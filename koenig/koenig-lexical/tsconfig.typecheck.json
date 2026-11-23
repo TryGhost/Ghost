@@ -15,7 +15,23 @@
     },
     "include": [
         "src/context/KoenigComposerContext.tsx",
+        "src/context/KoenigSelectedCardContext.tsx",
+        "src/context/SharedHistoryContext.tsx",
+        "src/context/SharedOnChangeContext.tsx",
+        "src/context/TKContext.tsx",
         "src/components/ui/cards/PaywallCard.tsx",
+        "src/utils/audioUploadHandler.ts",
+        "src/utils/dataSrcToFile.ts",
+        "src/utils/extractVideoMetadata.ts",
+        "src/utils/fileUploadHandler.ts",
+        "src/utils/getAudioMetadata.ts",
+        "src/utils/getImageDimensions.ts",
+        "src/utils/getImageFilenameFromSrc.ts",
+        "src/utils/imageUploadHandler.ts",
+        "src/utils/isGif.ts",
+        "src/utils/openFileSelection.ts",
+        "src/utils/prettifyFileName.ts",
+        "src/utils/thumbnailUploadHandler.ts",
         "src/utils/videoFrames.ts"
     ]
 }

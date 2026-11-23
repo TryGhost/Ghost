@@ -30,15 +30,15 @@ import {
   usePostResourceValueSource,
   useTierValueSource,
 } from '@/shared/filter-sources';
-import type { MemberView } from '@/members/hooks/use-member-views';
+import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 
 interface MembersFiltersProps {
   filters: Filter[];
   multipleActiveSubscriptionsCount: number;
   nql?: string;
   onFiltersChange: (filters: Filter[]) => void;
-  savedViews?: MemberView[];
-  activeView?: MemberView | null;
+  savedViews?: Segment[];
+  activeView?: Segment | null;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];

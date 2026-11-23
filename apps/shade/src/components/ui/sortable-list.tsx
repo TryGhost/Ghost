@@ -168,7 +168,11 @@ export const SortableList = <Item extends { id: string }>({
   }
 
   return (
-    <div className={cn('w-full', className)} {...props}>
+    <div
+      className={cn('w-full', className)}
+      data-row-dragging={draggingId !== null ? 'true' : undefined}
+      {...props}
+    >
       {title && (
         <div className={cn('mb-2', titleSeparator && 'space-y-1')}>
           <h6 className="text-base font-semibold text-muted-foreground">{title}</h6>
@@ -179,10 +183,13 @@ export const SortableList = <Item extends { id: string }>({
         collisionDetection={closestCenter}
         onDragCancel={() => setDraggingId(null)}
         onDragEnd={(event) => {
-          if (event.over) {
-            onMove(String(event.active.id), String(event.over.id));
+          try {
+            if (event.over) {
+              onMove(String(event.active.id), String(event.over.id));
+            }
+          } finally {
+            setDraggingId(null);
           }
-          setDraggingId(null);
         }}
         onDragStart={(event) => setDraggingId(String(event.active.id))}
       >

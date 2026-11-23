@@ -109,9 +109,21 @@ automatic retries and no collection of uploads orphaned by a shutdown between
 dispatch and execution. The exception is a site with
 `services:jobs:outbox:keepUntilSettled` on: its outbox keeps each row until the
 job settles, so a job that a restart or crash cut short runs again, from the
-start, at the next boot. A job type with its own recovery opts out with
-`static replayAfterRestart = false`, and its rows are dropped at boot instead.
-Newsletter sends do this, because the newsletter boot scan recovers them.
+start, once its lease runs out (`services:jobs:outbox:leaseMs`, two minutes by
+default). A process renews the rows of the jobs its backend reports as held,
+so while those renewals keep succeeding, no other process takes them. A backend
+that doesn't report what it holds has to ignore an id it already has instead.
+Only a job type that sets
+`static replayAfterRestart = true` runs again; the rows of every other type are
+dropped instead, and the job is lost unless something else recovers it.
+Newsletter sends set it: the send job checks the email's post and age itself,
+and the newsletter boot scan doesn't run while the outbox keeps rows until
+their jobs settle.
+A lease only shows that a process went quiet, not that it stopped: one that
+stalls or loses the database for longer than the lease can still be running a
+job when another process starts it again. A type that sets
+`replayAfterRestart` has to be safe to run twice at the same time, not only
+twice in a row.
 
 ## Scheduling
 

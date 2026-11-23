@@ -4,6 +4,9 @@ export const MAX_PINNED_APPS = 3;
 /** Shown where an app can't be pinned because the sidebar is full. */
 export const PINS_FULL_MESSAGE = `Only ${MAX_PINNED_APPS} apps fit. Unpin one to make room.`;
 
+/** Under a pin menu item that can't pin, where the item already says what pinning is. */
+export const PINS_FULL_HINT = 'Unpin another app to make room.';
+
 /** What a staff user decided, as saved in their navigation preferences. */
 export interface AppPins {
   pinned: string[];

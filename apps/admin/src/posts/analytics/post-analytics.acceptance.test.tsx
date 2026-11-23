@@ -17,6 +17,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleRequests,
   staffRole,
   webAnalyticsBootOverrides,
   type TinybirdPipeCapture,
@@ -623,6 +624,9 @@ describe('Post analytics overview', () => {
     });
 
     await expect.poll(() => failedStatusApi.requests.length).toBe(1);
+    // Focus doesn't refetch a query that's still fetching, and the fake records
+    // the request before the app has its error, so let it finish first
+    await settleRequests();
 
     const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
       email_statuses: [

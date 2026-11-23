@@ -1,5 +1,6 @@
 import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import boundaries from '../../../../.dependency-cruiser.cjs';
@@ -32,6 +33,17 @@ if (
 }
 const services = new RegExp(boundary.from.path);
 const libraries = allowlist.map((pattern: string) => new RegExp(pattern));
+
+// The allowlist admits contracts whole by their folder. Map each contract's
+// package name to that folder so a package import matches the same entry.
+const contractsDirectory = path.join(root, 'contracts');
+const contractFolders = new Map<string, string>();
+for (const entry of existsSync(contractsDirectory) ? readdirSync(contractsDirectory) : []) {
+  const manifest = path.join(contractsDirectory, entry, 'package.json');
+  if (!existsSync(manifest)) continue;
+  const { name } = JSON.parse(readFileSync(manifest, 'utf8')) as { name?: unknown };
+  if (typeof name === 'string') contractFolders.set(name, `contracts/${entry}`);
+}
 
 function unwrap(node: ESTree.Node | null | undefined) {
   while (
@@ -151,6 +163,9 @@ export const noInjectedServiceLibraries: CreateRule = {
             `node_modules/${target}`,
             `node_modules/${target}.js`,
           ];
+      const name = specifier.split('/', specifier.startsWith('@') ? 2 : 1).join('/');
+      const contract = contractFolders.get(name);
+      if (contract) candidates.push(`${contract}${specifier.slice(name.length)}`);
       return libraries.some((pattern) => candidates.some((candidate) => pattern.test(candidate)));
     }
 

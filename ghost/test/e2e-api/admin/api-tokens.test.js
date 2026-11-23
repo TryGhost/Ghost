@@ -22,6 +22,7 @@ describe('Admin API', function () {
   function assertMatchesFixture(fixtureId, response) {
     const user = response.users[0];
     const expected = fixtureManager.get('users', fixtureId);
+    assert.equal(user.id, expected.id);
     assert.equal(user.name, expected.name);
     assert.equal(user.email, expected.email);
     assert.equal(user.slug, expected.slug);
@@ -45,6 +46,76 @@ describe('Admin API', function () {
       await agent.loginAsAdmin();
       await agent.get('users').expectStatus(200);
     });
+  });
+
+  describe('Key and session cookie together', function () {
+    afterEach(function () {
+      agent.resetAuthentication();
+    });
+
+    it('uses the key, ignoring the session cookie', async function () {
+      await agent.useStaffTokenForContributor();
+      const authorization = agent.defaults.headers.Authorization;
+      await agent.loginAsAdmin();
+
+      // The cookie alone is the admin, so the key below is what changes the caller
+      await agent
+        .get('users/me')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assertMatchesFixture(1, body);
+        });
+
+      agent.defaults.headers.Authorization = authorization;
+      await agent
+        .get('users/me')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assertMatchesFixture(4, body);
+        });
+    });
+  });
+
+  // Roles are read at authentication; a cache across requests would keep the old role
+  describe('Role changes between requests', function () {
+    let adminId;
+    let adminRoleId;
+
+    beforeAll(async function () {
+      await agent.loginAsAdmin();
+      ({
+        body: {
+          users: [{ id: adminId }],
+        },
+      } = await agent.get('users/me').expectStatus(200));
+      adminRoleId = (await models.Role.findOne({ name: 'Administrator' })).id;
+    });
+
+    async function setRole(name) {
+      const role = await models.Role.findOne({ name });
+      await models.User.edit({ roles: [role.id] }, { id: adminId, context: { internal: true } });
+    }
+
+    afterEach(async function () {
+      await models.User.edit(
+        { roles: [adminRoleId] },
+        { id: adminId, context: { internal: true } },
+      );
+      agent.resetAuthentication();
+    });
+
+    for (const [credential, use] of [
+      ['staff token', () => agent.useStaffTokenForAdmin()],
+      ['session', () => agent.loginAsAdmin()],
+    ]) {
+      it(`applies a demotion to the next request with the same ${credential}`, async function () {
+        await use();
+        await agent.get('db').expectStatus(200);
+
+        await setRole('Editor');
+        await agent.get('db').expectStatus(403);
+      });
+    }
   });
 
   // The intention of these tests is to generally demonstrate that the staff token is working

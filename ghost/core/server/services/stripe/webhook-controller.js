@@ -2,6 +2,23 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const StripeAPI = require('./stripe-api');
 
+/**
+ * The classes of Stripe's errors for a key that no longer works on the publisher's Stripe
+ * account: expired or revoked (`StripeAuthenticationError`), or stripped of the permissions Ghost
+ * needs (`StripePermissionError`). Stripe's client puts the class's name in an error's `type`.
+ */
+const ACCOUNT_ACCESS_ERRORS = new Set(['StripeAuthenticationError', 'StripePermissionError']);
+
+/**
+ * @param {unknown} err
+ * @returns {boolean}
+ */
+function isAccountAccessError(err) {
+  return (
+    typeof err === 'object' && err !== null && 'type' in err && ACCOUNT_ACCESS_ERRORS.has(err.type)
+  );
+}
+
 module.exports = class WebhookController {
   /**
    * @param {object} deps
@@ -142,10 +159,15 @@ module.exports = class WebhookController {
       res.writeHead(200);
       res.end();
     } catch (err) {
-      // The span has logged the error. Sentry keeps only the unexpected ones, as Ghost's Sentry
-      // setup drops every Ghost error whose status isn't 500. Stripe sends the event again later.
-      this.sentry.captureException(err);
-      res.writeHead(err.statusCode || 500);
+      // The span has logged the error. Sentry keeps only the unexpected ones: Ghost's setup drops
+      // every Ghost error whose status isn't 500, and keeps every other error, Stripe's included.
+      // A publisher who revoked Ghost's access to their Stripe account fails every event Stripe
+      // sends until they reconnect, which only they can do, so those errors aren't sent at all.
+      // Stripe sends the event again later.
+      if (!isAccountAccessError(err)) {
+        this.sentry.captureException(err);
+      }
+      res.writeHead(err?.statusCode || 500);
       res.end();
     }
   }

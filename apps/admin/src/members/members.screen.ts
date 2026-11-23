@@ -18,6 +18,13 @@ import {
 export const membersScreen = {
   memberRows: () => page.getByTestId(membersListItem),
   memberRow: (name: string) => page.getByTestId(membersListItem).filter({ hasText: name }),
+  // The visual pinned-header clone is aria-hidden; the accessible original is height zero.
+  pinnedHeaderCell: (name: string) =>
+    Array.from(
+      document.querySelectorAll<HTMLTableCellElement>(
+        '[data-testid="members-pinned-header"] thead th',
+      ),
+    ).find((cell) => cell.textContent === name && cell.getBoundingClientRect().height > 0),
   link: (name: string) => page.getByRole('link', { name, exact: true }),
   newMemberLink: () => page.getByRole('link', { name: newMemberLink }),
   searchInput: () => page.getByLabelText(searchLabel),
@@ -28,6 +35,25 @@ export const membersScreen = {
   loadMoreButton: () => page.getByRole('button', { name: loadMoreButton }),
   dialog: () => page.getByRole('dialog'),
   menuItem: (name: string | RegExp) => page.getByRole('menuitem', { name }),
+  /** Reads "Save view", or "Edit view" while the filters match a saved view. */
+  manageViewButton: () => page.getByRole('button', { name: /^(Save|Edit) view$/ }),
+  viewNameInput: () => membersScreen.dialog().getByRole('textbox', { name: 'View name' }),
+  viewPopoverButton: (label: string) =>
+    membersScreen.dialog().getByRole('button', { name: label, exact: true }),
+
+  /** Save the current filters as a view or, on a saved view, rename it. */
+  async saveView(name: string): Promise<void> {
+    await membersScreen.manageViewButton().click();
+    await membersScreen.viewNameInput().fill(name);
+    await membersScreen.viewPopoverButton('Save').click();
+  },
+
+  /** Delete the saved view the list is on, through its edit popover. */
+  async deleteView(): Promise<void> {
+    await membersScreen.manageViewButton().click();
+    await membersScreen.viewPopoverButton('Delete').click();
+    await membersScreen.viewPopoverButton('Delete').click();
+  },
 
   /** Add a text filter through the filters UI: Filter button → field option → fill the value input. */
   async addFilter(field: keyof typeof textFilterFields, value: string): Promise<void> {
@@ -58,6 +84,18 @@ export const membersScreen = {
   /** The shell element whose scroll position drives the virtualized rows. */
   listScrollElement: () =>
     getScrollParent(document.querySelector(`[data-testid="${membersListScrollRoot}"]`)),
+
+  /** The table's horizontal scroll container, independent of the page's vertical scroll. */
+  horizontalScrollElement(): HTMLElement | undefined {
+    let element = membersScreen.memberRows().elements()[0]?.parentElement;
+    while (element) {
+      if (getComputedStyle(element).overflowX === 'auto') {
+        return element;
+      }
+      element = element.parentElement;
+    }
+    return undefined;
+  },
 
   /** The highest row index the virtualizer has rendered with data (-1 when none). */
   lastRenderedRowIndex: () =>

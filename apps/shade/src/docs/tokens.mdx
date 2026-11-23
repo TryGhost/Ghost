@@ -115,6 +115,10 @@ In light mode all three flatten to near-white, so borders and shadows carry the 
 
 **Glass** is a separate, translucent surface for chrome that floats over the page (the `FloatingSidebar`): `--surface-glass` over a backdrop blur, outlined with `--border-glass`, with `--surface-glass-highlight` as its top-edge sheen and `--shadow-glass-floating` / `--shadow-glass-docked` as its two shadows (their layers match, so one transitions into the other). Use the set together rather than mixing glass with the solid surfaces.
 
+With `admin7Design` on, the glass sidebar's thin outline is slightly stronger:
+its black shadow outline uses 9% opacity and its dark-mode border uses 14%
+white. The flag-off surface keeps its previous outline values.
+
 ## Interactive surfaces
 
 Hover, active, and selected states are their own tokens — don't reach for raw greys or apply `/30` opacity modifiers ad-hoc.

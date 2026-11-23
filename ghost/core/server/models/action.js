@@ -1,26 +1,13 @@
 const ghostBookshelf = require('./base');
+const { ACTION_KINDS } = require('../lib/action-log/kinds');
 
-// Member metafields are owned by a raw-knex service rather than the Bookshelf
-// registry. Actions still need a read model for `include=resource` to recognise
-// their polymorphic resource type and load the current field definition.
-const MemberMetafieldResource = ghostBookshelf.Model.extend({
-  tableName: 'members_metafields',
-});
-
-// App installations are owned by a raw-knex service too, and need the same.
-const AppInstallationResource = ghostBookshelf.Model.extend({
-  tableName: 'app_installations',
-});
-
-// Gift links are too. Their entries point at the post a link belongs to.
-const GiftLinkResource = ghostBookshelf.Model.extend({
-  tableName: 'posts',
-});
-
-// And the site-wide Stripe Checkout config.
-const StripeCheckoutConfigResource = ghostBookshelf.Model.extend({
-  tableName: 'stripe_checkout_config',
-});
+// The kinds logged by services built without Bookshelf point into tables outside the
+// Bookshelf registry. Each gets a plain read model, so `include=resource` can load an
+// action's resource from its kind's table.
+const loggedKinds = Object.entries(ACTION_KINDS).map(([kind, { table }]) => [
+  ghostBookshelf.Model.extend({ tableName: table }),
+  kind,
+]);
 
 const Action = ghostBookshelf.Model.extend(
   {
@@ -41,12 +28,7 @@ const Action = ghostBookshelf.Model.extend(
         candidates.push([User, 'security_action']);
       }
 
-      candidates.push([MemberMetafieldResource, 'member_custom_field']);
-      candidates.push([AppInstallationResource, 'app_installation']);
-      candidates.push([GiftLinkResource, 'gift_link']);
-      candidates.push([StripeCheckoutConfigResource, 'stripe_checkout_config']);
-
-      return candidates;
+      return [...candidates, ...loggedKinds];
     },
 
     actor() {

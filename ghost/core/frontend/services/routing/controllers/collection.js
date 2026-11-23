@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:routing:controllers:collection');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
@@ -75,7 +74,7 @@ module.exports = function collectionController(req, res, next) {
        *
        * People should always invert their filters to ensure that the database query loads unique posts per collection.
        */
-      result.posts = _.filter(result.posts, (post) => {
+      result.posts = result.posts.filter((post) => {
         // Restore the routing columns the Content API serializer strips:
         // `type` (the collection router knows what it serves) and
         // `status` (collections only ever load published posts). The
@@ -88,6 +87,7 @@ module.exports = function collectionController(req, res, next) {
         }
 
         debug(`'${post.slug}' is not owned by this collection`);
+        return false;
       });
 
       return renderer.renderEntries(req, res)(result);

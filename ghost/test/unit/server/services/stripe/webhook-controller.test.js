@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const Stripe = require('stripe');
 const logging = require('@tryghost/logging');
 const WebhookController = require('../../../../../core/server/services/stripe/webhook-controller');
 const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
@@ -266,6 +267,48 @@ describe('WebhookController', function () {
 
     await controller.handle(req, res);
 
+    sinon.assert.calledOnceWithExactly(deps.sentry.captureException, failure);
+  });
+
+  it('doesn’t report an event that failed because Ghost lost access to the Stripe account', async function () {
+    deps.webhookManager.parseWebhook.returns({
+      type: 'customer.subscription.created',
+      data: { object: { customer: 'cust_123' } },
+    });
+
+    for (const failure of [
+      new Stripe.errors.StripeAuthenticationError({
+        message: 'Expired API Key provided',
+        code: 'platform_api_key_expired',
+        statusCode: 401,
+      }),
+      new Stripe.errors.StripePermissionError({
+        message: 'The provided key does not have the required permissions',
+        statusCode: 403,
+      }),
+    ]) {
+      deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+      await controller.handle(req, res);
+      sinon.assert.calledWith(res.writeHead, failure.statusCode);
+    }
+
+    sinon.assert.notCalled(deps.sentry.captureException);
+  });
+
+  it('reports an event that failed because Stripe refused a request Ghost made', async function () {
+    const failure = new Stripe.errors.StripeInvalidRequestError({
+      message: 'Must provide customer or customer_account.',
+      statusCode: 400,
+    });
+    deps.webhookManager.parseWebhook.returns({
+      type: 'customer.subscription.created',
+      data: { object: { customer: 'cust_123' } },
+    });
+    deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledOnceWithExactly(res.writeHead, 400);
     sinon.assert.calledOnceWithExactly(deps.sentry.captureException, failure);
   });
 

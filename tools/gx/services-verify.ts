@@ -9,6 +9,7 @@ import {
   parseLegacyServices,
   servicesRoot,
 } from '../configs/oxlint/legacy-services.ts';
+import { missingTypeScript, scannerTypeScript } from '../scripts/lib/dependency-boundaries.ts';
 
 const bootPath = 'ghost/core/boot.ts';
 const allowlistPath = '.dependency-cruiser.cjs';
@@ -22,7 +23,10 @@ type CommandResult = { status: number; output: string; stdout?: string };
 type CruiseDependency = { module: string; resolved: string; dependencyTypes: string[] };
 export type Cruise = {
   modules: Array<{ source: string; dependencies: CruiseDependency[] }>;
-  summary: { violations: Array<{ from: string; to: string; rule: { name: string } }> };
+  summary: {
+    violations: Array<{ from: string; to: string; rule: { name: string } }>;
+    environment?: { transpilersFound?: unknown };
+  };
 };
 export type ServiceRule = { from: { path: string; pathNot: string }; to: { pathNot: string[] } };
 export type SpecialistEntry = { dependency: string; owners: string[] };
@@ -383,10 +387,18 @@ export function verifyService({
       ['exec', 'depcruise', servicesRoot, '--config', allowlistPath, '--output-type', 'json'],
       { cwd: repository, env },
     );
+    let cruise: Cruise;
     try {
-      cruises.push(JSON.parse(result.stdout ?? result.output) as Cruise);
+      cruise = JSON.parse(result.stdout ?? result.output) as Cruise;
     } catch {
       record(`dependencies-${resolution}`, 'fail', failureOutput({ ...result, status: 1 }));
+      continue;
+    }
+    // A scan without TypeScript succeeds and reports different violations.
+    if (scannerTypeScript(cruise.summary?.environment?.transpilersFound)) {
+      cruises.push(cruise);
+    } else {
+      record(`dependencies-${resolution}`, 'fail', [missingTypeScript]);
     }
   }
   const [source, built] = cruises;

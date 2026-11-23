@@ -191,9 +191,6 @@ describe('Stripe Checkout collected parts', function () {
 
   beforeEach(async function () {
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    // The phone number saves only into a phone field.
-    mockManager.mockLabsEnabled('customFieldTypePhone');
     for (const field of FIELDS) {
       await adminAgent
         .post('members/metafields/custom/')

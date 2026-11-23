@@ -11,6 +11,7 @@ across the workspace dependency graph.
 | `ghost/`         | The Ghost server, frontend rendering, migrations, and server tests            |
 | `koenig/`        | The Koenig editor and packages for storing, converting, and rendering content |
 | `packages/`      | Shared libraries, schemas, translations, test data, and adapter contracts     |
+| `contracts/`     | Packages that define the shape of data crossing a boundary                    |
 | `tools/configs/` | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
 | `e2e/`           | Playwright tests for complete Admin and public-site journeys                  |
 | `docker/`        | Containers and supporting services for local development and CI               |
@@ -61,8 +62,9 @@ For conventions used when adding a Ghost Core service, see the
 [services README](../../ghost/core/server/services/README.md).
 
 The [authentication subsystem](../../ghost/core/server/auth/README.md) lives in
-`ghost/core/server/auth/`. It keeps the existing authentication middleware and
-account workflows together while their longer-term ownership is settled.
+`ghost/core/server/auth/`. It keeps the existing authentication middleware,
+account workflows and staff permission checks together while their longer-term
+ownership is settled.
 
 ## Koenig
 
@@ -80,6 +82,11 @@ commands.
 `packages/` contains shared libraries used by Ghost Core and the apps. Adapter
 base packages define contracts for storage, scheduling, redirects, caching, and
 other replaceable services.
+
+`contracts/` contains packages that define the shape of data crossing a
+boundary, such as member custom field types or the formats Ghost and installed
+apps exchange. Ghost Core may import them anywhere through their public entry
+points. See [`contracts/README.md`](../../contracts/README.md).
 
 Read [`packages/README.md`](../../packages/README.md) before adding or
 modernizing an internal package. New internal packages start from

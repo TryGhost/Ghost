@@ -24,6 +24,7 @@ const rateLimiting = {
   },
   upgradeApiLimiter: use('upgradeApiBlock'),
   upgradeLimiter: use('upgradeBlock'),
+  presenceLimiter: use('presenceBlock'),
   globalBlock: use('globalBlock'),
   globalReset: use('globalReset'),
   userLogin: use('userLogin'),

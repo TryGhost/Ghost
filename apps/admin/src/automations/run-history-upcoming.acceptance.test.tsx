@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { settleRequests } from '@test-utils/acceptance/worker';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
@@ -10,6 +10,7 @@ import {
   setup,
   respond,
   canvas,
+  editingCanvas,
   select,
   open,
   close,
@@ -50,12 +51,17 @@ describe('Upcoming steps in active run history', () => {
     ],
   });
 
+  // The email card starts below the canvas's visible area, and Playwright's scroll into view
+  // doesn't reliably reach it there. Scroll the canvas down to it, as a user would.
+  const scrollToEmail = () => userEvent.wheel(editingCanvas(), { delta: { y: 1000 } });
+
   it('shows the saved downstream path while preserving the unsaved draft', async () => {
     setup();
     const request = fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
     respond(activeHistory());
     fakeEmailEditorData();
     await renderAdminApp('/automations/first', flags);
+    await scrollToEmail();
     await editEmailSubject(
       page.getByRole('article', { name: /^Send email/ }),
       'Unsaved future subject',
@@ -166,6 +172,7 @@ describe('Upcoming steps in active run history', () => {
     const historyRequest = respond(activeHistory());
     fakeEmailEditorData();
     await renderAdminApp('/automations/first', flags);
+    await scrollToEmail();
     await editEmailSubject(
       page.getByRole('article', { name: /^Send email/ }),
       'Unsaved future subject',

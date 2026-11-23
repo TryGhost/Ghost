@@ -26,7 +26,7 @@ function isEmptyValue(value) {
 }
 
 const handleConditional = (conditional, options) => {
-  if (_.isFunction(conditional)) {
+  if (typeof conditional === 'function') {
     conditional = conditional.call(this);
   }
 
@@ -60,13 +60,13 @@ const handleMatch = (data, operator, value) => {
       result = data <= value;
       break;
     case '~':
-      result = _.isString(data) && _.isString(value) && data.includes(value);
+      result = typeof data === 'string' && typeof value === 'string' && data.includes(value);
       break;
     case '~^':
-      result = _.isString(data) && _.isString(value) && data.startsWith(value);
+      result = typeof data === 'string' && typeof value === 'string' && data.startsWith(value);
       break;
     case '~$':
-      result = _.isString(data) && _.isString(value) && data.endsWith(value);
+      result = typeof data === 'string' && typeof value === 'string' && data.endsWith(value);
       break;
     default:
       result = data === value;
@@ -81,7 +81,7 @@ module.exports = function match(...attrs) {
   // options.data = options.data || {};
 
   const options = attrs.pop();
-  const isBlock = _.has(options, 'fn');
+  const isBlock = Object.hasOwn(options, 'fn');
   let result;
 
   if (_.isEmpty(attrs)) {

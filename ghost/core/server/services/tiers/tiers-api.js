@@ -74,12 +74,21 @@ module.exports = class TiersAPI {
   }
 
   /**
-   * @param {string} idString
+   * Reads the tier with this id, or null when no tier has it. Callers pass ids straight from
+   * requests, so an id that isn't an ObjectID's 24 hex characters names no tier rather than
+   * being an error. `isValid` alone also accepts any 12-character string, which
+   * `createFromHexString` throws on, so the length is checked too.
+   *
+   * @param {unknown} idString
    * @param {ReadOptions} [options]
    *
-   * @returns {Promise<Tier>}
+   * @returns {Promise<Tier|null>}
    */
   async read(idString, options = {}) {
+    if (typeof idString !== 'string' || idString.length !== 24 || !ObjectID.isValid(idString)) {
+      return null;
+    }
+
     const id = ObjectID.createFromHexString(idString);
     const tier = await this.#repository.getById(id, options);
 

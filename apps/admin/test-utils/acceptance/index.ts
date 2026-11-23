@@ -17,6 +17,20 @@ export {
 } from './editor';
 export type { FakePintura } from './editor';
 export { failModuleLoads, holdModuleLoads } from './module-loads';
+export {
+  fakeSegmentWrites,
+  holdSegmentsList,
+  replaceSavedViewsElsewhere,
+  segmentsBodyError,
+  withSavedViews,
+} from './shared-views';
+export type {
+  FakeSegmentWritesOptions,
+  SegmentBodyIssue,
+  SegmentWrite,
+  SegmentWritesCapture,
+  StoredView,
+} from './shared-views';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export { InAppProviders, renderInApp } from './render-in-app';
@@ -50,6 +64,7 @@ export {
 export type {
   BrowseQuery,
   EditSettingsCapture,
+  FakeEditSettingsOptions,
   FakeMembersOptions,
   ResourceCapture,
   ResourceOptions,

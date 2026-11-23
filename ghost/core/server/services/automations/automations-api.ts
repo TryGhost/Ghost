@@ -1,4 +1,3 @@
-// @ts-expect-error This module lacks type definitions.
 import domainEvents from '@tryghost/domain-events';
 import type { Knex } from 'knex';
 import errors from '@tryghost/errors';
@@ -515,11 +514,7 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
   return await repository.retryStep(...args);
 }
 
-export async function recordEmailSent(
-  ...args: Parameters<AutomationsRepository['recordEmailSent']>
-) {
-  return await repository.recordEmailSent(...args);
-}
+export const recordEmailSent = automationsApi2.recordEmailSent.bind(automationsApi2);
 
 export async function getAutomatedEmailRecipientsByMailgunIds(
   ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>

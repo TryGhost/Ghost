@@ -55,7 +55,14 @@ function cruise(
       source,
       dependencies: [{ module, resolved, dependencyTypes: [type] }],
     })),
-    summary: { violations },
+    summary: {
+      violations,
+      environment: {
+        transpilersFound: [
+          { name: 'typescript', available: true, currentVersion: 'typescript@6.0.3' },
+        ],
+      },
+    },
   };
 }
 
@@ -528,6 +535,32 @@ test('a specialist owner added since the base is checked against the scan', asyn
   f.cruises.source = cruise([[service, 'sdk', 'node_modules/sdk/index.js']]);
   f.cruises.built = f.cruises.source;
   assert.equal(status()['allowances-accurate'], 'pass');
+});
+
+test('a dependency run that could not load TypeScript fails and is not compared', async (t) => {
+  const f = await fixture(t);
+  // What dependency-cruiser reports for a compiler it can find but not load.
+  const withoutTypeScript: Cruise = {
+    ...cruise([]),
+    summary: {
+      violations: [],
+      environment: {
+        transpilersFound: [{ name: 'typescript', available: true, currentVersion: '-' }],
+      },
+    },
+  };
+  f.cruises.source = withoutTypeScript;
+  f.cruises.built = withoutTypeScript;
+  const checks = f.verify();
+  for (const name of ['dependencies-source', 'dependencies-built']) {
+    const check = checks.find((item) => item.name === name);
+    assert.equal(check?.status, 'fail');
+    assert.match(check?.details[0] ?? '', /could not load the `typescript` package/);
+  }
+  assert.equal(
+    checks.find((item) => item.name === 'built-boundaries'),
+    undefined,
+  );
 });
 
 test('unreadable dependency-cruiser output fails the run that produced it', async (t) => {

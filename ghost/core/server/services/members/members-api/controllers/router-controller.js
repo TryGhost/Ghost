@@ -31,6 +31,7 @@ const messages = {
   offerArchived: 'This offer is archived.',
   tierNotFound: 'This tier does not exist.',
   tierArchived: 'This tier is archived.',
+  tierFree: "This tier is free, so it can't be bought.",
   existingSubscription: 'A subscription exists for this Member.',
   unableToCheckout: 'Unable to initiate checkout session',
   inviteOnly: 'This site is invite-only, contact the owner for access.',
@@ -591,9 +592,12 @@ module.exports = class RouterController {
    * @returns
    */
   async _createSubscriptionCheckoutSession(options) {
-    if (options.tier && options.tier.id === 'free') {
+    // A free tier has nothing to pay for: checking it out would create a Stripe product for it
+    // and then fail on its missing price. Refuse it before anything reaches Stripe.
+    if (options.tier?.type === 'free') {
       throw new BadRequestError({
-        message: tpl(messages.badRequest),
+        message: tpl(messages.tierFree),
+        context: `Tier with id "${options.tier.id}" is free`,
       });
     }
 
@@ -756,6 +760,13 @@ module.exports = class RouterController {
       });
     }
 
+    // invite-only sites block new members, so a recipient who isn't already a member couldn't redeem
+    if (this._settingsHelpers.isMembersInviteOnly()) {
+      throw new DisabledFeatureError({
+        message: tpl(messages.inviteOnly),
+      });
+    }
+
     return await this._giftService.service.startCheckout({
       tierId: options.tierId,
       offerId: options.offerId,
@@ -854,6 +865,15 @@ module.exports = class RouterController {
 
         let response;
         if (type === 'subscription') {
+          // A site without Stripe has no Stripe client to check out with, so refuse the way gift
+          // and donation checkouts do. This checks Stripe alone, not whether signups are open,
+          // so a site that has closed signups but kept Stripe still sells subscriptions.
+          if (!this._settingsHelpers.isStripeConnected()) {
+            throw new DisabledFeatureError({
+              message: tpl(messages.notConfigured),
+            });
+          }
+
           if (!membersEnabled) {
             throw new BadRequestError({
               message: tpl(messages.badRequest),
@@ -1111,8 +1131,13 @@ module.exports = class RouterController {
   }
 
   async _handleSignup(req, normalizedEmail, referrer = null, giftToken = null) {
-    if (!this._allowSelfSignup()) {
-      if (this._settingsCache.get('members_signup_access') === 'paid') {
+    const signupAccess = this._settingsCache.get('members_signup_access');
+
+    // A gift is a paid membership, so paid-members-only sites accept new members redeeming one.
+    const isPaidGiftRedemption = signupAccess === 'paid' && Boolean(giftToken);
+
+    if (!this._allowSelfSignup() && !isPaidGiftRedemption) {
+      if (signupAccess === 'paid') {
         throw new errors.BadRequestError({
           message: tpl(messages.paidOnly),
         });
@@ -1129,6 +1154,11 @@ module.exports = class RouterController {
       throw new errors.BadRequestError({
         message: tpl(messages.blockedEmailDomain),
       });
+    }
+
+    // Throws the gift's own error (not found, redeemed, expired...) when it can't be redeemed.
+    if (isPaidGiftRedemption) {
+      await this._giftService.service.getRedeemable({ token: giftToken, memberStatus: null });
     }
 
     const { emailType } = req.body;

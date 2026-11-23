@@ -3,17 +3,41 @@ import type { NextFunction, Request, Response } from 'express';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { SpamPrevention } from '../../web/shared/middleware/api/spam-prevention';
+import urlUtils from '../../../shared/url-utils';
 
 const models = require('../../models');
 const auth = require('../../auth');
 const api = require('./index');
 const spamPrevention: SpamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = auth.isBetterAuth;
+
+type BetterAuthSession = ReturnType<
+  typeof import('../../auth/better-auth/session-controller').createSessionController
+>;
+
+// Better Auth loads only under its engine
+let betterAuthSession: BetterAuthSession | undefined;
+function getBetterAuthSession(): BetterAuthSession {
+  if (!betterAuthSession) {
+    const { createSessionController } = require('../../auth/better-auth/session-controller');
+
+    betterAuthSession = createSessionController({
+      getAuth: () => auth.betterAuth.service.api,
+      getOriginOfRequest: auth.session.getOriginOfRequest,
+      getAdminOrigin: () => urlUtils.getAdminOrigin(),
+      resetUserLogin: (req: Request) => spamPrevention.userLogin().resetRequest(req),
+    }) as BetterAuthSession;
+  }
+  return betterAuthSession;
+}
+
 const messages = {
   accessDenied: 'Access Denied.',
 };
 
-type SessionFrame = Frame<{ data: { username?: string; password?: string } }>;
+type SessionFrame = Frame<{ data: { username?: string; password?: string; token?: string } }>;
 
 type SessionRequest = Request & { user?: unknown; skipVerification?: boolean };
 
@@ -29,6 +53,21 @@ const controller = {
           message: tpl(messages.accessDenied),
         }),
       );
+    }
+
+    if (isBetterAuth) {
+      const credentials = {
+        email: object.username,
+        password: object.password,
+        token: typeof object.token === 'string' ? object.token : undefined,
+      };
+      return Promise.resolve(function betterAuthSignInMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().signIn(req, res, next, credentials);
+      });
     }
 
     let skipVerification = false;
@@ -86,6 +125,16 @@ const controller = {
       });
   },
   delete(): Promise<SessionMiddleware> {
+    if (isBetterAuth) {
+      return Promise.resolve(function betterAuthSignOutMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().signOut(req, res, next);
+      });
+    }
+
     return Promise.resolve(function logoutSessionMw(
       req: Request,
       res: Response,
@@ -95,6 +144,16 @@ const controller = {
     });
   },
   sendVerification(): Promise<SessionMiddleware> {
+    if (isBetterAuth) {
+      return Promise.resolve(function betterAuthSendVerificationMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().sendVerification(req, res, next);
+      });
+    }
+
     return Promise.resolve(function sendAuthCodeMw(
       req: Request,
       res: Response,
@@ -104,6 +163,16 @@ const controller = {
     });
   },
   verify(): Promise<SessionMiddleware> {
+    if (isBetterAuth) {
+      return Promise.resolve(function betterAuthVerifyMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().verify(req, res, next);
+      });
+    }
+
     return Promise.resolve(function verifyAuthCodeMw(
       req: Request,
       res: Response,

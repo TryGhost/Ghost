@@ -1,5 +1,4 @@
-const routeMatch = require('path-match')();
-
+import pathMatch from 'path-match';
 import type { ResourceLookupParams } from './lazy-url-service';
 
 export type PermalinkParams = ResourceLookupParams & {
@@ -9,6 +8,8 @@ export type PermalinkParams = ResourceLookupParams & {
   primary_tag?: string;
   primary_author?: string;
 };
+
+const routeMatch = pathMatch();
 
 const SUPPORTED_TOKENS = new Set([
   'id',

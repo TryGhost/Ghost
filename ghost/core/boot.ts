@@ -157,9 +157,10 @@ async function initCore({
 
   // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
   // Better Auth itself.
-  if (config.get('auth:engine') === 'better-auth') {
+  const auth: typeof import('./server/auth') = require('./server/auth');
+  if (auth.isBetterAuth) {
     debug('Begin: Better Auth');
-    await require('./server/auth').betterAuth.init();
+    await auth.betterAuth.init();
     debug('End: Better Auth');
   }
 
@@ -397,7 +398,6 @@ async function initServices({
   const members = require('./server/services/members');
   const tiers: typeof import('./server/services/tiers').default =
     require('./server/services/tiers').default;
-  const permissions = require('./server/services/permissions');
   const indexnow: typeof import('./server/services/indexnow-ping').default =
     require('./server/services/indexnow-ping').default;
   const upgrades: typeof import('./server/services/upgrades').default =
@@ -446,6 +446,10 @@ async function initServices({
     require('./server/services/users').default;
   const memberWelcomeEmails: typeof import('./server/services/member-welcome-emails').default =
     require('./server/services/member-welcome-emails').default;
+  const editorPresence: typeof import('./server/services/editor-presence').default =
+    require('./server/services/editor-presence').default;
+  const segments: typeof import('./server/services/segments').default =
+    require('./server/services/segments').default;
   const domainEvents = require('@tryghost/domain-events');
   const automations: typeof import('./server/services/automations') = require('./server/services/automations');
   const automationsApi: typeof import('./server/services/automations/automations-api') = require('./server/services/automations/automations-api');
@@ -505,7 +509,6 @@ async function initServices({
     tagsPublic.init(),
     postsPublic.init(),
     membersEvents.init(),
-    permissions.init(),
     indexnow.init(),
     upgrades.init(),
     slack.init(),
@@ -533,7 +536,9 @@ async function initServices({
     recommendationsService.init(),
     explorePingService.init(),
     users.init(),
+    editorPresence.init(),
     machinePaymentsService.init(),
+    segments.init(),
   ]);
   if (ghostServer) {
     // Each releases what its start acquired; the next boot in this process starts it again.
@@ -560,9 +565,10 @@ async function initServices({
   assert(mentionsService.service.sendingService, 'Mentions sending service should be initialized');
   assert(membersService.handleImportJob, 'Members service should be initialized');
   assert(emailService.service, 'Email service should be initialized');
+  const authCleanup: typeof import('./server/auth/better-auth/cleanup') = require('./server/auth/better-auth/cleanup');
   registerJobHandlers({
     gifts: emailAnalytics.getGifts(),
-    automations: emailAnalytics.getAutomations(),
+    automationAnalytics: emailAnalytics.getAutomations(),
     newsletters: emailAnalytics.getNewsletters(),
     jobsService,
     memberJobs,
@@ -577,11 +583,12 @@ async function initServices({
     contentImport,
     updateCheck,
     signingKeys: signingKeys.service,
+    authCleanup,
   });
   await jobsService.start();
   debug('End: Register job handlers');
 
-  await automations.automationsService.init({
+  automations.automationsService.init({
     domainEvents,
     apiUrl,
     schedulerAdapter,
@@ -629,23 +636,28 @@ async function initBackgroundServices({ config }: { config: Config }): Promise<v
     return;
   }
 
+  const jobsServiceRoot: typeof import('./server/services/jobs-service') = require('./server/services/jobs-service');
+  const jobsService = jobsServiceRoot.getInstance();
+
   // Resume any newsletter sends interrupted by a prior container shutdown.
   // Runs before activitypub.init so an activitypub failure can't disable recovery.
-  await runIsolated(() =>
-    require('./server/services/email-service').service.resumeInterruptedSends(),
-  );
+  // An outbox that keeps jobs until they settle hands interrupted sends over
+  // again itself, and this scan can't tell whether another process owns a send.
+  if (!jobsService.keepsJobsUntilSettled()) {
+    await runIsolated(() =>
+      require('./server/services/email-service').service.resumeInterruptedSends(),
+    );
+  }
 
   // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
   // sends sequentially and must not hold up the remaining background services.
   const giftService: typeof import('./server/services/gifts') = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
-  const jobsServiceRoot: typeof import('./server/services/jobs-service') = require('./server/services/jobs-service');
-  const jobsService = jobsServiceRoot.getInstance();
-
   // These run before activitypub.init for the same reason as the send recovery above: gifts,
-  // reminders, tokens, expired comped subscriptions, signing keys and email analytics would
-  // otherwise go unhandled for the life of the process if an unrelated background service fails.
+  // reminders, tokens, expired comped subscriptions, signing keys, expired auth rows and email
+  // analytics would otherwise go unhandled for the life of the process if an unrelated
+  // background service fails.
   // Each is scheduled in turn and isolated from the others.
   const jobsBeforeActivityPub = [
     () => require('./server/services/gifts/jobs').scheduleGiftCleanupJob(jobsService),
@@ -657,14 +669,18 @@ async function initBackgroundServices({ config }: { config: Config }): Promise<v
         require('./server/services/signing-keys').default;
       return signingKeys.extras.scheduleCheckJob(jobsService);
     },
+    () => {
+      const authCleanup: typeof import('./server/auth/better-auth/cleanup') = require('./server/auth/better-auth/cleanup');
+      return authCleanup.scheduleClearExpiredJob(jobsService);
+    },
     () => require('./server/services/email-analytics/jobs').scheduleRecurringJobs(),
   ];
   for (const scheduleJob of jobsBeforeActivityPub) {
     await runIsolated(scheduleJob);
   }
 
-  const activitypub = require('./server/services/activitypub');
-  await activitypub.init();
+  // Isolated like the jobs around it: a failed start is logged and the work below still starts.
+  await runIsolated(() => require('./server/services/activitypub').init());
 
   const jobsAfterActivityPub = [
     () => {

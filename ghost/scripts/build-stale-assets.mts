@@ -13,7 +13,7 @@ const projectRoot = path.resolve(import.meta.dirname, '..');
 const sources = [
   'core/frontend/src',
   ...fs
-    .readdirSync(path.join(projectRoot, 'core/frontend/src'), { recursive: true })
+    .readdirSync(path.join(projectRoot, 'core/frontend/src'), { recursive: true, encoding: 'utf8' })
     .map((file) => path.join('core/frontend/src', file)),
   'core/frontend/public/ghost.css',
   'core/frontend/public/private.js',

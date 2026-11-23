@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import redisStoreFactory from '../../../../../../core/server/adapters/lib/redis/redis-store-factory';
 
 class CacheManagerMock {
@@ -10,17 +9,17 @@ class CacheManagerMock {
 
 describe('Redis Store Factory', function () {
   it('returns a cache manager constructor when no extra parameters are provided', function () {
-    const store = redisStoreFactory.getRedisStore();
+    const store = redisStoreFactory.getRedisStore() as { create?: unknown };
 
     assert.ok(store);
     assert.ok(store.create);
   });
 
   it('reuses redis store instance', function () {
-    const store = redisStoreFactory.getRedisStore({}, true, CacheManagerMock);
+    const store = redisStoreFactory.getRedisStore({}, true, CacheManagerMock) as string;
     const storeReused = redisStoreFactory.getRedisStore({}, true, CacheManagerMock);
 
-    assert.equal(store.create, undefined);
+    assert.equal((store as { create?: unknown }).create, undefined);
 
     assert.equal(
       store.startsWith('StoreInstance'),

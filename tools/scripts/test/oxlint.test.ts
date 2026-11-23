@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -46,6 +55,14 @@ function runLint(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
     );
+    // The injection rule reads contract package names from their manifests.
+    for (const contract of readdirSync(path.join(root, 'contracts'))) {
+      const manifest = path.join('contracts', contract, 'package.json');
+      if (existsSync(path.join(root, manifest))) {
+        mkdirSync(path.join(cwd, 'contracts', contract), { recursive: true });
+        cpSync(path.join(root, manifest), path.join(cwd, manifest));
+      }
+    }
     const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
     mkdirSync(path.dirname(path.join(cwd, resolver)), { recursive: true });
     cpSync(path.join(root, resolver), path.join(cwd, resolver));
@@ -578,10 +595,13 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, clock, os});
   `;
   const original = lint(source, serviceRoot);
-  assert.equal(original.diagnostics.length, 5);
+  assert.equal(original.diagnostics.length, 7);
+  // Contracts are allowed whole, so every entry of one is reported.
   for (const library of [
     '@tryghost/errors/subpath',
     '@tryghost/app-contracts/manifest',
+    '@tryghost/app-contracts',
+    '@tryghost/app-contracts/other',
     'bson-objectid',
     '../../lib/db-types/boolean',
     '../../lib/db-types/json',
@@ -596,7 +616,7 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     () => "const serviceDependencyAllowlist = ['^node:os$',",
   );
   const result = lint(source, serviceRoot, false, undefined, changed);
-  assert.equal(result.diagnostics.length, 6);
+  assert.equal(result.diagnostics.length, 8);
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
 });
 

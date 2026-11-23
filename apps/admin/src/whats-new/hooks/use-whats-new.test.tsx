@@ -25,6 +25,8 @@ const mockUser = staffUser();
 interface SetupQueryOptions {
   accessibility?: string | null;
   changelog?: Partial<RawChangelogResponse>;
+  /** How many instances of the hook to render, as the sidebar renders several. */
+  readers?: number;
 }
 
 interface SetupMutationOptions {
@@ -111,7 +113,7 @@ async function setupQuery(
   queryClient: QueryClient,
   options: SetupQueryOptions = {},
 ) {
-  const { accessibility = null, changelog = {} } = options;
+  const { accessibility = null, changelog = {}, readers = 1 } = options;
 
   server.use(
     // Mock the user preferences endpoint
@@ -150,9 +152,11 @@ async function setupQuery(
     }),
   );
 
-  const { result } = renderHook(() => useWhatsNew(), {
-    wrapper,
-  });
+  const [{ result }] = Array.from({ length: readers }, () =>
+    renderHook(() => useWhatsNew(), {
+      wrapper,
+    }),
+  );
 
   await waitForBackingQueriesSettled(queryClient);
 
@@ -349,6 +353,25 @@ describe('useWhatsNew', () => {
         });
       });
     });
+  });
+
+  describe('initializing lastSeenDate', () => {
+    queryTest(
+      'saves it once when several parts of the sidebar read it',
+      async ({ server, setup }) => {
+        const saves: string[] = [];
+        server.events.on('request:start', ({ request }) => {
+          if (request.method === 'PUT') {
+            saves.push(request.url);
+          }
+        });
+
+        // The sidebar, its footer and its banner check for a banner, and the user menu shows a badge
+        await setup({ readers: 4 });
+
+        expect(saves).toHaveLength(1);
+      },
+    );
   });
 });
 

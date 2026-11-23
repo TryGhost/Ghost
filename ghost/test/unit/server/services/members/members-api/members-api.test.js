@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const MembersAPI = require('../../../../../../core/server/services/members/members-api/members-api');
 const MagicLink = require('../../../../../../core/server/lib/magic-link/magic-link');
-const GeolocationService = require('../../../../../../core/server/services/members/members-api/services/geolocation-service');
 const MemberRepository = require('../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const MemberBREADService = require('../../../../../../core/server/services/members/members-api/services/member-bread-service');
 const DomainEvents = require('@tryghost/domain-events');
@@ -112,7 +111,6 @@ describe('MembersAPI', function () {
     sinon.stub(MemberRepository.prototype, 'update');
     sinon.stub(MemberRepository.prototype, 'create');
     sinon.stub(MemberBREADService.prototype, 'read');
-    sinon.stub(GeolocationService.prototype, 'getGeolocationFromIP').resolves(null);
 
     tokenData = {
       email: 'jamie@example.com',

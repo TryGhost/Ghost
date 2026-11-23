@@ -11,14 +11,14 @@
 //     in a published manifest and only adds noise + phantom workspace refs
 //
 // Applied to the `ghost` package only (the Ghost-CLI release archive built by
-// ghost/scripts/pack.mjs):
+// ghost/scripts/pack.mts):
 //   - rewrite its workspace deps to the bundled `file:components/*.tgz`
 //     tarballs shipped in the archive (name→filename map via GHOST_COMPONENTS)
 //   - strip `scripts` to the runtime set — Ghost-CLI starts Ghost with `node`,
 //     not pnpm scripts, and the dev/build/test/lint scripts reference stripped
 //     devDependencies
 //
-// (`packageManager` is carried over separately, post-pack, by pack.js.)
+// (`packageManager` is carried over separately, post-pack, by pack.mts.)
 
 // Scripts retained in the packaged `ghost` manifest. Empty today: Ghost has no
 // runtime pnpm scripts. Add names here if that changes.

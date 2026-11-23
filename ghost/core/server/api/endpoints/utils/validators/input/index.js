@@ -16,10 +16,6 @@ module.exports = {
     return require('./password_reset');
   },
 
-  get setup() {
-    return require('./setup');
-  },
-
   get posts() {
     return require('./posts');
   },

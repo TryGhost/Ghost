@@ -76,8 +76,8 @@
           "html": "<p>web without email</p>",
           "visibility": {
             "web": {
-              "nonMember": true,
-              "memberSegment": "status:free,status:-free"
+              "nonMember": false,
+              "memberSegment": ""
             },
             "email": {
               "memberSegment": "status:free,status:-free"
@@ -89,12 +89,12 @@
           "version": 1,
           "html": "<p>email object only</p>",
           "visibility": {
-            "email": {
-              "memberSegment": "status:free,status:-free"
-            },
             "web": {
               "nonMember": true,
               "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free"
             }
           }
         },

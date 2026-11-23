@@ -24,13 +24,10 @@ const serviceDependencyAllowlist = [
   '(^|/)node_modules/@tryghost/security/|^@tryghost/security$', // Token, URL and password primitives; no application instances.
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
   '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
-  '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
-  '^@tryghost/app-contracts/identity$|^packages/app-contracts/(src|build)/identity/index\\.(ts|js)$', // Signed-manifest and challenge formats, signing and verification.
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
   '^@tryghost/parse-email-address(/mailbox)?$|^packages/parse-email-address/(src|build)/(index|mailbox)\\.(ts|js)$', // Email address and mailbox parsing and formatting; no sender policy or application instances.
   '^contracts/', // Contracts define the shape of data crossing a boundary and, like types, may be imported anywhere.
-  '^@tryghost/metafield-types(/(structure|shapes|identity|countries|phone))?$|^packages/metafield-types/(src|build)/(index|structure|shapes|identity|countries|phone)\\.(ts|js)$', // Custom field contract until it moves into contracts/: field types, schemas, value rules and the identity codec; only its public entries.
   '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
   '^@tryghost/version$|(^|/)node_modules/@tryghost/version/index\\.js$', // Ghost's version, a process fact fixed when Ghost is built; reads its own package.json once.
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
@@ -54,6 +51,8 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
   '^ghost/core/server/lib/common/to-plain\\.ts$', // Bookshelf/plain-object normalization; no application instances or captured state.
   '^ghost/core/server/lib/link-replacer\\.ts$', // HTML link rewriting with caller-owned callbacks; no retained state or application dependencies.
+  '^ghost/core/server/lib/mailgun/mailgun-recipient-variables\\.ts$', // Converts supplied replacement tokens and values into Mailgun recipient variables; no client, config or I/O.
+  '^ghost/core/server/lib/mailgun/mailgun-recipient-message-id\\.ts$', // Builds and sets per-recipient Message-Id variables from supplied values; no client, config or I/O.
   '^ghost/core/server/lib/magic-link/magic-link\\.js$', // Magic-link constructor with caller-supplied transporter, token provider and content callbacks; no application instances.
   '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
   '^ghost/core/server/lib/ensure-transaction\\.ts$', // Runs a callback in the caller's transaction or a new one on the supplied connection; no application instances.
@@ -106,6 +105,13 @@ const core = (file) =>
     ? `^ghost/core/${escape(file)}`
     : `^ghost/core/${escape(file.replace(/\.(js|ts)$/, ''))}\\.(js|ts)$`;
 const service = (file) => core(`server/services/${file}`);
+
+// Packages that publish type declarations and no JavaScript. The scan resolves
+// an import the way Node would, so it cannot resolve these, and an unresolved
+// import loses its type-only label. They have no code to run or inject, so the
+// service rules skip them by name. A package with a JavaScript entry does not
+// belong here: the service dependency tests check each one.
+const typesOnlyPackages = ['type-fest'];
 
 const specialistDependencies = [
   // Provider clients.
@@ -175,7 +181,7 @@ const specialistDependencies = [
     // Signing and verifying JSON Web Tokens.
     dependency: npm('jsonwebtoken'),
     owners: [
-      core('server/auth/api-key/admin.js'),
+      core('server/auth/api-key/admin.ts'),
       core('server/adapters/scheduling/utils.ts'),
       core('server/api/endpoints/featurebase.js'),
       service('identity-tokens/identity-token-service.ts'),
@@ -247,8 +253,7 @@ const specialistDependencies = [
     // Matching URLs against route patterns.
     dependency: npm('path-match'),
     owners: [
-      core('frontend/services/data/match-permalink-params.js'),
-      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.js'),
+      core('frontend/services/data/match-permalink-params.ts'),
       service('url/permalink-matcher.ts'),
     ],
   },
@@ -317,7 +322,7 @@ const serviceDependencyDecisions = {
     '^ghost/core/shared/settings-cache/', // Settings.
     '^ghost/core/server/models/index\\.js$', // Models.
     '^ghost/core/server/data/db/', // The database connection.
-    '^@tryghost/domain-events$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
+    '^@tryghost/domain-events$|^packages/domain-events/index\\.js$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
     `^${servicesRoot}/`, // Other services, including the events and helpers they own.
     '^ghost/core/shared/url-utils\\.ts$', // URL utils, built from config.
     '^ghost/core/shared/labs\\.js$', // Labs flags, read from settings and config.
@@ -337,7 +342,7 @@ const serviceDependencyDecisions = {
     '^@tryghost/image-transform$|^packages/image-transform/(src|build)/index\\.(ts|js)$', // Reads and writes image files.
     '^glob$|^@tryghost/zip$|^gscan$', // Read or write files.
     '^@tryghost/metrics$', // Process-wide metrics, set up from the logging config.
-    '^ghost/core/server/data/schema/index\\.js$', // Reaches the database through schema commands.
+    '^ghost/core/server/data/schema/index\\.ts$', // Reaches the database through schema commands.
     '^ghost/core/server/data/importer/(content-files|import-archive)\\.ts$', // Importer code; reads files and config.
     '^ghost/core/server/adapters/scheduling/build-signed-job\\.ts$', // Uses URL utils.
     '^ghost/core/server/adapters/storage/(utils|LocalStorageBase)\\.ts$', // Storage code; reads config, URL utils and files.
@@ -358,11 +363,6 @@ const serviceDependencyDecisions = {
       from: '^ghost/core/server/services/jobs-service/register-job-handlers\\.ts$',
       to: '-job\\.(ts|js)$',
       until: 'PLA-543 moves job handler registration into boot',
-    },
-    {
-      from: '^ghost/core/server/services/permissions/can-this\\.js$',
-      to: '^ghost/core/server/models/role-utils\\.ts$',
-      until: 'Permissions moves to server/auth/permissions and settles where role checks live',
     },
   ],
   // Allowed only in another form. A specialist dependency imported outside its
@@ -410,6 +410,7 @@ module.exports = {
         pathNot: [
           ...serviceDependencyAllowlist,
           ...specialistDependencies.map(({ dependency }) => dependency),
+          ...typesOnlyPackages.map(npm),
           `^${servicesRoot}/$1/`,
         ],
         dependencyTypesNot: ['type-only', 'type-import'],
@@ -438,7 +439,11 @@ module.exports = {
       comment: 'Resolve this runtime import so the service dependency rule can be checked.',
       severity: 'error',
       from: serviceImplementations,
-      to: { couldNotResolve: true, dependencyTypesNot: ['type-only', 'type-import'] },
+      to: {
+        couldNotResolve: true,
+        pathNot: typesOnlyPackages.map(npm),
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
     },
     {
       name: 'service-roots-in-services',
@@ -475,6 +480,17 @@ module.exports = {
       severity: 'error',
       from: { path: '^ghost/core/shared/' },
       to: { path: '^ghost/core/(server|frontend)/' },
+    },
+    // Config schema files describe shapes: they know feature names, not feature code.
+    {
+      name: 'config-schema-zod-only',
+      comment:
+        'Files in core/shared/config/schema/ may import only zod and each other. See core/shared/config/SCHEMA.md.',
+      severity: 'error',
+      from: { path: '^ghost/core/shared/config/schema/' },
+      to: {
+        pathNot: ['^ghost/core/shared/config/schema/', '(^|/)node_modules/zod/|^zod$'],
+      },
     },
     // ============================================================
     // Frontend must not require server/models directly
@@ -592,7 +608,7 @@ module.exports = {
         path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
       to: {
-        path: '^@tryghost/metafield-types$|^packages/metafield-types/(src|build)/index\\.(ts|js)$|^libphonenumber-js($|/)|(^|/)node_modules/libphonenumber-js/',
+        path: '^@tryghost/metafield-types$|^contracts/metafield-types/(src|build)/index\\.(ts|js)$|^libphonenumber-js($|/)|(^|/)node_modules/libphonenumber-js/',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -685,6 +701,11 @@ module.exports = {
     },
   ],
   options: {
+    // Read imports from the TypeScript source rather than the compiled output,
+    // where type-only imports are gone, so rules can cover types too. A rule
+    // that concerns runtime dependencies only excludes them with
+    // dependencyTypesNot.
+    tsPreCompilationDeps: true,
     // Resolve public package exports to authored workspace source when available.
     // `pnpm gx services verify` also resolves them to built output, the files Ghost
     // loads at runtime, so an allowance must hold for both.
@@ -709,14 +730,14 @@ module.exports = {
     doNotFollow: {
       path: [
         'node_modules',
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|koenig)/.*/(build|built|dist)/',
+        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
       ],
     },
     // Skip our own tests and emitted companions. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.
     exclude: {
       path: [
-        '^(?!ghost/core/server/services/)(apps|ghost|packages)/.*/(coverage|coverage-next|test)/',
+        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/',
         ...sourceExclusions(__dirname),
       ],
     },
@@ -729,4 +750,5 @@ Object.defineProperties(module.exports, {
   serviceDependencyAllowlist: { value: serviceDependencyAllowlist },
   specialistDependencies: { value: specialistDependencies },
   serviceDependencyDecisions: { value: serviceDependencyDecisions },
+  typesOnlyPackages: { value: typesOnlyPackages },
 });

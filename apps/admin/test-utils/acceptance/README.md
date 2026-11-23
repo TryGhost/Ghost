@@ -68,12 +68,13 @@ When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` i
 
 ## The boot table
 
-The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseMemberCustomFieldDefinitions`, `browseNotifications`, `browseActiveTheme`, `browseThemes`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
+The shell requests handled by default (`boot.ts`): `browseSettings`, `browseSegments`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseMemberCustomFieldDefinitions`, `browseNotifications`, `browseActiveTheme`, `browseThemes`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
 
 ```ts
 // Labs flags (sugar for lockstep settings + config overrides; merges into
 // any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
+await renderInApp(<MyComponent />, {labs: {admin7Mobile: true}});
 
 // The editor's autosave debounce, injected as a test-only `/config/` key, so a
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
@@ -90,7 +91,9 @@ me.users[0].accessibility = JSON.stringify({whatsNew: {lastSeenDate: "2025-01-01
 await renderAdminApp("/tags", {boot: {browseMe: {response: me}}});
 ```
 
-Boot responses are STATELESS — a canned reply per request, nothing is stored — with one exception: `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write).
+Boot responses are STATELESS — a canned reply per request, nothing is stored — with two exceptions. `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write). The `shared_views` setting is stored, as described next.
+
+The fake stores the `shared_views` setting in `shared-views.ts`. Ghost serves the saved member views in it through both `/settings/` and `/segments/`, so the fake keeps one copy for both: `browseSegments` lists the member views in the `shared_views` value of the test's `browseSettings` response, with ids derived from each view's filter as Ghost derives them, and a `shared_views` saved through `fakeEditSettings` replaces that value for the rest of the test, in later `GET /settings/` responses and the PUT's own echo too. Seed saved views with `withSavedViews(...)`.
 
 ## Faking a resource that has no fake yet
 
@@ -130,7 +133,7 @@ Adding a new screen:
 
 Reach for it when the behaviour under test is a component's own — a modal's steps, a hook's loading boundary — and going through the app would only add route setup. A component spec **must not boot the app or depend on a route**: no `renderAdminApp`, no URL assertions, no navigation between screens. Behaviour that needs the shell, a route, or a second screen is an acceptance spec.
 
-Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Boot overrides and labs flags have no seam in this tier; a component that needs one belongs in an acceptance spec.
+Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Pass Labs flags through `renderInApp(subject, {labs: {admin7Design: false}})` when a component needs a particular presentation. Without an override, Shade keeps its standalone defaults. Row contract tests cover both presentations. Test Admin's routing and Labs wiring through `renderAdminApp` with an explicit `labs` override.
 
 ## Running
 

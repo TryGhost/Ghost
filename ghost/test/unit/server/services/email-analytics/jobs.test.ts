@@ -25,7 +25,7 @@ const pipelines = [
   {
     JobClass: EmailAnalyticsAutomationFetchLatestJob,
     type: 'email-analytics-automation-fetch-latest',
-    wrapperName: 'automations',
+    wrapperName: 'automationAnalytics',
     schedule: 'scheduleRecurringAutomationsJob',
   },
   {

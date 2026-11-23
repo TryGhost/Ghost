@@ -1,7 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
-
-// @tryghost/version has no type definitions.
-const ghostVersion: { full: string } = require('@tryghost/version');
+import ghostVersion from '@tryghost/version';
 
 type SettingsCache = {
   get(key: string): unknown;

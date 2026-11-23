@@ -175,6 +175,48 @@ describe('Post editor feature image', () => {
     expect(String(submittedPost(saveApi).feature_image_caption)).toContain('Photo by me');
   });
 
+  it('keeps typing in the caption after moving there from a body image caption', async () => {
+    fakeSavablePost({
+      feature_image: UPLOADED,
+      feature_image_caption: 'Feature caption',
+      lexical: JSON.stringify({
+        root: {
+          children: [
+            {
+              type: 'image',
+              version: 1,
+              src: EXISTING,
+              alt: '',
+              caption: 'Body caption',
+              width: 1600,
+              height: 400,
+            },
+          ],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          type: 'root',
+          version: 1,
+        },
+      }),
+    });
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+
+    await expect.element(editorScreen.imageCardCaption()).toHaveTextContent('Body caption');
+    await editorScreen.imageCardCaption().click();
+    await userEvent.keyboard('{End}!');
+    await expect.element(editorScreen.imageCardCaption()).toHaveTextContent(/^Body caption!$/);
+
+    await editorScreen.featureImageCaption().click();
+    await userEvent.keyboard('{End}?');
+
+    await expect
+      .element(editorScreen.featureImageCaption())
+      .toHaveTextContent(/^Feature caption\?$/);
+    await expect.element(editorScreen.imageCardCaption()).toHaveTextContent(/^Body caption!$/);
+    await expect.element(editorScreen.featureImageCaption()).toHaveFocus();
+  });
+
   it('opens a post whose caption carries markup without making it unsaved', async () => {
     const saveApi = fakeSavablePost({
       feature_image: UPLOADED,

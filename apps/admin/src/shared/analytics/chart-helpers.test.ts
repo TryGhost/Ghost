@@ -537,6 +537,19 @@ describe('chart-helpers', () => {
       expect(endDate.diff(startDate, 'days')).toBe(29);
     });
 
+    it('getRangeDates uses an explicit timezone over the browser timezone', () => {
+      mockResolvedTimezone('Asia/Tokyo');
+      vi.useFakeTimers();
+      // Nov 17 in Tokyo, still Nov 16 in New York
+      vi.setSystemTime(new Date('2026-11-17T03:00:00Z'));
+
+      const { startDate, endDate, timezone } = getRangeDates(7, 'America/New_York');
+
+      expect(timezone).toBe('America/New_York');
+      expect(startDate.format('YYYY-MM-DD')).toBe('2026-11-10');
+      expect(endDate.format('YYYY-MM-DD')).toBe('2026-11-16');
+    });
+
     it('prefers the browser timezone over the site timezone fallback', () => {
       mockResolvedTimezone('Europe/Berlin');
       setSiteTimezoneFallback('America/Vancouver');

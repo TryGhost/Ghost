@@ -137,6 +137,33 @@ export function committedBuildOutput(repository: string) {
   });
 }
 
+// dependency-cruiser loads the `typescript` package only if it can find it, and
+// carries on without it: it then skips TypeScript files or reads their type-only
+// imports as ordinary ones, and reports different violations with no error.
+// Whether it finds the package depends on how the scan was started. In pnpm's
+// default layout here, dependency-cruiser sits in a store outside the
+// repository and finds `typescript` only through the NODE_PATH and module hook
+// that pnpm sets for what it runs. In the layout CI and Docker use, it finds the
+// root's `typescript` by walking up from node_modules.
+//
+// Returns the compiler a scan used, such as `typescript@6.0.3`, from the
+// transpilers its report lists under summary.environment, or undefined when it
+// had none. A compiler dependency-cruiser can find but not load is listed as
+// available, with `-` for its version. Its own missing-compiler warning does not
+// cover that case and does not fail the scan.
+export function scannerTypeScript(transpilers: unknown) {
+  const found = z
+    .array(z.object({ name: z.string(), available: z.boolean(), currentVersion: z.string() }))
+    .safeParse(transpilers)
+    .data?.find(({ name }) => name === 'typescript');
+  return found?.available && found.currentVersion.startsWith('typescript@')
+    ? found.currentVersion
+    : undefined;
+}
+
+export const missingTypeScript =
+  'dependency-cruiser could not load the `typescript` package. Without it the scan skips TypeScript files or reads type-only imports as ordinary imports, and reports different violations. Run the scan through pnpm, for example `pnpm lint:boundaries`. If that fails too, run `pnpm install`.';
+
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.
 // Given files, only they and what they import are scanned, as the commit hook
@@ -179,6 +206,10 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     process.stderr.write(result.stderr);
   }
   const graph: ICruiseResult = JSON.parse(result.stdout);
+  // The scan succeeds without TypeScript, so its report is checked, not its exit.
+  if (!scannerTypeScript(graph.summary?.environment?.transpilersFound)) {
+    throw new Error(missingTypeScript);
+  }
   // The full scan must find modules. A file list can be empty of them, when
   // every file given is one the scan skips.
   if (!Array.isArray(graph.modules) || !Array.isArray(graph.summary?.violations)) {

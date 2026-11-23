@@ -524,6 +524,11 @@ describe('Email Service', function () {
   });
 
   describe('resumeInterruptedSends', function () {
+    // Ghost's config defaults hold the 24 hour resume limit.
+    const config = {
+      get: (key) => (key === 'bulkEmail:resumeMaxAgeMs' ? 24 * 60 * 60 * 1000 : undefined),
+    };
+
     // The scanner runs one query per cutoff side. Tests that don't exercise the stale
     // path get an empty list for it and the given emails for the fresh one.
     const filterAwareFindAll =
@@ -580,6 +585,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -621,6 +627,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -662,6 +669,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -721,6 +729,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -738,11 +747,13 @@ describe('Email Service', function () {
       sinon.assert.calledOnce(scheduleEmail);
     });
 
-    it('Resumes fresh pending emails without changing their status', async function () {
+    it('Resumes fresh pending emails without changing their status, keeping their request time', async function () {
       const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const createdAt = new Date('2026-11-18T12:00:00.000Z');
       const email = createModel({
         id: 'pending',
         status: 'pending',
+        created_at: createdAt,
         post: createModel({ status: 'published' }),
       });
       const localService = new EmailService({
@@ -761,12 +772,13 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
 
       sinon.assert.notCalled(updateStatusLock);
-      sinon.assert.calledOnceWithExactly(scheduleEmail, email);
+      sinon.assert.calledOnceWithExactly(scheduleEmail, email, { requestedAt: createdAt });
     });
 
     it('Marks fresh pending emails with unsendable posts as failed', async function () {
@@ -792,6 +804,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();

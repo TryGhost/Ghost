@@ -69,7 +69,7 @@ module.exports = async (model, frame, options = {}) => {
 
   // Iterate over all known formats, and if they are not in the keep list, remove them
   const stripUnrequestedFormats = () => {
-    _.each(['mobiledoc', 'lexical', 'html', 'plaintext'], function (format) {
+    ['mobiledoc', 'lexical', 'html', 'plaintext'].forEach(function (format) {
       if (formatsToKeep.indexOf(format) === -1 || (format === 'html' && frame.forcedGatingHtml)) {
         delete jsonModel[format];
       }
@@ -131,7 +131,7 @@ module.exports = async (model, frame, options = {}) => {
   }
 
   // Transforms post/page metadata to flat structure
-  const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+  const metaAttrs = Object.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
   _(metaAttrs)
     .filter((k) => {
       return !frame.options.columns || (frame.options.columns && frame.options.columns.includes(k));

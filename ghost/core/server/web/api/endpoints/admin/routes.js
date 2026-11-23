@@ -6,7 +6,20 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
 
+// Better Auth loads only under its engine
+function betterAuthAdminOrigin() {
+  const { requireAdminOrigin } = require('../../../../auth/better-auth/session-controller');
+  const urlUtils = require('../../../../../shared/url-utils').default;
+  return requireAdminOrigin({
+    getOriginOfRequest: auth.session.getOriginOfRequest,
+    getAdminOrigin: () => urlUtils.getAdminOrigin(),
+  });
+}
+
 const shared = require('../../../shared');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = auth.isBetterAuth;
 
 /**
  * @returns {import('express').Router}
@@ -96,6 +109,13 @@ module.exports = function apiRoutes() {
   // ## Gifts
   router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
   router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.gifts.flushDeliveries));
+
+  // ## Segments
+  router.get('/segments', mw.authAdminApi, http(api.segments.browse));
+  router.post('/segments', mw.authAdminApi, http(api.segments.add));
+  router.get('/segments/:id', mw.authAdminApi, http(api.segments.read));
+  router.put('/segments/:id', mw.authAdminApi, http(api.segments.edit));
+  router.delete('/segments/:id', mw.authAdminApi, http(api.segments.destroy));
 
   // ## Settings
   router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
@@ -269,6 +289,14 @@ module.exports = function apiRoutes() {
   router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
   router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
   router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
+  const commentsStats = [mw.authAdminApi, labs.enabledMiddleware('commentsAnalytics')];
+  router.get('/stats/comments', commentsStats, http(api.stats.commentsOverview));
+  router.get('/stats/comments/top-posts', commentsStats, http(api.stats.commentsTopPosts));
+  router.get(
+    '/stats/comments/top-commenters',
+    commentsStats,
+    http(api.stats.commentsTopCommenters),
+  );
   router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
   router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
   router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
@@ -407,6 +435,20 @@ module.exports = function apiRoutes() {
   // ## Slack
   router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
+  // ## Presence
+  router.post(
+    '/presence',
+    mw.authAdminApi,
+    shared.middleware.rateLimiting.presenceLimiter,
+    http(api.presence.poll),
+  );
+  router.post(
+    '/presence/leave',
+    mw.authAdminApi,
+    shared.middleware.rateLimiting.presenceLimiter,
+    http(api.presence.leave),
+  );
+
   // ## Tinybird
   router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
@@ -446,7 +488,9 @@ module.exports = function apiRoutes() {
   router.put(
     '/authentication/password_reset',
     shared.middleware.rateLimiting.globalBlock,
-    auth.session.initSession,
+    // Better Auth sets its own session cookie in the controller, which can't
+    // check the origin as the legacy session does
+    ...(isBetterAuth ? [betterAuthAdminOrigin()] : [auth.session.initSession]),
     http(api.authentication.resetPassword),
   );
   router.post('/authentication/invitation', http(api.authentication.acceptInvitation));

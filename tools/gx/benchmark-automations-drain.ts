@@ -101,6 +101,10 @@ async function loadRuntime() {
   const { createDatabaseAutomationsRepository } =
     await import('../../ghost/core/server/services/automations/database-automations-repository.ts');
   const { poll } = await import('../../ghost/core/server/services/automations/poll.ts');
+  const { createAutomationsApi2 } =
+    await import('../../ghost/core/server/services/automations/automations-api-2.ts');
+  const { createDatabaseAutomationsRepository2 } =
+    await import('../../ghost/core/server/services/automations/database-automations-repository-2.ts');
   const { toDatabaseDate } = await import('../../ghost/core/server/lib/db-types/date.ts');
   const require = createRequire(import.meta.url);
   const welcomeEmailsModule = require('../../ghost/core/server/services/member-welcome-emails') as {
@@ -108,9 +112,17 @@ async function loadRuntime() {
     service: Parameters<typeof poll>[0]['memberWelcomeEmailService'];
   };
   const welcomeEmails = welcomeEmailsModule.default ?? welcomeEmailsModule;
-  const repository = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: 1 });
+  const automationsApi: Parameters<typeof poll>[0]['automationsApi'] = {
+    ...createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: 1 }),
+    recordEmailSent: createAutomationsApi2({
+      domainEvents: { dispatch: () => {} },
+      fakeWaitHoursMultiplier: 1,
+      labs: { isSet: () => true },
+      repository: createDatabaseAutomationsRepository2({ knex }),
+    }).recordEmailSent,
+  };
 
-  return { knex, poll, toDatabaseDate, welcomeEmails, repository };
+  return { knex, poll, toDatabaseDate, welcomeEmails, automationsApi };
 }
 
 type Runtime = Awaited<ReturnType<typeof loadRuntime>>;
@@ -277,7 +289,7 @@ async function assertRunsHealthy(knex: Knex, automationId: string, completedStep
 }
 
 async function drainQueue(
-  { knex, poll, repository, welcomeEmails, toDatabaseDate }: Runtime,
+  { knex, poll, automationsApi, welcomeEmails, toDatabaseDate }: Runtime,
   automationId: string,
   expectedStepCount: number,
 ) {
@@ -292,7 +304,7 @@ async function drainQueue(
   while (true) {
     const nextPoll = { at: null as Date | null };
     await poll({
-      automationsApi: repository,
+      automationsApi,
       memberWelcomeEmailService: welcomeEmails.service,
       scheduleAutomationEmailAnalyticsJob: async () => {},
       enqueueAnotherPollAt: (date) => {

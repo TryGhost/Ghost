@@ -18,7 +18,9 @@ import ts from 'typescript';
 import {
   committedBuildOutput,
   dependencyIdentity,
+  missingTypeScript,
   readKnownViolations,
+  scannerTypeScript,
 } from '../lib/dependency-boundaries.ts';
 import { legacyInventoryFile, readLegacyServices } from '../../configs/oxlint/legacy-services.ts';
 
@@ -80,13 +82,19 @@ function fixture(t: TestContext, files: Record<string, string>) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     symlinkSync(path.join(repository, file), path.join(root, file));
   }
-  const run = (output = 'json', input = services, args: string[] = []) => {
+  const run = (
+    output = 'json',
+    input = services,
+    args: string[] = [],
+    env: NodeJS.ProcessEnv = process.env,
+  ) => {
     const result = spawnSync(
       process.execPath,
       [cli, input, '--config', '.dependency-cruiser.cjs', '--output-type', output, ...args],
       {
         cwd: root,
         encoding: 'utf8',
+        env,
       },
     );
     assert.ifError(result.error);
@@ -97,13 +105,14 @@ function fixture(t: TestContext, files: Record<string, string>) {
     write,
     run,
     root,
-    lint(staged: string[] = []) {
+    lint(staged: string[] = [], env: NodeJS.ProcessEnv = process.env) {
       return spawnSync(
         process.execPath,
         ['tools/scripts/ci/check-boundaries.ts', ...(staged.length ? ['--', ...staged] : [])],
         {
           cwd: root,
           encoding: 'utf8',
+          env,
         },
       );
     },
@@ -129,6 +138,25 @@ const edges = (graph: ICruiseResult) =>
       dependencies.map(({ module, resolved }) => [source, module, resolved]),
     )
     .sort();
+// The labels dependency-cruiser gives one import, such as type-only.
+const labels = (graph: ICruiseResult, from: string, to: string) =>
+  graph.modules
+    .find(({ source }) => source === from)
+    ?.dependencies.find(({ resolved }) => resolved === to)?.dependencyTypes;
+const typeLabels = ['type-only', 'type-import'];
+// Makes Node unable to find the typescript package from anywhere, whichever way
+// the dependencies are installed.
+const withoutTypeScript = `--import=data:text/javascript,${encodeURIComponent(`
+  import { registerHooks } from 'node:module';
+  registerHooks({
+    resolve(specifier, context, nextResolve) {
+      if (specifier === 'typescript' || specifier.startsWith('typescript/')) {
+        throw Object.assign(new Error('typescript is hidden'), { code: 'ERR_MODULE_NOT_FOUND' });
+      }
+      return nextResolve(specifier, context);
+    },
+  });
+`)}`;
 
 it('enforces every implementation whether or not its service is a legacy entry', (t) => {
   const f = fixture(t, {
@@ -428,6 +456,182 @@ it('allows same-service code, explicit types, approved libraries and root wiring
   assert.equal(f.run('err').status, 0);
 });
 
+it('sees type-only imports and leaves them out of the runtime dependency rules', (t) => {
+  const imports = {
+    'declaration.ts':
+      "import type { Config } from '../../../shared/config'; export type A = Config;",
+    'specifier.ts': "import { type Config } from '../../../shared/config'; export type B = Config;",
+    'reexport.ts': "export type { Config } from '../../../shared/config';",
+    'inline.ts': "export type C = import('../../../shared/config').Config;",
+  };
+  const f = fixture(t, {
+    ...Object.fromEntries(
+      Object.entries(imports).map(([file, source]) => [`${alpha}/${file}`, source]),
+    ),
+    [`${alpha}/index.ts`]: 'export interface Root {}',
+    [`${alpha}/own.ts`]: "import type { Root } from './index'; export type D = Root;",
+    // The compiler drops this import, because the binding is only used as a type.
+    // The scan reads the source, where it is an ordinary import.
+    [`${alpha}/elided.ts`]:
+      "import { Config } from '../../../shared/config'; export type E = Config;",
+    [`${alpha}/value.ts`]:
+      "import { enabled } from '../../../shared/config'; export default enabled;",
+  });
+  const graph = f.graph();
+  for (const file of Object.keys(imports)) {
+    const found = labels(graph, `${alpha}/${file}`, config);
+    assert.ok(
+      found?.some((label) => typeLabels.includes(label)),
+      `${file} must reach ${config} as a type: ${JSON.stringify(found)}`,
+    );
+  }
+  assert.ok(labels(graph, `${alpha}/own.ts`, `${alpha}/index.ts`)?.includes('type-only'));
+  for (const file of ['elided.ts', 'value.ts']) {
+    const found = labels(graph, `${alpha}/${file}`, config);
+    assert.ok(found && !found.some((label) => typeLabels.includes(label)), JSON.stringify(found));
+  }
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/elided.ts`, config],
+    ['service-dependencies', `${alpha}/value.ts`, config],
+  ]);
+});
+
+it('applies a rule that does not exclude types to type-only imports', (t) => {
+  const kernel = 'ghost/core/kernel/primitive.ts';
+  const f = fixture(t, {
+    [kernel]: "import type { Config } from '../shared/config'; export type A = Config;",
+    'ghost/core/shared/typed.ts':
+      "import type { Model } from '../server/models/model'; export type B = Model;",
+    'ghost/core/server/models/model.ts': 'export interface Model {}',
+  });
+  const graph = f.graph('ghost/core');
+  assert.ok(labels(graph, kernel, config)?.includes('type-only'));
+  assert.deepEqual(violations(graph), [
+    ['kernel-not-application', kernel, config],
+    [
+      'shared-not-server-or-frontend',
+      'ghost/core/shared/typed.ts',
+      'ghost/core/server/models/model.ts',
+    ],
+  ]);
+});
+
+it('allows the listed types-only packages without allowing other unresolved imports', (t) => {
+  const typesOnly = (name: string) => ({
+    [`node_modules/${name}/package.json`]: JSON.stringify({
+      name,
+      types: './index.d.ts',
+      exports: { '.': { types: './index.d.ts' } },
+    }),
+    [`node_modules/${name}/index.d.ts`]: 'export type ReadonlyDeep<T> = T;',
+  });
+  const f = fixture(t, {
+    ...typesOnly('type-fest'),
+    ...typesOnly('type-fest-extra'),
+    'node_modules/runtime/package.json': '{"name":"runtime","main":"index.js"}',
+    'node_modules/runtime/index.js': 'module.exports = {};',
+    [`${alpha}/listed.ts`]:
+      "import type { ReadonlyDeep } from 'type-fest'; export type A = ReadonlyDeep<string>;",
+    [`${alpha}/unlisted.ts`]:
+      "import type { ReadonlyDeep } from 'type-fest-extra'; export type B = ReadonlyDeep<string>;",
+    // A package with JavaScript resolves, so its type-only import keeps its label.
+    [`${alpha}/typed.ts`]: "import type { Thing } from 'runtime'; export type C = Thing;",
+    [`${alpha}/runtime.ts`]: "import 'runtime';",
+  });
+  const graph = f.graph();
+  // The scan cannot resolve a package without JavaScript, and an unresolved
+  // import carries no type-only label for the rules to exclude.
+  assert.deepEqual(labels(graph, `${alpha}/listed.ts`, 'type-fest'), ['unknown']);
+  assert.ok(
+    labels(graph, `${alpha}/typed.ts`, 'node_modules/runtime/index.js')?.includes('type-only'),
+  );
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/runtime.ts`, 'node_modules/runtime/index.js'],
+    ['service-dependencies', `${alpha}/unlisted.ts`, 'type-fest-extra'],
+    ['service-unresolved', `${alpha}/unlisted.ts`, 'type-fest-extra'],
+  ]);
+});
+
+it('lists as types-only only packages that publish no JavaScript', () => {
+  const { typesOnlyPackages } = createRequire(import.meta.url)(
+    path.join(repository, '.dependency-cruiser.cjs'),
+  ) as { typesOnlyPackages: string[] };
+  assert.deepEqual(typesOnlyPackages, ['type-fest']);
+  // The condition each exports target is published under, such as types or import.
+  const conditions = (target: unknown, condition = 'default'): string[] =>
+    typeof target === 'string'
+      ? [condition]
+      : Object.entries(target ?? {}).flatMap(([key, value]) =>
+          conditions(value, key.startsWith('.') ? condition : key),
+        );
+  for (const name of typesOnlyPackages) {
+    // Ghost Core's own dependency, wherever the package manager stores it.
+    const manifest = JSON.parse(
+      readFileSync(path.join(repository, 'ghost/node_modules', name, 'package.json'), 'utf8'),
+    ) as Record<string, unknown>;
+    for (const field of ['main', 'module', 'browser', 'bin']) {
+      assert.equal(manifest[field], undefined, `${name} has a ${field} entry`);
+    }
+    assert.ok(manifest.exports, `${name} must restrict its entries with exports`);
+    assert.deepEqual([...new Set(conditions(manifest.exports))], ['types'], name);
+  }
+});
+
+it('reads the TypeScript compiler from what the scanner reports about itself', () => {
+  const report = (available: boolean, currentVersion: string) => [
+    { name: 'javascript', version: '*', available: true, currentVersion: 'acorn@8.19.0' },
+    { name: 'typescript', version: '>=2.0.0 <7.0.0', available, currentVersion },
+  ];
+  assert.equal(scannerTypeScript(report(true, 'typescript@6.0.3')), 'typescript@6.0.3');
+  // Not installed where dependency-cruiser looks.
+  assert.equal(scannerTypeScript(report(false, '-')), undefined);
+  // Found by require but not by import, so it is never loaded.
+  assert.equal(scannerTypeScript(report(true, '-')), undefined);
+  assert.equal(scannerTypeScript([]), undefined);
+  assert.equal(scannerTypeScript(undefined), undefined);
+});
+
+it('finds the TypeScript compiler in the report of a scan, coloured or not', (t) => {
+  const f = fixture(t, { [`${alpha}/implementation.ts`]: 'export {};' });
+  // The way these tests are run, the scanner must have it. Tools that colour
+  // their output, as Nx tells them to, must not change the answer.
+  for (const colour of ['0', '1']) {
+    const result = f.run('json', services, [], { ...process.env, FORCE_COLOR: colour });
+    assert.equal(result.status, 0, result.stderr);
+    const graph: ICruiseResult = JSON.parse(result.stdout);
+    assert.match(
+      scannerTypeScript(graph.summary.environment?.transpilersFound) ?? '',
+      /^typescript@\d/,
+      missingTypeScript,
+    );
+  }
+});
+
+it('fails instead of scanning when dependency-cruiser cannot load TypeScript', (t) => {
+  const from = `${alpha}/implementation.ts`;
+  const f = fixture(t, {
+    [from]: "import type { Config } from '../../../shared/config'; export type A = Config;",
+  });
+  const found = f.lint();
+  assert.equal(found.status, 0, found.stderr);
+  const env = {
+    ...process.env,
+    NODE_OPTIONS: [process.env.NODE_OPTIONS, withoutTypeScript].filter(Boolean).join(' '),
+  };
+  // Without the guard the scan still succeeds, and reports something else.
+  const hidden = f.run('json', services, [], env);
+  assert.equal(hidden.status, 0, hidden.stderr);
+  const degraded: ICruiseResult = JSON.parse(hidden.stdout);
+  assert.notDeepEqual(degraded.modules, f.graph().modules);
+  assert.equal(scannerTypeScript(degraded.summary.environment?.transpilersFound), undefined);
+  for (const staged of [[], [from]]) {
+    const missing = f.lint(staged, env);
+    assert.equal(missing.status, 1, missing.stdout);
+    assert.equal(missing.stderr.trim(), missingTypeScript);
+    assert.equal(missing.stdout, '');
+  }
+});
+
 it('allows the exact libraries required by Custom Theme Settings without allowing siblings', (t) => {
   const approved = ['@tryghost/nql', '@tryghost/nql/index.js'];
   const rejected = ['@tryghost/nql/other', '@tryghost/nql-extra'];
@@ -708,28 +912,6 @@ it('allows anything in the contracts folder, like types', (t) => {
   assert.deepEqual(violations(graph), [
     ['service-dependencies', `${alpha}/rejected.js`, lookalike],
   ]);
-});
-
-it('allows the custom field contract through its public entries only', (t) => {
-  const entries = ['index', 'structure', 'shapes', 'identity', 'countries', 'phone'];
-  const internal = 'packages/metafield-types/src/internal.ts';
-  const f = fixture(t, {
-    ...Object.fromEntries(
-      [...entries.map((entry) => `packages/metafield-types/src/${entry}.ts`), internal].map(
-        (file) => [file, 'export {};'],
-      ),
-    ),
-    [`${alpha}/approved.js`]: entries
-      .map((entry) => `require('../../../../../packages/metafield-types/src/${entry}');`)
-      .join('\n'),
-    [`${alpha}/rejected.js`]: "require('../../../../../packages/metafield-types/src/internal');",
-  });
-  const graph = f.graph();
-  assert.equal(
-    edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
-    entries.length,
-  );
-  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.js`, internal]]);
 });
 
 it('allows the shared stateless helpers without allowing their siblings', (t) => {
@@ -1433,34 +1615,31 @@ it('fails instead of passing when Git cannot list the tracked files', (t) => {
 });
 
 it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
-  const contract = 'packages/app-contracts';
-  const manifest = `${contract}/src/manifest/index.ts`;
+  const workspace = 'packages/parse-email-address';
+  const mailbox = `${workspace}/src/mailbox.ts`;
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: `
-      import '@tryghost/app-contracts/manifest';
+      import '@tryghost/parse-email-address/mailbox';
       import '@tryghost/errors';
     `,
-    [`${alpha}/other.ts`]: "import '@tryghost/app-contracts/other';",
-    [`${alpha}/root.ts`]: "import '@tryghost/app-contracts';",
-    [`${alpha}/private.ts`]: "import '@tryghost/app-contracts/private';",
-    [`${contract}/package.json`]: JSON.stringify({
-      name: '@tryghost/app-contracts',
+    [`${alpha}/other.ts`]: "import '@tryghost/parse-email-address/other';",
+    [`${alpha}/private.ts`]: "import '@tryghost/parse-email-address/private';",
+    [`${workspace}/package.json`]: JSON.stringify({
+      name: '@tryghost/parse-email-address',
       type: 'module',
       exports: {
-        '.': { source: './src/index.ts', default: './build/index.js' },
-        './manifest': {
-          types: './build/manifest/index.d.ts',
-          source: './src/manifest/index.ts',
-          default: './build/manifest/index.js',
+        './mailbox': {
+          types: './build/mailbox.d.ts',
+          source: './src/mailbox.ts',
+          default: './build/mailbox.js',
         },
         './other': { source: './src/other.ts', default: './build/other.js' },
       },
     }),
-    [manifest]: 'export const schema = {};',
-    [`${contract}/build/manifest/index.d.ts`]: 'export declare const schema: object;',
-    [`${contract}/src/index.ts`]: 'export const other = true;',
-    [`${contract}/src/other.ts`]: 'export const other = true;',
-    [`${contract}/private.js`]: 'module.exports = {};',
+    [mailbox]: 'export const parseMailbox = () => null;',
+    [`${workspace}/build/mailbox.d.ts`]: 'export declare const parseMailbox: () => null;',
+    [`${workspace}/src/other.ts`]: 'export const other = true;',
+    [`${workspace}/private.js`]: 'module.exports = {};',
     'node_modules/@tryghost/errors/package.json': JSON.stringify({
       name: '@tryghost/errors',
       exports: { '.': { types: './index.d.ts', default: './index.js' } },
@@ -1468,14 +1647,14 @@ it('resolves the approved workspace export to source without a build and keeps o
     'node_modules/@tryghost/errors/index.d.ts': 'export declare class GhostError {}',
     'node_modules/@tryghost/errors/index.js': 'module.exports = {};',
   });
-  f.link(contract, 'node_modules/@tryghost/app-contracts');
+  f.link(workspace, 'node_modules/@tryghost/parse-email-address');
   const before = f.graph();
   assert.ok(
     edges(before).some(
       ([from, specifier, to]) =>
         from === `${alpha}/implementation.ts` &&
-        specifier === '@tryghost/app-contracts/manifest' &&
-        to === manifest,
+        specifier === '@tryghost/parse-email-address/mailbox' &&
+        to === mailbox,
     ),
   );
   assert.ok(
@@ -1485,14 +1664,12 @@ it('resolves the approved workspace export to source without a build and keeps o
     ),
   );
   assert.deepEqual(violations(before), [
-    ['service-dependencies', `${alpha}/other.ts`, `${contract}/src/other.ts`],
-    ['service-dependencies', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
-    ['service-dependencies', `${alpha}/root.ts`, `${contract}/src/index.ts`],
-    ['service-unresolved', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
+    ['service-dependencies', `${alpha}/other.ts`, `${workspace}/src/other.ts`],
+    ['service-dependencies', `${alpha}/private.ts`, '@tryghost/parse-email-address/private'],
+    ['service-unresolved', `${alpha}/private.ts`, '@tryghost/parse-email-address/private'],
   ]);
-  f.write(`${contract}/build/manifest/index.js`, 'export const schema = {};');
-  f.write(`${contract}/build/index.js`, 'export const other = true;');
-  f.write(`${contract}/build/other.js`, 'export const other = true;');
+  f.write(`${workspace}/build/mailbox.js`, 'export const parseMailbox = () => null;');
+  f.write(`${workspace}/build/other.js`, 'export const other = true;');
   const after = f.graph();
   assert.deepEqual(edges(after), edges(before));
   assert.deepEqual(violations(after), violations(before));
@@ -1590,6 +1767,7 @@ it('invalidates cached boundary checks and fixture tests when their configuratio
     'ghost/core/**/*',
     'ghost/package.json',
     'packages/**/*',
+    'contracts/**/*',
     'koenig/**/*',
     '.dependency-cruiser-known-violations.json',
     'tools/scripts/lib/dependency-boundaries.ts',

@@ -1,7 +1,19 @@
+import createDebug from '@tryghost/debug';
 import * as errors from '@tryghost/errors';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import * as shared from '../../../src/index.ts';
+
+// The `debug` instance behind @tryghost/debug, to turn logging on and capture it
+const debugBase = (
+  createDebug as unknown as {
+    _base: {
+      enable(namespaces: string): void;
+      disable(): string;
+      log: (...args: unknown[]) => void;
+    };
+  }
+)._base;
 
 describe('validators/input/all', function () {
   afterEach(function () {
@@ -9,6 +21,34 @@ describe('validators/input/all', function () {
   });
 
   describe('all', function () {
+    it('leaves the principal out of its debug log', async function () {
+      const logged: unknown[][] = [];
+      const log = debugBase.log;
+      debugBase.log = (...args) => logged.push(args);
+      debugBase.enable('*validators:input:all');
+
+      try {
+        await shared.validators.input.all.all(
+          {},
+          {
+            options: {
+              context: {
+                user: '1',
+                principal: { kind: 'user', user: { id: '1', email: 'owner@example.com' } },
+              },
+            },
+          },
+        );
+      } finally {
+        debugBase.disable();
+        debugBase.log = log;
+      }
+
+      const output = JSON.stringify(logged);
+      assert.match(output, /"user":"1"/);
+      assert.doesNotMatch(output, /owner@example\.com|principal/);
+    });
+
     it('default', function () {
       const frame = {
         options: {

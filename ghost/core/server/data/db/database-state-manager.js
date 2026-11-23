@@ -33,14 +33,8 @@ const printState = ({ state }) => {
 
 const createMissingInDevelopmentTables = async () => {
   const { inDevelopment } = require('../schema');
-  const { usesBetterAuth } = require('../../auth/better-auth/enabled');
   const db = require('./index');
   await inDevelopment.createMissingInDevelopmentTables(db.knex);
-
-  if (usesBetterAuth()) {
-    const { seedCredentialAccounts } = require('../../auth/better-auth/seed-credential-accounts');
-    await seedCredentialAccounts(db.knex);
-  }
 };
 
 class DatabaseStateManager {

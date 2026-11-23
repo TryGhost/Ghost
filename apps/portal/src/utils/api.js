@@ -2,6 +2,7 @@ import { HumanReadableError } from './errors';
 import { fetchWithEdgeChallenge } from './edge-challenge';
 import { transformApiSiteData, transformApiTiersData, getUrlHistory } from './helpers';
 
+/** @param {{siteUrl?: string, apiUrl?: string, apiKey?: string}} options */
 function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
   const apiPath = 'members/api';
 
@@ -296,6 +297,14 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
     },
 
+    /** @param {{
+     *   name?: string,
+     *   subscribed?: boolean,
+     *   newsletters?: { id: string }[],
+     *   enableCommentNotifications?: boolean,
+     *   enableUpdatesAndAnnouncements?: boolean,
+     *   metafields?: Record<string, Record<string, unknown>>,
+     * }} props */
     update({
       name,
       subscribed,
@@ -372,14 +381,31 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     /**
-     * @returns {{
+     * @param {{
+     *   email: string,
+     *   emailType?: string,
+     *   labels?: string[],
+     *   name?: string,
+     *   oldEmail?: string,
+     *   newsletters?: string[],
+     *   redirect?: string,
+     *   integrityToken?: string,
+     *   phonenumber?: string,
+     *   customUrlHistory?: string,
+     *   token?: string,
+     *   giftToken?: string,
+     *   autoRedirect?: boolean,
+     *   includeOTC?: boolean
+     * }} options
+     * @returns {Promise<{
+     *     success?: boolean;
      *     inboxLinks?: {
      *         desktop: string;
      *         android: string;
      *         provider: 'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru';
      *     };
      *     otc_ref?: string;
-     * }}
+     * }>}
      */
     async sendMagicLink({
       email,
@@ -577,6 +603,18 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
     },
 
+    /** @param {{
+     *   plan?: string,
+     *   tierId?: string,
+     *   cadence?: string,
+     *   cancelUrl?: string,
+     *   successUrl?: string,
+     *   email?: string,
+     *   name?: string,
+     *   offerId?: string,
+     *   newsletters?: string[],
+     *   metadata?: object
+     * }} options */
     async checkoutPlan({
       plan,
       tierId,
@@ -946,6 +984,16 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         });
     },
 
+    /** @param {{
+     *   subscriptionId: string,
+     *   tierId?: string,
+     *   cadence?: string,
+     *   planId?: string,
+     *   smartCancel?: boolean,
+     *   cancelAtPeriodEnd?: boolean,
+     *   cancellationReason?: string,
+     *   answers?: object
+     * }} options */
     async updateSubscription({
       subscriptionId,
       tierId,

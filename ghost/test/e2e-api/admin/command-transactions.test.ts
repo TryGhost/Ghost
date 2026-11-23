@@ -1,15 +1,39 @@
 import assert from 'node:assert/strict';
+import sinon from 'sinon';
 import type { Knex } from 'knex';
 import { portsOf } from '@tryghost/checkout';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { createLoggingFake } from '../../utils/logging-utils';
 
 // Required rather than imported, so the test shares the module instances Ghost boots with.
-const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const metafields: typeof import('../../../core/server/services/members-metafields') = require('../../../core/server/services/members-metafields');
 const giftLinks: typeof import('../../../core/server/services/gift-links') = require('../../../core/server/services/gift-links');
 const stripeCheckoutConfig: typeof import('../../../core/server/services/stripe-checkout-config') = require('../../../core/server/services/stripe-checkout-config');
 const tiers: typeof import('../../../core/server/services/tiers') = require('../../../core/server/services/tiers');
+const segments: typeof import('../../../core/server/services/segments') = require('../../../core/server/services/segments');
+const {
+  SegmentFilter,
+  SegmentName,
+}: typeof import('../../../core/server/services/segments/models') = require('../../../core/server/services/segments/models');
+const {
+  SegmentsService,
+}: typeof import('../../../core/server/services/segments/service') = require('../../../core/server/services/segments/service');
+const {
+  SettingsSegmentRepository,
+}: typeof import('../../../core/server/services/segments/settings-repository') = require('../../../core/server/services/segments/settings-repository');
+const {
+  refreshSettingsCache,
+}: typeof import('../../../core/server/services/segments/settings-cache') = require('../../../core/server/services/segments/settings-cache');
+const {
+  segmentsTracking,
+}: typeof import('../../../core/server/services/segments/tracking') = require('../../../core/server/services/segments/tracking');
+const {
+  meter,
+  tracer,
+}: typeof import('../../../core/server/lib/tracing') = require('../../../core/server/lib/tracing');
+const settingsCache: typeof import('../../../core/shared/settings-cache') = require('../../../core/shared/settings-cache');
 
 /** Runs a command on the connection or transaction it is given, or on its own when given none. */
 type Run = (executor?: Knex) => Promise<unknown>;
@@ -47,7 +71,7 @@ describe('Commands and transactions', function () {
   let postId: string;
   let context: { actor: { id: string; type: 'user'; viaApiKey: boolean } };
 
-  const HISTORY = ['gift_link', 'member_custom_field', 'stripe_checkout_config'];
+  const HISTORY = ['gift_link', 'member_custom_field', 'setting', 'stripe_checkout_config'];
   const PHONE_PORT = portsOf('phone')[0];
   const SHIPPING = {
     shipping: {
@@ -88,6 +112,25 @@ describe('Commands and transactions', function () {
       metafields.ADMIN,
     );
     return { memberId, planned };
+  }
+
+  const newSegment = () => ({
+    name: SegmentName.parse('VIP'),
+    filter: SegmentFilter.parse('label:vip'),
+  });
+
+  /** Adds a segment in a transaction of its own, and returns its id. */
+  async function addSegment(): Promise<string> {
+    return (await segments.default.service.add(context, newSegment())).id;
+  }
+
+  /** `shared_views` as the settings cache holds it, which `GET /settings/` returns. */
+  const cachedSharedViews = () => settingsCache.get('shared_views', { resolve: false })?.value;
+
+  /** `shared_views` as it is stored. */
+  async function storedSharedViews(): Promise<unknown> {
+    const row = await knex('settings').where('key', 'shared_views').first('value');
+    return row?.value;
   }
 
   // Every row of each table, in an order that doesn't depend on how the database returns them.
@@ -279,6 +322,32 @@ describe('Commands and transactions', function () {
           stripeCheckoutConfig.default.service.config.edit(context, SHIPPING, executor);
       },
     },
+    {
+      name: 'segments: add',
+      tables: ['settings'],
+      recorded: true,
+      arrange: async () => (executor) =>
+        segments.default.service.add(context, newSegment(), executor),
+    },
+    {
+      name: 'segments: edit',
+      tables: ['settings'],
+      recorded: true,
+      arrange: async () => {
+        const id = await addSegment();
+        const rename = { name: SegmentName.parse('Gold') };
+        return (executor) => segments.default.service.edit(context, id, rename, executor);
+      },
+    },
+    {
+      name: 'segments: destroy',
+      tables: ['settings'],
+      recorded: true,
+      arrange: async () => {
+        const id = await addSegment();
+        return (executor) => segments.default.service.destroy(context, id, executor);
+      },
+    },
   ];
 
   beforeAll(async function () {
@@ -301,6 +370,12 @@ describe('Commands and transactions', function () {
     await knex('post_gift_links').del();
     await knex('gift_links').del();
     await knex('members').where('email', 'commands@example.com').del();
+    // In one transaction, so every settings cache refresh it schedules reads the same state.
+    await knex.transaction(async (trx) => {
+      for (const { id } of await segments.default.service.browse(trx)) {
+        await segments.default.service.destroy(context, id, trx);
+      }
+    });
     await knex('actions').whereIn('resource_type', HISTORY).del();
   });
 
@@ -591,6 +666,29 @@ describe('Commands and transactions', function () {
         };
       },
     },
+    {
+      name: 'segments: browse',
+      arrange: async () => ({
+        change: (trx) => segments.default.service.add(context, newSegment(), trx),
+        read: (executor) => segments.default.service.browse(executor),
+      }),
+    },
+    {
+      name: 'segments: read',
+      arrange: async () => {
+        let id = 'not-added-yet';
+        return {
+          change: async (trx) => {
+            id = (await segments.default.service.add(context, newSegment(), trx)).id;
+          },
+          read: (executor) =>
+            segments.default.service.read(id, executor).then(
+              (segment) => segment.name,
+              () => 'not found',
+            ),
+        };
+      },
+    },
   ];
 
   describe.each(queries)('$name', function ({ arrange }) {
@@ -610,6 +708,161 @@ describe('Commands and transactions', function () {
       );
 
       assert.deepEqual(await read(), before);
+    });
+  });
+
+  // A segment write keeps the settings cache, which `GET /settings/` reads, in step with what is
+  // stored, and records History in the same transaction.
+  describe('segments: settings cache and History', function () {
+    /**
+     * `shared_views` as it is stored, once the settings cache holds the same value. A segment
+     * write refreshes the cache shortly after its transaction ends.
+     */
+    /** What is cached for `shared_views`, which `GET /settings/` returns. */
+    const cachedEntry = () => settingsCache.get('shared_views', { resolve: false });
+
+    /**
+     * Lets what runs once a transaction has ended run. That work starts as the transaction's
+     * promise settles, and whatever it does without waiting on the database is done by the next
+     * turn of the event loop.
+     */
+    async function afterTransaction(trx: Knex.Transaction) {
+      await trx.executionPromise.catch(() => {});
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+
+    async function settledSharedViews(): Promise<unknown> {
+      return vi.waitFor(
+        async () => {
+          const stored = await storedSharedViews();
+          assert.equal(cachedSharedViews(), stored);
+          return stored;
+        },
+        { timeout: 5000, interval: 20 },
+      );
+    }
+
+    afterEach(function () {
+      mockManager.restore();
+    });
+
+    it('leaves both as they were when the transaction it joined is rolled back', async function () {
+      const stored = await settledSharedViews();
+      const recordedBefore = await recordedCount();
+
+      const trx = await knex.transaction();
+      await segments.default.service.add(context, newSegment(), trx);
+      await trx.rollback(new Error('The caller failed'));
+      await afterTransaction(trx);
+
+      assert.equal(cachedSharedViews(), stored);
+      assert.equal(await storedSharedViews(), stored);
+      assert.equal(await recordedCount(), recordedBefore);
+    });
+
+    it('leaves both as they were when the transaction it joined is rolled back without an error', async function () {
+      const stored = await settledSharedViews();
+      const recordedBefore = await recordedCount();
+
+      const cached = cachedEntry();
+
+      const trx = await knex.transaction();
+      await segments.default.service.add(context, newSegment(), trx);
+      await trx.rollback();
+      await afterTransaction(trx);
+      assert.equal(cachedSharedViews(), stored);
+
+      // The refresh reads the setting again and replaces the cached entry with what is stored.
+      await vi.waitFor(() => assert.notEqual(cachedEntry(), cached), {
+        timeout: 5000,
+        interval: 20,
+      });
+      assert.equal(cachedSharedViews(), stored);
+      assert.equal(await storedSharedViews(), stored);
+      assert.equal(await recordedCount(), recordedBefore);
+    });
+
+    it('updates both when the transaction it joined commits', async function () {
+      const recordedBefore = await recordedCount();
+
+      await knex.transaction((trx) => segments.default.service.add(context, newSegment(), trx));
+
+      assert.equal(
+        await settledSharedViews(),
+        JSON.stringify([{ name: 'VIP', route: 'members', filter: { filter: 'label:vip' } }]),
+      );
+      assert.equal(await recordedCount(), recordedBefore + 1);
+    });
+
+    it('rolls the change back when the function it reports the change to fails', async function () {
+      const metrics = mockManager.mockMetrics();
+      const failing = new SegmentsService({
+        knex,
+        repository: new SettingsSegmentRepository({
+          key: 'shared_views',
+          logging: createLoggingFake(),
+          maxValueLength: 65535,
+        }),
+        tracking: segmentsTracking({ tracer, meter }),
+        onSegmentUpdated: async () => {
+          throw new Error('Reporting the change failed');
+        },
+      });
+      const stored = await storedSharedViews();
+
+      await assert.rejects(failing.add(context, newSegment()), /Reporting the change failed/);
+
+      assert.equal(await storedSharedViews(), stored);
+      assert.deepEqual(await segments.default.service.browse(), []);
+      // The span fails without a rejection, so a dashboard counts it as a failure.
+      await vi.waitFor(() =>
+        expect(metrics.tracked('segments.add')).toMatchObject([
+          { event: { outcome: 'failure' }, error: { type: 'Error' } },
+        ]),
+      );
+      assert.deepEqual(metrics.tracked('segments.add')[0].labels, {});
+    });
+
+    it('logs and counts a refresh of the settings cache that fails, and keeps the change', async function () {
+      const metrics = mockManager.mockMetrics();
+      const logging = createLoggingFake();
+      const tracking = segmentsTracking({ tracer, meter });
+      const refreshingNothing = new SegmentsService({
+        knex,
+        repository: new SettingsSegmentRepository({
+          key: 'shared_views',
+          logging: createLoggingFake(),
+          maxValueLength: 65535,
+        }),
+        tracking,
+        // No setting has this key, so the refresh finds nothing to cache.
+        onSegmentUpdated: refreshSettingsCache({
+          knex,
+          cache: settingsCache,
+          logging,
+          tracking,
+          settingKey: 'not_a_setting',
+        }),
+      });
+
+      await refreshingNothing.add(context, newSegment());
+
+      await vi.waitFor(() =>
+        sinon.assert.calledOnceWithMatch(logging.error, {
+          event: { name: 'segments.refresh-settings-cache.failed' },
+        }),
+      );
+      await vi.waitFor(() =>
+        expect(metrics.tracked('segments.failed_settings_cache_refreshes')).toMatchObject([
+          { value: 1 },
+        ]),
+      );
+      assert.deepEqual(
+        (await segments.default.service.browse()).map((segment) => segment.name),
+        ['VIP'],
+      );
     });
   });
 });

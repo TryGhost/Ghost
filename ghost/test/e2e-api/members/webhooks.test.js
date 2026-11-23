@@ -115,8 +115,6 @@ describe('Members API', function () {
   // We create some shared stripe resources, so we don't have to have nocks in every test case
   const subscription = {};
   const customer = {};
-  const paymentMethod = {};
-  const setupIntent = {};
   const coupon = {};
 
   // Additional subscriptions that tests can register for multi-subscription scenarios
@@ -131,10 +129,6 @@ describe('Members API', function () {
 
         if (!match) {
           return [500];
-        }
-
-        if (resource === 'setup_intents') {
-          return [200, setupIntent];
         }
 
         if (resource === 'customers') {
@@ -170,10 +164,6 @@ describe('Members API', function () {
 
         if (!match) {
           return [500];
-        }
-
-        if (resource === 'payment_methods') {
-          return [200, paymentMethod];
         }
 
         if (resource === 'subscriptions') {
@@ -244,122 +234,6 @@ describe('Members API', function () {
     for (const key of Object.keys(subscriptionOverrides)) {
       delete subscriptionOverrides[key];
     }
-  });
-
-  describe('/webhooks/stripe/', function () {
-    beforeAll(async function () {
-      const agents = await agentProvider.getAgentsForMembers();
-      membersAgent = agents.membersAgent;
-      adminAgent = agents.adminAgent;
-
-      await fixtureManager.init('members');
-      await adminAgent.loginAsOwner();
-    });
-
-    beforeEach(function () {
-      mockManager.mockMail();
-    });
-
-    afterEach(function () {
-      mockManager.restore();
-    });
-
-    it('Responds with a 401 when the signature is invalid', async function () {
-      await membersAgent
-        .post('/webhooks/stripe/')
-        .body({
-          fake: 'data',
-        })
-        .header('stripe-signature', 'dodgy')
-        .expectStatus(401);
-    });
-
-    it('records a webhook whose signature does not show it came from Stripe as unauthorised', async function () {
-      const metrics = mockManager.mockMetrics();
-
-      await membersAgent
-        .post('/webhooks/stripe/')
-        .body({ fake: 'data' })
-        .header('stripe-signature', 'dodgy')
-        .expectStatus(401);
-
-      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
-        { outcome: 'failure', error: 'UnauthorizedError' },
-      ]);
-    });
-
-    it('records an event it ignores, for a customer whose events it is set to ignore', async function () {
-      const stripeService = require('../../../core/server/services/stripe');
-      stripeService.webhookController.configure({ webhookCustomerIgnoreList: ['cus_ignored'] });
-      try {
-        const metrics = mockManager.mockMetrics();
-        const webhookPayload = JSON.stringify({
-          type: 'customer.subscription.updated',
-          data: { object: { id: 'sub_ignored', customer: 'cus_ignored' } },
-        });
-
-        await membersAgent
-          .post('/webhooks/stripe/')
-          .body(webhookPayload)
-          .header('content-type', 'application/json')
-          .header(
-            'stripe-signature',
-            stripe.webhooks.generateTestHeaderString({
-              payload: webhookPayload,
-              secret: process.env.WEBHOOK_SECRET,
-            }),
-          )
-          .expectStatus(200);
-
-        assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
-          { outcome: 'success', type: 'customer.subscription.updated', ignored: true },
-        ]);
-      } finally {
-        stripeService.webhookController.configure({});
-      }
-    });
-
-    it('records each event it handles by its type', async function () {
-      const metrics = mockManager.mockMetrics();
-      const webhookPayload = JSON.stringify({ type: 'unknown', data: { id: 'id_123' } });
-
-      await membersAgent
-        .post('/webhooks/stripe/')
-        .body(webhookPayload)
-        .header('content-type', 'application/json')
-        .header(
-          'stripe-signature',
-          stripe.webhooks.generateTestHeaderString({
-            payload: webhookPayload,
-            secret: process.env.WEBHOOK_SECRET,
-          }),
-        )
-        .expectStatus(200);
-
-      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
-        { outcome: 'success', type: 'unknown' },
-      ]);
-    });
-
-    it('Responds with a 200 to unknown events with valid signature', async function () {
-      const webhookPayload = JSON.stringify({
-        type: 'unknown',
-        data: {
-          id: 'id_123',
-        },
-      });
-      const webhookSignature = stripe.webhooks.generateTestHeaderString({
-        payload: webhookPayload,
-        secret: process.env.WEBHOOK_SECRET,
-      });
-
-      await membersAgent
-        .post('/webhooks/stripe/')
-        .body(webhookPayload)
-        .header('content-type', 'application/json')
-        .header('stripe-signature', webhookSignature)
-        .expectStatus(200);
-    });
   });
 
   describe('Handling the end of subscriptions', function () {
@@ -1561,73 +1435,6 @@ describe('Members API', function () {
         0,
         'The member should not have any newsletter subscription',
       );
-    });
-
-    it('Does not 500 if the member is unknown', async function () {
-      set(paymentMethod, {
-        id: 'card_456',
-      });
-
-      set(subscription, {
-        id: 'sub_456',
-        customer: 'cus_456',
-        status: 'active',
-        items: {
-          type: 'list',
-          data: [
-            {
-              id: 'item_456',
-              price: {
-                id: 'price_456',
-                product: 'product_456',
-                active: true,
-                nickname: 'Monthly',
-                currency: 'usd',
-                recurring: {
-                  interval: 'month',
-                },
-                unit_amount: 500,
-                type: 'recurring',
-              },
-            },
-          ],
-        },
-        start_date: Date.now() / 1000,
-        current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
-        cancel_at_period_end: false,
-      });
-
-      set(setupIntent, {
-        id: 'setup_intent_456',
-        payment_method: paymentMethod.id,
-        metadata: {
-          customer_id: 'cus_456', // invalid customer id
-          subscription_id: subscription.id,
-        },
-      });
-
-      const webhookPayload = JSON.stringify({
-        type: 'checkout.session.completed',
-        data: {
-          object: {
-            mode: 'setup',
-            customer: 'cus_456',
-            setup_intent: setupIntent.id,
-          },
-        },
-      });
-
-      const webhookSignature = stripe.webhooks.generateTestHeaderString({
-        payload: webhookPayload,
-        secret: process.env.WEBHOOK_SECRET,
-      });
-
-      await membersAgent
-        .post('/webhooks/stripe/')
-        .body(webhookPayload)
-        .header('content-type', 'application/json')
-        .header('stripe-signature', webhookSignature)
-        .expectStatus(200);
     });
 
     it('Links the subscription when the Stripe price nickname is longer than 50 characters', async function () {
@@ -4595,8 +4402,6 @@ describe('Members API', function () {
 
     beforeEach(async function () {
       mockManager.mockMail();
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      mockManager.mockLabsEnabled('customFieldTypePhone');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
@@ -4647,6 +4452,8 @@ describe('Members API', function () {
         billingCountry = 'GB',
         // The wallet the buyer paid with, as Stripe names it, if they paid with one.
         wallet = undefined,
+        // The name on the buyer's card, which Ghost gives a member who has no name.
+        payerName = undefined,
         // What Ghost answers Stripe with. Nothing is read back from a failed checkout.
         status = 200,
       } = {},
@@ -4667,7 +4474,14 @@ describe('Members API', function () {
         email,
         subscriptions: {
           type: 'list',
-          data: [{ ...subscription, default_payment_method: walletMethod ?? null }],
+          data: [
+            {
+              ...subscription,
+              default_payment_method:
+                walletMethod ??
+                (payerName ? { id: 'pm_card', billing_details: { name: payerName } } : null),
+            },
+          ],
         },
       });
       const payload = JSON.stringify({
@@ -4781,7 +4595,7 @@ describe('Members API', function () {
       ]);
     });
 
-    it('records what it skipped for a member who checked out without signing in', async function () {
+    it('records what it saved for an existing member, whether or not they signed in before checking out', async function () {
       await adminAgent
         .post('/members/')
         .body({ members: [{ email: 'complete-unverified@example.com' }] })
@@ -4805,7 +4619,7 @@ describe('Members API', function () {
           outcome: 'success',
           type: 'subscription',
           member: 'unverified',
-          shipping: 'skipped',
+          shipping: 'saved',
           phone: 'none',
         },
         {
@@ -5086,7 +4900,7 @@ describe('Members API', function () {
       assert.equal(saved.recipient_name, 'Jamie Doe');
     });
 
-    it('leaves an existing member alone when the checkout was not started signed in', async function () {
+    it('saves the address but not the name for an existing member who checked out without signing in', async function () {
       await adminAgent
         .post('/members/')
         .body({ members: [{ email: 'shipping-existing@example.com' }] })
@@ -5095,50 +4909,72 @@ describe('Members API', function () {
       // The checkout started after the member already existed.
       const startedAt = Math.floor(Date.now() / 1000) + 1;
       assert.deepEqual(
-        await completeCheckout('shipping-existing@example.com', { created: startedAt }),
-        {},
+        await completeCheckout('shipping-existing@example.com', {
+          created: startedAt,
+          payerName: 'Someone Else',
+        }),
+        {
+          delivery_address: {
+            line1: '1 High Street',
+            city: 'London',
+            postal_code: 'N1 1AA',
+            country: 'GB',
+          },
+          recipient_name: 'Jamie Doe',
+        },
       );
-    });
-
-    it('replaces every part of an earlier address for a member who checked out signed in', async function () {
       const {
         body: { members },
-      } = await adminAgent
-        .post('/members/')
-        .body({ members: [{ email: 'shipping-signed-in@example.com' }] })
-        .expectStatus(201);
-      await adminAgent
-        .put(`/members/${members[0].id}/`)
-        .body({
-          members: [
-            {
-              metafields: {
-                custom: {
-                  delivery_address: {
-                    line1: '2 Old Road',
-                    line2: 'Flat 5',
-                    city: 'Austin',
-                    state: 'TX',
-                    postal_code: '78701',
-                    country: 'US',
+      } = await adminAgent.get('/members/?search=shipping-existing@example.com');
+      assert.equal(members[0].name, null);
+    });
+
+    for (const [signedIn, email] of [
+      [true, 'shipping-signed-in@example.com'],
+      [false, 'shipping-signed-out@example.com'],
+    ]) {
+      it(`replaces every part of an earlier address for a member who checked out ${signedIn ? 'signed in' : 'without signing in'}`, async function () {
+        const {
+          body: { members },
+        } = await adminAgent
+          .post('/members/')
+          .body({ members: [{ email }] })
+          .expectStatus(201);
+        await adminAgent
+          .put(`/members/${members[0].id}/`)
+          .body({
+            members: [
+              {
+                metafields: {
+                  custom: {
+                    delivery_address: {
+                      line1: '2 Old Road',
+                      line2: 'Flat 5',
+                      city: 'Austin',
+                      state: 'TX',
+                      postal_code: '78701',
+                      country: 'US',
+                    },
                   },
                 },
               },
-            },
-          ],
-        })
-        .expectStatus(200);
+            ],
+          })
+          .expectStatus(200);
 
-      const saved = await completeCheckout('shipping-signed-in@example.com', {
-        metadata: { ghostSignupContext: 'already_authenticated' },
-      });
+        // The checkout started after the member already existed.
+        const saved = await completeCheckout(email, {
+          created: Math.floor(Date.now() / 1000) + 1,
+          metadata: signedIn ? { ghostSignupContext: 'already_authenticated' } : {},
+        });
 
-      assert.deepEqual(saved.delivery_address, {
-        line1: '1 High Street',
-        city: 'London',
-        postal_code: 'N1 1AA',
-        country: 'GB',
+        assert.deepEqual(saved.delivery_address, {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'N1 1AA',
+          country: 'GB',
+        });
       });
-    });
+    }
   });
 });

@@ -9,6 +9,7 @@ import {
   siteResponse,
 } from '@tryghost/test-data';
 
+import { declareSharedViews, segmentsResponse, withWrittenSharedViews } from './shared-views';
 import { registerAdminApiHandler, registerRoute } from './worker';
 
 export { composeConfigBootOverrides, composeLabsBootOverrides } from './boot-composition';
@@ -44,6 +45,13 @@ export function defaultBootRequests() {
       method: 'GET',
       path: /^\/settings\/\?group=/,
       response: settingsResponse(),
+    },
+    // The sidebar's member views. Served from the test's `shared_views` setting (see
+    // shared-views.ts).
+    browseSegments: {
+      method: 'GET',
+      path: '/segments/',
+      response: () => segmentsResponse(),
     },
     browseConfig: {
       method: 'GET',
@@ -118,11 +126,17 @@ function matches(config: BootRequestConfig, method: string, apiPath: string): bo
   return typeof config.path === 'string' ? config.path === apiPath : config.path.test(apiPath);
 }
 
-async function respond(config: BootRequestConfig, request: Request): Promise<Response> {
-  const body =
+async function respond(
+  name: string,
+  config: BootRequestConfig,
+  request: Request,
+): Promise<Response> {
+  const declaredBody =
     typeof config.response === 'function'
       ? await (config.response as (request: Request) => Promise<unknown>)(request)
       : config.response;
+  // Serves a `shared_views` saved during the test in place of the canned one.
+  const body = name === 'browseSettings' ? withWrittenSharedViews(declaredBody) : declaredBody;
 
   return HttpResponse.json(body as Record<string, unknown>, {
     status: config.responseStatus ?? 200,
@@ -134,10 +148,10 @@ export async function defaultBootResolver(
   request: Request,
   apiPath: string,
 ): Promise<Response | undefined> {
-  const config = Object.values(defaultBootRequests()).find((entry) =>
+  const match = Object.entries(defaultBootRequests()).find(([, entry]) =>
     matches(entry, request.method, apiPath),
   );
-  return config ? await respond(config, request) : undefined;
+  return match ? await respond(match[0], match[1], request) : undefined;
 }
 
 /** Register per-test boot overrides (higher priority than the defaults). */
@@ -145,14 +159,19 @@ export function installBootOverrides(overrides: BootOverrides): void {
   const defaults = defaultBootRequests();
   const entries = Object.entries(overrides)
     .filter(([, override]) => Boolean(override))
-    .map(([name, override]) => ({ ...defaults[name as BootRequestName], ...override }));
+    .map(([name, override]) => ({
+      name,
+      config: { ...defaults[name as BootRequestName], ...override },
+    }));
 
-  for (const config of entries) {
+  declareSharedViews(overrides.browseSettings?.response);
+
+  for (const { config } of entries) {
     registerRoute(config.method, config.path);
   }
 
   registerAdminApiHandler(async (request, apiPath) => {
-    const config = entries.find((entry) => matches(entry, request.method, apiPath));
-    return config ? await respond(config, request) : undefined;
+    const entry = entries.find(({ config }) => matches(config, request.method, apiPath));
+    return entry ? await respond(entry.name, entry.config, request) : undefined;
   });
 }

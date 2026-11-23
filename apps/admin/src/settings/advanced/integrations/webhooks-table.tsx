@@ -10,6 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { type Integration } from '@tryghost/admin-x-framework/api/integrations';
@@ -113,12 +114,20 @@ const WebhooksTable: React.FC<{ integration: Integration }> = ({ integration }) 
               onClick={() => setEditingWebhook(webhook)}
             >
               <TableCell className="w-3/4 py-3 pr-6">
-                <div className="font-semibold">{webhook.name}</div>
+                <RowPrimaryAction asChild>
+                  <button
+                    className="font-semibold"
+                    type="button"
+                    onClick={() => setEditingWebhook(webhook)}
+                  >
+                    {webhook.name}
+                  </button>
+                </RowPrimaryAction>
                 <div className="mt-1 grid grid-cols-[max-content_1fr] gap-1 text-sm leading-snug">
                   <span className="text-muted-foreground">Event:</span>
                   <span>{getWebhookEventLabel(webhook.event)}</span>
                   <span className="text-muted-foreground">URL:</span>
-                  <span className="line-clamp-3 break-all" title={webhook.target_url}>
+                  <span className="relative z-10 line-clamp-3 break-all" title={webhook.target_url}>
                     {webhook.target_url}
                   </span>
                 </div>

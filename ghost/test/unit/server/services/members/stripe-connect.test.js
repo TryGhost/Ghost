@@ -62,4 +62,17 @@ describe('Members - Stripe Connect', function () {
       },
     );
   });
+
+  for (const stored of [null, undefined, '']) {
+    it(`getStripeConnectTokenData throws when no state is stored (${stored}) and the token carries the same`, async function () {
+      const encodedData = Buffer.from(
+        JSON.stringify({ p: 'pk', a: 'sk', l: false, s: stored }),
+      ).toString('base64');
+
+      await assert.rejects(
+        stripeConnect.getStripeConnectTokenData(encodedData, () => stored),
+        { errorType: 'NoPermissionError' },
+      );
+    });
+  }
 });

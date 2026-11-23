@@ -3,7 +3,10 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { loadBootFunction } from './harness';
 
-function createBackgroundHarness(environment = 'production') {
+function createBackgroundHarness(
+  environment = 'production',
+  { keepsJobsUntilSettled = false } = {},
+) {
   const emailAnalyticsJobs = { scheduleRecurringJobs: sinon.stub().resolves() };
   const recovery = sinon.stub().resolves();
   const giftRecovery = sinon.stub().resolves();
@@ -14,6 +17,7 @@ function createBackgroundHarness(environment = 'production') {
   const tinybirdSync = { scheduleJob: sinon.stub().resolves() };
   const milestones = { initAndRun: sinon.stub() };
   const signingKeys = { extras: { scheduleCheckJob: sinon.stub().resolves() } };
+  const authCleanup = { scheduleClearExpiredJob: sinon.stub().resolves() };
   const giftJobs = {
     scheduleGiftCleanupJob: sinon.stub().resolves(),
     scheduleGiftReminderJob: sinon.stub().resolves(),
@@ -23,7 +27,7 @@ function createBackgroundHarness(environment = 'production') {
     scheduleExpiredCompCleanupJob: sinon.stub().resolves(),
   };
   const remoteFlags = { init: sinon.stub() };
-  const jobsInstance = {};
+  const jobsInstance = { keepsJobsUntilSettled: () => keepsJobsUntilSettled };
   const initBackgroundServices = loadBootFunction(
     'initBackgroundServices',
     {
@@ -35,6 +39,7 @@ function createBackgroundHarness(environment = 'production') {
       './server/services/gifts/jobs': giftJobs,
       './server/services/members/jobs': memberJobs,
       './server/services/signing-keys': { default: signingKeys },
+      './server/auth/better-auth/cleanup': authCleanup,
       './server/services/jobs-service': { getInstance: () => jobsInstance },
       './server/services/activitypub': { init: activity },
       './server/services/tinybird-sync': tinybirdSync,
@@ -45,7 +50,10 @@ function createBackgroundHarness(environment = 'production') {
     { globals: { process: { env: { NODE_ENV: environment } } } },
   );
   return {
-    init: (): Promise<void> => initBackgroundServices({ config: { get: () => true } }),
+    init: (): Promise<void> =>
+      initBackgroundServices({
+        config: { get: () => true },
+      }),
     themes,
     recovery,
     giftRecovery,
@@ -56,6 +64,7 @@ function createBackgroundHarness(environment = 'production') {
     tinybirdSync,
     milestones,
     signingKeys,
+    authCleanup,
     giftJobs,
     memberJobs,
     remoteFlags,
@@ -75,8 +84,9 @@ const isolatedSteps: [string, (boot: BackgroundHarness) => sinon.SinonStub][] = 
     'expired complimentary cleanup scheduling',
     (boot) => boot.memberJobs.scheduleExpiredCompCleanupJob,
   ],
-  ['signing-key check scheduling', (boot) => boot.signingKeys.extras.scheduleCheckJob],
+  ['expired auth row cleanup scheduling', (boot) => boot.authCleanup.scheduleClearExpiredJob],
   ['email analytics scheduling', (boot) => boot.emailAnalyticsJobs.scheduleRecurringJobs],
+  ['social web (ActivityPub) start', (boot) => boot.activity],
   ['Tinybird sync scheduling', (boot) => boot.tinybirdSync.scheduleJob],
   ['update check scheduling', (boot) => boot.updateCheck.scheduleJobs],
 ];
@@ -91,6 +101,7 @@ function backgroundSteps(boot: BackgroundHarness): sinon.SinonStub[] {
     boot.memberJobs.scheduleTokenCleanupJob,
     boot.memberJobs.scheduleExpiredCompCleanupJob,
     boot.signingKeys.extras.scheduleCheckJob,
+    boot.authCleanup.scheduleClearExpiredJob,
     boot.emailAnalyticsJobs.scheduleRecurringJobs,
     boot.activity,
     boot.tinybirdSync.scheduleJob,
@@ -142,6 +153,14 @@ for (const environment of ['development', 'production']) {
     );
   });
 }
+
+it('leaves interrupted newsletter sends to the jobs outbox when it keeps jobs until they settle', async function () {
+  const boot = createBackgroundHarness('production', { keepsJobsUntilSettled: true });
+  await boot.init();
+
+  sinon.assert.notCalled(boot.recovery);
+  sinon.assert.calledOnce(boot.giftRecovery);
+});
 
 it('awaits signing-key job registration before later background work using the shared jobs instance', async function () {
   const boot = createBackgroundHarness();
@@ -201,6 +220,28 @@ it('logs signing-key job registration failures and continues background startup'
     sinon.match.same(boot.jobsInstance),
   );
   sinon.assert.calledOnce(boot.milestones.initAndRun);
+});
+
+it('schedules the expired auth row cleanup on the shared jobs instance', async function () {
+  const boot = createBackgroundHarness();
+
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(
+    boot.authCleanup.scheduleClearExpiredJob,
+    sinon.match.same(boot.jobsInstance),
+  );
+});
+
+it('logs a failed auth cleanup schedule and continues background startup', async function () {
+  const boot = createBackgroundHarness();
+  const failure = new Error('auth cleanup registration failed');
+  boot.authCleanup.scheduleClearExpiredJob.rejects(failure);
+
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
+  sinon.assert.calledOnce(boot.activity);
 });
 
 it('starts every background step once, in order', async function () {
@@ -277,20 +318,29 @@ for (const [name, getStep] of isolatedSteps) {
   });
 }
 
-it('stops background startup when ActivityPub fails, after the earlier jobs are scheduled', async function () {
+it('logs a failed ActivityPub start and still starts the background work after it', async function () {
   const boot = createBackgroundHarness();
   const failure = new Error('activitypub unavailable');
   boot.activity.rejects(failure);
 
-  await assert.rejects(boot.init(), (error) => error === failure);
+  await boot.init();
 
-  const steps = backgroundSteps(boot);
-  const activityIndex = steps.indexOf(boot.activity);
-  for (const step of steps.slice(0, activityIndex + 1)) {
-    sinon.assert.calledOnce(step);
-  }
-  for (const step of steps.slice(activityIndex + 1)) {
-    sinon.assert.notCalled(step);
-  }
-  sinon.assert.notCalled(boot.logging.error);
+  sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
+  sinon.assert.calledOnceWithExactly(
+    boot.tinybirdSync.scheduleJob,
+    sinon.match.same(boot.jobsInstance),
+  );
+  sinon.assert.calledOnceWithExactly(
+    boot.updateCheck.scheduleJobs,
+    sinon.match.same(boot.jobsInstance),
+  );
+  sinon.assert.calledOnce(boot.remoteFlags.init);
+  sinon.assert.calledOnce(boot.milestones.initAndRun);
+  sinon.assert.callOrder(
+    boot.activity,
+    boot.tinybirdSync.scheduleJob,
+    boot.updateCheck.scheduleJobs,
+    boot.remoteFlags.init,
+    boot.milestones.initAndRun,
+  );
 });

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
-// @ts-expect-error This module lacks type definitions.
 import * as commands from '../../../core/server/data/schema/commands';
 import { patternChecksOf } from '../../../core/server/data/schema/lib/column-patterns';
 import { readPatternChecks } from '../../utils/pattern-checks';
@@ -9,7 +8,7 @@ const testUtils = require('../../utils');
 const { knex }: { knex: Knex } = require('../../../core/server/data/db');
 
 const TABLE = 'test_column_patterns';
-const slug = { type: 'string', maxlength: 191, nullable: false, pattern: '^[a-z0-9_]+$' };
+const slug = { type: 'string' as const, maxlength: 191, nullable: false, pattern: '^[a-z0-9_]+$' };
 
 describe('A column pattern on MySQL', function () {
   const refused = (row: Record<string, unknown>) =>
@@ -36,7 +35,7 @@ describe('A column pattern on MySQL', function () {
     await refused({ slug: 'company\n' });
   });
 
-  // The check that compares a migrated database with schema.js reads checks back this way.
+  // The check that compares a migrated database with schema.ts reads checks back this way.
   it('reads back from MySQL as it was declared', async function () {
     const tableSpec = { slug: { ...slug, pattern: '^[a-z]+(_[a-z]+)?$' } };
     await commands.createTable(TABLE, knex, tableSpec);

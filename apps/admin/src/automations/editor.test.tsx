@@ -185,6 +185,11 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
   useBrowseTiers: () => ({ data: { tiers: [] }, isLoading: false }),
 }));
 
+vi.mock('@tryghost/admin-x-framework/api/labels', () => {
+  const refetch = vi.fn();
+  return { useReadLabel: () => ({ data: undefined, error: null, refetch }) };
+});
+
 // xyflow's ReactFlow needs a sized container; stub it out for unit tests.
 type StubNode = { id: string; data?: Record<string, unknown>; type?: string };
 type StubEdge = {

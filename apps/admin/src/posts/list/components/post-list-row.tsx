@@ -1,7 +1,16 @@
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  ListItem,
+  RowPrimaryAction,
+} from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import type { ActivePresence } from '@/shared/presence/presence-api';
 import { AdminLink } from '@/shared/admin-link';
 import { FadingText } from '@/shared/fading-text';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
@@ -29,6 +38,8 @@ import type { PostResource } from '@/posts/list/post-resource';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
+  /** Other staff with this post open; absent while presence indicators are off. */
+  presenceActive?: ActivePresence[];
   resource: PostResource;
   timezone?: string;
   /**
@@ -136,6 +147,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
   function PostListRowComponent(
     {
       post,
+      presenceActive,
       resource,
       timezone,
       isContributor,
@@ -207,7 +219,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ref={ref}
         {...rest}
         className={cn(
-          'group border-b border-border-default',
+          'group border-b border-border-default in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent]',
           // A light blue rather than a grey: selection is a different
           // kind of state from hover, and two greys a step apart read as
           // degrees of the same thing.
@@ -220,6 +232,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           // the row under the cursor look deselected.
           isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
         )}
+        data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
@@ -233,78 +246,87 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           setIsHovered(false);
         }}
       >
-        {/* `center`, not `start`: everything on the right centres
-                against the feature image.
+        {/* Keep the right-hand controls centered against the feature image. */}
+        <Inline align="center" gap="md">
+          <RowPrimaryAction asChild>
+            <RowLink
+              className="flex min-w-0 flex-1 items-start gap-4 py-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
+              data-testid="post-list-item-link"
+              offsite={linksOffsite}
+              to={linksOffsite ? post.url : editorPath}
+            >
+              <FeatureImage post={post} />
+              <Stack className="min-w-0 flex-1" gap="xs">
+                <Inline align="center" gap="xs">
+                  {post.featured && (
+                    <LucideIcon.Star
+                      aria-label="Featured"
+                      className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
+                      data-testid="post-featured"
+                    />
+                  )}
+                  <Text as="h3" className="truncate tracking-normal" weight="semibold">
+                    {post.title}
+                  </Text>
+                </Inline>
 
-                Padding is even on all four sides. It lives on the children
-                rather than the row because the link and the trailing button
-                each need to fill the row's full height to stay clickable —
-                so the row's own box has to stay flush. */}
-        <Inline align="center" className="pr-4" gap="md">
-          <RowLink
-            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
-            data-testid="post-list-item-link"
-            offsite={linksOffsite}
-            to={linksOffsite ? post.url : editorPath}
-          >
-            <FeatureImage post={post} />
-            <Stack className="min-w-0 flex-1" gap="xs">
-              <Inline align="center" gap="xs">
-                {post.featured && (
-                  <LucideIcon.Star
-                    aria-label="Featured"
-                    className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
-                    data-testid="post-featured"
-                  />
+                {metaParts.length > 0 && (
+                  // Joined from parts so a missing piece takes its
+                  // separator with it — no dangling " – date".
+                  //
+                  // Truncated like the title above it. Left to wrap,
+                  // a long author-and-tag line runs to three lines on
+                  // a narrow window and drives the row's height,
+                  // which reads as the metrics squashing it.
+                  <Text
+                    className="relative z-10 truncate"
+                    size="sm"
+                    title={dateTooltip}
+                    tone="secondary"
+                  >
+                    {metaParts.join(' - ')}
+                  </Text>
                 )}
-                <Text as="h3" className="truncate tracking-normal" weight="semibold">
-                  {post.title}
-                </Text>
-              </Inline>
 
-              {metaParts.length > 0 && (
-                // Joined from parts so a missing piece takes its
-                // separator with it — no dangling " – date".
-                //
-                // Truncated like the title above it. Left to wrap,
-                // a long author-and-tag line runs to three lines on
-                // a narrow window and drives the row's height,
-                // which reads as the metrics squashing it.
-                <Text className="truncate" size="sm" title={dateTooltip} tone="secondary">
-                  {metaParts.join(' - ')}
-                </Text>
-              )}
-
-              {emailSendingState.status === 'sending' ? (
-                <EmailSendingStatusLine
-                  announce={false}
-                  className="text-sm"
-                  line={emailSendingState.line}
-                />
-              ) : (
-                <Text
-                  className={statusTone(displayedPost, displayedIsFailed)}
-                  size="sm"
-                  weight={
-                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
-                      ? 'medium'
-                      : 'regular'
-                  }
-                >
-                  {displayedStatusLabel}
-                  {/* Mounted only while hovered, fading in and out. A CSS
+                {emailSendingState.status === 'sending' ? (
+                  <EmailSendingStatusLine
+                    announce={false}
+                    className="text-sm"
+                    line={emailSendingState.line}
+                  />
+                ) : (
+                  <Text
+                    className={statusTone(displayedPost, displayedIsFailed)}
+                    size="sm"
+                    weight={
+                      displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                        ? 'medium'
+                        : 'regular'
+                    }
+                  >
+                    {displayedStatusLabel}
+                    {/* Mounted only while hovered, fading in and out. A CSS
                                   opacity fade alone would keep it in the DOM, so a screen
                                   reader would read every row's full dispatch details
                                   aloud, always. */}
-                  {emailSendingState.status !== 'failed' && statusDetail && (
-                    <FadingText show={isHovered}> {statusDetail}</FadingText>
-                  )}
-                </Text>
-              )}
-            </Stack>
-          </RowLink>
+                    {emailSendingState.status !== 'failed' && statusDetail && (
+                      <FadingText show={isHovered}> {statusDetail}</FadingText>
+                    )}
+                  </Text>
+                )}
+              </Stack>
+            </RowLink>
+          </RowPrimaryAction>
+          {presenceActive && presenceActive.length > 0 ? (
+            <PresenceAvatars
+              active={presenceActive}
+              // Under 360px the title has no room left to give.
+              className="relative z-10 max-[359px]:hidden"
+              resourceType={editorType}
+            />
+          ) : null}
           <PostMetricsCells
-            className="py-4"
+            className="relative z-10 py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
             memberCounts={memberCounts}
             paidMembersEnabled={paidMembersEnabled}
@@ -326,7 +348,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 // title away from the metrics too.
                 className={cn(
                   'my-4 shrink-0',
+                  'relative z-10',
                   'ms-8',
+                  // Below 1200px the metrics are hidden, so with avatars beside it the
+                  // action needs no extra separation and the title keeps the room.
+                  presenceActive && presenceActive.length > 0 && 'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',
                 )}
@@ -359,7 +385,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         onAction={menuOnAction ?? (() => {})}
         onOpenChange={menuOnOpenChange ?? (() => {})}
       >
-        {row}
+        <ListItem asChild>{row}</ListItem>
       </PostsContextMenu>
     );
   },

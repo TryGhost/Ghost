@@ -690,6 +690,31 @@ describe('Pipeline', function () {
       assert.equal(queryStub.called, false);
     });
 
+    it('leaves the principal out of the default cache key', async function () {
+      const cache = {
+        get: sinon.stub().resolves(null),
+        set: sinon.stub().resolves(true),
+      };
+      const result = shared.pipeline({ browse: { cache } }, {});
+
+      validationInputStub.resolves();
+      serialisationInputStub.resolves();
+      permissionsStub.resolves();
+      queryStub.resolves('response');
+
+      const principal = (session: string) => ({
+        kind: 'user',
+        user: { id: '1', email: 'owner@example.com' },
+        session: { id: session },
+      });
+      await result.browse({ context: { user: '1', principal: principal('a') } });
+      await result.browse({ context: { user: '1', principal: principal('b') } });
+
+      const firstKey = cache.get.firstCall.args[0];
+      assert.equal(cache.get.secondCall.args[0], firstKey);
+      assert.deepEqual(JSON.parse(firstKey).context, { user: '1' });
+    });
+
     it('produces distinct cache keys when cacheKeyData objects differ only in nested fields', async function () {
       const cache = {
         get: sinon.stub().resolves(null),

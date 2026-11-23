@@ -19,6 +19,9 @@ const crypto = require('crypto');
 const { hasActiveOffer } = require('../utils/has-active-offer');
 const { afterCommit } = require('../../../../lib/after-commit');
 const {
+  LabelAddedToMembersEvent,
+} = require('../../../../../shared/events/label-added-to-members-event');
+const {
   StartAutomationsPollEvent,
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
@@ -278,7 +281,7 @@ module.exports = class MemberRepository {
       options.transacting.executionPromise.then(notify).catch((err) => {
         logging.error({
           err,
-          message: `Error notifying automations for member ${payload.memberId}`,
+          message: `Error notifying automations for ${payload.eventName} event`,
         });
       });
     } else {
@@ -308,7 +311,6 @@ module.exports = class MemberRepository {
       eventName: /** @type {const} */ ('paid_subscription_changed'),
       source: this._resolveContextSource(options.context || {}),
       memberId: member.id,
-      memberEmail: member.get('email'),
       memberStatus: member.get('status'),
       previousMemberStatus: previousStatus,
       memberTierIds: tierIds,
@@ -345,7 +347,6 @@ module.exports = class MemberRepository {
     bookshelfOptions,
   }) {
     const memberId = member.id;
-    const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
 
     await this.#notifyAutomations(
@@ -353,7 +354,6 @@ module.exports = class MemberRepository {
         eventName: 'membership_started',
         source: this._resolveContextSource(bookshelfOptions.context || {}),
         memberId,
-        memberEmail,
         memberStatus,
         previousMemberStatus,
         memberTierIds,
@@ -1420,15 +1420,42 @@ module.exports = class MemberRepository {
       return this._Member.bulkDestroy(membersLabelsIds, 'members_labels', { transacting });
     }
 
-    const relations = memberIds.map((id) => {
-      return {
+    const existingLabelRelations = await this._Member.getLabelRelations(
+      { labelId: data.meta.label.id, memberIds },
+      { transacting },
+    );
+    const memberIdsWhoAlreadyHaveThisLabel = new Set(
+      existingLabelRelations.map((row) => row.member_id),
+    );
+
+    const relations = memberIds
+      .filter((id) => !memberIdsWhoAlreadyHaveThisLabel.has(id))
+      .map((id) => ({
         member_id: id,
         label_id: data.meta.label.id,
         id: ObjectId().toHexString(),
-      };
-    });
+      }));
 
-    return this._Member.bulkAdd(relations, 'members_labels', { transacting });
+    const result = await this._Member.bulkAdd(relations, 'members_labels', { transacting });
+
+    const failedIds = new Set(result.unsuccessfulData.map((row) => row.member_id));
+
+    const addedMemberIds = relations
+      .filter((row) => !failedIds.has(row.member_id))
+      .map((row) => row.member_id);
+    if (addedMemberIds.length) {
+      this.dispatchEvent(new LabelAddedToMembersEvent(data.meta.label.id, addedMemberIds), {
+        transacting,
+      });
+    }
+
+    return {
+      ...result,
+      // This addition is for API backwards compatibility. Callers expect it to
+      // be the number of affected members before any filtering (like we do
+      // above).
+      successful: result.successful + memberIdsWhoAlreadyHaveThisLabel.size,
+    };
   }
 
   async upsertCustomer(data) {
@@ -1572,7 +1599,7 @@ module.exports = class MemberRepository {
       { ...options, forUpdate: true },
     );
 
-    const subscriptionPriceData = _.get(stripeSubscriptionData, 'items.data[0].price');
+    const subscriptionPriceData = stripeSubscriptionData.items?.data?.[0]?.price;
     let ghostProduct;
     try {
       ghostProduct = await this._productRepository.get(
@@ -1625,7 +1652,7 @@ module.exports = class MemberRepository {
 
     if (stripeCouponId && !offerId && ghostProduct) {
       const coupon = stripeSubscriptionData.discount.coupon;
-      const cadence = _.get(subscriptionPriceData, 'recurring.interval');
+      const cadence = subscriptionPriceData?.recurring?.interval;
       const tier = { id: ghostProduct.get('id'), name: ghostProduct.get('name') };
 
       try {
@@ -1676,8 +1703,7 @@ module.exports = class MemberRepository {
       // turned out to be much bigger problem.
       // Ideally, would need nickname field to be nullable on the DB level
       // condition can be simplified once this is done
-      plan_nickname:
-        subscriptionPriceData.nickname || _.get(subscriptionPriceData, 'recurring.interval'),
+      plan_nickname: subscriptionPriceData.nickname || subscriptionPriceData.recurring?.interval,
       plan_interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
       plan_amount: subscriptionPriceData.unit_amount,
       plan_currency: subscriptionPriceData.currency,

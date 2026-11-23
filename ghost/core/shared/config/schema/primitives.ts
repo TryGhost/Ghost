@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { reportUnknownKeys } from '../report';
-import { getNodeEnv } from '../utils';
 
 /**
  * An absolute `http://` or `https://` URL. Parsed with `new URL()`, as Ghost's
@@ -30,10 +28,13 @@ export function knownKeys<S extends z.ZodRawShape>(name: string, shape: S) {
   return z.looseObject(shape).transform((value, ctx) => {
     const unknown = Object.keys(value).filter((key) => !isKnown(key));
 
-    if (unknown.length && getNodeEnv().startsWith('test')) {
+    if (unknown.length && process.env.NODE_ENV?.startsWith('test')) {
       ctx.issues.push({ code: 'unrecognized_keys', keys: unknown, input: value });
-    } else {
-      reportUnknownKeys(unknown.map((key) => [name, key]));
+    } else if (unknown.length) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Ghost config has unknown keys, which are ignored:\n${unknown.map((key) => `  ${name}:${key}`).join('\n')}`,
+      );
     }
 
     return Object.fromEntries(Object.entries(value).filter(([key]) => isKnown(key))) as z.output<

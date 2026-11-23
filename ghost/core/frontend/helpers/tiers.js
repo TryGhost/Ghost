@@ -5,16 +5,15 @@
 // By default, tiers are separated by commas.
 const { SafeString, escapeExpression } = require('../services/handlebars');
 
-const isString = require('lodash/isString');
-
 module.exports = function tiers(options = {}) {
   options = options || {};
   options.hash = options.hash || {};
 
-  const separator = isString(options.hash.separator) ? options.hash.separator : ', ';
-  const lastSeparator = isString(options.hash.lastSeparator) ? options.hash.lastSeparator : ' and ';
-  const prefix = isString(options.hash.prefix) ? options.hash.prefix : '';
-  let suffix = isString(options.hash.suffix) ? options.hash.suffix : '';
+  const separator = typeof options.hash.separator === 'string' ? options.hash.separator : ', ';
+  const lastSeparator =
+    typeof options.hash.lastSeparator === 'string' ? options.hash.lastSeparator : ' and ';
+  const prefix = typeof options.hash.prefix === 'string' ? options.hash.prefix : '';
+  let suffix = typeof options.hash.suffix === 'string' ? options.hash.suffix : '';
 
   let output = '';
 
@@ -27,9 +26,9 @@ module.exports = function tiers(options = {}) {
 
     if (tierNames.length === 1) {
       output = tierNames[0];
-      suffix = isString(options.hash.suffix) ? options.hash.suffix : ' tier';
+      suffix = typeof options.hash.suffix === 'string' ? options.hash.suffix : ' tier';
     } else {
-      suffix = isString(options.hash.suffix) ? options.hash.suffix : ' tiers';
+      suffix = typeof options.hash.suffix === 'string' ? options.hash.suffix : ' tiers';
       const firsts = tierNames.slice(0, tierNames.length - 1);
       const last = tierNames[tierNames.length - 1];
       output = firsts.join(separator) + lastSeparator + last;

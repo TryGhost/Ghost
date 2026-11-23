@@ -31,6 +31,7 @@ const messages = {
   upgradeBlock: 'Too many update requests. Try again in a minute.',
   staffInviteBlock: 'Too many invitation requests. Try again in a minute.',
   memberEmailUpdateBlock: 'Too many email change requests. Try again in an hour.',
+  presenceBlock: 'Too many presence requests. Try again in a few seconds.',
 };
 
 const TABLE = 'rate_limits';
@@ -176,15 +177,21 @@ const requestBlock = (
   block: SpamBlock,
   errorOptions: ConstructorParameters<typeof errors.TooManyRequestsError>[0],
   keyOptions: Pick<LimiterOptions, 'key' | 'ignoreIP'> = {},
+  storage: { memory?: boolean } = {},
 ) =>
-  limiter(name, block, {
-    ...keyOptions,
-    onBlocked(retryAfterMs, res) {
-      res.set('Retry-After', String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
+  limiter(
+    name,
+    block,
+    {
+      ...keyOptions,
+      onBlocked(retryAfterMs, res) {
+        res.set('Retry-After', String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
 
-      return new errors.TooManyRequestsError({ ...errorOptions });
+        return new errors.TooManyRequestsError({ ...errorOptions });
+      },
     },
-  });
+    storage,
+  );
 
 // A staff user has one budget across IP addresses and Ghost instances.
 // Denied users cannot consume the owner or administrator budget.
@@ -208,6 +215,20 @@ const upgradeApiBlock = () =>
     context: 'The shared IP budget for update API requests has been exhausted.',
     help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
   });
+
+// A staff user has one budget across IP addresses. Kept in memory, not the
+// database: an open editor asks every ten seconds.
+const presenceBlock = () =>
+  requestBlock(
+    'presence',
+    'presence_block',
+    { message: messages.presenceBlock },
+    {
+      ignoreIP: true,
+      key: (req) => (req as Request & { user?: { id: string } }).user?.id,
+    },
+    { memory: true },
+  );
 
 // One budget for the whole site
 const staffInviteBlock = () =>
@@ -473,6 +494,7 @@ const spamPrevention = {
   memberIdentityKey,
   upgradeBlock,
   upgradeApiBlock,
+  presenceBlock,
   staffInviteBlock,
   memberEmailUpdateBlock,
   globalBlock,

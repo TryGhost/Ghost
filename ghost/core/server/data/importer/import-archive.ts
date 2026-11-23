@@ -3,10 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'fs-extra';
 import { globSync } from 'glob';
+import { extract } from '@tryghost/zip';
 
-const { extract } = require('@tryghost/zip') as {
-  extract(filePath: string, directory: string): Promise<void>;
-};
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
@@ -35,13 +33,13 @@ interface ImportArchiveOptions {
 }
 
 interface ImportArchiveDependencies {
-  extract?: (filePath: string, directory: string) => Promise<void>;
+  extract?: (filePath: string, directory: string) => Promise<unknown>;
 }
 
 export default class ImportArchive {
   readonly extensions: string[];
   readonly directories: string[];
-  private readonly extractArchive: (filePath: string, directory: string) => Promise<void>;
+  private readonly extractArchive: (filePath: string, directory: string) => Promise<unknown>;
 
   constructor(
     { extensions, directories }: ImportArchiveOptions,
