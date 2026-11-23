@@ -373,3 +373,60 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
     assert.deepEqual(returned, [2]);
   });
 });
+
+describe('AppInstallationsRepository historyRows', function () {
+  let knex: Knex;
+
+  beforeEach(async function () {
+    knex = createKnex({ client: 'better-sqlite3', connection: ':memory:', useNullAsDefault: true });
+    await knex.schema.createTable('app_installation_manifests', (table) => {
+      for (const column of ['id', 'installation_id', 'source']) {
+        table.string(column);
+      }
+      table.boolean('requires_approval');
+      table.text('changes');
+      table.dateTime('created_at');
+    });
+    await knex.schema.createTable('actions', (table) => {
+      for (const column of ['id', 'resource_type', 'resource_id', 'event', 'actor_id']) {
+        table.string(column);
+      }
+      table.text('context');
+      table.dateTime('created_at');
+    });
+    await knex.schema.createTable('users', (table) => {
+      table.string('id');
+      table.string('name');
+    });
+  });
+
+  afterEach(async function () {
+    await knex.destroy();
+  });
+
+  it('leaves out a manifest row that no longer decodes', async function () {
+    const row = (id: string, changes: unknown[], minute: number) => ({
+      id,
+      installation_id: 'installation',
+      source: 'update',
+      requires_approval: true,
+      changes: JSON.stringify(changes),
+      created_at: new Date(Date.UTC(2026, 0, 1, 0, minute)),
+    });
+    // Only the columns history reads, so not a row the table's type would accept.
+    await knex
+      .insert([
+        row('readable', [{ kind: 'scope', scope: 'post:read', change: 'added' }], 0),
+        // A scope the registry no longer has.
+        row('stale', [{ kind: 'scope', scope: 'post:publish', change: 'added' }], 1),
+      ])
+      .into('app_installation_manifests');
+
+    const { manifests } = await new AppInstallationsRepository(knex).historyRows('installation');
+
+    assert.deepEqual(
+      manifests.map(({ id }) => id),
+      ['readable'],
+    );
+  });
+});

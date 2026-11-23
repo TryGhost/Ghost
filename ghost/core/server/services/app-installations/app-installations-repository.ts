@@ -305,7 +305,10 @@ export class AppInstallationsRepository {
       );
     const [manifestData, actionData] = await Promise.all([manifestRows, actionRows]);
     return {
-      manifests: manifestData.map((row) => z.decode(HistoryManifestRow, row)),
+      manifests: manifestData.flatMap((row) => {
+        const decoded = HistoryManifestRow.safeDecode(row);
+        return decoded.success ? [decoded.data] : [];
+      }),
       actions: actionData.map((row) => z.decode(HistoryActionRow, row)),
     };
   }
