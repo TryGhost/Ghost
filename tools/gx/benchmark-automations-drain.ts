@@ -109,14 +109,16 @@ async function loadRuntime() {
     service: Parameters<typeof poll>[0]['memberWelcomeEmailService'];
   };
   const welcomeEmails = welcomeEmailsModule.default ?? welcomeEmailsModule;
+  const automationsApi2 = createAutomationsApi2({
+    domainEvents: { dispatch: () => {} },
+    fakeWaitHoursMultiplier: 1,
+    labs: { isSet: () => true },
+    repository: createDatabaseAutomationsRepository2({ knex }),
+  });
   const automationsApi: Parameters<typeof poll>[0]['automationsApi'] = {
     ...createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: 1 }),
-    recordEmailSent: createAutomationsApi2({
-      domainEvents: { dispatch: () => {} },
-      fakeWaitHoursMultiplier: 1,
-      labs: { isSet: () => true },
-      repository: createDatabaseAutomationsRepository2({ knex }),
-    }).recordEmailSent,
+    markStepTerminal: automationsApi2.markStepTerminal,
+    recordEmailSent: automationsApi2.recordEmailSent,
   };
 
   return { knex, poll, toDatabaseDate, welcomeEmails, automationsApi };
