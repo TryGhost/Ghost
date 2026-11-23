@@ -6,12 +6,13 @@ import testUtils from '../../../../utils';
 // @ts-expect-error This module lacks type definitions.
 import models = require('../../../../../core/server/models');
 import type permissionsType from '../../../../../core/server/auth/permissions';
-import type * as limitsType from '../../../../../core/server/services/limits';
+import { openServices } from '../../../../utils/services';
 import { toCheckResult } from '../../../../../core/server/auth/permissions/can-this';
 
 // require(), not import: the stubs must patch the instances the models load
 const permissions: typeof permissionsType = require('../../../../../core/server/auth/permissions');
-const { limitService }: typeof limitsType = require('../../../../../core/server/services/limits');
+const limits: typeof import('../../../../../shared/limits').default =
+  require('../../../../../shared/limits').default;
 
 // Tests pass fake contexts, ids and provider results the real types reject
 const canThis = permissions.canThis as (
@@ -61,6 +62,11 @@ const integrationKey = (role: string | null) => ({
 describe('Permissions', function () {
   let findPostSpy: sinon.SinonStub;
   let findTagSpy: sinon.SinonStub;
+
+  // The model rules ask the limits, which are built once services can be.
+  beforeEach(function () {
+    openServices();
+  });
 
   beforeEach(function () {
     findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
@@ -285,8 +291,8 @@ describe('Permissions', function () {
 
     it('reads the post and checks publishing limits only once', async function () {
       findPostSpy.resolves(models.Post.forge({ id: 'post-1', status: 'draft' }));
-      sinon.stub(limitService, 'isLimited').withArgs('members').returns(true);
-      const limitCheck = sinon.stub(limitService, 'errorIfIsOverLimit').resolves();
+      sinon.stub(limits.service, 'isLimited').withArgs('members').returns(true);
+      const limitCheck = sinon.stub(limits.service, 'errorIfIsOverLimit').resolves();
 
       await canThis(staff(['Administrator'], 'admin-1')).edit.post('post-1', {
         status: 'published',

@@ -528,8 +528,10 @@ a root.
   `needs`, or an event the root listens for builds the service, synchronously,
   and the application keeps the instance until Ghost stops.
 - **Not before boot allows it.** Boot opens the application's services once
-  config, the database and settings are ready. A service used earlier, or after
-  Ghost has stopped, is refused with an `IncorrectUsageError`.
+  config and the database are ready, before settings are loaded, because loading
+  settings uses the [limits](../../../shared/README.md). A service used earlier,
+  or after Ghost has stopped, is refused with an `IncorrectUsageError`. A service
+  built before settings are loaded reads no settings; nothing checks this.
 - **A failed build keeps nothing.** The error reaches whoever used the service,
   and the next use builds again. A mistake that used to fail boot now fails the
   first use.

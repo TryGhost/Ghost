@@ -9,7 +9,7 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const ghostBookshelf = require('./base');
 const config = require('../../shared/config');
 const settingsCache = require('../../shared/settings-cache');
-const { limitService } = require('../services/limits');
+const limits = require('../../../shared/limits').default;
 const { mobiledoc: mobiledocLib } = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
 const relations = require('./relations');
@@ -1555,10 +1555,10 @@ Post = ghostBookshelf.Model.extend(
       const isAdd = action === 'add';
       const isDestroy = action === 'destroy';
 
-      if (limitService.isLimited('members')) {
+      if (limits.service.isLimited('members')) {
         // You can't publish a post if you're over your member limit
         if ((isEdit && isChanging('status') && isDraft()) || (isAdd && isPublished())) {
-          await limitService.errorIfIsOverLimit('members');
+          await limits.service.errorIfIsOverLimit('members');
         }
       }
 

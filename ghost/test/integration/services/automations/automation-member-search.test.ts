@@ -1,4 +1,3 @@
-import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { decodeRunCursor } from '../../../../core/server/services/automations/automation-run-cursor';
 import assert from 'node:assert/strict';
 import createKnex, { type Knex } from 'knex';
@@ -32,7 +31,22 @@ const row = (n: number): AutomationRunRow => ({
   failed: false,
 });
 
+// Required, not imported: the repository asks the limits, and an imported copy would ask a
+// different application than the one whose services this test opens.
+const {
+  createDatabaseAutomationsRepository,
+}: typeof import('../../../../core/server/services/automations/database-automations-repository') = require('../../../../core/server/services/automations/database-automations-repository');
+const { services }: typeof import('../../../utils/services') = require('../../../utils/services');
+
 describe('Bounded search traversal with SQLite', () => {
+  // Ghost is not booted here, and the repository asks the limits: let them be built, as boot does.
+  beforeAll(function () {
+    services.open();
+  });
+  afterAll(async function () {
+    await services.close();
+  });
+
   let db: Knex;
   let repository: ReturnType<typeof createDatabaseAutomationsRepository>;
   beforeEach(async () => {

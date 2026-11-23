@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const testUtils = require('../../utils');
 const dataImporter = require('../../../core/server/data/importer/importers/data');
+const { services } = require('../../utils/services');
 
 const { exportedBodyLegacy } = require('../../utils/fixtures/export/body-generator');
 
@@ -9,6 +10,15 @@ const importOptions = {
 };
 
 describe('Importer Legacy', function () {
+  // Ghost is not booted here, and importing users asks the limits: let them be built, as boot
+  // does, without the roots that listen for the events an import emits.
+  beforeAll(function () {
+    services.open();
+  });
+  afterAll(async function () {
+    await services.close();
+  });
+
   beforeEach(testUtils.teardownDb);
   beforeEach(testUtils.setup('roles', 'owner'));
 

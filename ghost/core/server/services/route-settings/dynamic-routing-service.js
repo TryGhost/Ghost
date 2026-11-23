@@ -46,6 +46,7 @@ class DynamicRoutingService {
     this.urlService = urlService;
 
     const settings = await this.loadRouteSettings();
+    this.routerManager.prepare({ urlService });
     this.routerManager.start(settings);
   }
 

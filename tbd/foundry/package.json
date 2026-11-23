@@ -15,6 +15,11 @@
   ],
   "type": "module",
   "exports": {
+    "./adapter-manager": {
+      "source": "./src/adapter-manager/index.ts",
+      "types": "./build/adapter-manager/index.d.ts",
+      "default": "./build/adapter-manager/index.js"
+    },
     "./*": {
       "source": "./src/*.ts",
       "types": "./build/*.d.ts",
@@ -39,9 +44,11 @@
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@types/sinon": "catalog:",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
+    "sinon": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

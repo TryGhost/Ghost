@@ -80,7 +80,7 @@ export async function bootGhost({
     application = require('../app').default;
     void application.foundation.config;
     logger = application.foundation.logger;
-    const metrics = require('@tryghost/metrics');
+    const metrics = require('../foundation').buildMetrics(application.foundation);
     flushLogsAndMetrics = require('../../core/shared/flush').flushLogsAndMetrics;
     state = {
       options: { backend, frontend, server, roles },
@@ -95,8 +95,8 @@ export async function bootGhost({
   }
 
   try {
-    const { startList }: typeof import('../start') = require('../start');
-    await application.start(startList(state.options), state);
+    const { startList, timed }: typeof import('../start') = require('../start');
+    await application.start(timed(startList(state.options)), state);
 
     // If we pass the env var, kill Ghost
     if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {

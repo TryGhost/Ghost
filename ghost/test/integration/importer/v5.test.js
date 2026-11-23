@@ -3,6 +3,7 @@ const dataImporter = require('../../../core/server/data/importer/importers/data'
 const models = require('../../../core/server/models');
 const testUtils = require('../../utils');
 const { exportedBodyV5 } = require('../../utils/fixtures/export/body-generator');
+const { services } = require('../../utils/services');
 
 const importOptions = {
   returnImportedData: true,
@@ -11,6 +12,15 @@ const importOptions = {
 const LEGACY_HARDCODED_USER_ID = '1';
 
 describe('Importing 5.x export', function () {
+  // Ghost is not booted here, and importing users asks the limits: let them be built, as boot
+  // does, without the roots that listen for the events an import emits.
+  beforeAll(function () {
+    services.open();
+  });
+  afterAll(async function () {
+    await services.close();
+  });
+
   beforeEach(async function () {
     await testUtils.teardownDb();
     await testUtils.setup('roles', 'owner')();
@@ -86,7 +96,7 @@ describe('Importing 5.x export', function () {
   });
   it('imports a trial publication with more than ten authors, preserving posts and attribution', async function () {
     const config = require('../../../core/shared/config');
-    const limitsService = require('../../../core/server/services/limits');
+    const { reloadHostLimits } = require('../../utils/host-limits-utils');
     const originalPolicy = config.get('hostSettings:limits');
     config.set('hostSettings:limits', {
       allStaff: {
@@ -95,7 +105,7 @@ describe('Importing 5.x export', function () {
           'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
       },
     });
-    limitsService.init();
+    reloadHostLimits();
     try {
       const exportData = exportedBodyV5().db[0];
       const role = testUtils.DataGenerator.forKnex.createRole({ name: 'Contributor' });
@@ -134,7 +144,7 @@ describe('Importing 5.x export', function () {
       }
     } finally {
       config.set('hostSettings:limits', originalPolicy);
-      limitsService.init();
+      reloadHostLimits();
     }
   });
 });

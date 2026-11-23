@@ -5,13 +5,27 @@ import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
 import { fromDatabaseDate, toDatabaseDate } from '../../../../core/server/lib/db-types/date';
-import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
 const dbUtils = require('../../../utils/db-utils');
 
+// Required, not imported: the repository asks the limits, and an imported copy would ask a
+// different application than the one whose services this test opens.
+const {
+  createDatabaseAutomationsRepository,
+}: typeof import('../../../../core/server/services/automations/database-automations-repository') = require('../../../../core/server/services/automations/database-automations-repository');
+const { services }: typeof import('../../../utils/services') = require('../../../utils/services');
+
 describe('database automations repository', function () {
+  // Ghost is not booted here, and the repository asks the limits: let them be built, as boot does.
+  beforeAll(function () {
+    services.open();
+  });
+  afterAll(async function () {
+    await services.close();
+  });
+
   const knex: Knex = testUtils.knex;
   const automationId = ObjectId().toHexString();
 

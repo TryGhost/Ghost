@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('importer:users');
 const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
-const { limitService } = require('../../../../services/limits');
+const limits = require('../../../../../../shared/limits').default;
 const { ASSIGNABLE_ROLES } = require('../../../../models/role-utils');
 
 // User.add resolves a role by id when the value looks like an ObjectId, so a role from the
@@ -11,7 +11,7 @@ const { ASSIGNABLE_ROLES } = require('../../../../models/role-utils');
 // the default fallback role. Sites with a staff limit only import contributors; counting
 // staff users here would be too complex, and roles can be changed afterwards.
 function importableRoleName(roleName) {
-  if (limitService.isLimited('staff')) {
+  if (limits.service.isLimited('staff')) {
     return 'Contributor';
   }
 

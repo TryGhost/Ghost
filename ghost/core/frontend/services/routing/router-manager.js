@@ -19,6 +19,24 @@ class RouterManager {
      * @type {UrlService}
      */
     this.urlService = null;
+    // True between `init` and the `start` that follows it.
+    this.awaitingStart = false;
+  }
+
+  /**
+   * Makes sure `start` has a site router and the URL service to register routers with.
+   *
+   * Where a site app was built, building it called `init` and there is nothing to do. Where
+   * none was, no page is served, but the URL service still has to learn the routes so that
+   * the APIs and background services can build URLs.
+   *
+   * @param {object} options
+   * @param {UrlService} options.urlService
+   */
+  prepare({ urlService }) {
+    if (!this.awaitingStart) {
+      this.init({ urlService });
+    }
   }
 
   ownsResource(routerId, resource) {
@@ -75,6 +93,7 @@ class RouterManager {
 
     this.siteRouter = new ParentRouter('SiteRouter');
     this.registry.setRouter('siteRouter', this.siteRouter);
+    this.awaitingStart = true;
 
     if (routeSettings) {
       this.start(routeSettings);
@@ -100,6 +119,7 @@ class RouterManager {
    */
   start(routeSettings) {
     debug('routing start', routeSettings);
+    this.awaitingStart = false;
     const RESOURCE_CONFIG = require(`./config`);
 
     const unsubscribeRouter = new UnsubscribeRouter();

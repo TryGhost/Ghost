@@ -1,35 +1,13 @@
-const _ = require('lodash');
-const config = require('./core/shared/config');
-const ghostVersion = require('@tryghost/version');
-
-// Config for logging.
+// What @tryghost/logging and @tryghost/metrics build themselves from when one of them is
+// loaded before, or without, Ghost's start: in a worker thread, a test or a command.
 //
-// A deep clone, because everything below writes into it, and config is
-// read-only. @tryghost/logging require()s this file inside a try/catch and
-// falls back to {} on a throw, so mutating config's own object here would
-// silently drop the whole configuration - in production that means the
-// configured transports are replaced by the defaults. It also assigns
-// `transports` itself for worker threads, so what we hand back must be mutable.
-const loggingConfig = _.cloneDeep(config.get('logging')) || {};
+// Ghost's start builds both from the same values (bootstrap/foundation.ts). This file leaves
+// when nothing loads them any other way.
+//
+// @tryghost/logging require()s this file inside a try/catch and falls back to {} on a throw,
+// and assigns `transports` itself for worker threads, so what we hand back must be an object
+// of our own, never config's.
+const config = require('./core/shared/config');
+const { loggingValues } = require('./bootstrap/values/logging');
 
-if (!loggingConfig.path) {
-  loggingConfig.path = config.getContentPath('logs');
-}
-
-// Additional values used by logging
-loggingConfig.env = config.get('env');
-loggingConfig.domain = config.get('url');
-loggingConfig.metadata = {
-  version: ghostVersion.original,
-};
-
-// Config for metrics
-loggingConfig.metrics = _.cloneDeep(config.get('logging:metrics')) || {};
-loggingConfig.metrics.metadata = {
-  // Undefined if unavailable
-  siteId: config.get('hostSettings:siteId'),
-  domain: config.get('url'),
-  version: ghostVersion.original,
-};
-
-module.exports = loggingConfig;
+module.exports = loggingValues(config);

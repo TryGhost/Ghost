@@ -1,26 +1,23 @@
-import type { Foundation } from '#kernel/foundation';
-import { legacyEventBus } from './legacy-events';
+import type { Config, Database } from '#kernel/foundation';
 
 /**
- * EARMARKED. Hands the application the config, logger, database handle and event bus that legacy
- * code builds for itself on import, so that code handed the foundation and code that imports
- * them share one of each. Each is looked up when first read: this file loads none of them.
+ * EARMARKED. Ghost's config, which builds itself when `core/shared/config` is first loaded, from
+ * the files, environment and arguments of the process.
  *
- * It exists because those modules build themselves. It leaves when the foundry builds the
- * foundation from Ghost's values and the legacy import paths return what it built.
+ * It leaves when the bootstrap builds config from values it names and `core/shared/config` returns
+ * what it built.
  */
-export function legacyFoundation(): Foundation {
-  return {
-    get config() {
-      return require('../../core/shared/config');
-    },
-    get logger() {
-      return require('@tryghost/logging');
-    },
-    get database() {
-      return require('../../core/server/data/db').knex;
-    },
-    events: legacyEventBus(),
-    clock: { now: () => Date.now() },
-  };
+export function legacyConfig(): Config {
+  return require('../../core/shared/config');
+}
+
+/**
+ * EARMARKED. The database handle, which builds itself from config when `core/server/data/db` is
+ * first read. Building it opens no connection.
+ *
+ * It leaves when the bootstrap builds the handle from config and `core/server/data/db` returns
+ * what it built.
+ */
+export function legacyDatabase(): Database {
+  return require('../../core/server/data/db').knex;
 }

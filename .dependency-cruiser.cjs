@@ -269,6 +269,7 @@ const specialistDependencies = [
     owners: [
       core('server/data/'),
       core('server/models/label.js'),
+      core('server/models/settings.js'),
       service('jobs-service/index.ts'),
       service('members/service.js'),
       service('url/routable-resources.js'),
@@ -299,7 +300,8 @@ const specialistDependencies = [
   {
     // Plan limits.
     dependency: workspace('@tryghost/limit-service', 'packages/limit-service'),
-    owners: [service('limits.ts'), service('invites/index.ts')],
+    // The limits themselves are a shared module, outside the services this rule covers.
+    owners: [service('invites/index.ts')],
   },
 ];
 
@@ -319,6 +321,7 @@ const serviceDependencyDecisions = {
     '^ghost/core/server/data/db/', // The database connection.
     '^@tryghost/domain-events$|^packages/domain-events/index\\.js$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
     `^${servicesRoot}/`, // Other services, including the events and helpers they own.
+    '^ghost/shared/', // Shared modules, built by the application as services are.
     '^ghost/core/shared/url-utils\\.ts$', // URL utils, built from config.
     '^ghost/core/shared/labs\\.js$', // Labs flags, read from settings and config.
     '^ghost/core/shared/sentry\\.js$', // Sentry client, set up from config.
@@ -349,11 +352,6 @@ const serviceDependencyDecisions = {
   // Left as known violations until a planned refactor moves the importing file.
   // Each names the file, its dependencies and the refactor.
   deferred: [
-    {
-      from: '^ghost/core/server/services/adapter-manager/base-classes\\.ts$',
-      to: '^packages/adapters/[^/]+-base/',
-      until: "PLA-541 moves Ghost's adapter registry into boot",
-    },
     {
       from: '^ghost/core/server/services/jobs-service/register-job-handlers\\.ts$',
       to: '-job\\.(ts|js)$',
@@ -462,6 +460,19 @@ module.exports = {
       from: { path: '^tbd/kernel/' },
       to: { path: '^ghost/|^tbd/foundry/' },
     },
+    {
+      name: 'kernel-pure',
+      comment:
+        'The kernel is types, definitions and pure functions. It may import its own files and its date libraries; anything else only as a type. No Node module, no I/O, nothing that holds state: that belongs in the foundry.',
+      severity: 'error',
+      from: { path: '^tbd/kernel/src/' },
+      to: {
+        pathNot: ['^tbd/kernel/src/', '(^|/)node_modules/(moment-timezone|temporal-polyfill)/'],
+        dependencyTypesNot: ['type-only', 'type-import'],
+        // An import that cannot be resolved has no known kind; the build reports it.
+        couldNotResolve: false,
+      },
+    },
     // The foundry is told what an application is; it never looks.
     {
       name: 'foundry-not-application',
@@ -485,13 +496,17 @@ module.exports = {
     {
       name: 'bootstrap-only-from-boot',
       comment:
-        "Only Ghost's entry point and boot import the bootstrap. The two earmarked exceptions are a service root importing the defineService that adds the .service getter, and the endpoints registry reading the application's services.",
+        "Only Ghost's entry points import the bootstrap. The earmarked exceptions are a service root importing the defineService that adds the .service getter, the endpoints registry reading the application's services, and the legacy path of the adapter manager.",
       severity: 'error',
       from: {
         path: '^ghost/',
         pathNot: [
           '^ghost/bootstrap/',
+          // Ghost's entry points: the server, and the commands that are run on their own.
           '^ghost/index\\.js$',
+          '^ghost/bin/',
+          // Earmarked: the legacy path of the adapter manager, returning the one the bootstrap built.
+          '^ghost/core/server/services/adapter-manager/index\\.ts$',
           // Earmarked: hands endpoints their services from Ghost's one application.
           '^ghost/core/server/api/endpoints/index\\.js$',
         ],
@@ -508,13 +523,26 @@ module.exports = {
     {
       name: 'service-alias-only-from-service-roots',
       comment:
-        'Only a service root imports the defineService that adds the .service getter. It is transitional: do not spread it.',
+        'Only a service root or the root of a shared module imports the defineService that adds the .service getter. It is transitional: do not spread it.',
       severity: 'error',
       from: {
         path: '^ghost/',
-        pathNot: [`^${servicesRoot}/[^/]+/index\\.ts$`, '^ghost/bootstrap/'],
+        pathNot: [
+          `^${servicesRoot}/[^/]+/index\\.ts$`,
+          '^ghost/shared/[^/]+/index\\.ts$',
+          '^ghost/bootstrap/',
+        ],
       },
       to: { path: '^ghost/bootstrap/transition/define-service\\.ts$' },
+    },
+    // A shared module is what services and the web layer are built on, never the reverse.
+    {
+      name: 'shared-module-not-service-or-web',
+      comment:
+        'A shared module (ghost/shared) does not import a service, the API or the web layer. They depend on it; hand it what it needs through its definition.',
+      severity: 'error',
+      from: { path: '^ghost/shared/' },
+      to: { path: `^${servicesRoot}/|^ghost/core/server/(web|api)/` },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*

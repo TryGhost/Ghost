@@ -31,46 +31,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/adapter-paths.ts",
-    "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/cache-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/jobs-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/redirects-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/route-settings-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/scheduling-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/sso-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/storage-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/content-import/csv/parse.ts",
     "to": "fs-extra"
   },
@@ -297,7 +257,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
-    "to": "ghost/core/server/services/limits.ts"
+    "to": "ghost/shared/limits/index.ts"
   },
   {
     "rule": "service-dependencies",
@@ -568,21 +528,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
     "to": "ghost/core/server/services/update-check/jobs/update-check-job.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "ghost/core/server/data/db/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "ghost/core/shared/config/index.ts"
   },
   {
     "rule": "service-dependencies",
@@ -1107,7 +1052,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/settings/settings-service.js",
-    "to": "ghost/core/server/services/limits.ts"
+    "to": "ghost/shared/limits/index.ts"
   },
   {
     "rule": "service-dependencies",
@@ -1177,7 +1122,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/themes/installer.js",
-    "to": "ghost/core/server/services/limits.ts"
+    "to": "ghost/shared/limits/index.ts"
   },
   {
     "rule": "service-dependencies",

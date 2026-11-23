@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
 const config = require('../../../core/shared/config');
-const limitsService = require('../../../core/server/services/limits');
+const { reloadHostLimits } = require('../../utils/host-limits-utils');
 const db: typeof import('../../../core/server/data/db') = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const mailService = require('../../../core/server/lib/mail');
@@ -49,7 +49,7 @@ describe('Trial staff invitation limits', function () {
         error: 'Your trial allows {{max}} staff invitation emails per month, including resends.',
       },
     });
-    limitsService.init();
+    reloadHostLimits();
     send = sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail is disabled');
   });
 
@@ -62,7 +62,7 @@ describe('Trial staff invitation limits', function () {
     await db.knex('users').whereIn('id', created).delete();
     config.set('hostSettings:subscription', originalSubscription);
     config.set('hostSettings:limits', originalLimits);
-    limitsService.init();
+    reloadHostLimits();
     sinon.restore();
   });
 
@@ -94,7 +94,6 @@ describe('Trial staff invitation limits', function () {
   }
 
   describe('with a two-staff plan', function () {
-    const planLimits = require('../../../core/server/services/limits');
     let originalPlanLimits: Record<string, LimitConfig> | undefined;
     let userStatuses: Array<{ id: string; status: string }>;
 
@@ -104,7 +103,7 @@ describe('Trial staff invitation limits', function () {
         ...originalPlanLimits,
         staff: { max: 2, error: 'Your plan supports up to {{max}} staff users.' },
       });
-      planLimits.init();
+      reloadHostLimits();
       userStatuses = await db.knex('users').select('id', 'status');
       const ownerRole = await db.knex('roles').where({ name: 'Owner' }).first();
       const owner = await db.knex('roles_users').where({ role_id: ownerRole.id }).first();
@@ -116,7 +115,7 @@ describe('Trial staff invitation limits', function () {
         await db.knex('users').where({ id: user.id }).update({ status: user.status });
       }
       config.set('hostSettings:limits', originalPlanLimits);
-      planLimits.init();
+      reloadHostLimits();
     });
 
     it('keeps the plan cap for Editors while Contributors still count toward the trial cap', async function () {
@@ -343,12 +342,12 @@ describe('Trial staff invitation limits', function () {
     const [users] = await db.knex('users').count('id', { as: 'count' });
     config.set('hostSettings:limits:allStaff:max', Number(users.count) + 1);
     config.set('hostSettings:limits:inviteEmails:maxPeriodic', 1);
-    limitsService.init();
+    reloadHostLimits();
     await invite('before-upgrade@example.com').expect(201);
     await invite('over-limit@example.com').expect(403);
 
     config.set('hostSettings:limits', undefined);
-    limitsService.init();
+    reloadHostLimits();
     for (let i = 0; i < 5; i++) {
       await invite(`paid-${i}@example.com`).expect(201);
     }
@@ -512,7 +511,7 @@ describe('Trial staff invitation limits', function () {
     const pending = await models.Invite.findOne({ email });
     config.set('hostSettings:limits:inviteEmails', { disabled: true });
     config.set('hostSettings:subscription', undefined);
-    limitsService.init();
+    reloadHostLimits();
     await invite(email).expect(403);
     await request
       .post(localUtils.API.getApiQuery('authentication/invitation/'))
@@ -533,7 +532,7 @@ describe('Trial staff invitation limits', function () {
 
   it('retains best-effort audit logging when the trial policy is absent', async function () {
     config.set('hostSettings:limits', undefined);
-    limitsService.init();
+    reloadHostLimits();
     sinon
       .stub(models.Action, 'add')
       .rejects(new errors.InternalServerError({ message: 'Audit insert failed' }));

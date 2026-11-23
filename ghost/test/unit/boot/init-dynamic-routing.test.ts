@@ -3,9 +3,9 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { loadBootFunction } from './harness';
 
-function createRoutingHarness(frontend: boolean) {
+function createRoutingHarness() {
   const start = sinon.stub().resolves();
-  const routerManager = { init: sinon.stub() };
+  const routerManager = { init: sinon.stub(), prepare: sinon.stub() };
   const urlService = {};
   const bridge = { init: sinon.stub() };
   // Exercise the production orchestration without booting unrelated services.
@@ -16,7 +16,7 @@ function createRoutingHarness(frontend: boolean) {
     './bridge': bridge,
   });
   return {
-    init: (): Promise<void> => initDynamicRouting({ frontend }),
+    init: (): Promise<void> => initDynamicRouting({}),
     start,
     routerManager,
     urlService,
@@ -24,10 +24,10 @@ function createRoutingHarness(frontend: boolean) {
   };
 }
 
-for (const frontend of [false, true]) {
-  describe(`Dynamic routing startup ${frontend ? 'with' : 'without'} a frontend`, function () {
+{
+  describe('Dynamic routing startup', function () {
     it('passes the shared routing dependencies and waits for route-settings startup', async function () {
-      const boot = createRoutingHarness(frontend);
+      const boot = createRoutingHarness();
       const ready = Promise.withResolvers<void>();
       boot.start.returns(ready.promise);
       let finished = false;
@@ -43,13 +43,9 @@ for (const frontend of [false, true]) {
         const [dependencies] = boot.start.firstCall.args;
         assert.equal(dependencies.routerManager, boot.routerManager);
         assert.equal(dependencies.urlService, boot.urlService);
-        if (frontend) {
-          sinon.assert.notCalled(boot.routerManager.init);
-        } else {
-          sinon.assert.calledOnce(boot.routerManager.init);
-          assert.equal(boot.routerManager.init.firstCall.args[0].urlService, boot.urlService);
-          sinon.assert.callOrder(boot.routerManager.init, boot.start);
-        }
+        // Whether the router manager still needs its URL service is route settings' business.
+        sinon.assert.notCalled(boot.routerManager.init);
+        sinon.assert.notCalled(boot.routerManager.prepare);
         assert.equal(finished, false, 'Dynamic routing finished before route-settings startup');
       } finally {
         ready.resolve();
@@ -60,7 +56,7 @@ for (const frontend of [false, true]) {
     });
 
     it('propagates the original route-settings startup error', async function () {
-      const boot = createRoutingHarness(frontend);
+      const boot = createRoutingHarness();
       const failure = new Error('Route settings could not be loaded');
       boot.start.rejects(failure);
 

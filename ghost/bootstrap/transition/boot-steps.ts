@@ -120,16 +120,14 @@ export async function initExpressApps({
 }
 
 /**
- * Initialize prometheus client
+ * The Prometheus client, or null where the module built none. The module decides: it reads its
+ * own configuration and loads its library only when enabled.
  */
-export function initPrometheusClient({ config }: { config: Config }): PrometheusClient | null {
-  if (config.get('prometheus:enabled')) {
-    debug('Begin: initPrometheusClient');
-    const prometheusClient = require('../../core/shared/prometheus-client');
-    debug('End: initPrometheusClient');
-    return prometheusClient;
-  }
-  return null;
+export function initPrometheusClient(): PrometheusClient | null {
+  debug('Begin: initPrometheusClient');
+  const prometheusClient = require('../../core/shared/prometheus-client');
+  debug('End: initPrometheusClient');
+  return prometheusClient ?? null;
 }
 
 /**
@@ -143,21 +141,13 @@ export function initPrometheusClient({ config }: { config: Config }): Prometheus
  * frontend. The APIs, the email service and webhooks all build URLs, so a
  * backend-only boot that skipped this resolved every resource to /404/.
  */
-export async function initDynamicRouting({ frontend }: { frontend: boolean }): Promise<void> {
+export async function initDynamicRouting(): Promise<void> {
   debug('Begin: Dynamic Routing');
   const routing = require('../../core/frontend/services/routing');
   const routeSettingsModule = require('../../core/server/services/route-settings');
   const urlService = require('../../core/server/services/url');
   const bridge = require('../../core/bridge');
   bridge.init();
-
-  // With a frontend, initFrontend has already called this to build the site
-  // app's router. Without one there is nothing to mount, but the URL service
-  // still has to be handed to RouterManager before the routers register — so
-  // call the same init and discard the express router it returns.
-  if (!frontend) {
-    routing.routerManager.init({ urlService });
-  }
 
   await routeSettingsModule.service.start({
     routerManager: routing.routerManager,
@@ -318,9 +308,7 @@ export async function initServices({
     siteUuid: settingsCache.get('site_uuid'),
   });
 
-  if (schedulerAdapter.rescheduleOnBoot) {
-    await postScheduling.rescheduleAll();
-  }
+  await postScheduling.rescheduleOnStart();
 
   debug('End: Services');
 

@@ -5,7 +5,7 @@ import { Provider } from 'nconf';
 import type { RouteSettings } from '@tryghost/adapter-base-route-settings';
 import { bindAll as bindUrlHelpers } from '@tryghost/config-url-helpers';
 
-import { normalizeAdapterConfig } from '../../../../core/server/services/adapter-manager/config';
+import { normalizeAdapterConfig } from '../../../../bootstrap/values/adapters/config';
 import { bindAll as bindHelpers } from '../../../../core/shared/config/helpers';
 import type { ConfigInstance } from '../../../../core/shared/config/loader';
 

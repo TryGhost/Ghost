@@ -100,6 +100,16 @@ export default class PostScheduling {
   }
 
   /**
+   * Registers scheduled posts and pages again when Ghost starts, if the adapter's queue does
+   * not outlive the process. An adapter says so with `rescheduleOnBoot`.
+   */
+  async rescheduleOnStart(): Promise<void> {
+    if (this.#adapter.rescheduleOnBoot) {
+      await this.rescheduleAll();
+    }
+  }
+
+  /**
    * Registers every scheduled post and page with the scheduler again.
    *
    * This runs in two situations:

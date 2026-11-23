@@ -54,8 +54,8 @@ describe("Ghost's start list", function () {
   it('keeps the framework entries to the ones a stateless Ghost would still run', function () {
     assert.deepEqual(names(everyEntry.filter((entry) => entry.kind === 'framework')), [
       'register the service roots that listen',
-      'settings: load',
       'services: allow building',
+      'settings: load',
       'dynamic routers: register',
       'lift maintenance',
       'service roots with background work',
@@ -68,12 +68,16 @@ describe("Ghost's start list", function () {
     assert.ok(server < position('database: check the schema state, and migrate'));
   });
 
-  it('registers the listening roots before services can be built, and allows building only once settings are loaded', function () {
+  it('registers the listening roots before services can be built, and allows building once the database is ready and before settings are loaded', function () {
     assert.ok(
       position('register the service roots that listen') < position('services: allow building'),
     );
-    assert.ok(position('limits') < position('settings: load'));
-    assert.ok(position('settings: load') < position('services: allow building'));
+    // Loading settings reads the limits, which is built on first use.
+    assert.equal(
+      position('services: allow building'),
+      position('database: check the schema state, and migrate') + 1,
+    );
+    assert.ok(position('services: allow building') < position('settings: load'));
     assert.ok(
       position('services: allow building') < position('signing keys: advance a due rotation'),
     );

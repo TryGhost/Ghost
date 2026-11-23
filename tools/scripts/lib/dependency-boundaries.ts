@@ -164,11 +164,15 @@ export function scannerTypeScript(transpilers: unknown) {
 export const missingTypeScript =
   'dependency-cruiser could not load the `typescript` package. Without it the scan skips TypeScript files or reads type-only imports as ordinary imports, and reports different violations. Run the scan through pnpm, for example `pnpm lint:boundaries`. If that fails too, run `pnpm install`.';
 
-// The full scan covers the framework packages under tbd/, Ghost's bootstrap, Core and the apps.
-// The first two are skipped where they are absent, as in the fixture repositories of the tool tests.
+// The full scan covers the framework packages under tbd/, Ghost's bootstrap, its shared modules,
+// Core and the apps. The first three are skipped where they are absent, as in the fixture repositories of the tool tests.
 const scanRoots = (repository: string) => [
   ...(existsSync(path.join(repository, 'tbd')) ? ['tbd'] : []),
   ...(existsSync(path.join(repository, 'ghost/bootstrap')) ? ['ghost/bootstrap'] : []),
+  ...(existsSync(path.join(repository, 'ghost/shared')) ? ['ghost/shared'] : []),
+  // Ghost's entry points, so that what they import is checked like everything else.
+  ...(existsSync(path.join(repository, 'ghost/index.js')) ? ['ghost/index.js'] : []),
+  ...(existsSync(path.join(repository, 'ghost/bin')) ? ['ghost/bin'] : []),
   'ghost/core',
   'apps',
 ];

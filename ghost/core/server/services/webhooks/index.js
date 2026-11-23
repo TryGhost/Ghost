@@ -5,7 +5,7 @@
 module.exports = {
   listen() {
     const models = require('../../models');
-    const { limitService } = require('../../services/limits');
+    const limits = require('../../../../shared/limits').default;
     const events = require('../../lib/common/events');
     const urlService = require('../url');
     const membersService = require('../members');
@@ -21,7 +21,8 @@ module.exports = {
 
     const serialize = createSerialize({ urlService, readMemberMetafields });
     const payload = createPayload({ serialize });
-    const trigger = new WebhookTrigger({ models, payload, limitService });
+    // Each boot listens anew, with the limits of that boot.
+    const trigger = new WebhookTrigger({ models, payload, limitService: limits.service });
 
     registerListeners({ events, trigger });
   },

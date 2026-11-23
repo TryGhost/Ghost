@@ -1,4 +1,8 @@
-import * as limits from '../../core/server/services/limits';
+// Required, not imported, so that these are the root and the application Ghost's own code asks:
+// see ./services.ts.
+const limits: typeof import('../../shared/limits').default = require('../../shared/limits').default;
+const application: typeof import('../../bootstrap/app').default =
+  require('../../bootstrap/app').default;
 
 // Config utils is CommonJS with no types of its own, so state its shape here.
 interface ConfigUtils {
@@ -31,9 +35,10 @@ export interface HostSettings {
  * Limit a site the way its host does, for the duration of a test.
  *
  * Limits are host configuration, so configuration is all a test should have to set. The one
- * thing that is not obvious is that the limit service reads that configuration once, during
- * boot, so a test changing it afterwards has to ask the service to read it again. That is
- * what this hides.
+ * thing that is not obvious is that the limit service reads that configuration once, when it is
+ * built on first use during boot, so a test changing it afterwards has to ask the service to read
+ * it again. That is what this hides. While Ghost is not started there is no limit service: the
+ * next start builds one from the configuration set here.
  *
  * Reach for this rather than stubbing the limit service. A stub asserts that Ghost called
  * something, which stays true however the limits are implemented underneath, including when
@@ -49,11 +54,22 @@ export async function setHostLimits(
   rest: HostSettings = {},
 ): Promise<void> {
   configUtils.set({ hostSettings: { ...rest, limits: limitsConfig } });
-  await limits.init();
+  reloadHostLimits();
 }
 
 /** Put the site back to having no limits, and the limit service back in step with that. */
 export async function restoreHostLimits(): Promise<void> {
   await configUtils.restore();
-  await limits.init();
+  reloadHostLimits();
+}
+
+/**
+ * Asks the limit service Ghost holds to read its configuration again, for a test that sets
+ * `hostSettings` in config itself. After Ghost has stopped there is none to ask, and the next
+ * start reads the configuration as it is then.
+ */
+export function reloadHostLimits(): void {
+  if (application.services.isOpen) {
+    limits.extras.load(limits.service, application.foundation);
+  }
 }

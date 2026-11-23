@@ -7,6 +7,7 @@ const testUtils = require('../../../utils');
 const knex = require('../../../../core/server/data/db').knex;
 const { Post } = require('../../../../core/server/models/post');
 const security = require('@tryghost/security');
+const { openServices } = require('../../../utils/services');
 
 describe('Unit: models/post', function () {
   const mockDb = require('../../../utils/mock-knex');
@@ -407,6 +408,11 @@ describe('Unit: models/post', function () {
 });
 
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {
+  // The code under test asks the limits, which are built once services can be.
+  beforeEach(function () {
+    openServices();
+  });
+
   beforeEach(function () {
     sinon
       .stub(security.password, 'hash')

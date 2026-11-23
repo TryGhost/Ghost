@@ -45,16 +45,17 @@ Admin is a single React application. See
 
 `ghost/` is the main `ghost` package. The most common paths are:
 
-| Path                                                  | Contains                                                                    |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| [`tbd/kernel/`](../../tbd/kernel/README.md)           | Application-independent framework primitives                                |
-| [`tbd/foundry/`](../../tbd/foundry/README.md)         | Builds an application from what it is given; only bootstrap imports it      |
-| [`ghost/bootstrap/`](../../ghost/bootstrap/README.md) | What Ghost tells the foundry: its application, its lists, and `transition/` |
-| `ghost/core/server/`                                  | APIs, models, services, data access, and server startup                     |
-| `ghost/core/frontend/`                                | Theme rendering, helpers, middleware, and public assets                     |
-| `ghost/core/shared/`                                  | Configuration and code shared across server boundaries                      |
-| `ghost/content/`                                      | Default themes, adapters, settings, images, and runtime content             |
-| `ghost/test/`                                         | Unit, integration, and server E2E tests                                     |
+| Path                                                  | Contains                                                                            |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [`tbd/kernel/`](../../tbd/kernel/README.md)           | Application-independent framework primitives                                        |
+| [`tbd/foundry/`](../../tbd/foundry/README.md)         | Builds an application from what it is given; only bootstrap imports it              |
+| [`ghost/bootstrap/`](../../ghost/bootstrap/README.md) | What Ghost tells the foundry: its application, its lists, and `transition/`         |
+| [`ghost/shared/`](../../ghost/shared/README.md)       | Modules that more than one service or the web layer uses, described as a service is |
+| `ghost/core/server/`                                  | APIs, models, services, data access, and server startup                             |
+| `ghost/core/frontend/`                                | Theme rendering, helpers, middleware, and public assets                             |
+| `ghost/core/shared/`                                  | Configuration and code shared across server boundaries                              |
+| `ghost/content/`                                      | Default themes, adapters, settings, images, and runtime content                     |
+| `ghost/test/`                                         | Unit, integration, and server E2E tests                                             |
 
 Built Admin assets are copied into `ghost/core/built/admin/` for the Ghost
 release. Treat `built/`, `build/`, `dist/`, and `umd/` as generated output unless

@@ -2,6 +2,7 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const ObjectID = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
+const DatabaseInfo = require('@tryghost/database-info');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
@@ -347,9 +348,12 @@ const Settings = ghostBookshelf.Model.extend(
         options.context = internalContext.context;
       }
 
-      // this is required for sqlite to pick up the columns after db init
-      await ghostBookshelf.knex.destroy();
-      await ghostBookshelf.knex.initialize();
+      // SQLite needs a new connection to pick up the columns after db init. Other databases
+      // see them on the connections they have, so their pool is left as it is.
+      if (DatabaseInfo.isSQLite(ghostBookshelf.knex)) {
+        await ghostBookshelf.knex.destroy();
+        await ghostBookshelf.knex.initialize();
+      }
 
       const allSettings = await this.findAll(options);
 

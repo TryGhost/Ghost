@@ -135,6 +135,7 @@
           "{workspaceRoot}/tools/configs/oxlint/legacy-services.ts",
           "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
+          "{workspaceRoot}/ghost/shared/**/*",
           "{workspaceRoot}/ghost/package.json",
           "{workspaceRoot}/packages/**/*",
           "{workspaceRoot}/contracts/**/*",

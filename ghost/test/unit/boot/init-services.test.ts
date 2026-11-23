@@ -3,7 +3,7 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { loadBootFunction } from './harness';
 
-function createServicesHarness({ rescheduleOnBoot = true } = {}) {
+function createServicesHarness() {
   const stripe = sinon.stub().resolves();
   const emailAddress = sinon.stub();
   // These initializers are synchronous in production.
@@ -29,7 +29,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     handleImportJob() {},
     service: {},
   };
-  const scheduler = { run() {}, rescheduleOnBoot };
+  const scheduler = { run() {} };
   // Permissive: initServices has many dependencies, and only those listed here matter to these
   // tests. Every other dependency gets a generic service.
   const initServices = loadBootFunction(
@@ -61,7 +61,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/link-tracking': { init: linkTracking },
       './server/services/webhooks': { listen: webhooks },
       './server/services/media-inliner': { default: { service: {} } },
-      './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
+      './server/services/post-scheduling': { default: { rescheduleOnStart: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/signing-keys': { default: { service: signingKeys } },
       './server/services/automations': { automationsService: { init: automations } },
@@ -137,13 +137,12 @@ it('passes the ready signing keys service to job registration', async function (
   assert.equal(boot.register.firstCall.args[0].signingKeys, boot.signingKeys);
 });
 
-it('does not reschedule posts when the scheduling adapter opts out', async function () {
-  const boot = createServicesHarness({ rescheduleOnBoot: false });
+it('leaves whether posts are rescheduled to post scheduling', async function () {
+  const boot = createServicesHarness();
   await boot.initServices();
 
-  sinon.assert.calledOnce(boot.start);
-  sinon.assert.calledOnce(boot.automations);
-  sinon.assert.notCalled(boot.reschedule);
+  sinon.assert.calledOnceWithExactly(boot.reschedule);
+  sinon.assert.callOrder(boot.start, boot.automations, boot.reschedule);
 });
 
 it('waits for Stripe initialization before initializing gifts and the other services', async function () {

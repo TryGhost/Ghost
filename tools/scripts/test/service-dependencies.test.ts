@@ -1312,13 +1312,13 @@ it('allows specialist dependencies only from their owning files and folders', (t
   const csv = `${services}/content-import/csv/parse.ts`;
   const importer = 'ghost/core/server/data/importer/importers/importer-revue.js';
   const oembed = `${services}/oembed/nested/extract.ts`;
-  const limits = `${services}/limits.ts`;
+  const limits = `${services}/invites/index.ts`;
   const workspaceEntry = 'packages/limit-service/src/index.ts';
   const f = fixture(t, {
     [csv]: "import 'papaparse';",
     [importer]: "require('papaparse');",
     [oembed]: "import 'jsonrepair'; import 'chrono-node';",
-    [limits]: "import '../../../../packages/limit-service/src/index';",
+    [limits]: "import '../../../../../packages/limit-service/src/index';",
     [workspaceEntry]: 'export {};',
     // Owned elsewhere: another file in the same service, another service, Core
     // code outside services and a service root.

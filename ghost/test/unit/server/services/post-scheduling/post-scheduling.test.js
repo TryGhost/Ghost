@@ -236,6 +236,36 @@ describe('PostScheduling', function () {
     });
   });
 
+  describe('rescheduleOnStart', function () {
+    function build() {
+      const service = new PostScheduling({
+        apiUrl: 'http://scheduler.local:1111/',
+        adapter,
+        internalKeys,
+      });
+      sinon.stub(service, 'rescheduleAll').resolves();
+      return service;
+    }
+
+    it("reschedules everything when the adapter's queue does not outlive the process", async function () {
+      adapter.rescheduleOnBoot = true;
+      const service = build();
+
+      await service.rescheduleOnStart();
+
+      sinon.assert.calledOnceWithExactly(service.rescheduleAll);
+    });
+
+    it('does nothing when the adapter keeps its own queue', async function () {
+      adapter.rescheduleOnBoot = false;
+      const service = build();
+
+      await service.rescheduleOnStart();
+
+      sinon.assert.notCalled(service.rescheduleAll);
+    });
+  });
+
   describe('rescheduleAll', function () {
     function stubScheduledPost() {
       const post = Post.forge(

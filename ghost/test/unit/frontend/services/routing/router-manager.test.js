@@ -26,6 +26,36 @@ describe('services/routing/RouterManager', function () {
 
   const start = (routeSettings) => routerManager.init({ routeSettings, urlService });
 
+  describe('prepare', function () {
+    it('builds the site router and takes the URL service when no site app did', function () {
+      const init = sinon.spy(routerManager, 'init');
+
+      routerManager.prepare({ urlService });
+
+      sinon.assert.calledOnceWithExactly(init, { urlService });
+      assert.equal(routerManager.urlService, urlService);
+    });
+
+    it('keeps the site router a site app already mounted', function () {
+      routerManager.init({ urlService });
+      const mounted = routerManager.siteRouter;
+
+      routerManager.prepare({ urlService: {} });
+
+      assert.equal(routerManager.siteRouter, mounted);
+      assert.equal(routerManager.urlService, urlService);
+    });
+
+    it('builds a new site router once the last one has been started', function () {
+      routerManager.init({ routeSettings: emptySettings, urlService });
+      const started = routerManager.siteRouter;
+
+      routerManager.prepare({ urlService });
+
+      assert.notEqual(routerManager.siteRouter, started);
+    });
+  });
+
   describe('taxonomies', function () {
     it('mounts a router per entry in the domain taxonomies map', function () {
       start({ ...emptySettings, taxonomies: { tag: '/tag/{slug}/', author: '/author/{slug}/' } });

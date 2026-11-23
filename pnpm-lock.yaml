@@ -4488,6 +4488,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.2
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -4497,6 +4500,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      sinon:
+        specifier: 'catalog:'
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -4506,9 +4512,6 @@ importers:
 
   tbd/kernel:
     dependencies:
-      '@tryghost/errors':
-        specifier: 3.4.8
-        version: 3.4.8
       moment-timezone:
         specifier: 0.6.6
         version: 0.6.6

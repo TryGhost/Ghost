@@ -39,6 +39,19 @@ describe('DynamicRoutingService (store-backed)', function () {
     sinon.restore();
   });
 
+  it('start prepares the router manager with the URL service before starting the routers', async function () {
+    const stored = fromYaml(CUSTOM_YAML);
+    await store.replace(stored);
+    const routerManager = { prepare: sinon.stub(), start: sinon.stub() };
+    const urlService = {};
+
+    await service.start({ routerManager, urlService });
+
+    sinon.assert.calledOnceWithExactly(routerManager.prepare, { urlService });
+    sinon.assert.calledOnceWithExactly(routerManager.start, stored);
+    sinon.assert.callOrder(routerManager.prepare, routerManager.start);
+  });
+
   it('download returns the verbatim yaml source from the store', async function () {
     await store.replace(fromYaml(CUSTOM_YAML));
 

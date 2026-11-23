@@ -16,6 +16,7 @@ const ruleName = 'ghost/service-root-shape';
 // Roots import the transitional helper, which adds the `.service` getter to the kernel's.
 const helperImport = '../../../../bootstrap/transition/define-service';
 const kernelImport = '#kernel/define-service';
+const sharedHelperImport = '../../bootstrap/transition/define-service';
 const prefix = `import { defineService } from '${helperImport}';\n`;
 const factory = `defineService('Example', () => ({}))`;
 
@@ -440,10 +441,31 @@ test('configures the rule for every service root with both helper imports', () =
   );
   assert.deepEqual(
     overrides.map((override: { files: string[] }) => override.files),
-    [['ghost/core/server/services/*/index.ts']],
+    [['ghost/core/server/services/*/index.ts'], ['ghost/shared/*/index.ts']],
     'The legacy service inventory decides which roots are exempt, not a list of paths',
   );
   const settings = overrides[0].rules[ruleName];
   assert.equal(settings[0], 'error');
   assert.deepEqual(settings[1], { helperImports: [kernelImport, helperImport] });
+  // A shared module is two folders nearer the bootstrap than a service root.
+  assert.deepEqual(overrides[1].rules[ruleName], [
+    'error',
+    { helperImports: [kernelImport, sharedHelperImport] },
+  ]);
+});
+
+test('enforces the root shape on a shared module root, whatever the legacy inventory lists', () => {
+  const filename = 'ghost/shared/limits/index.ts';
+  const shared = `import { defineService } from '${sharedHelperImport}';\n`;
+  const inventory = JSON.stringify({ services: { limits: {} } });
+  assert.equal(lint(shared + `export default ${factory};`, filename, inventory).status, 0);
+  const result = lint(
+    shared + `export const helper = 1; export default ${factory};`,
+    filename,
+    inventory,
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /Named runtime exports belong in extras/);
+  // Only the root: other files of a shared module are ordinary modules.
+  assert.equal(lint('export const helper = 1;', 'ghost/shared/limits/load.ts').status, 0);
 });

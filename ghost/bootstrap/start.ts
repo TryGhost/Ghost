@@ -30,13 +30,12 @@ const list: readonly Entry[] = [
 
   // 3. Boot.
   entries.database,
+  // Before settings, as loading them reads the limits, which is built on first use.
+  entries.openServices,
   entries.adapters,
   entries.imageUploadConfig,
   entries.urlUtils,
-  // Before settings, as calculated settings read the limits.
-  entries.limits,
   entries.settings,
-  entries.openServices,
   entries.signingKeys,
   entries.i18n,
   entries.betterAuth,
@@ -65,6 +64,25 @@ const list: readonly Entry[] = [
 /** The entries a process with these options runs, in order. */
 export function startList(options: Pick<StartOptions, 'roles'>): readonly Entry[] {
   return list.filter((entry) => entry.role === undefined || options.roles.includes(entry.role));
+}
+
+/**
+ * The same entries, each reporting how long it took under `DEBUG=ghost:boot:entry`, so that
+ * what an entry costs can be read before deciding whether it still has to run before serving.
+ */
+export function timed(entriesToTime: readonly Entry[]): readonly Entry[] {
+  const debug: (message: string) => void = require('@tryghost/debug')('boot:entry');
+  return entriesToTime.map((entry) => ({
+    ...entry,
+    async run(run) {
+      const started = performance.now();
+      try {
+        await entry.run(run);
+      } finally {
+        debug(`${Math.round(performance.now() - started)}ms ${entry.name}`);
+      }
+    },
+  }));
 }
 
 export { list as everyEntry };

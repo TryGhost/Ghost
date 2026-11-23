@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { normalizeAdapterConfig } from '../../../../../core/server/services/adapter-manager/config';
+import { normalizeAdapterConfig } from '../../../../../bootstrap/values/adapters/config';
 import { createConfig } from '../../../../../core/shared/config/validated';
 import { configSources } from '../../../../utils/config-sources';
 import type { ConfigInstance } from '../../../../../core/shared/config/loader';
-import type { AdapterConfig } from '#kernel/adapter-manager';
+import type { AdapterConfig } from '#foundry/adapter-manager';
 
 // The options a named store would be constructed with, read back from the
 // normalized config without assuming the type is configured.

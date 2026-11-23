@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import type { NextFunction, Request, Response } from 'express';
-import { limitService } from '../../../services/limits';
+import limits from '../../../../../shared/limits';
 import type { BackoffLimiter } from './api/backoff-limiter';
 import type { SpamPrevention } from './api/spam-prevention';
 
@@ -17,7 +17,7 @@ const use = (name: LimiterName) => (req: Request, res: Response, next: NextFunct
 
 const rateLimiting = {
   staffInviteLimiter(req: Request, res: Response, next: NextFunction) {
-    if (!limitService.isLimited('inviteEmails')) {
+    if (!limits.service.isLimited('inviteEmails')) {
       return next();
     }
     return use('staffInviteBlock')(req, res, next);

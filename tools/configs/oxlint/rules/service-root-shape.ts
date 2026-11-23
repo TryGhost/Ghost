@@ -6,6 +6,8 @@ import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const serviceRoot = new RegExp(`^${servicesRoot}/([^/]+)/index\\.ts$`);
+// A shared module is described as a service is, and none of them is legacy.
+const sharedRoot = /^ghost\/shared\/[^/]+\/index\.ts$/;
 // Read once per process, so every root in a run is checked against one list.
 let legacyServices: ReturnType<typeof readLegacyServices> | undefined;
 
@@ -14,7 +16,7 @@ const SUBSCRIBES = new Set(['subscribe', 'on', 'once', 'addListener', 'addEventL
 
 /**
  * Enforces the public source shape of every service root, unless the service
- * is listed in the legacy service inventory.
+ * is listed in the legacy service inventory, and of every shared module root.
  */
 export const serviceRootShape: CreateRule = {
   meta: {
@@ -54,12 +56,14 @@ export const serviceRootShape: CreateRule = {
   create(context) {
     const filename = path.relative(root, context.filename).split(path.sep).join('/');
     const service = serviceRoot.exec(filename)?.[1];
-    if (!service) {
+    if (!service && !sharedRoot.test(filename)) {
       return {};
     }
-    legacyServices ??= readLegacyServices(root);
-    if (legacyServices.has(service)) {
-      return {};
+    if (service) {
+      legacyServices ??= readLegacyServices(root);
+      if (legacyServices.has(service)) {
+        return {};
+      }
     }
     const sourceCode = context.sourceCode;
     const option = context.options[0];

@@ -1,8 +1,8 @@
 import { createApplication } from '#foundry/application';
-import { legacyFoundation } from './transition/legacy-foundation';
+import { foundation } from './foundation';
 
 /**
  * Ghost, as an application of the framework. This is the one application in the process.
  * Importing it builds nothing and reads nothing.
  */
-export default createApplication({ name: 'Ghost', foundation: legacyFoundation() });
+export default createApplication({ name: 'Ghost', foundation });

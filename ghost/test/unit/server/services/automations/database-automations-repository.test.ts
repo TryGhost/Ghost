@@ -9,7 +9,6 @@ import { NON_EMPTY_EMAIL_LEXICAL } from '../../../../utils/automations-fixtures'
 import ghostConfig from '../../../../../core/shared/config';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../../core/server/services/automations/database-automations-repository-2';
-import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
 import type {
   AutomationAction,
   AutomationsRepository,
@@ -17,6 +16,13 @@ import type {
   AutomationStepToRun,
 } from '../../../../../core/server/services/automations/automations-repository';
 import { fromDatabaseDate, toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
+import { openServices } from '../../../../utils/services';
+
+// Required, not imported: the repository asks the limits, and an imported copy would ask a
+// different application than the one `openServices` opens.
+const {
+  createDatabaseAutomationsRepository,
+}: typeof import('../../../../../core/server/services/automations/database-automations-repository') = require('../../../../../core/server/services/automations/database-automations-repository');
 
 const HOUR_MS = 60 * 60 * 1000;
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
@@ -474,6 +480,11 @@ type KnexQuery = {
 // These tests are partly coupled to the *fake* repository. We should be able to
 // modify it once we have the real repository.
 describe('automations repository', function () {
+  // The code under test asks the limits, which are built once services can be.
+  beforeEach(function () {
+    openServices();
+  });
+
   let knex: Knex;
   let repo: AutomationsRepository;
 

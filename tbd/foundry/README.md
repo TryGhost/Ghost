@@ -9,13 +9,29 @@ Only an application's bootstrap imports the foundry. For Ghost that is
 [`ghost/bootstrap`](../../ghost/bootstrap/README.md). The foundry never imports
 Ghost, and knows nothing about what Ghost is: it is told.
 
+## Foundation
+
+[`createFoundation(parts)`](src/foundation.ts) builds a
+[foundation](../kernel/src/foundation.ts) from one function for each part:
+config, logger, database handle and event bus, written by the application, and a
+clock that defaults to the system's. A part is handed the parts before it. Each
+is built once, when it is first read, so declaring a foundation builds nothing.
+
 ## Application
 
 [`createApplication({ name, foundation })`](src/application.ts) returns an
-application: its [foundation](../kernel/src/foundation.ts) and its services.
-Building one loads nothing, starts nothing and reads nothing. Everything an
-application holds is inside the object, so two applications in one process share
-nothing.
+application: its foundation and its services. Building one loads nothing, starts
+nothing and reads nothing. Everything an application holds is inside the object,
+so two applications in one process share nothing.
+
+- **`start(steps, state)`** runs the steps the application supplies, in the order
+  given, each to completion before the next. A step is a name and a function. It
+  is handed the foundation, the services, `state` and `onStop(name, stop)` to
+  register what has to be undone. The foundry names no step and has no slots
+  before or after one: the order is the list. A step that fails ends the start
+  with its error.
+- **`stop()`** runs what the steps registered, last registered first, then closes
+  the services. A failure is logged and the rest still run.
 
 ## Services
 
@@ -46,3 +62,40 @@ What it refuses, each with an `IncorrectUsageError`:
 
 A failed build keeps nothing: the error reaches whoever used the service, or the
 event bus when an event caused the build, and the next use builds again.
+
+## Adapter manager
+
+[`adapter-manager/`](src/adapter-manager/index.ts) loads, validates and caches
+adapter instances by type. It knows nothing about which adapters exist, where
+they are installed or how they are configured: the application constructs
+`AdapterManager` with its base-class registry, search paths, module loader and
+a `getConfig` callback returning the [adapter configuration](src/adapter-manager/types.ts)
+keyed by type. Ghost's registry, search paths and configuration normalization
+are values in [`ghost/bootstrap/values/adapters`](../../ghost/bootstrap/values/adapters/base-classes.ts);
+`bin/validate-adapters.ts` shares the same loader and registry so a build-time
+check resolves adapters exactly as the server does.
+
+### Contract
+
+- **Construction** registers base classes only. It reads no configuration and
+  loads nothing.
+- **`init()`** validates every configured adapter up front: it resolves each
+  configured type and feature to a distinct class and options, loads the class,
+  calls its optional static `validate`, and aggregates all failures into one
+  error. It constructs no instances and does not touch cached ones. It is safe
+  to call again.
+- **`getAdapter(name)`** resolves `name` (`type` or `type:feature`) through
+  `getConfig()` on every call, loads the class, and constructs and validates the
+  instance on first use. Instances are cached by requested name and class, so a
+  changed option reaches a new instance only after `clearCache()`, while
+  switching the active class and back returns the earlier instance. A cached
+  lookup still resolves and loads, so a class that can no longer be loaded
+  throws even for a cached name. There is no readiness guard: lookups before
+  `init()` work and are not validated up front.
+- **`clearCache()`** drops the manager's references so the next lookup
+  constructs afresh. It is not disposal: adapters own their resources, and
+  consumers that retained an instance keep it.
+
+[`loadAdapterClass`](src/adapter-manager/loader.ts) and
+[`resolveAdapterOptions`](src/adapter-manager/options.ts) are exported for callers
+that need resolution without a manager, such as the validation CLI.

@@ -47,7 +47,15 @@ class EmailServiceWrapper {
     const db = require('../../data/db');
     const sentry = require('../../../shared/sentry');
     const membersRepository = membersService.api.members;
-    const { limitService } = require('../limits');
+    const limits = require('../../../../shared/limits').default;
+    // Read when an email is checked: this service is kept across a restart of Ghost in one
+    // process (see init), and the limits are built again by each start.
+    const limitService = {
+      isLimited: (name) => limits.service.isLimited(name),
+      errorIfIsOverLimit: (name, options) => limits.service.errorIfIsOverLimit(name, options),
+      errorIfWouldGoOverLimit: (name, options) =>
+        limits.service.errorIfWouldGoOverLimit(name, options),
+    };
     const labs = require('../../../shared/labs');
     const emailAddressService = require('../email-address');
     const i18nLib = require('@tryghost/i18n').default;

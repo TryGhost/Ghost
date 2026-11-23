@@ -6,7 +6,8 @@ const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const { Settings } = require('../../../../../core/server/models/settings');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
-const { limitService: limits } = require('../../../../../core/server/services/limits');
+const limits = require('../../../../../shared/limits').default;
+const { openServices } = require('../../../../utils/services');
 
 describe('Settings Service', function () {
   let settingsService;
@@ -28,6 +29,8 @@ describe('Settings Service', function () {
     ];
 
     settingsService = require('../../../../../core/server/services/settings/settings-service');
+    // Loading settings asks the limits, which are built once services can be.
+    openServices();
   });
 
   afterEach(async function () {
@@ -307,7 +310,7 @@ describe('Settings Service', function () {
     });
 
     it('is a no-op when the limit is not disabled', async function () {
-      sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(false);
+      sinon.stub(limits.service, 'isDisabled').withArgs('publicSiteAccess').returns(false);
       const editStub = sinon.stub(Settings, 'edit').resolves();
 
       await settingsService.init();
@@ -316,7 +319,7 @@ describe('Settings Service', function () {
     });
 
     it('persists is_private = true and a generated access code when both are missing', async function () {
-      sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
+      sinon.stub(limits.service, 'isDisabled').withArgs('publicSiteAccess').returns(true);
       const findOneStub = sinon.stub(Settings, 'findOne');
       findOneStub.withArgs({ key: 'is_private' }).resolves(fakeSettingRow(false));
       findOneStub.withArgs({ key: 'password' }).resolves(fakeSettingRow(''));
@@ -333,7 +336,7 @@ describe('Settings Service', function () {
     });
 
     it('only writes the missing values when one is already enforced', async function () {
-      sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
+      sinon.stub(limits.service, 'isDisabled').withArgs('publicSiteAccess').returns(true);
       const findOneStub = sinon.stub(Settings, 'findOne');
       findOneStub.withArgs({ key: 'is_private' }).resolves(fakeSettingRow(true));
       findOneStub.withArgs({ key: 'password' }).resolves(fakeSettingRow(''));
@@ -347,7 +350,7 @@ describe('Settings Service', function () {
     });
 
     it('does not write when both values are already enforced', async function () {
-      sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
+      sinon.stub(limits.service, 'isDisabled').withArgs('publicSiteAccess').returns(true);
       const findOneStub = sinon.stub(Settings, 'findOne');
       findOneStub.withArgs({ key: 'is_private' }).resolves(fakeSettingRow(true));
       findOneStub.withArgs({ key: 'password' }).resolves(fakeSettingRow('anchor042'));
@@ -359,7 +362,7 @@ describe('Settings Service', function () {
     });
 
     it('treats a whitespace-only access code as missing', async function () {
-      sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
+      sinon.stub(limits.service, 'isDisabled').withArgs('publicSiteAccess').returns(true);
       const findOneStub = sinon.stub(Settings, 'findOne');
       findOneStub.withArgs({ key: 'is_private' }).resolves(fakeSettingRow(true));
       findOneStub.withArgs({ key: 'password' }).resolves(fakeSettingRow('   '));

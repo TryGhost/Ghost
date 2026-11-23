@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import { limitService } from '../../services/limits';
+import limits from '../../../../shared/limits';
 import type { AuthenticatedRequest } from '../principal';
 import type { LoadedApiKey } from './admin';
 
@@ -60,13 +60,13 @@ export const authenticateContentApiKey = async function authenticateContentApiKe
 
     // CASE: blocking all non-internal: "custom" and "builtin" integration requests when the limit is reached
     if (
-      limitService.isLimited('customIntegrations') &&
+      limits.service.isLimited('customIntegrations') &&
       apiKey.relations.integration &&
       !['internal', 'core'].includes(apiKey.relations.integration.get('type') as string)
     ) {
       // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
       //       a concept of measuring if the limit has been surpassed
-      await limitService.errorIfWouldGoOverLimit('customIntegrations');
+      await limits.service.errorIfWouldGoOverLimit('customIntegrations');
     }
 
     // authenticated OK, store the api key on the request for later checks and logging

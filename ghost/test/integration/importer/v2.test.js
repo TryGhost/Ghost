@@ -14,6 +14,7 @@ const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const { passwordHashOf } = require('../../utils/password-hash');
 const dataImporter = require('../../../core/server/data/importer/importers/data');
+const { services } = require('../../utils/services');
 
 const importOptions = {
   returnImportedData: true,
@@ -25,6 +26,15 @@ const { exportedBodyV2 } = require('../../utils/fixtures/export/body-generator')
 
 // Tests in here do an import for each test
 describe('Importer', function () {
+  // Ghost is not booted here, and importing users asks the limits: let them be built, as boot
+  // does, without the roots that listen for the events an import emits.
+  beforeAll(function () {
+    services.open();
+  });
+  afterAll(async function () {
+    await services.close();
+  });
+
   beforeAll(testUtils.teardownDb);
 
   afterEach(testUtils.teardownDb);

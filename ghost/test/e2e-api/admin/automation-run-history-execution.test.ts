@@ -8,7 +8,6 @@ import sinon from 'sinon';
 import logging from '@tryghost/logging';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../core/server/models';
-import { createDatabaseAutomationsRepository } from '../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../core/server/services/automations/automations-api-2';
 import { poll } from '../../../core/server/services/automations/poll';
@@ -19,6 +18,12 @@ import {
   setupAutomationsFixture,
   cleanupAutomationsFixture,
 } from '../../utils/automations-fixtures';
+
+// Required, not imported: the repository asks the limits, and an imported copy would ask a
+// different application than the one Ghost booted.
+const {
+  createDatabaseAutomationsRepository,
+}: typeof import('../../../core/server/services/automations/database-automations-repository') = require('../../../core/server/services/automations/database-automations-repository');
 
 const db: Knex = models.Base.knex;
 

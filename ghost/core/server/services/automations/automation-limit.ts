@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AutomationStatus } from './automations-repository';
-import { limitService } from '../limits';
+import limits from '../../../../shared/limits';
 
 /**
  * There can be a limit to the number of enabled automations.
@@ -28,7 +28,7 @@ export async function lockAutomationLimit(
     }
   }
 
-  if (!limitService.isLimited('limitAutomations')) {
+  if (!limits.service.isLimited('limitAutomations')) {
     return;
   }
 

@@ -17,7 +17,7 @@ const {
 export const services: Services = application.services;
 
 /**
- * What boot does once settings are loaded: tells the application about the roots that declare
+ * What boot does once the database is ready: tells the application about the roots that declare
  * listeners or a `start`, and lets services be built. A unit test that reads a root's `.service` without booting Ghost calls this
  * first. The unit setup closes the services after every test, which forgets each instance the
  * test built, so a test never sees a service another test built:

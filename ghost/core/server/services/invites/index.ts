@@ -5,7 +5,8 @@ import { Invites } from './invites';
 import InvitationLimiter from './invitation-limiter';
 
 export default defineService('Invites', () => {
-  const { limitService }: typeof import('../limits') = require('../limits');
+  const limits: typeof import('../../../../shared/limits').default =
+    require('../../../../shared/limits').default;
   const settingsCache = require('../../../shared/settings-cache');
   const settingsHelpers = require('../settings-helpers');
   const mailService = require('../../lib/mail');
@@ -22,7 +23,7 @@ export default defineService('Invites', () => {
     logging,
     invitationLimiter: new InvitationLimiter({
       transaction: (callback) => models.Base.transaction(callback),
-      limitService,
+      limitService: limits.service,
       Settings: models.Settings,
       getPeriodStart: () =>
         config.get('hostSettings:limits:inviteEmails:maxPeriodic') !== undefined

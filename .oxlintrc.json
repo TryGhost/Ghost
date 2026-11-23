@@ -79,6 +79,7 @@
         "ghost/*.js",
         "ghost/core/**/*.ts",
         "ghost/bootstrap/**/*.ts",
+        "ghost/shared/**/*.ts",
         "ghost/*.ts",
         "packages/adapters/cache-base/src/**/*.ts",
         "packages/adapters/cache-base/test/**/*.ts",
@@ -144,7 +145,12 @@
       ]
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}", "ghost/bootstrap/**/*.ts", "tbd/*/src/**/*.ts"],
+      "files": [
+        "ghost/core/**/*.{js,ts}",
+        "ghost/bootstrap/**/*.ts",
+        "ghost/shared/**/*.ts",
+        "tbd/*/src/**/*.ts"
+      ],
       "rules": {
         "local-filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
       },
@@ -244,6 +250,17 @@
       }
     },
     {
+      "files": ["ghost/shared/*/index.ts"],
+      "rules": {
+        "ghost/service-root-shape": [
+          "error",
+          {
+            "helperImports": ["#kernel/define-service", "../../bootstrap/transition/define-service"]
+          }
+        ]
+      }
+    },
+    {
       "files": ["ghost/core/server/services/**/*.{js,ts}"],
       "plugins": ["import"],
       "rules": {
@@ -254,6 +271,7 @@
       "files": [
         "ghost/core/**/*.{js,ts}",
         "ghost/bootstrap/**/*.ts",
+        "ghost/shared/**/*.ts",
         "ghost/test/**/*.{js,ts}",
         "tbd/foundry/src/**/*.ts"
       ],

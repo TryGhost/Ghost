@@ -110,6 +110,7 @@
     "bin/**/*.ts",
     "bootstrap/**/*.ts",
     "core/**/*.ts",
+    "shared/**/*.ts",
     "types/**/*.d.ts"
   ]
 }

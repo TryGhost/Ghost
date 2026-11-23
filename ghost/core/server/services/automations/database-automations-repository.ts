@@ -45,7 +45,7 @@ import {
   type DatabaseDate,
 } from '../../lib/db-types/date';
 import { getStaleLockCutoff } from './stale-lock-cutoff';
-import { limitService } from '../limits';
+import limits from '../../../../shared/limits';
 import { lockAutomationLimit } from './automation-limit';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
@@ -343,7 +343,7 @@ export function createDatabaseAutomationsRepository({
         await lockAutomationLimit(trx, data.status);
         switch (data.status) {
           case 'active':
-            await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+            await limits.service.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
             break;
           case 'inactive':
           case 'archived':
@@ -415,7 +415,7 @@ export function createDatabaseAutomationsRepository({
           return null;
         }
 
-        if (data.status === 'active' && limitService.isLimited('limitAutomations')) {
+        if (data.status === 'active' && limits.service.isLimited('limitAutomations')) {
           // Active legacy welcome emails start consuming a slot when they gain a graph.
           const addsFirstGraph =
             automation.status === 'active' &&
@@ -426,7 +426,7 @@ export function createDatabaseAutomationsRepository({
               .whereNull('deleted_at')
               .first());
           if (automation.status !== 'active' || addsFirstGraph) {
-            await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+            await limits.service.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
           }
         }
 
@@ -710,7 +710,7 @@ async function ensureDefaultAutomations(
 
   // Existing welcome emails already have automation rows, but no action graph.
   // Keep them inactive while building graphs, then allocate available activation slots.
-  const candidates = limitService.isLimited('limitAutomations')
+  const candidates = limits.service.isLimited('limitAutomations')
     ? await trx('automations')
         .whereIn(
           'slug',
@@ -735,7 +735,7 @@ async function ensureDefaultAutomations(
     await ensureWelcomeEmailAction(repository2, trx, automation.id);
     if (
       candidates.includes(automation.id) &&
-      !(await limitService.checkWouldGoOverLimit('limitAutomations', { transacting: trx }))
+      !(await limits.service.checkWouldGoOverLimit('limitAutomations', { transacting: trx }))
     ) {
       await trx('automations').where('id', automation.id).update({ status: 'active' });
     }

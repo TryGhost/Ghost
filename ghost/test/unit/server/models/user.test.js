@@ -8,8 +8,14 @@ const ghostBookshelf = require('../../../../core/server/models/base');
 const permissions = require('../../../../core/server/auth/permissions');
 const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
+const { openServices } = require('../../../utils/services');
 
 describe('Unit: models/user', function () {
+  // The code under test asks the limits, which are built once services can be.
+  beforeEach(function () {
+    openServices();
+  });
+
   afterEach(function () {
     sinon.restore();
   });

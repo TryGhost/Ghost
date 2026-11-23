@@ -20,7 +20,7 @@ export default defineService('Newsletters', () => {
       maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
     }),
     urlUtils: require('../../../shared/url-utils').default,
-    limitService: require('../limits').limitService,
+    limitService: require('../../../../shared/limits').default.service,
     labs: require('../../../shared/labs'),
     emailAddressService: require('../email-address'),
     logging: require('@tryghost/logging'),

@@ -4,8 +4,14 @@ const sinon = require('sinon');
 const { Invite } = require('../../../../core/server/models/invite');
 const { Role } = require('../../../../core/server/models/role');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const { openServices } = require('../../../utils/services');
 
 describe('Unit: models/invite', function () {
+  // The code under test asks the limits, which are built once services can be.
+  beforeEach(function () {
+    openServices();
+  });
+
   beforeEach(function () {
     sinon.stub(settingsCache, 'get').withArgs('db_hash').returns('12345678');
   });

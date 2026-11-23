@@ -9,7 +9,8 @@ import ghostVersion from '@tryghost/version';
 const logging = require('@tryghost/logging');
 const events = require('../../../../../core/server/lib/common/events');
 const models = require('../../../../../core/server/models');
-const { limitService } = require('../../../../../core/server/services/limits');
+const limits = require('../../../../../shared/limits').default;
+const { services } = require('../../../../utils/services');
 const urlService = require('../../../../../core/server/services/url');
 const membersService = require('../../../../../core/server/services/members');
 const { ADMIN } = require('../../../../../core/server/services/members-metafields');
@@ -146,7 +147,10 @@ describe('Webhooks service root', function () {
     };
     models.Webhook = Webhook;
 
-    sandbox.stub(limitService, 'isLimited').returns(false);
+    // The trigger is handed the limits when the service starts listening. Opened without the
+    // listening roots, which would otherwise be handed the model events this test emits.
+    services.open();
+    sandbox.stub(limits.service, 'isLimited').returns(false);
     sandbox.stub(urlService, 'getRequiredRelations').returns([]);
     sandbox.stub(logging, 'info');
     sandbox.stub(logging, 'warn');

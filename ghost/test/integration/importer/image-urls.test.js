@@ -3,6 +3,7 @@ const dataImporter = require('../../../core/server/data/importer/importers/data'
 const db = require('../../../core/server/data/db');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const testUtils = require('../../utils');
+const { services } = require('../../utils/services');
 const { exportedBodyV5 } = require('../../utils/fixtures/export/body-generator');
 
 const importOptions = {
@@ -17,6 +18,15 @@ const LEGACY_HARDCODED_USER_ID = '1';
 // stores image URLs in transform-ready (__GHOST_URL__) form — is only visible in
 // the raw stored value.
 describe('Importing posts with image URLs', function () {
+  // Ghost is not booted here, and importing users asks the limits: let them be built, as boot
+  // does, without the roots that listen for the events an import emits.
+  beforeAll(function () {
+    services.open();
+  });
+  afterAll(async function () {
+    await services.close();
+  });
+
   let siteUrl;
 
   beforeEach(async function () {

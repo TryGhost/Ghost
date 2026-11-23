@@ -119,7 +119,7 @@ export const entries = {
     leavesWhen:
       'the metrics client is part of the foundation and decides for itself whether it is enabled',
     run(run) {
-      run.state.prometheusClient = phases().initPrometheusClient({ config: ghostConfig(run) });
+      run.state.prometheusClient = phases().initPrometheusClient();
     },
   },
 
@@ -187,6 +187,20 @@ export const entries = {
     },
   },
 
+  openServices: {
+    name: 'services: allow building',
+    kind: 'framework',
+    leavesWhen: 'it stays: services are built on first use from here until the application stops',
+    run({ services }) {
+      // Safe from here: config and the database handle are ready, and the schema is the one this
+      // code expects. A service used earlier is refused. It is before the settings entry because
+      // loading settings uses the limits, a shared module built like a service. Nothing checks
+      // what that allows: a service built before the settings entry has run reads no settings,
+      // and one that keeps what it read keeps nothing until the application stops.
+      services.open();
+    },
+  },
+
   adapters: {
     name: 'adapters: validate what is configured',
     kind: 'earmarked',
@@ -220,16 +234,6 @@ export const entries = {
     },
   },
 
-  limits: {
-    name: 'limits',
-    kind: 'earmarked',
-    leavesWhen:
-      'limits is a shared module built on first use; today it is started before settings because calculated settings read it',
-    async run() {
-      await core('server/services/limits').init();
-    },
-  },
-
   settings: {
     name: 'settings: load',
     kind: 'framework',
@@ -241,17 +245,6 @@ export const entries = {
       await settings.syncEmailSettings(
         ghostConfig(run).get('hostSettings:emailVerification:verified'),
       );
-    },
-  },
-
-  openServices: {
-    name: 'services: allow building',
-    kind: 'framework',
-    leavesWhen: 'it stays: services are built on first use from here until the application stops',
-    run({ services }) {
-      // Safe from here: config, the database and settings are ready. A service used earlier is
-      // refused.
-      services.open();
     },
   },
 
@@ -397,8 +390,8 @@ export const entries = {
     kind: 'framework',
     leavesWhen:
       'it stays, as the boot hook the routing module declares: without it every resource resolves to a 404',
-    async run({ state }) {
-      await phases().initDynamicRouting({ frontend: state.options.frontend });
+    async run() {
+      await phases().initDynamicRouting();
     },
   },
 

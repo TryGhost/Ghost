@@ -27,7 +27,6 @@ const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
-const { limitService } = require('../../core/server/services/limits');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
@@ -486,16 +485,34 @@ const mockLabsDisabled = (flag, alpha = true) => {
   fakedLabsFlags[flag] = false;
 };
 
+// The limit service is built by each start of Ghost, so the one to mock is read when a mock is
+// applied, and what was mocked is undone on the instance it was done to.
+const limitsRoot = () => require('../../shared/limits').default;
+
 const mockLimitService = (limit, options) => {
+  // Throws while Ghost is not started: there is no limit service to mock yet.
+  const limitService = limitsRoot().service;
+
+  if (mocks.limitService && mocks.limitService.instance !== limitService) {
+    // Ghost was started again since the first mock: carry what was mocked over to the new
+    // limit service, as the earlier one is no longer the one Ghost asks.
+    const applied = [...mocks.limitService.applied];
+    restoreLimitService();
+    for (const [earlierLimit, earlierOptions] of applied) {
+      mockLimitService(earlierLimit, earlierOptions);
+    }
+  }
+
   if (!mocks.limitService) {
     mocks.limitService = {
+      instance: limitService,
       isLimited: sinon.stub(limitService, 'isLimited'),
       isDisabled: sinon.stub(limitService, 'isDisabled'),
       checkWouldGoOverLimit: sinon.stub(limitService, 'checkWouldGoOverLimit'),
       errorIfWouldGoOverLimit: sinon.stub(limitService, 'errorIfWouldGoOverLimit'),
       limitsExisted: !!limitService.limits,
       originalEntries: new Map(),
-      mockedLimits: new Set(), // Track which limits we've mocked
+      applied: new Map(), // Each limit mocked, with the options it was mocked with
     };
   }
 
@@ -516,7 +533,7 @@ const mockLimitService = (limit, options) => {
   limitService.limits[limit] = {
     allowlist: options.allowlist || [],
   };
-  mocks.limitService.mockedLimits.add(limit); // Track this limit
+  mocks.limitService.applied.set(limit, options);
 
   // If errorIfWouldGoOverLimit is true, reject with HostLimitError
   if (options.errorIfWouldGoOverLimit === true) {
@@ -533,23 +550,19 @@ const mockLimitService = (limit, options) => {
 
 const restoreLimitService = () => {
   if (mocks.limitService) {
-    if (mocks.limitService.isLimited && mocks.limitService.isLimited.restore) {
-      mocks.limitService.isLimited.restore();
-    }
-    if (
-      mocks.limitService.checkWouldGoOverLimit &&
-      mocks.limitService.checkWouldGoOverLimit.restore
-    ) {
-      mocks.limitService.checkWouldGoOverLimit.restore();
-    }
-    if (
-      mocks.limitService.errorIfWouldGoOverLimit &&
-      mocks.limitService.errorIfWouldGoOverLimit.restore
-    ) {
-      mocks.limitService.errorIfWouldGoOverLimit.restore();
-    }
-    if (mocks.limitService.isDisabled && mocks.limitService.isDisabled.restore) {
-      mocks.limitService.isDisabled.restore();
+    // The instance that was mocked, which Ghost may have stopped using since: nothing here asks
+    // the application for its limit service, so this is safe once Ghost has stopped.
+    const limitService = mocks.limitService.instance;
+
+    for (const method of [
+      'isLimited',
+      'checkWouldGoOverLimit',
+      'errorIfWouldGoOverLimit',
+      'isDisabled',
+    ]) {
+      if (mocks.limitService[method] && mocks.limitService[method].restore) {
+        mocks.limitService[method].restore();
+      }
     }
 
     if (limitService.limits && mocks.limitService.originalEntries) {

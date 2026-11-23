@@ -5,8 +5,14 @@ const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
 const apiKeyAuth = require('../../../../../core/server/auth/api-key').default;
 const { ApiKey } = require('../../../../../core/server/models/api-key');
+const { openServices } = require('../../../../utils/services');
 
 describe('Admin API Key Auth', function () {
+  // The code under test asks the limits, which are built once services can be.
+  beforeEach(function () {
+    openServices();
+  });
+
   const ADMIN_API_URL_VERSIONED = '/ghost/api/v4/admin/';
   const ADMIN_API_URL_NON_VERSIONED = '/ghost/api/admin/';
 

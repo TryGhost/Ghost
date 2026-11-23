@@ -4,7 +4,7 @@ const security = require('@tryghost/security');
 const moment = require('moment');
 
 const settingsCache = require('../../shared/settings-cache');
-const { limitService } = require('../services/limits');
+const limits = require('../../../shared/limits').default;
 const ghostBookshelf = require('./base');
 const { setIsRoles } = require('./role-utils');
 
@@ -99,12 +99,12 @@ const Invite = ghostBookshelf.Model.extend(
 
           if (
             isAdd &&
-            limitService.isLimited('staff') &&
+            limits.service.isLimited('staff') &&
             roleToInvite.get('name') !== 'Contributor'
           ) {
             // CASE: if your site is limited to a certain number of staff users
             // Inviting a new user requires we check we won't go over the limit
-            await limitService.errorIfWouldGoOverLimit('staff');
+            await limits.service.errorIfWouldGoOverLimit('staff');
           }
 
           let allowed = [];

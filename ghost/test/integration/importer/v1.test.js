@@ -4,6 +4,7 @@ const { exportedBodyV1 } = require('../../utils/fixtures/export/body-generator')
 
 const models = require('../../../core/server/models');
 const dataImporter = require('../../../core/server/data/importer/importers/data');
+const { services } = require('../../utils/services');
 
 const importOptions = {
   returnImportedData: true,
@@ -21,6 +22,15 @@ const markdownToMobiledoc = (content) => {
 };
 
 describe('Importer 1.0', function () {
+  // Ghost is not booted here, and importing users asks the limits: let them be built, as boot
+  // does, without the roots that listen for the events an import emits.
+  beforeAll(function () {
+    services.open();
+  });
+  afterAll(async function () {
+    await services.close();
+  });
+
   beforeEach(testUtils.teardownDb);
   beforeEach(testUtils.setup('roles', 'owner'));
 

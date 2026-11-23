@@ -4,7 +4,7 @@ const path = require('path');
 const security = require('@tryghost/security');
 const request = require('@tryghost/request');
 const errors = require('@tryghost/errors');
-const { limitService } = require('../../services/limits');
+const limits = require('../../../../shared/limits').default;
 const { setFromZip } = require('./storage');
 
 const messages = {
@@ -19,17 +19,17 @@ const messages = {
 const installFromGithub = async (ref) => {
   const [org, repo] = ref.toLowerCase().split('/');
 
-  if (limitService.isLimited('customThemes')) {
+  if (limits.service.isLimited('customThemes')) {
     // The custom theme limit might consist of only one single theme, so we can't rely on
     // the org alone to determine if the request is allowed or not.
-    const noOtherThemesAllowed = limitService.limits.customThemes?.allowlist?.length === 1;
+    const noOtherThemesAllowed = limits.service.limits.customThemes?.allowlist?.length === 1;
     //TODO: move the organization check to config
     const isNotOfficialThemeRequest = org.toLowerCase() !== 'tryghost';
 
     const checkThemeLimit = noOtherThemesAllowed || isNotOfficialThemeRequest;
 
     if (checkThemeLimit) {
-      await limitService.errorIfWouldGoOverLimit('customThemes', { value: repo.toLowerCase() });
+      await limits.service.errorIfWouldGoOverLimit('customThemes', { value: repo.toLowerCase() });
     }
   }
 

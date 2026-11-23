@@ -15,11 +15,6 @@
   ],
   "type": "module",
   "exports": {
-    "./adapter-manager": {
-      "source": "./src/adapter-manager/index.ts",
-      "types": "./build/adapter-manager/index.d.ts",
-      "default": "./build/adapter-manager/index.js"
-    },
     "./*": {
       "source": "./src/*.ts",
       "types": "./build/*.d.ts",
@@ -36,7 +31,6 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@tryghost/errors": "catalog:",
     "moment-timezone": "catalog:",
     "temporal-polyfill": "catalog:"
   },

@@ -2,7 +2,14 @@ import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import ObjectId from 'bson-objectid';
 import InvitationLimiter from '../../../core/server/services/invites/invitation-limiter';
-const { limitService, init: initLimits } = require('../../../core/server/services/limits');
+// Ghost is not booted here, so this builds a limit service of its own from the root, as the
+// application would, and reads the host's limits into it again whenever a test changes them.
+const limitsRoot: typeof import('../../../shared/limits').default =
+  require('../../../shared/limits').default;
+const { foundation }: typeof import('../../../bootstrap/app').default =
+  require('../../../bootstrap/app').default;
+const limitService = limitsRoot.create({ foundation });
+const initLimits = () => limitsRoot.extras.load(limitService, foundation);
 import { lastPeriodStart, type LimitConfig } from '@tryghost/limit-service';
 import { vi } from 'vitest';
 

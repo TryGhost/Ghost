@@ -1,5 +1,5 @@
 const themeService = require('../../services/themes');
-const { limitService } = require('../../services/limits');
+const limits = require('../../../../shared/limits').default;
 const models = require('../../models');
 
 // Used to emit theme.uploaded which is used in core/server/analytics-events
@@ -48,8 +48,8 @@ const controller = {
     async query(frame) {
       const themeName = frame.options.name;
 
-      if (limitService.isLimited('customThemes')) {
-        await limitService.errorIfWouldGoOverLimit('customThemes', { value: themeName });
+      if (limits.service.isLimited('customThemes')) {
+        await limits.service.errorIfWouldGoOverLimit('customThemes', { value: themeName });
       }
 
       const newSettings = [
@@ -110,9 +110,9 @@ const controller = {
       method: 'add',
     },
     async query(frame) {
-      if (limitService.isLimited('customThemes')) {
+      if (limits.service.isLimited('customThemes')) {
         // Sending a bad string to make sure it fails (empty string isn't valid)
-        await limitService.errorIfWouldGoOverLimit('customThemes', { value: '.' });
+        await limits.service.errorIfWouldGoOverLimit('customThemes', { value: '.' });
       }
 
       // @NOTE: consistent filename uploads

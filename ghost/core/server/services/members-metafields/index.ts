@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
 import { ActionLog } from '../../lib/action-log/action-log';
-import { limitService } from '../limits';
+import limits from '../../../../shared/limits';
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
 import { MetafieldBindingsService } from './bindings-service';
@@ -84,6 +84,13 @@ export function init(): void {
 
   // Custom fields are the one application of metafields so far, and the only namespace
   // anyone can define fields in.
+  // Read when a limit is asked for: what is built here is kept across a restart of Ghost in one
+  // process, and the limits are built again by each start.
+  const limitService: Parameters<typeof customFields>[0]['limitService'] = {
+    isDisabled: (name) => limits.service.isDisabled(name),
+    errorIfWouldGoOverLimit: (name, options) =>
+      limits.service.errorIfWouldGoOverLimit(name, options),
+  };
   namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })]);
   fields = fieldSource(namespaces);
 

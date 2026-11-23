@@ -4,8 +4,14 @@ const errors = require('@tryghost/errors');
 const { authenticateContentApiKey } = require('../../../../../core/server/auth/api-key/content');
 const { ApiKey } = require('../../../../../core/server/models/api-key');
 const sinon = require('sinon');
+const { openServices } = require('../../../../utils/services');
 
 describe('Content API Key Auth', function () {
+  // The code under test asks the limits, which are built once services can be.
+  beforeEach(function () {
+    openServices();
+  });
+
   let fakeApiKey;
   let apiKeyStub;
 

@@ -1,8 +1,7 @@
-import config from '../../../shared/config';
-import type { ConfigInstance } from '../../../shared/config/loader';
+import type { ConfigInstance } from '../../../core/shared/config/loader';
 
 /**
- * Where adapters are looked up, in order. Also read by bin/validate-adapters.ts,
+ * Where adapters are looked up, in order. Also used by bin/validate-adapters.ts,
  * which checks adapter implementations at build time - keep this the only place
  * the lookup order is declared, so a name resolves there exactly as it does here.
  */
@@ -24,5 +23,3 @@ export function buildAdapterPaths(configInstance: ConfigInstance): string[] {
     ]),
   );
 }
-
-export const adapterPaths: string[] = buildAdapterPaths(config);

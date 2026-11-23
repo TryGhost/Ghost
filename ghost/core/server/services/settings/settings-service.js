@@ -7,7 +7,7 @@ const logging = require('@tryghost/logging');
 const { tracer } = require('../../lib/tracing');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
-const { limitService: limits } = require('../limits');
+const limits = require('../../../../shared/limits').default;
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager').default;
 const SettingsCache = require('../../../shared/settings-cache');
@@ -46,7 +46,13 @@ const getSettingsBREADServiceInstance = () => {
     SettingsModel: models.Settings,
     settingsCache: SettingsCache,
     labsService: labs,
-    limitsService: limits,
+    // The API endpoints call this on import, before services can be built: the limits are read
+    // when a limit is asked for.
+    limitsService: {
+      isDisabled: (name) => limits.service.isDisabled(name),
+      errorIfWouldGoOverLimit: (name, options) =>
+        limits.service.errorIfWouldGoOverLimit(name, options),
+    },
     mail,
     singleUseTokenProvider: new SingleUseTokenProvider({
       SingleUseTokenModel: models.SingleUseToken,
@@ -132,7 +138,7 @@ module.exports = {
    * @private
    */
   async enforcePublicSiteAccessLimit() {
-    if (!limits.isDisabled('publicSiteAccess')) {
+    if (!limits.service.isDisabled('publicSiteAccess')) {
       return;
     }
 

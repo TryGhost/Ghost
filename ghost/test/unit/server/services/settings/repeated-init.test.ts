@@ -5,7 +5,8 @@ const config = require('../../../../../core/shared/config');
 const events = require('../../../../../core/server/lib/common/events');
 const models = require('../../../../../core/server/models');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
-const { limitService } = require('../../../../../core/server/services/limits');
+const limits = require('../../../../../shared/limits').default;
+const { openServices } = require('../../../../utils/services');
 const MemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const sentry = require('../../../../../core/shared/sentry');
 
@@ -58,7 +59,9 @@ describe('Settings repeated initialization', function () {
     rows = {};
     overrides = {};
     sandbox.stub(sentry);
-    sandbox.stub(limitService, 'isDisabled').returns(false);
+    // Loading settings asks the limits, which are built once services can be.
+    openServices();
+    sandbox.stub(limits.service, 'isDisabled').returns(false);
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('hostSettings:settingsOverrides').callsFake(() => overrides);
     getConfig.withArgs('mail:from').returns('sender@example.com');

@@ -211,7 +211,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/adapter-manager/index.ts
-        - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+        - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
         - core/server/lib/image/index.js
         - core/server/services/post-scheduling/index.ts
         - bootstrap/transition/steps.ts
@@ -229,12 +229,12 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/adapter-manager/index.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
-          - core/server/services/adapter-manager/base-classes.ts
-          - ../tbd/kernel/src/adapter-manager/loader.ts
-          - ../tbd/kernel/src/adapter-manager/options.ts
-          - core/server/services/adapter-manager/config.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/values/adapters/adapter-paths.ts
+          - bootstrap/values/adapters/base-classes.ts
+          - ../tbd/foundry/src/adapter-manager/loader.ts
+          - ../tbd/foundry/src/adapter-manager/options.ts
+          - bootstrap/values/adapters/config.ts
           - bin/validate-adapters.ts
           - core/server/lib/image/index.js
           - core/server/services/post-scheduling/index.ts
@@ -242,7 +242,7 @@ services:
       - adapter-manager/index.ts
     notes: >-
       Split in progress. The reusable loading, validation and instance-management machinery
-      now lives in ../tbd/kernel/src/adapter-manager and takes its configuration through an
+      now lives in ../tbd/foundry/src/adapter-manager and takes its configuration through an
       explicit getConfig callback, so it imports nothing from the application. This
       directory holds only Ghost's composition: the base-class registry, search paths, the
       legacy scheduling/storage normalization, import-storage isolation and content-path
@@ -265,8 +265,8 @@ services:
           CLI. There is no manager shutdown or disposal API.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - ../tbd/kernel/src/adapter-manager/types.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/types.ts
           - bin/validate-adapters.ts
         tests:
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
@@ -283,16 +283,16 @@ services:
           or configured adapters.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
-          - core/server/services/adapter-manager/base-classes.ts
-          - ../tbd/kernel/src/adapter-manager/loader.ts
-          - core/server/services/adapter-manager/config.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/values/adapters/adapter-paths.ts
+          - bootstrap/values/adapters/base-classes.ts
+          - ../tbd/foundry/src/adapter-manager/loader.ts
+          - bootstrap/values/adapters/config.ts
           - bin/validate-adapters.ts
         tests:
-          - ../tbd/kernel/test/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/base-classes.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - ../tbd/foundry/test/adapter-manager/adapter-manager.test.ts
+          - test/unit/bootstrap/values/adapters/base-classes.test.ts
+          - test/unit/bootstrap/values/adapters/adapter-paths.test.ts
       consumers:
         summary: >-
           Boot validates adapters and starts scheduling. Services retain image/settings/public
@@ -348,13 +348,13 @@ services:
           guard and import-time consumers can construct adapters independently of validation.
         sources:
           - bootstrap/transition/steps.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - ../tbd/kernel/src/adapter-manager/options.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
           - core/server/api/endpoints/authentication.ts
           - core/server/lib/image/index.js
         tests:
-          - ../tbd/kernel/test/adapter-manager/adapter-manager.test.ts
+          - ../tbd/foundry/test/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
       lifetime:
         summary: >-
@@ -366,13 +366,13 @@ services:
           Conditional S3 route-store integration tests clear the cache before rereading settings;
           they do not establish replacement of retained consumers or cleanup.
         sources:
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/lib/image/index.js
           - core/server/services/jobs-service/index.ts
           - core/server/adapters/lib/redis/redis-store-factory.ts
           - core/server/ghost-server.ts
         tests:
-          - ../tbd/kernel/test/adapter-manager/adapter-manager.test.ts
+          - ../tbd/foundry/test/adapter-manager/adapter-manager.test.ts
           - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
           - test/unit/server/adapters/lib/redis/redis-store-factory.test.ts
       configuration:
@@ -386,16 +386,16 @@ services:
           config mutation; they establish neither production hot reload nor changed options
           reaching an already retained adapter.
         sources:
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
-          - ../tbd/kernel/src/adapter-manager/options.ts
-          - core/server/services/adapter-manager/config.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/values/adapters/adapter-paths.ts
+          - ../tbd/foundry/src/adapter-manager/options.ts
+          - bootstrap/values/adapters/config.ts
           - core/shared/config/defaults.json
         tests:
-          - ../tbd/kernel/test/adapter-manager/adapter-manager.test.ts
-          - ../tbd/kernel/test/adapter-manager/options.test.ts
-          - test/unit/server/services/adapter-manager/config.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - ../tbd/foundry/test/adapter-manager/adapter-manager.test.ts
+          - ../tbd/foundry/test/adapter-manager/options.test.ts
+          - test/unit/bootstrap/values/adapters/config.test.ts
+          - test/unit/bootstrap/values/adapters/adapter-paths.test.ts
           - test/integration/adapters/storage/imports-storage-config.test.ts
       resources:
         summary: >-
@@ -407,8 +407,8 @@ services:
           owns backend shutdown through GhostServer cleanup. clearCache invokes none of these
           owners and cannot drain active consumers or release custom-adapter resources.
         sources:
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - ../tbd/kernel/src/adapter-manager/types.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/types.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
           - core/server/adapters/lib/redis/AdapterCacheRedis.ts
@@ -435,13 +435,13 @@ services:
           Static validation is synchronous and not awaited. No failed-init guard, rollback or
           manager retry exists; later calls retry uncached work using current config.
         sources:
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - ../tbd/kernel/src/adapter-manager/loader.ts
-          - core/server/services/adapter-manager/config.ts
-          - ../tbd/kernel/src/adapter-manager/types.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/loader.ts
+          - bootstrap/values/adapters/config.ts
+          - ../tbd/foundry/src/adapter-manager/types.ts
         tests:
-          - ../tbd/kernel/test/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - ../tbd/foundry/test/adapter-manager/adapter-manager.test.ts
+          - test/unit/bootstrap/values/adapters/adapter-paths.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
     unverified: []
     blockers:
@@ -1121,7 +1121,7 @@ services:
           - core/server/services/custom-redirects/index.js
           - core/server/services/custom-redirects/redirects-service.ts
           - core/server/services/adapter-manager/index.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - bootstrap/transition/steps.ts
         tests: []
       consumers:
@@ -1200,7 +1200,7 @@ services:
           - core/server/web/shared/dynamic-redirect-manager.js
           - core/shared/url-utils.ts
           - core/shared/config/validated.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
         tests:
@@ -3104,252 +3104,6 @@ services:
         shutdown alone. Domain handlers such as the site importer may absorb their own
         failures, so settlement is not proof of successful domain work. Cross-service drain
         ordering and failures outside the tested jobs-start boundary remain open.
-  limits.ts:
-    kind: file
-    disposition: migrate
-    futureHome: core/shared/limits
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    migration:
-      complexity: complex
-      modelImpact: fits
-      reason: >-
-        Models retain the eager policy instance and boot loads it before settings, so
-        construction and consumer ordering need coordinated changes. Keep policy reload as
-        an explicit operation on that retained instance and preserve tolerated
-        invalid-configuration behavior. These are boundary and error-policy decisions;
-        mutable policy does not require replacing the service or changing the helper.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
-      sources:
-        - core/server/services/limits.ts
-        - core/server/models/integration.js
-        - bootstrap/transition/steps.ts
-        - test/utils/host-limits-utils.ts
-        - test/unit/server/services/limits.test.js
-      dependencies:
-        complexity: straightforward
-        reason: >-
-          This file is already the composition point for LimitService, config, database and logging.
-          A root index.ts can keep that wiring together; the main dependency constraint is making
-          model and route consumers obtain the initialized instance after limits boot, rather than
-          evaluating its guarded getter during import.
-        preparation:
-          - >-
-            Move the composition into a service root and update eager model/API bindings to use the
-            ready policy instance at operation time, retaining boot-before-settings order and live
-            policy reload.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
-        sources:
-          - core/server/services/limits.ts
-          - core/server/models/integration.js
-          - core/server/models/user.js
-          - core/server/models/invite.js
-          - core/server/services/members-metafields/index.ts
-          - bootstrap/transition/steps.ts
-    entryPoints:
-      - limits.ts
-    notes: >-
-      Suggested future home after this migration: Ghost-wide entitlement/quota policy belongs in
-      core/shared/limits. The reusable limit engine stays in @tryghost/limit-service. Boot
-      injects configuration and database dependencies so Shared does not import server code. No
-      source has moved. Boot loads host policy into an eagerly exported, widely retained
-      instance. Preserve per-consumer enforcement and existing configuration quirks.
-    contracts:
-      exports:
-        summary: >-
-          Named TypeScript exports are limitService and synchronous receiver-independent init
-          returning undefined. Callers use the instance's synchronous isLimited/isDisabled, async
-          throwing and boolean checks, and public limits map; the theme installer reads an
-          allowlist directly. Package instance methods depend on their receiver. No test pins
-          the root's exact export or receiver surface.
-        sources:
-          - core/server/services/limits.ts
-          - core/server/services/themes/installer.js
-        tests:
-          - test/e2e-api/admin/host-limits.test.ts
-      construction:
-        summary: >-
-          Import constructs one empty LimitService from the workspace package. Every init
-          reloads that same object with current host limits, subscription, help link, the
-          shared db module and Ghost errors. There is no initialized guard, promise or
-          configurable factory. Loading synchronously constructs per-limit implementations;
-          neither construction nor loading queries the database. Core init tests stub
-          loadLimits and test error handling, without asserting its full argument object.
-        sources:
-          - core/server/services/limits.ts
-          - core/server/data/db/index.js
-        tests:
-          - test/unit/server/services/limits.test.js
-      consumers:
-        summary: >-
-          Models gate publishing, staff invites/reactivation/promotion and integration creation;
-          imports become Contributors whenever staff is configured. API-key authentication
-          exempts internal/core integrations, whereas limited webhooks retain only internal
-          integrations. Retained dependencies in newsletters, email, settings and settings
-          helpers govern active newsletters, send/retry checks, Stripe connection, private-site
-          settings and social/analytics availability. Theme endpoints/installer and file/media
-          validators enforce values/sizes. Custom fields' namespace policy asks isDisabled on
-          every member metafield read and errorIfWouldGoOverLimit on every change to a field.
-          HTTP assertions cover integration creation/authentication, newsletter add/reactivation,
-          member-limit publishing, staff invitations, theme/file limits and member-field guards.
-          Privacy, social/analytics, importer demotion and several user-model paths remain source-only.
-        sources:
-          - core/server/models/post.js
-          - core/server/models/user.js
-          - core/server/models/invite.js
-          - core/server/models/integration.js
-          - core/server/data/importer/importers/data/users-importer.js
-          - core/server/auth/api-key/admin.ts
-          - core/server/auth/api-key/content.ts
-          - core/server/services/webhooks/index.js
-          - core/server/services/webhooks/webhook-trigger.js
-          - core/server/services/newsletters/index.ts
-          - core/server/services/newsletters/newsletters-service.js
-          - core/server/services/email-service/email-service-wrapper.js
-          - core/server/services/email-service/email-service.js
-          - core/server/services/settings/settings-service.js
-          - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings-helpers/index.js
-          - core/server/services/settings-helpers/settings-helpers.js
-          - core/server/services/themes/installer.js
-          - core/server/api/endpoints/themes.js
-          - core/server/api/endpoints/utils/validators/input/files.ts
-          - core/server/api/endpoints/utils/validators/input/media.ts
-          - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/custom-fields.ts
-        tests:
-          - test/e2e-api/admin/host-limits.test.ts
-          - test/e2e-api/admin/member-custom-fields.test.ts
-          - test/e2e-api/admin/newsletters.test.js
-          - test/e2e-api/admin/key-authentication.test.js
-          - test/e2e-api/content/key-authentication.test.js
-          - test/e2e-api/admin/posts-legacy.test.js
-      startup:
-        summary: >-
-          initCore awaits init before settings initialization: settings enforce public-site
-          privacy and derive social/analytics availability using loaded limits. The eager
-          instance is callable before init and has no limits then. The root does not await a
-          loadLimits return value; the current package method is synchronous. Boot-based
-          authentication/newsletter/email tests exercise configured startup, but do not assert
-          the ordering or pre-init contract explicitly. Public-site startup tests stub the
-          limit method, so they do not prove real configuration reaches that consumer.
-        sources:
-          - bootstrap/transition/steps.ts
-          - core/server/services/limits.ts
-          - core/server/services/settings/settings-service.js
-          - core/server/services/settings-helpers/settings-helpers.js
-        tests:
-          - test/e2e-api/admin/key-authentication.test.js
-          - test/e2e-api/content/key-authentication.test.js
-          - test/e2e-api/admin/newsletters.test.js
-          - test/e2e-api/admin/posts-legacy.test.js
-          - test/unit/server/services/settings/settings-service.test.js
-      lifetime:
-        summary: >-
-          Module caching retains the exported instance and callers' references across init.
-          Each load replaces its limits map and creates new limit objects, rather than
-          updating old ones; an already-started check can finish against its former object.
-          There is no automatic host-config subscription, reset/stop, query cancellation or
-          cross-request reservation. Core host-limit helpers explicitly call init after
-          changing/restoring config, and tests assert removal of a prior limit. Retained
-          references, concurrent checks/reloads and restart identity are source-only findings.
-        sources:
-          - core/server/services/limits.ts
-          - core/server/services/newsletters/index.ts
-          - core/server/services/settings-helpers/index.js
-          - core/server/services/email-service/email-service-wrapper.js
-          - core/server/services/themes/installer.js
-        tests:
-          - test/e2e-api/admin/host-limits.test.ts
-      configuration:
-        summary: >-
-          init uses hostSettings:limits or {}, a billing URL only when enabled is boolean true,
-          otherwise https://ghost.org/help/, and a truthy subscription object supplies start
-          with interval fixed to month. Package loading recognizes configured names and chooses
-          allowlist, max, maxPeriodic, then flag by property presence. Unknown names are ignored;
-          noncanonical names can load without their supplied settings. Flags use truthiness,
-          so string false disables too. Scalar policy is captured on load, allowlist arrays
-          are retained, and counts/current monthly period are evaluated per check. API config
-          separately exposes host configuration, not proof a limit loaded. Tests pin several
-          quirks and billing-enabled output, not every default or configuration boundary.
-        sources:
-          - core/server/services/limits.ts
-          - core/server/api/endpoints/config.js
-          - core/server/api/endpoints/utils/public-config/config.js
-          - core/server/services/settings/settings-service.js
-        tests:
-          - test/e2e-api/admin/host-limits.test.ts
-      resources:
-        summary: >-
-          The root and its limit objects retain policy/dependency references and own no timers,
-          subscriptions or transport. Count checks borrow the shared lazy knex connection or
-          supplied transaction and await queries; newsletters forwards transaction context for
-          add/reactivation. Counts cover members, active newsletters, email totals since the
-          current billing-period start, and non-Contributor staff excluding inactive users plus
-          non-Contributor invites. Uploads supply
-          bytes instead of querying. No counter cache, lock, reservation, shutdown or drain
-          is supplied. HTTP tests exercise database-backed refusals with/without newsletter
-          transactions, without proving concurrent capacity or complete SQL count semantics.
-        sources:
-          - core/server/services/limits.ts
-          - core/server/data/db/index.js
-          - core/server/data/db/connection.ts
-          - core/server/services/newsletters/newsletters-service.js
-          - core/server/services/email-service/email-service.js
-          - core/server/api/endpoints/utils/validators/input/files.ts
-          - core/server/api/endpoints/utils/validators/input/media.ts
-        tests:
-          - test/e2e-api/admin/host-limits.test.ts
-          - test/e2e-api/admin/newsletters.test.js
-      failures:
-        summary: >-
-          Only synchronous loadLimits IncorrectUsageError is warned and swallowed; other
-          synchronous errors escape unchanged. Config reads occur outside that catch. Loading
-          resets the map before building entries, so failure retains any successful prefix and
-          omits the failed entry and following entries. Core tests assert exact warning/error
-          identity, and HTTP tests pin a first-entry failure leaving subsequent policy absent.
-          Invalid nonempty dates can register periodic limits; that test does not exercise
-          their query. Check failures reject callers; boolean checks convert only HostLimitError
-          to true. HTTP middleware forwards errors, endpoint wrappers can reword them, and
-          webhook preparation logs a failed check and sends nothing. There is no retry or rollback.
-        sources:
-          - core/server/services/limits.ts
-          - core/server/services/webhooks/webhook-trigger.js
-          - core/server/auth/api-key/content.ts
-          - core/server/api/endpoints/newsletters.js
-          - core/server/api/endpoints/settings.js
-        tests:
-          - test/unit/server/services/limits.test.js
-          - test/e2e-api/admin/host-limits.test.ts
-          - test/e2e-api/admin/member-custom-fields.test.ts
-          - test/unit/server/services/newsletters/service.test.js
-          - test/unit/server/services/email-service/email-service.test.js
-    unverified: []
-    blockers:
-      - >-
-        Pin root construction/export identity, pre-init behavior, exact load arguments and boot
-        ordering, including strict billing-enabled/default help and subscription defaults.
-        Characterize retained callers, the public theme allowlist and in-flight checks across
-        reload/restart before replacing the shared instance or map.
-      - >-
-        Characterize failed reload after earlier valid entries and recovery, config-read failure
-        and query rejection. First-entry failure tests do not prove atomic load or rollback.
-        Treat string false, noncanonical names, invalid periodic dates and partial loading as
-        recorded compatibility hazards; fix them separately from initialization if desired.
-      - >-
-        Extend real-root consumer assertions for staff reactivation/promotion/import, integration
-        creation, public-site/social/analytics policy, media/thumbnail uploads, theme-install
-        exceptions and webhook filtering. Existing helper, webhook and theme-install tests use
-        injected/stubbed limits; add targeted tests for the retained production compositions.
-      - >-
-        Verify counted-query boundaries, periodic history and recipient addedCount through real
-        consumers, plus retry/resume differences and concurrent capacity decisions. A max-zero
-        refusal and package query stubs do not prove date filtering, staff exclusions or safe
-        concurrent check-then-write behavior. Initialization must keep borrowing database/transaction
-        ownership without adding untested cancellation or cleanup behavior.
-      - >-
-        Keep host-policy business logic outside HTTP; moving the root wholesale into API would
-        conflict with the placement rules. Recorded facets do not establish migration readiness.
   link-tracking:
     kind: directory
     disposition: migrate
@@ -5323,7 +5077,7 @@ services:
         sources:
           - core/server/services/oembed/service.js
           - core/server/services/oembed/oembed-service.js
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/storage/LocalImagesStorage.ts
           - core/server/adapters/storage/S3Storage.ts
           - core/server/lib/request-external.js
@@ -5396,7 +5150,7 @@ services:
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/services/oembed/service.js
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/services/mentions/webmention-metadata.js
           - core/server/services/recommendations/service/recommendation-metadata-service.ts
         tests:
@@ -5453,7 +5207,7 @@ services:
           - core/server/lib/request-external.js
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/adapters/storage/S3Storage.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - bootstrap/transition/steps.ts
           - package.json
         tests:
@@ -5872,7 +5626,7 @@ services:
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/api/endpoints/authentication.ts
           - bootstrap/transition/steps.ts
@@ -5937,7 +5691,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/scheduling-default.ts
           - core/server/adapters/scheduling/error-capture.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
       configuration:
@@ -5980,7 +5734,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/adapters/scheduling/scheduling-default.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/lib/common/events.js
           - bootstrap/transition/steps.ts
           - core/server/ghost-server.ts
@@ -6619,8 +6373,8 @@ services:
         sources:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/dynamic-routing-service.js
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/base-classes.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/values/adapters/base-classes.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
         tests:
@@ -6726,8 +6480,8 @@ services:
         sources:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/route-settings-parser.ts
-          - core/server/services/adapter-manager/config.ts
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - bootstrap/values/adapters/config.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/shared/config/defaults.json
@@ -6737,7 +6491,7 @@ services:
           - core/frontend/services/routing/parent-router.js
         tests:
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
-          - test/unit/server/services/adapter-manager/config.test.ts
+          - test/unit/bootstrap/values/adapters/config.test.ts
           - test/unit/server/adapters/route-settings/s3-route-settings-store.test.ts
           - test/unit/server/services/route-settings/route-settings-parser.test.ts
           - test/unit/server/services/route-settings/validate-route-settings.test.ts
@@ -6755,7 +6509,7 @@ services:
           They do not prove transport release, collision safety or drain on shutdown.
         sources:
           - core/server/services/route-settings/dynamic-routing-service.js
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/server/adapters/route-settings/utils.ts
@@ -7162,7 +6916,7 @@ services:
           - core/server/services/settings-helpers/settings-helpers.js
           - core/shared/settings-cache/index.js
           - core/shared/url-utils.ts
-          - core/server/services/limits.ts
+          - shared/limits/index.ts
           - core/server/data/db/index.js
         tests:
           - test/unit/server/services/settings-helpers/settings-helpers.test.js
@@ -7218,7 +6972,7 @@ services:
           - test/integration/services/q-email-addresses.test.js
       startup:
         summary: >-
-          Boot initializes limits before settings; settings fills raw cache rows before invoking
+          Boot allows the limits to be built before settings; settings fills raw cache rows before invoking
           bound helpers for calculated fields. This root has no readiness check. Before cache
           initialization, missing reads can produce plausible defaults: members enabled is true,
           signup/invite gates false, keys null and validation key undefined; signing with a uuid
@@ -7230,7 +6984,7 @@ services:
           - core/server/services/settings-helpers/settings-helpers.js
           - core/server/services/settings/settings-service.js
           - core/shared/settings-cache/cache-manager.js
-          - core/server/services/limits.ts
+          - shared/limits/index.ts
         tests:
           - test/unit/server/services/settings/repeated-init.test.ts
       lifetime:
@@ -7274,7 +7028,7 @@ services:
           - core/server/services/settings-helpers/settings-helpers.js
           - core/shared/url-utils.ts
           - core/shared/config/validated.ts
-          - core/server/services/limits.ts
+          - shared/limits/index.ts
           - package.json
         tests:
           - test/unit/server/services/settings-helpers/settings-helpers.test.js
@@ -7747,7 +7501,7 @@ services:
           - core/frontend/services/theme-engine/engine.js
           - core/frontend/services/theme-engine/i18n/index.js
           - core/frontend/services/theme-engine/i18next/index.js
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/themes/loader.test.js
           - test/unit/server/services/themes/storage.test.ts
@@ -7832,7 +7586,7 @@ services:
           - core/server/services/themes/list.js
           - core/server/services/themes/validate.js
           - core/server/services/themes/storage.js
-          - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
+          - ../tbd/foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/frontend/services/theme-engine/active.js
         tests:
@@ -9593,7 +9347,7 @@ services:
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/services/webhooks/serialize.js
-          - core/server/services/limits.ts
+          - shared/limits/index.ts
           - core/server/lib/request-external.js
           - core/shared/config/defaults.json
         tests:

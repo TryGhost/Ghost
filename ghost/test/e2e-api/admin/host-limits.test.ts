@@ -22,9 +22,9 @@ const mailService = require('../../../core/server/lib/mail') as {
 const membersService = require('../../../core/server/services/members') as {
   stripeConnect: StripeConnect;
 };
-const {
-  limitService: limits,
-}: typeof import('../../../core/server/services/limits') = require('../../../core/server/services/limits');
+// The root, read for its service at each use: every start of Ghost builds a new limit service.
+const limits: typeof import('../../../shared/limits').default =
+  require('../../../shared/limits').default;
 
 /** What an Admin API request answers with, narrowed to the parts these tests read. */
 interface ApiResponse {
@@ -122,11 +122,11 @@ describe('Host limits', function () {
 
     it('forgets the limits it was holding once the host sends none', async function () {
       await hostLimits.setHostLimits({ newsletters: { max: 0 } });
-      assert.equal(limits.isLimited('newsletters'), true);
+      assert.equal(limits.service.isLimited('newsletters'), true);
 
       await hostLimits.restoreHostLimits();
 
-      assert.equal(limits.isLimited('newsletters'), false);
+      assert.equal(limits.service.isLimited('newsletters'), false);
     });
 
     it('lets the site do a thing that is limited elsewhere', async function () {
@@ -311,7 +311,7 @@ describe('Host limits', function () {
         { subscription: { start: '2026-01-01T00:00:00.000Z' } },
       );
 
-      assert.equal(limits.isLimited('emails'), true);
+      assert.equal(limits.service.isLimited('emails'), true);
     });
 
     it('refuses a send once the allowance for this period is used up', async function () {
@@ -347,7 +347,7 @@ describe('Host limits', function () {
     it('is dropped, leaving the site unlimited, when the host anchors no period', async function () {
       await hostLimits.setHostLimits({ emails: { maxPeriodic: 1 } });
 
-      assert.equal(limits.isLimited('emails'), false);
+      assert.equal(limits.service.isLimited('emails'), false);
     });
   });
 
@@ -406,8 +406,8 @@ describe('Host limits', function () {
         limitStripeConnect: { disabled: true },
       });
 
-      assert.equal(limits.isLimited('customThemes'), false);
-      assert.equal(limits.isLimited('limitStripeConnect'), false);
+      assert.equal(limits.service.isLimited('customThemes'), false);
+      assert.equal(limits.service.isLimited('limitStripeConnect'), false);
     });
 
     it('keeps a site serving rather than failing to start', async function () {
@@ -424,7 +424,7 @@ describe('Host limits', function () {
         { subscription: { start: 'not a date' } },
       );
 
-      assert.equal(limits.isLimited('emails'), true);
+      assert.equal(limits.service.isLimited('emails'), true);
     });
   });
 
@@ -444,7 +444,7 @@ describe('Host limits', function () {
     it('ignores a limit name the code has never heard of, leaving the feature available', async function () {
       await hostLimits.setHostLimits({ aLimitNobodyShipped: { disabled: true } });
 
-      assert.equal(limits.isLimited('aLimitNobodyShipped'), false);
+      assert.equal(limits.service.isLimited('aLimitNobodyShipped'), false);
     });
 
     it('drops a known limit written in another case, leaving the site unlimited', async function () {
