@@ -1067,12 +1067,14 @@ describe('Create Stripe Checkout Session', function () {
 
   describe('A checkout that can’t start', function () {
     let paidTierId;
+    let freeTierId;
 
     beforeAll(async function () {
       const {
         body: { tiers },
       } = await adminAgent.get('/tiers/');
       paidTierId = tiers.find((tier) => tier.type === 'paid').id;
+      freeTierId = tiers.find((tier) => tier.type === 'free').id;
     });
 
     beforeEach(function () {
@@ -1090,6 +1092,27 @@ describe('Create Stripe Checkout Session', function () {
     it('answers that an unknown tier doesn’t exist', async function () {
       const error = await failedCheckout({ tierId: '0123456789abcdef01234567' });
       assert.equal(error.message, 'This tier does not exist.');
+    });
+
+    it('refuses the free tier, leaving Stripe and the site’s Stripe products untouched', async function () {
+      const stripeBefore = structuredClone({
+        products: stripeMocker.products,
+        prices: stripeMocker.prices,
+        checkoutSessions: stripeMocker.checkoutSessions,
+      });
+
+      const error = await failedCheckout({ tierId: freeTierId });
+
+      assert.equal(error.message, "This tier is free, so it can't be bought.");
+      assert.deepEqual(
+        {
+          products: stripeMocker.products,
+          prices: stripeMocker.prices,
+          checkoutSessions: stripeMocker.checkoutSessions,
+        },
+        stripeBefore,
+      );
+      assert.equal(await models.StripeProduct.findOne({ product_id: freeTierId }), null);
     });
 
     it('answers a malformed tier id with a server error, as the tiers read throws on one', async function () {
