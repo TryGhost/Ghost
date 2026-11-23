@@ -130,6 +130,12 @@ const features: Feature[] = [
       'Work in progress. So far, member filters in the Admin API can name saved segments.',
     flag: 'segmentEmails',
   },
+  {
+    title: 'Grouped settings navigation',
+    description:
+      'Collapse the Settings navigation to its groups and show one group of settings at a time.',
+    flag: 'settingsGroupedNav',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

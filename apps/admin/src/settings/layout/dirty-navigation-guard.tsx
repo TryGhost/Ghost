@@ -5,22 +5,42 @@ import { useGlobalDirtyState } from '@tryghost/shade/utils';
 import { isOnRouterHistoryEntry } from '@/hooks/use-router-history-entry';
 import { useRef } from 'react';
 import { dialogIdentity } from './dirty-navigation-guard-identity';
+import { settingsGroupForPath } from './settings-groups';
+import {
+  useActiveSettingsGroup,
+  useSettingsGroupedNav,
+} from '@/settings/hooks/use-settings-groups';
 
-// Only history (back/forward) navigations are blocked: every in-app way out of a
-// dirty settings dialog already runs its own dirty confirmation before navigating.
+// History (back/forward) navigations are blocked: every in-app way out of a dirty
+// settings dialog already runs its own dirty confirmation before navigating. With the
+// grouped navigation, leaving a group from its page is blocked however it happens, as
+// leaving Settings is, since its unsaved cards would be hidden.
 export const DirtyNavigationGuard: React.FC = () => {
   const { isDirty } = useGlobalDirtyState();
+  const grouped = useSettingsGroupedNav();
+  const activeGroup = useActiveSettingsGroup();
   const leaveConfirmedRef = useRef(false);
   useConfirmUnload(isDirty);
 
   const blocker = useBlocker(({ currentLocation, nextLocation, historyAction }) => {
-    if (!isDirty || historyAction !== NavigationType.Pop) {
+    if (!isDirty) {
       return false;
+    }
+    // From a dialog, its own confirmation already ran
+    const leavesGroup =
+      grouped &&
+      dialogIdentity(currentLocation.pathname) === 'settings' &&
+      (settingsGroupForPath(nextLocation.pathname) ?? activeGroup) !== activeGroup;
+    if (historyAction !== NavigationType.Pop) {
+      return leavesGroup;
     }
     if (!isOnRouterHistoryEntry()) {
       return false;
     }
-    return dialogIdentity(currentLocation.pathname) !== dialogIdentity(nextLocation.pathname);
+    return (
+      leavesGroup ||
+      dialogIdentity(currentLocation.pathname) !== dialogIdentity(nextLocation.pathname)
+    );
   });
   const isBlocked = blocker.state === 'blocked';
 

@@ -135,6 +135,8 @@ export const settingsScreen = {
   menu: () => page.getByRole('menu'),
   menuItem: (name: string) => page.getByRole('menuitem', { name }),
   sidebar: () => page.getByTestId(sel.settingsSidebar),
+  groupHeader: (name: string) =>
+    settingsScreen.sidebar().getByRole('button', { name, exact: true }),
   search: () => page.getByRole('textbox', { name: sel.settingsSearchLabel, exact: true }),
   exitButton: () => page.getByTestId(sel.exitSettings),
   confirmationModal: () => page.getByTestId(sel.confirmationModal),
@@ -155,12 +157,15 @@ export const settingsScreen = {
   suggestedAmount: () =>
     settingsScreen.tipsAndDonations().getByRole('textbox', { name: sel.suggestedAmountLabel }),
   navItem: (name: string) => settingsScreen.sidebar().getByText(name, { exact: true }),
+  titleInput: () => settingsScreen.titleAndDescription().getByLabelText(sel.siteTitleLabel),
+  titleEditButton: () => settingsScreen.titleAndDescription().getByRole('button', { name: 'Edit' }),
+  titleCancelButton: () =>
+    settingsScreen.titleAndDescription().getByRole('button', { name: 'Cancel', exact: true }),
   noSearchResults: () =>
     settingsScreen.sidebar().getByText(sel.noSearchResultsText, { exact: true }),
 
   async editTitle(value: string): Promise<void> {
-    const section = settingsScreen.titleAndDescription();
-    await section.getByRole('button', { name: 'Edit' }).click();
-    await section.getByLabelText(sel.siteTitleLabel).fill(value);
+    await settingsScreen.titleEditButton().click();
+    await settingsScreen.titleInput().fill(value);
   },
 };

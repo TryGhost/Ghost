@@ -10,6 +10,7 @@ import {
 } from './settings-app-context';
 import { officialThemes } from '@/settings/data/official-themes';
 import { zapierTemplates } from '@/settings/data/zapier-templates';
+import { SettingsGroupedNavProvider } from '@/settings/hooks/use-settings-groups';
 
 type SettingsAppProviderProps = { upgradeStatus?: UpgradeStatusType; children: ReactNode };
 
@@ -44,7 +45,9 @@ const SettingsAppProvider: React.FC<SettingsAppProviderProps> = ({ children, upg
       }}
     >
       <GlobalDataProvider>
-        <ScrollSectionProvider>{children}</ScrollSectionProvider>
+        <SettingsGroupedNavProvider>
+          <ScrollSectionProvider>{children}</ScrollSectionProvider>
+        </SettingsGroupedNavProvider>
       </GlobalDataProvider>
     </SettingsAppContext.Provider>
   );
