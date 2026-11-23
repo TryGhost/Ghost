@@ -161,6 +161,10 @@ export const AutomationTriggerReferencesResponseSchema = z.object({
   ),
 });
 
+export const AutomationEnrollmentsResponseSchema = z.object({
+  automation_enrollments: z.array(z.object({ automation_id: z.string().min(1) })),
+});
+
 export type AutomationEmailPreview = {
   html: string;
   plaintext: string;
