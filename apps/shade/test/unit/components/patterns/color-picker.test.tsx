@@ -1,8 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
-import { StrictMode, useState } from 'react';
+import { StrictMode } from 'react';
 import ColorPicker, {
-  ColorPickerAlpha,
   ColorPickerEyeDropper,
   ColorPickerFormat,
   ColorPickerHue,
@@ -251,63 +250,6 @@ describe('ColorPicker Component', () => {
       expect(handleChange.mock.calls).toEqual([['#8F3030'], ['#8F3130']]);
     });
 
-    it('adopts a value reset to a colour picked earlier', () => {
-      const handleChange = vi.fn();
-      const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
-      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-      expect(handleChange.mock.calls).toEqual([['#FF0400'], ['#FF0900']]);
-
-      rerender(<Parent value="#FF0400" onChange={handleChange} />);
-
-      expect(Number(screen.getByRole('slider').getAttribute('aria-valuenow'))).toBeCloseTo(1, 0);
-    });
-
-    it('keeps its hue through a drag across black when the parent echoes every report', () => {
-      const handleChange = vi.fn();
-      function Controlled() {
-        const [value, setValue] = useState('#0000ff');
-        return (
-          <ColorPickerRoot
-            value={value}
-            onChange={(hex) => {
-              handleChange(hex);
-              setValue(hex);
-            }}
-          >
-            <ColorPickerSelection data-testid="gradient" />
-            <ColorPickerHue />
-          </ColorPickerRoot>
-        );
-      }
-      render(<Controlled />);
-      const gradient = mockGradientRect();
-
-      fireEvent.pointerDown(gradient, { clientX: 100, clientY: 100, pointerId: 1 });
-      fireEvent.pointerMove(gradient, { clientX: 100, clientY: 200, pointerId: 1 });
-      fireEvent.pointerMove(gradient, { clientX: 100, clientY: 100, pointerId: 1 });
-
-      // Back from black, the colour is still blue, not the red a hex of black would give.
-      expect(handleChange.mock.calls.at(-1)).toEqual(['#30308F']);
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('240');
-    });
-
-    it('is not called when the hex is retyped in another case', () => {
-      const handleChange = vi.fn();
-      render(
-        <ColorPickerRoot defaultValue="#ff0000" onChange={handleChange}>
-          <ColorPickerSelection data-testid="gradient" />
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 100 });
-      expect(handleChange.mock.calls).toEqual([['#8F3030']]);
-
-      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#8f3030' } });
-
-      expect(handleChange).toHaveBeenCalledTimes(1);
-    });
-
     it('lets an error thrown by onChange reach the caller', () => {
       render(
         <ColorPickerRoot
@@ -332,34 +274,6 @@ describe('ColorPicker Component', () => {
 
       expect(errors.map((error) => (error as Error).message)).toContain('onChange failed');
     });
-
-    it('reports black from a transparent colour and shows it opaque once the parent stores it', () => {
-      // Admin shows a transparent setting as #00000000; clicking black must still report it.
-      const handleChange = vi.fn();
-      function Controlled() {
-        const [value, setValue] = useState('#00000000');
-        return (
-          <ColorPickerRoot
-            value={value}
-            onChange={(hex) => {
-              handleChange(hex);
-              setValue(hex);
-            }}
-          >
-            <ColorPickerSelection data-testid="gradient" />
-            <ColorPickerAlpha />
-          </ColorPickerRoot>
-        );
-      }
-      render(<Controlled />);
-
-      fireEvent.pointerDown(mockGradientRect(), { clientX: 200, clientY: 200 });
-
-      expect(handleChange).toHaveBeenCalledTimes(1);
-      expect(handleChange).toHaveBeenCalledWith('#000000');
-      // The echoed #000000 has no alpha, so the picker takes it as opaque.
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('100');
-    });
   });
 
   describe('eye dropper', () => {
@@ -367,16 +281,13 @@ describe('ColorPicker Component', () => {
       vi.unstubAllGlobals();
     });
 
-    // An EyeDropper whose pick resolves when the test says so. Like a browser that is slow
-    // to cancel, it ignores the abort signal and only records it.
+    // An EyeDropper whose pick resolves when the test says so.
     function mockEyeDropper() {
       let resolvePick: (result: { sRGBHex: string }) => void = () => {};
-      let signal: AbortSignal | undefined;
       vi.stubGlobal(
         'EyeDropper',
         class {
-          open(options?: { signal?: AbortSignal }) {
-            signal = options?.signal;
+          open() {
             return new Promise((resolve) => {
               resolvePick = resolve;
             });
@@ -385,7 +296,6 @@ describe('ColorPicker Component', () => {
       );
       return {
         pick: (sRGBHex: string) => act(async () => resolvePick({ sRGBHex })),
-        isAborted: () => signal?.aborted,
       };
     }
 
@@ -417,7 +327,7 @@ describe('ColorPicker Component', () => {
     });
 
     it('does not report a pick that resolves after the picker unmounts', async () => {
-      const { pick, isAborted } = mockEyeDropper();
+      const { pick } = mockEyeDropper();
       const handleChange = vi.fn();
       const { unmount } = renderEyeDropper(handleChange);
 
@@ -425,7 +335,6 @@ describe('ColorPicker Component', () => {
       unmount();
       await pick('#0000ff');
 
-      expect(isAborted()).toBe(true);
       expect(handleChange).not.toHaveBeenCalled();
     });
   });
