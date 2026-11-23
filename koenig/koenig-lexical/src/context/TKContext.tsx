@@ -2,7 +2,10 @@ import React from 'react';
 import throttle from 'lodash/throttle';
 import type {NodeKey} from 'lexical';
 
-export type TKNodeMap = Record<NodeKey, NodeKey[]>;
+// Sparse: only top-level nodes that contain TK nodes have an entry
+export interface TKNodeMap {
+    [topLevelNodeKey: NodeKey]: NodeKey[] | undefined;
+}
 
 type EditorTKNodeMap = Map<string, Map<NodeKey, {topLevelNodeKey: NodeKey}>>;
 
@@ -57,10 +60,12 @@ export const TKContext = ({children}: {children: React.ReactNode}) => {
                 nodeMap.forEach(({topLevelNodeKey}, tkNodeKey) => {
                     newTkCount = newTkCount + 1;
 
-                    if (newTkNodeMap[topLevelNodeKey] === undefined) {
-                        newTkNodeMap[topLevelNodeKey] = [tkNodeKey];
+                    const tkNodeKeys = newTkNodeMap[topLevelNodeKey];
+
+                    if (tkNodeKeys) {
+                        tkNodeKeys.push(tkNodeKey);
                     } else {
-                        newTkNodeMap[topLevelNodeKey].push(tkNodeKey);
+                        newTkNodeMap[topLevelNodeKey] = [tkNodeKey];
                     }
                 });
             });
