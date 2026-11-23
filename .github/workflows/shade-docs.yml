@@ -1,14 +1,14 @@
 name: Shade Docs
 
 # Builds the Shade Storybook and hands it to TryGhost/shade-gh-pages, which
-# deploys it to https://shade.ghost.org on main pushes that touch apps/shade/.
+# deploys it to https://shade.ghost.org on main pushes that touch clients/shade/.
 # The dispatch token needs `actions: write` on TryGhost/shade-gh-pages.
 
 on:
   push:
     branches: [main]
     paths:
-      - 'apps/shade/**'
+      - 'clients/shade/**'
       - 'pnpm-lock.yaml'
       - '.github/workflows/shade-docs.yml'
   workflow_dispatch:
@@ -39,14 +39,14 @@ jobs:
           store-cache: 'false'
 
       - name: Build Storybook
-        working-directory: apps/shade
+        working-directory: clients/shade
         run: pnpm build-storybook
 
       - name: Upload Storybook artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: apps/shade/storybook-static
+          path: clients/shade/storybook-static
           retention-days: 1
           if-no-files-found: error
 

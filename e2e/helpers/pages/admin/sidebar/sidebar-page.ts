@@ -20,7 +20,7 @@ export interface NavItem {
  * `roles` = roles whose sidebar shows the item (Owner sees everything
  * Administrator does; Contributors have no sidebar at all — they get a
  * floating user menu instead). Gating source:
- * apps/admin/src/layout/app-sidebar/{nav-main,nav-content}.tsx.
+ * clients/admin/src/layout/app-sidebar/{nav-main,nav-content}.tsx.
  */
 export const NAV_ITEMS: NavItem[] = [
   {

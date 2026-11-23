@@ -1,8 +1,8 @@
 ---
 name: Shade new component
-description: Acceptance checklist for adding or editing a Shade component or pattern file — naming, sibling story, className forwarding, cva variants, required states, recipe usage. Trigger when editing files in apps/shade/src/components.
+description: Acceptance checklist for adding or editing a Shade component or pattern file — naming, sibling story, className forwarding, cva variants, required states, recipe usage. Trigger when editing files in clients/shade/src/components.
 autoTrigger:
-  - fileEdit: "apps/shade/src/components/**/*.{ts,tsx}"
+  - fileEdit: "clients/shade/src/components/**/*.{ts,tsx}"
 ---
 
 # Shade — new component / pattern checklist
@@ -125,4 +125,4 @@ See `shade-tokens-not-hex` and `shade-no-dark-variants`.
 
 ## Source of truth
 
-Shade's [`CONTRIBUTING.md`](../../../apps/shade/CONTRIBUTING.md) and the component's stories.
+Shade's [`CONTRIBUTING.md`](../../../clients/shade/CONTRIBUTING.md) and the component's stories.

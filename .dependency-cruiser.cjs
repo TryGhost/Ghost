@@ -417,7 +417,7 @@ const serviceDependencyDecisions = {
  *                 proxy seam, and server/ must not reach into the frontend
  *                 rendering layer. Paths are anchored on `^ghost/core/`.
  *
- *   apps/       — design system layer hierarchy and public/admin separation.
+ *   clients/       — design system layer hierarchy and public/admin separation.
  *                 shade/ is a leaf package that nothing above it may pull
  *                 back into. admin-x-framework/ sits above it but below
  *                 feature apps. Public UMD bundles (portal, comments-ui,
@@ -599,28 +599,28 @@ module.exports = {
     },
 
     // ============================================================
-    // apps/ — shade/ is the foundation; must not depend on higher layers
+    // clients/ — shade/ is the foundation; must not depend on higher layers
     // ============================================================
     {
       name: 'shade-is-leaf',
       comment: 'shade/ must not depend on admin-x-framework. It is the foundation layer.',
       severity: 'error',
-      from: { path: '^apps/shade/' },
-      to: { path: '^@tryghost/admin-x-framework($|/)|^apps/admin-x-framework/' },
+      from: { path: '^clients/shade/' },
+      to: { path: '^@tryghost/admin-x-framework($|/)|^clients/admin-x-framework/' },
     },
     // ============================================================
-    // apps/ — admin-x-framework/ must not depend on feature apps
+    // clients/ — admin-x-framework/ must not depend on feature apps
     // ============================================================
     {
       name: 'framework-not-feature-apps',
       comment:
         'admin-x-framework/ must not depend on feature apps (activitypub). The framework layer sits below the feature layer.',
       severity: 'error',
-      from: { path: '^apps/admin-x-framework/' },
-      to: { path: '^@tryghost/activitypub($|/)|^apps/activitypub/' },
+      from: { path: '^clients/admin-x-framework/' },
+      to: { path: '^@tryghost/activitypub($|/)|^clients/activitypub/' },
     },
     // ============================================================
-    // apps/ — public UMD apps must not depend on admin-only libraries
+    // clients/ — public UMD apps must not depend on admin-only libraries
     // ============================================================
     {
       name: 'public-apps-not-admin-libs',
@@ -628,9 +628,9 @@ module.exports = {
         'Public UMD apps (portal, comments-ui, etc.) must not depend on admin-only libraries (shade, admin-x-framework).',
       severity: 'error',
       from: {
-        path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
+        path: '^clients/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
-      to: { path: '^@tryghost/(shade|admin-x-framework)($|/)|^apps/(shade|admin-x-framework)/' },
+      to: { path: '^@tryghost/(shade|admin-x-framework)($|/)|^clients/(shade|admin-x-framework)/' },
     },
     {
       name: 'public-apps-not-field-rules',
@@ -638,7 +638,7 @@ module.exports = {
         "Public UMD apps load on every page view of a site, so they draw custom fields from @tryghost/metafield-types/structure rather than loading the package root's value rules, which carry zod and libphonenumber-js. Types from the root are fine.",
       severity: 'error',
       from: {
-        path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
+        path: '^clients/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
       to: {
         path: '^@tryghost/metafield-types$|^contracts/metafield-types/(src|build)/index\\.(ts|js)$|^libphonenumber-js($|/)|(^|/)node_modules/libphonenumber-js/',
@@ -646,18 +646,18 @@ module.exports = {
       },
     },
     // ============================================================
-    // apps/ — admin is an app, not a library
+    // clients/ — admin is an app, not a library
     // ============================================================
     {
       name: 'admin-is-app',
       comment:
         'No sibling app or library may depend on @tryghost/admin - whether by package specifier or by relative reach-in. Admin sits at the top of the layer stack.',
       severity: 'error',
-      from: { path: '^apps/', pathNot: '^apps/admin/' },
-      to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
+      from: { path: '^clients/', pathNot: '^clients/admin/' },
+      to: { path: '^@tryghost/admin($|/)|^clients/admin/' },
     },
     // ============================================================
-    // apps/ — test data must not reach production source
+    // clients/ — test data must not reach production source
     // ============================================================
     {
       name: 'no-test-data-in-production-source',
@@ -665,7 +665,7 @@ module.exports = {
         'App source must not import @tryghost/test-data. Only the ./selectors/* subpath is allowed, and only for testids — product copy is declared in the component that renders it. Tests, fixtures, and test utilities are exempt.',
       severity: 'error',
       from: {
-        path: '^apps/[^/]+/src/',
+        path: '^clients/[^/]+/src/',
         pathNot: ['\\.test\\.[^/]+$', '(^|/)__fixtures__/', '(^|/)__test-utils__/'],
       },
       to: {
@@ -676,60 +676,60 @@ module.exports = {
       },
     },
     // ============================================================
-    // apps/admin — domains cross into each other only via api.ts
+    // clients/admin — domains cross into each other only via api.ts
     // ============================================================
     {
       name: 'admin-domains-cross-via-api-only',
       comment:
-        "A domain folder in apps/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
+        "A domain folder in clients/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
       severity: 'error',
       from: {
-        path: '^apps/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/',
+        path: '^clients/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/',
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {
-        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
+        path: '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
         pathNot: [
-          '^(?:@/|apps/admin/src/)$1($|/)',
-          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
+          '^(?:@/|clients/admin/src/)$1($|/)',
+          '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
 
           // Shared-shaped modules that still live inside a domain.
           // Goal: move them under src/shared and work this list down to empty.
-          '^(?:@/|apps/admin/src/)settings/components/(?:koenig-loader|error-boundary)$',
-          '^(?:@/|apps/admin/src/)posts/list/post-time$',
+          '^(?:@/|clients/admin/src/)settings/components/(?:koenig-loader|error-boundary)$',
+          '^(?:@/|clients/admin/src/)posts/list/post-time$',
         ],
       },
     },
     // ============================================================
-    // apps/admin — the shell and layout import domains only via api.ts
+    // clients/admin — the shell and layout import domains only via api.ts
     // ============================================================
     {
       name: 'admin-shell-into-domains-via-api-only',
       comment:
-        'The admin shell (top-level files in apps/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
+        'The admin shell (top-level files in clients/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
       severity: 'error',
       from: {
-        path: '^apps/admin/src/(?:(?:layout|hooks|providers|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
+        path: '^clients/admin/src/(?:(?:layout|hooks|providers|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {
-        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
+        path: '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
         pathNot: [
-          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
+          '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
         ],
       },
     },
     // ============================================================
-    // apps/admin — shared/ must stay domain-free
+    // clients/admin — shared/ must stay domain-free
     // ============================================================
     {
       name: 'admin-shared-no-domains',
       comment:
-        'apps/admin/src/shared must not import from feature domains. Move code used by a single domain into that domain; keep shared/ generic. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier.',
+        'clients/admin/src/shared must not import from feature domains. Move code used by a single domain into that domain; keep shared/ generic. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier.',
       severity: 'error',
-      from: { path: '^apps/admin/src/shared/' },
+      from: { path: '^clients/admin/src/shared/' },
       to: {
-        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor|layout)($|/)',
+        path: '^(@/|clients/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor|layout)($|/)',
       },
     },
   ],
@@ -763,14 +763,14 @@ module.exports = {
     doNotFollow: {
       path: [
         'node_modules',
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
+        '^(?!ghost/core/server/services/)(clients|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
       ],
     },
     // Skip our own tests and emitted companions. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.
     exclude: {
       path: [
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/',
+        '^(?!ghost/core/server/services/)(clients|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/',
         ...sourceExclusions(__dirname),
       ],
     },

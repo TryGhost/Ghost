@@ -5,7 +5,7 @@ Ghost's shared ESLint rules live in two internal packages:
 - `@internal/cfg-eslint` provides shared rule atoms and `nodeLibConfig()` for
   Node.js libraries.
 - `@internal/cfg-eslint-react` provides `reactAppConfig()` for React apps under
-  `apps/`.
+  `clients/`.
 
 Both factories are synchronous and document their options with JSDoc and
 examples in their `index.mjs` files. Add the relevant package as a
@@ -41,7 +41,7 @@ were turned on are recorded, per file and rule, in each app's
   recorded count.
 - Fixing a recorded violation fails lint too, until the count is lowered. Run
   the app's ESLint command with `--prune-suppressions`, for example
-  `pnpm exec eslint . --prune-suppressions` in `apps/admin`, and commit the
+  `pnpm exec eslint . --prune-suppressions` in `clients/admin`, and commit the
   result.
 
 Counts only go down. Fix a new violation rather than adding it to the file.
@@ -50,7 +50,7 @@ ESLint writes these files, so `oxfmt` ignores them.
 To see how many violations remain across the apps:
 
 ```bash
-jq -s '[.[][][] | .count] | add' apps/*/eslint-suppressions.json
+jq -s '[.[][][] | .count] | add' clients/*/eslint-suppressions.json
 ```
 
 ## Plugin dependencies

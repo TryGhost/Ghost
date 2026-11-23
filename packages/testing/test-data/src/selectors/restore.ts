@@ -1,6 +1,6 @@
 /**
  * Restore screen selector strings, consumed by the admin screen helpers and the
- * e2e page objects. Source of truth: apps/admin/src/editor/restore.
+ * e2e page objects. Source of truth: clients/admin/src/editor/restore.
  */
 
 // accessible names

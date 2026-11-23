@@ -72,8 +72,8 @@ call site. It is a short cleanup step, not a permanent home for released flags.
 1. Add the key to `PRIVATE_FEATURES` or `PUBLIC_BETA_FEATURES` in
    `ghost/core/shared/labs.js`.
 2. Add the matching toggle to
-   `apps/admin/src/settings/advanced/labs/private-features.tsx` or
-   `apps/admin/src/settings/advanced/labs/beta-features.tsx`.
+   `clients/admin/src/settings/advanced/labs/private-features.tsx` or
+   `clients/admin/src/settings/advanced/labs/beta-features.tsx`.
 3. Gate the server and browser behavior that must ship together.
 4. Add tests for both the enabled and disabled behavior.
 5. Update and review the Admin config and settings API snapshots.
@@ -129,7 +129,7 @@ compatibility branches, without changing ordinary component calls. Document
 milestone-specific scope and exclusions alongside the affected design.
 
 Content-list and table row behavior follows Shade's
-[Lists and tables contract](../../apps/shade/src/docs/list-rows.mdx#shared-defaults)
+[Lists and tables contract](../../clients/shade/src/docs/list-rows.mdx#shared-defaults)
 in both the current and upcoming UI. Row alignment, feedback, primary actions
 and press behavior are shared defaults, independent of `admin7Design`.
 

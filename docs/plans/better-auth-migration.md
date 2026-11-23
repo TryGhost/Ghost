@@ -155,8 +155,8 @@ needs an explicit pass-through. Internal keys (`ghost-scheduler`,
 `permissions_roles` and `permissions_users` tables are unused and unseeded and
 go in 7.0. `roles`, `roles_users` and `api_keys.role_id` remain.
 
-**Clients.** React Admin (`apps/admin`) owns every auth screen
-(`apps/admin/src/auth/`: sign-in, verify, reset, signup, setup, sign-out). The
+**Clients.** React Admin (`clients/admin`) owns every auth screen
+(`clients/admin/src/auth/`: sign-in, verify, reset, signup, setup, sign-out). The
 screens use an `AuthClient` contract shaped like the Better Auth client
 (`{data, error}`, codes `USER_NOT_FOUND`, `INVALID_PASSWORD`,
 `PASSWORD_RESET_REQUIRED`, `INVALID_CODE`, `twoFactorRedirect` with
@@ -252,7 +252,7 @@ or an upstream contribution later (Better Auth has no Knex adapter).
 ### 3.3 Ghost plugins
 
 Each is a `BetterAuthPlugin` in `auth/better-auth/plugins/`, with a client
-counterpart in `apps/admin-x-framework` where the browser needs one.
+counterpart in `clients/admin-x-framework` where the browser needs one.
 Server-only endpoints use `createAuthEndpoint.serverOnly()`. Ghost operations
 that make several Better Auth writes open them with `runWithTransaction` from
 `@better-auth/core/context`, so `databaseHooks.*.before` hooks run in the
@@ -858,7 +858,7 @@ Exit: identical client experience for new-device verification and
 Runs alongside Phase 5, after Phase 4's token policy and scopes.
 
 1. In-development `oauth_*` tables; `@better-auth/oauth-provider` with the
-   Phase 4 scope vocabulary, Ghost-styled consent in `apps/admin/src/auth/`,
+   Phase 4 scope vocabulary, Ghost-styled consent in `clients/admin/src/auth/`,
    and token lifetimes. Decide Redis secondary storage for the token tables
    here (§4.1).
 2. Installing an app registers it as an OAuth client; uninstalling revokes
@@ -873,9 +873,9 @@ Runs alongside Phase 5, after Phase 4's token policy and scopes.
 ### Phase 5: New sign-in methods, token UI, Pro cohort (M)
 
 1. `magicLink` with Ghost mail, signing in to a verified Better Auth session,
-   surfaced in `apps/admin/src/auth/` through an `AuthClient` addition behind
+   surfaced in `clients/admin/src/auth/` through an `AuthClient` addition behind
    the `staffMagicLinks` labs flag.
-2. Personal Access Tokens UI in `apps/admin/src/settings/general/users/`
+2. Personal Access Tokens UI in `clients/admin/src/settings/general/users/`
    (name, scopes, expiry, list, revoke, shown once); site tokens in the
    Integrations settings, Administrators only. Document Bearer as the
    recommended Admin API method.
@@ -922,8 +922,8 @@ integration API responses.
 
 ### Phase 8: Better Auth client, team SSO, session management (L)
 
-1. Better Auth client in `apps/admin-x-framework` with the plugin clients;
-   `apps/admin/src/auth/client/better-auth-client.ts` implements `AuthClient`
+1. Better Auth client in `clients/admin-x-framework` with the plugin clients;
+   `clients/admin/src/auth/client/better-auth-client.ts` implements `AuthClient`
    and is chosen when `config.auth.engine` allows, keeping
    `ghost-auth-client.ts` for older servers.
 2. Team SSO with `@better-auth/sso` (OIDC and SAML), provisioning only existing
@@ -1144,9 +1144,9 @@ New (under `ghost/core/server` unless stated):
 - `auth/policy/scopes.ts`, `token-policy.ts`, `capabilities.ts`,
   `authorize.ts`, `rules/`
 - `data/migrations/versions/<next>/…` as tables graduate
-- `apps/admin-x-framework/src/auth/`, `src/api/personal-access-tokens.ts`
-- `apps/admin/src/auth/client/better-auth-client.ts`
-- `apps/admin/src/settings/general/users/` token, passkey and authenticator UI
+- `clients/admin-x-framework/src/auth/`, `src/api/personal-access-tokens.ts`
+- `clients/admin/src/auth/client/better-auth-client.ts`
+- `clients/admin/src/settings/general/users/` token, passkey and authenticator UI
 - `ghost/test/integration/auth/knex-adapter.test.ts`,
   `ghost/test/e2e-api/admin/auth-native.test.js`, `bearer-tokens.test.js`
 
@@ -1165,7 +1165,7 @@ Changed:
 - `data/schema/schema.ts`, `data/schema/in-development.ts`,
   `data/exporter/table-lists.js`, `ghost/test/unit/server/data/schema/integrity.test.ts`
 - `ghost/core/shared/config/defaults.json`, `ghost/core/shared/labs.js`
-- `apps/admin/src/auth/`, `apps/admin-x-framework/src/api/session.ts`
+- `clients/admin/src/auth/`, `clients/admin-x-framework/src/api/session.ts`
 - `docs/codebase/authentication.md`, `docs/codebase/direction.md`
 
 Removed in Phase 9 / 7.0: `auth/session/express-session.js`,

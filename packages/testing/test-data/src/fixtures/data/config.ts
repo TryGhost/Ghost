@@ -1,4 +1,4 @@
-// Canned Ghost Admin API response data, ported from apps/admin-x-framework/src/test/responses — see fixtures/index.ts.
+// Canned Ghost Admin API response data, ported from clients/admin-x-framework/src/test/responses — see fixtures/index.ts.
 // `labs` is not in this map — `configResponse` fills it from the labs defaults so it stays in lockstep with `settingsResponse`.
 export const configData = {
   config: {

@@ -85,7 +85,7 @@ The command starts:
 Admin and its shared libraries hot-reload. Portal and the other public apps are
 built when the command starts; `pnpm dev:public` rebuilds them as you edit.
 These commands preserve the site's existing feature flags; see
-[Admin development](../../apps/admin/README.md#development) to preview flagged
+[Admin development](../../clients/admin/README.md#development) to preview flagged
 features with session overrides.
 
 Admin's dev server only accepts connections from this machine. Set

@@ -7,7 +7,7 @@ across the workspace dependency graph.
 
 | Directory        | Contains                                                                      |
 | ---------------- | ----------------------------------------------------------------------------- |
-| `apps/`          | Admin applications, public browser apps, and frontend libraries               |
+| `clients/`       | Admin applications, public browser apps, and frontend libraries               |
 | `ghost/`         | The Ghost server, frontend rendering, migrations, and server tests            |
 | `koenig/`        | The Koenig editor and packages for storing, converting, and rendering content |
 | `packages/`      | Shared libraries, schemas, translations, test data, and adapter contracts     |
@@ -24,7 +24,9 @@ service before changing it.
 
 ## Frontend applications
 
-`apps/` contains several types of frontend project:
+`clients/` contains several types of frontend project. These are Ghost's own
+browser clients, separate from Ghost Apps, the installable extensions Admin
+lists under Apps.
 
 - `admin/` is the React Admin application.
 - `activitypub/` is a React application included in Admin.
@@ -39,7 +41,7 @@ configuration from data attributes. Ghost Core renders these integrations
 through theme helpers such as `{{ghost_head}}` and `{{comments}}`.
 
 Admin is a single React application. See
-[`apps/admin/README.md`](../../apps/admin/README.md) for how it is organized.
+[`clients/admin/README.md`](../../clients/admin/README.md) for how it is organized.
 
 ## Ghost Core
 

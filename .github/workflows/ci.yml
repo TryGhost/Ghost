@@ -247,11 +247,11 @@ jobs:
               - '!ghost/vitest.config.ts'
               - '!ghost/vitest.config.inventory.ts'
               - '!koenig/*/test/**'
-              - '!apps/admin/src/**/*.test.ts'
-              - '!apps/admin/src/**/*.test.tsx'
-              - '!apps/admin/src/**/*.screen.ts'
-              - '!apps/admin/test-utils/**'
-              - '!apps/admin/vitest.acceptance.config.ts'
+              - '!clients/admin/src/**/*.test.ts'
+              - '!clients/admin/src/**/*.test.tsx'
+              - '!clients/admin/src/**/*.screen.ts'
+              - '!clients/admin/test-utils/**'
+              - '!clients/admin/vitest.acceptance.config.ts'
               - *renovate_only
             # The Analytics E2E shards normally pull a prebuilt tb-cli image
             # from GHCR, which is only republished from main. Without this the
@@ -315,7 +315,7 @@ jobs:
           # Browser-only projects don't depend on the Node version; only the primary Node leg runs them.
           UNIT_TEST_NODE_PROJECTS_STR=""
           if [[ -n "$UNIT_TEST_PROJECTS_STR" ]]; then
-            UNIT_TEST_NODE_PROJECTS_STR=$(pnpm nx show projects --projects "$UNIT_TEST_PROJECTS_STR" --exclude 'apps/*,tag:playwright' --json | jq -r 'join(",")')
+            UNIT_TEST_NODE_PROJECTS_STR=$(pnpm nx show projects --projects "$UNIT_TEST_PROJECTS_STR" --exclude 'clients/*,tag:playwright' --json | jq -r 'join(",")')
           fi
           echo "unit_test_node_projects_str=$UNIT_TEST_NODE_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
@@ -326,7 +326,7 @@ jobs:
 
           # "playwright" tag = projects whose test:acceptance suite runs in
           # job_apps_acceptance-tests. Tag-based rather than directory-based so
-          # the matrix isn't coupled to the workspace layout (apps/*, koenig/*, ...).
+          # the matrix isn't coupled to the workspace layout (clients/*, koenig/*, ...).
           PLAYWRIGHT_PROJECTS=$(pnpm nx show projects ${AFFECTED_ARG} \
             --withTarget test:acceptance \
             --projects 'tag:playwright' \
@@ -1335,7 +1335,7 @@ jobs:
         if: always()
         id: app_name
         # trim '@tryghost/' prefix for better readability in test report artifact names;
-        # resolve the project root since apps live in apps/* and koenig/*
+        # resolve the project root since apps live in clients/* and koenig/*
         run: |
           APP_NAME="${{ matrix.app }}"
           APP_ROOT=$(pnpm nx show project ${{ matrix.app }} --json | jq -r .root)
@@ -1357,7 +1357,7 @@ jobs:
           path: ${{ steps.app_name.outputs.root }}/playwright-report
           retention-days: 30
 
-      # Vitest Browser Mode apps (e.g. apps/admin) save failure screenshots
+      # Vitest Browser Mode apps (e.g. clients/admin) save failure screenshots
       # into __screenshots__/ directories next to the specs, not a
       # playwright-report; upload them so failures are debuggable from CI.
       - name: Upload failure screenshots
@@ -1375,7 +1375,7 @@ jobs:
         continue-on-error: true
         run: |
           node tools/scripts/ci/summarize-admin-acceptance.ts \
-            --report=apps/admin/test-results/acceptance.json \
+            --report=clients/admin/test-results/acceptance.json \
             --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Admin acceptance results
@@ -1383,7 +1383,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-acceptance-results-${{ matrix.shardIndex }}
-          path: apps/admin/test-results/acceptance.json
+          path: clients/admin/test-results/acceptance.json
           if-no-files-found: ignore
           retention-days: 30
 
@@ -1536,11 +1536,11 @@ jobs:
           # admin-x-framework, shade, koenig-lexical), so install the full workspace.
 
       - name: Build admin
-        # IS_SHIPPING enables the Sentry vite plugin in apps/admin, which
+        # IS_SHIPPING enables the Sentry vite plugin in clients/admin, which
         # injects debug IDs into the built bundles. Only shippable builds
         # (main + tags in the canonical repo) get it. The maps are uploaded by
         # job_upload_sourcemaps so Sentry can't block the build.
-        # Builds apps/admin/dist, ghost/core/built/admin (assemble:assets),
+        # Builds clients/admin/dist, ghost/core/built/admin (assemble:assets),
         # and ghost/core/built/embed-renderer (separate-origin previews).
         # Non-tag builds bake in GHOST_BUILD_VERSION, in the same format as the
         # server version job_docker sets, for About's Admin version.
@@ -1577,7 +1577,7 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: admin-build-cd
-          path: apps/admin/dist
+          path: clients/admin/dist
           retention-days: 7
           if-no-files-found: error
 
@@ -1618,7 +1618,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: admin-build-cd
-          path: apps/admin/dist
+          path: clients/admin/dist
 
       - name: Upload sourcemaps to Sentry
         env:
@@ -1636,7 +1636,7 @@ jobs:
           if [ "$GITHUB_REF_TYPE" != "tag" ]; then
             VERSION="${VERSION}+${GITHUB_SHA:0:7}"
           fi
-          node tools/scripts/build/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" apps/admin/dist
+          node tools/scripts/build/upload-sentry-sourcemaps.ts --release "ghost@${VERSION}" clients/admin/dist
 
   job_pack:
     name: Build Ghost-CLI archive
@@ -2054,11 +2054,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Extract into a clean staging dir and build from there: the tarball holds
-      # exactly the apps/*/umd paths the Dockerfile COPYs, while the workspace at
+      # exactly the clients/*/umd paths the Dockerfile COPYs, while the workspace at
       # this point is dirty (node_modules, dist/ outputs from the earlier builds)
       # and the root-anchored .dockerignore patterns don't cover the nested
       # copies — using `.` as context would ship hundreds of MB into the builder
-      # and let stray build output under apps/*/umd leak into the image.
+      # and let stray build output under clients/*/umd leak into the image.
       - name: Download public app artifacts (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -2333,12 +2333,12 @@ jobs:
       - name: Pack public app artifacts
         run: |
           apps=(
-            apps/portal/umd
-            apps/comments-ui/umd
-            apps/sodo-search/umd
-            apps/signup-form/umd
-            apps/announcement-bar/umd
-            apps/admin-toolbar/umd
+            clients/portal/umd
+            clients/comments-ui/umd
+            clients/sodo-search/umd
+            clients/signup-form/umd
+            clients/announcement-bar/umd
+            clients/admin-toolbar/umd
           )
           # Nx cache restores keep the uploader's file modes; Ghost reads these as a non-root user
           chmod -R u=rwX,go=rX "${apps[@]}"

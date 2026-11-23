@@ -2,7 +2,7 @@
 name: Shade dropdown surface contract
 description: DropdownMenu, Select, and Popover share one visual recipe (bg-surface-elevated-2 + border-border/60 dark:border-border/30 + shadow-md). Change them together. Trigger when editing any of those three Shade files.
 autoTrigger:
-  - fileEdit: "apps/shade/src/components/ui/{dropdown-menu,select,popover}.tsx"
+  - fileEdit: "clients/shade/src/components/ui/{dropdown-menu,select,popover}.tsx"
 ---
 
 # Shade — dropdown surface contract
@@ -41,11 +41,11 @@ The `dark:border-border/30` is a legitimate exception to the no-`dark:`-for-colo
 
 If a design change touches the floating-menu surface (background, border, shadow, elevation), edit **all three** files:
 
-- `apps/shade/src/components/ui/dropdown-menu.tsx` (`DropdownMenuContent` and `DropdownMenuSubContent`)
-- `apps/shade/src/components/ui/select.tsx` (`SelectContent`)
-- `apps/shade/src/components/ui/popover.tsx` (`PopoverContent`)
+- `clients/shade/src/components/ui/dropdown-menu.tsx` (`DropdownMenuContent` and `DropdownMenuSubContent`)
+- `clients/shade/src/components/ui/select.tsx` (`SelectContent`)
+- `clients/shade/src/components/ui/popover.tsx` (`PopoverContent`)
 
-If a fourth Radix-backed surface needs the same recipe, extract it as a `floatingSurface` recipe under `apps/shade/src/components/ui/`. Two consumers is too thin to justify a Recipe; three is the current count and just covered by mirroring.
+If a fourth Radix-backed surface needs the same recipe, extract it as a `floatingSurface` recipe under `clients/shade/src/components/ui/`. Two consumers is too thin to justify a Recipe; three is the current count and just covered by mirroring.
 
 ## Items inside the menu
 

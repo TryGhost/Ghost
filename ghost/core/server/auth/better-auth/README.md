@@ -360,7 +360,7 @@ upload then never runs for an app request that can't succeed.
 | `StaffSession`              | `services/app-installations/staff-session.ts`  | The staff user and staff session an app session's tokens are for    |
 | `AppSessionToken`           | `services/app-installations/serializers.ts`    | What Admin gets: `access_token` and `expires_in`                    |
 | `RoutedMethod`              | `@tryghost/api-framework`                      | The controller method a route runs, which `refuseAppEarly` checks   |
-| `AppTokenHolder`            | `apps/admin/src/apps/lib/app-token.ts`         | Admin's holder of an app session's token, which renews it           |
+| `AppTokenHolder`            | `clients/admin/src/apps/lib/app-token.ts`      | Admin's holder of an app session's token, which renews it           |
 
 ### Details
 

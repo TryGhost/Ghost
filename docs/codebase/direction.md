@@ -75,9 +75,9 @@ that every migration path is settled:
 
 ### Build Admin features in React
 
-Build new Admin UI in [`apps/admin/`](../../apps/admin/) with
+Build new Admin UI in [`clients/admin/`](../../clients/admin/) with
 `admin-x-framework` for API access and Shade for UI. The
-[Admin README](../../apps/admin/README.md) describes the current integration.
+[Admin README](../../clients/admin/README.md) describes the current integration.
 
 ### Use TypeScript
 

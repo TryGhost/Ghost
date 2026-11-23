@@ -287,7 +287,7 @@ async function fixture(t: TestContext) {
     await cp(new URL(`../../../${file}`, import.meta.url), join(root, file));
   }
   await write('.dependency-cruiser-known-violations.json', '[]');
-  await write('apps/empty.ts', 'export {};');
+  await write('clients/empty.ts', 'export {};');
   await write('package.json', '{"type":"module"}');
   await symlink(new URL('../node_modules', import.meta.url), join(root, 'node_modules'));
   await write(legacyInventoryFile, JSON.stringify({ services: { alpha: entry() } }));
@@ -699,8 +699,8 @@ test('reports and boundary lint share the graph and known-violations file', asyn
   const report = f.run(['report', 'alpha', '--json']);
   assert.equal(report.status, 0, report.stderr);
   assert.equal(JSON.parse(report.stdout).findings.length, 2);
-  await f.write('apps/portal/forbidden.ts', "import '../admin-x-framework/implementation';");
-  await f.write('apps/admin-x-framework/implementation.ts', 'export {};');
+  await f.write('clients/portal/forbidden.ts', "import '../admin-x-framework/implementation';");
+  await f.write('clients/admin-x-framework/implementation.ts', 'export {};');
   const auditResult = f.run(['audit', '--output-type', 'json']);
   assert.equal(auditResult.status, 0, auditResult.stderr);
   const graph = JSON.parse(auditResult.stdout);

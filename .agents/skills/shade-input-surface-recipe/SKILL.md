@@ -2,13 +2,13 @@
 name: Shade inputSurface recipe
 description: Use the inputSurface() recipe for form-control chrome (border, background, radius, focus ring, invalid state) — don't roll your own. Trigger when editing form-control-shaped files in Shade.
 autoTrigger:
-  - fileEdit: "apps/shade/src/components/ui/{input,textarea,input-group,select,combobox,multi-select-combobox,dropzone,calendar,command}.tsx"
-  - fileEdit: "apps/shade/src/components/ui/{input-group,dropzone}-variants.ts"
+  - fileEdit: "clients/shade/src/components/ui/{input,textarea,input-group,select,combobox,multi-select-combobox,dropzone,calendar,command}.tsx"
+  - fileEdit: "clients/shade/src/components/ui/{input-group,dropzone}-variants.ts"
 ---
 
 # Shade — `inputSurface` recipe
 
-Form controls share one visual rule: border, background, radius, transition, focus ring, invalid state. That rule lives in **`inputSurface`** (`apps/shade/src/components/ui/input-surface.ts`) and is used by `Input`, `Textarea`, `InputGroup`, and the `Select` trigger. Don't duplicate the chrome — compose the recipe.
+Form controls share one visual rule: border, background, radius, transition, focus ring, invalid state. That rule lives in **`inputSurface`** (`clients/shade/src/components/ui/input-surface.ts`) and is used by `Input`, `Textarea`, `InputGroup`, and the `Select` trigger. Don't duplicate the chrome — compose the recipe.
 
 ```ts
 import {inputSurface, inputSurfaceClasses} from '@/components/ui/input-surface';
@@ -109,4 +109,4 @@ const dyn = `has-[[data-slot=control]:focus-visible]:${ringColor}`;
 
 ## Source of truth
 
-`apps/shade/src/components/ui/input-surface.ts` — the JSDoc on `inputSurface` is canonical. Human docs: Storybook → Recipes / inputSurface.
+`clients/shade/src/components/ui/input-surface.ts` — the JSDoc on `inputSurface` is canonical. Human docs: Storybook → Recipes / inputSurface.

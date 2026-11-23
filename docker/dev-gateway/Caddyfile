@@ -102,7 +102,7 @@
 		@public_app path_regexp public_app ^/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/(.*)$
 		handle @public_app {
 			rewrite * /{re.public_app.2}
-			root * /srv/apps/{re.public_app.1}/umd
+			root * /srv/clients/{re.public_app.1}/umd
 			file_server
 		}
 

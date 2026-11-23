@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 // Root Vitest config — a single watcher across every Vitest-based package in
 // the monorepo. `pnpm test:watch` runs this. Each package is a project that
 // keeps its own config (environment, setup, pool); scope to one with a path
-// filter, e.g. `pnpm test:watch apps/admin`.
+// filter, e.g. `pnpm test:watch clients/admin`.
 //
 // Not included: signup-form has no Vitest unit tests (its test:unit is a
 // build; test/unit holds only an empty placeholder).
@@ -15,8 +15,8 @@ export default defineConfig({
       'packages/**',
       '!packages/_template',
       'contracts/*',
-      'apps/*',
-      '!apps/signup-form',
+      'clients/*',
+      '!clients/signup-form',
     ],
     // ghost's snapshot tests use @tryghost/jest-snapshot, which
     // manages its own __snapshots__/*.snap files. Vitest's native

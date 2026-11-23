@@ -1,6 +1,6 @@
 /**
  * Ghost(Pro) billing screen selector strings, consumed by the admin screen
- * helpers and the e2e page objects. Source of truth: apps/admin/src/billing.
+ * helpers and the e2e page objects. Source of truth: clients/admin/src/billing.
  */
 
 // accessible names

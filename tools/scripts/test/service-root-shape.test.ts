@@ -337,7 +337,7 @@ test('does not enforce the root shape on legacy roots or implementation files', 
     'ghost/core/server/services/app-installations/implementation.ts',
     'ghost/core/server/services/app-installations/nested/index.ts',
     'ghost/test/example.ts',
-    'apps/admin/example.ts',
+    'clients/admin/example.ts',
   ]) {
     assert.equal(lint('export const ordinary = true;', filename).status, 0, filename);
   }

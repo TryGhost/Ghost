@@ -1022,7 +1022,7 @@ describe('Batch Sending Service', function () {
       /**
        * !! WARNING !!
        * If the error message is changed that it no longer contains the word 'partially',
-       * we'll also need the frontend logic in apps/admin/src/editor/publish/components/complete-with-email-error-step.tsx
+       * we'll also need the frontend logic in clients/admin/src/editor/publish/components/complete-with-email-error-step.tsx
        */
       await assert.rejects(
         service.sendBatches({
