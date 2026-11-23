@@ -1,6 +1,6 @@
 import {JSDOM} from 'jsdom';
 import type {Visibility} from '../../src/utils/visibility.js';
-import {getEmailMediaHref, hasRestrictedCards, isOldVisibilityFormat, isVisibilityRestricted, isWebVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} from '../../src/utils/visibility.js';
+import {getEmailMediaHref, getRenderedVisibility, hasRestrictedCards, isOldVisibilityFormat, isVisibilityRestricted, isWebVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} from '../../src/utils/visibility.js';
 
 type VisibilityRenderOutput = Parameters<typeof renderWithVisibility>[0];
 
@@ -313,6 +313,33 @@ describe('Utils: visibility', function () {
                 {emailOnly: false},
                 {memberSegment: 'status:free,status:-free'}
             ));
+        });
+    });
+
+    describe('getRenderedVisibility', function () {
+        it('returns everyone for missing visibility', function () {
+            expect(getRenderedVisibility(undefined)).toEqual(buildDefaultVisibility());
+        });
+
+        it('migrates the old format', function () {
+            expect(getRenderedVisibility({showOnWeb: false, showOnEmail: true, segment: 'status:free'})).toEqual({
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:free'}
+            });
+        });
+
+        it('hides the card on the web for a web segment it does not recognise', function () {
+            expect(getRenderedVisibility({
+                web: {nonMember: true, memberSegment: 'status:-free,status:free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            }).web).toEqual({nonMember: false, memberSegment: ''});
+        });
+
+        it('only shows the card to public visitors when nonMember is exactly true', function () {
+            expect(getRenderedVisibility({
+                web: {nonMember: null as unknown as boolean, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            }).web).toEqual({nonMember: false, memberSegment: 'status:free,status:-free'});
         });
     });
 

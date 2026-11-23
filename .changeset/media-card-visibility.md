@@ -1,6 +1,6 @@
 ---
 "@tryghost/koenig-lexical": minor
-"@tryghost/kg-default-nodes": patch
+"@tryghost/kg-default-nodes": minor
 ---
 
 Added web/email visibility settings to the image, gallery, video, audio, file, callout, header, product, toggle, button and bookmark cards, so content can be shown in the email but hidden on the published post (and vice versa, or limited to a member segment)

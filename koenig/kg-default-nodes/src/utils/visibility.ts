@@ -169,6 +169,26 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
     return newVisibility;
 }
 
+// The audiences a card is rendered for. Only Ghost's own web segments and a
+// true or false visitor setting are valid; any other value hides the card on the web.
+export function getRenderedVisibility(visibility: Visibility | undefined) {
+    const migrated = visibility ? migrateOldVisibilityFormat(visibility) : buildDefaultVisibility();
+
+    const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
+    const storedWeb = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
+    const validSegment = WEB_SEGMENTS.includes(storedWeb.memberSegment as string);
+
+    return {
+        web: {
+            nonMember: validSegment && storedWeb.nonMember === true,
+            memberSegment: validSegment ? storedWeb.memberSegment as string : NO_MEMBERS_SEGMENT
+        },
+        email: {
+            memberSegment: email.memberSegment as string
+        }
+    };
+}
+
 export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visibility: Visibility | undefined, options: {target?: string}) {
     if (!visibility) {
         return originalRenderOutput;
@@ -182,17 +202,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
 
     const document = element.ownerDocument;
 
-    const migrated = migrateOldVisibilityFormat(visibility);
-
-    const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
-    // Only Ghost's own member segments and a true or false visitor setting are valid;
-    // a card with any other value is hidden
-    const storedWeb = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
-    const validSegment = WEB_SEGMENTS.includes(storedWeb.memberSegment as string);
-    const web = {
-        nonMember: validSegment && storedWeb.nonMember === true,
-        memberSegment: validSegment ? storedWeb.memberSegment as string : NO_MEMBERS_SEGMENT
-    };
+    const {web, email} = getRenderedVisibility(visibility);
 
     if (options.target === 'email') {
         if (email.memberSegment === NO_MEMBERS_SEGMENT) {

@@ -1,5 +1,5 @@
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
-import {buildDefaultVisibility, migrateOldVisibilityFormat} from '@tryghost/kg-default-nodes/visibility';
+import {buildDefaultVisibility, getRenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
     WEB_AND_EMAIL: 'web and email',
@@ -143,28 +143,14 @@ export function serializeOptionsToVisibility(options, existingVisibility) {
     };
 }
 
-function normalizeSegment(segment) {
-    return (segment ?? '').split(',').filter(Boolean).sort().join(',');
-}
-
-function normalizeVisibility(visibility) {
-    const migrated = visibility ? migrateOldVisibilityFormat(visibility) : buildDefaultVisibility();
-    return {
-        // match the renderer, which only shows the card to public visitors when this is exactly true
-        nonMember: migrated.web?.nonMember === true,
-        webSegment: normalizeSegment(migrated.web?.memberSegment),
-        emailSegment: normalizeSegment(migrated.email?.memberSegment)
-    };
-}
-
 // Whether two cards show to exactly the same audiences. Missing visibility
 // counts as the default (everyone), so a plain image matches a plain gallery.
 // Used to stop drag-and-drop merging images with different audiences, which
 // would otherwise silently widen who can see one of them.
 export function isSameVisibility(a, b) {
-    const x = normalizeVisibility(a);
-    const y = normalizeVisibility(b);
-    return x.nonMember === y.nonMember
-        && x.webSegment === y.webSegment
-        && x.emailSegment === y.emailSegment;
+    const x = getRenderedVisibility(a);
+    const y = getRenderedVisibility(b);
+    return x.web.nonMember === y.web.nonMember
+        && x.web.memberSegment === y.web.memberSegment
+        && x.email.memberSegment === y.email.memberSegment;
 }

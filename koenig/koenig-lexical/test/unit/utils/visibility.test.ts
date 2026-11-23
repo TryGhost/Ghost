@@ -282,9 +282,13 @@ describe('isSameVisibility', function () {
         expect(isSameVisibility(undefined, paidOnly)).toBe(false);
     });
 
-    it('ignores segment order', function () {
-        const reordered = {web: {nonMember: true, memberSegment: 'status:-free,status:free'}, email: {memberSegment: 'status:-free,status:free'}};
-        expect(isSameVisibility(reordered, everyone)).toBe(true);
+    // the renderer hides a card on the web when it doesn't recognise the web segment
+    it('does not treat an unrecognised web segment as everyone', function () {
+        const reordered = {...everyone, web: {nonMember: true, memberSegment: 'status:-free,status:free'}};
+        const hiddenOnWeb = {...everyone, web: {nonMember: false, memberSegment: ''}};
+
+        expect(isSameVisibility(reordered, everyone)).toBe(false);
+        expect(isSameVisibility(reordered, hiddenOnWeb)).toBe(true);
     });
 
     it('does not match different audiences', function () {
