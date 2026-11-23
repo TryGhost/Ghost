@@ -13,6 +13,14 @@ const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirnam
 const models = require('../../core/server/models');
 const { fixtureManager } = require('../../core/server/data/schema/fixtures');
 const settingsService = require('../../core/server/services/settings/settings-service');
+const { services } = require('./services');
+
+// Loading settings reads the limits, which the application builds on first use. A test that
+// loads settings without booting Ghost lets the application build services first, as boot does.
+async function initSettings() {
+  services.open();
+  await settingsService.init();
+}
 const labsService = require('../../core/shared/labs');
 const {
   Queries: EmailAnalyticsQueries,
@@ -908,7 +916,7 @@ const fixtures = {
       await models.Settings.add(labsSetting);
     }
 
-    await settingsService.init();
+    await initSettings();
   },
 };
 
@@ -953,7 +961,7 @@ const toDoList = {
     return fixtures.insertExtraTags();
   },
   settings: function populateSettings() {
-    return settingsService.init();
+    return initSettings();
   },
   'users:roles': function createUsersWithRoles() {
     return fixtures.createUsersWithRoles();

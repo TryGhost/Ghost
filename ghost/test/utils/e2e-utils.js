@@ -16,6 +16,7 @@ const jobsService = require('../../core/server/services/jobs-service');
 // Other Test Utilities
 const configUtils = require('./config-utils');
 const dbUtils = require('./db-utils');
+const { services } = require('./services');
 const urlServiceUtils = require('./url-service-utils');
 const redirects = require('./redirects');
 const context = require('./fixtures/context');
@@ -123,6 +124,9 @@ const _startGhost = async (options) => {
 
   await dbUtils.reset({ truncate: true });
 
+  // Loading settings reads the limits, which the application builds on first use. Boot allows
+  // that itself; this load runs before boot does.
+  services.open();
   await settingsService.init();
 
   // Actually boot Ghost
