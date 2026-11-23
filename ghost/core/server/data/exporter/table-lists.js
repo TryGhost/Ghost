@@ -51,6 +51,7 @@ const BACKUP_TABLES = [
   'members_metafields',
   'members_metafield_values',
   'members_metafield_bindings',
+  'segments',
   'mentions',
   'comments',
   'comment_likes',

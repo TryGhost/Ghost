@@ -339,7 +339,7 @@ describe('A sortable collection', function () {
         name: 'IncorrectUsageError',
         message: `${PLAIN} declares no sortable collection.`,
       });
-      // No table in Ghost's schema declares one yet.
+      // The same holds for a table of Ghost's schema.
       // @ts-expect-error `posts` declares no sortable collection.
       assert.throws(() => sortable('posts'), { name: 'IncorrectUsageError' });
     });
