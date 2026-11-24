@@ -187,11 +187,23 @@ Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
   the provider's routes. Plugins are fixed at boot: turning the flag on takes
   effect at the next restart. The `jwt` plugin sets no header on session reads
   and its session JWT route (`/token`) is disabled.
+- Boot reads the flag before remote flags load, so it must come from config
+  or the Labs setting. A flag turned on only through remote flags never
+  registers the provider, however often Ghost restarts.
 - Opaque access tokens carry the `ghost_app_` prefix. The provider registers
-  no scopes, `openid` included, so it issues no ID tokens and serves no OpenID
-  configuration; an ID token would last 5 minutes. Nobody manages clients
-  through the provider's endpoints (`clientPrivileges` refuses every action),
-  and none registers itself.
+  no scopes, `openid` included, so it issues no ID tokens; an ID token would
+  last 5 minutes. Nobody manages clients through the provider's endpoints
+  (`clientPrivileges` refuses every action), and none registers itself.
+- The provider supports no standard grant (`grantTypes` is empty): its token
+  endpoint refuses every grant and its authorize endpoint answers 404, since
+  Ghost issues app tokens itself. Its metadata routes,
+  `/.well-known/oauth-authorization-server` and
+  `/.well-known/openid-configuration`, are disabled, so it advertises nothing.
+- Registering the provider adds its hooks to every site with the flag on: a
+  request whose body carries `oauth_query` must carry the provider's
+  signature, a response that sets a session cookie resumes a pending
+  authorization (there never is one), and deleting a session runs back-channel
+  logout for clients that registered a URI (none does).
 
 The provider's per-IP rate limits don't apply: the `customStorage` limiter
 allows every path it doesn't map, `/oauth2/*` included.
