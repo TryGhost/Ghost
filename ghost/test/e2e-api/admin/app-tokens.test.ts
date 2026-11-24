@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { generateTestAppKeys, type TestAppKeys } from '../../utils/app-identity';
 import { insertTestInstallation } from '../../utils/app-installations';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
+import { SESSION_COOKIE_NAME as SESSION_COOKIE } from '../../../core/server/auth/better-auth/create-auth';
 
 const models = require('../../../core/server/models');
 // Required, not imported, so the stub reaches the copy Ghost loaded
@@ -16,8 +17,8 @@ const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
 
 describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>> & {
-    loginAsOwner(): Promise<void>;
     clearCookies(): void;
+    jar: { setCookies(cookies: string[]): void };
     get(path: string): any;
     post(path: string): any;
     delete(path: string): any;
@@ -30,24 +31,44 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
   const installation = (scopes: string[], status: 'active' | 'suspended' = 'active') =>
     insertTestInstallation(knex(), { scopes, status, keys });
 
-  /** The Owner's staff session, as signing in left it. */
-  const ownerSession = () =>
-    knex()('user_sessions').where({ user_id: owner().id }).orderBy('created_at', 'desc').first();
+  /**
+   * A new verified staff session for the Owner, and the cookies that sign a browser into it.
+   * Made directly, as signing in over HTTP is rate limited.
+   */
+  async function ownerSession() {
+    const setCookies: string[] =
+      await require('../../../core/server/auth').staffSessions.createVerifiedSession(owner().id);
+    const cookies = setCookies.map((c) => c.split(';')[0]);
+    const sessionCookie = cookies.find((c) => c.startsWith(`${SESSION_COOKIE}=`));
+    assert.ok(sessionCookie);
+    const token = decodeURIComponent(sessionCookie.slice(SESSION_COOKIE.length + 1)).split('.')[0];
+    const session = await knex()('user_sessions').where({ token }).first();
+    assert.ok(session);
+    return { id: session.id as string, setCookies };
+  }
 
-  /** A user token for the installation, as an app session start issues one. */
+  /** Signs the agent into a new staff session of the Owner's, as a browser would be. */
+  async function signInOwner() {
+    const session = await ownerSession();
+    agent.jar.setCookies(session.setCookies);
+    return session;
+  }
+
+  /** A user token for the installation, bound to a new staff session of the Owner's. */
   async function tokenFor(
     installationId: string,
     { clientScopes, tokenScopes }: { clientScopes: string[]; tokenScopes?: string[] },
   ) {
+    const session = await ownerSession();
     await appTokens().reconcileClient({ id: installationId, active: true, scopes: clientScopes });
     const issued = await appTokens().issue({
       installationId,
       userId: owner().id,
-      sessionId: (await ownerSession()).id,
+      sessionId: session.id,
       scopes: tokenScopes ?? clientScopes,
     });
-    assert.ok(issued);
-    return issued.accessToken as string;
+    assert.ok('accessToken' in issued, `refused: ${JSON.stringify(issued)}`);
+    return { token: issued.accessToken as string, session };
   }
 
   const bearer = (token: string) => `Bearer ${token}`;
@@ -57,8 +78,11 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users', 'posts');
     keys = await generateTestAppKeys();
-    // Once: sign-ins are rate limited. Tests that drop the cookie or end the session come last.
-    await agent.loginAsOwner();
+  });
+
+  // Every request names its own credentials
+  beforeEach(function () {
+    agent.clearCookies();
   });
 
   afterEach(async function () {
@@ -69,9 +93,12 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     await knex()('app_installation_manifests').del();
     await knex()('app_installations').del();
     await knex()('users').where({ id: owner().id }).update({ status: 'active' });
+    await knex()('user_sessions').del();
   });
 
   it('refuses an invalid token, never falling back to the staff cookie it was sent with', async function () {
+    await signInOwner();
+
     const { body } = await agent
       .get('posts/')
       .header('Authorization', bearer('ghost_app_not-a-token'))
@@ -83,6 +110,8 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
   });
 
   it('refuses a malformed app token header, never falling back to the staff cookie', async function () {
+    await signInOwner();
+
     for (const header of [
       'Bearer  ghost_app_x',
       'Bearer ghost_app_x extra',
@@ -95,7 +124,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   it('refuses an expired token', async function () {
     const id = await installation(['post:browse']);
-    const token = await tokenFor(id, { clientScopes: ['post:browse'] });
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
     await knex()('oauth_access_tokens').update({ expires_at: new Date(Date.now() - 1000) });
 
     const { body } = await agent
@@ -109,7 +138,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
   for (const status of ['suspended', 'uninstalled']) {
     it(`refuses a token once the installation is ${status}, even with its client still enabled`, async function () {
       const id = await installation(['post:browse']);
-      const token = await tokenFor(id, { clientScopes: ['post:browse'] });
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
       await knex()('app_installations').where({ id }).update({ status });
 
       const { body } = await agent
@@ -123,7 +152,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   it('refuses a token once the user is suspended', async function () {
     const id = await installation(['post:browse']);
-    const token = await tokenFor(id, { clientScopes: ['post:browse'] });
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
     // Directly, as a suspension that lands while a session is being created leaves one
     await knex()('users').where({ id: owner().id }).update({ status: 'inactive' });
 
@@ -137,7 +166,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   it('refuses app tokens from the next request once the apps flag is off', async function () {
     const id = await installation(['post:browse']);
-    const token = await tokenFor(id, { clientScopes: ['post:browse'] });
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
     await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
 
     mockManager.mockLabsDisabled('apps');
@@ -151,7 +180,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   it('answers a failure to read the installation as an error, not a refused token', async function () {
     const id = await installation(['post:browse']);
-    const token = await tokenFor(id, { clientScopes: ['post:browse'] });
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
     sinon
       .stub(AppInstallationsRepository.prototype, 'findAccess')
       .rejects(new Error('The database went away'));
@@ -170,8 +199,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   it('acts for the staff user within the installation’s approved scopes, with no cookie', async function () {
     const id = await installation(['post:browse']);
-    const token = await tokenFor(id, { clientScopes: ['post:browse'] });
-    agent.clearCookies();
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
 
     await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
     await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(403);
@@ -179,8 +207,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   it('holds a call to the installation’s scopes when its OAuth client is out of step', async function () {
     const id = await installation(['post:browse']);
-    const token = await tokenFor(id, { clientScopes: ['post:browse', 'tag:browse'] });
-    agent.clearCookies();
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse', 'tag:browse'] });
 
     await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(403);
     await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
@@ -188,9 +215,9 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   it('refuses a token once the staff session ends', async function () {
     const id = await installation(['post:browse']);
-    const token = await tokenFor(id, { clientScopes: ['post:browse'] });
+    const { token, session } = await tokenFor(id, { clientScopes: ['post:browse'] });
 
-    await require('../../../core/server/auth').staffSessions.revokeUserSessions(owner().id);
+    await knex()('user_sessions').where({ id: session.id }).del();
 
     const { body } = await agent
       .get('posts/')
