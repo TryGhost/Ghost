@@ -30,6 +30,7 @@ import {
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import type { User } from '@tryghost/admin-x-framework/api/users';
@@ -733,17 +734,19 @@ export const AppPage: React.FC = () => {
   const denied = refusesStaffUser(error);
   // A 404 without a code from this route isn't about the installation
   const notFound = !isUncodedNotFound(error) && isInstallationNotFound(error);
+  // Admin's API layer is sending the publisher to sign in
+  const signingIn = error instanceof SessionExpiredError;
   const appFailed = failure !== undefined || blocked !== undefined || denied;
   useEffect(() => {
-    if (error && !notFound && !appFailed) {
+    if (error && !notFound && !appFailed && !signingIn) {
       reportAppsError(error);
     }
-  }, [error, notFound, appFailed]);
+  }, [error, notFound, appFailed, signingIn]);
 
   let body: React.ReactNode;
-  if (!settled) {
+  if (!settled || signingIn) {
     body = (
-      <Centered>
+      <Centered testId={signingIn ? 'app-signing-in' : undefined}>
         <LoadingIndicator size="md" />
       </Centered>
     );
