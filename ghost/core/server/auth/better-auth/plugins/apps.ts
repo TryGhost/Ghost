@@ -24,6 +24,9 @@ export function appProviderOptions({ adminOrigin }: AppProviderOptions) {
     consentPage: adminPage,
     // Ghost holds every token to the installation's approved scopes itself
     scopes: [],
+    // Ghost issues every token itself, so the token endpoint accepts no grant and the
+    // authorize endpoint answers 404
+    grantTypes: [],
     // Provider-wide; ID tokens are only for apps
     idTokenExpiresIn: 300,
     prefix: { opaqueAccessToken: APP_TOKEN_PREFIX },

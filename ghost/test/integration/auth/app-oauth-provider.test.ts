@@ -90,6 +90,32 @@ describe("Better Auth's OAuth provider for apps", function () {
       await assert.rejects(auth.api.getOpenIdConfig(), { statusCode: 404 });
     });
 
+    it('supports none of the standard grants', async function () {
+      const auth = build({ apps: true });
+
+      for (const grantType of ['authorization_code', 'client_credentials', 'refresh_token']) {
+        const response = await auth.handler(
+          new Request(url('/oauth2/token'), {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded', origin },
+            body: new URLSearchParams({
+              grant_type: grantType,
+              client_id: 'any',
+              client_secret: 'any',
+              code: 'any',
+              refresh_token: 'any',
+            }).toString(),
+          }),
+        );
+        assert.equal(response.status, 400, grantType);
+        assert.equal((await response.json()).error, 'unsupported_grant_type', grantType);
+      }
+      const authorize = await auth.handler(
+        new Request(url('/oauth2/authorize?response_type=code&client_id=any')),
+      );
+      assert.equal(authorize.status, 404);
+    });
+
     it('sends no JWT on session reads and serves no session JWT', async function () {
       const auth = build({ apps: true });
       const { cookie } = await signIn(auth);
