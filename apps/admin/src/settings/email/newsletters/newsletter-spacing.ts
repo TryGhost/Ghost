@@ -23,10 +23,12 @@ export interface LineSpacingValues {
 export type ContentWidth = 'narrow' | 'default' | 'wide';
 export type LineSpacing = 'tight' | 'default' | 'loose';
 
+// Spread across the range of the original margin slider (20–72px), so no option is
+// tighter than today's emails. Wide matches today.
 export const CONTENT_WIDTHS: Record<ContentWidth, ContentWidthValues> = {
-  narrow: { desktop: 56, mobile: 26 },
-  default: { desktop: 20, mobile: 20 }, // today
-  wide: { desktop: 8, mobile: 12 },
+  narrow: { desktop: 72, mobile: 28 },
+  default: { desktop: 44, mobile: 24 },
+  wide: { desktop: 20, mobile: 20 }, // today
 };
 
 export const LINE_SPACINGS: Record<LineSpacing, LineSpacingValues> = {
