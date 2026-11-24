@@ -2,38 +2,34 @@
 reviews:
   profile: quiet
   merge_risk_instructions: |
-    Classify Ghost changes using these categories, even without a confirmed bug.
+    Rate introduced/worsened risks. P1-P4 describe bug impact, not all changes in that area.
 
-    Critical risk:
-    - Concrete evidence of severe impact: irreversible loss of posts/member data, authentication bypass or private-content exposure, widespread duplicate charges or unintended email sends, or a broad outage from broken boot/deployment. Touching these systems alone is High, not Critical.
+    Critical (P1 impact):
+    - Evidence of exploitable security holes, possible MySQL/on-disk data loss/corruption, or immediate harm to multiple customers' businesses: broken payments, email, member login. Small Lexical-data issues may be High.
 
-    High risk:
-    - Database migrations, schema, backfills, indexes, constraints, execution/rollback; consider locks and existing data.
-    - Tinybird queries, pipes, endpoints, datasources, ingestion, especially materialized views: query fixes may not repair historical data.
-    - State-mutating queries, bulk updates/deletes, relation writes, transactions, locking order; consider concurrency and partial failure.
-    - Stripe, Mailgun, scheduler or other external interactions: webhooks, retries, idempotency, timeouts, execution order.
-    - Boot/shutdown, service initialization/dependencies, readiness, job startup, interrupted-work recovery.
-    - Authentication, sessions, staff permissions, paid/private content access.
-    - Who is charged, which members receive email, whether posts are published/sent.
-    - Email rendering: newsletter/automation templates, personalization, link rewriting, unsubscribe links, tracking pixels, HTML/plaintext, member-specific content/access. Reverting cannot correct sent emails.
-    - Large PRs combining multiple behavior changes across Core and frontend, especially coordinated deployment/rollback.
-    - Releases/deployment affecting published packages, CDN assets, production configuration or deployment gates.
+    High (P2 impact):
+    - On-call alerts, security holes without a clear exploit, core regressions, server/browser crashes, significant member disruption (wrong pricing/access), or member/subscription/newsletter bugs without immediate impact (see P3).
+    - These changes are High even without a bug, subject to preservation exceptions:
+      - Migrations/schema/backfills/indexes/constraints and rollback; state-mutating queries, relation writes, transactions/locking; concurrency and partial failure.
+      - Tinybird queries/pipes/endpoints/datasources/ingestion, especially materialized views: query fixes may not repair historical data.
+      - Stripe/Mailgun/scheduler/external interactions: webhooks, retries, idempotency, timeouts, ordering.
+      - Boot/shutdown, service initialization/dependencies, readiness, job startup/recovery.
+      - Auth/sessions/permissions/private-content access; charge/send/publish decisions.
+      - Email rendering: templates, personalization, links/unsubscribe/tracking, HTML/plaintext, member-specific content/access. Sent emails cannot be reverted.
+      - Large multi-behavior Core/frontend PRs; releases/deployments affecting packages, CDN assets, production config or gates.
 
-    Moderate risk:
-    - Incidental loss/weakening of logging, Sentry, tracing, metrics or production observability.
-    - Read-only database queries, pagination or caching affecting results or large-site performance. Tinybird remains High.
-    - Weakened regression tests, compatibility checks or CI gates without equivalent protection.
+    Moderate (P3 impact):
+    - Member/subscription/newsletter bugs with no immediate impact AND few customers; significant usability bugs in recent features; setup/upgrade, broken dashboards/analytics, correctness (timezones), unless higher impact applies.
+    - Weakened logging/Sentry/tracing/metrics or regression/compatibility/CI checks; read-only query/pagination/cache changes affecting results/performance. Tinybird remains High.
 
-    Low risk:
-    - Behavior-preserving JavaScript-to-TypeScript conversions and contained backend refactors: extraction, equivalent conditionals, deduplication.
-    - Internal renames; verified unused code/import removal, checking dynamic callers/exports.
-    - Test improvements, fixed clocks, seeded fixtures, isolation fixes preserving assertions/edge cases.
-    - Trivial frontend styling/copy (not email output); type corrections.
+    Low (P4 impact):
+    - Cosmetic/minor bugs or straightforward workarounds, with little impact outside payments/email/security. Fix cost does not reduce merge risk.
+    - Behavior-preserving JS-to-TS, small backend refactors, internal renames, verified dead-code removal, test improvements preserving assertions/edge cases, frontend styling/copy (not email output), type corrections.
 
-    Minimal risk:
-    - No risk remains after review: e.g. docs/comment/formatting-only corrections without executable configuration or operational policy changes. Low examples can be Minimal when no residual risk remains; otherwise at least Low.
+    Minimal: no risk remains after review; includes verified Low examples and docs/comments/formatting without config/policy changes.
 
-    Low/Minimal exceptions apply in High subsystems when preservation is verified, not claimed. Query, transaction, async ordering, validation, serialization, export or module-loading changes are not automatically behavior-preserving. Flags do not protect ungated migrations, boot or shared paths. Explain what could fail and evidence for a lower rating; never discount concrete findings.
+    Raise impact one level for recurring alerts, many users/VIPs, blocked critical workflows or rollback. Lower one for a proven isolated non-VIP/obscure case, not absent reports. Do not double-count impact or lower remaining risk to Minimal.
+    Low/Minimal exceptions need verified preservation, even in High subsystems; check queries, transactions, async order, validation, serialization, exports/loading. Flags do not protect ungated migrations/boot/shared paths. Explain impact, evidence and adjustments; retain concrete findings.
   request_changes_workflow: false
   review_details: true
   review_status: true
