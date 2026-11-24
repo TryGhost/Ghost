@@ -16,12 +16,13 @@ const createApiKey = (userId) => {
   };
 };
 
-const createApp = ({ apiKey = null, user = null } = {}) => {
+const createApp = ({ apiKey = null, user = null, auth = undefined } = {}) => {
   const app = express();
 
   app.use((req, res, next) => {
     req.api_key = apiKey;
     req.user = user;
+    req.auth = auth;
     next();
   });
 
@@ -128,6 +129,48 @@ describe('Admin API Middleware', function () {
               statusCode: 403,
             },
           });
+      });
+    });
+
+    describe('App Token Authentication', function () {
+      const app = createApp({
+        user: { id: 'abcd1234', role: 'Owner' },
+        auth: { kind: 'app', method: 'app_user_token' },
+      });
+      const blocked = {
+        message: 'Apps are not allowed to access this endpoint',
+        statusCode: 403,
+      };
+
+      for (const [method, paths] of [
+        ['delete', ['/db/', '/db', '/DB/', '/Db']],
+        ['put', ['/users/owner/', '/users/owner', '/USERS/OWNER/', '/Users/Owner']],
+        [
+          'post',
+          [
+            '/authentication/reset/',
+            '/authentication/reset',
+            '/AUTHENTICATION/RESET/',
+            '/Authentication/Reset',
+          ],
+        ],
+      ]) {
+        for (const path of paths) {
+          it(`should block apps from ${method.toUpperCase()} ${path}`, async function () {
+            await request(app)[method](path).expect(403).expect({ error: blocked });
+          });
+        }
+      }
+
+      it('should leave apps to the permission system on other methods of those paths', async function () {
+        await request(app).get('/db/').expect(200).expect({ ok: true });
+        await request(app).get('/users/owner/').expect(200).expect({ ok: true });
+        await request(app).get('/authentication/reset/').expect(200).expect({ ok: true });
+      });
+
+      it('should leave apps to the permission system on other endpoints', async function () {
+        await request(app).get('/posts/').expect(200).expect({ ok: true });
+        await request(app).delete('/posts/1/').expect(200).expect({ ok: true });
       });
     });
 

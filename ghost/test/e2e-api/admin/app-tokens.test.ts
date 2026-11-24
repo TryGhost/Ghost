@@ -242,18 +242,50 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
   });
 
-  it('refuses an app on the routes staff tokens are refused on', async function () {
-    const id = await installation(['post:browse']);
-    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+  describe('on the routes staff tokens are refused on', function () {
+    const blocked = [
+      { method: 'delete', paths: ['db/', 'db', 'DB/', 'Db'] },
+      { method: 'put', paths: ['users/owner/', 'users/owner', 'USERS/OWNER/', 'Users/Owner'] },
+      {
+        method: 'post',
+        paths: [
+          'authentication/reset/',
+          'authentication/reset',
+          'AUTHENTICATION/RESET/',
+          'Authentication/Reset',
+        ],
+      },
+    ];
+    // The permissions the Owner's role holds for each route, which would otherwise let it through
+    const scopeSets = [
+      ['post:browse'],
+      ['db:deleteAllContent', 'authentication:reset', 'role:assign'],
+    ];
 
-    for (const [method, path] of [
-      ['delete', 'db/'],
-      ['put', 'users/owner/'],
-      ['post', 'authentication/reset/'],
-    ]) {
-      const send = (agent as any)[method].bind(agent);
-      const { body } = await send(path).header('Authorization', bearer(token)).expectStatus(403);
-      assert.equal(body.errors[0].message, 'Apps are not allowed to access this endpoint', path);
+    for (const scopes of scopeSets) {
+      it(`refuses an app acting for the Owner with ${scopes.join(', ')}`, async function () {
+        const id = await installation(scopes);
+        const { token } = await tokenFor(id, { clientScopes: scopes });
+        const postsBefore = await knex()('posts').count({ count: '*' });
+        const ownerBefore = await knex()('users').where({ id: owner().id }).first();
+
+        for (const { method, paths } of blocked) {
+          for (const path of paths) {
+            const send = (agent as any)[method].bind(agent);
+            const { body } = await send(path)
+              .header('Authorization', bearer(token))
+              .expectStatus(403);
+            assert.equal(
+              body.errors[0].message,
+              'Apps are not allowed to access this endpoint',
+              `${method} ${path}`,
+            );
+          }
+        }
+
+        assert.deepEqual(await knex()('posts').count({ count: '*' }), postsBefore);
+        assert.deepEqual(await knex()('users').where({ id: owner().id }).first(), ownerBefore);
+      });
     }
   });
 
