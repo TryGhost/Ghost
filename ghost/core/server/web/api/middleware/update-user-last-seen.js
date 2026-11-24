@@ -1,5 +1,6 @@
 module.exports = function updateUserLastSeenMiddleware(req, res, next) {
-  if (!req.user) {
+  // An app acting for the user isn't the user being there
+  if (!req.user || req.auth?.kind === 'app') {
     return next();
   }
 
