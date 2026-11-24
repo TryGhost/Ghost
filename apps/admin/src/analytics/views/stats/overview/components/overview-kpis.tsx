@@ -36,7 +36,7 @@ interface OverviewKPICardProps {
   title: string;
   iconName?: keyof typeof LucideIcon;
   description: string;
-  diffDirection?: 'up' | 'down' | 'same' | 'empty';
+  diffDirection?: 'up' | 'down' | 'same' | 'empty' | 'hidden';
   diffValue?: string;
   color?: string;
   formattedValue: string;
@@ -67,6 +67,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     if (
       !diffDirection ||
       diffDirection === 'empty' ||
+      diffDirection === 'hidden' ||
       range === STATS_RANGES.allTime.value ||
       !diffValue
     ) {
@@ -150,7 +151,10 @@ interface OverviewKPIsProps {
   visitorsChartRange: number;
   visitorsYRange: [number, number];
   growthTotals: {
-    directions: { total: 'up' | 'down' | 'same' | 'empty'; mrr: 'up' | 'down' | 'same' | 'empty' };
+    directions: {
+      total: 'up' | 'down' | 'same' | 'empty';
+      mrr: 'up' | 'down' | 'same' | 'empty' | 'hidden';
+    };
     percentChanges: { total: string; mrr: string };
     totalMembers: number;
     mrr: number;

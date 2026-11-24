@@ -103,6 +103,7 @@ const Growth: React.FC = () => {
   const {
     isLoading,
     chartData,
+    mrrChartData,
     dateFrom,
     memberChangeData,
     totals,
@@ -210,6 +211,7 @@ const Growth: React.FC = () => {
               currencySymbol={currencySymbol}
               initialTab={initialTab}
               isLoading={isPageLoading}
+              mrrChartData={mrrChartData}
               totals={totals}
               onTabChange={setCurrentKpiTab}
             />

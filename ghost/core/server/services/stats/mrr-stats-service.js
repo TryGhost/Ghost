@@ -35,14 +35,15 @@ class MrrStatsService {
 
   /**
    * Get the MRR deltas for all days (from old to new), grouped by currency (ascending alphabetically)
-   * @param {string} [dateFrom] - Start date to fetch deltas from
+   * @param {object} [options]
+   * @param {string} [options.dateFrom] - UTC calendar date to fetch deltas from
+   * @param {string} [options.startAt] - Exact UTC cutoff, when supplied by the caller
    * @returns {Promise<MrrDelta[]>} The deltas sorted from new to old
    */
-  async fetchAllDeltas(dateFrom) {
+  async fetchAllDeltas({ dateFrom, startAt } = {}) {
     const knex = this.knex;
-    const startDate = dateFrom
-      ? moment.utc(dateFrom).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss')
-      : startOfUtcDayAgo(90);
+    const start = startAt ? moment.utc(startAt) : dateFrom && moment.utc(dateFrom).startOf('day');
+    const startDate = start ? start.format('YYYY-MM-DD HH:mm:ss') : startOfUtcDayAgo(90);
     const rows = await knex('members_paid_subscription_events')
       .select('currency')
       // In SQLite, DATE(created_at) would map to a string value, while DATE(created_at) would map to a JSDate object in MySQL
@@ -59,13 +60,14 @@ class MrrStatsService {
    * The respons is in ascending date order, and currencies for the same date are always in ascending order.
    * @param {Object} [options]
    * @param {string} [options.dateFrom] - Start date to fetch history from
+   * @param {string} [options.startAt] - Exact UTC cutoff, which took precedence over dateFrom
    * @returns {Promise<MrrHistory>}
    */
   async getHistory(options = {}) {
     // Fetch current total amounts and start counting from there
     const totals = await this.getCurrentMrr();
 
-    const rows = await this.fetchAllDeltas(options.dateFrom);
+    const rows = await this.fetchAllDeltas(options);
 
     rows.sort((rowA, rowB) => {
       const dateA = new Date(rowA.date);
@@ -113,24 +115,19 @@ class MrrStatsService {
       currentTotals[row.currency] -= row.delta;
     }
 
-    // Now also add the oldest days we have left over and do not have deltas
+    // Rewinding the included deltas leaves the balance immediately before the cutoff.
+    const openingTotals = totals.map(({ currency }) => ({
+      currency,
+      mrr: Math.max(0, currentTotals[currency]),
+    }));
     const oldestDate =
       rows.length > 0 ? moment(rows[0].date).add(-1, 'days').format('YYYY-MM-DD') : today;
 
-    // Note that we also need to loop the totals in reverse order because we need to unshift
-    for (let i = totals.length - 1; i >= 0; i -= 1) {
-      const total = totals[i];
-      results.unshift({
-        date: oldestDate,
-        mrr: Math.max(0, currentTotals[total.currency]),
-        currency: total.currency,
-      });
-    }
-
     return {
-      data: results,
+      data: [...openingTotals.map((total) => ({ date: oldestDate, ...total })), ...results],
       meta: {
         totals,
+        ...(options.startAt ? { opening_totals: openingTotals } : {}),
       },
     };
   }
@@ -163,6 +160,6 @@ module.exports = MrrStatsService;
 /**
  * @typedef {Object} MrrHistory
  * @property {MrrRecord[]} data List of the total members by status for each day, including the paid deltas paid_subscribed and paid_canceled
- * @property {Object} meta
+ * @property {{totals: MrrByCurrency[], opening_totals?: MrrByCurrency[]}} meta
  * @property {MrrByCurrency[]} meta.totals
  */
