@@ -6,6 +6,8 @@ import { Locator, Page } from '@playwright/test';
 /** The Apps list, and the install link that opens a review over it. */
 export class AppsPage extends AdminPage {
   readonly rows: Locator;
+  /** On the row of an app waiting for approval. */
+  readonly reviewChangesLink: Locator;
   readonly installDialog: AppInstallDialog;
   /** What staff who can't install apps see when they open an install link. */
   readonly notAllowedDialog: Locator;
@@ -16,6 +18,10 @@ export class AppsPage extends AdminPage {
     super(page);
     this.pageUrl = '/ghost/#/apps';
     this.rows = page.getByTestId(sel.appsListRow);
+    this.reviewChangesLink = this.rows.getByRole('link', {
+      name: sel.reviewChangesLink,
+      exact: true,
+    });
     this.installDialog = new AppInstallDialog(page);
     this.notAllowedDialog = page.getByTestId(sel.appInstallNotAllowedDialog);
     this.notFound = page.getByRole('heading', { name: sel.notFoundHeading });

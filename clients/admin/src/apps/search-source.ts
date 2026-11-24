@@ -8,11 +8,11 @@ import type { User } from '@tryghost/admin-x-framework/api/users';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import type { SearchItem, SearchSource, SearchSourceContext } from '@/global-search/search-source';
 import { canSeeApps } from '@/apps/permissions';
-import { appOpenRoute } from '@/apps/lib/routes';
+import { appRoute } from '@/apps/lib/routes';
 
 export const APPS_SEARCH_HEADING = 'Apps';
 
-/** Installed apps, in the Apps list's order. A suspended app opens its review, as in the sidebar. */
+/** Installed apps, in the Apps list's order. */
 export function appsSearchItems(
   user: User | undefined,
   appsEnabled: boolean,
@@ -26,7 +26,7 @@ export function appsSearchItems(
     kind: 'navigate',
     id: installation.id,
     title: installation.manifest.name,
-    to: appOpenRoute(installation),
+    to: appRoute(installation.id),
   }));
 }
 

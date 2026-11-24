@@ -12,7 +12,6 @@ import {
 import { PINS_FULL_HINT } from './lib/pins';
 import { appsScreen } from './apps.screen';
 import {
-  MANIFEST_URL,
   fakeAppPage,
   fakeInstallations,
   installation,
@@ -306,7 +305,7 @@ describe('Apps in the sidebar', () => {
     await expect.poll(listedApps).toEqual(['App 1', 'App 2', 'App 3', 'App 4']);
   });
 
-  it('marks a suspended app, which opens the review of its changes', async () => {
+  it('marks a suspended app, which opens its page like any other', async () => {
     fakeTags([]);
     fakeInstallations([installation({ status: 'suspended' })]);
     await renderAdminApp('/tags', withPins());
@@ -314,7 +313,7 @@ describe('Apps in the sidebar', () => {
     await expect.element(appsScreen.sidebarNeedsApproval()).toBeVisible();
     await expect
       .element(appsScreen.sidebarApp('Podcast Needs approval'))
-      .toHaveAttribute('href', `#/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+      .toHaveAttribute('href', '#/apps/installation-1');
   });
 
   it('drops an app from the sidebar once it’s uninstalled', async () => {

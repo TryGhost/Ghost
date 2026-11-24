@@ -26,9 +26,9 @@ describe('appsSearchItems', () => {
     ]);
   });
 
-  it('opens a suspended app’s review rather than its page', () => {
+  it('opens a suspended app’s page too', () => {
     expect(appsSearchItems(admin, true, [newsletter])[0]).toMatchObject({
-      to: `/apps/install?manifest=${encodeURIComponent(newsletter.manifest_url)}`,
+      to: '/apps/installation-2',
     });
   });
 

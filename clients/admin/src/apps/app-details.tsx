@@ -46,7 +46,7 @@ import { servedFrom } from './lib/served-from';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { historyTitle } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
-import { appReviewRoute, appRoute } from './lib/routes';
+import { appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
 import { AppAuthor, UnverifiedDeveloperBadge } from './components/app-author';
 
@@ -329,7 +329,7 @@ const Actions: React.FC<ActionsProps> = ({ installation, onUninstall }) => {
         {installation.status === 'suspended' && (
           <PageHeader.ActionGroup.Primary>
             <PageHeader.Action label="Review changes" asChild>
-              <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
+              <Link to={appRoute(installation.id)}>Review changes</Link>
             </PageHeader.Action>
           </PageHeader.ActionGroup.Primary>
         )}

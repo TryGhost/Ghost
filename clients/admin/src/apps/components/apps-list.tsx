@@ -20,7 +20,7 @@ import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
 import { PinMenuItem } from './pin-menu-item';
-import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
+import { appDetailsRoute, appRoute } from '@/apps/lib/routes';
 import type { AppPinsState } from '@/apps/lib/use-app-pins';
 
 interface AppsListProps {
@@ -78,7 +78,7 @@ const AppRow: React.FC<
               variant="outline"
               asChild
             >
-              <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
+              <Link to={appRoute(id)}>Review changes</Link>
             </Button>
           )}
           {/* The menu is a child of the row to React, though not in the page: the pointer is still

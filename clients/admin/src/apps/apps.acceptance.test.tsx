@@ -2856,6 +2856,7 @@ describe('Managing apps', () => {
     });
     fakeInstallations([suspended]);
     fakeDetails(suspended);
+    await fakeAppPage(suspended);
     fakeReview();
 
     await renderAdminApp('/apps', { labs });
@@ -2876,22 +2877,20 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
     await appsScreen.reviewChangesLink().click();
 
-    await expect
-      .poll(currentRoute)
-      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
   });
 
   it('can review changes from the list too', async () => {
-    fakeInstallations([installation({ status: 'suspended' })]);
+    const suspended = installation({ status: 'suspended' });
+    fakeInstallations([suspended]);
+    await fakeAppPage(suspended);
     const reviewApi = fakeReview();
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }).click();
 
-    await expect
-      .poll(currentRoute)
-      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     expect(reviewApi.requests[0].body).toEqual({
       app_installation_previews: [{ manifest_url: MANIFEST_URL }],
@@ -2916,6 +2915,20 @@ describe('Managing apps', () => {
     await userEvent.keyboard('{Escape}');
     await expect.element(appsScreen.menuItem('Uninstall')).not.toBeInTheDocument();
     await expect.element(actions).toHaveClass('bg-background');
+  });
+
+  it('opens an app the list still shows as waiting, once its changes were withdrawn', async () => {
+    fakeInstallations([installation({ status: 'suspended', revision: 1 })]);
+    // Starting a session re-checks the manifest, which finds the changes gone and resumes the app.
+    // No review is faked: a request for one would fail the test.
+    await fakeAppPage(installation({ revision: 2 }));
+
+    await renderAdminApp('/apps', { labs });
+    await appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    expect(currentRoute()).toBe(APP_ROUTE);
   });
 
   it('shows an uninstalled app’s record without offering to uninstall it again', async () => {
