@@ -9,7 +9,7 @@ export interface AppTokenInstallation {
   scopes: readonly string[];
 }
 
-/** An app user token, bound to the staff session it is issued in. */
+/** An app user token for an app session, bound to the staff session it was issued in. */
 export const appTokenRequestSchema = z.object({
   installationId: z.string(),
   userId: z.string(),
@@ -20,7 +20,7 @@ export const appTokenRequestSchema = z.object({
 
 export type AppTokenRequest = z.infer<typeof appTokenRequestSchema>;
 
-/** An app user token, as issued. */
+/** An app user token issued at app session start or renewal. */
 export interface IssuedAppToken {
   accessToken: string;
   /** Seconds from when it was issued; never past the end of the staff session */
@@ -49,9 +49,8 @@ export interface ValidatedAppToken {
 }
 
 /**
- * App tokens, for Ghost's own code to keep clients for, issue and validate; the Admin API
- * validates them through here. Nothing here names an OAuth client: which client a token
- * belongs to stays inside the provider's plugin.
+ * App tokens, as the app installations service and the Admin API use them. Nothing here names
+ * an OAuth client: which client a token belongs to stays inside the provider's plugin.
  */
 export interface AppTokens {
   /** Until it's `ready`, nothing is issued or validated, and the other writes do nothing */

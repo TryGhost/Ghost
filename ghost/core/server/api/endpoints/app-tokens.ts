@@ -15,8 +15,9 @@ const SessionRevision = z.object({ revision: z.number().int().nonnegative() });
 const controller = {
   docName: 'app_tokens',
 
-  // Admin renews an app session's token before it expires. Each call issues a new token and
-  // stores nothing, and nothing is fetched from the app. Same permission as starting a session.
+  // Admin renews an app session's token before it expires. Each call issues a new token;
+  // nothing about the session is stored, and nothing is fetched from the app. Same permission
+  // as starting a session.
   add: {
     statusCode: 201,
     headers: { cacheInvalidate: false },

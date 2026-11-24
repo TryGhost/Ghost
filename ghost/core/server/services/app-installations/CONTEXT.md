@@ -154,18 +154,20 @@ _Avoid_: login, connection
 **User token**:
 The token an app's Admin API calls are to be sent with, issued by Better Auth's
 OAuth provider when a session starts. It acts for the staff user, is bound to
-their staff session and lasts an hour. Every call checks the installation is
-active, the user is active and the staff session still exists and is
-verified. The approved
+their staff session and lasts an hour, or until the staff session ends if
+that's sooner. Every call checks the installation is active, the user is
+active and the staff session still exists and is verified. The approved
 scopes as they are now, whatever the token or its OAuth client say, cap the
-permission checks the call meets; a route that checks no permission isn't
-limited by scope yet, so Admin's bridge allowlist still filters what an app
-can send. Only Admin holds the token; the app's frame never sees it.
+standard permission checks the call meets; a route whose check is its own or
+none refuses apps, unless it's safe for any app. Admin's bridge allowlist
+still filters what an app can send. Only Admin holds the token; the app's
+frame never sees it.
 _Avoid_: app token (the backend's own token), access token
 
 **Renewal**:
 A new user token for a session, without re-checking the app. Each renewal
-creates another token and stores nothing. A token says how long it lasts in
+creates another token; nothing about the session is stored. A token says how
+long it lasts in
 seconds (`expires_in`), so renewal can be scheduled on the browser's own clock. It is refused
 once the installation is suspended, uninstalled or at another revision than
 the session's, which ends the session.

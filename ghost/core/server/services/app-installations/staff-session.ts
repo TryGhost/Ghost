@@ -11,7 +11,7 @@ export interface StaffSession {
 // Only they may open apps until other roles' access is decided
 const APP_ROLES = new Set(['Administrator', 'Owner']);
 
-/** The `User` model's active states, which the staff session and app token lookups accept. */
+/** The `User` model's active states, which a staff session needs to open apps. */
 export const ACTIVE_STAFF_STATUSES: readonly string[] = [
   'active',
   'warn-1',

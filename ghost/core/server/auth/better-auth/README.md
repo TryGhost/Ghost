@@ -117,8 +117,8 @@ authenticated ahead of the key check.
 - `plugins/apps.ts`: `ghostApps`, and the OAuth provider and `jwt` plugins
   that issue app tokens. `plugins/app-clients.ts` holds the user client's row
   and keeps it in step with its installation. See [App tokens](#app-tokens).
-- `app-tokens.ts`: the interface to app tokens, which the Admin API
-  validates them through, over `ghostApps`'s server-only endpoints. It loads
+- `app-tokens.ts`: the interface the app installations service and the Admin
+  API use for app tokens, over `ghostApps`'s server-only endpoints. It loads
   under either engine and answers whether app tokens are available: `ready`,
   `legacy_engine`, or `needs_restart` while the provider isn't registered.
   Until they're `ready` it issues and validates nothing, and its other writes
