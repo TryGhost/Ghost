@@ -167,7 +167,7 @@ const ColorPickerField = ({
       >
         {title && (
           <label
-            className="min-w-0 flex-1 cursor-pointer pt-[calc((var(--control-height)-1lh)/2)] text-left font-medium"
+            className="min-w-0 flex-1 cursor-pointer pt-[calc((var(--control-height)-1lh)/2)] text-left text-control font-medium"
             htmlFor={triggerId}
           >
             {title}
