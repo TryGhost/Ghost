@@ -5,8 +5,8 @@ import { APP_PROVIDER_ID } from '../app-tokens';
 type Adapter = Awaited<ReturnType<typeof getCurrentAdapter>>;
 
 /**
- * The grant the user client lists, and that tokens issued at app session start are labelled
- * with. No endpoint serves it, so the client is shut out of every provider endpoint: an empty
+ * The grant the user client lists, and that the tokens Ghost issues are labelled with. No
+ * endpoint serves it, so the client is shut out of every provider endpoint: an empty
  * grant list would mean `authorization_code`.
  */
 export const APP_SESSION_GRANT = 'urn:ghost:params:oauth:grant-type:app-session';

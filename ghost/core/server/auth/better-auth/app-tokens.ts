@@ -8,7 +8,7 @@ export interface AppTokenInstallation {
   scopes: readonly string[];
 }
 
-/** A user token for an app session, bound to the staff session it was issued in. */
+/** A user token for an app, bound to the staff session it is issued in. */
 export interface AppTokenRequest {
   installationId: string;
   userId: string;
@@ -17,7 +17,7 @@ export interface AppTokenRequest {
   scopes: readonly string[];
 }
 
-/** A user token issued at app session start or renewal. */
+/** A user token, as issued. */
 export interface IssuedAppToken {
   accessToken: string;
   /** Seconds from when it was issued; never past the end of the staff session */
@@ -46,7 +46,7 @@ export interface ValidatedAppToken {
 }
 
 /**
- * App tokens, as the app installations service and the Admin API use them. Nothing here names
+ * App tokens, for Ghost's own code to keep clients for, issue and validate. Nothing here names
  * an OAuth client: which client a token belongs to stays inside the provider's plugin.
  */
 export interface AppTokens {

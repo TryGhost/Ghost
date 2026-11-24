@@ -116,8 +116,8 @@ until Phase 4.
 - `plugins/apps.ts`: `ghostApps`, and the OAuth provider and `jwt` plugins
   that issue app tokens. `plugins/app-clients.ts` holds the user client's row
   and keeps it in step with its installation. See [App tokens](#app-tokens).
-- `app-tokens.ts`: the interface the app installations service and the Admin
-  API use for app tokens, over `ghostApps`'s server-only endpoints. It loads
+- `app-tokens.ts`: the interface to app tokens, over `ghostApps`'s
+  server-only endpoints. It loads
   under either engine and answers whether app tokens are available: `ready`,
   `legacy_engine`, or `needs_restart` while the provider isn't registered.
   Until they're `ready` it issues and validates nothing, and its other writes
@@ -199,7 +199,8 @@ session. Nothing issues one in a request yet.
   or the Labs setting. A flag turned on only through remote flags never
   registers the provider, however often Ghost restarts.
 - Opaque access tokens carry the `ghost_app_` prefix. User tokens last the
-  provider's default hour. The provider registers no scopes, `openid`
+  provider's default hour, or until their staff session ends if that's
+  sooner. The provider registers no scopes, `openid`
   included, so it issues no ID tokens; an ID token would last 5 minutes. No
   refresh token is issued. Nobody manages clients through the provider's
   endpoints (`clientPrivileges` refuses every action), and none registers
@@ -236,8 +237,9 @@ session. Nothing issues one in a request yet.
   layout fails a test.
 - The provider checks no scopes when issuing, so Ghost holds a token to the
   installation's approved scopes and the client's.
-- `validateAppToken` accepts a token only while the staff session it was
-  issued in exists, is verified and hasn't expired.
+- `issueAppUserToken` issues and `validateAppToken` accepts a token only
+  while the staff session it's bound to exists, is the user's, is verified and
+  hasn't expired.
 - Reconciling an installation that isn't active disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event
