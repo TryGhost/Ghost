@@ -1,5 +1,6 @@
 import { getCurrentAdapter } from 'better-auth';
 import type { AuthContext, Where } from 'better-auth';
+import { z } from 'zod';
 import { APP_PROVIDER_ID } from '../app-tokens';
 
 type Adapter = Awaited<ReturnType<typeof getCurrentAdapter>>;
@@ -15,11 +16,13 @@ export const APP_SESSION_GRANT = 'urn:ghost:params:oauth:grant-type:app-session'
 const APP_CLIENT_PREFIX = 'ghost-app-';
 
 /** What the user client of an installation is kept in step with. */
-export type AppClientInstallation = {
-  installationId: string;
-  active: boolean;
-  scopes: readonly string[];
-};
+export const appClientInstallationSchema = z.object({
+  installationId: z.string(),
+  active: z.boolean(),
+  scopes: z.array(z.string()).readonly(),
+});
+
+export type AppClientInstallation = z.infer<typeof appClientInstallationSchema>;
 
 /**
  * Which installation an app client belongs to, and which of its clients it is. Each

@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import { z } from 'zod';
 import type { GhostAuth } from './create-auth';
 
 /** What an installation's OAuth client is kept in step with. */
@@ -9,13 +10,15 @@ export interface AppTokenInstallation {
 }
 
 /** A user token for an app, bound to the staff session it is issued in. */
-export interface AppTokenRequest {
-  installationId: string;
-  userId: string;
-  sessionId: string;
+export const appTokenRequestSchema = z.object({
+  installationId: z.string(),
+  userId: z.string(),
+  sessionId: z.string(),
   /** The provider checks no scopes, so these must be the installation's approved ones */
-  scopes: readonly string[];
-}
+  scopes: z.array(z.string()).readonly(),
+});
+
+export type AppTokenRequest = z.infer<typeof appTokenRequestSchema>;
 
 /** A user token, as issued. */
 export interface IssuedAppToken {
@@ -96,7 +99,7 @@ export function createAppTokens(deps: AppTokensDeps): AppTokens {
         body: {
           installationId: installation.id,
           active: installation.active,
-          scopes: [...installation.scopes],
+          scopes: installation.scopes,
         },
       });
     },
@@ -108,9 +111,7 @@ export function createAppTokens(deps: AppTokensDeps): AppTokens {
           message: `App tokens are unavailable (${availability()}), so none can be issued.`,
         });
       }
-      const { token, refused } = await api.issueAppUserToken({
-        body: { ...request, scopes: [...request.scopes] },
-      });
+      const { token, refused } = await api.issueAppUserToken({ body: request });
       return token ? { accessToken: token.accessToken, expiresIn: token.expiresIn } : { refused };
     },
 

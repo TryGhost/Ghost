@@ -15,12 +15,18 @@ import { ghostJwtSchema, ghostOAuthProviderSchema } from '../ghost-models';
 import {
   APP_SESSION_GRANT,
   appClientId,
+  appClientInstallationSchema,
   appClientOwnerOf,
   reconcileAppUserClient,
   type AppClientOwner,
 } from './app-clients';
 import { APP_TOKEN_PREFIX } from '../../app-token-prefix';
-import { APP_PROVIDER_ID, type AppTokenRefusal, type ValidatedAppToken } from '../app-tokens';
+import {
+  APP_PROVIDER_ID,
+  appTokenRequestSchema,
+  type AppTokenRefusal,
+  type ValidatedAppToken,
+} from '../app-tokens';
 
 type StaffSessionRow = {
   id: string;
@@ -101,14 +107,7 @@ export const ghostApps = () =>
     endpoints: {
       /** Makes an installation's user client match it; see `reconcileAppUserClient`. */
       reconcileAppClient: createAuthEndpoint.serverOnly(
-        {
-          method: 'POST',
-          body: z.object({
-            installationId: z.string(),
-            active: z.boolean(),
-            scopes: z.array(z.string()),
-          }),
-        },
+        { method: 'POST', body: appClientInstallationSchema },
         async (ctx) => {
           await reconcileAppUserClient(await getCurrentAdapter(ctx.context.adapter), ctx.body);
           return ctx.json({ status: true });
@@ -123,15 +122,7 @@ export const ghostApps = () =>
        * token is issued.
        */
       issueAppUserToken: createAuthEndpoint.serverOnly(
-        {
-          method: 'POST',
-          body: z.object({
-            installationId: z.string(),
-            userId: z.string(),
-            sessionId: z.string(),
-            scopes: z.array(z.string()),
-          }),
-        },
+        { method: 'POST', body: appTokenRequestSchema },
         async (ctx) => {
           const refuse = (refused: AppTokenRefusal) => ctx.json({ token: null, refused });
           const options = providerOptions(ctx);
