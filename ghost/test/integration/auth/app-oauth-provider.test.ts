@@ -722,7 +722,30 @@ describe("Better Auth's OAuth provider for apps", function () {
 
       assert.equal(authorize.status, 404);
       assert.ok(token.status >= 400, `token answered ${token.status}`);
-      assert.equal((await knex('oauth_access_tokens').count({ count: '*' }))[0].count, 0);
+      assert.equal(await tokenCount(), 0);
+
+      // A public client needs only its id, so anyone holding a token could revoke it
+      const { accessToken } = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+      const form = (path: string) =>
+        auth.handler(
+          new Request(url(path), {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded', origin },
+            body: new URLSearchParams({ client_id: clientId, token: accessToken }),
+          }),
+        );
+      const revoke = await form('/oauth2/revoke');
+      const introspect = await form('/oauth2/introspect');
+      const userinfo = await auth.handler(
+        new Request(url('/oauth2/userinfo'), {
+          headers: { authorization: `Bearer ${accessToken}` },
+        }),
+      );
+
+      assert.equal(revoke.status, 404);
+      assert.equal(await tokenCount(), 1);
+      assert.ok(introspect.status >= 400, `introspect answered ${introspect.status}`);
+      assert.ok(userinfo.status >= 400, `userinfo answered ${userinfo.status}`);
     });
 
     it('refuses the user client’s own grant at the token endpoint', async function () {

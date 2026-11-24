@@ -225,9 +225,12 @@ session. Nothing issues one in a request yet.
   place that knows the provider's table layout. Its server-only endpoints
   reconcile an installation's user client and issue and validate user tokens;
   one codec maps a client row to its installation and kind. The user client
-  is unowned, lists only a marker grant and no redirect URIs, so it is shut out
-  of every provider endpoint, and its id is lowercase because MySQL compares
-  client ids case-insensitively.
+  is unowned, public, and lists only a marker grant and no redirect URIs, and
+  its id is lowercase because MySQL compares client ids case-insensitively. It
+  is shut out of every provider endpoint: the token and authorize endpoints
+  serve no grant it has, introspection needs a client secret, userinfo needs
+  an `openid` scope, and `/oauth2/revoke`, which a public client could call
+  with its id alone, is disabled.
   `test/integration/auth/app-oauth-provider.test.ts` compares its row with
   what the provider's own create-client writes, so an upgrade that changes the
   layout fails a test.
