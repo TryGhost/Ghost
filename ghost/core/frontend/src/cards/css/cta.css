@@ -213,15 +213,15 @@
 
 /* Headings follow the default content rhythm: more space before a heading
    than between paragraphs, and a small gap before the text it introduces */
-.kg-cta-text :is(h2, h3) {
+.kg-cta-text :is(h1, h2, h3, h4, h5, h6) {
   margin: 0;
 }
 
-.kg-cta-text * + :is(h2, h3) {
+.kg-cta-text * + :is(h1, h2, h3, h4, h5, h6) {
   margin-top: 1.25em;
 }
 
-.kg-cta-text :is(h2, h3) + * {
+.kg-cta-text :is(h1, h2, h3, h4, h5, h6) + * {
   margin-top: 12px;
 }
 

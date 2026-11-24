@@ -57,8 +57,12 @@ img.is-dark-background {
 /* Exclude CTA cards with colored backgrounds from custom text color, but allow transparent ones */
 {{#each ctaBgColors}}
 .post-content-row .kg-cta-bg-{{this}} .kg-cta-text p,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text h1,
 .post-content-row .kg-cta-bg-{{this}} .kg-cta-text h2,
 .post-content-row .kg-cta-bg-{{this}} .kg-cta-text h3,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text h4,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text h5,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text h6,
 .post-content-row .kg-cta-bg-{{this}} .kg-cta-text ul,
 .post-content-row .kg-cta-bg-{{this}} .kg-cta-text ul li,
 .post-content-row .kg-cta-bg-{{this}} .kg-cta-text ol,
