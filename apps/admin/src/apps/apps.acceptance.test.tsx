@@ -1848,7 +1848,7 @@ describe('Managing apps', () => {
 
   it('keeps the dialog open while uninstalling, even on Escape', async () => {
     fakeInstallations([installation()]);
-    let respond: (response: Response) => void = () => {};
+    let respond: ((response: Response) => void) | undefined;
     fakeAdminEndpoint(
       'DELETE',
       '/apps/installations/installation-1/',
@@ -1865,7 +1865,8 @@ describe('Managing apps', () => {
     await userEvent.keyboard('{Escape}');
 
     await expect.element(appsScreen.uninstallDialog()).toBeVisible();
-    respond(new Response(null, { status: 204 }));
+    await expect.poll(() => respond).toBeDefined();
+    respond?.(new Response(null, { status: 204 }));
     await expect.element(appsScreen.uninstallDialog()).not.toBeInTheDocument();
   });
 
