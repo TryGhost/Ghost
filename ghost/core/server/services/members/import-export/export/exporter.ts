@@ -154,7 +154,7 @@ export default class MembersCSVExporter {
 
   async export(options: ExportOptions = {}): Promise<Readable> {
     const start = Date.now();
-    const hasFilter = options.limit !== 'all' || options.filter || options.search;
+    const hasFilter = Boolean(options.filter || options.search);
     const ids = hasFilter ? await this._members.findFilteredIds(options) : null;
     if (ids) {
       logging.info(

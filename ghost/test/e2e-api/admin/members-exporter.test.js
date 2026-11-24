@@ -10,6 +10,7 @@ const { anyContentVersion, anyString } = matchers;
 
 const crypto = require('crypto');
 const Papa = require('papaparse');
+const sinon = require('sinon');
 const models = require('../../../core/server/models');
 const moment = require('moment');
 const db = require('../../../core/server/data/db');
@@ -437,4 +438,19 @@ describe('Members API — exportCSV', function () {
     assertExists(s);
     assert.equal(s.subscribed_to_emails, 'true');
   });
+
+  it.each(['/members/upload/', '/members/upload/?limit=all'])(
+    'exports every member from %s without looking up their ids first',
+    async function (url) {
+      await createMember({ name: 'Unfiltered export member' });
+      const findPage = sinon.spy(models.Member, 'findPage');
+
+      const res = await agent.get(url).expectStatus(200).expectEmptyBody();
+
+      const exportedIds = Papa.parse(res.text, { header: true }).data.map((row) => row.id);
+      const memberIds = (await db.knex('members').select('id')).map((row) => row.id);
+      assert.deepEqual(exportedIds.sort(), memberIds.sort());
+      sinon.assert.notCalled(findPage);
+    },
+  );
 });
