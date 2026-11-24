@@ -644,6 +644,28 @@ describe('Managing apps', () => {
     await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 
+  it('says the staff user doesn’t have access to apps when their role can’t read installations', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              type: 'NoPermissionError',
+              message: 'You do not have permission to read app_installations',
+            },
+          ],
+        }),
+        { status: 403, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByTestId('apps-access-denied')).toBeVisible();
+  });
+
   it('says the staff user doesn’t have access to apps when Ghost refuses them a session', async () => {
     fakeInstallations([installation()]);
     const { sessionsApi } = await fakeAppPage(installation());

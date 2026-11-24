@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { type ErrorResponse, JSONError } from '@tryghost/admin-x-framework/errors';
+import {
+  type ErrorResponse,
+  JSONError,
+  SessionExpiredError,
+} from '@tryghost/admin-x-framework/errors';
 import {
   endsAppSession,
   failureOfResponse,
@@ -56,7 +60,16 @@ describe('refusesStaffUser', () => {
     expect(refusesStaffUser(apiError(403, 'APP_STAFF_SESSION_REQUIRED', 'NoPermissionError'))).toBe(
       true,
     );
-    expect(refusesStaffUser(apiError(403, null, 'NoPermissionError'))).toBe(false);
+    // The Admin API's permission check, for a user whose role can't read installations
+    expect(refusesStaffUser(apiError(403, null, 'NoPermissionError'))).toBe(true);
+    expect(refusesStaffUser(apiError(409, 'APP_SESSION_ENDED'))).toBe(false);
+  });
+
+  it('leaves an expired staff session to Admin’s sign-in handling', () => {
+    const expired = new SessionExpiredError(new Response(null, { status: 403 }), {
+      errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }],
+    });
+    expect(refusesStaffUser(expired)).toBe(false);
   });
 });
 

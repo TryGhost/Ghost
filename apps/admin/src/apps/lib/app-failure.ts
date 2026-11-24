@@ -3,7 +3,7 @@ import {
   isAppFailureCode,
   isUnconfirmedAppCode,
 } from '@tryghost/app-contracts';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 
 /**
  * What Ghost said about a failed apps request: the first error's code, and its type for an error
@@ -81,10 +81,16 @@ export function siteBlocksApps(error: unknown): SiteBlocksApps | undefined {
 
 /**
  * Ghost won't open apps for the staff user: their role doesn't allow it, such as after they were
- * made an Editor while an app was open.
+ * made an Editor while an app was open. The Admin API's permission check refuses such a role
+ * before the apps service does, without a code. An expired staff session is refused as a
+ * `NoPermissionError` too, which Admin's API layer reads as expired and handles itself.
  */
 export function refusesStaffUser(error: unknown): boolean {
-  return failureOf(error)?.code === 'APP_STAFF_SESSION_REQUIRED';
+  if (error instanceof SessionExpiredError) {
+    return false;
+  }
+  const failure = failureOf(error);
+  return failure?.code === 'APP_STAFF_SESSION_REQUIRED' || failure?.type === 'NoPermissionError';
 }
 
 /** Codes that end an open app session: nothing it can do opens it again as it was. */
