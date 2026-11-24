@@ -90,6 +90,21 @@ describe("Better Auth's OAuth provider for apps", function () {
       await assert.rejects(auth.api.getOpenIdConfig(), { statusCode: 404 });
     });
 
+    it('serves no authorization server metadata, signed in or not', async function () {
+      const auth = build({ apps: true });
+      const { cookie } = await signIn(auth);
+
+      for (const path of [
+        '/.well-known/oauth-authorization-server',
+        '/.well-known/openid-configuration',
+      ]) {
+        for (const headers of [{}, { cookie }]) {
+          const response = await auth.handler(new Request(url(path), { headers }));
+          assert.equal(response.status, 404, path);
+        }
+      }
+    });
+
     it('supports none of the standard grants', async function () {
       const auth = build({ apps: true });
 

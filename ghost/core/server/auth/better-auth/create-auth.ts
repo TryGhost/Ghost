@@ -161,8 +161,11 @@ export function createAuth(deps: CreateAuthDeps) {
       ROUTES.changeEmail,
       ROUTES.deleteUser,
       ROUTES.signInSocial,
-      // The jwt plugin's session JWT; apps get tokens from Ghost's own endpoints
-      ...(deps.apps ? [ROUTES.jwtToken] : []),
+      // The jwt plugin's session JWT; apps get tokens from Ghost's own endpoints. Nothing
+      // discovers the provider, so its metadata would only advertise endpoints to strangers
+      ...(deps.apps
+        ? [ROUTES.jwtToken, ROUTES.oauthServerMetadata, ROUTES.openIdConfiguration]
+        : []),
     ],
     hooks: {
       // A password change ends every other session, as PUT /users/password does
