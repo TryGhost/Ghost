@@ -119,7 +119,7 @@
     "@tryghost/metrics": "catalog:",
     "@tryghost/mg-clean-html": "catalog:",
     "@tryghost/mongo-knex": "catalog:",
-    "@tryghost/mongo-utils": "0.6.6",
+    "@tryghost/mongo-utils": "0.6.7",
     "@tryghost/mw-error-handler": "3.4.0",
     "@tryghost/mw-vhost": "3.4.0",
     "@tryghost/nodemailer": "2.4.0",
