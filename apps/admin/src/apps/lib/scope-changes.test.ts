@@ -16,8 +16,12 @@ describe('describeScopeChanges', () => {
         lines.map(({ title, actions }) => `${title}: ${actions.join(' ')}`),
       ]),
     ).toEqual([
-      ['added', 'New access', ['Posts and pages: Read any post or page.', 'Tags: Edit tags.']],
-      ['removed', 'No longer has', ['Tiers: List your tiers and their prices.']],
+      [
+        'added',
+        'Permissions approved',
+        ['Posts and pages: Read any post or page.', 'Tags: Edit tags.'],
+      ],
+      ['removed', 'No longer requires', ['Tiers: List your tiers and their prices.']],
     ]);
   });
 
@@ -25,7 +29,7 @@ describe('describeScopeChanges', () => {
     expect(describeScopeChanges([])).toEqual([]);
   });
 
-  it('words a suspension’s changes as what it asked for', () => {
+  it('words a suspension’s changes as what the update requires', () => {
     expect(
       describeScopeChanges(
         [
@@ -34,12 +38,12 @@ describe('describeScopeChanges', () => {
         ],
         { pending: true },
       ).map(({ heading }) => heading),
-    ).toEqual(['Asked for', 'Would drop']);
+    ).toEqual(['Now requires', 'No longer requires']);
   });
 });
 
 describe('markScopeChanges', () => {
-  it('marks new scopes and lists what the app no longer has', () => {
+  it('marks new scopes and lists what the app no longer requires', () => {
     const marks = markScopeChanges([
       { kind: 'scope', scope: 'post:edit', change: 'added' },
       { kind: 'scope', scope: 'product:browse', change: 'removed' },

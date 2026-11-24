@@ -15,22 +15,34 @@ import { SectionEyebrow } from './section-eyebrow';
 interface AccessIndicatorProps {
   manifest: AppManifest;
   /**
-   * Leaves out the label, the intro, the border and where the app's data goes, for a page that
-   * gives the list its own section heading and card.
+   * Leaves out the label, the border, where the app's data goes and the note under the list, for
+   * a page that gives the list its own section heading and card.
    */
   bare?: boolean;
   /**
    * What an update changes in access, for its review: new scopes are marked where they're listed,
-   * and what the app no longer has is listed after them.
+   * and what the app no longer requires is listed after them.
    */
   changes?: readonly ScopeChange[];
+  /** The review approves an update to an installed app rather than its first installation. */
+  reviewingUpdate?: boolean;
 }
 
-/** How an app gets what's on the list, on an app's details page. */
-export const OPENED_APP_ACCESS_INTRO = 'The app acts as whoever opens it, within their role.';
-
 /** Whatever the app asks for, for anyone deciding to let it in. */
-const TRUST_NOTE = 'Only install apps from developers you trust.';
+const TrustNote: React.FC<{ manifest: AppManifest; reviewingUpdate: boolean }> = ({
+  manifest,
+  reviewingUpdate,
+}) => (
+  <Text size="sm" tone="secondary">
+    <Text as="span" size="sm" tone="secondary" weight="medium">
+      Make sure you trust {manifest.author.name}.
+    </Text>{' '}
+    Ghost does not review apps such as {manifest.name}.{' '}
+    {reviewingUpdate
+      ? 'Only approve changes from developers you trust.'
+      : 'Only install apps from developers you trust.'}
+  </Text>
+);
 
 const NO_ACCESS = 'This app doesn’t ask for access to anything on your site.';
 
@@ -47,42 +59,45 @@ export const AccessLines: React.FC<{
   <ul className="m-0 flex list-none flex-col gap-3 p-0">
     {lines.map((line) => (
       <li key={line.resource} data-testid={testId}>
-        <Text size="sm" tone={removed ? 'secondary' : 'primary'} weight="semibold">
-          {line.title}
-        </Text>
-        <ul className="m-0 list-disc pl-5">
-          {line.actions.map((action, index) => {
-            const isNew = added?.has(line.scopes[index]) ?? false;
-            return (
-              <li key={action} data-testid={isNew ? 'access-new' : undefined}>
-                <Text as="span" size="sm" tone={removed ? 'tertiary' : 'secondary'}>
-                  {action}
-                </Text>
-                {isNew && (
-                  <Badge className="ml-2 align-middle" variant="success">
-                    New
-                  </Badge>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <Stack gap="xs">
+          <Text size="sm" tone={removed ? 'secondary' : 'primary'} weight="semibold">
+            {line.title}
+          </Text>
+          <ul className="m-0 list-disc pl-5">
+            {line.actions.map((action, index) => {
+              const isNew = added?.has(line.scopes[index]) ?? false;
+              return (
+                <li key={action} data-testid={isNew ? 'access-new' : undefined}>
+                  <Text as="span" size="sm" tone={removed ? 'tertiary' : 'secondary'}>
+                    {action}
+                  </Text>
+                  {/* On the text's baseline, so "New" lines up with the words before it. */}
+                  {isNew && (
+                    <Badge className="ml-1 align-baseline" variant="success">
+                      New
+                    </Badge>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </Stack>
       </li>
     ))}
   </ul>
 );
 
-/** What the app no longer has after an update. */
-const NoLongerHas: React.FC<{ lines: ScopeLine[] }> = ({ lines }) => (
+/** What the app no longer requires after an update. */
+const NoLongerRequires: React.FC<{ lines: ScopeLine[] }> = ({ lines }) => (
   <Stack data-testid="app-access-removed" gap="sm">
     <Text size="sm" tone="secondary" weight="semibold">
-      No longer has
+      No longer requires
     </Text>
     <AccessLines lines={lines} testId="access-removed-item" removed />
   </Stack>
 );
 
-/** What a change to an app's access adds and takes away, in the review screen's words. */
+/** What a change to an app's access adds and takes away, under a heading for each. */
 export const AccessChanges: React.FC<{ groups: ScopeChangeGroup[] }> = ({ groups }) => (
   <Stack gap="md">
     {groups.map((group) => (
@@ -104,6 +119,7 @@ export const AccessIndicator: React.FC<AccessIndicatorProps> = ({
   manifest,
   bare = false,
   changes = [],
+  reviewingUpdate = false,
 }) => {
   const lines = describeScopes(manifest.scopes);
   const marks = markScopeChanges(changes);
@@ -117,7 +133,7 @@ export const AccessIndicator: React.FC<AccessIndicatorProps> = ({
           {NO_ACCESS}
         </Text>
       )}
-      {marks.removed.length > 0 && <NoLongerHas lines={marks.removed} />}
+      {marks.removed.length > 0 && <NoLongerRequires lines={marks.removed} />}
     </Stack>
   );
 
@@ -130,29 +146,28 @@ export const AccessIndicator: React.FC<AccessIndicatorProps> = ({
   }
 
   return (
-    <Stack data-testid="access-indicator" gap="md">
-      <Stack gap="xs">
+    // The note sits as far below the box as the dialog's next section, the dialog's own gap.
+    <Stack data-testid="access-indicator" gap="xl">
+      <Stack gap="md">
         <SectionEyebrow>Required permissions</SectionEyebrow>
-        <Text size="sm" tone="secondary">
-          {manifest.scopes.length > 0 ? `${OPENED_APP_ACCESS_INTRO} ${TRUST_NOTE}` : TRUST_NOTE}
-        </Text>
-      </Stack>
-      {/* The box holds the list, then where the app's data goes as a band across its bottom,
-          outside the list so assistive tech doesn't count it as a permission. It clips the
-          band to its corners. */}
-      <div className="overflow-hidden rounded-lg border border-border-default">
-        <div className="p-4">{list}</div>
-        <div className="bg-muted px-4 py-3">
-          <DataAccessedBy manifest={manifest} />
+        {/* The box holds the list, then where the app's data goes as a band across its bottom,
+            outside the list so assistive tech doesn't count it as a permission. It clips the
+            band to its corners. */}
+        <div className="overflow-hidden rounded-lg border border-border-default">
+          <div className="p-4">{list}</div>
+          <div className="bg-muted px-4 py-3">
+            <DataAccessedBy manifest={manifest} />
+          </div>
         </div>
-      </div>
+      </Stack>
+      <TrustNote manifest={manifest} reviewingUpdate={reviewingUpdate} />
     </Stack>
   );
 };
 
 /** Where an app reads and writes its data: a quiet label over the address. */
 const DataAccessedBy: React.FC<{ manifest: AppManifest }> = ({ manifest }) => (
-  <Stack className="min-w-0" data-testid="app-data-accessed-by" gap="sm">
+  <Stack className="min-w-0" data-testid="app-data-accessed-by" gap="xs">
     <p className="stat-label text-muted-foreground">Data accessed by</p>
     <p className="min-w-0 text-sm break-words text-foreground">{servedFrom(manifest)}</p>
   </Stack>

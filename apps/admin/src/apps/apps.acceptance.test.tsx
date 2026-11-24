@@ -1631,24 +1631,38 @@ describe('Managing apps', () => {
 
     await renderAdminApp(DETAILS_ROUTE, { labs });
 
+    // An entry that changed access opens to show what changed.
+    await expect(appsScreen.historyEntries()).toHaveCount(4);
+    await expect
+      .element(appsScreen.historyEntries().nth(0))
+      .not.toHaveTextContent('Permissions approved');
+    await appsScreen.openHistoryEntry(0);
     await expect
       .element(appsScreen.historyEntries().nth(0))
       .toHaveTextContent(
-        /New access\s*Posts and pages\s*Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them\.\s*No longer has\s*Tiers/,
+        /Permissions approved\s*Posts and pages\s*Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them\.\s*No longer requires\s*Tiers/,
       );
     // The approved suspension leaves its changes to the approval, so they show once.
     await expect
       .element(appsScreen.historyEntries().nth(1))
       .toHaveTextContent(/^Updated, needs approval/);
-    await expect.element(appsScreen.historyEntries().nth(1)).not.toHaveTextContent('Asked for');
-    // The replaced one never took effect, so it keeps what it asked for.
+    await expect.element(appsScreen.historyEntries().nth(1)).not.toHaveTextContent('Now requires');
+    // It has nothing to open, so its row is disabled.
+    await expect.element(appsScreen.historyEntries().nth(1).getByRole('button')).toBeDisabled();
+    // The replaced one never took effect, so it keeps what it asked for. Opening it closes the
+    // first: one entry is open at a time.
+    await appsScreen.openHistoryEntry(2);
     await expect
       .element(appsScreen.historyEntries().nth(2))
-      .toHaveTextContent(/^Updated, needs approval.*Asked for\s*Tags\s*Edit tags\./);
+      .toHaveTextContent(/^Updated, needs approval.*Now requires\s*Tags\s*Edit tags\./);
+    await expect
+      .element(appsScreen.historyEntries().nth(0))
+      .not.toHaveTextContent('Permissions approved');
+    await appsScreen.openHistoryEntry(3);
     await expect
       .element(appsScreen.historyEntries().nth(3))
       .toHaveTextContent(
-        /New access\s*Posts and pages\s*List, search and read every post and page, drafts included\.$/,
+        /Permissions approved\s*Posts and pages\s*List, search and read every post and page, drafts included\.$/,
       );
   });
 
@@ -1674,6 +1688,38 @@ describe('Managing apps', () => {
     await expect.element(page.getByRole('heading', { name: 'Permissions' })).toBeVisible();
     await expect.element(appsScreen.openLink()).toBeVisible();
   });
+
+  // Admin 7's large titles move the name and its badges from the sidebar into the header.
+  it.each([
+    { admin7Design: false, nameIn: 'the sidebar' },
+    { admin7Design: true, nameIn: 'the header' },
+  ])(
+    'leaves a suspension to the banner, with no badge by the name in $nameIn',
+    async ({ admin7Design }) => {
+      // Admin 7's sidebar shows the site's member count and revenue.
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      fakeDetails(
+        installation({
+          status: 'suspended',
+          history: [
+            entry('h2', 'suspended', '2026-10-02T10:00:00.000Z'),
+            installedOn('2026-10-01T10:00:00.000Z'),
+          ],
+        }),
+      );
+
+      await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design } });
+
+      await expect
+        .element(appsScreen.needsApproval())
+        .toHaveTextContent('Podcast has been updated, and the changes need your approval.');
+      await expect.element(page.getByRole('heading', { name: 'Podcast', level: 1 })).toBeVisible();
+      await expect
+        .element(page.getByText('Needs approval', { exact: true }))
+        .not.toBeInTheDocument();
+    },
+  );
 
   it('shows that an app’s details are loading', async () => {
     let respond: ((response: Response) => void) | undefined;
@@ -1950,9 +1996,11 @@ describe('Managing apps', () => {
     fakeReview();
 
     await renderAdminApp('/apps', { labs });
+    // The row's Review changes button marks it; there's no badge by the name.
     await expect
-      .element(appsScreen.row('Podcast').getByTestId('app-needs-approval-badge'))
-      .toHaveTextContent('Needs approval');
+      .element(appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }))
+      .toBeVisible();
+    await expect.element(appsScreen.row('Podcast')).not.toHaveTextContent('Needs approval');
     await appsScreen.rowActions('Podcast').click();
     await appsScreen.detailsMenuItem().click();
 

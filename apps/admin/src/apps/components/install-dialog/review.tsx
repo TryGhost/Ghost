@@ -30,31 +30,30 @@ export const Review: React.FC<ReviewProps> = ({
   onConfirm,
 }) => {
   const { manifest, installation } = preview;
-  const name = installation?.manifest.name;
   // Scope changes are marked in the access list, not rows among the fields.
   const { fields, scopes } = splitChanges(installation?.changes ?? []);
   const rows = installation ? describeChanges(installation, preview, fields) : [];
+  // Above the separator is the app as it stands: an installed app stays as it was approved until
+  // its changes are. The sections below say what needs review.
+  const current = installation ?? preview;
   return (
     <>
-      <ReviewHeader
-        description={
-          installation
-            ? `${name} has changed. The changes take effect once you approve them.`
-            : manifest.description
-        }
-        preview={preview}
-        title={installation ? `Review changes to ${name}` : manifest.name}
-      />
-      <NoticeBanner notice={notice} />
-      <CapabilitySummary manifest={manifest} />
-      <ReviewSeparator />
+      <ReviewHeader app={current}>
+        <NoticeBanner notice={notice} />
+        <CapabilitySummary manifest={current.manifest} />
+        <ReviewSeparator />
+      </ReviewHeader>
       {rows.length > 0 && (
         <Stack gap="sm">
           <SectionEyebrow>What changed</SectionEyebrow>
           <ManifestChanges rows={rows} />
         </Stack>
       )}
-      <AccessIndicator changes={scopes} manifest={manifest} />
+      <AccessIndicator
+        changes={scopes}
+        manifest={manifest}
+        reviewingUpdate={Boolean(installation)}
+      />
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>
           Cancel

@@ -126,7 +126,7 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.accessIndicator())
       .toHaveTextContent(
-        'The app acts as whoever opens it, within their role. Only install apps from developers you trust.',
+        'Make sure you trust Example Audio. Ghost does not review apps such as Podcast. Only install apps from developers you trust.',
       );
     // One line per resource the app declares, in Ghost's words.
     await expect(appsScreen.accessItems()).toHaveCount(2);
@@ -178,10 +178,10 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
     await expect.element(appsScreen.noAccess()).toBeVisible();
-    // Nothing to do as whoever opens it.
+    // Whatever it asks for, Ghost hasn't reviewed it.
     await expect
       .element(appsScreen.accessIndicator())
-      .not.toHaveTextContent('acts as whoever opens it');
+      .toHaveTextContent('Only install apps from developers you trust.');
     await expect(appsScreen.accessItems()).toHaveCount(0);
   });
 
@@ -212,7 +212,7 @@ describe('Installing an app', () => {
       .toHaveTextContent('Edit, publish and email posts and pages');
     await expect
       .element(appsScreen.removedAccess())
-      .toHaveTextContent('No longer hasTiersList your tiers and their prices.');
+      .toHaveTextContent('No longer requiresTiersList your tiers and their prices.');
     // Access isn't repeated among the field-by-field changes.
     await expect(appsScreen.changes()).toHaveCount(0);
   });
@@ -297,7 +297,11 @@ describe('Installing an app', () => {
 
   it('reviews what changed for an app the site already has, and approves it in place', async () => {
     fakeInstallations([installation()]);
-    const renamed = manifest({ name: 'Podcasts', description: 'New words.' });
+    const renamed = manifest({
+      name: 'Podcasts',
+      description: 'New words.',
+      author: { name: 'Podcast Network', url: 'https://podcasts.example.com/' },
+    });
     fakePreview(
       previewResponse(
         preview({
@@ -306,6 +310,7 @@ describe('Installing an app', () => {
           installation: existing([
             { kind: 'field', path: 'description', requires_approval: false },
             { kind: 'field', path: 'name', requires_approval: true },
+            { kind: 'field', path: 'author.name', requires_approval: true },
           ]),
         }),
       ),
@@ -316,11 +321,25 @@ describe('Installing an app', () => {
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
-    await expect(appsScreen.changes()).toHaveCount(2);
-    // What needs approval comes first.
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    // The header shows the approved app, while the warning names the version being reviewed.
+    await expect
+      .element(appsScreen.installDialog().getByRole('heading', { name: 'Podcast', exact: true }))
+      .toBeVisible();
+    await expect
+      .element(appsScreen.accessIndicator())
+      .toHaveTextContent(
+        'Make sure you trust Podcast Network. Ghost does not review apps such as Podcasts. Only approve changes from developers you trust.',
+      );
+    // Every changed field is shown, including the description that needs no approval on its own.
+    await expect(appsScreen.changes()).toHaveCount(3);
     await expect.element(appsScreen.changes().nth(0)).toHaveTextContent('NamePodcastPodcasts');
-    await expect.element(appsScreen.changes().nth(1)).toHaveTextContent('Description');
+    await expect
+      .element(appsScreen.changes().nth(1))
+      .toHaveTextContent('DescriptionPublish episodes and embed players.New words.');
+    await expect
+      .element(appsScreen.changes().nth(2))
+      .toHaveTextContent('DeveloperExample AudioPodcast Network');
 
     await appsScreen.approveChangesButton().click();
 
@@ -358,14 +377,16 @@ describe('Installing an app', () => {
 
     await renderAdminApp(`/apps/install?manifest=${encodeURIComponent(elsewhere)}`, { labs });
 
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     await expect(appsScreen.changes()).toHaveCount(2);
     await expect
       .element(appsScreen.changes().first())
       .toHaveTextContent(`Install link${MANIFEST_URL}${elsewhere}`);
     await expect
-      .element(appsScreen.changes().last())
-      .toHaveTextContent('https://podcast.example.com/adminhttps://audio.example.org/admin');
+      .element(appsScreen.changes().nth(1))
+      .toHaveTextContent(
+        'Page in Adminhttps://podcast.example.com/adminhttps://audio.example.org/admin',
+      );
 
     await appsScreen.approveChangesButton().click();
 
@@ -507,7 +528,7 @@ describe('Installing an app', () => {
     await appsScreen.installButton().click();
 
     await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     expect(previews).toBe(2);
   });
 

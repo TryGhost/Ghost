@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from '@tryghost/shade/primitives';
+import { Inline, Text } from '@tryghost/shade/primitives';
 import type { ChangeRow } from '@/apps/lib/changes';
 
 /** One side of a change. The approved side reads as replaced, struck through when it had a value. */
@@ -9,8 +9,8 @@ const Value: React.FC<{ value: string | null; missing: string; approved?: boolea
   approved,
 }) => (
   <Text
-    as="div"
-    className={approved && value !== null ? 'break-all line-through' : 'break-all'}
+    as="span"
+    className={approved && value !== null ? 'wrap-anywhere line-through' : 'wrap-anywhere'}
     size="sm"
     tone={approved ? 'secondary' : undefined}
   >
@@ -20,7 +20,7 @@ const Value: React.FC<{ value: string | null; missing: string; approved?: boolea
 
 /**
  * What changed since the app was approved, field by field: only what's new or different,
- * not the whole manifest again, with the changes that need approval first.
+ * not the whole manifest again.
  */
 export const ManifestChanges: React.FC<{ rows: ChangeRow[] }> = ({ rows }) => (
   <ul
@@ -32,8 +32,11 @@ export const ManifestChanges: React.FC<{ rows: ChangeRow[] }> = ({ rows }) => (
         <Text as="div" size="sm" weight="semibold">
           {row.label}
         </Text>
-        <Value missing="Not there before" value={row.before} approved />
-        <Value missing="Removed" value={row.after} />
+        {/* Side by side, wrapping onto the next line when they don't fit. */}
+        <Inline align="baseline" gap="xs" wrap>
+          <Value missing="Not there before" value={row.before} approved />
+          <Value missing="Removed" value={row.after} />
+        </Inline>
       </li>
     ))}
   </ul>

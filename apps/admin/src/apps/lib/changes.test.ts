@@ -44,19 +44,17 @@ describe('describeChanges', () => {
         label: 'Name',
         before: 'Podcast',
         after: 'Podcasts',
-        requiresApproval: true,
       },
       {
         field: 'author.name',
         label: 'Developer',
         before: 'Example Audio',
         after: 'Example',
-        requiresApproval: true,
       },
     ]);
   });
 
-  it('shows an app that moved as its new install link, and where its page runs', () => {
+  it('shows an app that moved as its new install link and page URL', () => {
     const reviewed = {
       manifest_url: 'https://podcast.example.net/ghost-app.json',
       manifest: manifest({
@@ -90,8 +88,7 @@ describe('describeChanges', () => {
     ).toEqual([['Development build', 'No', 'Yes']]);
   });
 
-  // A publisher can't judge a key, and a new backend key applies without a review anyway.
-  it('leaves out a new backend key', () => {
+  it('shows a new backend key, even though it does not require approval on its own', () => {
     const reviewed = {
       ...approved,
       manifest: manifest({
@@ -107,12 +104,29 @@ describe('describeChanges', () => {
       describeChanges(approved, reviewed, [
         { kind: 'field', path: 'backend_key.x', requires_approval: false },
       ]),
-    ).toEqual([]);
+    ).toEqual([
+      {
+        field: 'backend_key',
+        label: 'Backend key',
+        before: '{"kty":"OKP","crv":"Ed25519","x":"H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk"}',
+        after: '{"kty":"OKP","crv":"Ed25519","x":"Z_QKSqF5_5W5r2LfGwj1UyVOFyFew44-bMShKMwpCfo"}',
+      },
+    ]);
+  });
+
+  it('shows a new accent colour', () => {
+    const reviewed = { ...approved, manifest: manifest({ accent_color: '#3b82f6' }) };
+
+    expect(
+      describeChanges(approved, reviewed, [
+        { kind: 'field', path: 'accent_color', requires_approval: false },
+      ]).map(({ label, before, after }) => [label, before, after]),
+    ).toEqual([['Accent color', '#ff5500', '#3b82f6']]);
   });
 
   it('shows an icon as one change, whether it is named or served by the app', () => {
     const reviewed = {
-      manifest_url: approved.manifest_url,
+      ...approved,
       manifest: manifest({ icon: { url: 'https://podcast.example.com/icon.svg' } }),
     };
 
@@ -120,19 +134,11 @@ describe('describeChanges', () => {
       describeChanges(approved, reviewed, [
         { kind: 'field', path: 'icon.name', requires_approval: false },
         { kind: 'field', path: 'icon.url', requires_approval: true },
-      ]),
-    ).toEqual([
-      {
-        field: 'icon',
-        label: 'Icon',
-        before: 'audio-lines',
-        after: 'https://podcast.example.com/icon.svg',
-        requiresApproval: true,
-      },
-    ]);
+      ]).map(({ label, before, after }) => [label, before, after]),
+    ).toEqual([['Icon', 'audio-lines', 'https://podcast.example.com/icon.svg']]);
   });
 
-  it('lists changes that need approval before those that do not', () => {
+  it('shows changes that need no approval alongside the ones that do', () => {
     const reviewed = {
       manifest_url: approved.manifest_url,
       manifest: manifest({ name: 'Podcasts', description: 'New words.' }),
@@ -142,11 +148,8 @@ describe('describeChanges', () => {
       describeChanges(approved, reviewed, [
         { kind: 'field', path: 'description', requires_approval: false },
         { kind: 'field', path: 'name', requires_approval: true },
-      ]).map(({ field, requiresApproval }) => [field, requiresApproval]),
-    ).toEqual([
-      ['name', true],
-      ['description', false],
-    ]);
+      ]).map(({ field }) => field),
+    ).toEqual(['name', 'description']);
   });
 
   it('shows a field Admin does not know yet by its name, as JSON', () => {
@@ -165,7 +168,6 @@ describe('describeChanges', () => {
         label: 'cards',
         before: null,
         after: '[{"name":"player"}]',
-        requiresApproval: true,
       },
     ]);
   });
