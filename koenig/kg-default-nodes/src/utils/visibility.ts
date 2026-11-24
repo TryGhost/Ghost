@@ -8,7 +8,13 @@ export const NO_MEMBERS_SEGMENT = '';
 
 const WEB_SEGMENTS = [NO_MEMBERS_SEGMENT, ALL_MEMBERS_SEGMENT, FREE_MEMBERS_SEGMENT, PAID_MEMBERS_SEGMENT];
 
-const DEFAULT_VISIBILITY = {
+// A card's audiences in the current format, with every field present
+export interface RenderedVisibility {
+    web: {nonMember: boolean; memberSegment: string};
+    email: {memberSegment: string};
+}
+
+const DEFAULT_VISIBILITY: RenderedVisibility = {
     web: {
         nonMember: true,
         memberSegment: ALL_MEMBERS_SEGMENT
@@ -23,7 +29,7 @@ function isNullish(value: unknown) {
 }
 
 // ensure we always work with a deep copy to avoid accidental ref mutations
-export function buildDefaultVisibility(): typeof DEFAULT_VISIBILITY {
+export function buildDefaultVisibility(): RenderedVisibility {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
 }
 
@@ -171,7 +177,7 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
 
 // The audiences a card is rendered for. Only Ghost's own web segments and a
 // true or false visitor setting are valid; any other value hides the card on the web.
-export function getRenderedVisibility(visibility: Visibility | undefined) {
+export function getRenderedVisibility(visibility: Visibility | undefined): RenderedVisibility {
     const migrated = visibility ? migrateOldVisibilityFormat(visibility) : buildDefaultVisibility();
 
     const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
@@ -213,7 +219,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
             return originalRenderOutput;
         }
 
-        return _renderWithEmailVisibility(document, _getRenderContent(originalRenderOutput), email as {memberSegment: string});
+        return _renderWithEmailVisibility(document, _getRenderContent(originalRenderOutput), email);
     }
 
     const isNotVisibleOnWeb =
@@ -229,7 +235,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
         web.memberSegment !== ALL_MEMBERS_SEGMENT;
 
     if (hasWebVisibilityRestrictions) {
-        return _renderWithWebVisibility(document, _getRenderContent(originalRenderOutput), web as {nonMember: boolean; memberSegment: string});
+        return _renderWithWebVisibility(document, _getRenderContent(originalRenderOutput), web);
     }
 
     return originalRenderOutput;
@@ -259,7 +265,7 @@ function _getRenderContent({element, type}: ExportDOMOutput) {
     }
 }
 
-function _renderWithEmailVisibility(document: Document, content: string, emailVisibility: {memberSegment: string}): ExportDOMOutput<'html'> {
+function _renderWithEmailVisibility(document: Document, content: string, emailVisibility: RenderedVisibility['email']): ExportDOMOutput<'html'> {
     const {memberSegment} = emailVisibility;
     const container = document.createElement('div');
     container.innerHTML = content;
@@ -268,7 +274,7 @@ function _renderWithEmailVisibility(document: Document, content: string, emailVi
     return {element: container, type: 'html' as const};
 }
 
-function _renderWithWebVisibility(document: Document, content: string, webVisibility: {nonMember: boolean; memberSegment: string}): ExportDOMOutput<'value'> {
+function _renderWithWebVisibility(document: Document, content: string, webVisibility: RenderedVisibility['web']): ExportDOMOutput<'value'> {
     const {nonMember, memberSegment} = webVisibility;
     const wrappedContent = `\n<!--kg-gated-block:begin nonMember:${nonMember} memberSegment:"${memberSegment}" -->${content}<!--kg-gated-block:end-->\n`;
     const textarea = document.createElement('textarea');

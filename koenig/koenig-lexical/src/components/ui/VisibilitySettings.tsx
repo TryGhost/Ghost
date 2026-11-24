@@ -1,6 +1,12 @@
 import {ToggleSetting} from './SettingsPanel';
+import type {VisibilityOption} from '../../utils/visibility';
 
-export function VisibilitySettings({visibilityOptions, toggleVisibility}) {
+interface VisibilitySettingsProps {
+    visibilityOptions: VisibilityOption[];
+    toggleVisibility: (groupKey: string, toggleKey: string, value: boolean) => void;
+}
+
+export function VisibilitySettings({visibilityOptions, toggleVisibility}: VisibilitySettingsProps) {
     const settingGroups = visibilityOptions.map((group, index) => {
         const toggles = group.toggles.map((toggle) => {
             return (

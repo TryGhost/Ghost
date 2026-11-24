@@ -4,12 +4,15 @@ import {VISIBILITY_SETTINGS} from '../../../src/utils/visibility';
 import {act, renderHook} from '@testing-library/react';
 import {expect, vi} from 'vitest';
 import {useVisibilityToggle} from '../../../src/hooks/useVisibilityToggle';
+import type {CardConfig} from '../../../src/context/KoenigComposerContext';
+import type {KoenigCard} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor} from 'lexical';
 
 const lexicalMocks = vi.hoisted(() => ({
     $getNodeByKey: vi.fn()
 }));
 const koenigMocks = vi.hoisted(() => ({
-    $isKoenigCard: vi.fn()
+    $isKoenigCard: vi.fn<(node: unknown) => node is KoenigCard>()
 }));
 
 vi.mock(import('lexical'), async (importOriginal) => {
@@ -26,9 +29,9 @@ vi.mock(import('@tryghost/kg-default-nodes'), () => ({
 }));
 
 describe('useVisibilityToggle', () => {
-    let editor;
-    let node;
-    let cardConfig;
+    let editor: LexicalEditor;
+    let node: {visibility: typeof DEFAULT_VISIBILITY; getType: ReturnType<typeof vi.fn>; getIsVisibilityActive: ReturnType<typeof vi.fn>};
+    let cardConfig: CardConfig;
 
     const DEFAULT_VISIBILITY = {
         web: {
@@ -53,9 +56,9 @@ describe('useVisibilityToggle', () => {
             getEditorState: vi.fn(() => ({
                 read: vi.fn(callback => callback())
             }))
-        };
+        } as unknown as LexicalEditor;
 
-        $getNodeByKey.mockReturnValue(node);
+        vi.mocked($getNodeByKey).mockReturnValue(node as unknown as ReturnType<typeof $getNodeByKey>);
 
         cardConfig = {
             stripeEnabled: true

@@ -1,14 +1,50 @@
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {buildDefaultVisibility, getRenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
+import type {CardConfig} from '../context/KoenigComposerContext';
+import type {LexicalNode} from 'lexical';
+import type {RenderedVisibility, Visibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
     WEB_AND_EMAIL: 'web and email',
     WEB_ONLY: 'web only',
     EMAIL_ONLY: 'email only',
     NONE: 'none'
-};
+} as const;
 
-export function isVisibilityEnabled(cardConfig) {
+export type VisibilitySetting = typeof VISIBILITY_SETTINGS[keyof typeof VISIBILITY_SETTINGS];
+
+export interface VisibilityToggles {
+    web: {
+        nonMembers: boolean;
+        freeMembers: boolean;
+        paidMembers: boolean;
+    };
+    email: {
+        freeMembers: boolean;
+        paidMembers: boolean;
+    };
+}
+
+export interface VisibilityToggle {
+    key: string;
+    label: string;
+    checked: boolean;
+}
+
+export interface VisibilityOption {
+    label: string;
+    key: string;
+    toggles: VisibilityToggle[];
+}
+
+// image and gallery nodes expose these; other cards don't
+interface PlaceholderCandidate {
+    isEmpty?: () => boolean;
+    src?: unknown;
+    images?: unknown;
+}
+
+export function isVisibilityEnabled(cardConfig?: CardConfig) {
     return (cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL) !== VISIBILITY_SETTINGS.NONE;
 }
 
@@ -16,7 +52,7 @@ export function isVisibilityEnabled(cardConfig) {
 // `cardConfig.visibilityCardTypes` lists the cards whose visibility the
 // backend can honour; Admin passes it because it can deploy ahead of the
 // server. Without a list every card with a visibility property is allowed.
-export function isCardVisibilityAvailable(cardType, cardConfig) {
+export function isCardVisibilityAvailable(cardType: string, cardConfig?: CardConfig) {
     if (!isVisibilityEnabled(cardConfig)) {
         return false;
     }
@@ -26,7 +62,7 @@ export function isCardVisibilityAvailable(cardType, cardConfig) {
 }
 
 // an image or gallery placeholder has no content to hide yet
-function isPlaceholderCard(cardNode) {
+function isPlaceholderCard(cardNode: LexicalNode & PlaceholderCandidate) {
     return cardNode.isEmpty?.() === true
         || cardNode.src === ''
         || (Array.isArray(cardNode.images) && cardNode.images.length === 0);
@@ -34,7 +70,7 @@ function isPlaceholderCard(cardNode) {
 
 // Cards without an edit mode of their own (image, gallery) still open
 // their settings panel in edit mode when visibility is something to edit
-export function cardHasEditMode(cardNode, cardConfig) {
+export function cardHasEditMode(cardNode: LexicalNode | null | undefined, cardConfig?: CardConfig) {
     if (!$isKoenigCard(cardNode)) {
         return false;
     }
@@ -46,7 +82,7 @@ export function cardHasEditMode(cardNode, cardConfig) {
     return cardNode.hasVisibility?.() === true && isCardVisibilityAvailable(cardNode.getType(), cardConfig) && !isPlaceholderCard(cardNode);
 }
 
-export function parseVisibilityToToggles(visibility) {
+export function parseVisibilityToToggles(visibility?: RenderedVisibility): VisibilityToggles {
     visibility = visibility || buildDefaultVisibility();
 
     return {
@@ -62,17 +98,17 @@ export function parseVisibilityToToggles(visibility) {
     };
 }
 
-function isToggleChecked(toggles, key, fallback) {
+function isToggleChecked(toggles: VisibilityToggle[], key: string, fallback: boolean): boolean {
     return toggles.find(t => t.key === key)?.checked ?? fallback;
 }
 
 // used for building UI
-export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWeb = true, showEmail = true} = {}) {
+export function getVisibilityOptions(visibility?: RenderedVisibility, {isStripeEnabled = true, showWeb = true, showEmail = true} = {}): VisibilityOption[] {
     visibility = visibility || buildDefaultVisibility();
     const toggles = parseVisibilityToToggles(visibility);
 
     // use arrays to ensure consistent order when using to build UI
-    const options = [
+    const options: VisibilityOption[] = [
         {
             label: 'Web',
             key: 'web',
@@ -110,13 +146,13 @@ export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWe
     });
 }
 
-export function serializeOptionsToVisibility(options, existingVisibility) {
+export function serializeOptionsToVisibility(options: VisibilityOption[], existingVisibility?: RenderedVisibility): RenderedVisibility {
     existingVisibility = existingVisibility || buildDefaultVisibility();
     const existingToggles = parseVisibilityToToggles(existingVisibility);
     const webToggles = options.find(group => group.key === 'web')?.toggles ?? [];
     const emailToggles = options.find(group => group.key === 'email')?.toggles ?? [];
 
-    const webSegments = [];
+    const webSegments: string[] = [];
     if (isToggleChecked(webToggles, 'freeMembers', existingToggles.web.freeMembers)) {
         webSegments.push('status:free');
     }
@@ -124,7 +160,7 @@ export function serializeOptionsToVisibility(options, existingVisibility) {
         webSegments.push('status:-free');
     }
 
-    const emailSegments = [];
+    const emailSegments: string[] = [];
     if (isToggleChecked(emailToggles, 'freeMembers', existingToggles.email.freeMembers)) {
         emailSegments.push('status:free');
     }
@@ -147,7 +183,7 @@ export function serializeOptionsToVisibility(options, existingVisibility) {
 // counts as the default (everyone), so a plain image matches a plain gallery.
 // Used to stop drag-and-drop merging images with different audiences, which
 // would otherwise silently widen who can see one of them.
-export function isSameVisibility(a, b) {
+export function isSameVisibility(a: Visibility | undefined, b: Visibility | undefined) {
     const x = getRenderedVisibility(a);
     const y = getRenderedVisibility(b);
     return x.web.nonMember === y.web.nonMember

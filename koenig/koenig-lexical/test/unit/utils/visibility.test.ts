@@ -240,17 +240,17 @@ describe('serializeOptionsToVisibility', function () {
                 key: 'web',
                 label: 'Web',
                 toggles: [
-                    {key: 'nonMembers', checked: true},
-                    {key: 'freeMembers', checked: true},
-                    {key: 'paidMembers', checked: false}
+                    {key: 'nonMembers', label: 'Public visitors', checked: true},
+                    {key: 'freeMembers', label: 'Free members', checked: true},
+                    {key: 'paidMembers', label: 'Paid members', checked: false}
                 ]
             },
             {
                 key: 'email',
                 label: 'Email',
                 toggles: [
-                    {key: 'freeMembers', checked: false},
-                    {key: 'paidMembers', checked: true}
+                    {key: 'freeMembers', label: 'Free members', checked: false},
+                    {key: 'paidMembers', label: 'Paid members', checked: true}
                 ]
             }
         ]);
@@ -307,8 +307,9 @@ describe('isSameVisibility', function () {
 
     // the renderer only shows a card to public visitors when nonMember is exactly true
     it('does not treat a nonMember value other than true as public', function () {
-        const nullNonMember = {...everyone, web: {...everyone.web, nonMember: null}};
-        const stringNonMember = {...everyone, web: {...everyone.web, nonMember: 'true'}};
+        // stored data the editor doesn't produce itself
+        const nullNonMember = {...everyone, web: {...everyone.web, nonMember: null}} as unknown as typeof everyone;
+        const stringNonMember = {...everyone, web: {...everyone.web, nonMember: 'true'}} as unknown as typeof everyone;
         const membersOnly = {...everyone, web: {...everyone.web, nonMember: false}};
 
         expect(isSameVisibility(nullNonMember, everyone)).toBe(false);
