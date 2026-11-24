@@ -2,11 +2,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import * as errors from '@tryghost/errors';
-import {
-  DbDate,
-  fromDatabaseDate,
-  toDatabaseDate,
-} from '../../../../../core/server/lib/db-types/date';
+import { DbDate, fromDatabaseDate, toDatabaseDate } from '#kernel/database/columns';
 
 describe('database date utilities', function () {
   const timezones = [
@@ -24,7 +20,7 @@ describe('database date utilities', function () {
   const runInOtherTimezones = async (toRun: string) => {
     // JSON.stringify does a good job wrapping strings in quotes and escaping.
     const s = JSON.stringify;
-    const modulePath = require.resolve('../../../../../core/server/lib/db-types/date');
+    const modulePath = require.resolve('#kernel/database/columns');
 
     await Promise.all(
       timezones.map(async ({ tz, expectedNaive }) => {

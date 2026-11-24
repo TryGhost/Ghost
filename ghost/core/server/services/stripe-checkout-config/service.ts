@@ -25,7 +25,7 @@ import {
   type Key,
   KeySchema,
 } from '@tryghost/metafield-types/identity';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { toDatabaseDate } from '#kernel/database/columns';
 import type { RequestContext } from '../../lib/actor';
 import type { ActionLog } from '../../lib/action-log/action-log';
 import { configRow, type ConfigRowSchema } from './codec';
@@ -42,7 +42,7 @@ import {
 import { CONFIG_SLUG, CONFIG_TABLE, DbConfigParts } from './schema';
 import { parseRequest } from '../../lib/parse-request';
 import { CheckoutConfigInput } from './serializers';
-import { ensureTransaction } from '../../lib/ensure-transaction';
+import { ensureTransaction } from '#kernel/database/transaction';
 
 // A `custom_field_key` is a key in the publisher's `custom` namespace, so the config reads and
 // checks only the bindings and fields there.

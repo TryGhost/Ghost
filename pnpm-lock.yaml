@@ -2196,18 +2196,37 @@ importers:
 
   framework/foundry:
     dependencies:
+      '@tryghost/database-info':
+        specifier: 2.4.0
+        version: 2.4.0
       '@tryghost/kernel':
         specifier: workspace:*
         version: link:../kernel
       '@tryghost/logging':
         specifier: 6.1.0
         version: 6.1.0(supports-color@10.2.2)
-
-  framework/kernel:
-    dependencies:
       knex:
         specifier: 'catalog:'
         version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+
+  framework/kernel:
+    dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.8
+        version: 3.4.8
+      knex:
+        specifier: 'catalog:'
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+      luxon:
+        specifier: 'catalog:'
+        version: 3.7.2
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7(patch_hash=011cbd2c390354e6d9b4a7c1d83ee357aec0ab419beb9a74d91587ce9b33c6a6)
+    devDependencies:
+      '@types/luxon':
+        specifier: 'catalog:'
+        version: 3.7.6
 
   ghost:
     dependencies:

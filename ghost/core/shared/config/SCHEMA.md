@@ -251,7 +251,7 @@ makes no measurable difference to the test suite.
 Config is shared as well as read-only: every reader of a key gets the same object. Build
 a derived object instead. Three places got this wrong, each writing through into
 config for every later reader:
-[`configure-knex.ts`](../../server/data/db/configure-knex.ts) assembling knex's
+`configure-knex.ts` (now [`bootstrap/database-options.ts`](../../../bootstrap/database-options.ts)) assembling knex's
 options, `AdapterCacheRedis` folding `ttl` into `clusterConfig`, and
 `MigratorConfig` handing the `database` subtree to knex-migrator before 6.4,
 which mutated what it was given.

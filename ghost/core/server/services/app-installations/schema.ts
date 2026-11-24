@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { AppManifestSchema, ManifestChangeSchema } from '@tryghost/app-contracts/manifest';
-import { DbBoolean } from '../../lib/db-types/boolean';
-import { DbDate } from '../../lib/db-types/date';
-import { DbJson } from '../../lib/db-types/json';
+import { DbBoolean } from '#kernel/database/columns';
+import { DbDate } from '#kernel/database/columns';
+import { DbJson } from '#kernel/database/columns';
 
 // Mirrors schema.ts's `isIn` on the column, which stays static config and does not import this.
 export const AppInstallationStatus = z.enum(['active', 'suspended', 'uninstalled']);

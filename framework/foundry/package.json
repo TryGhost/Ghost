@@ -8,7 +8,9 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@tryghost/database-info": "2.4.0",
     "@tryghost/kernel": "workspace:*",
-    "@tryghost/logging": "catalog:"
+    "@tryghost/logging": "catalog:",
+    "knex": "catalog:"
   }
 }

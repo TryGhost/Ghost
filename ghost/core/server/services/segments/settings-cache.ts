@@ -2,8 +2,8 @@ import type { GhostLogger } from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import type settingsCache from '../../../shared/settings-cache';
-import { afterCommit } from '../../lib/after-commit';
-import { DbDate } from '../../lib/db-types/date';
+import { afterCommit } from '#kernel/database/after-commit';
+import { DbDate } from '#kernel/database/columns';
 import type { OnSegmentUpdated } from './changes';
 import type { SegmentsTracking } from './tracking';
 

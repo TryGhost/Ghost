@@ -1,4 +1,4 @@
-import { fromDatabaseDate } from '../../core/server/lib/db-types/date';
+import { fromDatabaseDate } from '#kernel/database/columns';
 import ObjectId from 'bson-objectid';
 import moment from 'moment';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../core/server/services/member-welcome-emails/constants';

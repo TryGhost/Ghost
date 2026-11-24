@@ -7,7 +7,7 @@ import {
   SAFETY_LAG_MS,
   syncTableToTinybird,
 } from '../../../../../core/server/services/tinybird-sync/sync-table-to-tinybird';
-import { toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
+import { toDatabaseDate } from '#kernel/database/columns';
 
 const SITE_UUID = 'bd05ceed-1df9-4af7-832a-d3b5faa7ca1d';
 const TRAFFIC_ANALYTICS_AUTH = 'sync-secret';

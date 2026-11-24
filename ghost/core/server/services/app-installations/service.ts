@@ -12,7 +12,7 @@ import {
   type WriteOutcome,
 } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
-import { ensureTransaction, transactionOf } from '../../lib/ensure-transaction';
+import { ensureTransaction, transactionOf } from '#kernel/database/transaction';
 import { approvalWrite, changesFrom, recheckWrite, type ManifestWrite } from './decide-on-manifest';
 import type { FetchIcon } from './fetch-icon';
 import { approvalManifestIds, buildHistory } from './history';

@@ -4,7 +4,7 @@ import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
+import { DbDate, toDatabaseDate } from '#kernel/database/columns';
 import {
   ApprovedManifestFields,
   InstallationFields,

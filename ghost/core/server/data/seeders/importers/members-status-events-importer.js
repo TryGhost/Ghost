@@ -1,6 +1,6 @@
 const { TableImporter } = require('./table-importer');
 const { randomDateBetween } = require('../utils/random');
-const { toDatabaseDate } = require('../../../lib/db-types/date');
+const { toDatabaseDate } = require('#kernel/database/columns');
 
 class MembersStatusEventsImporter extends TableImporter {
   static table = 'members_status_events';

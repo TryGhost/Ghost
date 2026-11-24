@@ -16,7 +16,6 @@ const tiersService = require('../tiers').default;
 const giftService = require('../gifts');
 const VerificationTrigger = require('../verification-trigger');
 const { verificationWebhookService } = require('../verification/verification-webhook-service');
-const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
 const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
 
@@ -40,7 +39,7 @@ const membersConfig = new MembersConfigProvider({
 const membersStats = new MembersStats({
   db: db,
   settingsCache: settingsCache,
-  isSQLite: DatabaseInfo.isSQLite(db.knex),
+  isSQLite: db.database.dialect === 'sqlite',
 });
 
 let membersApi;

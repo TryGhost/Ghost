@@ -1,6 +1,6 @@
 const { faker } = require('@faker-js/faker');
 const { TableImporter } = require('./table-importer');
-const { fromDatabaseDate } = require('../../../lib/db-types/date');
+const { fromDatabaseDate } = require('#kernel/database/columns');
 
 class MembersStripeCustomersImporter extends TableImporter {
   static table = 'members_stripe_customers';

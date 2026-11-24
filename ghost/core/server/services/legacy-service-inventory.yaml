@@ -590,7 +590,6 @@ services:
           delivery/open results with provider events and cursors substituted. These establish
           selected wiring, not replacement compatibility or a durable signup-to-run outbox.
         sources:
-          - core/server/lib/after-commit.ts
           - core/boot.js
           - core/server/api/endpoints/automations.ts
           - core/server/api/endpoints/automation-performance-stats.ts
@@ -2069,7 +2068,6 @@ services:
           bounded preparation workers, drain gates and cached-image fallback using fakes;
           these do not prove provider socket disposal or whole-server shutdown completion.
         sources:
-          - core/server/lib/after-commit.ts
           - core/server/services/posts/posts-service.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/batch-sending-service.js
@@ -3293,7 +3291,7 @@ services:
         sources:
           - core/server/services/limits.ts
           - core/server/data/db/index.js
-          - core/server/data/db/connection.ts
+          - bootstrap/transition/legacy-database.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/email-service/email-service.js
           - core/server/api/endpoints/utils/validators/input/files.ts
@@ -4160,7 +4158,6 @@ services:
           - core/server/services/verification-trigger.js
           - core/server/services/members/single-use-token-provider.js
           - core/server/services/members/members-api/repositories/member-repository.js
-          - core/server/lib/after-commit.ts
           - core/server/services/members/import-export/import/importer.ts
           - core/server/services/members/import-export/import/spool.ts
           - core/server/services/members/import-export/csv/parse.ts
@@ -4203,7 +4200,6 @@ services:
           - core/server/services/members/members-ssr.js
           - core/server/lib/magic-link/magic-link.js
           - core/server/services/members/members-api/repositories/member-repository.js
-          - core/server/lib/after-commit.ts
           - core/server/services/members/account-service.ts
           - core/server/services/members/import-export/index.ts
           - core/server/services/members/import-export/import/importer.ts
@@ -4576,7 +4572,7 @@ services:
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
           - core/server/data/db/index.js
-          - core/server/data/db/connection.ts
+          - bootstrap/transition/legacy-database.ts
         tests:
           - test/e2e-api/members/webhooks.test.js
       consumers:
@@ -4696,7 +4692,7 @@ services:
           - core/server/lib/action-log/action-log.ts
           - core/server/services/members/members-api/services/member-bread-service.js
           - core/server/services/members/import-export/import/importer.ts
-          - core/server/data/db/connection.ts
+          - bootstrap/transition/legacy-database.ts
           - core/server/data/schema/schema.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
@@ -6252,7 +6248,6 @@ services:
           - core/server/services/posts/posts-exporter.js
           - core/server/services/posts/post-scheduling.js
           - core/server/services/posts/stats/post-stats.js
-          - core/server/lib/after-commit.ts
           - core/server/api/endpoints/utils/serializers/output/posts.js
           - core/server/api/endpoints/utils/serializers/output/stream-csv-response.ts
           - core/server/api/endpoints/utils/serializers/output/stream-response.ts
@@ -6291,7 +6286,6 @@ services:
           - core/server/services/posts/post-email-handler.js
           - core/server/services/posts/posts-exporter.js
           - core/server/services/posts/post-scheduling.js
-          - core/server/lib/after-commit.ts
           - core/server/api/endpoints/schedules.js
         tests:
           - test/unit/server/services/posts/posts-service.test.js
@@ -8394,7 +8388,6 @@ services:
           - core/server/services/tinybird-sync/get-ingest-config.ts
           - core/server/services/tinybird-sync/tinybird-sync-service.ts
           - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
-          - core/server/lib/db-types/date.ts
           - core/shared/config/loader.ts
         tests:
           - test/unit/server/services/tinybird-sync/get-ingest-config.test.ts

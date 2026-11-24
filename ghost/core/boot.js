@@ -75,14 +75,14 @@ function notifyServerReady(error) {
  * @returns {Promise<string|null>} a warning to log once boot completes
  */
 async function initDatabase({ config }) {
-  const DatabaseStateManager = require('./server/data/db/database-state-manager');
+  const DatabaseStateManager = require('../bootstrap/transition/database-state');
   const dbStateManager = new DatabaseStateManager({
     knexMigratorFilePath: config.get('paths:appRoot'),
   });
   await dbStateManager.makeReady();
 
-  const databaseInfo = require('./server/data/db/info');
-  await databaseInfo.init();
+  // What the database server is (MySQL 8, MariaDB...) is no longer asked here: the
+  // handle asks the first time something wants to know, and keeps the answer.
 
   return dbStateManager.warning;
 }
@@ -755,7 +755,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     debug('Begin: Get DB ready');
     const databaseWarning = await initDatabase({ config });
     bootLogger.log('database ready');
-    const connection = require('./server/data/db/connection');
+    // Handed the knex the foundation holds: the same one `server/data/db` returns
+    const connection = foundation.database.knex;
     sentry.initQueryTracing(connection);
     debug('End: Get DB ready');
 
@@ -782,7 +783,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       await initAppService();
     }
 
-    const knex = require('./server/data/db').knex;
+    const knex = foundation.database.knex;
     const jobsService = require('./server/services/jobs-service').init({ knex, config });
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });

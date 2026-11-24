@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import { type Knex } from 'knex';
 import { z } from 'zod';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { toDatabaseDate } from '#kernel/database/columns';
 import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;

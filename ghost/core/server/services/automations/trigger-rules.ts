@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { DbDate } from '../../lib/db-types/date';
-import { ObjectIdSchema } from '../../lib/db-types/object-id';
+import { DbDate } from '#kernel/database/columns';
+import { ObjectIdSchema } from '../../../../database/columns/object-id';
 
 export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigger_type', [
   z.object({

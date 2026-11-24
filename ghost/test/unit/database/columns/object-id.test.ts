@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { ObjectIdSchema } from '../../../../../core/server/lib/db-types/object-id';
+import { ObjectIdSchema } from '../../../../database/columns/object-id';
 import ObjectId from 'bson-objectid';
 
 describe('ObjectIdSchema', function () {

@@ -1,7 +1,7 @@
 import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
-import { DbJson } from '../../lib/db-types/json';
+import { DbJson } from '#kernel/database/columns';
 import { StripeCheckoutDesign } from './models';
 
 /** The design's fields in snake_case, as used by the database, the Admin API and Stripe. */

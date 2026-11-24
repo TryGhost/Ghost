@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { DbCount } from '../../lib/db-types/count';
-import { DbDate } from '../../lib/db-types/date';
+import { DbCount } from '#kernel/database/columns';
+import { DbDate } from '#kernel/database/columns';
 
 export const StoredSendingStatus = z.enum(['pending', 'submitting', 'submitted', 'failed']);
 export type StoredSendingStatus = z.infer<typeof StoredSendingStatus>;

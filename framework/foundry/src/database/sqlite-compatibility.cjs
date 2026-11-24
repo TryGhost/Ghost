@@ -1,6 +1,12 @@
 /**
  * better-sqlite3 compatibility patches
  *
+ * EARMARKED. `applyBetterSqlite3Patches` changes knex's better-sqlite3 Client for
+ * the whole process, which framework code otherwise never does. It leaves when the
+ * foundry passes knex a Client subclass that carries these overrides instead. That
+ * waits on knex-migrator, which reads `config.client` as a string, picking up
+ * `@tryghost/database-info` 2.5.0, which also understands a Client class.
+ *
  * Ghost historically ran on the node-sqlite3 driver. better-sqlite3 is now used
  * as a drop-in replacement, but it differs from node-sqlite3 in a few behaviours
  * that the rest of Ghost relies on. This module re-creates the old behaviour by

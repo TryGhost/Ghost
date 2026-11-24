@@ -8,9 +8,9 @@ import {
 } from '@better-auth/test-utils/adapter';
 import type { BetterAuthOptions } from 'better-auth/types';
 import { getAuthTables } from 'better-auth/db';
-import knex, { type Knex } from 'knex';
+import type { Knex } from 'knex';
 import config from '../../../core/shared/config';
-import { configure, type DatabaseConfig } from '../../../core/server/data/db/configure-knex';
+import { buildDatabase } from '../../../bootstrap/database';
 import { createKnexAdapter } from '../../../core/server/auth/better-auth/knex-adapter';
 import {
   generateGhostId,
@@ -39,11 +39,21 @@ const schema: Record<string, TableDefinition> =
 //    `user_sessions`, `verifications`) built from it, with the virtual
 //    `email_verified` column, as the instance will run.
 
-const dbConfig = config.get('database') as DatabaseConfig;
+const dbConfig = config.get('database') as { connection: Record<string, unknown> };
 const baseDatabase = (dbConfig.connection as { database: string }).database;
 
+// Ghost's own database options with another database name: a handle built the way
+// Ghost's is, held and closed by the suite.
 const knexFor = (database?: string) =>
-  knex(configure({ ...dbConfig, connection: { ...dbConfig.connection, database } }));
+  buildDatabase(
+    {
+      get: (key: string) =>
+        key === 'database'
+          ? { ...dbConfig, connection: { ...dbConfig.connection, database } }
+          : config.get(key),
+    },
+    require('@tryghost/logging'),
+  )!.knex;
 
 type FieldAttributes = ReturnType<typeof getAuthTables>[string]['fields'][string];
 

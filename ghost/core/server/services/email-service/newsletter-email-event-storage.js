@@ -1,6 +1,6 @@
 const moment = require('moment-timezone');
-const { DbCount } = require('../../lib/db-types/count');
-const { getAffectedRows } = require('../../lib/db-types/affected-rows');
+const { DbCount } = require('#kernel/database/columns');
+const { getAffectedRows } = require('#kernel/database/columns');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 /** @typedef {{storedDelivered: number, storedOpened: number, storedPermanentFailed: number}} StoredEventCounts */

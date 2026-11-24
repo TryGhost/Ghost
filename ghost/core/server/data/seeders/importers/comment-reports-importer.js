@@ -1,7 +1,7 @@
 const { TableImporter } = require('./table-importer');
 const { faker } = require('@faker-js/faker');
 const { luck, randomDateBetween } = require('../utils/random');
-const { toDatabaseDate } = require('../../../lib/db-types/date');
+const { toDatabaseDate } = require('#kernel/database/columns');
 
 class CommentReportsImporter extends TableImporter {
   static table = 'comment_reports';

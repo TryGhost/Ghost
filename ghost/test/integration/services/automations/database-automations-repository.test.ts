@@ -4,7 +4,7 @@ import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
-import { fromDatabaseDate, toDatabaseDate } from '../../../../core/server/lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate } from '#kernel/database/columns';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';

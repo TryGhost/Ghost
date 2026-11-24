@@ -8,8 +8,10 @@
  */
 import { defineConfig } from 'knex-migrator';
 import ghostVersion from '@tryghost/version';
+import logging from '@tryghost/logging';
+import { knexConfig } from '#foundry/database';
 import config from './core/shared/config/index.js';
-import { configure } from './core/server/data/db/configure-knex.js';
+import { databaseOptions } from './bootstrap/database-options.js';
 
 /**
  * knex-migrator can be used via CLI or within the application
@@ -17,9 +19,16 @@ import { configure } from './core/server/data/db/configure-knex.js';
  */
 import './core/server/overrides.js';
 
+const options = databaseOptions(config, { logger: logging });
+
+if (!options) {
+  throw new Error('knex-migrator needs a database: config names no database client.');
+}
+
 export default defineConfig({
   currentVersion: ghostVersion.safe,
-  // The same knex options Ghost connects with, so migrations run with the app's client settings.
-  database: configure(config.get('database')),
+  // Built by the framework from Ghost's options, as Ghost's own handle is, so migrations
+  // run with the app's client settings. knex-migrator builds its own knex from it.
+  database: knexConfig(options),
   migrationPath: config.get('paths:migrationPath'),
 });

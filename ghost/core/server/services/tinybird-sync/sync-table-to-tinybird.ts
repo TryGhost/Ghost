@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 import type { ReadonlyDeep } from 'type-fest';
 import errors from '@tryghost/errors';
-import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate, type DatabaseDate } from '#kernel/database/columns';
 
 export type TinybirdSyncTarget = ReadonlyDeep<{
   table: string;

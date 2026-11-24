@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it, beforeAll } from 'vitest';
 import type { Knex } from 'knex';
-import { afterCommit } from '../../../core/server/lib/after-commit';
+import { afterCommit } from '#kernel/database/after-commit';
 
 const testUtils = require('../../utils');
 const knex: Knex = require('../../../core/server/data/db').knex;

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { DbCount } from '../../../../../core/server/lib/db-types/count';
+import { DbCount } from '#kernel/database/columns';
 
 describe('DbCount', function () {
   describe('decode', function () {

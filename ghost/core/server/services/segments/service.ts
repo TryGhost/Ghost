@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { RequestContext } from '../../lib/actor';
-import { ensureTransaction } from '../../lib/ensure-transaction';
+import { ensureTransaction } from '#kernel/database/transaction';
 import type { OnSegmentUpdated } from './changes';
 import type { Segment, SegmentFilter, SegmentName } from './models';
 import type { SegmentRepository } from './repository';

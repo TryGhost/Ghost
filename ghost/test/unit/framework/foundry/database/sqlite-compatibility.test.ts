@@ -6,8 +6,7 @@ import {
   formatBindings,
   getPrimarySqliteCode,
   normalizeSqliteError,
-  // @ts-expect-error This module lacks type definitions.
-} from '../../../../../core/server/data/db/better-sqlite3-patches';
+} from '../../../../../../framework/foundry/src/database/sqlite-compatibility.cjs';
 // @ts-expect-error This module lacks type definitions.
 import BetterSqlite3Client from 'knex/lib/dialects/better-sqlite3/index.js';
 

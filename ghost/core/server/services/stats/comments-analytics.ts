@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
+import { isMySQL } from '#kernel/database/dialect';
 import { z } from 'zod';
 import {
   addDays,
@@ -314,8 +315,7 @@ export class CommentsAnalyticsService {
   // Byte comparison makes MySQL's DISTINCT ~4x faster than its collation; SQLite
   // already compares bytes, and its CAST(... AS BINARY) would coerce to numbers.
   private distinctCommenters() {
-    const client = String(this.knex.client.config.client);
-    return client.startsWith('mysql')
+    return isMySQL(this.knex)
       ? this.knex.raw('COUNT(DISTINCT CAST(c.member_id AS BINARY)) AS commenters')
       : this.knex.raw('COUNT(DISTINCT c.member_id) AS commenters');
   }

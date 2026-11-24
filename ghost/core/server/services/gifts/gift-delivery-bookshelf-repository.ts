@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
-import { fromDatabaseDate, toDatabaseDate } from '../../lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate } from '#kernel/database/columns';
 import { decodeGiftRow } from './gift-codec';
 import { decodeGiftDeliveryRow, encodeGiftDelivery } from './gift-delivery-codec';
 import type { Gift } from './gift';

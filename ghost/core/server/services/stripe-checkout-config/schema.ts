@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import { DbDate } from '../../lib/db-types/date';
+import { DbDate } from '#kernel/database/columns';
 
 export const CONFIG_TABLE = 'stripe_checkout_config';
 

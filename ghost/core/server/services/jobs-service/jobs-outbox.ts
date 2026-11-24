@@ -1,8 +1,8 @@
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { DispatchEnvelope } from '@tryghost/adapter-base-jobs';
-import { DbDate } from '../../lib/db-types/date';
-import { DbJson } from '../../lib/db-types/json';
+import { DbDate } from '#kernel/database/columns';
+import { DbJson } from '#kernel/database/columns';
 
 const TABLE = 'jobs_outbox';
 // knex's generated name for the schema's ['submitted_at', 'available_at'] index on this table.

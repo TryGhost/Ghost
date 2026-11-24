@@ -1,7 +1,7 @@
 const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const DatabaseInfo = require('@tryghost/database-info');
+const { isMySQL } = require('#kernel/database/dialect');
 
 const messages = {
   labelNotFound: 'Label not found.',
@@ -130,7 +130,7 @@ const Label = ghostBookshelf.Model.extend(
     findCandidatesByName(names, unfilteredOptions = {}) {
       const query = ghostBookshelf.knex('labels').select('id', 'name');
 
-      if (DatabaseInfo.isMySQL(ghostBookshelf.knex)) {
+      if (isMySQL(ghostBookshelf.knex)) {
         query.whereIn('name', names);
       }
 

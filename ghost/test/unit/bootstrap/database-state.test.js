@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const DatabaseStateManager = require('../../../../../core/server/data/db/database-state-manager');
-const configUtils = require('../../../../utils/config-utils');
+const DatabaseStateManager = require('../../../bootstrap/transition/database-state');
+const configUtils = require('../../utils/config-utils');
 
 describe('DatabaseStateManager', function () {
   let manager;

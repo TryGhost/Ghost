@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import { clamp } from 'lodash';
 import type { Knex } from 'knex';
 import { TableImporter } from './table-importer';
-import { fromDatabaseDate, toDatabaseDate } from '../../../lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate } from '#kernel/database/columns';
 
 type AutomationRun = {
   id: string;

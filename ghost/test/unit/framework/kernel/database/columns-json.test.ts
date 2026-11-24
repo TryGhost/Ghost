@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
-import { DbJson } from '../../../../../core/server/lib/db-types/json';
+import { DbJson } from '#kernel/database/columns';
 
 const Settings = z.object({ enabled: z.boolean(), tags: z.array(z.string()) });
 

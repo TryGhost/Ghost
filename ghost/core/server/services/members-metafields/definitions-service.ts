@@ -42,7 +42,7 @@ import type { ActionLog } from '../../lib/action-log/action-log';
 import type { RequestContext } from '../../lib/actor';
 import { fieldAction, reorderAction, type FieldAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
-import { ensureTransaction } from '../../lib/ensure-transaction';
+import { ensureTransaction } from '#kernel/database/transaction';
 
 // Column limits come from the canonical schema — the same source the migration and
 // Bookshelf models read — so the service can never drift from the database. The

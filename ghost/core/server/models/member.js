@@ -1,6 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const { afterCommit } = require('../lib/after-commit');
+const { afterCommit } = require('#kernel/database/after-commit');
 const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');

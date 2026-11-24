@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
-import { configure } from '../../core/server/data/db/configure-knex';
+import { knexConfig } from '#foundry/database';
+import { databaseOptions } from '../../bootstrap/database-options';
 
 const config = require('../../core/shared/config');
 const { loadConfig } = require('knex-migrator/lib/utils');
@@ -34,10 +35,8 @@ describe('MigratorConfig', function () {
   it('hands knex-migrator the knex config Ghost connects with', function () {
     // pool holds per-call afterCreate closures, so compare everything else
     const { pool: _migratorPool, ...migratorDatabase } = migratorConfig.database;
-    const { pool: _ghostPool, ...ghostDatabase } = configure(config.get('database')) as Record<
-      string,
-      unknown
-    >;
+    const options = databaseOptions(config, { logger: { info() {} } });
+    const { pool: _ghostPool, ...ghostDatabase } = knexConfig(options!) as Record<string, unknown>;
 
     assert.deepEqual(migratorDatabase, ghostDatabase);
   });

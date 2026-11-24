@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
-import { getAffectedRows } from '../../lib/db-types/affected-rows';
+import { getAffectedRows } from '#kernel/database/columns';
 import { defaultIndexName } from '../../data/schema/lib/default-index-name';
 import type { TableName } from '../../data/schema/schema';
 import type { JobsService } from '../../services/jobs-service/jobs-service';

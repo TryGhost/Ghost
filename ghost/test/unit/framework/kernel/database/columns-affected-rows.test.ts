@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getAffectedRows } from '../../../../../core/server/lib/db-types/affected-rows';
+import { getAffectedRows } from '#kernel/database/columns';
 
 describe('getAffectedRows', function () {
   it('reads MySQL raw UPDATE results', function () {

@@ -42,14 +42,14 @@ describe('Public-config response builders', function () {
       sinon.restore();
     });
 
-    it('should return the correct default config properties', function () {
-      const configProperties = getConfigProperties();
+    it('should return the correct default config properties', async function () {
+      const configProperties = await getConfigProperties();
 
       assert.deepEqual(Object.keys(configProperties), allowedKeys);
     });
 
-    it('should list the cards whose visibility this server supports', function () {
-      const { cardVisibility } = getConfigProperties();
+    it('should list the cards whose visibility this server supports', async function () {
+      const { cardVisibility } = await getConfigProperties();
       for (const nodeType of [
         'html',
         'call-to-action',
@@ -64,71 +64,71 @@ describe('Public-config response builders', function () {
       assert(!cardVisibility.includes('embed'));
     });
 
-    it('should return the auth engine outside security', function () {
-      assert.deepEqual(getConfigProperties().auth, { engine: 'legacy' });
+    it('should return the auth engine outside security', async function () {
+      assert.deepEqual((await getConfigProperties()).auth, { engine: 'legacy' });
 
       configUtils.set({ 'database:client': 'mysql2', 'auth:engine': 'better-auth' });
-      assert.deepEqual(getConfigProperties().auth, { engine: 'better-auth' });
+      assert.deepEqual((await getConfigProperties()).auth, { engine: 'better-auth' });
     });
 
-    it('should return GHOST_BUILD_VERSION as version when set', function () {
+    it('should return GHOST_BUILD_VERSION as version when set', async function () {
       process.env.GHOST_BUILD_VERSION = '6.21.2+abc1234';
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.version, '6.21.2+abc1234');
 
       delete process.env.GHOST_BUILD_VERSION;
     });
 
-    it('should return package version when GHOST_BUILD_VERSION is not set', function () {
+    it('should return package version when GHOST_BUILD_VERSION is not set', async function () {
       delete process.env.GHOST_BUILD_VERSION;
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.match(configProperties.version, /^\d+\.\d+\.\d+/);
       assert.notEqual(configProperties.version, '6.21.2+abc1234');
     });
 
-    it('should return null for klipy apikey when unset', function () {
-      const configProperties = getConfigProperties();
+    it('should return null for klipy apikey when unset', async function () {
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.klipy.apiKey, null);
     });
 
-    it('should return klipy apikey when set', function () {
+    it('should return klipy apikey when set', async function () {
       configUtils.set('klipy:apiKey', 'KLIPY_KEY');
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.klipy.apiKey, 'KLIPY_KEY');
     });
 
-    it('should return true for mailgunIsConfigured when mailgun is configured', function () {
+    it('should return true for mailgunIsConfigured when mailgun is configured', async function () {
       configUtils.set('bulkEmail', {
         mailgun: 'exists',
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.mailgunIsConfigured, true);
     });
 
-    it('should return false for mailgunIsConfigured when mailgun is not configured', function () {
+    it('should return false for mailgunIsConfigured when mailgun is not configured', async function () {
       configUtils.set('bulkEmail', {});
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.mailgunIsConfigured, false);
     });
 
-    it('should NOT return stats by default', function () {
-      const configProperties = getConfigProperties();
+    it('should NOT return stats by default', async function () {
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.stats, undefined);
     });
 
-    it('should return stats when tinybird config is set with the stats key', function () {
+    it('should return stats when tinybird config is set with the stats key', async function () {
       configUtils.set('tinybird', {
         stats: {
           endpoint: 'xxx',
@@ -138,7 +138,7 @@ describe('Public-config response builders', function () {
         },
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.deepEqual(configProperties.stats, {
         endpoint: 'xxx',
@@ -149,19 +149,19 @@ describe('Public-config response builders', function () {
       });
     });
 
-    it('should return stats id when tinybird config is set with the id key', function () {
+    it('should return stats id when tinybird config is set with the id key', async function () {
       configUtils.set('tinybird', {
         stats: {
           id: '1234567890',
         },
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.deepEqual(configProperties.stats.id, '1234567890');
     });
 
-    it('should not return stats token when tinybird config is set with a token', function () {
+    it('should not return stats token when tinybird config is set with a token', async function () {
       configUtils.set('tinybird', {
         stats: {
           endpoint: 'xxx',
@@ -169,7 +169,7 @@ describe('Public-config response builders', function () {
         },
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.deepEqual(configProperties.stats, {
         endpoint: 'xxx',
@@ -178,7 +178,7 @@ describe('Public-config response builders', function () {
       assert.equal(configProperties.stats.token, undefined);
     });
 
-    it('should return public local stats config without the local stats token', function () {
+    it('should return public local stats config without the local stats token', async function () {
       configUtils.set('tinybird', {
         stats: {
           endpoint: 'xxx',
@@ -191,7 +191,7 @@ describe('Public-config response builders', function () {
         },
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.deepEqual(configProperties.stats, {
         endpoint: 'xxx',
@@ -205,51 +205,51 @@ describe('Public-config response builders', function () {
       assert.equal(configProperties.stats.local.token, undefined);
     });
 
-    it('should NOT return stats when tinybird config is set without the stats key', function () {
+    it('should NOT return stats when tinybird config is set without the stats key', async function () {
       configUtils.set('tinybird', {
         url: 'xxx',
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.stats, undefined);
     });
 
-    it('should return emailAnalytics as boolean from nested config structure', function () {
+    it('should return emailAnalytics as boolean from nested config structure', async function () {
       // Default config has emailAnalytics.enabled = true
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.emailAnalytics, true);
       assert.equal(typeof configProperties.emailAnalytics, 'boolean');
     });
 
-    it('should return false for emailAnalytics when disabled', function () {
+    it('should return false for emailAnalytics when disabled', async function () {
       configUtils.set('emailAnalytics:enabled', false);
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.emailAnalytics, false);
     });
 
-    it('should NOT return featurebase config by default', function () {
-      const configProperties = getConfigProperties();
+    it('should NOT return featurebase config by default', async function () {
+      const configProperties = await getConfigProperties();
       assert.equal(configProperties.featurebase, undefined);
     });
 
-    it('should return featurebase config with enabled=false when configured but disabled', function () {
+    it('should return featurebase config with enabled=false when configured but disabled', async function () {
       configUtils.set('featurebase', {
         enabled: false,
         organization: 'test-org',
         jwtSecret: 'super-secret-key',
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.equal(configProperties.featurebase.enabled, false);
       assert.equal(configProperties.featurebase.organization, 'test-org');
     });
 
-    it('should return only public featurebase config properties, not sensitive ones', function () {
+    it('should return only public featurebase config properties, not sensitive ones', async function () {
       configUtils.set('featurebase', {
         enabled: true,
         organization: 'test-org',
@@ -257,7 +257,7 @@ describe('Public-config response builders', function () {
         apiKey: 'secret-api-key',
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       // Only enabled and organization should be exposed, not jwtSecret/apiKey
       assert.deepEqual(configProperties.featurebase, { enabled: true, organization: 'test-org' });
@@ -265,7 +265,7 @@ describe('Public-config response builders', function () {
       assert.equal(configProperties.featurebase.apiKey, undefined);
     });
 
-    it('should strip webhook secrets from hostSettings', function () {
+    it('should strip webhook secrets from hostSettings', async function () {
       configUtils.set('hostSettings', {
         siteId: '123',
         export: {
@@ -280,7 +280,7 @@ describe('Public-config response builders', function () {
         },
       });
 
-      const configProperties = getConfigProperties();
+      const configProperties = await getConfigProperties();
 
       assert.deepEqual(configProperties.hostSettings, {
         siteId: '123',

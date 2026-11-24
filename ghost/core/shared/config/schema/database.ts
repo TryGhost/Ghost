@@ -2,11 +2,11 @@ import { z } from 'zod';
 import { tcpPort } from './primitives';
 
 /**
- * Shared by both clients. Loose, because configure-knex spreads it into knex,
+ * Shared by both clients. Loose, because bootstrap/database-options.ts passes it through to knex,
  * so unlisted keys like `acquireConnectionTimeout` still work.
  */
 const databaseBase = {
-  /** Replaced by configure-knex for better-sqlite3. */
+  /** Replaced by the foundry's knexConfig for better-sqlite3. */
   pool: z
     .looseObject({
       min: z.number().optional(),

@@ -12,8 +12,8 @@ import {
   type MetafieldChangeSource,
   type TypedSettings,
 } from '@tryghost/metafield-types';
-import { DbDate } from '../../lib/db-types/date';
-import { DbJson } from '../../lib/db-types/json';
+import { DbDate } from '#kernel/database/columns';
+import { DbJson } from '#kernel/database/columns';
 import { MemberAccessSchema } from './access';
 import type { ValueColumn, ValueColumns } from './storage';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';

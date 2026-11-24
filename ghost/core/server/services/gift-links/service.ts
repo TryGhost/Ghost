@@ -5,7 +5,7 @@ import { GiftLinkRow, giftLinkCodec, giftLinkColumns } from './codec';
 import { generateGiftLinkToken, type GiftLink, type Post } from './models';
 import type { ActionLog, ActionRow } from '../../lib/action-log/action-log';
 import type { RequestContext } from '../../lib/actor';
-import { ensureTransaction } from '../../lib/ensure-transaction';
+import { ensureTransaction } from '#kernel/database/transaction';
 
 // The LEFT JOIN leaves every link column nullable; the explicit generic names a row shape knex
 // can't infer from a dynamic column list.

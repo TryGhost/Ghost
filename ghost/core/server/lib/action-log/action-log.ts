@@ -1,7 +1,7 @@
 import ObjectID from 'bson-objectid';
 import type { Knex } from 'knex';
 import type { RequestContext } from '../actor';
-import { toDatabaseDate } from '../db-types/date';
+import { toDatabaseDate } from '#kernel/database/columns';
 import type { ActionKind, ActionVerb } from './kinds';
 
 interface ActionOf<K extends ActionKind> {

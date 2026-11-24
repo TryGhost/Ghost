@@ -9,7 +9,7 @@ import {
   getPublicKeyInfoFromPublicKey,
   type PublicKeyInfo,
 } from '../../lib/public-jwk';
-import { DbDate } from '../../lib/db-types/date';
+import { DbDate } from '#kernel/database/columns';
 import type { Settings as SettingsModel } from '../../models/settings';
 
 export type SigningKeyPurpose = 'members' | 'staff';

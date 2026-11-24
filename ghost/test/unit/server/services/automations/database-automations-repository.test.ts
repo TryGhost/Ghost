@@ -16,7 +16,7 @@ import type {
   AutomationStatus,
   AutomationStepToRun,
 } from '../../../../../core/server/services/automations/automations-repository';
-import { fromDatabaseDate, toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate } from '#kernel/database/columns';
 
 const HOUR_MS = 60 * 60 * 1000;
 const FAKE_WAIT_HOURS_MULTIPLIER = 2500;

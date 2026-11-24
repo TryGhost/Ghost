@@ -16,7 +16,7 @@ import {
 } from './queries';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
-import { ensureTransaction } from '../../lib/ensure-transaction';
+import { ensureTransaction } from '#kernel/database/transaction';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
 

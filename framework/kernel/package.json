@@ -8,6 +8,12 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "knex": "catalog:"
+    "@tryghost/errors": "catalog:",
+    "knex": "catalog:",
+    "luxon": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/luxon": "catalog:"
   }
 }

@@ -2,7 +2,7 @@ import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import { onTestFinished } from 'vitest';
-import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
+import { fromDatabaseDate } from '#kernel/database/columns';
 import type {
   ActionToInsert,
   EdgeRow,

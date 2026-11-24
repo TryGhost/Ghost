@@ -12,6 +12,7 @@ import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import ObjectId from 'bson-objectid';
 import { type Knex } from 'knex';
+import { isMySQL } from '#kernel/database/dialect';
 import { AutoFillingMap } from '../../lib/auto-filling-map';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
@@ -43,7 +44,7 @@ import {
   fromDatabaseDate,
   toDatabaseDate,
   type DatabaseDate,
-} from '../../lib/db-types/date';
+} from '#kernel/database/columns';
 import { getStaleLockCutoff } from './stale-lock-cutoff';
 import { limitService } from '../limits';
 import { lockAutomationLimit } from './automation-limit';
@@ -57,11 +58,8 @@ const MEMBER_SEARCH_PREDICATE =
 function memberSearchPattern(query: string) {
   return `%${query.replace(/[!%_]/g, (character) => `!${character}`)}%`;
 }
-function isMysql(knex: Knex) {
-  return ['mysql', 'mysql2'].includes(knex.client.config.client);
-}
 function withSearchTimeout<T extends Knex.QueryBuilder>(knex: Knex, query: T): T {
-  if (isMysql(knex)) {
+  if (isMySQL(knex)) {
     query.hintComment('MAX_EXECUTION_TIME(2000)').timeout(2500, { cancel: true });
   }
   return query;
@@ -263,7 +261,7 @@ export function createDatabaseAutomationsRepository({
     async getRunMembers(automationId, runIds, search) {
       const members = new Map<string, AutomationRunMember | null>();
       // SQLite has a lower binding limit. Each lookup is bounded by primary-key IDs.
-      const batchSize = isMysql(knex) ? 5000 : 500;
+      const batchSize = isMySQL(knex) ? 5000 : 500;
       for (let offset = 0; offset < runIds.length; offset += batchSize) {
         const lookup = knex('automation_runs as runs')
           .leftJoin('members', 'members.id', 'runs.member_id')
@@ -287,7 +285,7 @@ export function createDatabaseAutomationsRepository({
     },
 
     async probeMemberSearch(automationId, query) {
-      if (!isMysql(knex)) {
+      if (!isMySQL(knex)) {
         return null;
       }
       const pattern = memberSearchPattern(query);

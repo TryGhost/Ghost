@@ -1,7 +1,7 @@
 const { TableImporter } = require('./table-importer');
 const { slugify } = require('@tryghost/string');
 const { blogStartDate } = require('../utils/blog-info');
-const { toDatabaseDate } = require('../../../lib/db-types/date');
+const { toDatabaseDate } = require('#kernel/database/columns');
 
 const offerTemplates = [
   {

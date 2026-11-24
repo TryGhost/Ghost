@@ -1,10 +1,22 @@
+/**
+ * EARMARKED. Gets the database to the schema this code expects, at start.
+ *
+ * Two jobs that will separate. Checking the schema version is one of the four things
+ * Ghost really must do before it serves, and stays. Initialising and migrating the
+ * database leave boot: they become a command, run by the command-line role, and boot
+ * only reports a database that is not ready. Creating the in-development tables goes
+ * with migration.
+ *
+ * Ghost's own: it knows Ghost's migrations, its development warning and its error
+ * reporting, so none of it is framework code.
+ */
 const KnexMigrator = require('knex-migrator');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 
-const config = require('../../../shared/config');
-const sentry = require('../../../shared/sentry');
+const config = require('../../core/shared/config');
+const sentry = require('../../core/shared/sentry');
 
 const states = {
   READY: 0,
@@ -32,8 +44,8 @@ const printState = ({ state }) => {
 };
 
 const createMissingInDevelopmentTables = async () => {
-  const { inDevelopment } = require('../schema');
-  const db = require('./index');
+  const { inDevelopment } = require('../../core/server/data/schema');
+  const db = require('../../core/server/data/db');
   await inDevelopment.createMissingInDevelopmentTables(db.knex);
 };
 

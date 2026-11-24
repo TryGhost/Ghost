@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ObjectIdSchema } from '../../lib/db-types/object-id';
+import { ObjectIdSchema } from '../../../../database/columns/object-id';
 import { Segment, SegmentFilter, SegmentName } from './models';
 import type { NewSegment, SegmentEdit } from './service';
 

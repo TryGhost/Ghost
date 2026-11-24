@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { DbBoolean } from '../../../../../core/server/lib/db-types/boolean';
+import { DbBoolean } from '#kernel/database/columns';
 
 describe('DbBoolean', function () {
   describe('decode', function () {

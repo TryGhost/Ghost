@@ -6,7 +6,7 @@ const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
 const DomainEvents = require('@tryghost/domain-events');
 const PostEmailHandler = require('./post-email-handler');
-const { afterCommit } = require('../../lib/after-commit');
+const { afterCommit } = require('#kernel/database/after-commit');
 const logging = require('@tryghost/logging');
 const {
   validateAdminApiBulkFilterTransformer,

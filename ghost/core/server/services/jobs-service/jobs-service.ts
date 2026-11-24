@@ -14,7 +14,7 @@ import type {
 } from '@tryghost/adapter-base-jobs';
 import type { GhostLogger } from '@tryghost/logging';
 import { Job, JobConstructor, JobHandler } from './job';
-import { afterCommit } from '../../lib/after-commit';
+import { afterCommit } from '#kernel/database/after-commit';
 
 export type JobsLogger = Pick<GhostLogger, 'error' | 'info' | 'warn'>;
 

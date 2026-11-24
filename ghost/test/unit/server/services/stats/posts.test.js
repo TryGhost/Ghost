@@ -6,7 +6,7 @@ const { createLoggingFake } = require('../../../../utils/logging-utils');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const {
   applyBetterSqlite3Patches,
-} = require('../../../../../core/server/data/db/better-sqlite3-patches');
+} = require('../../../../../../framework/foundry/src/database/sqlite-compatibility.cjs');
 
 /**
  * @typedef {object} TestPost

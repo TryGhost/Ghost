@@ -2,7 +2,7 @@ const { isPlainObject, omit, pick } = require('lodash');
 const config = require('../../../../../shared/config');
 const settingsCache = require('../../../../../shared/settings-cache');
 const labs = require('../../../../../shared/labs');
-const databaseInfo = require('../../../../data/db/info');
+const db = require('../../../../data/db');
 const ghostVersion = require('@tryghost/version');
 const lexicalLib = require('../../../../lib/lexical');
 
@@ -49,11 +49,12 @@ const getTinybirdStatsPayload = (statsConfig, siteUuid) => {
   return statsPayload;
 };
 
-module.exports = function getConfigProperties() {
+module.exports = async function getConfigProperties() {
   const configProperties = {
     version: process.env.GHOST_BUILD_VERSION || ghostVersion.original,
     environment: config.get('env'),
-    database: databaseInfo.getEngine(),
+    // Asked of the server the first time, then kept by the database handle
+    database: (await db.database.server()).engine,
     mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
     useGravatar: !config.isPrivacyDisabled('useGravatar'),
     labs: labs.getAll(),

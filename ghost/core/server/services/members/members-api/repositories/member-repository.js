@@ -17,7 +17,7 @@ const { NotFoundError } = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const { hasActiveOffer } = require('../utils/has-active-offer');
-const { afterCommit } = require('../../../../lib/after-commit');
+const { afterCommit } = require('#kernel/database/after-commit');
 const {
   LabelAddedToMembersEvent,
 } = require('../../../../../shared/events/label-added-to-members-event');

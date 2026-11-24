@@ -1,6 +1,6 @@
 import type { OptionalKeysOf, SetOptional } from 'type-fest';
 import { z } from 'zod';
-import { DbDate } from '../../lib/db-types/date';
+import { DbDate } from '#kernel/database/columns';
 import type { CamelKeys } from '../../lib/case-keys';
 
 export const GiftCadenceSchema = z.enum(['month', 'year']);

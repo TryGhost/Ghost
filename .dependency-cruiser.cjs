@@ -46,16 +46,12 @@ const serviceDependencyAllowlist = [
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
-  '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
-  '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
-  '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
   '^ghost/core/server/lib/common/to-plain\\.ts$', // Bookshelf/plain-object normalization; no application instances or captured state.
   '^ghost/core/server/lib/link-replacer\\.ts$', // HTML link rewriting with caller-owned callbacks; no retained state or application dependencies.
   '^ghost/core/server/lib/mailgun/mailgun-recipient-variables\\.ts$', // Converts supplied replacement tokens and values into Mailgun recipient variables; no client, config or I/O.
   '^ghost/core/server/lib/mailgun/mailgun-recipient-message-id\\.ts$', // Builds and sets per-recipient Message-Id variables from supplied values; no client, config or I/O.
   '^ghost/core/server/lib/magic-link/magic-link\\.js$', // Magic-link constructor with caller-supplied transporter, token provider and content callbacks; no application instances.
   '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
-  '^ghost/core/server/lib/ensure-transaction\\.ts$', // Runs a callback in the caller's transaction or a new one on the supplied connection; no application instances.
   '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
   '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
@@ -64,10 +60,8 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/image-content\\.ts$', // Image extension and content predicates; no application instances.
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
-  '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
-  '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
-  '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
-  '^ghost/core/server/lib/db-types/object-id\\.ts$', // Database ObjectId codec.
+  '^framework/kernel/', // Framework code that holds no state: any file may import it. A lint rule keeps it stateless.
+  '^ghost/database/columns/object-id\\.ts$', // Ghost's ObjectId id column.
   '^ghost/core/server/lib/mailgun/mailgun-message-id\\.ts$', // Mailgun message ID normalisation; no client.
   '^ghost/core/server/lib/mailgun/mailgun-error\\.ts$', // Mailgun error class; no client.
   '^ghost/core/server/lib/promise-pool\\.ts$', // Runs caller-supplied tasks with a concurrency limit.
@@ -508,6 +502,22 @@ module.exports = {
           '(^|/)node_modules/@tryghost/logging/',
         ],
       },
+    },
+    {
+      name: 'database-is-handed-not-imported',
+      comment:
+        "Application code outside core is handed the database. It imports neither core's process-wide handle nor the bootstrap that holds it. See ghost/database/README.md.",
+      severity: 'error',
+      from: { path: '^ghost/(database|domains)/' },
+      to: { path: ['^ghost/bootstrap/', '^ghost/core/server/data/db/'] },
+    },
+    {
+      name: 'dialect-from-the-kernel',
+      comment:
+        'New code reads the dialect from #kernel/database/dialect or database.dialect. @tryghost/database-info is a library the framework uses; legacy callers in core keep it until they move.',
+      severity: 'error',
+      from: { path: '^ghost/(bootstrap|shared|database|domains)/' },
+      to: { path: '(^|/)node_modules/@tryghost/database-info/' },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*

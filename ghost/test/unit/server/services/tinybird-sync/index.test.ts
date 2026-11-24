@@ -3,7 +3,7 @@ import createKnex, { type Knex } from 'knex';
 import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import { createTinybirdSyncService } from '../../../../../core/server/services/tinybird-sync/tinybird-sync-service';
 import TinybirdSyncJob from '../../../../../core/server/services/tinybird-sync/jobs/tinybird-sync-job';
-import { toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
+import { toDatabaseDate } from '#kernel/database/columns';
 
 describe('createTinybirdSyncService', () => {
   let databases: Knex[];

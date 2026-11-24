@@ -7,7 +7,7 @@ import { OutboxTracker } from './outbox-tracker';
 import { getOutboxConfig } from './outbox-config';
 import type { JobsShutdownOptions } from '@tryghost/adapter-base-jobs';
 
-const DatabaseInfo = require('@tryghost/database-info');
+import { isMySQL as usesMySQL } from '#kernel/database/dialect';
 
 export interface JobsServiceInitOptions {
   knex: Knex;
@@ -33,7 +33,7 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
 
   const outboxConfig = getOutboxConfig(config);
   // The relay claims rows with FOR UPDATE SKIP LOCKED, which SQLite does not have.
-  const isMySQL = DatabaseInfo.isMySQL(knex);
+  const isMySQL = usesMySQL(knex);
   const active = outboxConfig.enabled && isMySQL;
 
   let outbox: JobsOutboxWiring | undefined;

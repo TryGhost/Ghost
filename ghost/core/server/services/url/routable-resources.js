@@ -68,7 +68,7 @@ async function fetchRoutableResources(
   // for its shape without pulling in the model layer.
   const models = require('../../models');
   const schema = require('../../data/schema');
-  const DatabaseInfo = require('@tryghost/database-info');
+  const { isSQLite } = require('#kernel/database/dialect');
 
   // Callers speak include; raw_knex only speaks exclude, so translate
   // against the table schema here, once.
@@ -94,7 +94,7 @@ async function fetchRoutableResources(
   }
 
   let rows;
-  if (!DatabaseInfo.isSQLite(models.Base.knex)) {
+  if (!isSQLite(models.Base.knex)) {
     rows = await models.Base.Model.raw_knex.fetchAll(options);
   } else {
     rows = [];
