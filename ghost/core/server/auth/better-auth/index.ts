@@ -3,6 +3,7 @@ import * as security from '@tryghost/security';
 import { defineService } from '../../../kernel/define-service';
 import { createAuth, type GhostAuth } from './create-auth';
 import { createSignInCodeEmail } from '../emails/sign-in-code';
+import { APP_OAUTH_TABLES } from './plugins/apps';
 
 export type { GhostAuth } from './create-auth';
 
@@ -17,6 +18,12 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const { GhostMailer } = require('../../lib/mail');
   const { t } = require('../../../shared/i18n');
   const { blogIcon } = require('../../lib/image');
+  const labs = require('../../../shared/labs');
+  const { getTables } = require('../../data/schema/commands');
+
+  // In-development tables exist only in development and testing databases
+  const tables: string[] = await getTables(knex);
+  const apps = labs.isSet('apps') && APP_OAUTH_TABLES.every((table) => tables.includes(table));
 
   const auth = createAuth({
     db: knex,
@@ -55,6 +62,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
     }),
     getRequestOrigin: (headers) =>
       require('../session').default.getOriginOfRequest({ headers: Object.fromEntries(headers) }),
+    apps,
   });
   // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
   await auth.$context;

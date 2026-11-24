@@ -49,6 +49,7 @@ describe.skipIf(isSQLite)('Better Auth instance', function () {
       sendDeviceVerificationCode: async () => {},
       getRequestOrigin: (headers) =>
         legacySession.getOriginOfRequest({ headers: Object.fromEntries(headers) } as never),
+      apps: false,
     });
   }
 

@@ -7,6 +7,7 @@ import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
 import { ghostSso } from './plugins/sso';
+import { appOAuthPlugins } from './plugins/apps';
 import {
   DEVICE_TRUST_COOKIE,
   ghostDeviceVerification,
@@ -57,6 +58,11 @@ export type CreateAuthDeps = {
   sendDeviceVerificationCode(message: DeviceVerificationCode): Promise<void>;
   /** The legacy session's origin rule (Origin, else Referer, else the admin URL) */
   getRequestOrigin(headers: Headers): string | null;
+  /**
+   * Registers the OAuth provider and jwt plugins, which issue app tokens. Plugins are
+   * fixed at boot, so this is the `apps` flag then, and only once their tables exist.
+   */
+  apps: boolean;
 };
 
 type SessionPins = { userId?: string; verified?: boolean; origin?: string | null };
@@ -155,6 +161,8 @@ export function createAuth(deps: CreateAuthDeps) {
       ROUTES.changeEmail,
       ROUTES.deleteUser,
       ROUTES.signInSocial,
+      // The jwt plugin's session JWT; apps get tokens from Ghost's own endpoints
+      ...(deps.apps ? [ROUTES.jwtToken] : []),
     ],
     hooks: {
       // A password change ends every other session, as PUT /users/password does
@@ -232,6 +240,7 @@ export function createAuth(deps: CreateAuthDeps) {
         emailLimiter: deps.limiters.verificationEmail,
         sendCode: deps.sendDeviceVerificationCode,
       }),
+      ...(deps.apps ? appOAuthPlugins({ adminOrigin }) : []),
     ],
     telemetry: { enabled: false },
     logger: {
