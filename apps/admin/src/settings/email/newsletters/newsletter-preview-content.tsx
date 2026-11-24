@@ -739,8 +739,11 @@ const NewsletterPreviewContent: React.FC<{
               style={{ backgroundColor: cardBackgroundColor, borderRadius: cardRadius }}
             >
               {headerImage && (
-                // Fills the top of the card edge to edge; the card's corners clip it.
-                <img alt="" className="block w-full" src={headerImage} />
+                // Fills the top of the card edge to edge; the card's corners clip it. The header
+                // colour sits behind it, so transparent images read as part of the header.
+                <div style={headerBand}>
+                  <img alt="" className="block w-full" src={headerImage} />
+                </div>
               )}
               <div style={{ ...headerBand, ...headerStyle }}>{headerContent}</div>
               <div className={bodyClassName} style={columnStyle}>
