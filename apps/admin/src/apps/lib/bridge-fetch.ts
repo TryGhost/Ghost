@@ -6,6 +6,7 @@ import {
   isReservedRequestHeader,
 } from '@tryghost/app-contracts/bridge';
 import { ghostApiRequestHeaders, handleSessionExpiry } from '@tryghost/admin-x-framework/helpers';
+import type { AppTokenSource } from './app-token';
 import { BridgeError, sessionEnded } from './bridge-error';
 
 export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Promise<FetchResponse>;
@@ -17,17 +18,23 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
  * wasn't approved for, before anything reaches the network.
  * It also drops headers that only Admin sets, so none of the app's headers can replace Admin's,
  * whatever reaches this function.
+ *
+ * Requests carry the app session's token, never the staff session cookie; `token` decides which
+ * token a call is sent with, and sends it again when the token was refused.
  */
 export function createAdminApiFetch({
   apiRoot,
   approvedScopes,
   ghostVersion,
+  token,
 }: {
   /** The Admin API's root URL, as Admin's own requests use it. */
   apiRoot: URL;
   /** The scopes in the approved manifest the app session is pinned to. */
   approvedScopes: ReadonlySet<AppPermissionKey>;
   ghostVersion?: string;
+  /** The app session's token, which the app's frame never sees. */
+  token: AppTokenSource;
 }): AdminApiFetch {
   return async (request, signal) => {
     const method = request.method ?? 'GET';
@@ -53,24 +60,30 @@ export function createAdminApiFetch({
         ? sessionEnded()
         : new BridgeError('network_error', `${what}: ${String(error)}`);
 
-    let response: Response;
-    try {
+    const send = (sentToken: string) =>
       // eslint-disable-next-line no-restricted-syntax -- a raw request, returned to the app as is
-      response = await fetch(url, {
+      fetch(url, {
         method,
-        headers: { ...ghostApiRequestHeaders({ ghostVersion, body: request.body }), ...appHeaders },
+        headers: {
+          ...ghostApiRequestHeaders({ ghostVersion, body: request.body }),
+          ...appHeaders,
+          authorization: `Bearer ${sentToken}`,
+        },
         body: request.body,
-        // The request carries the staff user's own session. That stands in for the app-scoped token
-        // that comes with Permissions and auth, and the allowlist above goes away along with it.
-        // Until then, the allowlist and the approved scopes are what keep the rest of the
-        // session's reach from the app.
-        credentials: 'include',
+        // The token is the request's only credential. The allowlist above and the approved
+        // scopes still limit what the app can ask for, until Ghost checks the token's scopes
+        // itself.
+        credentials: 'omit',
         // A redirect could lead off the API, where the app's path would no longer show where the
         // request went, so no redirect is followed. Most Admin API redirects are for a path missing
         // its trailing `/`, which the app can fix.
         redirect: 'manual',
         signal,
       });
+
+    let response: Response;
+    try {
+      response = await token.send(send);
     } catch (error) {
       throw failed('Couldn’t reach the Admin API', error);
     }

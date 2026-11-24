@@ -21,10 +21,13 @@ import {
   useRouterDestination,
 } from '@tryghost/admin-x-framework';
 import {
+  type ActiveAppSession,
   type AppInstallation,
   type AppSession,
+  isActiveAppSession,
   useBrowseAppInstallations,
   useReadAppInstallation,
+  useCreateAppToken,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -42,6 +45,7 @@ import { AppOverlay } from './components/app-overlay';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
+import { createAppTokenHolder } from './lib/app-token';
 import {
   appEntryPath,
   appFrameUrl,
@@ -53,7 +57,13 @@ import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { supportLink } from './lib/developer';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
-import { isInstallationNotFound, sessionFailureOf, type SessionFailure } from './lib/not-found';
+import {
+  siteBlocksApps,
+  type SiteBlocksApps,
+  sessionFailureOf,
+  type SessionFailure,
+} from './lib/app-failure';
+import { isInstallationNotFound } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -195,8 +205,9 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
  * Only a read made during this session counts, and only a higher revision ends it. Revisions only
  * increase, so a read sent before the session started that arrives after it shows a lower revision.
  *
- * This only sees changes this tab reads. Changes made in another tab, or by another staff user, are
- * left to the app token that comes with Permissions and auth.
+ * This only sees changes this tab reads. Ghost catches the rest: the app's calls are refused once
+ * the installation isn't active, and renewing the token ends the session once its revision
+ * changed.
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
@@ -233,7 +244,7 @@ const NO_INSETS: SafeArea = { top: 0, right: 0, bottom: 0, left: 0 };
  * component renders the session's state and keeps the session updated with Admin's location.
  */
 const AppFrame: React.FC<{
-  session: AppSession;
+  session: ActiveAppSession;
   site: SiteData;
   user: User;
   timezone: string;
@@ -242,6 +253,21 @@ const AppFrame: React.FC<{
 }> = ({ session, site, user, timezone, accentColor, onEnded }) => {
   const { installation } = session;
   useSessionEnd(session, onEnded);
+  const { mutateAsync: createToken } = useCreateAppToken();
+  // Owned by this session, like the frame's session below, and renewed in place, so a new token
+  // never reloads the frame. A renewal Ghost refuses ends the session the way a revision change
+  // does.
+  const [tokenHolder] = useState(() =>
+    createAppTokenHolder({ token: session.token, onError: reportAppsError }),
+  );
+  useEffect(() => {
+    tokenHolder.start({
+      renew: async () =>
+        (await createToken({ id: installation.id, revision: installation.revision })).app_tokens[0],
+      onEnded,
+    });
+    return () => tokenHolder.stop();
+  }, [tokenHolder, createToken, installation.id, installation.revision, onEnded]);
   const navigate = useNavigate();
   const location = useLocation();
   const { ghostVersion } = useFramework();
@@ -306,6 +332,7 @@ const AppFrame: React.FC<{
         apiRoot: new URL(apiUrl('/')),
         approvedScopes: approvedScopes(manifest.scopes),
         ghostVersion,
+        token: tokenHolder,
       }),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
@@ -430,10 +457,10 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  * either, so the app never starts without knowing who is using it. The host check applies
  * to the URL the frame starts from; `isGhostHost` describes what it doesn't cover.
  */
-const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
-  session,
-  onEnded,
-}) => {
+const ActiveApp: React.FC<{
+  session: ActiveAppSession;
+  onEnded: () => void;
+}> = ({ session, onEnded }) => {
   const { installation } = session;
   const site = useBrowseSite({ defaultErrorHandler: false });
   const settings = useBrowseSettings({ defaultErrorHandler: false });
@@ -549,6 +576,36 @@ const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () =>
   );
 };
 
+/**
+ * Apps get their tokens from Better Auth, which a site on the legacy auth engine doesn't run, so
+ * none of them opens there. Nothing about the app is wrong, so there's no Try again.
+ */
+const AppsBlocked: React.FC<{ reason: SiteBlocksApps; onRetry: () => void }> = ({
+  reason,
+  onRetry,
+}) => (
+  <Centered testId={reason === 'restart' ? 'apps-need-restart' : 'app-needs-new-auth-engine'}>
+    <EmptyIndicator
+      actions={
+        <>
+          <Button variant="outline" asChild>
+            <Link to="/apps">Back to Apps</Link>
+          </Button>
+          {reason === 'restart' && <Button onClick={onRetry}>Try again</Button>}
+        </>
+      }
+      description={
+        reason === 'restart'
+          ? 'Apps were turned on after Ghost started, so they open once Ghost restarts. Your site isn’t affected.'
+          : 'Apps need Ghost’s new auth engine, which this site doesn’t use yet. Your site isn’t affected.'
+      }
+      title="Apps aren’t available on this site"
+    >
+      <LucideIcon.LayoutGrid />
+    </EmptyIndicator>
+  </Centered>
+);
+
 const NotInstalled: React.FC = () => (
   <Centered testId="app-not-installed">
     <EmptyIndicator
@@ -608,7 +665,8 @@ export const AppPage: React.FC = () => {
   const installation = session?.installation;
   const notFound = isInstallationNotFound(error);
   const failure = sessionFailureOf(error);
-  const appFailed = failure !== undefined;
+  const blocked = siteBlocksApps(error);
+  const appFailed = failure !== undefined || blocked !== undefined;
   useEffect(() => {
     if (error && !notFound && !appFailed) {
       reportAppsError(error);
@@ -622,7 +680,7 @@ export const AppPage: React.FC = () => {
         <LoadingIndicator size="md" />
       </Centered>
     );
-  } else if (session && installation?.status === 'active') {
+  } else if (isActiveAppSession(session)) {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
     body = (
@@ -630,6 +688,8 @@ export const AppPage: React.FC = () => {
         <NeedsApproval installation={installation} onApproved={restart} />
       </WithAppFooter>
     );
+  } else if (blocked) {
+    body = <AppsBlocked reason={blocked} onRetry={restart} />;
   } else if (failure) {
     body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {

@@ -390,6 +390,25 @@ describe('handling session expiry for a response', () => {
     expect(window.location.replace).not.toHaveBeenCalled();
   });
 
+  // An app's calls carry its token and no cookie, so Ghost refusing the token says nothing about
+  // the staff session.
+  it('does not redirect for a refused app token while the staff session works', async () => {
+    const handleSessionExpiry = await signedIn();
+    const checks = vi.fn(() => HttpResponse.json({ users: [{ id: '1' }] }));
+    server.use(http.get(USERS_ME, checks));
+
+    await handleSessionExpiry(
+      POSTS,
+      HttpResponse.json(
+        { errors: [{ code: 'APP_TOKEN_INVALID', type: 'UnauthorizedError' }] },
+        { status: 401 },
+      ),
+    );
+
+    expect(checks).toHaveBeenCalledOnce();
+    expect(window.location.replace).not.toHaveBeenCalled();
+  });
+
   it('does not redirect when the session check gets no response', async () => {
     const handleSessionExpiry = await signedIn();
     server.use(http.get(USERS_ME, () => HttpResponse.error()));

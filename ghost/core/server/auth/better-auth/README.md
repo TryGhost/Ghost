@@ -188,8 +188,8 @@ whose password hasn't changed since still carry their old hash there, unread.
 
 Apps open only under `better-auth`. When an app session starts, Ghost issues
 the staff user an app user token for the app from `@better-auth/oauth-provider`,
-bound to their staff session, which the Admin API accepts as
-`Authorization: Bearer`.
+bound to their staff session, and Admin sends the app's Admin API calls with
+it as `Authorization: Bearer` and no cookie.
 
 ### How the pieces fit
 
@@ -367,10 +367,9 @@ upload then never runs for an app request that can't succeed.
   the provider's default hour, or until their staff session ends if that's
   sooner. The provider registers no scopes, `openid`
   included, so it issues no ID tokens; an ID token would last 5 minutes. No
-  refresh token is issued; a session renews through Ghost
+  refresh token is issued; Admin renews through Ghost
   (`POST /apps/installations/:id/tokens/`). Nobody manages clients through the
-  provider's endpoints (`clientPrivileges` refuses every action), and none
-  registers itself.
+  provider's endpoints (`clientPrivileges` refuses every action).
 - Neither plugin's routes are mounted. Ghost issues and validates app tokens
   through the provider's server API, so every path either plugin declares is
   in `disabledPaths` (`appOAuthDisabledPaths`): token, authorize,
@@ -426,7 +425,7 @@ upload then never runs for an app request that can't succeed.
   runs through the pipeline for this alone: its methods are single functions,
   which the pipeline runs with no other stage. A unit test lists every such
   method the Admin API mounts, so a new one is refused until someone decides
-  otherwise.
+  otherwise. Admin's bridge allowlist still filters what an app can send.
 - A route ending in a controller outside the pipeline, which has no permission
   stage and no name the allowlist could hold, refuses apps (403). That includes
   a route whose `http()` mounts a method the API doesn't have. To let an app

@@ -5,12 +5,13 @@ import type { FetchMethod } from './rules.ts';
  * The Admin API routes apps can reach through the fetch escape hatch. Everything else is
  * refused.
  *
- * Apps call the Admin API with the staff user's own session. This list stands in for an
- * app-scoped token with permissions, which checks on the server what was approved. Its routes
- * are grouped by the registry's resources, then under the scope that opens them, and
+ * Apps call the Admin API with their session's token, acting for the staff user. Ghost holds
+ * the token to the installation's approved scopes on every route that checks a permission, but
+ * not yet on routes that check none, so this list still filters what the bridge sends. Its
+ * routes are grouped by the registry's resources, then under the scope that opens them, and
  * `checkAdminApiRequest` refuses a route whose scope the installation wasn't approved for, as
- * Admin holds the approved manifest while the app runs. It is still a stopgap: the server
- * checks nothing an app does through the bridge.
+ * Admin holds the approved manifest while the app runs. It is a stopgap until the server checks
+ * every route an app can reach.
  *
  * What's allowed, and why:
  *

@@ -80,16 +80,45 @@ export interface AppInstallationsResponseType {
 }
 
 /**
- * One session of an installed app: the installation as Ghost returned it after re-checking the
- * app's manifest. The session is pinned to that installation's revision, and ends once the
- * revision changes.
+ * The token Admin sends the app's Admin API calls with, as `Authorization: Bearer`. It acts for
+ * the staff user within the installation's approved scopes. Only Admin holds it; the app's frame
+ * never sees it.
  */
-export interface AppSession {
-  installation: AppInstallation;
+export interface AppSessionToken {
+  access_token: string;
+  /** How long it lasts, in seconds from when Ghost answered */
+  expires_in: number;
+}
+
+/**
+ * One session of an installed app: the installation as Ghost returned it after re-checking the
+ * app's manifest, and for an active one the token its calls are sent with. The session is pinned
+ * to that installation's revision, and ends once the revision changes.
+ */
+export type AppSession = ActiveAppSession | InactiveAppSession;
+
+/** A session of an active installation, which always comes with a token. */
+export interface ActiveAppSession {
+  installation: AppInstallation & { status: 'active' };
+  token: AppSessionToken;
+}
+
+/** A session of an installation that isn't active: it gets no token, and the app doesn't load. */
+export interface InactiveAppSession {
+  installation: AppInstallation & { status: Exclude<AppInstallationStatus, 'active'> };
+  token: null;
+}
+
+export function isActiveAppSession(session: AppSession | undefined): session is ActiveAppSession {
+  return session?.installation.status === 'active';
 }
 
 export interface AppSessionsResponseType {
   app_sessions: AppSession[];
+}
+
+export interface AppTokensResponseType {
+  app_tokens: AppSessionToken[];
 }
 
 export interface AppInstallationPreviewsResponseType {
@@ -133,6 +162,21 @@ export const useStartAppSession = createMutation<AppSessionsResponseType, string
   method: 'POST',
   path: (id) => `/apps/installations/${id}/sessions/`,
   invalidateQueries: { dataType },
+});
+
+/**
+ * Creates a new token for a session that started at `revision`, which renews it without
+ * re-checking the manifest. The token has the same shape as a started session's. Ghost answers
+ * 409 with `APP_SESSION_ENDED` when the installation was suspended or changed since the session
+ * started, and 404 with `APP_NOT_INSTALLED` once it's uninstalled; either ends the session.
+ */
+export const useCreateAppToken = createMutation<
+  AppTokensResponseType,
+  { id: string; revision: number }
+>({
+  method: 'POST',
+  path: ({ id }) => `/apps/installations/${id}/tokens/`,
+  body: ({ revision }) => ({ app_tokens: [{ revision }] }),
 });
 
 export const useAddAppInstallation = createMutation<

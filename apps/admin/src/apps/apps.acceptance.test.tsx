@@ -41,6 +41,7 @@ import {
   fakeInstallations,
   fakeSessionStart,
   imageSources,
+  SESSION_TOKEN,
   installation,
   labs,
   manifest,
@@ -581,6 +582,42 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(sessionsApi.requests).toHaveLength(2);
+  });
+
+  it('says apps need the new auth engine on a site that doesn’t run it, with no Try again', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'Apps need Ghost’s new auth engine.', 'APP_AUTH_ENGINE_UNSUPPORTED'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('app-needs-new-auth-engine'))
+      .toHaveTextContent('Apps need Ghost’s new auth engine');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+  });
+
+  it('says apps open after a restart when the apps flag was turned on since Ghost started', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'Apps can’t open until Ghost restarts.', 'APP_TOKENS_UNAVAILABLE'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('apps-need-restart'))
+      .toHaveTextContent('they open once Ghost restarts');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+
+    sessionsApi.set(installation());
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
   });
 
   // Uninstalling and installing it again from a link is how another developer's key gets pinned.
@@ -1929,6 +1966,56 @@ describe('Managing apps', () => {
       const { headers } = postsApi.requests[0];
       expect(headers['app-pragma']).toBe('no-cache');
       expect(headers['x-podcast-trace']).toBe('abc');
+      // The session's token, which the app's frame never sees
+      expect(headers.authorization).toBe(`Bearer ${SESSION_TOKEN.access_token}`);
+    });
+
+    it('renews a token Ghost refused and sends the request again, without reloading the app', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const renewApi = fakeAdminEndpoint('POST', `/apps/installations/${postsApp().id}/tokens/`, {
+        app_tokens: [{ ...SESSION_TOKEN, access_token: 'ghost_app_renewed' }],
+      });
+      const postsApi = fakeAdminEndpoint('GET', '/posts/?include=authors', ({ headers }) =>
+        headers.authorization === 'Bearer ghost_app_renewed'
+          ? { posts: [] }
+          : apiError(401, 'The app token is invalid or has expired.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const frame = appsScreen.frame().element();
+
+      const response = answer(await callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }));
+
+      expect(response.status).toBe(200);
+      expect(postsApi.requests).toHaveLength(2);
+      expect(renewApi.requests).toHaveLength(1);
+      expect(renewApi.requests[0].body).toEqual({
+        app_tokens: [{ revision: postsApp().revision }],
+      });
+      expect(appsScreen.frame().element()).toBe(frame);
+      expect(sessionsApi.requests).toHaveLength(1);
+    });
+
+    it('ends the session when Ghost refuses to renew its token', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        apiError(409, 'This app session has ended.', 'APP_SESSION_ENDED'),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'The app token is invalid or has expired.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      // The session ends while the call is out, taking the frame with it
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      // Ended as any session is: Admin starts a new one
+      await expect.poll(() => sessionsApi.requests.length).toBe(2);
     });
 
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
