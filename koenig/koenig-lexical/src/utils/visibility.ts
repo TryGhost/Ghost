@@ -1,6 +1,7 @@
-import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import {$isGalleryNode, $isImageNode, $isKoenigCard} from '@tryghost/kg-default-nodes';
 import {buildDefaultVisibility, getRenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
 import type {CardConfig} from '../context/KoenigComposerContext';
+import type {KoenigCard} from '@tryghost/kg-default-nodes';
 import type {LexicalNode} from 'lexical';
 import type {RenderedVisibility, Visibility} from '@tryghost/kg-default-nodes/visibility';
 
@@ -43,13 +44,6 @@ export interface VisibilityOption {
 
 export type ToggleVisibility = (groupKey: VisibilityGroupKey, toggleKey: VisibilityToggleKey, value: boolean) => void;
 
-// image and gallery nodes expose these; other cards don't
-interface PlaceholderCandidate {
-    isEmpty?: () => boolean;
-    src?: unknown;
-    images?: unknown;
-}
-
 export function isVisibilityEnabled(cardConfig?: CardConfig) {
     return (cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL) !== VISIBILITY_SETTINGS.NONE;
 }
@@ -68,10 +62,9 @@ export function isCardVisibilityAvailable(cardType: string, cardConfig?: CardCon
 }
 
 // an image or gallery placeholder has no content to hide yet
-function isPlaceholderCard(cardNode: LexicalNode & PlaceholderCandidate) {
-    return cardNode.isEmpty?.() === true
-        || cardNode.src === ''
-        || (Array.isArray(cardNode.images) && cardNode.images.length === 0);
+function isPlaceholderCard(cardNode: KoenigCard) {
+    return ($isImageNode(cardNode) && cardNode.src === '')
+        || ($isGalleryNode(cardNode) && cardNode.images.length === 0);
 }
 
 // Cards without an edit mode of their own (image, gallery) still open
