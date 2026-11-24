@@ -529,6 +529,24 @@ test.describe('Content Visibility', async () => {
             expect(area.y + area.height).toBeGreaterThanOrEqual(lastImage.y + lastImage.height - 1);
         });
 
+        test('the settings panel is vertically centred on a gallery', async function () {
+            const galleryImage = () => ({row: 0, src: '/Koenig-editor-1.png', width: 1600, height: 900, fileName: 'image.png'});
+            const gallery = {type: 'gallery', version: 1, images: [galleryImage(), galleryImage()], caption: ''};
+            await initialize({page, uri: `/#/?content=${content(paragraph('one'), paragraph('two'), paragraph('three'), paragraph('four'), gallery)}`});
+            const card = page.locator('[data-kg-card="gallery"]');
+            await expectImageLoaded(card);
+
+            await card.dblclick();
+            await expectPanelOnTab(card, 'visibility');
+
+            const cardBox = await card.boundingBox();
+            const panelBox = await card.getByTestId('settings-panel').boundingBox();
+            const visibleBottom = Math.min(cardBox.y + cardBox.height, page.viewportSize().height);
+
+            expect(cardBox.y).toBeGreaterThan(100);
+            expect(panelBox.y + panelBox.height / 2).toBeCloseTo((cardBox.y + visibleBottom) / 2, -1);
+        });
+
         test('keeps the panel inside the viewport', async function () {
             const card = page.locator('[data-kg-card="image"]');
             await card.getByTestId('visibility-indicator').click();
