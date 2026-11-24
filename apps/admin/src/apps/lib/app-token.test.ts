@@ -101,19 +101,26 @@ describe('createAppTokenHolder', () => {
     expect(onError).toHaveBeenCalledOnce();
   });
 
-  it('leaves an expired staff session to Admin, which signs in again, without reporting or retrying', async () => {
-    const expired = new SessionExpiredError(new Response('{}', { status: 401 }), {});
-    const renew = vi.fn(() => Promise.reject(expired));
-    const { holder, onEnded, onError, start } = holderWith(renew);
-    start();
+  it.each([
+    [401, {}],
+    // How Ghost refuses a request with no staff session, which Admin's API layer reads as expired
+    [403, { errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }] }],
+  ])(
+    'leaves an expired staff session (%i) to Admin, which signs in again, without ending the session, reporting or retrying',
+    async (status, data) => {
+      const expired = new SessionExpiredError(new Response('{}', { status }), data);
+      const renew = vi.fn(() => Promise.reject(expired));
+      const { holder, onEnded, onError, start } = holderWith(renew);
+      start();
 
-    expect(await holder.renew()).toBe(false);
-    expect(onError).not.toHaveBeenCalled();
-    expect(onEnded).not.toHaveBeenCalled();
+      expect(await holder.renew()).toBe(false);
+      expect(onError).not.toHaveBeenCalled();
+      expect(onEnded).not.toHaveBeenCalled();
 
-    await vi.advanceTimersByTimeAsync(2 * HOUR);
-    expect(renew).toHaveBeenCalledOnce();
-  });
+      await vi.advanceTimersByTimeAsync(2 * HOUR);
+      expect(renew).toHaveBeenCalledOnce();
+    },
+  );
 
   it('keeps the session and tries again a minute later when a renewal fails otherwise', async () => {
     const renew = vi

@@ -122,13 +122,15 @@ export function createAppTokenHolder({
           return true;
         })
         .catch((error: unknown) => {
-          if (endsAppSession(error)) {
-            end();
-            return false;
-          }
-          // Admin's API layer found the staff session expired and is signing in again
+          // Admin's API layer found the staff session expired and is signing in again. Checked
+          // first: Ghost refuses a request with no staff session as a `NoPermissionError`, which
+          // would otherwise end the app session and start another that's refused too.
           if (error instanceof SessionExpiredError) {
             stopRenewing();
+            return false;
+          }
+          if (endsAppSession(error)) {
+            end();
             return false;
           }
           onError(error);
