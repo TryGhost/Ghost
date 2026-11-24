@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import type { Request, Response } from 'express';
 import {
   createAppTokenAuthentication,
+  refuseAppToken,
   unlessAppToken,
   type AppTokenDeps,
 } from '../../../../core/server/auth/app-token';
@@ -160,5 +161,26 @@ describe('App token authentication', function () {
     handler({} as never, {} as Response, next);
 
     assert.equal(called, 1);
+  });
+
+  it('refuses an app on a route outside the API pipeline, and passes anyone else on', function () {
+    const errors: unknown[] = [];
+    const handler = refuseAppToken('delete session');
+    const next = (err?: unknown) => {
+      errors.push(err);
+    };
+
+    handler({ auth: { kind: 'app' } } as never, {} as Response, next);
+    handler({ auth: { kind: 'staff' } } as never, {} as Response, next);
+    handler({} as never, {} as Response, next);
+
+    assert.equal(errors.length, 3);
+    assert.throws(
+      () => {
+        throw errors[0];
+      },
+      { statusCode: 403, message: 'Apps do not have permission to delete session' },
+    );
+    assert.deepEqual(errors.slice(1), [undefined, undefined]);
   });
 });
