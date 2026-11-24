@@ -5,6 +5,7 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
+import { DbJson } from '../../lib/db-types/json';
 import {
   ApprovedManifestFields,
   InstallationFields,
@@ -61,6 +62,18 @@ const INSTALLATION_COLUMNS = [
 ];
 
 const LockedRow = DbAppInstallation.pick({ status: true, revision: true });
+
+// Only the scopes are read from the approved manifest, so nothing else in it is decoded
+const AccessRow = DbAppInstallation.pick({ id: true, status: true })
+  .extend({
+    manifest: DbJson(z.object({ scopes: z.array(z.string()) }), {
+      message: 'The stored manifest is not JSON.',
+    }),
+  })
+  .transform(({ id, status, manifest }) => ({ id, status, scopes: manifest.scopes }));
+
+/** What an app's calls are checked against: whether it's active, and its approved scopes. */
+export type InstallationAccess = z.output<typeof AccessRow>;
 
 /** What came of `whileUnchanged`: the write's result, or why it didn't write. */
 export type WriteOutcome<T> =
@@ -209,6 +222,18 @@ export class AppInstallationsRepository {
       .where('installation.id', id)
       .first<z.input<typeof InstallationRow> | undefined>(INSTALLATION_COLUMNS);
     return row ? z.decode(InstallationRow, row) : undefined;
+  }
+
+  /** An installation's status and approved scopes, uninstalled or not. */
+  async findAccess(id: string): Promise<InstallationAccess | undefined> {
+    const row = await this.withApprovedManifest()
+      .where('installation.id', id)
+      .first<z.input<typeof AccessRow> | undefined>(
+        'installation.id',
+        'installation.status',
+        'approved.manifest',
+      );
+    return row ? z.decode(AccessRow, row) : undefined;
   }
 
   /** The app's current installation, if it has one. */

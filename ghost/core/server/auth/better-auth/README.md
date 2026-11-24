@@ -43,7 +43,8 @@ Better Auth's session, pins it to the admin origin and to the session's own
 `origin`, and treats an unverified session, or one with no `origin`, as
 anonymous. A request that sends an `Authorization` header never falls back to
 the cookie. Legacy session cookies are not read. `Bearer` is still rejected
-until Phase 4.
+until Phase 4, except app tokens (see [App tokens](#app-tokens)), which are
+authenticated ahead of the key check.
 
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies.
@@ -187,7 +188,8 @@ whose password hasn't changed since still carry their old hash there, unread.
 
 Apps are to get app tokens from `@better-auth/oauth-provider`, under
 `better-auth` only: a user token for the staff user, bound to their staff
-session. Nothing issues one in a request yet.
+session. The Admin API accepts one as `Authorization: Bearer`; nothing issues
+one in a request yet.
 
 ### How the pieces fit
 
@@ -312,11 +314,25 @@ sooner. Its scopes are the requested ones the client lists.
   while the staff session it's bound to exists, is the user's, is verified and
   hasn't expired. The session row is parsed, and one that doesn't parse
   counts as missing.
+- `auth/app-token.ts` acts only on `Bearer ghost_app_…`, ahead of the key
+  check. Every call validates the token, which `validateAppToken` accepts
+  only while the staff session it was issued in exists, is verified and
+  hasn't expired. The middleware then reads the installation (it must be
+  active) and the user (active) again, and takes the scopes from the
+  installation's approved manifest. The `apps` flag is read per request. A
+  refused token, or a Bearer credential that looks like an app token but is
+  malformed, answers `401 APP_TOKEN_INVALID` and never falls back to the
+  cookie; a failure to read the installation or the user is an error, not a
+  refusal. The principal is `kind: 'app'` with method `app_user_token`,
+  acting for the staff user.
+- The scopes cap the permission checks a call meets, through the policy core,
+  on top of the user's role. A route that checks no permission (uploads,
+  oEmbed and others) isn't limited by scope yet.
 - Reconciling an installation that isn't active disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event
-  under
-  [Revocation](#revocation) deletes the user's.
+  under [Revocation](#revocation) deletes the user's, but nothing depends on
+  it: the per-call checks are what refuse a token.
 
 The provider's per-IP rate limits don't apply: the `customStorage` limiter
 allows every path it doesn't map.

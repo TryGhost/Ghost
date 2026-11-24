@@ -14,6 +14,7 @@ import {
   AppInstallationsRepository,
   retryOnDeadlock,
   type AddedRow,
+  type InstallationAccess,
   type WriteOutcome,
 } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
@@ -200,6 +201,15 @@ export class AppInstallationsService {
       installation.history = await this.historyOf(id);
     }
     return installation;
+  }
+
+  /**
+   * What an app token's call is checked against: the installation's status and the scopes of
+   * its approved manifest, read on every call. Null only when there's no such installation; a
+   * failure to read it is an error, never a refusal.
+   */
+  async readAccess(id: string): Promise<InstallationAccess | null> {
+    return (await this.repository.findAccess(id)) ?? null;
   }
 
   /**

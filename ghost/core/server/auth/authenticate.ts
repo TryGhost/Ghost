@@ -6,6 +6,7 @@ import {
   unlessKeyed,
 } from './resolve-principal';
 import session from './session';
+import { appTokenAuthentication, unlessAppToken } from './app-token';
 import { findActiveStaffUser } from './staff-users';
 import apiKeyAuth from './api-key';
 import * as members from './members';
@@ -54,7 +55,12 @@ function createBetterAuth(): Authenticate {
   });
 
   return {
-    authenticateAdminApi: [apiKeyAuth.admin.authenticate, resolver.adminApi],
+    // An app token authenticates on its own; the key check and the cookie never see it
+    authenticateAdminApi: [
+      appTokenAuthentication(),
+      unlessAppToken(apiKeyAuth.admin.authenticate),
+      unlessAppToken(resolver.adminApi),
+    ],
     authenticateAdminApiWithUrl: [apiKeyAuth.admin.authenticateWithUrl, resolver.adminApiWithUrl],
     authenticateContentApi: [
       apiKeyAuth.content.authenticateContentApiKey,
