@@ -1210,12 +1210,48 @@ describe('CheckoutSessionEventService', function () {
         sinon.assert.notCalled(isPaidWelcomeEmailActive);
       });
 
-      it('should NOT send signup email on upgrade regardless of flow or welcome email', async function () {
+      it('should NOT send signup email on upgrade after a pre-checkout magic link', async function () {
         api.getCustomer.resolves(customer);
         memberRepository.get.resolves(member);
         session.metadata.checkoutType = 'upgrade';
         session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
         isPaidWelcomeEmailActive.resolves(false);
+
+        await service.handleEvent(session);
+
+        sinon.assert.notCalled(sendSignupEmail);
+      });
+
+      it('should send signup email on upgrade when the buyer has no sign-in path', async function () {
+        api.getCustomer.resolves(customer);
+        memberRepository.get.resolves(member);
+        session.metadata.checkoutType = 'upgrade';
+        session.metadata.ghostSignupContext = 'needs_magic_link_email';
+        isPaidWelcomeEmailActive.resolves(true);
+
+        await service.handleEvent(session);
+
+        sinon.assert.calledOnceWithExactly(sendSignupEmail, 'customer@example.com');
+        sinon.assert.notCalled(isPaidWelcomeEmailActive);
+      });
+
+      it('should NOT send signup email on upgrade by a signed-in member', async function () {
+        api.getCustomer.resolves(customer);
+        memberRepository.get.resolves(member);
+        session.metadata.checkoutType = 'upgrade';
+        session.metadata.ghostSignupContext = 'already_authenticated';
+        isPaidWelcomeEmailActive.resolves(false);
+
+        await service.handleEvent(session);
+
+        sinon.assert.notCalled(sendSignupEmail);
+      });
+
+      it('should NOT send signup email on upgrade without a signup context', async function () {
+        api.getCustomer.resolves(customer);
+        memberRepository.get.resolves(member);
+        session.metadata.checkoutType = 'upgrade';
+        delete session.metadata.ghostSignupContext;
 
         await service.handleEvent(session);
 
