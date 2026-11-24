@@ -11,6 +11,7 @@ import {
 import { findActiveStaffUser } from './staff-users';
 import { APP_TOKEN_PREFIX } from './app-token-prefix';
 import type { ValidatedAppToken } from './better-auth/app-tokens';
+import type { InstallationAccess } from '../services/app-installations';
 
 /**
  * The app token in an `Authorization` header. Any Bearer credential that looks like an app
@@ -33,9 +34,7 @@ export interface AppTokenDeps {
   /** Null unless the token is active and its staff session is verified and unexpired */
   validate(token: string): Promise<ValidatedAppToken | null>;
   /** The installation's status and approved scopes; null only when there's none */
-  findInstallation(
-    id: string,
-  ): Promise<{ id: string; status: string; scopes: readonly string[] } | null>;
+  findInstallation(id: string): Promise<InstallationAccess | null>;
   /** An active staff user by id, with roles, or null */
   findActiveUser(id: string): Promise<User | null>;
 }
