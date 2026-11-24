@@ -9,6 +9,7 @@ import {isCardVisibilityAvailable} from '../utils/visibility';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import type {NodeKey} from 'lexical';
+import type {VisibilityGroupKey, VisibilityToggleKey} from '../utils/visibility';
 
 // Whether the editor offers visibility settings for this card: it has a
 // visibility property and the host supports visibility for its type.
@@ -50,7 +51,7 @@ export function useCardVisibilitySettings(nodeKey: NodeKey, {hiddenToggles = []}
 
     // Nested text editors can leave a range selection in the parent editor.
     // Restore the card selection before updating, as the card's other toggles do.
-    const handleToggleVisibility = (type: string, key: string, value: boolean) => {
+    const handleToggleVisibility = (type: VisibilityGroupKey, key: VisibilityToggleKey, value: boolean) => {
         setEditing(true);
         toggleVisibility(type, key, value);
     };

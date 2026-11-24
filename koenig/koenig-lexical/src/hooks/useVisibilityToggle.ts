@@ -5,6 +5,7 @@ import type {CardConfig} from '../context/KoenigComposerContext';
 import type {KoenigCard} from '@tryghost/kg-default-nodes';
 import type {LexicalEditor, NodeKey} from 'lexical';
 import type {RenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
+import type {VisibilityGroupKey, VisibilityToggleKey} from '../utils/visibility';
 
 // Cards migrate older visibility formats when they're imported, so a card in
 // the editor always holds the current format
@@ -40,7 +41,7 @@ export const getVisibilityToggle = (editor: LexicalEditor, nodeKey: NodeKey, car
         isVisibilityEnabled: visibilityEnabled,
         visibilityData,
         visibilityOptions,
-        toggleVisibility: (type: string, key: string, value: boolean) => {
+        toggleVisibility: (type: VisibilityGroupKey, key: VisibilityToggleKey, value: boolean) => {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
                 if (!$isKoenigCard(node)) {

@@ -25,15 +25,19 @@ export interface VisibilityToggles {
     };
 }
 
+export type VisibilityGroupKey = keyof VisibilityToggles;
+
+export type VisibilityToggleKey = 'nonMembers' | 'freeMembers' | 'paidMembers';
+
 export interface VisibilityToggle {
-    key: string;
+    key: VisibilityToggleKey;
     label: string;
     checked: boolean;
 }
 
 export interface VisibilityOption {
     label: string;
-    key: string;
+    key: VisibilityGroupKey;
     toggles: VisibilityToggle[];
 }
 
@@ -98,7 +102,7 @@ export function parseVisibilityToToggles(visibility?: RenderedVisibility): Visib
     };
 }
 
-function isToggleChecked(toggles: VisibilityToggle[], key: string, fallback: boolean): boolean {
+function isToggleChecked(toggles: VisibilityToggle[], key: VisibilityToggleKey, fallback: boolean): boolean {
     return toggles.find(t => t.key === key)?.checked ?? fallback;
 }
 
