@@ -101,8 +101,7 @@ const EntrySummary: React.FC<{ entry: AppInstallationHistoryEntry; timezone: str
 
 /**
  * Each entry, newest first. One that changed the app's access opens to show what changed; one that
- * changed nothing in it is the same row, disabled, with its chevron hidden but kept in place so
- * the dates line up.
+ * changed nothing in it is a plain row, laid out as the others are while closed.
  */
 const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: string }> = ({
   entries,
@@ -117,25 +116,35 @@ const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: stri
           const groups = describeScopeChanges(accessChanges[index], {
             pending: entry.event === 'suspended',
           });
+          if (groups.length === 0) {
+            return (
+              <li
+                key={entry.id}
+                className="flex items-center gap-3 border-b py-4 text-sm first:pt-0 last:border-b-0"
+                data-testid="app-history-entry"
+              >
+                <EntrySummary entry={entry} timezone={timezone} />
+                {/* As wide as the chevron of an entry that opens, so the dates line up. */}
+                <span className="size-4 shrink-0" />
+              </li>
+            );
+          }
           return (
             <AccordionItem
               key={entry.id}
               className="group/entry last:border-b-0"
               data-testid="app-history-entry"
-              disabled={groups.length === 0}
               value={entry.id}
               asChild
             >
               <li>
                 {/* The first entry sits flush under the section's heading. */}
-                <AccordionTrigger className="gap-3 font-normal group-first/entry:pt-0 hover:no-underline disabled:[&>svg]:invisible">
+                <AccordionTrigger className="gap-3 font-normal group-first/entry:pt-0 hover:no-underline">
                   <EntrySummary entry={entry} timezone={timezone} />
                 </AccordionTrigger>
-                {groups.length > 0 && (
-                  <AccordionContent>
-                    <AccessChanges groups={groups} />
-                  </AccordionContent>
-                )}
+                <AccordionContent>
+                  <AccessChanges groups={groups} />
+                </AccordionContent>
               </li>
             </AccordionItem>
           );

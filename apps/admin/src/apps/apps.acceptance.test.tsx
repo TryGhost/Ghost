@@ -1647,8 +1647,10 @@ describe('Managing apps', () => {
       .element(appsScreen.historyEntries().nth(1))
       .toHaveTextContent(/^Updated, needs approval/);
     await expect.element(appsScreen.historyEntries().nth(1)).not.toHaveTextContent('Requested');
-    // It has nothing to open, so its row is disabled.
-    await expect.element(appsScreen.historyEntries().nth(1).getByRole('button')).toBeDisabled();
+    // It has nothing to open, so it's a plain row.
+    await expect
+      .element(appsScreen.historyEntries().nth(1).getByRole('button'))
+      .not.toBeInTheDocument();
     // The replaced one never took effect, so it keeps what it asked for. Opening it closes the
     // first: one entry is open at a time.
     await appsScreen.openHistoryEntry(2);
