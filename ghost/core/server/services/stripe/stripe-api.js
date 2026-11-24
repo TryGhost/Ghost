@@ -1254,7 +1254,7 @@ module.exports = class StripeAPI {
    */
   async updateSubscriptionItemPrice(subscriptionId, id, price, options = {}) {
     await this._rateLimitBucket.throttle();
-    const subscription = await this._stripe.subscriptions.update(subscriptionId, {
+    const params = {
       proration_behavior: options.prorationBehavior || 'always_invoice',
       items: [
         {
@@ -1262,15 +1262,14 @@ module.exports = class StripeAPI {
           price,
         },
       ],
-      ...(options.preserveCancellation
-        ? {}
-        : {
-            cancel_at_period_end: false,
-            metadata: {
-              cancellation_reason: options.cancellationReason ?? null,
-            },
-          }),
-    });
+    };
+    if (!options.preserveCancellation) {
+      params.cancel_at_period_end = false;
+      params.metadata = {
+        cancellation_reason: options.cancellationReason ?? null,
+      };
+    }
+    const subscription = await this._stripe.subscriptions.update(subscriptionId, params);
     return subscription;
   }
 
