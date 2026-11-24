@@ -10,6 +10,7 @@ const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => ({
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  scopes: [],
   manifest_url: 'https://podcast.example.com/ghost-app.json',
   identity_key: { kty: 'OKP', crv: 'Ed25519', x: 'xQcVt_FXHEk7Uv4dKhUL2nR5DwwsLVW4pu2il-5sX_s' },
   backend_key: { kty: 'OKP', crv: 'Ed25519', x: 'H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk' },

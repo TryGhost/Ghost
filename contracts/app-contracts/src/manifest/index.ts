@@ -12,7 +12,13 @@
  * The format is unversioned while only Ghost builds apps.
  */
 
-export { ManifestChangeSchema, type FieldChange, type ManifestChange } from './changes-schema.ts';
+export { AppScopesSchema } from './scopes-schema.ts';
+export {
+  ManifestChangeSchema,
+  type ScopeChange,
+  type FieldChange,
+  type ManifestChange,
+} from './changes-schema.ts';
 export { compareManifests, type ManifestComparison } from './compare.ts';
 export { isGhostHost } from './ghost-host.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';

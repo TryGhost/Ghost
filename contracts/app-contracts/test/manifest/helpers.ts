@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 
-import { parseManifest, type ParseManifestOptions } from '../../src/manifest/index.ts';
+import { z } from 'zod';
+
+import {
+  AppManifestSchema,
+  parseManifest,
+  type AppManifest,
+  type ParseManifestOptions,
+} from '../../src/manifest/index.ts';
 
 export const options: ParseManifestOptions = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
@@ -36,6 +43,7 @@ export function manifest(overrides: Record<string, unknown> = {}) {
     accent_color: '#FF5500',
     icon: { url: '/icon.svg' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    scopes: [],
     manifest_url: 'https://podcast.example.com/ghost-app.json',
     identity_key: IDENTITY_KEY,
     backend_key: BACKEND_KEY,
@@ -62,4 +70,9 @@ export function manifestOf(input: unknown, parseOptions = options) {
   const result = parseManifest(input, parseOptions);
   assert(result.success, 'Expected the manifest to be valid');
   return result.manifest;
+}
+
+/** A parsed manifest as Ghost stores it, which `AppManifestSchema` reads back. */
+export function storedOf(parsed: AppManifest) {
+  return z.encode(AppManifestSchema, parsed);
 }

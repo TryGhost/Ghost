@@ -271,7 +271,11 @@ export class AppInstallationsRepository {
     return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
   }
 
-  /** An installation's manifest rows and staff actions, oldest first. */
+  /**
+   * An installation's manifest rows and staff actions, oldest first. A manifest row whose
+   * changes no longer decode keeps its entry without them, and one that doesn't decode at all
+   * is left out.
+   */
   async historyRows(
     id: string,
   ): Promise<{ manifests: HistoryManifest[]; actions: HistoryAction[] }> {
@@ -302,7 +306,17 @@ export class AppInstallationsRepository {
       );
     const [manifestData, actionData] = await Promise.all([manifestRows, actionRows]);
     return {
-      manifests: manifestData.map((row) => z.decode(HistoryManifestRow, row)),
+      manifests: manifestData.flatMap((row) => {
+        const decoded = HistoryManifestRow.safeDecode(row);
+        if (decoded.success) {
+          return [decoded.data];
+        }
+        const withoutChanges = HistoryManifestRow.safeDecode({
+          ...row,
+          changes: z.encode(StoredChanges, []),
+        });
+        return withoutChanges.success ? [withoutChanges.data] : [];
+      }),
       actions: actionData.map((row) => z.decode(HistoryActionRow, row)),
     };
   }
@@ -338,6 +352,7 @@ export class AppInstallationsRepository {
   async insert(
     loaded: LoadedManifest,
     iconDataUrl: string | null,
+    changes: ManifestChange[],
     { transacting }: { transacting: Knex.Transaction },
   ): Promise<Installation> {
     const { manifest } = loaded;
@@ -384,8 +399,7 @@ export class AppInstallationsRepository {
       icon_data_url: iconDataUrl,
       source: 'install',
       requires_approval: false,
-      // An install has no approved manifest to differ from.
-      changes: z.encode(StoredChanges, []),
+      changes: z.encode(StoredChanges, changes),
       created_at: now,
     });
     return z.decode(InstallationRow, written);

@@ -17,6 +17,7 @@ import {
   manifest,
   manifestOf,
   options,
+  storedOf,
 } from './helpers.ts';
 
 describe('parseManifest', () => {
@@ -29,6 +30,7 @@ describe('parseManifest', () => {
       accent_color: '#ff5500',
       icon: { url: 'https://podcast.example.com/icon.svg' },
       surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+      scopes: [],
       manifest_url: 'https://podcast.example.com/ghost-app.json',
       identity_key: IDENTITY_KEY,
       backend_key: BACKEND_KEY,
@@ -40,7 +42,7 @@ describe('parseManifest', () => {
   // schema, not parsed again.
   it('hands back a manifest the stored manifest’s schema reads unchanged', () => {
     const parsed = manifestOf(manifest({ name: ' Podcast ' }));
-    expect(AppManifestSchema.parse(parsed)).toEqual(parsed);
+    expect(AppManifestSchema.parse(storedOf(parsed))).toEqual(parsed);
   });
 
   it('trims the name and description', () => {
