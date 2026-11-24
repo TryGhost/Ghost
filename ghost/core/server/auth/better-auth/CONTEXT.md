@@ -60,9 +60,10 @@ never reads one, so switching engines signs everyone out once.
 _Avoid_: old session, Express session
 
 **Session token**:
-The secret that identifies a session. Over HTTP it travels only in the
-session cookie and never in a response body. Ghost's own calls to the instance
-can still get it back, so their results are as sensitive as the cookie.
+The secret that identifies a session. Ghost sends it only in the session
+cookie and never in a response body, though a native route such as
+`/auth/revoke-session` accepts one in its request body. Ghost's own calls to
+the instance can get it back, so their results are as sensitive as the cookie.
 _Avoid_: session id, which is not secret
 
 **Session cookie**:

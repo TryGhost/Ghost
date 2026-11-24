@@ -46,8 +46,9 @@ _Avoid_: admin token
 
 **Admin API token**:
 A token signed with an Admin API key. Sent with the `Ghost` authorization
-scheme, it lasts at most five minutes. The scheduler's routes take one in the
-URL instead, and there only the token's own expiry limits it.
+scheme, it is refused once its issued-at time is more than five minutes past.
+The scheduler's routes take one in the URL instead, where that check is
+skipped and only an expiry in the token limits it.
 _Avoid_: admin key, bearer token
 
 **Staff access token**:
