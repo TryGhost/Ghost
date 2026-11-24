@@ -3,6 +3,7 @@ import {
   isAppFailureCode,
   isUnconfirmedAppCode,
 } from '@tryghost/app-contracts';
+import { getSettingValue, type Setting } from '@tryghost/admin-x-framework/api/settings';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 
 /**
@@ -64,19 +65,59 @@ const SITE_BLOCKS_APPS: Partial<Record<AppFailureCode, SiteBlocksApps>> = {
 /**
  * Ghost turns the apps routes away with a 404 that has no code while the `apps` flag is off. The
  * routes that start a session and renew its token answer an installation that doesn't exist with
- * `APP_NOT_INSTALLED`, so from them, a 404 without a code means apps are off.
+ * `APP_NOT_INSTALLED`, so from them a 404 without a code may mean apps are off. Only the flag
+ * says whether they are: see `appsFlagOn`.
  */
-function appsTurnedOff(failure: Failure | undefined): boolean {
+export function isUncodedNotFound(error: unknown): boolean {
+  const failure = failureOf(error);
   return failure?.type === 'NotFoundError' && failure.code === undefined;
+}
+
+/**
+ * Whether the site's Labs settings have the `apps` flag on, or undefined when they can't be read.
+ * They're where Admin's Labs screen turns it on and off.
+ */
+export function appsFlagOn(settings: Setting[]): boolean | undefined {
+  try {
+    const labs: unknown = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    return typeof labs === 'object' && labs !== null && (labs as { apps?: unknown }).apps === true;
+  } catch {
+    return undefined;
+  }
+}
+
+/** A session start Ghost turned away because the `apps` flag is off, as the site's Labs show. */
+export class AppsTurnedOffError extends Error {
+  constructor(options?: ErrorOptions) {
+    super('Apps are turned off on this site', options);
+  }
+}
+
+/**
+ * What a session start failed with. A 404 without a code is checked against the site's Labs,
+ * read again since the flag would have changed after Admin loaded them, and stays the error it
+ * is unless they show apps off.
+ */
+export async function sessionStartFailure(
+  error: unknown,
+  readSettings: () => Promise<Setting[] | undefined>,
+): Promise<unknown> {
+  if (!isUncodedNotFound(error)) {
+    return error;
+  }
+  const settings = await readSettings();
+  return settings && appsFlagOn(settings) === false
+    ? new AppsTurnedOffError({ cause: error })
+    : error;
 }
 
 /** Why no app opens on this site, read from a failed session start. */
 export function siteBlocksApps(error: unknown): SiteBlocksApps | undefined {
-  const failure = failureOf(error);
-  if (appsTurnedOff(failure)) {
+  if (error instanceof AppsTurnedOffError) {
     return 'off';
   }
-  return isAppFailureCode(failure?.code) ? SITE_BLOCKS_APPS[failure.code] : undefined;
+  const code = failureOf(error)?.code;
+  return isAppFailureCode(code) ? SITE_BLOCKS_APPS[code] : undefined;
 }
 
 /**
@@ -104,14 +145,15 @@ const ENDS_SESSION: ReadonlySet<string> = new Set<AppFailureCode>([
 
 /**
  * Whether Ghost refused a renewal for good: the installation changed or is gone, the site can't
- * issue app tokens or has apps turned off, or the staff user may no longer open apps.
+ * issue app tokens or may have apps turned off, or the staff user may no longer open apps. The
+ * session start that follows finds out which.
  */
 export function endsAppSession(error: unknown): boolean {
   const failure = failureOf(error);
   return (
     (failure?.code !== undefined && ENDS_SESSION.has(failure.code)) ||
     failure?.type === 'NoPermissionError' ||
-    appsTurnedOff(failure)
+    isUncodedNotFound(error)
   );
 }
 

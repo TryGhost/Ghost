@@ -1,15 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   type ErrorResponse,
   JSONError,
   SessionExpiredError,
 } from '@tryghost/admin-x-framework/errors';
 import {
+  AppsTurnedOffError,
+  appsFlagOn,
   endsAppSession,
   failureOfResponse,
   isRefusedToken,
   refusesStaffUser,
   sessionFailureOf,
+  sessionStartFailure,
   siteBlocksApps,
 } from './app-failure';
 
@@ -49,9 +52,51 @@ describe('siteBlocksApps', () => {
     expect(siteBlocksApps(apiError(409, 'APP_SESSION_ENDED'))).toBeUndefined();
   });
 
-  it('reads a 404 without a code, how Ghost turns the apps routes away, as apps turned off', () => {
-    expect(siteBlocksApps(apiError(404, null, 'NotFoundError'))).toBe('off');
-    expect(siteBlocksApps(apiError(404, 'APP_NOT_INSTALLED', 'NotFoundError'))).toBeUndefined();
+  it('reads apps as turned off only once the site’s Labs show it', () => {
+    expect(siteBlocksApps(new AppsTurnedOffError())).toBe('off');
+    expect(siteBlocksApps(apiError(404, null, 'NotFoundError'))).toBeUndefined();
+  });
+});
+
+const labsSettings = (labs: string) => [{ key: 'labs', value: labs }];
+
+describe('appsFlagOn', () => {
+  it('reads the apps flag from the site’s Labs settings', () => {
+    expect(appsFlagOn(labsSettings('{"apps":true}'))).toBe(true);
+    expect(appsFlagOn(labsSettings('{"apps":false}'))).toBe(false);
+    expect(appsFlagOn(labsSettings('{}'))).toBe(false);
+    expect(appsFlagOn([])).toBe(false);
+    expect(appsFlagOn(labsSettings('not json'))).toBeUndefined();
+  });
+});
+
+describe('sessionStartFailure', () => {
+  const uncodedNotFound = apiError(404, null, 'NotFoundError');
+
+  it('reads a 404 without a code as apps turned off when the site’s Labs, read again, show it', async () => {
+    const readSettings = vi.fn(() => Promise.resolve(labsSettings('{"apps":false}')));
+
+    const failure = await sessionStartFailure(uncodedNotFound, readSettings);
+
+    expect(failure).toBeInstanceOf(AppsTurnedOffError);
+    expect((failure as Error).cause).toBe(uncodedNotFound);
+    expect(readSettings).toHaveBeenCalledOnce();
+  });
+
+  it('keeps a 404 without a code as it is while the Labs show apps on, or can’t be read', async () => {
+    for (const settings of [labsSettings('{"apps":true}'), labsSettings('not json'), undefined]) {
+      expect(await sessionStartFailure(uncodedNotFound, () => Promise.resolve(settings))).toBe(
+        uncodedNotFound,
+      );
+    }
+  });
+
+  it('reads no settings for any other failure', async () => {
+    const readSettings = vi.fn(() => Promise.resolve(labsSettings('{"apps":false}')));
+    const notInstalled = apiError(404, 'APP_NOT_INSTALLED', 'NotFoundError');
+
+    expect(await sessionStartFailure(notInstalled, readSettings)).toBe(notInstalled);
+    expect(readSettings).not.toHaveBeenCalled();
   });
 });
 
@@ -78,7 +123,7 @@ describe('endsAppSession', () => {
     expect(endsAppSession(apiError(409, 'APP_SESSION_ENDED'))).toBe(true);
     expect(endsAppSession(apiError(404, 'APP_NOT_INSTALLED'))).toBe(true);
     expect(endsAppSession(apiError(403, null, 'NoPermissionError'))).toBe(true);
-    // Apps were turned off
+    // Apps may have been turned off; the session start that follows finds out
     expect(endsAppSession(apiError(404, null, 'NotFoundError'))).toBe(true);
   });
 

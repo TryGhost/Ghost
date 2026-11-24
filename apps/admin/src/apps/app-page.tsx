@@ -58,7 +58,9 @@ import { placeRoute } from './lib/bridge-places';
 import { supportLink } from './lib/developer';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
 import {
+  isUncodedNotFound,
   refusesStaffUser,
+  sessionStartFailure,
   siteBlocksApps,
   type SiteBlocksApps,
   sessionFailureOf,
@@ -682,6 +684,11 @@ function useAppSession(installationId: string): {
   restart: () => void;
 } {
   const { mutateAsync: start } = useStartAppSession();
+  // Admin's copy of the settings is shared, and only read again here
+  const { refetch: refetchSettings } = useBrowseSettings({
+    enabled: false,
+    defaultErrorHandler: false,
+  });
   const [generation, setGeneration] = useState(0);
 
   // One start per open and per restart. Each start is its own query that never goes stale, isn't
@@ -691,7 +698,15 @@ function useAppSession(installationId: string): {
     // `null` when there's nothing to open, because a query can't return `undefined`. Stamped as
     // it arrives: the frame that holds its token can mount much later.
     queryFn: async (): Promise<ReceivedSession | null> => {
-      const session = (await start(installationId)).app_sessions[0];
+      let session: AppSession | undefined;
+      try {
+        session = (await start(installationId)).app_sessions[0];
+      } catch (failed) {
+        throw await sessionStartFailure(
+          failed,
+          async () => (await refetchSettings()).data?.settings,
+        );
+      }
       return session ? { ...session, receivedAt: Date.now() } : null;
     },
     staleTime: Infinity,
@@ -716,8 +731,8 @@ export const AppPage: React.FC = () => {
   const failure = sessionFailureOf(error);
   const blocked = siteBlocksApps(error);
   const denied = refusesStaffUser(error);
-  // Apps being turned off is a 404 too
-  const notFound = !blocked && isInstallationNotFound(error);
+  // A 404 without a code from this route isn't about the installation
+  const notFound = !isUncodedNotFound(error) && isInstallationNotFound(error);
   const appFailed = failure !== undefined || blocked !== undefined || denied;
   useEffect(() => {
     if (error && !notFound && !appFailed) {

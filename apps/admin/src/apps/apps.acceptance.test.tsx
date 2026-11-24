@@ -9,6 +9,7 @@ import {
   allowUnhandledRequests,
   callAppFrame,
   callHostRaw,
+  configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -632,9 +633,19 @@ describe('Managing apps', () => {
   it('says apps are turned off when Ghost turns the session away for that, with no Try again', async () => {
     fakeInstallations([installation()]);
     const { sessionsApi } = await fakeAppPage(installation());
-    sessionsApi.set(appsTurnedOff());
+    let appsOn = true;
+    sessionsApi.setAnswer(() => {
+      // Turned off elsewhere since Admin loaded its settings
+      appsOn = false;
+      return appsTurnedOff();
+    });
 
-    await renderAdminApp(APP_ROUTE, { labs });
+    await renderAdminApp(APP_ROUTE, {
+      boot: {
+        browseConfig: { response: configResponse({ labs }) },
+        browseSettings: { response: () => settingsResponse({ labs: { apps: appsOn } }) },
+      },
+    });
 
     await expect
       .element(page.getByTestId('apps-turned-off'))
@@ -642,6 +653,18 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.notInstalled()).not.toBeInTheDocument();
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+  });
+
+  it('says an app couldn’t load, not that apps are off, when Ghost turns its session away with Labs showing them on', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(appsTurnedOff());
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByText('Couldn’t load this app. Please try again.')).toBeVisible();
+    await expect.element(page.getByTestId('apps-turned-off')).not.toBeInTheDocument();
+    await expect.element(appsScreen.notInstalled()).not.toBeInTheDocument();
   });
 
   it('says the staff user doesn’t have access to apps when their role can’t read installations', async () => {
@@ -2099,6 +2122,12 @@ describe('Managing apps', () => {
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
       sessionsApi.set(appsTurnedOff());
+      // Turned off elsewhere: Admin still holds the settings it loaded with them on
+      fakeAdminEndpoint(
+        'GET',
+        /^\/settings\/\?group=/,
+        settingsResponse({ labs: { apps: false } }),
+      );
 
       void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
 
