@@ -2194,6 +2194,17 @@ importers:
         specifier: 'catalog:'
         version: 4.6.7(patch_hash=011cbd2c390354e6d9b4a7c1d83ee357aec0ab419beb9a74d91587ce9b33c6a6)
 
+  framework/foundry:
+    dependencies:
+      '@tryghost/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@tryghost/logging':
+        specifier: 6.1.0
+        version: 6.1.0(supports-color@10.2.2)
+
+  framework/kernel: {}
+
   ghost:
     dependencies:
       '@aws-sdk/client-s3':
@@ -2271,6 +2282,9 @@ importers:
       '@tryghost/errors':
         specifier: 3.4.8
         version: 3.4.8
+      '@tryghost/foundry':
+        specifier: workspace:*
+        version: link:../framework/foundry
       '@tryghost/helpers':
         specifier: 'catalog:'
         version: 1.1.110
@@ -2283,6 +2297,9 @@ importers:
       '@tryghost/image-transform':
         specifier: workspace:*
         version: link:../packages/image-transform
+      '@tryghost/kernel':
+        specifier: workspace:*
+        version: link:../framework/kernel
       '@tryghost/kg-card-factory':
         specifier: workspace:*
         version: link:../koenig/kg-card-factory

@@ -471,6 +471,29 @@ module.exports = {
       from: { path: '^ghost/core/kernel/' },
       to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
     },
+    // Framework code (framework/) knows nothing about Ghost. See framework/README.md.
+    {
+      name: 'framework-kernel-not-foundry-or-application',
+      comment:
+        'The kernel is what any file may import, so it imports neither the foundry nor Ghost.',
+      severity: 'error',
+      from: { path: '^framework/kernel/' },
+      to: { path: '^framework/foundry/|^ghost/' },
+    },
+    {
+      name: 'foundry-not-application',
+      comment: 'The foundry builds from what it is given. It never imports Ghost.',
+      severity: 'error',
+      from: { path: '^framework/foundry/' },
+      to: { path: '^ghost/' },
+    },
+    {
+      name: 'foundry-only-from-bootstrap',
+      comment: 'Only ghost/bootstrap imports the foundry. Other code is handed what it built.',
+      severity: 'error',
+      from: { pathNot: '^ghost/bootstrap/|^framework/foundry/' },
+      to: { path: '^framework/foundry/' },
+    },
     // ============================================================
     // shared/ must not require server/* or frontend/*
     // ============================================================

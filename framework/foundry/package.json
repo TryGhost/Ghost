@@ -1,0 +1,14 @@
+{
+  "name": "@tryghost/foundry",
+  "version": "private",
+  "private": true,
+  "description": "Framework code that builds what an application runs on. Only ghost/bootstrap imports it.",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@tryghost/kernel": "workspace:*",
+    "@tryghost/logging": "catalog:"
+  }
+}

@@ -1,5 +1,6 @@
 packages:
   - 'ghost'
+  - 'framework/*'
   - 'apps/*'
   - 'e2e'
   - 'koenig/*'

@@ -705,9 +705,10 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     config = require('./shared/config');
     debug('End: Load config');
 
-    // Logging is also used absolutely everywhere
+    // Logging is also used absolutely everywhere, so Ghost's logger is built here, before
+    // anything else can load @tryghost/logging and have it build one of its own
     debug('Begin: Load logging');
-    logging = require('@tryghost/logging');
+    logging = require('../bootstrap/logging').buildLogger(config);
     metrics = require('@tryghost/metrics');
     flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
     bootLogger = new BootLogger(logging, metrics, startTime);

@@ -36,6 +36,10 @@
     "nodemon.json",
     "tsconfig.json"
   ],
+  "imports": {
+    "#foundry/*": "@tryghost/foundry/*",
+    "#kernel/*": "@tryghost/kernel/*"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -101,10 +105,12 @@
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "workspace:*",
     "@tryghost/errors": "catalog:",
+    "@tryghost/foundry": "workspace:*",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.17",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/image-transform": "workspace:*",
+    "@tryghost/kernel": "workspace:*",
     "@tryghost/kg-card-factory": "workspace:*",
     "@tryghost/kg-converters": "workspace:*",
     "@tryghost/kg-default-cards": "workspace:*",

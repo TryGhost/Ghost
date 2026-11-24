@@ -1,0 +1,10 @@
+{
+  "name": "@tryghost/kernel",
+  "version": "private",
+  "private": true,
+  "description": "Framework code that holds no state. Any file may import it.",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  }
+}
