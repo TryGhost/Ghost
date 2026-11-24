@@ -239,7 +239,9 @@ session. Nothing issues one in a request yet.
 - `validateAppToken` accepts a token only while the staff session it was
   issued in exists, is verified and hasn't expired.
 - Reconciling an installation that isn't active disables its client and
-  deletes its tokens, and each security event under
+  deletes its tokens, and enabling a disabled client again deletes its tokens
+  too, so none issued while it was disabled comes back. Each security event
+  under
   [Revocation](#revocation) deletes the user's.
 
 The provider's per-IP rate limits don't apply: the `customStorage` limiter

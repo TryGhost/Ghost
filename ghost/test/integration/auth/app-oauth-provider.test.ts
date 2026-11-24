@@ -334,6 +334,26 @@ describe("Better Auth's OAuth provider for apps", function () {
       assert.deepEqual(JSON.parse(row.scopes), ['tag:browse']);
     });
 
+    it('deletes the tokens of a client it enables again', async function () {
+      const auth = build({ apps: true });
+      const id = installationId();
+      await auth.api.reconcileAppClient({
+        body: { installationId: id, active: true, scopes: ['post:browse'] },
+      });
+      const kept = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+      // A token that outlived the suspension, such as one issued while it was being written
+      await knex('oauth_clients')
+        .where({ client_id: userClientId(id) })
+        .update({ disabled: true });
+
+      await auth.api.reconcileAppClient({
+        body: { installationId: id, active: true, scopes: ['post:browse'] },
+      });
+
+      assert.equal(await tokenCount(), 0);
+      assert.equal(await validate(auth, kept.accessToken), null);
+    });
+
     it("keeps the client row in the provider's own layout", async function () {
       // The provider's create-client, on the same tables, with what Ghost's client sets
       const reference = betterAuth({
