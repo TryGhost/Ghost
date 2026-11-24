@@ -23,26 +23,35 @@ const principal: Principal = {
   },
 };
 
+const installationAt = (status: Installation['status'], id = 'installation-id') =>
+  ({ id, status, revision: 2, manifest: { scopes: ['post:browse'] } }) as Installation;
+
+/**
+ * Session tokens whose provider answers `issued`, reading the installation as each of `reads`
+ * in turn, and active once they run out; `undefined` is an uninstalled one.
+ */
 function tokensIssuing(
   issued: Awaited<ReturnType<AppTokens['issue']>>,
   availability: ReturnType<AppTokens['availability']> = 'ready',
+  reads: Array<Installation['status'] | undefined> = [],
 ) {
-  return new AppSessionTokens({
+  const reconciled: Array<{ id: string; active: boolean }> = [];
+  const tokens = new AppSessionTokens({
     appTokens: {
       availability: () => availability,
-      reconcileClient: async () => {},
+      reconcileClient: async ({ id, active }) => {
+        reconciled.push({ id, active });
+      },
       issue: async () => issued,
       validate: async () => null,
     },
-    findInstallation: async (id) =>
-      ({
-        id,
-        status: 'active',
-        revision: 2,
-        manifest: { scopes: ['post:browse'] },
-      }) as Installation,
+    findInstallation: async (id) => {
+      const status = reads.length ? reads.shift() : 'active';
+      return status ? installationAt(status, id) : undefined;
+    },
     logging: { error() {} },
   });
+  return Object.assign(tokens, { reconciled });
 }
 
 describe('App session tokens', function () {
@@ -108,5 +117,67 @@ describe('App session tokens', function () {
       ),
       { access_token: 'ghost_app_x', expires_in: 3600 },
     );
+  });
+
+  it('refuses a staff session that ended before the token was issued', async function () {
+    await assert.rejects(
+      tokensIssuing({ refused: 'session_unavailable' }).renew('installation-id', 2, principal),
+      { statusCode: 403, code: 'APP_STAFF_SESSION_REQUIRED' },
+    );
+  });
+
+  it('ends the session when the installation is suspended while renewing', async function () {
+    await assert.rejects(
+      tokensIssuing({ refused: 'client_unavailable' }, 'ready', ['active', 'suspended']).renew(
+        'installation-id',
+        2,
+        principal,
+      ),
+      { statusCode: 409, code: 'APP_SESSION_ENDED' },
+    );
+  });
+
+  it('says the app is not installed when it is uninstalled while renewing', async function () {
+    await assert.rejects(
+      tokensIssuing({ refused: 'client_unavailable' }, 'ready', ['active', undefined]).renew(
+        'installation-id',
+        2,
+        principal,
+      ),
+      { statusCode: 404, code: 'APP_NOT_INSTALLED' },
+    );
+  });
+
+  it('gives no token at session start when the installation is suspended while issuing', async function () {
+    const tokens = tokensIssuing({ refused: 'client_unavailable' }, 'ready', ['suspended']);
+
+    assert.equal(
+      await tokens.issue(installationAt('active'), { userId: 'u', sessionId: 's' }),
+      null,
+    );
+  });
+
+  it('withdraws a token issued while the installation was uninstalled', async function () {
+    const tokens = tokensIssuing({ accessToken: 'ghost_app_x', expiresIn: 3600 }, 'ready', [
+      undefined,
+    ]);
+
+    await assert.rejects(tokens.issue(installationAt('active'), { userId: 'u', sessionId: 's' }), {
+      statusCode: 404,
+      code: 'APP_NOT_INSTALLED',
+    });
+    assert.deepEqual(tokens.reconciled, [{ id: 'installation-id', active: false }]);
+  });
+
+  it('withdraws a token issued while the installation was suspended', async function () {
+    const tokens = tokensIssuing({ accessToken: 'ghost_app_x', expiresIn: 3600 }, 'ready', [
+      'suspended',
+    ]);
+
+    assert.equal(
+      await tokens.issue(installationAt('active'), { userId: 'u', sessionId: 's' }),
+      null,
+    );
+    assert.deepEqual(tokens.reconciled, [{ id: 'installation-id', active: false }]);
   });
 });

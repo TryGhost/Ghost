@@ -1574,6 +1574,10 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
       const tokenRowsOf = (id: string) =>
         models.Base.knex('oauth_access_tokens').where({ client_id: `ghost-app-user-${id}` });
 
+      /** Disables or enables the installation's client, as reconciling it would. */
+      const reconcileAs = (id: string, active: boolean) =>
+        appTokens().reconcileClient({ id, active, scopes: [] });
+
       /** Renews a session started at `revision`, as Admin does before its token expires. */
       const renew = (id: string, revision: number, status = 201) =>
         agent
@@ -1671,6 +1675,100 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         await service().uninstall(owner, installed.id);
 
         const { body } = await renew(installed.id, 1, 404);
+
+        assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+      });
+
+      /** The installation's user client, as the provider stores it. */
+      const clientOf = (id: string) =>
+        models.Base.knex('oauth_clients')
+          .where({ client_id: `ghost-app-user-${id}` })
+          .first();
+
+      it('answers a session start that races an uninstall as not installed, leaving no token', async function () {
+        const installed = await install();
+        serve(manifest());
+        const tokens = appTokens();
+        const reconcile = tokens.reconcileClient.bind(tokens);
+        let raced = false;
+        // The uninstall lands after the session read the installation as active, so the
+        // session's own reconcile turns the client back on
+        sinon
+          .stub(tokens, 'reconcileClient')
+          .callsFake(async (installation: { active: boolean }) => {
+            if (installation.active && !raced) {
+              raced = true;
+              await service().uninstall(owner, installed.id);
+            }
+            return reconcile(installation);
+          });
+
+        const { body } = await start(installed.id, 404);
+
+        assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+        assert.equal((await clientOf(installed.id)).disabled, 1);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it('answers a session start that races a suspension with no token', async function () {
+        const installed = await install();
+        serve(manifest());
+        const tokens = appTokens();
+        const issue = tokens.issue.bind(tokens);
+        sinon.stub(tokens, 'issue').callsFake(async (request: { installationId: string }) => {
+          await models.Base.knex('app_installations')
+            .where({ id: installed.id })
+            .update({ status: 'suspended' });
+          await reconcileAs(installed.id, false);
+          return issue(request);
+        });
+
+        const { body } = await start(installed.id);
+
+        assert.equal(body.app_sessions[0].installation.status, 'suspended');
+        assert.equal(body.app_sessions[0].token, null);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it('ends a renewal that races a suspension, rather than failing', async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body: started } = await start(installed.id);
+        const tokens = appTokens();
+        const issue = tokens.issue.bind(tokens);
+        sinon.stub(tokens, 'issue').callsFake(async (request: { installationId: string }) => {
+          await models.Base.knex('app_installations')
+            .where({ id: installed.id })
+            .update({ status: 'suspended' });
+          await reconcileAs(installed.id, false);
+          return issue(request);
+        });
+
+        const { body } = await renew(
+          installed.id,
+          started.app_sessions[0].installation.revision,
+          409,
+        );
+
+        assert.equal(body.errors[0].code, 'APP_SESSION_ENDED');
+      });
+
+      it('answers a renewal that races an uninstall as not installed, rather than failing', async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body: started } = await start(installed.id);
+        const tokens = appTokens();
+        const issue = tokens.issue.bind(tokens);
+        sinon.stub(tokens, 'issue').callsFake(async (request: { installationId: string }) => {
+          await service().uninstall(owner, installed.id);
+          return issue(request);
+        });
+
+        const { body } = await renew(
+          installed.id,
+          started.app_sessions[0].installation.revision,
+          404,
+        );
 
         assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
       });

@@ -8,7 +8,7 @@ import type {
 } from '../../auth/better-auth/app-tokens';
 import type { Principal } from '../../auth/principal';
 import type { Installation } from './codec';
-import { staffSessionOf, type StaffSession } from './staff-session';
+import { staffSessionOf, staffSessionRequired, type StaffSession } from './staff-session';
 
 /**
  * The user token Admin sends for the app, as `Authorization: Bearer`. It acts for the staff
@@ -36,7 +36,10 @@ function tokensUnavailable(availability: Exclude<AppTokensAvailability, 'ready'>
   }
 }
 
-/** Why no token could be issued for an installation that was active when it was read. */
+/**
+ * Why no token could be issued for an installation that is still active. A staff session that
+ * ended meanwhile is the request's problem; anything else is Ghost's.
+ */
 function notIssued(refused: AppTokenRefusal) {
   switch (refused) {
     case 'client_unavailable':
@@ -47,6 +50,8 @@ function notIssued(refused: AppTokenRefusal) {
       return new errors.InternalServerError({
         message: 'The staff user was not found, so no app token was issued.',
       });
+    case 'session_unavailable':
+      return staffSessionRequired();
   }
 }
 
@@ -103,8 +108,15 @@ export class AppSessionTokens {
     return staffSessionOf(principal);
   }
 
-  /** A user token for an active installation, holding the scopes of its approved manifest. */
-  async issue(installation: Installation, staff: StaffSession): Promise<AppSessionToken> {
+  /**
+   * A user token for an installation that was active when read, holding the scopes of its
+   * approved manifest. Null when it was suspended meanwhile; throws when it was uninstalled.
+   *
+   * Its client follows the installation, so a suspension or uninstall that lands while issuing
+   * either refuses the token or deletes it before it's stored. The installation is read again
+   * after issuing so neither is answered with a token, or with an error of Ghost's.
+   */
+  async issue(installation: Installation, staff: StaffSession): Promise<AppSessionToken | null> {
     // The provider checks no scopes, so they come from the approved manifest
     const issued = await this.appTokens.issue({
       installationId: installation.id,
@@ -113,15 +125,37 @@ export class AppSessionTokens {
       scopes: installation.manifest.scopes,
     });
     if ('refused' in issued) {
+      if (issued.refused === 'client_unavailable' && !(await this.isStillActive(installation))) {
+        return null;
+      }
       throw notIssued(issued.refused);
+    }
+    if (!(await this.isStillActive(installation))) {
+      return null;
     }
     return { access_token: issued.accessToken, expires_in: issued.expiresIn };
   }
 
   /**
+   * Whether the installation is still active. When it isn't, its client is brought in step
+   * again, which deletes any token issued meanwhile; when it's been uninstalled, throws.
+   */
+  private async isStillActive(installation: Installation): Promise<boolean> {
+    const current = await this.findInstallation(installation.id);
+    if (current?.status === 'active') {
+      return true;
+    }
+    await this.keepClientInStep(current ?? { ...installation, status: 'uninstalled' });
+    if (!current) {
+      throw notInstalled();
+    }
+    return false;
+  }
+
+  /**
    * A fresh user token for a session started at `revision`, without fetching the manifest.
-   * Nothing is stored. The same checks as starting a session, and the session must still be
-   * current.
+   * Nothing about the session is stored. The same checks as starting a session, and the
+   * session must still be current.
    */
   async renew(id: string, revision: number, principal: Principal | null): Promise<AppSessionToken> {
     const staff = this.staffSessionFor(principal);
@@ -132,7 +166,11 @@ export class AppSessionTokens {
     if (installation.status !== 'active' || installation.revision !== revision) {
       throw sessionEnded();
     }
-    return this.issue(installation, staff);
+    const token = await this.issue(installation, staff);
+    if (!token) {
+      throw sessionEnded();
+    }
+    return token;
   }
 
   /**

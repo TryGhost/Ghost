@@ -354,7 +354,9 @@ export class AppInstallationsService {
     if (installation.status !== 'active') {
       return { installation, token: null };
     }
-    return { installation, token: await this.sessionTokens.issue(installation, staff) };
+    // Null when the app was suspended while issuing, which reconciled its client again
+    const token = await this.sessionTokens.issue(installation, staff);
+    return token ? { installation, token } : { installation: await this.read(id), token: null };
   }
 
   /** A fresh user token for a session started at `revision`; see `AppSessionTokens.renew`. */

@@ -34,7 +34,12 @@ export function staffSessionOf(principal: Principal | null | undefined): StaffSe
   ) {
     return { userId: principal.user.id, sessionId: principal.session.id };
   }
-  throw new errors.NoPermissionError({
+  throw staffSessionRequired();
+}
+
+/** The request isn't, or is no longer, a staff session that may open apps. */
+export function staffSessionRequired() {
+  return new errors.NoPermissionError({
     message: 'Apps open only in a signed-in Administrator’s or Owner’s session.',
     code: 'APP_STAFF_SESSION_REQUIRED' satisfies AppFailureCode,
   });
