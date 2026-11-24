@@ -14,6 +14,7 @@ import {
   useState,
 } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/patterns/page-header';
 import { Calendar } from '@/components/ui/calendar';
 import { useFilterBarContext } from '@/components/patterns/filter-bar-context';
@@ -1937,6 +1938,27 @@ function ResolvedSelectOptionsPopover<T = unknown>({
   );
 }
 
+function useResolvedFilterField<T>(
+  field: FilterFieldConfig<T> & { valueSource: ValueSource<string> },
+  values: T[],
+  searchInput: string,
+) {
+  const effectiveValues = useMemo(() => field.value ?? values, [field.value, values]);
+  const sourceState = field.valueSource.useOptions({
+    query: searchInput,
+    selectedValues: effectiveValues as string[],
+  });
+  const resolvedField = useMemo(
+    () => ({
+      ...field,
+      options: sourceState.options as FilterOption<T>[],
+    }),
+    [field, sourceState.options],
+  );
+
+  return { resolvedField, sourceState };
+}
+
 function ValueSourceSelectOptionsPopover<T = unknown>({
   field,
   values,
@@ -1952,18 +1974,7 @@ function ValueSourceSelectOptionsPopover<T = unknown>({
     onSearchChange: (value: string) => void;
   }
 >) {
-  const effectiveValues = useMemo(() => field.value ?? values, [field.value, values]);
-  const sourceState = field.valueSource.useOptions({
-    query: searchInput,
-    selectedValues: effectiveValues as string[],
-  });
-  const resolvedField = useMemo(
-    () => ({
-      ...field,
-      options: sourceState.options as FilterOption<T>[],
-    }),
-    [field, sourceState.options],
-  );
+  const { resolvedField, sourceState } = useResolvedFilterField(field, values, searchInput);
 
   return (
     <ResolvedSelectOptionsPopover
@@ -3400,44 +3411,76 @@ function InlineFilters<T = unknown>({
   );
 }
 
+function FilterSummaryChip<T>({
+  field,
+  filter,
+}: {
+  field?: FilterFieldConfig<T>;
+  filter: Filter<T>;
+}) {
+  const label = field?.pillLabel ?? field?.label ?? 'Filter';
+  const values = (field?.value ?? filter.values).map((value) => {
+    const option = field?.options?.find((candidate) => candidate.value === value);
+    return (
+      option?.label ??
+      (['text', 'email', 'url', 'tel', 'date', 'datetime', 'time'].includes(field?.type ?? '') &&
+      typeof value === 'string'
+        ? value.trim()
+        : '')
+    );
+  });
+  const operator = field?.operators?.find(
+    (candidate) => candidate.value === filter.operator,
+  )?.label;
+  const text =
+    values.length && values.every(Boolean)
+      ? `${label}${operator ? ` ${operator}` : ':'} ${values.join(', ')}`
+      : label;
+  const valueText = values.length && values.every(Boolean) ? values.join(', ') : '';
+  const qualifier = !['is', 'contains', 'is-any'].includes(filter.operator) ? operator : '';
+
+  const chipLabel = valueText ? `${qualifier ? `${qualifier} ` : ''}${valueText}` : label;
+  return (
+    <Badge size="md" variant="outline" asChild>
+      <span className="shrink-0 gap-1.5 bg-background whitespace-nowrap" title={text}>
+        <span className="sr-only">{text}</span>
+        <span aria-hidden="true" className="flex items-center gap-1.5 [&_svg]:size-3.5">
+          {field?.icon}
+          {chipLabel}
+        </span>
+      </span>
+    </Badge>
+  );
+}
+
+function ValueSourceFilterSummaryChip<T>({
+  field,
+  filter,
+}: {
+  field: FilterFieldConfig<T> & { valueSource: ValueSource<string> };
+  filter: Filter<T>;
+}) {
+  const { resolvedField } = useResolvedFilterField(field, filter.values, '');
+  return <FilterSummaryChip field={resolvedField} filter={filter} />;
+}
+
 export function Filters<T = unknown>(props: FiltersProps<T>) {
   const mobile = useMobileFilters();
-  const filterChips = useMemo(() => {
-    const fields = flattenFields(props.fields);
-    return props.filters.map((filter) => {
-      const field = fields.find((candidate) => candidate.key === filter.field);
-      const label = field?.pillLabel ?? field?.label ?? 'Filter';
-      const values = filter.values.map((value) => {
-        const option = field?.options?.find((candidate) => candidate.value === value);
-        return (
-          option?.label ??
-          (['text', 'email', 'url', 'tel', 'date', 'datetime', 'time'].includes(
-            field?.type ?? '',
-          ) && typeof value === 'string'
-            ? value.trim()
-            : '')
-        );
-      });
-      const operator = field?.operators?.find(
-        (candidate) => candidate.value === filter.operator,
-      )?.label;
-      const text =
-        values.length && values.every(Boolean)
-          ? `${label}${operator ? ` ${operator}` : ':'} ${values.join(', ')}`
-          : label;
-      const valueText = values.length && values.every(Boolean) ? values.join(', ') : '';
-      const qualifier = !['is', 'contains', 'is-any'].includes(filter.operator) ? operator : '';
-      return {
-        id: filter.id,
-        icon: field?.icon,
-        label: valueText ? `${qualifier ? `${qualifier} ` : ''}${valueText}` : label,
-        description: text,
-      };
-    });
-  }, [props.filters, props.fields]);
-
+  const fields = useMemo(() => getFieldsMap(props.fields), [props.fields]);
   if (mobile) {
-    return <SheetFilters {...props} chips={filterChips} controls={InlineFilters} />;
+    const chips = props.filters.map((filter) => {
+      const field = fields[filter.field];
+      return field?.valueSource ? (
+        <ValueSourceFilterSummaryChip
+          key={`${filter.id}:${field.valueSource.id}`}
+          field={field as FilterFieldConfig<T> & { valueSource: ValueSource<string> }}
+          filter={filter}
+        />
+      ) : (
+        <FilterSummaryChip key={filter.id} field={field} filter={filter} />
+      );
+    });
+    return <SheetFilters {...props} chips={chips} controls={InlineFilters} />;
   }
   return <InlineFilters {...props} />;
 }

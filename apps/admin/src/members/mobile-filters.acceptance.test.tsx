@@ -1,6 +1,13 @@
 import { afterEach, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeMembers, fakeSegmentWrites, member, renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakeMembers,
+  fakeSegmentWrites,
+  member,
+  label,
+  tier,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 
 afterEach(async () => {
   await page.viewport(1280, 800);
@@ -100,4 +107,27 @@ it('searches fields and selects with the keyboard', async () => {
   await expect
     .element(page.getByRole('textbox', { name: 'Enter name...', exact: true }))
     .toBeVisible();
+});
+
+it('resolves tier and label chip values without opening the sheet', async () => {
+  await page.viewport(390, 844);
+  const gold = tier({ name: 'Gold membership', slug: 'gold-membership' });
+  const silver = tier({ name: 'Silver membership', slug: 'silver-membership' });
+  const vip = label({ name: 'VIP readers', slug: 'vip-readers' });
+  fakeMembers([member({ labels: [vip] })], { tiers: [gold, silver] });
+  const filter = `tier_id:[${gold.id}]+label:[${vip.slug}]`;
+  await renderAdminApp(`/members?filter=${encodeURIComponent(filter)}`, {
+    labs: { admin7Mobile: true, admin7Design: false },
+  });
+  const summary = page.getByRole('button', { name: 'Edit active filters', exact: true });
+  await expect.element(summary).toHaveTextContent('Gold membership');
+  await expect.element(summary).toHaveTextContent('VIP readers');
+  await expect(page.getByRole('dialog', { name: 'Filters', exact: true })).toHaveCount(0);
+  await summary.click();
+  await page.getByRole('button', { name: 'Gold membership', exact: true }).click();
+  await page.getByRole('option', { name: /Silver membership/ }).click();
+  await userEvent.keyboard('{Escape}');
+  const sheet = page.getByRole('dialog', { name: 'Filters', exact: true });
+  await sheet.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect.element(summary).toHaveTextContent('Silver membership');
 });

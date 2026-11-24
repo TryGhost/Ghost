@@ -1,6 +1,6 @@
 import { type FiltersProps } from '@/components/patterns/filters';
 import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
-import { Badge, Button, Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components';
+import { Button, Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components';
 import { createPortal } from 'react-dom';
 import { PageHeader } from '@/components/patterns/page-header';
 import { Inline, Stack } from '@/components/primitives';
@@ -9,7 +9,7 @@ import { LucideIcon, formatNumber, cn } from '@/utils';
 interface FilterSheetSurfaceProps {
   count: number;
   keyboardShortcut?: string;
-  chips: { id: string; icon?: ReactNode; label: string; description: string }[];
+  chips: ReactNode[];
   barContainer?: HTMLElement | null;
   backButtonRef?: Ref<HTMLSpanElement>;
   children: ReactNode;
@@ -71,6 +71,7 @@ function FilterSheetSurface({
     update();
     const observer = new ResizeObserver(update);
     observer.observe(scroller);
+    Array.from(scroller.children).forEach((chip) => observer.observe(chip));
     scroller.addEventListener('scroll', update, { passive: true });
     return () => {
       observer.disconnect();
@@ -143,23 +144,7 @@ function FilterSheetSurface({
                         : undefined,
                   }}
                 >
-                  {chips.map((chip) => (
-                    <Badge key={chip.id} size="md" variant="outline" asChild>
-                      <span
-                        className="shrink-0 gap-1.5 bg-background whitespace-nowrap"
-                        title={chip.description}
-                      >
-                        <span className="sr-only">{chip.description}</span>
-                        <span
-                          aria-hidden="true"
-                          className="flex items-center gap-1.5 [&_svg]:size-3.5"
-                        >
-                          {chip.icon}
-                          {chip.label}
-                        </span>
-                      </span>
-                    </Badge>
-                  ))}
+                  {chips}
                 </span>
               </button>
             </SheetTrigger>
