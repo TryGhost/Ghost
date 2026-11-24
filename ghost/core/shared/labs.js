@@ -35,6 +35,7 @@ const GA_FEATURES = [
   'membersCustomFields',
   'stripeCheckoutCollection',
   'customFieldTypePhone',
+  'inAppSupport',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -63,7 +64,6 @@ const PRIVATE_FEATURES = [
   'paywallImprovements',
   'machinePayments',
   'apps',
-  'inAppSupport',
   'editorPresencePolling',
   'editorPresence',
   'editorLease',
