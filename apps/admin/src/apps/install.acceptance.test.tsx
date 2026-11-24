@@ -3,6 +3,7 @@ import { page } from 'vitest/browser';
 import type {
   AppInstallation,
   AppInstallationPreview,
+  AppManifest,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
   currentRoute,
@@ -23,6 +24,9 @@ import {
   labs,
   manifest,
 } from './apps.test-utils';
+
+/** Reads and edits posts, reading on its own too, and lists tags. */
+const SCOPES: AppManifest['scopes'] = ['post:browse', 'post:edit', 'tag:browse'];
 
 const INSTALL_ROUTE = `/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`;
 
@@ -96,7 +100,9 @@ describe('Installing an app', () => {
 
   it('shows who the app is and where it runs, and installs the version reviewed', async () => {
     const installations = fakeInstallations();
-    const previewApi = fakePreview(previewResponse(preview()));
+    const previewApi = fakePreview(
+      previewResponse(preview({ manifest: manifest({ scopes: SCOPES }) })),
+    );
     const installApi = fakeAdminEndpoint('POST', '/apps/installations/', () => {
       installations.set([installation()]);
       return { app_installations: [installation()] };
@@ -119,14 +125,19 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
     await expect
       .element(appsScreen.accessIndicator())
-      .toHaveTextContent('The app acts as whoever opens it, within their role.');
-    // One line per resource in the scope registry, in Ghost's words.
-    await expect(appsScreen.accessItems()).toHaveCount(6);
+      .toHaveTextContent(
+        'The app acts as whoever opens it, within their role. Only install apps from developers you trust.',
+      );
+    // One line per resource the app declares, in Ghost's words.
+    await expect(appsScreen.accessItems()).toHaveCount(2);
     await expect
       .element(appsScreen.accessItems().first())
       .toHaveTextContent(
-        'Posts and pagesList, search and read every post and page, drafts included.Read any post or page.',
+        'Posts and pagesList, search and read every post and page, drafts included.Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them.',
       );
+    await expect
+      .element(appsScreen.accessItems().nth(1))
+      .toHaveTextContent('TagsList and search tags.');
     // Where the app's data goes closes the box, but isn't one of the permissions.
     await expect(
       appsScreen.accessIndicator().getByRole('listitem').filter({ hasText: 'Data accessed by' }),
@@ -158,6 +169,52 @@ describe('Installing an app', () => {
     await expect.poll(currentRoute).toBe('/apps');
     await expect(appsScreen.rows()).toHaveCount(1);
     await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
+  });
+
+  it('says when an app asks for no access', async () => {
+    fakeInstallations();
+    fakePreview(previewResponse(preview()));
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.noAccess()).toBeVisible();
+    // Nothing to do as whoever opens it.
+    await expect
+      .element(appsScreen.accessIndicator())
+      .not.toHaveTextContent('acts as whoever opens it');
+    await expect(appsScreen.accessItems()).toHaveCount(0);
+  });
+
+  it('marks what changed in access in the list when approving an installed app’s changes', async () => {
+    fakeInstallations([installation()]);
+    fakePreview(
+      previewResponse(
+        preview({
+          manifest: manifest({ scopes: SCOPES }),
+          digest: 'digest-2',
+          installation: {
+            ...existing([
+              { kind: 'scope', scope: 'post:edit', change: 'added' },
+              { kind: 'scope', scope: 'product:browse', change: 'removed' },
+            ]),
+            manifest: manifest({ scopes: ['post:browse', 'tag:browse', 'product:browse'] }),
+          },
+        }),
+      ),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    // A new scope is marked where it's listed.
+    await expect(appsScreen.newAccess()).toHaveCount(1);
+    await expect
+      .element(appsScreen.newAccess())
+      .toHaveTextContent('Edit, publish and email posts and pages');
+    await expect
+      .element(appsScreen.removedAccess())
+      .toHaveTextContent('No longer hasTiersList your tiers and their prices.');
+    // Access isn't repeated among the field-by-field changes.
+    await expect(appsScreen.changes()).toHaveCount(0);
   });
 
   it('shows the app’s own icon from the copy Ghost would store, never from the app', async () => {
