@@ -2035,6 +2035,26 @@ describe('Managing apps', () => {
     });
   });
 
+  it('styles a row as hovered by where the pointer is once its menu closes', async () => {
+    fakeInstallations([installation()]);
+    await renderAdminApp('/apps', { labs });
+
+    const actions = appsScreen.rowActions('Podcast');
+    await actions.click();
+    // The menu hangs below the row, so the pointer leaves the row for it.
+    await appsScreen.menuItem('Uninstall').hover();
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(appsScreen.menuItem('Uninstall')).not.toBeInTheDocument();
+    await expect.element(actions).not.toHaveClass('bg-background');
+
+    // Closed with the pointer still on the row, it stays hovered.
+    await actions.click();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(appsScreen.menuItem('Uninstall')).not.toBeInTheDocument();
+    await expect.element(actions).toHaveClass('bg-background');
+  });
+
   it('shows an uninstalled app’s record without offering to uninstall it again', async () => {
     fakeDetails(
       installation({

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Badge,
   Button,
@@ -39,8 +39,10 @@ const AppRow: React.FC<
 > = ({ installation, onUninstall, pins }) => {
   const { id, status, manifest } = installation;
   const [isHovered, setIsHovered] = useState(false);
+  const rowRef = useRef<HTMLTableRowElement>(null);
   return (
     <TableRow
+      ref={rowRef}
       data-testid="apps-list-row"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -79,7 +81,16 @@ const AppRow: React.FC<
               <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
             </Button>
           )}
-          <DropdownMenu>
+          {/* The menu is a child of the row to React, though not in the page: the pointer is still
+              "in the row" while over it, and no leave follows when it closes under the pointer. So
+              closing it asks the page where the pointer is. */}
+          <DropdownMenu
+            onOpenChange={(open) => {
+              if (!open) {
+                setIsHovered(rowRef.current?.matches(':hover') ?? false);
+              }
+            }}
+          >
             <DropdownMenuTrigger asChild>
               {/* Quiet until the row is hovered, then outlined, as a post's action is */}
               <Button
