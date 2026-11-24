@@ -103,3 +103,125 @@ export const ghostCreateDefaults: Record<
 > = {
   users: (row) => ({ slug: row.id, password: '!' }),
 };
+
+// `requirePKCE` is `require_pkce`
+const snakeCase = (field: string) =>
+  field.replace(
+    /([a-z])([A-Z]+)/g,
+    (_, last: string, upper: string) => `${last}_${upper.toLowerCase()}`,
+  );
+
+/** Maps each field to its snake_case column, as Ghost's tables name them. */
+function snakeFields(fields: readonly string[]): Record<string, string> {
+  return Object.fromEntries(fields.map((field) => [field, snakeCase(field)]));
+}
+
+/**
+ * Pass as `oauthProvider({ schema: ghostOAuthProviderSchema })`. Maps the
+ * provider's models onto Ghost's `oauth_*` tables.
+ */
+export const ghostOAuthProviderSchema = {
+  oauthClient: {
+    modelName: 'oauth_clients',
+    fields: snakeFields([
+      'clientId',
+      'clientSecret',
+      'clientDiscoveryId',
+      'skipConsent',
+      'enableEndSession',
+      'subjectType',
+      'clientCredentialsScopes',
+      'userId',
+      'createdAt',
+      'updatedAt',
+      'softwareId',
+      'softwareVersion',
+      'softwareStatement',
+      'redirectUris',
+      'postLogoutRedirectUris',
+      'backchannelLogoutUri',
+      'backchannelLogoutSessionRequired',
+      'tokenEndpointAuthMethod',
+      'applicationType',
+      'jwksUri',
+      'grantTypes',
+      'responseTypes',
+      'requirePKCE',
+      'dpopBoundAccessTokens',
+      'referenceId',
+    ]),
+  },
+  oauthResource: {
+    modelName: 'oauth_resources',
+    fields: snakeFields([
+      'accessTokenTtl',
+      'refreshTokenTtl',
+      'signingAlgorithm',
+      'signingKeyId',
+      'allowedScopes',
+      'customClaims',
+      'dpopBoundAccessTokensRequired',
+      'createdAt',
+      'updatedAt',
+      'policyVersion',
+    ]),
+  },
+  oauthClientResource: {
+    modelName: 'oauth_client_resources',
+    fields: snakeFields(['clientId', 'resourceId', 'createdAt']),
+  },
+  oauthRefreshToken: {
+    modelName: 'oauth_refresh_tokens',
+    fields: snakeFields([
+      'clientId',
+      'sessionId',
+      'userId',
+      'referenceId',
+      'authorizationCodeId',
+      'requestedUserInfoClaims',
+      'expiresAt',
+      'createdAt',
+      'rotatedAt',
+      'rotationReplayResponse',
+      'rotationReplayExpiresAt',
+      'authTime',
+    ]),
+  },
+  oauthAccessToken: {
+    modelName: 'oauth_access_tokens',
+    fields: snakeFields([
+      'clientId',
+      'sessionId',
+      'userId',
+      'referenceId',
+      'authorizationCodeId',
+      'requestedUserInfoClaims',
+      'refreshId',
+      'expiresAt',
+      'createdAt',
+    ]),
+  },
+  oauthConsent: {
+    modelName: 'oauth_consents',
+    fields: snakeFields([
+      'clientId',
+      'userId',
+      'referenceId',
+      'requestedUserInfoClaims',
+      'createdAt',
+      'updatedAt',
+    ]),
+  },
+  oauthClientAssertion: {
+    modelName: 'oauth_client_assertions',
+    fields: snakeFields(['expiresAt']),
+  },
+};
+
+/** Pass as `jwt({ schema: ghostJwtSchema })`. */
+export const ghostJwtSchema = {
+  jwks: {
+    modelName: 'oauth_jwks',
+    fields: snakeFields(['publicKey', 'privateKey', 'createdAt', 'expiresAt']),
+  },
+};

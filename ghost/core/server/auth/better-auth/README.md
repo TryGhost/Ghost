@@ -333,6 +333,10 @@ changed there, so reset the database (`pnpm reset:db`).
 
 `verifications.attempts` counts wrong device verification codes.
 
+The OAuth provider's and `jwt` plugin's tables (`oauth_*`) are in-development
+tables, mapped in `ghost-models.ts`. Their token rows cascade with their user
+and staff session.
+
 `user_two_factors`, the `twoFactor` plugin's model, is still an in-development
 table, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
 like the other three it is left out of exports by default.
