@@ -29,7 +29,8 @@ export interface AppTokenSource {
 
 /** How the holder renews, and what it does when Ghost refuses a renewal. */
 export interface AppTokenRenewal {
-  renew: () => Promise<AppSessionToken>;
+  /** Ghost's answer, which the holder checks is a token before using it. */
+  renew: () => Promise<AppSessionToken | undefined>;
   /** Ends the session the way Admin ends one */
   onEnded: () => void;
 }
@@ -48,6 +49,15 @@ export interface AppTokenHolder extends AppTokenSource {
    */
   start(renewal: AppTokenRenewal): void;
   stop(): void;
+}
+
+function isToken(token: AppSessionToken | undefined): token is AppSessionToken {
+  return (
+    typeof token?.access_token === 'string' &&
+    token.access_token !== '' &&
+    typeof token.expires_in === 'number' &&
+    token.expires_in > 0
+  );
 }
 
 /**
@@ -115,6 +125,9 @@ export function createAppTokenHolder({
       renewing ??= renewal
         .renew()
         .then((next) => {
+          if (!isToken(next)) {
+            throw new Error('Ghost renewed an app token without a token');
+          }
           current = next;
           expiresAt = Date.now() + next.expires_in * 1000;
           failures = 0;

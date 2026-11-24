@@ -263,7 +263,8 @@ const AppFrame: React.FC<{
   useEffect(() => {
     tokenHolder.start({
       renew: async () =>
-        (await createToken({ id: installation.id, revision: installation.revision })).app_tokens[0],
+        (await createToken({ id: installation.id, revision: installation.revision }))
+          .app_tokens?.[0],
       onEnded,
     });
     return () => tokenHolder.stop();

@@ -138,6 +138,34 @@ describe('createAppTokenHolder', () => {
     expect(holder.current()).toBe('ghost_app_renewed');
   });
 
+  it.each([
+    ['no token', undefined],
+    ['a token without a value', { expires_in: 3600 }],
+    ['a token without a lifetime', { access_token: 'ghost_app_renewed' }],
+    ['a token that has expired', { access_token: 'ghost_app_renewed', expires_in: 0 }],
+  ])('keeps the token it holds when Ghost answers a renewal with %s', async (_what, answer) => {
+    const renew = vi
+      .fn<() => Promise<ReturnType<typeof tokenExpiringIn> | undefined>>()
+      .mockResolvedValueOnce(answer as ReturnType<typeof tokenExpiringIn> | undefined)
+      .mockResolvedValueOnce(tokenExpiringIn(HOUR, 'ghost_app_renewed'));
+    const onEnded = vi.fn();
+    const onError = vi.fn();
+    const holder = createAppTokenHolder({
+      token: tokenExpiringIn(HOUR, 'ghost_app_first'),
+      onError,
+    });
+    holder.start({ renew, onEnded });
+
+    expect(await holder.renew()).toBe(false);
+    expect(holder.current()).toBe('ghost_app_first');
+    expect(onError).toHaveBeenCalledOnce();
+    expect(onEnded).not.toHaveBeenCalled();
+
+    // Tried again as any failed renewal is
+    await vi.advanceTimersByTimeAsync(MINUTE);
+    expect(holder.current()).toBe('ghost_app_renewed');
+  });
+
   it('backs off a renewal that keeps failing, then ends the session', async () => {
     const renew = vi.fn(() => Promise.reject(apiError(500)));
     const { holder, onEnded, onError, start } = holderWith(renew);
