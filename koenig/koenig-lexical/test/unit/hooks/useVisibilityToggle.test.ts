@@ -30,7 +30,7 @@ vi.mock(import('@tryghost/kg-default-nodes'), () => ({
 
 describe('useVisibilityToggle', () => {
     let editor: LexicalEditor;
-    let node: {visibility: typeof DEFAULT_VISIBILITY; getType: ReturnType<typeof vi.fn>; getIsVisibilityActive: ReturnType<typeof vi.fn>};
+    let node: {visibility: typeof DEFAULT_VISIBILITY; getType: () => string; getIsVisibilityActive: () => boolean};
     let cardConfig: CardConfig;
 
     const DEFAULT_VISIBILITY = {
