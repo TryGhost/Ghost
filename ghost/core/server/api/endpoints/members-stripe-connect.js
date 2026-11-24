@@ -30,6 +30,7 @@ function isFromAdmin(req) {
 const isBetterAuth = auth.isBetterAuth;
 
 const messages = {
+  notFromAdmin: 'Start connecting Stripe from Ghost Admin.',
   sessionRequired: 'Connecting Stripe requires a signed-in staff session, not an API token.',
 };
 
@@ -38,6 +39,11 @@ const messages = {
  * session, which a keyed request skips.
  */
 function stateSetter(frame, req) {
+  // Only Ghost Admin's own link may start a connection: another site
+  // could otherwise reset the admin's connection in progress.
+  if (!isFromAdmin(req)) {
+    throw new errors.NoPermissionError({ message: tpl(messages.notFromAdmin) });
+  }
   if (isBetterAuth) {
     return (_prop, val) => auth.stripeConnectState.set(frame.options.context.user, val);
   }
@@ -68,13 +74,6 @@ const controller = {
     query(frame) {
       // This is something you have to do if you want to use the "framework" with access to the raw req/res
       frame.response = async function (req, res, next) {
-        // Only Ghost Admin's own link may start a connection: another site
-        // could otherwise reset the admin's connection in progress.
-        if (!isFromAdmin(req)) {
-          return next(
-            new errors.NoPermissionError({ message: 'Start connecting Stripe from Ghost Admin.' }),
-          );
-        }
         try {
           const stripeConnectAuthURL = await membersService.stripeConnect.getStripeConnectOAuthUrl(
             stateSetter(frame, req),
