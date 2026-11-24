@@ -335,6 +335,17 @@ describe('Utils: visibility', function () {
             }).web).toEqual({nonMember: false, memberSegment: ''});
         });
 
+        it('sends the card to no-one for an email segment it does not recognise', function () {
+            expect(getRenderedVisibility({
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:-free,status:free'}
+            }).email).toEqual({memberSegment: ''});
+        });
+
+        it('sends the card to no-one for an old-format segment the migration does not recognise', function () {
+            expect(getRenderedVisibility({showOnWeb: true, showOnEmail: true, segment: 'label:vip'}).email).toEqual({memberSegment: ''});
+        });
+
         it('only shows the card to public visitors when nonMember is exactly true', function () {
             expect(getRenderedVisibility({
                 web: {nonMember: null as unknown as boolean, memberSegment: 'status:free,status:-free'},

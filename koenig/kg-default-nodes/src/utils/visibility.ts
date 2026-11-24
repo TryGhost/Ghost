@@ -6,12 +6,22 @@ export const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped + gift
 export const FREE_MEMBERS_SEGMENT = 'status:free';
 export const NO_MEMBERS_SEGMENT = '';
 
-const WEB_SEGMENTS = [NO_MEMBERS_SEGMENT, ALL_MEMBERS_SEGMENT, FREE_MEMBERS_SEGMENT, PAID_MEMBERS_SEGMENT];
+export type MemberSegment =
+    | typeof NO_MEMBERS_SEGMENT
+    | typeof ALL_MEMBERS_SEGMENT
+    | typeof FREE_MEMBERS_SEGMENT
+    | typeof PAID_MEMBERS_SEGMENT;
+
+const MEMBER_SEGMENTS: readonly unknown[] = [NO_MEMBERS_SEGMENT, ALL_MEMBERS_SEGMENT, FREE_MEMBERS_SEGMENT, PAID_MEMBERS_SEGMENT];
+
+export function isMemberSegment(value: unknown): value is MemberSegment {
+    return MEMBER_SEGMENTS.includes(value);
+}
 
 // A card's audiences in the current format, with every field present
 export interface RenderedVisibility {
-    web: {nonMember: boolean; memberSegment: string};
-    email: {memberSegment: string};
+    web: {nonMember: boolean; memberSegment: MemberSegment};
+    email: {memberSegment: MemberSegment};
 }
 
 const DEFAULT_VISIBILITY: RenderedVisibility = {
@@ -134,13 +144,13 @@ export function getEmailMediaHref(src: string, visibility: Visibility | undefine
 // memberSegment: 'status:free,status:-free' = everyone
 // memberSegment: 'status:free' = free members
 // memberSegment: 'status:-free' = paid + comped + gift members
-export function migrateOldVisibilityFormat(visibility: Visibility) {
+export function migrateOldVisibilityFormat(visibility: Visibility): Visibility {
     if (!visibility || !isOldVisibilityFormat(visibility)) {
         return visibility;
     }
 
     // deep clone to avoid mutating the original object
-    const newVisibility = JSON.parse(JSON.stringify(visibility));
+    const newVisibility: Visibility = JSON.parse(JSON.stringify(visibility));
 
     // ensure we have expected objects ready to populate
     newVisibility.web ??= {};
@@ -175,22 +185,24 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
     return newVisibility;
 }
 
-// The audiences a card is rendered for. Only Ghost's own web segments and a
-// true or false visitor setting are valid; any other value hides the card on the web.
+// The audiences a card is rendered for. Only Ghost's own member segments and a
+// true or false visitor setting are valid. Any other web value hides the card on
+// the web, and any other email segment sends it to no-one, which is how the email
+// service already treats segments it doesn't recognise.
 export function getRenderedVisibility(visibility: Visibility | undefined): RenderedVisibility {
     const migrated = visibility ? migrateOldVisibilityFormat(visibility) : buildDefaultVisibility();
 
-    const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
-    const storedWeb = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
-    const validSegment = WEB_SEGMENTS.includes(storedWeb.memberSegment as string);
+    const {nonMember, memberSegment: webSegment} = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
+    const {memberSegment: emailSegment} = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
+    const validWebSegment = isMemberSegment(webSegment);
 
     return {
         web: {
-            nonMember: validSegment && storedWeb.nonMember === true,
-            memberSegment: validSegment ? storedWeb.memberSegment as string : NO_MEMBERS_SEGMENT
+            nonMember: validWebSegment && nonMember === true,
+            memberSegment: validWebSegment ? webSegment : NO_MEMBERS_SEGMENT
         },
         email: {
-            memberSegment: email.memberSegment as string
+            memberSegment: isMemberSegment(emailSegment) ? emailSegment : NO_MEMBERS_SEGMENT
         }
     };
 }

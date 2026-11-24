@@ -9,6 +9,7 @@ export {
     isVisibilityRestricted,
     migrateOldVisibilityFormat,
     renderWithVisibility,
+    type MemberSegment,
     type RenderedVisibility,
     type Visibility
 } from './utils/visibility.js';

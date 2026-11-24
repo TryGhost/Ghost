@@ -1,9 +1,9 @@
 import {$isGalleryNode, $isImageNode, $isKoenigCard} from '@tryghost/kg-default-nodes';
-import {buildDefaultVisibility, getRenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
+import {ALL_MEMBERS_SEGMENT, FREE_MEMBERS_SEGMENT, NO_MEMBERS_SEGMENT, PAID_MEMBERS_SEGMENT, buildDefaultVisibility, getRenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
 import type {CardConfig} from '../context/KoenigComposerContext';
 import type {KoenigCard} from '@tryghost/kg-default-nodes';
 import type {LexicalNode} from 'lexical';
-import type {RenderedVisibility, Visibility} from '@tryghost/kg-default-nodes/visibility';
+import type {MemberSegment, RenderedVisibility, Visibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
     WEB_AND_EMAIL: 'web and email',
@@ -145,35 +145,38 @@ export function getVisibilityOptions(visibility?: RenderedVisibility, {isStripeE
     });
 }
 
+function getMemberSegment(freeMembers: boolean, paidMembers: boolean): MemberSegment {
+    if (freeMembers && paidMembers) {
+        return ALL_MEMBERS_SEGMENT;
+    }
+    if (freeMembers) {
+        return FREE_MEMBERS_SEGMENT;
+    }
+    if (paidMembers) {
+        return PAID_MEMBERS_SEGMENT;
+    }
+    return NO_MEMBERS_SEGMENT;
+}
+
 export function serializeOptionsToVisibility(options: VisibilityOption[], existingVisibility?: RenderedVisibility): RenderedVisibility {
     existingVisibility = existingVisibility || buildDefaultVisibility();
     const existingToggles = parseVisibilityToToggles(existingVisibility);
     const webToggles = options.find(group => group.key === 'web')?.toggles ?? [];
     const emailToggles = options.find(group => group.key === 'email')?.toggles ?? [];
 
-    const webSegments: string[] = [];
-    if (isToggleChecked(webToggles, 'freeMembers', existingToggles.web.freeMembers)) {
-        webSegments.push('status:free');
-    }
-    if (isToggleChecked(webToggles, 'paidMembers', existingToggles.web.paidMembers)) {
-        webSegments.push('status:-free');
-    }
-
-    const emailSegments: string[] = [];
-    if (isToggleChecked(emailToggles, 'freeMembers', existingToggles.email.freeMembers)) {
-        emailSegments.push('status:free');
-    }
-    if (isToggleChecked(emailToggles, 'paidMembers', existingToggles.email.paidMembers)) {
-        emailSegments.push('status:-free');
-    }
-
     return {
         web: {
             nonMember: isToggleChecked(webToggles, 'nonMembers', existingToggles.web.nonMembers),
-            memberSegment: webSegments.join(',')
+            memberSegment: getMemberSegment(
+                isToggleChecked(webToggles, 'freeMembers', existingToggles.web.freeMembers),
+                isToggleChecked(webToggles, 'paidMembers', existingToggles.web.paidMembers)
+            )
         },
         email: {
-            memberSegment: emailSegments.join(',')
+            memberSegment: getMemberSegment(
+                isToggleChecked(emailToggles, 'freeMembers', existingToggles.email.freeMembers),
+                isToggleChecked(emailToggles, 'paidMembers', existingToggles.email.paidMembers)
+            )
         }
     };
 }
