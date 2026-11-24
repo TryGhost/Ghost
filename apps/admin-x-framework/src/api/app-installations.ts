@@ -1,4 +1,5 @@
 import type { AppManifest, ManifestChange } from '@tryghost/app-contracts';
+import { z } from 'zod';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
@@ -84,11 +85,40 @@ export interface AppInstallationsResponseType {
  * the staff user within the installation's approved scopes. Only Admin holds it; the app's frame
  * never sees it.
  */
-export interface AppSessionToken {
-  access_token: string;
+export const AppSessionTokenSchema = z.object({
+  access_token: z.string().min(1),
   /** How long it lasts, in seconds from when Ghost answered */
-  expires_in: number;
-}
+  expires_in: z.number().positive(),
+});
+
+export type AppSessionToken = z.infer<typeof AppSessionTokenSchema>;
+
+// Only the status is checked: it decides whether a session comes with a token. The rest of the
+// installation is read as the other installation hooks read it.
+const installationWithStatus = <Status extends AppInstallationStatus>(
+  statuses: readonly Status[],
+) =>
+  z.custom<AppInstallation & { status: Status }>(
+    (value) =>
+      typeof value === 'object' &&
+      value !== null &&
+      (statuses as readonly unknown[]).includes((value as { status?: unknown }).status),
+  );
+
+/** A session of an active installation, which always comes with a token. */
+const ActiveAppSessionSchema = z.object({
+  installation: installationWithStatus(['active']),
+  token: AppSessionTokenSchema,
+});
+
+/** A session of an installation that isn't active: it gets no token, and the app doesn't load. */
+const InactiveAppSessionSchema = z.object({
+  installation: installationWithStatus(['suspended', 'uninstalled']),
+  token: z.null(),
+});
+
+export type ActiveAppSession = z.infer<typeof ActiveAppSessionSchema>;
+export type InactiveAppSession = z.infer<typeof InactiveAppSessionSchema>;
 
 /**
  * One session of an installed app: the installation as Ghost returned it after re-checking the
@@ -97,29 +127,21 @@ export interface AppSessionToken {
  */
 export type AppSession = ActiveAppSession | InactiveAppSession;
 
-/** A session of an active installation, which always comes with a token. */
-export interface ActiveAppSession {
-  installation: AppInstallation & { status: 'active' };
-  token: AppSessionToken;
-}
-
-/** A session of an installation that isn't active: it gets no token, and the app doesn't load. */
-export interface InactiveAppSession {
-  installation: AppInstallation & { status: Exclude<AppInstallationStatus, 'active'> };
-  token: null;
-}
-
 export function isActiveAppSession(session: AppSession | undefined): session is ActiveAppSession {
   return session?.installation.status === 'active';
 }
 
-export interface AppSessionsResponseType {
-  app_sessions: AppSession[];
-}
+const AppSessionsResponseSchema = z.object({
+  app_sessions: z.array(z.union([ActiveAppSessionSchema, InactiveAppSessionSchema])),
+});
 
-export interface AppTokensResponseType {
-  app_tokens: AppSessionToken[];
-}
+export type AppSessionsResponseType = z.infer<typeof AppSessionsResponseSchema>;
+
+const AppTokensResponseSchema = z.object({
+  app_tokens: z.array(AppSessionTokenSchema),
+});
+
+export type AppTokensResponseType = z.infer<typeof AppTokensResponseSchema>;
 
 export interface AppInstallationPreviewsResponseType {
   app_installation_previews: AppInstallationPreview[];
@@ -161,6 +183,7 @@ export const useReadAppInstallation = createQueryWithId<AppInstallationsResponse
 export const useStartAppSession = createMutation<AppSessionsResponseType, string>({
   method: 'POST',
   path: (id) => `/apps/installations/${id}/sessions/`,
+  parseResponse: (data) => AppSessionsResponseSchema.parse(data),
   invalidateQueries: { dataType },
 });
 
@@ -177,6 +200,7 @@ export const useCreateAppToken = createMutation<
   method: 'POST',
   path: ({ id }) => `/apps/installations/${id}/tokens/`,
   body: ({ revision }) => ({ app_tokens: [{ revision }] }),
+  parseResponse: (data) => AppTokensResponseSchema.parse(data),
   // Every app call refused for its token waits on the renewal, so a stalled one mustn't hold
   // them. The token holder backs off and retries itself.
   timeout: 10_000,

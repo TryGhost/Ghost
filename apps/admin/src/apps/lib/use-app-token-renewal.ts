@@ -26,7 +26,7 @@ export function useAppTokenRenewal(
       return;
     }
     holder.start({
-      renew: async () => (await createToken({ id, revision })).app_tokens?.[0],
+      renew: async () => (await createToken({ id, revision })).app_tokens[0],
       onEnded,
     });
     return () => holder.stop();
