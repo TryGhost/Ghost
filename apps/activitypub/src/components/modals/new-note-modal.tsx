@@ -475,7 +475,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
                   </div>
                 )}
                 <Button
-                  aria-label="Remove image"
+                  aria-label={`Remove image ${formatNumber(index + 1)}`}
                   className="absolute top-3 right-3 size-8 bg-black/60 text-white opacity-0 group-hover:opacity-100 hover:bg-black/80"
                   onClick={handleClearImage(image.id)}
                 >
@@ -483,6 +483,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
                 </Button>
                 {image.url !== null && (
                   <Button
+                    aria-label={`Edit alt text for image ${formatNumber(index + 1)}`}
                     className={`absolute bottom-3 left-3 h-6 px-2 py-0 text-white ${altInputImageId !== image.id ? 'bg-black/60 hover:bg-black/80' : 'bg-green-500 hover:bg-green-500'}`}
                     onClick={handleToggleAltInput(image.id)}
                   >

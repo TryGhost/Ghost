@@ -678,4 +678,125 @@ test.describe('Feed', async () => {
       content: 'This is a test reply to a feed post',
     });
   });
+
+  test('I can remove an image from a multi-image reply during upload', async ({ page }) => {
+    const thirdPostFixture = feedFixture.posts[2];
+    const uploadUrls = [
+      'https://localhost/.ghost/activitypub/gcs/image-1.png',
+      'https://localhost/.ghost/activitypub/gcs/image-2.png',
+      'https://localhost/.ghost/activitypub/gcs/image-3.png',
+    ];
+
+    let resolveUploads!: () => void;
+    const uploadsReady = new Promise<void>((resolve) => {
+      resolveUploads = resolve;
+    });
+
+    const { lastApiRequests } = await mockApi({
+      page,
+      requests: {
+        getFeed: {
+          method: 'GET',
+          path: '/v1/feed/notes',
+          response: feedFixture,
+        },
+        getPost: {
+          method: 'GET',
+          path: `/v1/post/${encodeURIComponent(thirdPostFixture.id)}`,
+          response: {
+            ...thirdPostFixture,
+            metadata: {
+              ghostAuthors: [],
+            },
+          },
+        },
+        getThread: {
+          method: 'GET',
+          path: `/v1/thread/${encodeURIComponent(thirdPostFixture.id)}`,
+          response: {
+            posts: [
+              {
+                ...thirdPostFixture,
+              },
+            ],
+          },
+        },
+        getActivityPubUser: {
+          method: 'GET',
+          path: '/users/index',
+          response: activityPubUser,
+        },
+        replyToPost: {
+          method: 'POST',
+          path: `/v1/actions/reply/${encodeURIComponent(thirdPostFixture.id)}`,
+          response: {
+            id: 'new-reply-id',
+            type: 'Note',
+            content: 'A reply with images',
+          },
+        },
+      },
+      options: { useActivityPub: true },
+    });
+
+    // mockApi has no delay hook, so hold uploads on a dedicated route.
+    // Registered after mockApi so Playwright gives this handler first crack.
+    let nextUpload = 0;
+    await page.route(/\/\.ghost\/activitypub\/v1\/upload\/image/, async (route) => {
+      const index = nextUpload;
+      nextUpload += 1;
+      await uploadsReady;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ fileUrl: uploadUrls[index] }),
+      });
+    });
+
+    await page.goto('#/notes?noteImages=ON');
+    await expect(page.getByTestId('feed-list')).toBeVisible();
+
+    const thirdPost = page.getByTestId('feed-item').nth(2);
+    await thirdPost.hover();
+    await thirdPost.getByTestId('reply-button').click();
+
+    const modal = page.getByTestId('new-note-modal');
+    await expect(modal).toBeVisible();
+    await modal.getByTestId('note-textarea').fill('A reply with images');
+
+    const uploadsInFlight = Promise.all(
+      uploadUrls.map(() =>
+        page.waitForRequest(
+          (request) => request.method() === 'POST' && request.url().includes('/v1/upload/image'),
+        ),
+      ),
+    );
+
+    await modal.locator('input[type="file"]').setInputFiles(Array(3).fill(imagePath));
+    await uploadsInFlight;
+
+    const previews = modal.getByTestId('image-preview');
+    const postButton = modal.getByTestId('post-button');
+    await expect(previews).toHaveCount(3);
+    await expect(postButton).toBeDisabled();
+
+    // Remove is opacity-0 until hover; force avoids hover flake while still using the a11y name.
+    await modal.getByRole('button', { name: 'Remove image 1' }).click({ force: true });
+    await expect(previews).toHaveCount(2);
+    await expect(postButton).toBeDisabled();
+
+    resolveUploads();
+
+    await expect(postButton).toBeEnabled();
+    await expect(previews).toHaveCount(2);
+
+    await postButton.click();
+
+    await expect.poll(() => lastApiRequests.replyToPost).toBeTruthy();
+    // First upload slot was removed while pending; only the other two URLs are submitted.
+    expect(lastApiRequests.replyToPost?.body).toEqual({
+      content: 'A reply with images',
+      images: [{ url: uploadUrls[1] }, { url: uploadUrls[2] }],
+    });
+  });
 });
