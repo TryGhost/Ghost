@@ -45,9 +45,9 @@ access token is a staff user's own. It is never sent.
 _Avoid_: admin token
 
 **Admin API token**:
-A short-lived token signed with an Admin API key. It is sent with the `Ghost`
-authorization scheme, or in the URL on the routes that accept one, such as the
-scheduler's.
+A token signed with an Admin API key. Sent with the `Ghost` authorization
+scheme, it lasts at most five minutes. The scheduler's routes take one in the
+URL instead, and there only the token's own expiry limits it.
 _Avoid_: admin key, bearer token
 
 **Staff access token**:
@@ -70,8 +70,9 @@ Deciding whether a principal may take an action.
 _Avoid_: authentication, permission check when the whole decision is meant
 
 **Principal**:
-Whoever made a request, worked out once from its credential. Every request has
-exactly one.
+Whoever made a request, worked out once from its credential. Every request a
+principal resolver runs on has exactly one. Some routes don't run one, such as
+the Admin API's `GET /site` and the Members API.
 _Avoid_: actor, caller, identity, current user
 
 **Kind**:
