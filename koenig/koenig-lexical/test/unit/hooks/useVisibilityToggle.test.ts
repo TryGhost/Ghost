@@ -4,12 +4,15 @@ import {VISIBILITY_SETTINGS} from '../../../src/utils/visibility';
 import {act, renderHook} from '@testing-library/react';
 import {expect, vi} from 'vitest';
 import {useVisibilityToggle} from '../../../src/hooks/useVisibilityToggle';
+import type {CardConfig} from '../../../src/context/KoenigComposerContext';
+import type {KoenigCard} from '@tryghost/kg-default-nodes';
+import type {LexicalEditor} from 'lexical';
 
 const lexicalMocks = vi.hoisted(() => ({
     $getNodeByKey: vi.fn()
 }));
 const koenigMocks = vi.hoisted(() => ({
-    $isKoenigCard: vi.fn()
+    $isKoenigCard: vi.fn<(node: unknown) => node is KoenigCard>()
 }));
 
 vi.mock(import('lexical'), async (importOriginal) => {
@@ -26,9 +29,9 @@ vi.mock(import('@tryghost/kg-default-nodes'), () => ({
 }));
 
 describe('useVisibilityToggle', () => {
-    let editor;
-    let node;
-    let cardConfig;
+    let editor: LexicalEditor;
+    let node: {visibility: typeof DEFAULT_VISIBILITY; getType: () => string; getIsVisibilityActive: () => boolean};
+    let cardConfig: CardConfig;
 
     const DEFAULT_VISIBILITY = {
         web: {
@@ -44,6 +47,7 @@ describe('useVisibilityToggle', () => {
         koenigMocks.$isKoenigCard.mockReturnValue(true);
         node = {
             visibility: DEFAULT_VISIBILITY,
+            getType: vi.fn(() => 'image'),
             getIsVisibilityActive: vi.fn(() => true)
         };
 
@@ -52,9 +56,9 @@ describe('useVisibilityToggle', () => {
             getEditorState: vi.fn(() => ({
                 read: vi.fn(callback => callback())
             }))
-        };
+        } as unknown as LexicalEditor;
 
-        $getNodeByKey.mockReturnValue(node);
+        vi.mocked($getNodeByKey).mockReturnValue(node as unknown as ReturnType<typeof $getNodeByKey>);
 
         cardConfig = {
             stripeEnabled: true
@@ -246,5 +250,25 @@ describe('useVisibilityToggle', () => {
 
         act(() => result.current.toggleVisibility('email', 'freeMembers', false));
         expect(node.visibility).toEqual(beforeVisibility);
+    });
+
+    describe('backend support', () => {
+        it('is enabled when the backend lists the card type', () => {
+            cardConfig.visibilityCardTypes = ['html', 'image'];
+            const {result} = renderHook(() => useVisibilityToggle(editor, 'key', cardConfig));
+            expect(result.current.isVisibilityEnabled).toBe(true);
+        });
+
+        it('is disabled when the backend does not list the card type', () => {
+            cardConfig.visibilityCardTypes = ['html', 'call-to-action', 'transistor'];
+            const {result} = renderHook(() => useVisibilityToggle(editor, 'key', cardConfig));
+            expect(result.current.isVisibilityEnabled).toBe(false);
+        });
+
+        it('is enabled for every card when no list is given', () => {
+            delete cardConfig.visibilityCardTypes;
+            const {result} = renderHook(() => useVisibilityToggle(editor, 'key', cardConfig));
+            expect(result.current.isVisibilityEnabled).toBe(true);
+        });
     });
 });

@@ -1,6 +1,7 @@
 import {$createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection, COMMAND_PRIORITY_EDITOR} from 'lexical';
 import {$createPaywallNode, INSERT_PAYWALL_COMMAND} from '../nodes/PaywallNode';
 import {getSelectedNode} from '../utils/getSelectedNode';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -49,6 +50,11 @@ export const PaywallPlugin = () => {
     // add markdown shortcut '==='
     useEffect(() => {
         return editor.registerUpdateListener(() => {
+            // a selection change is an update too, and a read-only document's is not to be rewritten
+            if (!isDocumentEditable(editor)) {
+                return;
+            }
+
             editor.update(() => {
                 // don't do anything when using IME input
                 if (editor.isComposing()) {

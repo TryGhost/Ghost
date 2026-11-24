@@ -7,6 +7,7 @@ const defaultSettings = require('../../../schema').defaultSettings;
 const keyGroupMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-group-mapper');
 const keyTypeMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-type-mapper');
 const { WRITABLE_KEYS_ALLOWLIST } = require('../../../../../shared/labs');
+const { withoutSavedMemberViews } = require('./segments-importer');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
 const defaultSettingsGroups = Object.fromEntries(
@@ -237,6 +238,12 @@ class SettingsImporter extends BaseImporter {
         // Overwrite the labs setting with our current defaults
         // Ensures things that are enabled in new versions, are turned on
         obj.value = JSON.stringify(Object.assign({}, filteredLabsValue, labsDefaults));
+      }
+
+      // CASE: saved member views are segments, which the segments importer adds. The setting
+      // keeps the views of the posts list.
+      if (obj.key === 'shared_views') {
+        obj.value = withoutSavedMemberViews(obj.value);
       }
 
       // CASE: we do not import "from address" for members settings as that needs to go via validation with magic link

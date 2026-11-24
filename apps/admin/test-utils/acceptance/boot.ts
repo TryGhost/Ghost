@@ -9,7 +9,7 @@ import {
   siteResponse,
 } from '@tryghost/test-data';
 
-import { declareSharedViews, segmentsResponse, withWrittenSharedViews } from './shared-views';
+import { declareSharedViews, segmentsResponse, withStoredSharedViews } from './shared-views';
 import { registerAdminApiHandler, registerRoute } from './worker';
 
 export { composeConfigBootOverrides, composeLabsBootOverrides } from './boot-composition';
@@ -46,8 +46,7 @@ export function defaultBootRequests() {
       path: /^\/settings\/\?group=/,
       response: settingsResponse(),
     },
-    // The sidebar's member views. Served from the test's `shared_views` setting (see
-    // shared-views.ts).
+    // The sidebar's member views. Served from the fake's segments (see shared-views.ts).
     browseSegments: {
       method: 'GET',
       path: '/segments/',
@@ -135,8 +134,8 @@ async function respond(
     typeof config.response === 'function'
       ? await (config.response as (request: Request) => Promise<unknown>)(request)
       : config.response;
-  // Serves a `shared_views` saved during the test in place of the canned one.
-  const body = name === 'browseSettings' ? withWrittenSharedViews(declaredBody) : declaredBody;
+  // Serves `shared_views` as the fake stores it, in place of the canned one.
+  const body = name === 'browseSettings' ? withStoredSharedViews(declaredBody) : declaredBody;
 
   return HttpResponse.json(body as Record<string, unknown>, {
     status: config.responseStatus ?? 200,

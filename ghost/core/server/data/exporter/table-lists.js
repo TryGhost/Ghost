@@ -114,6 +114,7 @@ const TABLES_ALLOWLIST = [
   'offers',
   'offer_redemptions',
   'snippets',
+  'segments',
 ];
 
 // NOTE: these are non-core settings keys which should never end up in the export file

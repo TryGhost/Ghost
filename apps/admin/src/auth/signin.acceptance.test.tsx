@@ -117,6 +117,15 @@ it('marks the password when Core rejects it', async () => {
   await expect.element(authScreen.passwordInput()).toHaveAttribute('aria-invalid', 'true');
   await expect.element(authScreen.emailInput()).not.toHaveAttribute('aria-invalid');
   await expect.element(authScreen.retryButton()).toBeVisible();
+
+  await authScreen.passwordInput().click();
+  await expect
+    .poll(
+      () =>
+        getComputedStyle(authScreen.passwordInput().element().closest('[data-slot="input-group"]')!)
+          .borderColor,
+    )
+    .toBe(getComputedStyle(authScreen.text('Your password is incorrect.').element()).color);
 });
 
 it('shows the full rate-limit message', async () => {

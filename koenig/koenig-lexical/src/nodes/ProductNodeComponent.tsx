@@ -9,6 +9,8 @@ import {ProductCard} from '../components/ui/cards/ProductCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
+import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
+import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function ProductNodeComponent({
@@ -30,6 +32,7 @@ export function ProductNodeComponent({
     description
 }) {
     const [editor] = useLexicalComposerContext();
+    const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const imgMimeTypes = fileUploader.fileTypes.image?.mimeTypes || ['image/*'];
@@ -43,6 +46,7 @@ export function ProductNodeComponent({
         titleEditor.setEditable(isEditing);
         descriptionEditor.setEditable(isEditing);
     }, [isEditing, titleEditor, descriptionEditor]);
+    useEditModeAfterReadOnly(isEditing, titleEditor, descriptionEditor);
 
     const handleImgUpload = async (files) => {
         const imgPreviewUrl = URL.createObjectURL(files[0]);
@@ -154,9 +158,11 @@ export function ProductNodeComponent({
                 isRatingEnabled={isRatingEnabled}
                 openImageEditor={openImageEditor}
                 rating={starRating}
+                showVisibilitySettings={showVisibilitySettings}
                 title={title}
                 titleEditor={titleEditor}
                 titleEditorInitialState={titleEditorInitialState}
+                visibilitySettings={visibilitySettings}
                 onButtonTextChange={handleButtonTextChange}
                 onButtonToggle={handleButtonToggle}
                 onButtonUrlChange={handleButtonUrlChange}

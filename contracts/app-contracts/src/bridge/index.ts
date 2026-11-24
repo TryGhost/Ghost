@@ -14,6 +14,7 @@ export {
   ADMIN_API_ALLOWLIST,
   type AdminApiResource,
   type AdminApiRouteGroup,
+  scopeForField,
 } from './allowlist.ts';
 export type { AppExports, HostExports } from './exports.ts';
 export {

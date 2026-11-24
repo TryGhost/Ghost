@@ -5,21 +5,41 @@ import type { RenderAdminAppOptions } from './render-admin-app';
 import { registerAdminApiHandler, registerRoute } from './worker';
 
 /**
- * The fake server's `shared_views` setting for the current test.
+ * The fake server's saved views for the current test.
  *
- * Ghost keeps the saved member views and posts views in this one setting and serves it through
- * two APIs: `/settings/` returns the whole setting, and `/segments/` lists and changes the member
- * views in it. Admin uses both in one session, so the fake keeps one copy of the setting that both
- * serve, as Ghost does.
+ * Ghost keeps them in two places. The views of the posts and pages lists are entries of the
+ * `shared_views` setting, which `/settings/` returns and saves. The saved member views are
+ * segments, with a store of their own, which `/segments/` lists and changes. Ghost doesn't read
+ * the setting for member views, so a member view saved through `/settings/` is not a segment.
  *
- * A test starts with the `shared_views` value of its `browseSettings` boot response, or `[]`.
- * A `browseSettings` response given as a function isn't read, so its views reach `/settings/` but
- * not `/segments/`. Each write through either API (`fakeEditSettings`, `fakeSegmentWrites`)
- * replaces the value for the rest of the test, and `GET /settings/` then serves the replacement.
+ * A test declares its views together, in the `shared_views` value of its `browseSettings` boot
+ * response (see `withSavedViews`). The fake stores them as Ghost does: the member views with a
+ * filter become segments, and the rest stay in the setting. A `browseSettings` response given as
+ * a function isn't read, so its views reach `/settings/` as they are and none become segments.
+ * Each write through either API (`fakeEditSettings`, `fakeSegmentWrites`) changes its own store
+ * for the rest of the test.
  */
 
+interface Segment {
+  id: string;
+  name: string;
+  filter: string;
+}
+
+/** The setting's value as the test declared it, without the views that became segments. */
 let declared: string | undefined;
+/** The setting's value as last saved through `/settings/` in this test. */
 let written: string | undefined;
+/** The segments, in order. Each keeps the id it was given when it was added. */
+let segmentViews: Segment[] = [];
+/** How many segments this test has added, which the next segment's id is made from. */
+let segmentsAdded = 0;
+
+/** A new segment, with an id no other segment of the test has, as Ghost gives each segment. */
+function newSegment(name: string, filter: string): Segment {
+  segmentsAdded += 1;
+  return { id: segmentsAdded.toString(16).padStart(24, '0'), name, filter };
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -34,45 +54,6 @@ function sharedViewsIn(body: unknown): string | undefined {
   const settings: unknown[] = body.settings;
   const setting = settings.find((entry) => isRecord(entry) && entry.key === 'shared_views');
   return isRecord(setting) && typeof setting.value === 'string' ? setting.value : undefined;
-}
-
-/** Starts the test from the `shared_views` value in its `browseSettings` boot response. */
-export function declareSharedViews(settingsBody: unknown): void {
-  if (typeof settingsBody !== 'function') {
-    declared = sharedViewsIn(settingsBody);
-  }
-}
-
-/** The setting's current value. */
-export function currentSharedViews(): string {
-  return written ?? declared ?? sharedViewsIn(settingsResponse()) ?? '[]';
-}
-
-/** Replaces the setting's value for the rest of the test. */
-export function writeSharedViews(value: string): void {
-  written = value;
-}
-
-/** A settings response body with the setting's value as written in this test, if it was. */
-export function withWrittenSharedViews(settingsBody: unknown): unknown {
-  if (written === undefined || !isRecord(settingsBody) || !Array.isArray(settingsBody.settings)) {
-    return settingsBody;
-  }
-
-  const value = written;
-  const settings: unknown[] = settingsBody.settings;
-  return {
-    ...settingsBody,
-    settings: settings.map((entry) =>
-      isRecord(entry) && entry.key === 'shared_views' ? { ...entry, value } : entry,
-    ),
-  };
-}
-
-/** Called by the harness between tests, alongside the fake API reset. */
-export function resetSharedViews(): void {
-  declared = undefined;
-  written = undefined;
 }
 
 interface StoredMemberView {
@@ -93,77 +74,95 @@ function isStoredMemberView(view: unknown): view is StoredMemberView {
 }
 
 /**
- * The stored views, or `undefined` when the value can't be read. Like Ghost, an empty value, `null`
- * and `{}` count as no views.
+ * Stores `value`, a `shared_views` value that holds every kind of saved view, as Ghost stores
+ * them: its member views with a filter as the segments, and the rest as the setting's value. A
+ * value that isn't a list of views is the setting's value as it is, and there are no segments.
  */
-function storedViews(): unknown[] | undefined {
-  const value = currentSharedViews();
-  if (value === '') {
-    return [];
-  }
-
+function storeViews(value: string): string {
+  // A view that is still there keeps its id, as a segment does when others are deleted.
+  const previous = segmentViews;
+  segmentViews = [];
+  let views: unknown;
   try {
-    const parsed: unknown = JSON.parse(value);
-    if (parsed === null || (isRecord(parsed) && Object.keys(parsed).length === 0)) {
-      return [];
-    }
-    return Array.isArray(parsed) ? parsed : undefined;
+    views = JSON.parse(value);
   } catch {
-    return undefined;
+    return value;
   }
-}
-
-interface Segment {
-  id: string;
-  name: string;
-  filter: string;
+  if (!Array.isArray(views)) {
+    return value;
+  }
+  const entries: unknown[] = views;
+  segmentViews = entries
+    .filter(isStoredMemberView)
+    .map(
+      (view) =>
+        previous.find(({ name, filter }) => name === view.name && filter === view.filter.filter) ??
+        newSegment(view.name, view.filter.filter),
+    );
+  return JSON.stringify(entries.filter((view) => !isStoredMemberView(view)));
 }
 
 /**
- * A segment's id, as Ghost derives it: the first 24 hex characters of the SHA-256 hash of the
- * filter. The second and later views that share a filter hash a 0xFF byte followed by
- * `JSON.stringify([filter, occurrence])` instead.
+ * Starts the test from the `shared_views` value in its `browseSettings` boot response. A
+ * response that has no such value declares nothing, so the views the test already has stay.
  */
-async function segmentId(filter: string, occurrence: number): Promise<string> {
-  const encoder = new TextEncoder();
-  const hashed =
-    occurrence === 1
-      ? encoder.encode(filter)
-      : new Uint8Array([0xff, ...encoder.encode(JSON.stringify([filter, occurrence]))]);
-  const digest = await crypto.subtle.digest('SHA-256', hashed);
-  const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0'));
-  return hex.join('').slice(0, 24);
-}
-
-/** The member views in `views` as segments, each with its view and the view's position. */
-async function listSegments(
-  views: unknown[],
-): Promise<Array<{ segment: Segment; view: StoredMemberView; index: number }>> {
-  const occurrences = new Map<string, number>();
-  const listed: Array<{ segment: Segment; view: StoredMemberView; index: number }> = [];
-
-  for (const [index, view] of views.entries()) {
-    if (!isStoredMemberView(view)) {
-      continue;
-    }
-    const occurrence = (occurrences.get(view.filter.filter) ?? 0) + 1;
-    occurrences.set(view.filter.filter, occurrence);
-    const id = await segmentId(view.filter.filter, occurrence);
-    listed.push({ segment: { id, name: view.name, filter: view.filter.filter }, view, index });
+export function declareSharedViews(settingsBody: unknown): void {
+  const value = typeof settingsBody === 'function' ? undefined : sharedViewsIn(settingsBody);
+  if (value !== undefined) {
+    declared = storeViews(value);
   }
-
-  return listed;
 }
 
-/** `GET /segments/`: the member views in the setting, in order. */
-export async function segmentsResponse(): Promise<{ segments: Segment[] }> {
-  const listed = await listSegments(storedViews() ?? []);
-  return { segments: listed.map(({ segment }) => segment) };
+/** The setting's current value. */
+export function currentSharedViews(): string {
+  return written ?? declared ?? sharedViewsIn(settingsResponse()) ?? '[]';
+}
+
+/** Replaces the setting's value for the rest of the test. */
+export function writeSharedViews(value: string): void {
+  written = value;
 }
 
 /**
- * Holds `GET /segments/` until the returned function is called, then answers it from the fake
- * setting, as a slow server would. Call the function before the test ends.
+ * A settings response body with the setting's value as the fake stores it: without the views
+ * that became segments, and as saved in this test, if it was.
+ */
+export function withStoredSharedViews(settingsBody: unknown): unknown {
+  const value = written ?? declared;
+  if (value === undefined || !isRecord(settingsBody) || !Array.isArray(settingsBody.settings)) {
+    return settingsBody;
+  }
+
+  const settings: unknown[] = settingsBody.settings;
+  return {
+    ...settingsBody,
+    settings: settings.map((entry) =>
+      isRecord(entry) && entry.key === 'shared_views' ? { ...entry, value } : entry,
+    ),
+  };
+}
+
+/** Called by the harness between tests, alongside the fake API reset. */
+export function resetSharedViews(): void {
+  declared = undefined;
+  written = undefined;
+  segmentViews = [];
+  segmentsAdded = 0;
+}
+
+/** The segments, each with its position. */
+function listSegments(): Array<{ segment: Segment; index: number }> {
+  return segmentViews.map((segment, index) => ({ segment, index }));
+}
+
+/** `GET /segments/`: the segments, in order. */
+export function segmentsResponse(): { segments: Segment[] } {
+  return { segments: [...segmentViews] };
+}
+
+/**
+ * Holds `GET /segments/` until the returned function is called, then answers it from the fake's
+ * segments, as a slow server would. Call the function before the test ends.
  */
 export function holdSegmentsList(): () => void {
   let release = () => {};
@@ -177,13 +176,13 @@ export function holdSegmentsList(): () => void {
       return undefined;
     }
     await released;
-    return HttpResponse.json(await segmentsResponse());
+    return HttpResponse.json(segmentsResponse());
   });
 
   return release;
 }
 
-/** A saved view in the `shared_views` setting's stored form. */
+/** A saved view in the form the `shared_views` setting stores one. */
 export interface StoredView {
   name: string;
   route: 'members' | 'posts' | 'pages';
@@ -191,7 +190,10 @@ export interface StoredView {
   filter: Record<string, string>;
 }
 
-/** Views saved before the test, through the `browseSettings` boot response. */
+/**
+ * Views saved before the test, declared through the `browseSettings` boot response. The fake
+ * stores the member views among them as segments.
+ */
 export function withSavedViews(...views: StoredView[]): RenderAdminAppOptions {
   return {
     boot: {
@@ -204,7 +206,7 @@ export function withSavedViews(...views: StoredView[]): RenderAdminAppOptions {
 
 /** Replaces the stored views as another session would, without Admin's caches knowing. */
 export function replaceSavedViewsElsewhere(...views: StoredView[]): void {
-  writeSharedViews(JSON.stringify(views));
+  written = storeViews(JSON.stringify(views));
 }
 
 type SegmentAction = 'save' | 'edit' | 'delete';
@@ -280,7 +282,6 @@ export function segmentsBodyError(action: 'save' | 'edit', issue: SegmentBodyIss
 }
 
 const MAX_NAME_LENGTH = 191;
-const SAVED_VIEWS_INVALID = 'Cannot modify saved views because shared_views is invalid';
 
 /**
  * The segment a write body sends, read as strictly as Ghost reads it: `name` is trimmed, a
@@ -334,85 +335,62 @@ function readSegmentInput(
   return { name, filter };
 }
 
-/**
- * Whether a saved member view, other than the one at `exceptIndex`, has `name`. As in Ghost, a
- * member view without a filter counts, although it isn't listed as a segment.
- */
-function isNameTaken(views: unknown[], name: string, exceptIndex?: number): boolean {
+/** Whether a segment, other than the one at `exceptIndex`, has `name`, ignoring case. */
+function isNameTaken(name: string, exceptIndex?: number): boolean {
   const normalized = name.trim().toLowerCase();
-  return views.some(
-    (view, index) =>
-      index !== exceptIndex &&
-      isRecord(view) &&
-      view.route === 'members' &&
-      isRecord(view.filter) &&
-      typeof view.name === 'string' &&
-      view.name.trim().toLowerCase() === normalized,
+  return segmentViews.some(
+    (view, index) => index !== exceptIndex && view.name.trim().toLowerCase() === normalized,
   );
 }
 
-async function addSegment(body: unknown): Promise<Response> {
+function addSegment(body: unknown, filtersAreUnique: boolean): Response {
   const input = readSegmentInput(body, 'save');
   if (input instanceof Response) {
     return input;
   }
-  const views = storedViews();
-  if (!views) {
-    return segmentsRefusal('save', 'invalid', SAVED_VIEWS_INVALID);
-  }
-  if (isNameTaken(views, input.name)) {
+  if (isNameTaken(input.name)) {
     return segmentsRefusal('save', 'invalid', 'A view with this name already exists', 'name');
   }
   const filter = input.filter ?? '';
-  if (views.some((view) => isStoredMemberView(view) && view.filter.filter === filter)) {
+  // Ghost lets two segments have one filter under different names. A version from before
+  // segments had ids of their own rejects the second.
+  if (filtersAreUnique && segmentViews.some((view) => view.filter === filter)) {
     return segmentsRefusal('save', 'invalid', 'A view with this filter already exists', 'filter');
   }
-
-  writeSharedViews(
-    JSON.stringify([...views, { name: input.name, route: 'members', filter: { filter } }]),
-  );
-  const { segments } = await segmentsResponse();
-  return HttpResponse.json({ segments: segments.slice(-1) }, { status: 201 });
+  const segment = newSegment(input.name, filter);
+  segmentViews = [...segmentViews, segment];
+  return HttpResponse.json({ segments: [segment] }, { status: 201 });
 }
 
-async function renameSegment(id: string, body: unknown): Promise<Response> {
+function renameSegment(id: string, body: unknown): Response {
   const input = readSegmentInput(body, 'edit');
   if (input instanceof Response) {
     return input;
   }
-  const views = storedViews();
-  if (!views) {
-    return segmentsRefusal('edit', 'invalid', SAVED_VIEWS_INVALID);
-  }
-  const target = (await listSegments(views)).find(({ segment }) => segment.id === id);
+  const target = listSegments().find(({ segment }) => segment.id === id);
   if (!target) {
     return segmentsRefusal('edit', 'not-found', 'Segment not found.');
   }
   if (input.filter !== undefined && input.filter !== target.segment.filter) {
     return segmentsRefusal('edit', 'invalid', "A segment's filter cannot be changed", 'filter');
   }
-  if (isNameTaken(views, input.name, target.index)) {
+  if (isNameTaken(input.name, target.index)) {
     return segmentsRefusal('edit', 'invalid', 'A view with this name already exists', 'name');
   }
 
-  const renamed = { ...target.view, name: input.name };
-  writeSharedViews(
-    JSON.stringify(views.map((view, index) => (index === target.index ? renamed : view))),
+  segmentViews = segmentViews.map((view, index) =>
+    index === target.index ? { ...view, name: input.name } : view,
   );
   return HttpResponse.json({ segments: [{ ...target.segment, name: input.name }] });
 }
 
-async function deleteSegment(id: string): Promise<Response> {
-  const views = storedViews();
-  if (!views) {
-    return segmentsRefusal('delete', 'invalid', SAVED_VIEWS_INVALID);
-  }
-  const target = (await listSegments(views)).find(({ segment }) => segment.id === id);
+function deleteSegment(id: string): Response {
+  const target = listSegments().find(({ segment }) => segment.id === id);
   if (!target) {
     return segmentsRefusal('delete', 'not-found', 'Segment not found.');
   }
 
-  writeSharedViews(JSON.stringify(views.filter((_, index) => index !== target.index)));
+  segmentViews = segmentViews.filter((_, index) => index !== target.index);
   return new HttpResponse(null, { status: 204 });
 }
 
@@ -436,15 +414,22 @@ export interface FakeSegmentWritesOptions {
    * request is still captured as soon as it arrives.
    */
   respondAfter?: Promise<unknown>;
+  /**
+   * Answers as a version of Ghost from before segments had ids of their own, which rejects a new
+   * segment with a filter another segment has. Admin runs against such a server until it
+   * updates.
+   */
+  filtersAreUnique?: boolean;
 }
 
 /**
  * Handles `POST /segments/`, `PUT /segments/:id/` and `DELETE /segments/:id/` the way Ghost does:
- * each changes the member views in the test's `shared_views` setting, and a write Ghost would
- * refuse is answered with Ghost's error body. Captures every write.
+ * each changes the fake's segments, and a write Ghost would refuse is answered with Ghost's error
+ * body. Captures every write.
  */
 export function fakeSegmentWrites({
   respondAfter,
+  filtersAreUnique = false,
 }: FakeSegmentWritesOptions = {}): SegmentWritesCapture {
   const requests: SegmentWrite[] = [];
 
@@ -463,7 +448,7 @@ export function fakeSegmentWrites({
     await respondAfter;
 
     if (request.method === 'POST' && id === undefined) {
-      return addSegment(body);
+      return addSegment(body, filtersAreUnique);
     }
     if (request.method === 'PUT' && id !== undefined) {
       return renameSegment(id, body);

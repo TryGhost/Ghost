@@ -21,6 +21,7 @@ import { getAdminToolbarUrl } from '@/utils/admin-toolbar-url';
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
+  const isAdmin = !!currentUser && hasAdminAccess(currentUser);
   const { data: settings } = useBrowseSettings();
   const networkEnabled =
     getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
@@ -35,7 +36,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   // multiple indicators when you have navigated there.
   const { data: networkNotificationCount = 0 } = useNotificationsCountForUser(
     currentUser?.slug || '',
-    networkEnabled,
+    networkEnabled && isAdmin,
   );
   const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true });
   const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
@@ -48,7 +49,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
 
   // Only show NavMain for admin users
-  if (!currentUser || !hasAdminAccess(currentUser)) {
+  if (!isAdmin) {
     return null;
   }
   return (

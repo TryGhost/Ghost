@@ -184,6 +184,7 @@ export const rolePermissions = {
     offer: ['browse', 'read'],
     comment: 'all',
     gift_link: ['manage'],
+    identity: ['read'],
   },
   Editor: {
     notification: ['browse', 'destroy'],
@@ -205,6 +206,7 @@ export const rolePermissions = {
     collection: 'all',
     recommendation: ['browse', 'read'],
     gift_link: ['manage'],
+    identity: ['read'],
   },
   Author: {
     post: ['browse', 'read', 'edit', 'add', 'destroy'],
@@ -223,6 +225,7 @@ export const rolePermissions = {
     newsletter: ['browse', 'read'],
     collection: ['browse', 'read', 'add'],
     recommendation: ['browse', 'read'],
+    identity: ['read'],
   },
   Contributor: {
     post: ['browse', 'read', 'edit', 'add', 'destroy'],
@@ -238,5 +241,6 @@ export const rolePermissions = {
     snippet: ['browse', 'read'],
     collection: ['browse', 'read'],
     recommendation: ['browse', 'read'],
+    identity: ['read'],
   },
 } satisfies Record<string, Partial<Record<ObjectType, RolePermissionValue>>>;

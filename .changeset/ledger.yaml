@@ -34,6 +34,10 @@
   intents:
     - framework-typings-bump
     - weak-cats-add
+"@tryghost/adapter-base-scheduling@0.2.11":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - small-owls-repeat
 "@tryghost/adapter-base-scheduling@0.2.2":
   dir: packages/adapters/scheduling-base
   intents:
@@ -290,10 +294,25 @@
     - olive-swans-teach
     - strict-entity-decoding
     - tryghost-sdk-deps
+"@tryghost/kg-default-nodes@2.4.0":
+  dir: koenig/kg-default-nodes
+  intents:
+    - card-settings-special-characters
+    - card-value-checks
+    - card-values-special-characters
+    - kg-default-nodes-has-restricted-cards
+    - media-card-visibility
+    - media-card-visibility-rendering
+    - revert-partial-card-visibility
+    - typed-card-visibility
 "@tryghost/kg-default-transforms@1.3.10":
   dir: koenig/kg-default-transforms
   intents:
     - olive-swans-teach
+"@tryghost/kg-default-transforms@1.3.11":
+  dir: koenig/kg-default-transforms
+  intents:
+    - media-card-visibility-rendering
 "@tryghost/kg-default-transforms@1.3.4":
   dir: koenig/kg-default-transforms
   intents:
@@ -339,6 +358,10 @@
   dir: koenig/kg-html-to-lexical
   intents:
     - olive-swans-teach
+"@tryghost/kg-html-to-lexical@1.4.6":
+  dir: koenig/kg-html-to-lexical
+  intents:
+    - media-card-visibility-rendering
 "@tryghost/kg-lexical-html-renderer@1.5.0":
   dir: koenig/kg-lexical-html-renderer
   intents:
@@ -363,6 +386,10 @@
   dir: koenig/kg-lexical-html-renderer
   intents:
     - olive-swans-teach
+"@tryghost/kg-lexical-html-renderer@1.5.5":
+  dir: koenig/kg-lexical-html-renderer
+  intents:
+    - card-value-checks
 "@tryghost/kg-markdown-html-renderer@7.2.10":
   dir: koenig/kg-markdown-html-renderer
   intents:
@@ -420,6 +447,11 @@
   intents:
     - lazy-cows-sneeze
     - olive-swans-teach
+"@tryghost/kg-unsplash-selector@0.4.13":
+  dir: koenig/kg-unsplash-selector
+  intents:
+    - orange-rice-look
+    - wet-pigs-rule
 "@tryghost/kg-unsplash-selector@0.4.4":
   dir: koenig/kg-unsplash-selector
   intents:
@@ -597,6 +629,15 @@
     - olive-swans-teach
     - proud-pears-ring
     - wicked-grapes-stand
+"@tryghost/koenig-lexical@2.4.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - fluffy-birds-poke
+    - koenig-read-only-controls
+    - mean-taxis-own
+    - media-card-visibility
+    - media-card-visibility-rendering
+    - wet-pigs-rule
 "@tryghost/metafield-types@0.1.1":
   dir: packages/metafield-types
   intents:

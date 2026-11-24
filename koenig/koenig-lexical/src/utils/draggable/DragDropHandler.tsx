@@ -89,6 +89,11 @@ export class DragDropHandler {
         };
     }
 
+    // abandon a drag in progress without dropping it
+    cancelDrag() {
+        this._resetDrag();
+    }
+
     // remove all containers and event handlers, useful when leaving an editor route
     cleanup() {
         this.containers.forEach(container => container.disableDrag());

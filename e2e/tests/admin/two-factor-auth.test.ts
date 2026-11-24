@@ -29,7 +29,11 @@ test.describe('Two-Factor authentication', () => {
     await loginPage.goto();
   });
 
-  test('authenticates with 2FA token', async ({ browser, baseURL, ghostAccountOwner }) => {
+  test('automatically authenticates with 2FA token', async ({
+    browser,
+    baseURL,
+    ghostAccountOwner,
+  }) => {
     await withIsolatedPage(browser, { baseURL }, async ({ page: page }) => {
       const { email, password } = ghostAccountOwner;
       const previousCount = (await searchVerificationEmails(email)).length;
@@ -42,14 +46,13 @@ test.describe('Two-Factor authentication', () => {
 
       const verifyPage = new LoginVerifyPage(page);
       await verifyPage.twoFactorTokenField.fill(code);
-      await verifyPage.twoFactorVerifyButton.click();
 
       const adminAnalyticsPage = new AnalyticsOverviewPage(page);
       await expect(adminAnalyticsPage.header).toBeVisible();
     });
   });
 
-  test('authenticates with 2FA token that was resent', async ({
+  test('automatically authenticates with 2FA token that was resent', async ({
     browser,
     baseURL,
     ghostAccountOwner,
@@ -71,7 +74,6 @@ test.describe('Two-Factor authentication', () => {
 
       const code = parseCodeFromMessageSubject(messages[0]);
       await verifyPage.twoFactorTokenField.fill(code);
-      await verifyPage.twoFactorVerifyButton.click();
 
       const adminAnalyticsPage = new AnalyticsOverviewPage(page);
       await expect(adminAnalyticsPage.header).toBeVisible();

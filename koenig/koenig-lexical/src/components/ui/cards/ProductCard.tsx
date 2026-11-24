@@ -8,6 +8,8 @@ import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export function ProductCard({
+    visibilitySettings = null,
+    showVisibilitySettings = false,
     isEditing,
     imgAlt,
     imgSrc,
@@ -36,6 +38,40 @@ export function ProductCard({
 }) {
     const showFilledButton = !!buttonUrl && !!buttonText && isButtonEnabled;
     const showButtonInEditMode = isButtonEnabled && isEditing;
+    const contentSettings = (
+        <>
+            <ToggleSetting
+                dataTestId="product-rating-toggle"
+                isChecked={isRatingEnabled}
+                label='Rating'
+                onChange={onRatingToggle}
+            />
+            <ToggleSetting
+                dataTestId="product-button-toggle"
+                isChecked={isButtonEnabled}
+                label='Button'
+                onChange={onButtonToggle}
+            />
+            {isButtonEnabled && (
+                <>
+                    <InputSetting
+                        dataTestId="product-button-text-input"
+                        label='Button text'
+                        placeholder='Add button text'
+                        value={buttonText}
+                        onChange={onButtonTextChange}
+                    />
+                    <InputUrlSetting
+                        dataTestId="product-button-url-input"
+                        label='Button URL'
+                        value={buttonUrl}
+                        onChange={onButtonUrlChange}
+                    />
+                </>
+            )}
+        </>
+    );
+
     return (
         <>
             <div className="mx-auto my-4 flex w-full max-w-[550px] flex-col rounded-md border border-grey/40 p-5 font-sans dark:border-grey/20">
@@ -101,36 +137,12 @@ export function ProductCard({
             </div>
 
             {isEditing && (
-                <SettingsPanel>
-                    <ToggleSetting
-                        dataTestId="product-rating-toggle"
-                        isChecked={isRatingEnabled}
-                        label='Rating'
-                        onChange={onRatingToggle}
-                    />
-                    <ToggleSetting
-                        dataTestId="product-button-toggle"
-                        isChecked={isButtonEnabled}
-                        label='Button'
-                        onChange={onButtonToggle}
-                    />
-                    {isButtonEnabled && (
-                        <>
-                            <InputSetting
-                                dataTestId="product-button-text-input"
-                                label='Button text'
-                                placeholder='Add button text'
-                                value={buttonText}
-                                onChange={onButtonTextChange}
-                            />
-                            <InputUrlSetting
-                                dataTestId="product-button-url-input"
-                                label='Button URL'
-                                value={buttonUrl}
-                                onChange={onButtonUrlChange}
-                            />
-                        </>
-                    )}
+                <SettingsPanel
+                    settingsLabel="Content"
+                    showVisibilitySettings={showVisibilitySettings}
+                    visibilitySettings={visibilitySettings}
+                >
+                    {contentSettings}
                 </SettingsPanel>
             )}
 
@@ -140,6 +152,8 @@ export function ProductCard({
 }
 
 ProductCard.propTypes = {
+    visibilitySettings: PropTypes.node,
+    showVisibilitySettings: PropTypes.bool,
     isEditing: PropTypes.bool,
     imgAlt: PropTypes.string,
     imgSrc: PropTypes.string,

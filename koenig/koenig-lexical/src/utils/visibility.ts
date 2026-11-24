@@ -1,13 +1,87 @@
-import {buildDefaultVisibility} from '@tryghost/kg-default-nodes/visibility';
+import {$isGalleryNode, $isImageNode, $isKoenigCard} from '@tryghost/kg-default-nodes';
+import {ALL_MEMBERS_SEGMENT, FREE_MEMBERS_SEGMENT, NO_MEMBERS_SEGMENT, PAID_MEMBERS_SEGMENT, buildDefaultVisibility, getRenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
+import type {CardConfig} from '../context/KoenigComposerContext';
+import type {KoenigCard} from '@tryghost/kg-default-nodes';
+import type {LexicalNode} from 'lexical';
+import type {MemberSegment, RenderedVisibility, Visibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
     WEB_AND_EMAIL: 'web and email',
     WEB_ONLY: 'web only',
     EMAIL_ONLY: 'email only',
     NONE: 'none'
-};
+} as const;
 
-export function parseVisibilityToToggles(visibility) {
+export type VisibilitySetting = typeof VISIBILITY_SETTINGS[keyof typeof VISIBILITY_SETTINGS];
+
+export interface VisibilityToggles {
+    web: {
+        nonMembers: boolean;
+        freeMembers: boolean;
+        paidMembers: boolean;
+    };
+    email: {
+        freeMembers: boolean;
+        paidMembers: boolean;
+    };
+}
+
+export type VisibilityGroupKey = 'web' | 'email';
+
+export type VisibilityToggleKey = 'nonMembers' | 'freeMembers' | 'paidMembers';
+
+export interface VisibilityToggle {
+    key: VisibilityToggleKey;
+    label: string;
+    checked: boolean;
+}
+
+export interface VisibilityOption {
+    label: string;
+    key: VisibilityGroupKey;
+    toggles: VisibilityToggle[];
+}
+
+export type ToggleVisibility = (groupKey: VisibilityGroupKey, toggleKey: VisibilityToggleKey, value: boolean) => void;
+
+export function isVisibilityEnabled(cardConfig?: CardConfig) {
+    return (cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL) !== VISIBILITY_SETTINGS.NONE;
+}
+
+// Whether the editor should offer visibility settings for a card type.
+// `cardConfig.visibilityCardTypes` lists the cards whose visibility the
+// backend can honour; Admin passes it because it can deploy ahead of the
+// server. Without a list every card with a visibility property is allowed.
+export function isCardVisibilityAvailable(cardType: string, cardConfig?: CardConfig) {
+    if (!isVisibilityEnabled(cardConfig)) {
+        return false;
+    }
+
+    const supportedTypes = cardConfig?.visibilityCardTypes;
+    return !Array.isArray(supportedTypes) || supportedTypes.includes(cardType);
+}
+
+// an image or gallery placeholder has no content to hide yet
+function isPlaceholderCard(cardNode: KoenigCard) {
+    return ($isImageNode(cardNode) && cardNode.src === '')
+        || ($isGalleryNode(cardNode) && cardNode.images.length === 0);
+}
+
+// Cards without an edit mode of their own (image, gallery) still open
+// their settings panel in edit mode when visibility is something to edit
+export function cardHasEditMode(cardNode: LexicalNode | null | undefined, cardConfig?: CardConfig) {
+    if (!$isKoenigCard(cardNode)) {
+        return false;
+    }
+
+    if (cardNode.hasEditMode()) {
+        return true;
+    }
+
+    return cardNode.hasVisibility?.() === true && isCardVisibilityAvailable(cardNode.getType(), cardConfig) && !isPlaceholderCard(cardNode);
+}
+
+export function parseVisibilityToToggles(visibility?: RenderedVisibility): VisibilityToggles {
     visibility = visibility || buildDefaultVisibility();
 
     return {
@@ -23,17 +97,17 @@ export function parseVisibilityToToggles(visibility) {
     };
 }
 
-function isToggleChecked(toggles, key, fallback) {
+function isToggleChecked(toggles: VisibilityToggle[], key: VisibilityToggleKey, fallback: boolean): boolean {
     return toggles.find(t => t.key === key)?.checked ?? fallback;
 }
 
 // used for building UI
-export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWeb = true, showEmail = true} = {}) {
+export function getVisibilityOptions(visibility?: RenderedVisibility, {isStripeEnabled = true, showWeb = true, showEmail = true} = {}): VisibilityOption[] {
     visibility = visibility || buildDefaultVisibility();
     const toggles = parseVisibilityToToggles(visibility);
 
     // use arrays to ensure consistent order when using to build UI
-    const options = [
+    const options: VisibilityOption[] = [
         {
             label: 'Web',
             key: 'web',
@@ -71,35 +145,50 @@ export function getVisibilityOptions(visibility, {isStripeEnabled = true, showWe
     });
 }
 
-export function serializeOptionsToVisibility(options, existingVisibility) {
+function getMemberSegment(freeMembers: boolean, paidMembers: boolean): MemberSegment {
+    if (freeMembers && paidMembers) {
+        return ALL_MEMBERS_SEGMENT;
+    }
+    if (freeMembers) {
+        return FREE_MEMBERS_SEGMENT;
+    }
+    if (paidMembers) {
+        return PAID_MEMBERS_SEGMENT;
+    }
+    return NO_MEMBERS_SEGMENT;
+}
+
+export function serializeOptionsToVisibility(options: VisibilityOption[], existingVisibility?: RenderedVisibility): RenderedVisibility {
     existingVisibility = existingVisibility || buildDefaultVisibility();
     const existingToggles = parseVisibilityToToggles(existingVisibility);
     const webToggles = options.find(group => group.key === 'web')?.toggles ?? [];
     const emailToggles = options.find(group => group.key === 'email')?.toggles ?? [];
 
-    const webSegments = [];
-    if (isToggleChecked(webToggles, 'freeMembers', existingToggles.web.freeMembers)) {
-        webSegments.push('status:free');
-    }
-    if (isToggleChecked(webToggles, 'paidMembers', existingToggles.web.paidMembers)) {
-        webSegments.push('status:-free');
-    }
-
-    const emailSegments = [];
-    if (isToggleChecked(emailToggles, 'freeMembers', existingToggles.email.freeMembers)) {
-        emailSegments.push('status:free');
-    }
-    if (isToggleChecked(emailToggles, 'paidMembers', existingToggles.email.paidMembers)) {
-        emailSegments.push('status:-free');
-    }
-
     return {
         web: {
             nonMember: isToggleChecked(webToggles, 'nonMembers', existingToggles.web.nonMembers),
-            memberSegment: webSegments.join(',')
+            memberSegment: getMemberSegment(
+                isToggleChecked(webToggles, 'freeMembers', existingToggles.web.freeMembers),
+                isToggleChecked(webToggles, 'paidMembers', existingToggles.web.paidMembers)
+            )
         },
         email: {
-            memberSegment: emailSegments.join(',')
+            memberSegment: getMemberSegment(
+                isToggleChecked(emailToggles, 'freeMembers', existingToggles.email.freeMembers),
+                isToggleChecked(emailToggles, 'paidMembers', existingToggles.email.paidMembers)
+            )
         }
     };
+}
+
+// Whether two cards show to exactly the same audiences. Missing visibility
+// counts as the default (everyone), so a plain image matches a plain gallery.
+// Used to stop drag-and-drop merging images with different audiences, which
+// would otherwise silently widen who can see one of them.
+export function isSameVisibility(a: Visibility | undefined, b: Visibility | undefined) {
+    const x = getRenderedVisibility(a);
+    const y = getRenderedVisibility(b);
+    return x.web.nonMember === y.web.nonMember
+        && x.web.memberSegment === y.web.memberSegment
+        && x.email.memberSegment === y.email.memberSegment;
 }

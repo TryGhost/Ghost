@@ -12,7 +12,6 @@ import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting
 import {CALLTOACTION_COLORS} from '../../../utils/callToActionColors.js';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay.jsx';
 import {RestrictContentPlugin} from '../../../index.js';
-import {VisibilitySettings} from '../VisibilitySettings.jsx';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useState} from 'react';
@@ -100,7 +99,7 @@ export function CallToActionCard({
     layout = 'immersive',
     showButton = false,
     showDividers = true,
-    visibilityOptions = {},
+    visibilitySettings = null,
     handleButtonColor = () => {},
     handleColorChange = () => {},
     handleLinkColorChange = () => {},
@@ -114,7 +113,6 @@ export function CallToActionCard({
     updateLayout = () => {},
     updateShowButton = () => {},
     updateShowDividers = () => {},
-    toggleVisibility = () => {},
     imageDragHandler = {},
     imageUploader = () => {},
     linkColor = 'text',
@@ -124,12 +122,9 @@ export function CallToActionCard({
 
     const {isLoading, progress} = imageUploader || {};
 
-    const hasVisibilityOptions = Array.isArray(visibilityOptions) && visibilityOptions.length > 0;
-
     const tabs = [
         {id: 'content', label: 'Content'},
-        {id: 'design', label: 'Design'},
-        ...(hasVisibilityOptions ? [{id: 'visibility', label: 'Visibility'}] : [])
+        {id: 'design', label: 'Design'}
     ];
 
     const layoutOptions = [
@@ -294,13 +289,6 @@ export function CallToActionCard({
         </>
     );
 
-    const visibilitySettings = (
-        <VisibilitySettings
-            toggleVisibility={toggleVisibility}
-            visibilityOptions={visibilityOptions}
-        />
-    );
-
     return (
         <>
             <div
@@ -421,14 +409,15 @@ export function CallToActionCard({
 
             {isEditing && (
                 <SettingsPanel
-                    defaultTab={showVisibilitySettings ? 'visibility' : 'content'}
+                    defaultTab="content"
+                    showVisibilitySettings={showVisibilitySettings}
                     tabs={tabs}
+                    visibilitySettings={visibilitySettings}
                     onMouseDown={e => e.preventDefault()}
                 >
                     {{
                         content: contentSettings,
-                        design: designSettings,
-                        visibility: visibilitySettings
+                        design: designSettings
                     }}
                 </SettingsPanel>
             )}
@@ -465,8 +454,7 @@ CallToActionCard.propTypes = {
     onRemoveMedia: PropTypes.func,
     sponsorLabelHtmlEditor: PropTypes.object,
     sponsorLabelHtmlEditorInitialState: PropTypes.object,
-    visibilityOptions: PropTypes.array,
-    toggleVisibility: PropTypes.func,
+    visibilitySettings: PropTypes.node,
     imageUploadHandler: PropTypes.func,
     imageDragHandler: PropTypes.object,
     linkColor: PropTypes.oneOf(['text', 'accent']),

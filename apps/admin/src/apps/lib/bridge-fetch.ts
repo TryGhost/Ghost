@@ -1,3 +1,4 @@
+import type { AppPermissionKey } from '@tryghost/app-contracts';
 import {
   type FetchRequest,
   type FetchResponse,
@@ -12,21 +13,25 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
 /**
  * Sends the requests an app asks for, only to the Admin API under `apiRoot`. `request` is already
  * validated. This function checks where its path leads and what it sends, and refuses a path that
- * leaves the API, or a request the allowlist doesn't allow, before anything reaches the network.
+ * leaves the API, or a request the allowlist doesn't allow or that needs a scope the installation
+ * wasn't approved for, before anything reaches the network.
  * It also drops headers that only Admin sets, so none of the app's headers can replace Admin's,
  * whatever reaches this function.
  */
 export function createAdminApiFetch({
   apiRoot,
+  approvedScopes,
   ghostVersion,
 }: {
   /** The Admin API's root URL, as Admin's own requests use it. */
   apiRoot: URL;
+  /** The scopes in the approved manifest the app session is pinned to. */
+  approvedScopes: ReadonlySet<AppPermissionKey>;
   ghostVersion?: string;
 }): AdminApiFetch {
   return async (request, signal) => {
     const method = request.method ?? 'GET';
-    const check = checkAdminApiRequest(request, apiRoot);
+    const check = checkAdminApiRequest(request, apiRoot, approvedScopes);
     if (check.problem === 'invalid_path') {
       throw new BridgeError('invalid_path', 'Expected an Admin API path within the Admin API');
     }
@@ -57,7 +62,8 @@ export function createAdminApiFetch({
         body: request.body,
         // The request carries the staff user's own session. That stands in for the app-scoped token
         // that comes with Permissions and auth, and the allowlist above goes away along with it.
-        // Until then, the allowlist is what keeps the rest of the session's reach from the app.
+        // Until then, the allowlist and the approved scopes are what keep the rest of the
+        // session's reach from the app.
         credentials: 'include',
         // A redirect could lead off the API, where the app's path would no longer show where the
         // request went, so no redirect is followed. Most Admin API redirects are for a path missing

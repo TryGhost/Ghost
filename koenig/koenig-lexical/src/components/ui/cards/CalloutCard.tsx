@@ -83,6 +83,8 @@ export const calloutColorPicker = [
 ];
 
 export function CalloutCard({
+    visibilitySettings = null,
+    showVisibilitySettings = false,
     color = 'green',
     isEditing,
     setShowEmojiPicker,
@@ -105,6 +107,24 @@ export function CalloutCard({
             setShowEmojiPicker(false);
         }
     }, [isEditing, setShowEmojiPicker]);
+
+    const designSettings = (
+        <>
+            <ToggleSetting
+                dataTestId='emoji-toggle'
+                isChecked={!!calloutEmoji}
+                label='Emoji'
+                onChange={toggleEmoji}
+            />
+            <ColorOptionSetting
+                buttons={calloutColorPicker}
+                dataTestId='callout-color-picker'
+                label='Background'
+                selectedName={color}
+                onClick={handleColorChange}
+            />
+        </>
+    );
 
     return (
         <>
@@ -147,20 +167,10 @@ export function CalloutCard({
                 isEditing ? (
                     <SettingsPanel
                         darkMode={darkMode}
+                        showVisibilitySettings={showVisibilitySettings}
+                        visibilitySettings={visibilitySettings}
                     >
-                        <ToggleSetting
-                            dataTestId='emoji-toggle'
-                            isChecked={!!calloutEmoji}
-                            label='Emoji'
-                            onChange={toggleEmoji}
-                        />
-                        <ColorOptionSetting
-                            buttons={calloutColorPicker}
-                            dataTestId='callout-color-picker'
-                            label='Background'
-                            selectedName={color}
-                            onClick={handleColorChange}
-                        />
+                        {designSettings}
                     </SettingsPanel>
                 ) : (
                     <ReadOnlyOverlay />
@@ -171,6 +181,8 @@ export function CalloutCard({
 }
 
 CalloutCard.propTypes = {
+    visibilitySettings: PropTypes.node,
+    showVisibilitySettings: PropTypes.bool,
     color: PropTypes.oneOf(['white', 'grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'accent']),
     text: PropTypes.string,
     hasEmoji: PropTypes.bool,

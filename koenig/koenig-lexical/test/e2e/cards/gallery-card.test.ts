@@ -408,6 +408,70 @@ test.describe('Gallery card', async () => {
     //     `, {ignoreCardContents: true});
     // });
 
+    test.describe('dragging image cards onto a gallery with visibility', function () {
+        const paidOnly = {web: {nonMember: false, memberSegment: 'status:-free'}, email: {memberSegment: 'status:-free'}};
+
+        async function loadGalleryAndImage(galleryVisibility, imageVisibility) {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'gallery'});
+            await page.keyboard.press('Enter');
+            await insertCard(page, {cardName: 'image'});
+
+            const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+            const [fileChooser] = await Promise.all([
+                page.waitForEvent('filechooser'),
+                await page.click('[data-kg-card="image"] button[name="placeholder-button"]')
+            ]);
+            await fileChooser.setFiles([filePath]);
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                const imageNode = state.root.children.find(c => c.type === 'image');
+                return imageNode && imageNode.src;
+            }, {timeout: 5000});
+
+            // set the audiences directly in the editor state
+            await page.evaluate(({galleryVis, imageVis}) => {
+                const editor = window.lexicalEditor;
+                const json = editor.getEditorState().toJSON();
+                for (const node of json.root.children) {
+                    if (node.type === 'gallery' && galleryVis) {
+                        node.visibility = galleryVis;
+                    }
+                    if (node.type === 'image' && imageVis) {
+                        node.visibility = imageVis;
+                    }
+                }
+                editor.setEditorState(editor.parseEditorState(json));
+            }, {galleryVis: galleryVisibility, imageVis: imageVisibility});
+
+            await page.click('p:not(figure p)');
+
+            const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
+            const galleryBBox = await page.locator('[data-kg-card="gallery"]').boundingBox();
+            await dragMouse(page, imageBBox, galleryBBox, 'middle', 'middle', true, 100, 100);
+        }
+
+        test('does not add a restricted image to a public gallery', async function () {
+            await loadGalleryAndImage(null, paidOnly);
+
+            await expect(page.locator('[data-kg-card="gallery"] [data-image]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card="image"]')).toHaveCount(1);
+        });
+
+        test('adds an image to a gallery with the same audience', async function () {
+            await loadGalleryAndImage(paidOnly, paidOnly);
+
+            await expect(page.locator('[data-kg-card="gallery"] [data-image]')).toHaveCount(1);
+            await expect(page.locator('[data-kg-card="image"]')).toHaveCount(0);
+
+            const state = await getEditorState(page);
+            const gallery = state.root.children.find(c => c.type === 'gallery');
+            expect(gallery.visibility).toEqual(paidOnly);
+            expect(gallery.images[0].visibility).toBeUndefined();
+        });
+    });
+
     test('can drag populated image card onto empty gallery card', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'gallery'});

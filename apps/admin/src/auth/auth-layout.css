@@ -1,0 +1,8 @@
+/* Keep autofilled fields on the same surface as their inline actions. Clipping
+   the browser's autofill background to the text leaves Shade's focus ring and
+   validation border intact, including on standalone inputs. */
+.auth-layout input:autofill {
+  background-clip: text;
+  -webkit-text-fill-color: currentColor;
+  caret-color: currentColor;
+}
