@@ -1,6 +1,6 @@
 import path from 'path';
 import {CALLTOACTION_COLORS} from '../../../src/utils/callToActionColors.js';
-import {assertHTML, createDataTransfer, focusEditor, getEditorStateJSON, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, focusEditor, getEditorStateJSON, html, initialize, insertCard, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 import {selectCustomColor, selectNamedColor, selectTitledColor} from '../../utils/color-select-helper';
@@ -261,6 +261,35 @@ test.describe('Call To Action Card', async () => {
         await page.keyboard.type('This is a new CTA Card.');
         const content = page.locator('[data-testid="cta-card-content-editor"]');
         await expect(content).toContainText('This is a new CTA Card.');
+    });
+
+    test('can format content editor text as a heading', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="cta-card-content-editor"]');
+        await page.keyboard.type('Join our newsletter');
+        await selectBackwards(page, 'newsletter'.length);
+
+        await page.click('[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"] button');
+
+        const content = page.locator('[data-testid="cta-card-content-editor"]');
+        await expect(content.locator('h2')).toHaveText('Join our newsletter');
+
+        const json = JSON.parse(await getEditorStateJSON(page));
+        const card = json.root.children.find(child => child.type === 'call-to-action');
+        expect(card.textValue).toContain('<h2');
+    });
+
+    test('sponsor label toolbar has no heading options', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="sponsor-label-editor"]');
+        await page.keyboard.press('End');
+        await selectBackwards(page, 'SPONSORED'.length);
+
+        await expect(page.locator('[data-kg-floating-toolbar] [data-kg-toolbar-button="italic"]')).toBeVisible();
+        await expect(page.locator('[data-kg-floating-toolbar] [data-kg-toolbar-button="h2"]')).toBeHidden();
+        await expect(page.locator('[data-kg-floating-toolbar] [data-kg-toolbar-button="h3"]')).toBeHidden();
     });
 
     test('can add and remove CTA Card image', async function () {
