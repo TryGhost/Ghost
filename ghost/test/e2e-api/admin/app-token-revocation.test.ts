@@ -9,10 +9,13 @@ const models = require('../../../core/server/models');
 const settingsCache = require('../../../core/shared/settings-cache');
 const configUtils = require('../../utils/config-utils');
 
-// Apps get tokens from Better Auth's OAuth provider, so they work only under its engine
-const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+// Apps get tokens from Better Auth's OAuth provider, registered only under its engine and only
+// when the apps flag is on at boot
+const appTokensAtBoot =
+  configUtils.config.get('auth:engine') === 'better-auth' &&
+  configUtils.config.get('labs:apps') === true;
 
-describe.skipIf(!isBetterAuth)('App tokens on security events', function () {
+describe.skipIf(!appTokensAtBoot)('App tokens on security events', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>> & {
     loginAsOwner(): Promise<void>;
     put(path: string): any;
@@ -46,12 +49,17 @@ describe.skipIf(!isBetterAuth)('App tokens on security events', function () {
       sessionId: session.id,
       scopes: ['post:browse'],
     });
-    assert.ok(issued);
+    assert.ok('accessToken' in issued, `refused: ${JSON.stringify(issued)}`);
+    // Cut loose from its staff session, so ending sessions can't cascade to it and only an
+    // explicit delete removes it
+    await knex()('oauth_access_tokens').where({ user_id: userId }).update({ session_id: null });
+    assert.ok((await tokenRowsOf(userId)) > 0);
     return issued.accessToken as string;
   }
 
-  const tokenRowsOf = async (userId: string) =>
-    (await knex()('oauth_access_tokens').where({ user_id: userId })).length;
+  async function tokenRowsOf(userId: string) {
+    return (await knex()('oauth_access_tokens').where({ user_id: userId })).length;
+  }
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -60,6 +68,7 @@ describe.skipIf(!isBetterAuth)('App tokens on security events', function () {
     installationId = await insertTestInstallation(knex(), { scopes: ['post:browse'], keys });
     // Once: sign-ins are rate limited
     await agent.loginAsOwner();
+    assert.equal(auth().appTokens.availability(), 'ready');
   });
 
   it("deletes a user's app tokens when they are suspended", async function () {
