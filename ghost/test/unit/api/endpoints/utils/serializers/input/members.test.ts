@@ -21,43 +21,43 @@ describe('Unit: endpoints/utils/serializers/input/members', function () {
   describe('browse', function () {
     type BrowseFrame = {
       options: {
-        skip_pagination?: string;
-        skipPagination?: boolean;
+        skip_total?: string;
+        skipTotal?: boolean;
       };
     };
 
-    it('maps skip_pagination=true to skipPagination', function () {
-      const frame: BrowseFrame = { options: { skip_pagination: 'true' } };
+    it('maps skip_total=true to skipTotal', function () {
+      const frame: BrowseFrame = { options: { skip_total: 'true' } };
 
       serializers.input.members.browse({}, frame);
 
-      assert.equal(frame.options.skipPagination, true);
-      assert.equal('skip_pagination' in frame.options, false);
+      assert.equal(frame.options.skipTotal, true);
+      assert.equal('skip_total' in frame.options, false);
     });
 
-    it('maps skip_pagination=false to skipPagination', function () {
-      const frame: BrowseFrame = { options: { skip_pagination: 'false' } };
+    it('maps skip_total=false to skipTotal', function () {
+      const frame: BrowseFrame = { options: { skip_total: 'false' } };
 
       serializers.input.members.browse({}, frame);
 
-      assert.equal(frame.options.skipPagination, false);
-      assert.equal('skip_pagination' in frame.options, false);
+      assert.equal(frame.options.skipTotal, false);
+      assert.equal('skip_total' in frame.options, false);
     });
 
-    it('maps skip_pagination regardless of case', function () {
-      const frame: BrowseFrame = { options: { skip_pagination: 'TRUE' } };
+    it('maps skip_total regardless of case', function () {
+      const frame: BrowseFrame = { options: { skip_total: 'TRUE' } };
 
       serializers.input.members.browse({}, frame);
 
-      assert.equal(frame.options.skipPagination, true);
+      assert.equal(frame.options.skipTotal, true);
     });
 
-    it('leaves skipPagination unset without skip_pagination', function () {
+    it('leaves skipTotal unset without skip_total', function () {
       const frame: BrowseFrame = { options: {} };
 
       serializers.input.members.browse({}, frame);
 
-      assert.equal('skipPagination' in frame.options, false);
+      assert.equal('skipTotal' in frame.options, false);
     });
   });
 

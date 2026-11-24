@@ -67,7 +67,7 @@ const controller = {
       'page',
       'search',
       'include',
-      'skip_pagination',
+      'skip_total',
     ],
     permissions: true,
     validation: {
@@ -75,7 +75,7 @@ const controller = {
         include: {
           values: allowedIncludes,
         },
-        skip_pagination: {
+        skip_total: {
           values: ['true', 'false'],
         },
       },

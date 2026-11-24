@@ -56,22 +56,6 @@ const {
   restoreEmailVerificationUtils,
 } = require('../../utils/email-verification-utils');
 
-async function recordQueries(fn) {
-  const queries = [];
-  const handler = (query) => queries.push(query.sql);
-
-  knex.client.on('query', handler);
-  try {
-    await fn();
-  } finally {
-    knex.client.off('query', handler);
-  }
-
-  return queries;
-}
-
-const countsMembers = (sql) => sql.includes('count(') && sql.includes('`members`');
-
 async function assertMemberEvents({ eventType, memberId, asserts }) {
   const events = await models[eventType].where('member_id', memberId).fetchAll();
   const eventsJSON = events.map((e) => e.toJSON());
@@ -797,50 +781,54 @@ describe('Members API', function () {
       });
   });
 
-  it('Can browse with skip_pagination=true without counting members', async function () {
-    const countedQueries = await recordQueries(async () => {
-      await agent.get('/members/?limit=3').expectStatus(200);
-    });
-    assert.notEqual(countedQueries.filter(countsMembers).length, 0);
+  it('Can browse every page with skip_total=true', async function () {
+    const { body: firstPage } = await agent.get('/members/?limit=3').expectStatus(200);
+    const { pages } = firstPage.meta.pagination;
+    assert.ok(pages > 1);
 
-    let body;
-    const queries = await recordQueries(async () => {
-      ({ body } = await agent.get('/members/?limit=3&skip_pagination=true').expectStatus(200));
-    });
+    for (let page = 1; page <= pages; page++) {
+      const { body: counted } = await agent.get(`/members/?limit=3&page=${page}`).expectStatus(200);
+      const { body } = await agent
+        .get(`/members/?limit=3&page=${page}&skip_total=true`)
+        .expectStatus(200);
 
-    assert.deepEqual(queries.filter(countsMembers), []);
-    assert.equal(body.members.length, 3);
-    assert.deepEqual(body.meta, {});
+      assert.deepEqual(
+        body.members.map((member) => member.id),
+        counted.members.map((member) => member.id),
+      );
+      assert.deepEqual(body.meta.pagination, {
+        ...counted.meta.pagination,
+        pages: null,
+        total: null,
+      });
+    }
   });
 
-  it('Can browse a later page with skip_pagination=true', async function () {
-    const browseIds = async (query) => {
-      const { body } = await agent.get(`/members/?${query}`).expectStatus(200);
-      return body.members.map((member) => member.id);
-    };
+  it('Can browse with skip_total=true and limit=all', async function () {
+    const { body: counted } = await agent.get('/members/?limit=all').expectStatus(200);
+    const { body } = await agent.get('/members/?limit=all&skip_total=true').expectStatus(200);
 
-    const firstPage = await browseIds('limit=3&skip_pagination=true');
-    const secondPage = await browseIds('limit=3&page=2&skip_pagination=true');
-
-    assert.equal(secondPage.length, 3);
-    assert.deepEqual(secondPage, await browseIds('limit=3&page=2'));
-    assert.deepEqual(
-      secondPage.filter((id) => firstPage.includes(id)),
-      [],
-    );
+    assert.equal(body.members.length, counted.members.length);
+    assert.deepEqual(body.meta.pagination, {
+      page: 1,
+      limit: 100,
+      pages: null,
+      total: null,
+      next: null,
+      prev: null,
+    });
   });
 
-  it('Can browse with skip_pagination=false', async function () {
-    const { body: paginated } = await agent.get('/members/?limit=3').expectStatus(200);
-    const { body } = await agent.get('/members/?limit=3&skip_pagination=false').expectStatus(200);
+  it('Can browse with skip_total=false', async function () {
+    const { body: counted } = await agent.get('/members/?limit=3').expectStatus(200);
+    const { body } = await agent.get('/members/?limit=3&skip_total=false').expectStatus(200);
 
-    assert.equal(body.members.length, 3);
     assert.equal(typeof body.meta.pagination.total, 'number');
-    assert.deepEqual(body.meta, paginated.meta);
+    assert.deepEqual(body.meta, counted.meta);
   });
 
-  it('Cannot browse with an invalid skip_pagination value', async function () {
-    const { body } = await agent.get('/members/?skip_pagination=maybe').expectStatus(422);
+  it('Cannot browse with an invalid skip_total value', async function () {
+    const { body } = await agent.get('/members/?skip_total=maybe').expectStatus(422);
 
     assert.equal(body.errors[0].type, 'ValidationError');
   });

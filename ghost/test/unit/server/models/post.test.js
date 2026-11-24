@@ -183,6 +183,66 @@ describe('Unit: models/post', function () {
       });
     });
 
+    describe('skipTotal', function () {
+      function findPageWithoutTotal(options, rowCount) {
+        const queries = [];
+        tracker.install();
+
+        tracker.on('query', (query) => {
+          queries.push(query);
+          query.response([...Array(rowCount).keys()].map((index) => ({ id: `post-${index}` })));
+        });
+
+        return Post.findPage({ ...options, skipTotal: true }).then((result) => ({
+          queries,
+          result,
+        }));
+      }
+
+      const countQueries = (queries) => queries.filter((query) => query.sql.includes('count('));
+
+      it('reads one row past the page instead of counting', async function () {
+        const { queries, result } = await findPageWithoutTotal({ limit: 2, page: 2 }, 3);
+
+        assert.deepEqual(countQueries(queries), []);
+        assert.match(queries[0].sql, /^select `posts`\.\* from `posts` .* limit \? offset \?$/);
+        assert.deepEqual(queries[0].bindings.slice(-2), [3, 2]);
+        assert.deepEqual(
+          result.data.map((model) => model.id),
+          ['post-0', 'post-1'],
+        );
+        assert.deepEqual(result.meta, {
+          pagination: { page: 2, limit: 2, pages: null, total: null, next: 3, prev: 1 },
+        });
+      });
+
+      it('has no next page when the extra row is missing', async function () {
+        const { result } = await findPageWithoutTotal({ limit: 2, page: 3 }, 2);
+
+        assert.equal(result.data.length, 2);
+        assert.deepEqual(result.meta, {
+          pagination: { page: 3, limit: 2, pages: null, total: null, next: null, prev: 2 },
+        });
+      });
+
+      it('falls back to the default limit for a zero limit', async function () {
+        const { queries, result } = await findPageWithoutTotal({ limit: 0 }, 0);
+
+        assert.match(queries[0].sql, /limit \?$/);
+        assert.equal(queries[0].bindings.at(-1), 16);
+        assert.deepEqual(result.meta, {
+          pagination: { page: 1, limit: 15, pages: null, total: null, next: null, prev: null },
+        });
+      });
+
+      it('keeps the total for limit=all, which needs no count query', async function () {
+        const { queries, result } = await findPageWithoutTotal({ limit: 'all' }, 2);
+
+        assert.deepEqual(countQueries(queries), []);
+        assert.equal(result.meta.pagination.total, 2);
+      });
+    });
+
     describe('primary_tag/primary_author', function () {
       it('generates correct query for - filter: primary_tag:photo, with related: tags', function () {
         const queries = [];
