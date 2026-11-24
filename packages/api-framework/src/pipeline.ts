@@ -54,7 +54,14 @@ export type Controller<TFrames extends ControllerFrameMap = ControllerFrameMap> 
   ? Record<string, ControllerMethod | string | undefined>
   : { [TMethod in keyof TFrames]: ControllerMethod<TFrames[TMethod]> });
 interface ApiUtils {
-  permissions?: { handle(config: Dictionary, frame: Frame): AsyncResult };
+  permissions?: {
+    handle(config: Dictionary, frame: Frame): AsyncResult;
+    /**
+     * Runs before a method whose `permissions` is `false` or its own function, which `handle`
+     * never sees; a rejection stops the method
+     */
+    handleUnchecked?(config: ApiConfiguration, frame: Frame): AsyncResult;
+  };
   serializers?: { input?: Dictionary; output?: Dictionary };
   validators?: { input?: Dictionary };
 }
@@ -220,16 +227,19 @@ const STAGES = {
       return Promise.reject(new IncorrectUsageError());
     }
 
-    // CASE: handle permissions completely yourself
-    if (typeof apiImpl.permissions === 'function') {
-      debug('permissions function call');
-      return Promise.resolve(apiImpl.permissions(frame));
-    }
+    const ownCheck = apiImpl.permissions;
+    if (typeof ownCheck === 'function' || ownCheck === false) {
+      return Promise.resolve(apiUtils.permissions?.handleUnchecked?.(apiConfig, frame)).then(() => {
+        // CASE: handle permissions completely yourself
+        if (typeof ownCheck === 'function') {
+          debug('permissions function call');
+          return ownCheck(frame);
+        }
 
-    // CASE: skip stage completely
-    if (apiImpl.permissions === false) {
-      debug('disabled permissions');
-      return Promise.resolve();
+        // CASE: skip stage completely
+        debug('disabled permissions');
+        return undefined;
+      });
     }
 
     const permissionConfig =

@@ -325,9 +325,15 @@ sooner. Its scopes are the requested ones the client lists.
   cookie; a failure to read the installation or the user is an error, not a
   refusal. The principal is `kind: 'app'` with method `app_user_token`,
   acting for the staff user.
-- The scopes cap the permission checks a call meets, through the policy core,
-  on top of the user's role. A route that checks no permission (uploads,
-  oEmbed and others) isn't limited by scope yet.
+- The scopes cap the standard permission checks a call meets, through the
+  policy core, on top of the user's role. A method whose permission check is
+  its own or none would see the staff user the app acts for, so the API
+  pipeline refuses apps on every such method (403) unless it's on the
+  allowlist in `api/endpoints/utils/permissions.js`, which holds only methods
+  safe for any app whatever its scopes (`site.read`). The session routes run
+  outside the pipeline, and `DELETE /session` refuses apps itself. A unit test
+  lists every such method the Admin API mounts, so a new one is refused until
+  someone decides otherwise.
 - Reconciling an installation that isn't active disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event

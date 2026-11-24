@@ -225,4 +225,63 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
       .expectStatus(401);
     assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
   });
+
+  describe('on routes with no standard permission check', function () {
+    // Each acts for the Owner in ways no scope covers
+    const refusedRoutes = (ownerId: string) => [
+      {
+        method: 'put',
+        path: 'authentication/setup/',
+        body: {
+          setup: [
+            {
+              name: 'Taken Over',
+              email: 'taken-over@example.com',
+              password: 'Sl1m3rson99-taken!',
+              blogTitle: 'Taken over',
+            },
+          ],
+        },
+      },
+      { method: 'get', path: `users/${ownerId}/token/` },
+      { method: 'put', path: `users/${ownerId}/token/` },
+      { method: 'get', path: 'featurebase/token/' },
+      { method: 'post', path: 'slack/test/' },
+      { method: 'delete', path: 'session/' },
+    ];
+
+    for (const withCookie of [false, true]) {
+      it(`refuses an app acting for the Owner${withCookie ? ', with the staff cookie also sent' : ''}`, async function () {
+        const id = await installation(['post:browse']);
+        const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+        const signedIn = withCookie ? await signInOwner() : null;
+        const ownerBefore = await knex()('users').where({ id: owner().id }).first();
+        const staffTokenBefore = await knex()('api_keys').where({ user_id: owner().id }).first();
+
+        for (const { method, path, body } of refusedRoutes(owner().id)) {
+          const request = (agent as any)[method](path).header('Authorization', bearer(token));
+          const { body: response } = await (body ? request.body(body) : request).expectStatus(403);
+          assert.match(response.errors[0].message, /^Apps do not have permission/, path);
+        }
+
+        const ownerAfter = await knex()('users').where({ id: owner().id }).first();
+        assert.equal(ownerAfter.email, ownerBefore.email);
+        assert.equal(ownerAfter.password, ownerBefore.password);
+        assert.deepEqual(
+          await knex()('api_keys').where({ user_id: owner().id }).first(),
+          staffTokenBefore,
+        );
+        if (signedIn) {
+          assert.ok(await knex()('user_sessions').where({ id: signedIn.id }).first());
+        }
+      });
+    }
+
+    it('allows an app on a route on the allowlist', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+
+      await agent.get('site/').header('Authorization', bearer(token)).expectStatus(200);
+    });
+  });
 });

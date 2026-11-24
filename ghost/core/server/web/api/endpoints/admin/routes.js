@@ -5,6 +5,7 @@ const auth = require('../../../../auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const { refuseAppToken } = require('../../../../auth/app-token');
 
 // Better Auth loads only under its engine
 function betterAuthAdminOrigin() {
@@ -463,7 +464,13 @@ module.exports = function apiRoutes() {
     shared.middleware.rateLimiting.userLogin,
     http(api.session.add),
   );
-  router.delete('/session', mw.authAdminApi, http(api.session.delete));
+  // The session controller runs outside the pipeline, so it refuses apps here
+  router.delete(
+    '/session',
+    mw.authAdminApi,
+    refuseAppToken('delete session'),
+    http(api.session.delete),
+  );
   router.post(
     '/session/verify',
     shared.middleware.rateLimiting.sendVerificationCode,

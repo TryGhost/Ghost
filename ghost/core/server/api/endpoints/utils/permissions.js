@@ -6,7 +6,18 @@ const errors = require('@tryghost/errors');
 
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
+  appsCannotCall: 'Apps do not have permission to {method} {docName}',
 };
+
+/**
+ * The methods an app may call although they check no permission or check their own, so the
+ * scopes an app was approved for can't limit them. A method is listed here only when it is safe
+ * for any app, whatever its scopes; every other such method refuses apps.
+ *
+ * - `site.read`: the site's public title, description, logo, icon and accent colour, which
+ *   Admin's bridge lets every app read
+ */
+const APP_UNCHECKED_ALLOWLIST = new Set(['site.read']);
 
 /**
  * @description Handle requests, which need authentication.
@@ -105,4 +116,29 @@ module.exports = {
 
     return nonePublicAuth(apiConfig, frame);
   },
+
+  /**
+   * @description Refuses an app on a method whose permission check is its own or none, unless
+   * the method is on the allowlist. The scopes an app was approved for only cap the standard
+   * check, so without this an app would act on such a method as the staff user it acts for.
+   *
+   * @param {Object} apiConfig - Docname & method of target ctrl.
+   * @param {import('@tryghost/api-framework').Frame} frame
+   */
+  async handleUnchecked(apiConfig, frame) {
+    if (frame.options.context?.principal?.kind !== 'app') {
+      return;
+    }
+    if (APP_UNCHECKED_ALLOWLIST.has(`${apiConfig.docName}.${apiConfig.method}`)) {
+      return;
+    }
+    throw new errors.NoPermissionError({
+      message: tpl(messages.appsCannotCall, {
+        method: apiConfig.method,
+        docName: apiConfig.docName,
+      }),
+    });
+  },
+
+  APP_UNCHECKED_ALLOWLIST,
 };
