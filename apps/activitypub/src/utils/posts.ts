@@ -114,6 +114,7 @@ export function mapPostToActivity(post: Post): Activity {
     repostCount: post.repostCount,
     authored: post.authoredByMe === true,
     metadata: post.metadata,
+    inReplyTo: post.inReplyTo ?? null,
     // These are not used but needed to comply with the ObjectProperties type
     '@context': '',
   };

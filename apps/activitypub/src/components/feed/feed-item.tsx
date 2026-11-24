@@ -18,6 +18,7 @@ import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
 import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
+import { ObjectWithReplyContext, getReplyBanner } from '../../utils/reply-context';
 import { handleProfileClick } from '../../utils/handle-profile-click';
 import { openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
 import { renderTimestamp } from '../../utils/render-timestamp';
@@ -474,7 +475,7 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
 interface FeedItemProps {
   actor: ActorProperties;
   allowDelete?: boolean;
-  object: ObjectProperties;
+  object: ObjectWithReplyContext;
   parentId?: string;
   layout: string;
   type: string;
@@ -494,6 +495,14 @@ interface FeedItemProps {
 }
 
 const noop = () => {};
+
+const replyIcon = (
+  <LucideIcon.Reply
+    className="shrink-0 text-gray-700 dark:text-gray-600"
+    size={16}
+    strokeWidth={1.5}
+  />
+);
 
 const repostIcon = (
   <LucideIcon.RefreshCw
@@ -786,6 +795,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
   const authorHandle = author ? getHandle(author) : null;
 
+  const replyBanner = layout === 'feed' ? getReplyBanner(object?.inReplyTo, authorHandle) : null;
+
   const followedByMe = author?.followedByMe || false;
 
   const isAuthorCurrentUser =
@@ -860,6 +871,37 @@ const FeedItem: React.FC<FeedItemProps> = ({
                     </span>
                   </ProfilePreviewHoverCard>
                   reposted
+                </div>
+              </div>
+            )}
+            {replyBanner && (
+              <div
+                className="z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600"
+                data-testid="reply-context-banner"
+              >
+                {replyIcon}
+                <div className="flex min-w-0 items-center gap-1 text-sm">
+                  {replyBanner.kind === 'continuing' && 'Continuing a thread'}
+                  {replyBanner.kind === 'generic' && 'Replying to a post'}
+                  {replyBanner.kind === 'named' && (
+                    <>
+                      Replying to
+                      {replyBanner.handle ? (
+                        <button
+                          className="break-anywhere truncate hover:underline"
+                          data-testid="reply-context-profile-link"
+                          type="button"
+                          onClick={(e) => {
+                            handleProfileClick(replyBanner.handle as string, navigate, e);
+                          }}
+                        >
+                          {replyBanner.name}
+                        </button>
+                      ) : (
+                        <span className="break-anywhere truncate">{replyBanner.name}</span>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}

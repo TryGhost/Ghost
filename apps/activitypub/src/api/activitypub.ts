@@ -277,6 +277,11 @@ export interface Post {
   repostCount: number;
   repostedByMe: boolean;
   repostedBy: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url' | 'followedByMe'> | null;
+  /** Feed reply parent; not `Notification.inReplyTo`. `author: null` = unknown parent author. */
+  inReplyTo?: {
+    id: string;
+    author: { name: string; handle: string; url: string } | null;
+  } | null;
   metadata?: {
     ghostAuthors?: Array<{
       name: string;

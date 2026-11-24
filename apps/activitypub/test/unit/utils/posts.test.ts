@@ -188,6 +188,44 @@ describe('mapPostToActivity', function () {
     expect(object.contentWarning).toBe('Sensitive topic');
   });
 
+  test('it treats an omitted inReplyTo as null', function () {
+    expect(mapPostToActivity(post).object.inReplyTo).toBeNull();
+    expect(mapPostToActivity({ ...post, inReplyTo: null }).object.inReplyTo).toBeNull();
+    expect(mapPostToActivity({ ...post, inReplyTo: undefined }).object.inReplyTo).toBeNull();
+  });
+
+  test('it maps inReplyTo with a known parent author', function () {
+    const object = mapPostToActivity({
+      ...post,
+      inReplyTo: {
+        id: 'https://example.com/notes/parent',
+        author: {
+          name: 'Parent Author',
+          handle: '@parent@example.org',
+          url: 'https://example.org/users/parent',
+        },
+      },
+    }).object;
+
+    expect(object.inReplyTo).toEqual({
+      id: 'https://example.com/notes/parent',
+      author: {
+        name: 'Parent Author',
+        handle: '@parent@example.org',
+        url: 'https://example.org/users/parent',
+      },
+    });
+  });
+
+  test('it maps inReplyTo with an unknown parent author', function () {
+    const object = mapPostToActivity({
+      ...post,
+      inReplyTo: { id: 'https://example.com/notes/parent', author: null },
+    }).object;
+
+    expect(object.inReplyTo).toEqual({ id: 'https://example.com/notes/parent', author: null });
+  });
+
   test('it maps object engagement properties', function () {
     const object = mapPostToActivity({
       ...post,
