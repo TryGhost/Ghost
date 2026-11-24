@@ -1574,6 +1574,19 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
       const tokenRowsOf = (id: string) =>
         models.Base.knex('oauth_access_tokens').where({ client_id: `ghost-app-user-${id}` });
 
+      /** Resolves once `check` holds, for work Ghost does after a commit it doesn't await. */
+      const waitFor = async (check: () => Promise<boolean>) => {
+        for (let attempt = 0; attempt < 50; attempt += 1) {
+          if (await check()) {
+            return;
+          }
+          await new Promise((resolve) => {
+            setTimeout(resolve, 20);
+          });
+        }
+        assert.fail('never happened');
+      };
+
       /** Disables or enables the installation's client, as reconciling it would. */
       const reconcileAs = (id: string, active: boolean) =>
         appTokens().reconcileClient({ id, active, scopes: [] });
@@ -1771,6 +1784,41 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         );
 
         assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+      });
+
+      it("keeps the client as it was when a caller's transaction rolls an uninstall back", async function () {
+        const installed = await install();
+        serve(manifest());
+        await start(installed.id);
+        const rollback = new Error('rolled back');
+
+        await assert.rejects(
+          models.Base.knex.transaction(async (transaction: unknown) => {
+            await service().uninstall(owner, installed.id, transaction as never);
+            throw rollback;
+          }),
+          rollback,
+        );
+
+        assert.equal((await installationRow(installed.id)).status, 'active');
+        assert.equal((await clientOf(installed.id)).disabled, 0);
+        assert.equal((await tokenRowsOf(installed.id)).length, 1);
+      });
+
+      it("disables the client once a caller's transaction commits an uninstall", async function () {
+        const installed = await install();
+        serve(manifest());
+        await start(installed.id);
+        let disabledBeforeCommit: number | undefined;
+
+        await models.Base.knex.transaction(async (transaction: unknown) => {
+          await service().uninstall(owner, installed.id, transaction as never);
+          disabledBeforeCommit = (await clientOf(installed.id)).disabled;
+        });
+
+        assert.equal(disabledBeforeCommit, 0);
+        await waitFor(async () => (await clientOf(installed.id)).disabled === 1);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
       });
 
       it('needs the revision the session started with, as a whole number', async function () {

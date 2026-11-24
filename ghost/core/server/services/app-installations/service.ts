@@ -159,6 +159,7 @@ export class AppInstallationsService {
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
   private sessionTokens: AppSessionTokens;
+  private logging: Pick<GhostLogger, 'error'>;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -186,6 +187,7 @@ export class AppInstallationsService {
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
+    this.logging = logging;
     this.sessionTokens = new AppSessionTokens({
       appTokens,
       findInstallation: (id) => this.currentInstallation(id),
@@ -269,7 +271,7 @@ export class AppInstallationsService {
     // A deadlock rolls back the whole transaction, so only one this command opened can be run
     // again. A caller's transaction is the caller's to retry.
     const installation = await (transactionOf(executor) ? install() : retryOnDeadlock(install));
-    await this.sessionTokens.keepClientInStep(installation);
+    await this.keepClientInStepOnCommit(executor, installation);
     return installation;
   }
 
@@ -332,7 +334,7 @@ export class AppInstallationsService {
       throw await this.changedSinceReview(checked, id);
     }
     const approved = await this.read(id, { executor });
-    await this.sessionTokens.keepClientInStep(approved);
+    await this.keepClientInStepOnCommit(executor, approved);
     return approved;
   }
 
@@ -388,7 +390,29 @@ export class AppInstallationsService {
       }
       return installation;
     });
-    await this.sessionTokens.keepClientInStep({ ...ended, status: 'uninstalled' });
+    await this.keepClientInStepOnCommit(executor, { ...ended, status: 'uninstalled' });
+  }
+
+  /**
+   * Brings the installation's OAuth client in step with a change once it's committed. A
+   * transaction this command opened has committed by now; a caller's commits later, so the
+   * client follows when it does, from the installation as committed, and stays as it was if
+   * the caller rolls back.
+   */
+  private async keepClientInStepOnCommit(executor: Knex, installation: Installation) {
+    const transaction = transactionOf(executor);
+    if (!transaction) {
+      await this.sessionTokens.keepClientInStep(installation);
+      return;
+    }
+    transaction.executionPromise.then(
+      () =>
+        this.read(installation.id)
+          .then((committed) => this.sessionTokens.keepClientInStep(committed))
+          .catch((err) => this.logging.error(err)),
+      // Rolled back: nothing changed
+      () => {},
+    );
   }
 
   private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {
