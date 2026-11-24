@@ -1706,15 +1706,14 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         let raced = false;
         // The uninstall lands after the session read the installation as active, so the
         // session's own reconcile turns the client back on
-        sinon
-          .stub(tokens, 'reconcileClient')
-          .callsFake(async (installation: { active: boolean }) => {
-            if (installation.active && !raced) {
-              raced = true;
-              await service().uninstall(owner, installed.id);
-            }
-            return reconcile(installation);
-          });
+        sinon.stub(tokens, 'reconcileClient').callsFake(async (...args: unknown[]) => {
+          const installation = args[0] as { active: boolean };
+          if (installation.active && !raced) {
+            raced = true;
+            await service().uninstall(owner, installed.id);
+          }
+          return reconcile(installation);
+        });
 
         const { body } = await start(installed.id, 404);
 
@@ -1728,7 +1727,8 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         serve(manifest());
         const tokens = appTokens();
         const issue = tokens.issue.bind(tokens);
-        sinon.stub(tokens, 'issue').callsFake(async (request: { installationId: string }) => {
+        sinon.stub(tokens, 'issue').callsFake(async (...args: unknown[]) => {
+          const request = args[0] as Parameters<typeof issue>[0];
           await models.Base.knex('app_installations')
             .where({ id: installed.id })
             .update({ status: 'suspended' });
@@ -1749,7 +1749,8 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         const { body: started } = await start(installed.id);
         const tokens = appTokens();
         const issue = tokens.issue.bind(tokens);
-        sinon.stub(tokens, 'issue').callsFake(async (request: { installationId: string }) => {
+        sinon.stub(tokens, 'issue').callsFake(async (...args: unknown[]) => {
+          const request = args[0] as Parameters<typeof issue>[0];
           await models.Base.knex('app_installations')
             .where({ id: installed.id })
             .update({ status: 'suspended' });
@@ -1772,7 +1773,8 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         const { body: started } = await start(installed.id);
         const tokens = appTokens();
         const issue = tokens.issue.bind(tokens);
-        sinon.stub(tokens, 'issue').callsFake(async (request: { installationId: string }) => {
+        sinon.stub(tokens, 'issue').callsFake(async (...args: unknown[]) => {
+          const request = args[0] as Parameters<typeof issue>[0];
           await service().uninstall(owner, installed.id);
           return issue(request);
         });
@@ -1797,7 +1799,7 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
             await service().uninstall(owner, installed.id, transaction as never);
             throw rollback;
           }),
-          rollback,
+          (thrown) => thrown === rollback,
         );
 
         assert.equal((await installationRow(installed.id)).status, 'active');
