@@ -1248,6 +1248,7 @@ module.exports = class StripeAPI {
    * @param {object} [options={}] - Additional data to set on the subscription object
    * @param {('always_invoice'|'create_prorations'|'none')} [options.prorationBehavior='always_invoice'] - The proration behavior to use. See [Stripe docs](https://docs.stripe.com/api/subscriptions/update#update_subscription-proration_behavior) for more info
    * @param {string} [options.cancellationReason=null] - The user defined cancellation reason
+   * @param {boolean} [options.preserveCancellation=false] - Leave a scheduled cancellation and its reason as they are, instead of reactivating the subscription
    *
    * @returns {Promise<ISubscription>}
    */
@@ -1261,10 +1262,14 @@ module.exports = class StripeAPI {
           price,
         },
       ],
-      cancel_at_period_end: false,
-      metadata: {
-        cancellation_reason: options.cancellationReason ?? null,
-      },
+      ...(options.preserveCancellation
+        ? {}
+        : {
+            cancel_at_period_end: false,
+            metadata: {
+              cancellation_reason: options.cancellationReason ?? null,
+            },
+          }),
     });
     return subscription;
   }

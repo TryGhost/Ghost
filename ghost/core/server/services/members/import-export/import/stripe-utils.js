@@ -164,7 +164,7 @@ module.exports = class MembersCSVImporterStripeUtils {
           stripeSubscription.id,
           stripeSubscriptionItem.id,
           newStripePrice.id,
-          { prorationBehavior: 'none' },
+          { prorationBehavior: 'none', preserveCancellation: true },
         );
       } catch (err) {
         // The subscription update failed after we created a new price, which would
@@ -198,7 +198,7 @@ module.exports = class MembersCSVImporterStripeUtils {
           stripeSubscription.id,
           stripeSubscriptionItem.id,
           stripePriceId,
-          { prorationBehavior: 'none' },
+          { prorationBehavior: 'none', preserveCancellation: true },
         );
       }
     }
