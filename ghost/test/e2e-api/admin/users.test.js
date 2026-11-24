@@ -884,10 +884,10 @@ describe('User API: permission includes', function () {
   // where the API reads permissions from, has to update this too.
   const PERMISSION_COUNTS = {
     Administrator: 151,
-    Editor: 56,
-    Author: 33,
-    Contributor: 24,
-    'Super Editor': 76,
+    Editor: 57,
+    Author: 34,
+    Contributor: 25,
+    'Super Editor': 77,
   };
 
   const PERMISSION_KEYS = ['action_type', 'object_id', 'object_type'];
