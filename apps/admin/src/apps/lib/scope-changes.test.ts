@@ -38,7 +38,7 @@ describe('describeScopeChanges', () => {
         ],
         { pending: true },
       ).map(({ heading }) => heading),
-    ).toEqual(['Now requires', 'No longer requires']);
+    ).toEqual(['Requested', 'Would no longer require']);
   });
 });
 

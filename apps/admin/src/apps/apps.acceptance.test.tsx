@@ -1646,7 +1646,7 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().nth(1))
       .toHaveTextContent(/^Updated, needs approval/);
-    await expect.element(appsScreen.historyEntries().nth(1)).not.toHaveTextContent('Now requires');
+    await expect.element(appsScreen.historyEntries().nth(1)).not.toHaveTextContent('Requested');
     // It has nothing to open, so its row is disabled.
     await expect.element(appsScreen.historyEntries().nth(1).getByRole('button')).toBeDisabled();
     // The replaced one never took effect, so it keeps what it asked for. Opening it closes the
@@ -1654,7 +1654,7 @@ describe('Managing apps', () => {
     await appsScreen.openHistoryEntry(2);
     await expect
       .element(appsScreen.historyEntries().nth(2))
-      .toHaveTextContent(/^Updated, needs approval.*Now requires\s*Tags\s*Edit tags\./);
+      .toHaveTextContent(/^Updated, needs approval.*Requested\s*Tags\s*Edit tags\./);
     await expect
       .element(appsScreen.historyEntries().nth(0))
       .not.toHaveTextContent('Permissions approved');

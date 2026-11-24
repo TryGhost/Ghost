@@ -23,12 +23,12 @@ const HEADINGS: Headings = {
 };
 
 /**
- * For changes a suspension asked for, which only take effect once approved: what the update
- * requires.
+ * For changes a suspension asked for, which only take effect once approved. Worded as what was
+ * asked at the time, so a history entry stays true once it is approved, withdrawn or replaced.
  */
 const PENDING_HEADINGS: Headings = {
-  added: 'Now requires',
-  removed: 'No longer requires',
+  added: 'Requested',
+  removed: 'Would no longer require',
 };
 
 const scopesOf = (changes: readonly ScopeChange[], kind: ScopeChange['change']) =>
