@@ -6,6 +6,7 @@ import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {cardHasEditMode, isCardVisibilityAvailable} from '../utils/visibility';
+import {isDocumentEditable, useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -29,9 +30,49 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const skipClick = React.useRef(false);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
+    const isReadOnly = !useIsDocumentEditable();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
+
+    // the stylesheet takes the pointer from a read-only card, and new focus is refused here. Not
+    // `inert`, which would also keep its text out of selections, find-in-page and screen readers
+    const refuseFocus = React.useCallback((event) => {
+        event.target.blur?.();
+    }, []);
+
+    // a control that had focus keeps it, so its keys and the clicks they make are refused. Shortcuts
+    // pass once the card is no longer selected: until that renders, its editing controls would take them
+    const refuseInput = React.useCallback((event) => {
+        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
+            return;
+        }
+
+        const isShortcut = event.ctrlKey || event.metaKey || ['Shift', 'Control', 'Alt', 'Meta'].includes(event.key);
+        if (event.type !== 'click' && isShortcut && !isSelected) {
+            return;
+        }
+
+        event.stopPropagation();
+
+        if (event.key !== 'Tab') {
+            event.preventDefault();
+        }
+    }, [editor, isSelected]);
+
+    // a file chosen in a dialog that was opened before the document went read-only is not taken,
+    // nor kept by the input, which would not report the same file chosen again
+    const refuseChange = React.useCallback((event) => {
+        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
+            return;
+        }
+
+        event.stopPropagation();
+
+        if (event.target.type === 'file') {
+            event.target.value = '';
+        }
+    }, [editor]);
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
@@ -200,6 +241,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 ref={containerRef}
                 cardType={cardType}
                 cardWidth={width}
+                data-kg-read-only={isReadOnly ? '' : undefined}
                 feature={cardConfig?.feature}
                 IndicatorIcon={IndicatorIcon}
                 isDragging={isDragging}
@@ -207,7 +249,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
                 wrapperStyle={wrapperStyle}
+                onChangeCapture={refuseChange}
+                onClickCapture={refuseInput}
+                onFocusCapture={isReadOnly ? refuseFocus : undefined}
                 onIndicatorClick={handleVisibilityToggle}
+                onKeyDownCapture={refuseInput}
+                onKeyUpCapture={refuseInput}
             >
                 {children}
             </CardWrapper>

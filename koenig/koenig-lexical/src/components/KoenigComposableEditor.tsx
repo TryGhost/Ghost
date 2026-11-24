@@ -20,6 +20,7 @@ import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {RestrictContentPlugin} from '../index.js';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
 import {useCollaborationContext} from '@lexical/react/LexicalCollaborationContext';
+import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSharedHistoryContext} from '../context/SharedHistoryContext';
 import {useSharedOnChangeContext} from '../context/SharedOnChangeContext';
@@ -49,6 +50,8 @@ const KoenigComposableEditor = ({
     const [editor] = useLexicalComposerContext();
     const {isCollabActive} = useCollaborationContext();
     const {editorContainerRef, darkMode, isTKEnabled} = React.useContext(KoenigComposerContext);
+    // not this editor's own flag: in a card's nested editor that follows the card's edit mode
+    const isEditable = useIsDocumentEditable();
 
     const isNested = !!editor._parentEditor;
     const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested;
@@ -108,7 +111,8 @@ const KoenigComposableEditor = ({
             {!isCollabActive && <HistoryPlugin externalHistoryState={historyState} />} {/* adds undo/redo, in multiplayer that's handled by yjs */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} isNested={isNested} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
-            {floatingAnchorElem && (<FloatingToolbarPlugin anchorElem={floatingAnchorElem} hiddenFormats={hiddenFormats} isSnippetsEnabled={isSnippetsEnabled} />)}
+            {/* formatting changes the document, which a read-only editor must not offer */}
+            {isEditable && floatingAnchorElem && (<FloatingToolbarPlugin anchorElem={floatingAnchorElem} hiddenFormats={hiddenFormats} isSnippetsEnabled={isSnippetsEnabled} />)}
             <DragDropPastePlugin />
             {registerAPI ? <ExternalControlPlugin registerAPI={registerAPI} /> : null}
             {isDragReorderEnabled && <DragDropReorderPlugin containerElem={editorContainerRef} />}

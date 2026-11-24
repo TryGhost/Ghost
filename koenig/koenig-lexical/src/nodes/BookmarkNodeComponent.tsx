@@ -9,6 +9,7 @@ import {BookmarkCard} from '../components/ui/cards/BookmarkCard.jsx';
 import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {isInternalUrl} from '../utils/isInternalUrl.js';
 import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -40,7 +41,8 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     };
 
     const handleUrlSubmit = async (eventOrUrl, type) => {
-        if (!eventOrUrl) {
+        // reached from a window-level key listener too, when a result is picked from the search list
+        if (!eventOrUrl || !isDocumentEditable(editor)) {
             return;
         }
 
@@ -78,6 +80,11 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     }, [editor, nodeKey, urlInputValue]);
 
     const handleClose = useCallback(() => {
+        // reached from a window-level Escape listener, so not only when the card has focus
+        if (!isDocumentEditable(editor)) {
+            return;
+        }
+
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             const nextSibling = node.getNextSibling();

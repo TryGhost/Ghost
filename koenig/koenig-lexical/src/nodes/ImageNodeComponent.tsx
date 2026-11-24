@@ -24,10 +24,12 @@ import {isSameVisibility} from '../utils/visibility';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
 
 export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionEditor, captionEditorInitialState, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
     const [showLink, setShowLink] = React.useState(false);
+    useResetWhenReadOnly(() => setShowLink(false));
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, cardWidth, setCardWidth, setEditing} = React.useContext(CardContext);
     const fileInputRef = React.useRef();

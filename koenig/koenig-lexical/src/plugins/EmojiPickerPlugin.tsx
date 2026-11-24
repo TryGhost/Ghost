@@ -7,6 +7,7 @@ import {$createTextNode, $getSelection, $isRangeSelection, $isTextNode, COMMAND_
 import {LexicalTypeaheadMenuPlugin} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {SearchIndex, init} from 'emoji-mart';
 import {mergeRegister} from '@lexical/utils';
+import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 init({data: emojiData});
@@ -36,6 +37,7 @@ const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji
 
 export function EmojiPickerPlugin() {
     const [editor] = useLexicalComposerContext();
+    const isEditable = useIsDocumentEditable();
     const [queryString, setQueryString] = React.useState(null);
     const [searchResults, setSearchResults] = React.useState(null);
 
@@ -164,6 +166,11 @@ export function EmojiPickerPlugin() {
         return {
             marginTop: `${rangeRect.height}px`
         };
+    }
+
+    // picking an emoji changes the document, so a menu open when the editor goes read-only closes
+    if (!isEditable) {
+        return null;
     }
 
     return (
