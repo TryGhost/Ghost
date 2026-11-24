@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const labs = require('../../../../../core/shared/labs');
+const db = require('../../../../../core/server/data/db');
 
 const rootPath = require.resolve('../../../../../core/server/auth/better-auth');
 type Root = typeof import('../../../../../core/server/auth/better-auth').default;
@@ -38,5 +40,16 @@ describe('Better Auth service root', function () {
     get.returns('a'.repeat(64));
     await betterAuth.init();
     assert.equal(typeof betterAuth.service.handler, 'function');
+  });
+
+  it("doesn't look for the app tables while the apps flag is off", async function () {
+    const betterAuth = loadRoot();
+    sinon.stub(settingsCache, 'get').withArgs('admin_session_secret').returns('a'.repeat(64));
+    sinon.stub(labs, 'isSet').withArgs('apps').returns(false);
+    const raw = sinon.spy(db.knex, 'raw');
+
+    await betterAuth.init();
+
+    sinon.assert.neverCalledWithMatch(raw, sinon.match(/show full tables|sqlite_master/));
   });
 });

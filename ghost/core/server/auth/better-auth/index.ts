@@ -22,8 +22,11 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const { getTables } = require('../../data/schema/commands');
 
   // In-development tables exist only in development and testing databases
-  const tables: string[] = await getTables(knex);
-  const apps = labs.isSet('apps') && APP_OAUTH_TABLES.every((table) => tables.includes(table));
+  const hasAppTables = async () => {
+    const tables: string[] = await getTables(knex);
+    return APP_OAUTH_TABLES.every((table) => tables.includes(table));
+  };
+  const apps = labs.isSet('apps') && (await hasAppTables());
 
   const auth = createAuth({
     db: knex,
