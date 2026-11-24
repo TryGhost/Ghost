@@ -331,7 +331,7 @@ const Sidebar: React.FC = () => {
   // With admin7Design, the navigation sits in the floating sidebar's glass
   const floatingSidebar = useFeatureFlag('admin7Design');
   // Admin 7 has Help in its top bar instead
-  const showHelp = useFeatureFlag('inAppSupport') && !floatingSidebar;
+  const showHelp = !floatingSidebar;
   const scrollFade = useScrollFade(scrollerRef, floatingSidebar);
   const {
     visibleMembershipSearchKeywords,
