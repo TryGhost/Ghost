@@ -127,6 +127,25 @@ const accountMigrationStatusSchema = z
 
 export type AccountMigrationStatus = z.infer<typeof accountMigrationStatusSchema>;
 
+const replyContextAuthorSchema = z.object({
+  name: z.string(),
+  handle: z.string(),
+  url: z.string(),
+});
+
+const inReplyToSchema = z.object({
+  id: z.string().min(1),
+  author: replyContextAuthorSchema.nullable().catch(null),
+});
+
+export type InReplyTo = z.infer<typeof inReplyToSchema>;
+
+/** Keep usable reply context; bad author → `author: null`; unusable → `null`. */
+export function sanitizeInReplyTo(raw: unknown): InReplyTo | null {
+  const parsed = inReplyToSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
+
 function emptyAccountAliasesResponse(): AccountAliasesResponse {
   return {
     destination: {
@@ -278,10 +297,7 @@ export interface Post {
   repostedByMe: boolean;
   repostedBy: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url' | 'followedByMe'> | null;
   /** Feed reply parent; not `Notification.inReplyTo`. `author: null` = unknown parent author. */
-  inReplyTo?: {
-    id: string;
-    author: { name: string; handle: string; url: string } | null;
-  } | null;
+  inReplyTo?: InReplyTo | null;
   metadata?: {
     ghostAuthors?: Array<{
       name: string;

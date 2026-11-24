@@ -226,6 +226,27 @@ describe('mapPostToActivity', function () {
     expect(object.inReplyTo).toEqual({ id: 'https://example.com/notes/parent', author: null });
   });
 
+  test('it nulls a malformed inReplyTo author and drops unusable context', function () {
+    expect(
+      mapPostToActivity({
+        ...post,
+        inReplyTo: {
+          id: 'https://example.com/notes/parent',
+          // @ts-expect-error — malformed API payload
+          author: { name: 'Bob', handle: 42, url: 'https://example.com/@bob' },
+        },
+      }).object.inReplyTo,
+    ).toEqual({ id: 'https://example.com/notes/parent', author: null });
+
+    expect(
+      mapPostToActivity({
+        ...post,
+        // @ts-expect-error — malformed API payload
+        inReplyTo: { author: { name: 'Bob', handle: '@bob@example.com', url: '' } },
+      }).object.inReplyTo,
+    ).toBeNull();
+  });
+
   test('it maps object engagement properties', function () {
     const object = mapPostToActivity({
       ...post,

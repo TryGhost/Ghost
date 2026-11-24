@@ -1,4 +1,4 @@
-import { Activity, Post, PostType } from '../api/activitypub';
+import { Activity, Post, PostType, sanitizeInReplyTo } from '../api/activitypub';
 import { ActorProperties } from '@tryghost/admin-x-framework/api/activitypub';
 
 /**
@@ -114,7 +114,7 @@ export function mapPostToActivity(post: Post): Activity {
     repostCount: post.repostCount,
     authored: post.authoredByMe === true,
     metadata: post.metadata,
-    inReplyTo: post.inReplyTo ?? null,
+    inReplyTo: sanitizeInReplyTo(post.inReplyTo),
     // These are not used but needed to comply with the ObjectProperties type
     '@context': '',
   };

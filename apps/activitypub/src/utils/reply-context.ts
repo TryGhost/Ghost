@@ -1,13 +1,8 @@
+import type { InReplyTo } from '../api/activitypub';
 import type { ObjectProperties } from '@tryghost/admin-x-framework/api/activitypub';
 
-/** Parent reply context for feed banners. `author: null` = reply, author unknown. */
-export interface ReplyContext {
-  id: string;
-  author: { name: string; handle: string; url: string } | null;
-}
-
 export type ObjectWithReplyContext = ObjectProperties & {
-  inReplyTo?: ReplyContext | null;
+  inReplyTo?: InReplyTo | null;
 };
 
 export type ReplyBanner =
@@ -41,7 +36,7 @@ export function normalizeHandle(handle: string | null | undefined): string | nul
 
 /** Pick feed reply banner; self-detect is handle-only (never id/URL). */
 export function getReplyBanner(
-  inReplyTo: ReplyContext | null | undefined,
+  inReplyTo: InReplyTo | null | undefined,
   noteAuthorHandle: string | null | undefined,
 ): ReplyBanner | null {
   if (!inReplyTo) {

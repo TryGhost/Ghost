@@ -3,7 +3,8 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ActorProperties } from '@tryghost/admin-x-framework/api/activitypub';
-import type { ObjectWithReplyContext, ReplyContext } from '../../../src/utils/reply-context';
+import type { InReplyTo } from '../../../src/api/activitypub';
+import type { ObjectWithReplyContext } from '../../../src/utils/reply-context';
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
@@ -66,7 +67,7 @@ function makeActor(overrides: Partial<ActorProperties> & { handle: string }): Ac
 const alice = makeActor({ name: 'Alice', handle: '@alice@fake.host' });
 const reposter = makeActor({ name: 'Rita', handle: '@rita@fake.host' });
 
-function makeObject(inReplyTo?: ReplyContext | null): ObjectWithReplyContext {
+function makeObject(inReplyTo?: InReplyTo | null): ObjectWithReplyContext {
   return {
     '@context': '',
     id: 'https://fake.host/notes/1',
@@ -83,7 +84,7 @@ function makeObject(inReplyTo?: ReplyContext | null): ObjectWithReplyContext {
   };
 }
 
-const bobParent: ReplyContext = {
+const bobParent: InReplyTo = {
   id: 'https://other.example/notes/parent',
   author: { name: 'Bob', handle: '@bob@other.example', url: 'https://other.example/users/bob' },
 };
