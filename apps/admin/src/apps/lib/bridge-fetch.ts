@@ -70,9 +70,7 @@ export function createAdminApiFetch({
           authorization: `Bearer ${sentToken}`,
         },
         body: request.body,
-        // The token is the request's only credential. The allowlist above and the approved
-        // scopes still limit what the app can ask for, until Ghost checks the token's scopes
-        // itself.
+        // The token is the request's only credential, which Ghost holds to the approved scopes.
         credentials: 'omit',
         // A redirect could lead off the API, where the app's path would no longer show where the
         // request went, so no redirect is followed. Most Admin API redirects are for a path missing
