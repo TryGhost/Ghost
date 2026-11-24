@@ -4,6 +4,7 @@ import {
   endsAppSession,
   failureOfResponse,
   isRefusedToken,
+  refusesStaffUser,
   sessionFailureOf,
   siteBlocksApps,
 } from './app-failure';
@@ -47,6 +48,15 @@ describe('siteBlocksApps', () => {
   it('reads a 404 without a code, how Ghost turns the apps routes away, as apps turned off', () => {
     expect(siteBlocksApps(apiError(404, null, 'NotFoundError'))).toBe('off');
     expect(siteBlocksApps(apiError(404, 'APP_NOT_INSTALLED', 'NotFoundError'))).toBeUndefined();
+  });
+});
+
+describe('refusesStaffUser', () => {
+  it('reads a staff user Ghost won’t open apps for', () => {
+    expect(refusesStaffUser(apiError(403, 'APP_STAFF_SESSION_REQUIRED', 'NoPermissionError'))).toBe(
+      true,
+    );
+    expect(refusesStaffUser(apiError(403, null, 'NoPermissionError'))).toBe(false);
   });
 });
 

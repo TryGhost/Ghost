@@ -58,6 +58,7 @@ import { placeRoute } from './lib/bridge-places';
 import { supportLink } from './lib/developer';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
 import {
+  refusesStaffUser,
   siteBlocksApps,
   type SiteBlocksApps,
   sessionFailureOf,
@@ -635,6 +636,23 @@ const AppsBlocked: React.FC<{ reason: SiteBlocksApps; onRetry: () => void }> = (
   );
 };
 
+/** Shown when Ghost won't open apps for the staff user, whichever app it is. */
+const NoAppsAccess: React.FC = () => (
+  <Centered testId="apps-access-denied">
+    <EmptyIndicator
+      actions={
+        <Button variant="outline" asChild>
+          <Link to="/">Back to Admin</Link>
+        </Button>
+      }
+      description="Only Administrators and the Owner can open apps. Your site isn’t affected."
+      title="You don’t have access to apps"
+    >
+      <LucideIcon.Lock />
+    </EmptyIndicator>
+  </Centered>
+);
+
 const NotInstalled: React.FC = () => (
   <Centered testId="app-not-installed">
     <EmptyIndicator
@@ -697,9 +715,10 @@ export const AppPage: React.FC = () => {
   const installation = session?.installation;
   const failure = sessionFailureOf(error);
   const blocked = siteBlocksApps(error);
+  const denied = refusesStaffUser(error);
   // Apps being turned off is a 404 too
   const notFound = !blocked && isInstallationNotFound(error);
-  const appFailed = failure !== undefined || blocked !== undefined;
+  const appFailed = failure !== undefined || blocked !== undefined || denied;
   useEffect(() => {
     if (error && !notFound && !appFailed) {
       reportAppsError(error);
@@ -723,6 +742,8 @@ export const AppPage: React.FC = () => {
     );
   } else if (blocked) {
     body = <AppsBlocked reason={blocked} onRetry={restart} />;
+  } else if (denied) {
+    body = <NoAppsAccess />;
   } else if (failure) {
     body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {

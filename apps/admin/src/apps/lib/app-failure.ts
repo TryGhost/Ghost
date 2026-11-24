@@ -79,6 +79,14 @@ export function siteBlocksApps(error: unknown): SiteBlocksApps | undefined {
   return isAppFailureCode(failure?.code) ? SITE_BLOCKS_APPS[failure.code] : undefined;
 }
 
+/**
+ * Ghost won't open apps for the staff user: their role doesn't allow it, such as after they were
+ * made an Editor while an app was open.
+ */
+export function refusesStaffUser(error: unknown): boolean {
+  return failureOf(error)?.code === 'APP_STAFF_SESSION_REQUIRED';
+}
+
 /** Codes that end an open app session: nothing it can do opens it again as it was. */
 const ENDS_SESSION: ReadonlySet<string> = new Set<AppFailureCode>([
   'APP_SESSION_ENDED',

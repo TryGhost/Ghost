@@ -644,6 +644,26 @@ describe('Managing apps', () => {
     await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 
+  it('says the staff user doesn’t have access to apps when Ghost refuses them a session', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(
+        403,
+        'Apps open only in a signed-in Administrator’s or Owner’s session.',
+        'APP_STAFF_SESSION_REQUIRED',
+      ),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('apps-access-denied'))
+      .toHaveTextContent('You don’t have access to apps');
+    await expect.element(page.getByText('Couldn’t load this app')).not.toBeInTheDocument();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
   // Uninstalling and installing it again from a link is how another developer's key gets pinned.
   it('says Ghost couldn’t confirm it’s the app installed, sending the publisher to its developer', async () => {
     fakeInstallations([installation()]);
@@ -2063,6 +2083,32 @@ describe('Managing apps', () => {
       await expect.element(page.getByTestId('apps-turned-off')).toBeVisible();
       expect(renewApi.requests).toHaveLength(1);
       expect(sessionsApi.requests).toHaveLength(2);
+    });
+
+    it('says the staff user doesn’t have access to apps once Ghost refuses them while it’s open', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const staffSessionRequired = apiError(
+        403,
+        'Apps open only in a signed-in Administrator’s or Owner’s session.',
+        'APP_STAFF_SESSION_REQUIRED',
+      );
+      fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        staffSessionRequired.clone(),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'The staff user behind the app token is not active.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      sessionsApi.set(staffSessionRequired);
+
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      await expect.element(page.getByTestId('apps-access-denied')).toBeVisible();
     });
 
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
