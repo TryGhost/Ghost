@@ -30,4 +30,12 @@ module.exports = class CustomThemeSettingsBREADService {
   async transaction(fn) {
     return this.Model.transaction(fn);
   }
+
+  /**
+   * Locks the active theme setting row so concurrent syncs run one at a time.
+   * A new theme has no rows of its own to lock.
+   */
+  async lockActiveTheme(transacting) {
+    await transacting('settings').where('key', 'active_theme').forUpdate().first('id');
+  }
 };

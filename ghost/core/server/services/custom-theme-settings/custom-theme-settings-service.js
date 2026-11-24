@@ -229,16 +229,58 @@ module.exports = class CustomThemeSettingsService {
    */
   async _syncRepositoryWithTheme(name, theme) {
     const themeSettings = theme.customSettings || {};
+    const browse = async (options) => {
+      const collection = await this._repository.browse({ filter: `theme:'${name}'`, ...options });
+      return collection.toJSON();
+    };
 
-    const settingsCollection = await this._repository.browse({ filter: `theme:'${name}'` });
-    let knownSettings = settingsCollection.toJSON();
+    const knownSettings = await browse();
 
     // exit early if there's nothing to sync for this theme
-    if (knownSettings.length === 0 && isEmpty(themeSettings)) {
-      return [];
+    if (!this._getChanges(name, themeSettings, knownSettings)) {
+      return knownSettings;
     }
 
-    const removedIds = [];
+    // take the lock and compare again, a concurrent sync may have written while we waited
+    return this._repository.transaction(async (transacting) => {
+      await this._repository.lockActiveTheme(transacting);
+
+      const changes = this._getChanges(name, themeSettings, await browse({ transacting }));
+
+      if (changes) {
+        for (const id of changes.remove) {
+          // locking read, a sync that doesn't take the lock may have removed the record since the compare
+          if (await this._repository.read({ id }, { transacting, forUpdate: true })) {
+            await this._repository.destroy({ id, transacting });
+          }
+        }
+
+        for (const { id, value } of changes.reset) {
+          await this._repository.edit({ value }, { id, transacting });
+        }
+
+        for (const newSettingValues of changes.add) {
+          await this._repository.add(newSettingValues, { transacting });
+        }
+      }
+
+      return browse({ transacting });
+    });
+  }
+
+  /**
+   * Compares the stored records with the theme's settings
+   *
+   * @param {string} name - name of the theme
+   * @param {Object} themeSettings - custom settings defined by the theme
+   * @param {Array} knownSettings - stored theme record objects
+   * @returns {{remove: string[], reset: Object[], add: Object[]}|null} - records to write, null when they already match
+   * @private
+   */
+  _getChanges(name, themeSettings, knownSettings) {
+    const remove = [];
+    const reset = [];
+    const add = [];
 
     // sync any knownSettings that have changed in the theme
     for (const knownSetting of knownSettings) {
@@ -251,8 +293,7 @@ module.exports = class CustomThemeSettingsService {
         debug(
           `Removing custom theme setting '${name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`,
         );
-        await this._repository.destroy({ id: knownSetting.id });
-        removedIds.push(knownSetting.id);
+        remove.push(knownSetting.id);
         continue;
       }
 
@@ -261,32 +302,28 @@ module.exports = class CustomThemeSettingsService {
         debug(
           `Resetting custom theme setting value '${name}.${themeSetting.key}' - "${knownSetting.value}" is not a valid option`,
         );
-        await this._repository.edit({ value: themeSetting.default }, { id: knownSetting.id });
+        reset.push({ id: knownSetting.id, value: themeSetting.default });
       }
     }
 
-    // clean up any removed knownSettings now that we've finished looping over them
-    knownSettings = knownSettings.filter((setting) => !removedIds.includes(setting.id));
-
     // add any new settings found in theme (or re-add settings that were removed due to type change)
-    const knownSettingsKeys = knownSettings.map((setting) => setting.key);
+    const knownSettingsKeys = knownSettings
+      .filter((setting) => !remove.includes(setting.id))
+      .map((setting) => setting.key);
 
     for (const [key, setting] of Object.entries(themeSettings)) {
       if (!knownSettingsKeys.includes(key)) {
-        const newSettingValues = {
+        debug(`Adding custom theme setting '${name}.${key}'`);
+        add.push({
           theme: name,
           key,
           type: setting.type,
           value: setting.default,
-        };
-
-        debug(`Adding custom theme setting '${name}.${key}'`);
-        await this._repository.add(newSettingValues);
+        });
       }
     }
 
-    const updatedSettingsCollection = await this._repository.browse({ filter: `theme:'${name}'` });
-    return updatedSettingsCollection.toJSON();
+    return remove.length || reset.length || add.length ? { remove, reset, add } : null;
   }
 
   /**
