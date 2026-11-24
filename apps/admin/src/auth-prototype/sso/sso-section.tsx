@@ -60,10 +60,7 @@ function ConnectedBody({
       <Inline align="start" className="rounded-lg bg-muted p-4" gap="md" justify="between">
         <Inline align="start" className="min-w-0" gap="md">
           {/* As tall as the name and domain rows together. */}
-          <ProviderMark
-            className="size-11 bg-surface-elevated text-md"
-            initials={provider.initials}
-          />
+          <ProviderMark className="size-11 text-md" provider={provider} />
           <Stack className="min-w-0" gap="xs">
             <Inline gap="sm">
               <Text size="md" weight="semibold">

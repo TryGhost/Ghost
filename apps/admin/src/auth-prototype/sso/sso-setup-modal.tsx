@@ -26,20 +26,33 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { type DemoState, getDemoState, updateSso, useDemoState } from '@/auth-prototype/demo-store';
 import { DOMAIN_VERIFICATION_RECORD, fakeDelay } from '@/auth-prototype/fake';
-import { PROVIDERS, type ProviderId, getProvider } from './providers';
+import { PROVIDERS, type Provider, type ProviderId, getProvider } from './providers';
 
 export type SetupStep = 'provider' | 'connect' | 'test';
 
-export function ProviderMark({ initials, className }: { initials: string; className?: string }) {
+/** The provider's logo on a white tile, or its initials (or a generic icon for "Other"). */
+export function ProviderMark({ provider, className }: { provider: Provider; className?: string }) {
   return (
     <span
       className={cn(
-        'flex size-9 shrink-0 items-center justify-center rounded-md bg-secondary text-sm font-semibold text-secondary-foreground',
+        'flex size-9 shrink-0 items-center justify-center rounded-md border border-border-default bg-surface-elevated text-sm font-semibold text-foreground',
         className,
       )}
       aria-hidden
     >
-      {initials}
+      {provider.logo && provider.monochrome ? (
+        // Masked like Admin's monochrome BrandIcons, so it takes the text colour.
+        <span
+          className="size-1/2 bg-current"
+          style={{ mask: `url("${provider.logo}") center / contain no-repeat` }}
+        />
+      ) : provider.logo ? (
+        <img alt="" className="size-1/2" src={provider.logo} />
+      ) : provider.generic ? (
+        <LucideIcon.Building2 className="size-1/2 text-muted-foreground" />
+      ) : (
+        provider.initials
+      )}
     </span>
   );
 }
@@ -69,7 +82,7 @@ function ProviderStep({
             type="button"
             onClick={() => onSelect(provider.id)}
           >
-            <ProviderMark initials={provider.initials} />
+            <ProviderMark provider={provider} />
             <span className="min-w-0">
               <span className="block font-medium">{provider.name}</span>
               <span className="block text-sm text-muted-foreground">{provider.description}</span>

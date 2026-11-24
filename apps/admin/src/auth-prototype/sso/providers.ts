@@ -1,3 +1,7 @@
+import googleLogo from './logos/google.svg';
+import microsoftLogo from './logos/microsoft.svg';
+import oktaLogo from './logos/okta.svg';
+
 export type ProviderId = 'okta' | 'google' | 'entra' | 'workos' | 'oidc' | 'saml';
 
 export interface ProviderField {
@@ -14,6 +18,12 @@ export interface Provider {
   /** Short name, for buttons like "Continue with Okta". */
   shortName: string;
   initials: string;
+  /** The provider's own logo. Without one, the mark shows `initials` (or a generic icon for "Other"). */
+  logo?: string;
+  /** A one-colour logo, drawn in the text colour so it shows in dark mode too. */
+  monochrome?: boolean;
+  /** For the "Other" choices, which have no brand of their own. */
+  generic?: boolean;
   description: string;
   fields: ProviderField[];
   /** Where the secret lives, for the invalid_client hint. */
@@ -32,6 +42,8 @@ export const PROVIDERS: Provider[] = [
     name: 'Okta',
     shortName: 'Okta',
     initials: 'Ok',
+    logo: oktaLogo,
+    monochrome: true,
     description: 'OpenID Connect',
     fields: oidcFields('https://acme.okta.com'),
     secretLocation: 'Okta > Applications > Ghost > General',
@@ -41,6 +53,7 @@ export const PROVIDERS: Provider[] = [
     name: 'Google Workspace',
     shortName: 'Google',
     initials: 'G',
+    logo: googleLogo,
     description: 'OpenID Connect',
     fields: [
       {
@@ -57,6 +70,7 @@ export const PROVIDERS: Provider[] = [
     name: 'Microsoft Entra ID',
     shortName: 'Microsoft',
     initials: 'Me',
+    logo: microsoftLogo,
     description: 'OpenID Connect',
     fields: [
       { id: 'tenant', label: 'Directory (tenant) ID', placeholder: '72f988bf-86f1-41af-91ab' },
@@ -82,6 +96,7 @@ export const PROVIDERS: Provider[] = [
     name: 'Other (OpenID Connect)',
     shortName: 'your company login',
     initials: 'ID',
+    generic: true,
     description: 'Any OIDC provider',
     fields: oidcFields('https://login.example.com'),
     secretLocation: "your provider's app settings",
@@ -91,6 +106,7 @@ export const PROVIDERS: Provider[] = [
     name: 'Other (SAML)',
     shortName: 'your company login',
     initials: 'SA',
+    generic: true,
     description: 'Any SAML 2.0 provider',
     fields: [
       {
