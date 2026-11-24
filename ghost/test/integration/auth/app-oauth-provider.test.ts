@@ -117,7 +117,7 @@ describe("Better Auth's OAuth provider for apps", function () {
         '/.well-known/oauth-authorization-server',
         '/.well-known/openid-configuration',
       ]) {
-        for (const headers of [{}, { cookie }]) {
+        for (const headers of [{}, { cookie }] as Array<Record<string, string>>) {
           const response = await auth.handler(new Request(url(path), { headers }));
           assert.equal(response.status, 404, path);
         }
