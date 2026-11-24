@@ -116,8 +116,9 @@ export const ghostApps = () =>
       ),
 
       /**
-       * A user token for an installation's user client, bound to a staff session. The
-       * provider checks no scopes when issuing, so `scopes` must already be narrowed to the
+       * A user token for an installation's user client, bound to a staff session of the
+       * user's that is verified and unexpired, and lasting no longer than it. The provider
+       * checks no scopes when issuing, so `scopes` must already be narrowed to the
        * installation's approved scopes; they are also held to the client's. No refresh or ID
        * token is issued.
        */
@@ -133,9 +134,9 @@ export const ghostApps = () =>
         },
         async (ctx) => {
           const refuse = (refused: AppTokenRefusal) => ctx.json({ token: null, refused });
-          const provider = getOAuthProviderApi(ctx, providerOptions(ctx), APP_SESSION_GRANT);
+          const options = providerOptions(ctx);
           const owner: AppClientOwner = { installationId: ctx.body.installationId, kind: 'user' };
-          const client = await provider.getClient(appClientId(owner));
+          const client = await getOAuthProviderApi(ctx, options).getClient(appClientId(owner));
           const user = await ctx.context.internalAdapter.findUserById(ctx.body.userId);
           if (!client || client.disabled || !isClientOf(client, owner)) {
             return refuse('client_unavailable');
@@ -143,6 +144,25 @@ export const ghostApps = () =>
           if (!user) {
             return refuse('user_not_found');
           }
+          const session = await findStaffSession(ctx, ctx.body.sessionId);
+          if (!isUsableStaffSession(session, ctx.body.userId)) {
+            return refuse('session_unavailable');
+          }
+          // Validation stops accepting the token when the session ends, so it lasts no longer
+          const sessionSecondsLeft = Math.floor(
+            (new Date(session.expiresAt).getTime() - Date.now()) / 1000,
+          );
+          const provider = getOAuthProviderApi(
+            ctx,
+            {
+              ...options,
+              accessTokenExpiresIn: Math.min(
+                options.accessTokenExpiresIn ?? DEFAULT_ACCESS_TOKEN_SECONDS,
+                sessionSecondsLeft,
+              ),
+            },
+            APP_SESSION_GRANT,
+          );
           const allowed = new Set(client.scopes ?? []);
           const scopes = [...new Set(ctx.body.scopes)].filter((scope) => allowed.has(scope));
           const issued = await provider.issueTokens({
@@ -189,18 +209,8 @@ export const ghostApps = () =>
           const client = await provider.getClient(payload.client_id);
           const owner = client ? appClientOwnerOf(client) : null;
           // The provider checks the session exists and hasn't expired, but not that it's verified
-          const adapter = await getCurrentAdapter(ctx.context.adapter);
-          const session = await adapter.findOne<StaffSessionRow>({
-            model: 'session',
-            where: [{ field: 'id', value: payload.sid }],
-          });
-          if (
-            owner?.kind !== 'user' ||
-            !session ||
-            session.userId !== payload.sub ||
-            session.verified !== true ||
-            new Date(session.expiresAt) <= new Date()
-          ) {
+          const session = await findStaffSession(ctx, payload.sid);
+          if (owner?.kind !== 'user' || !isUsableStaffSession(session, payload.sub)) {
             return ctx.json({ token: null });
           }
           const validated: ValidatedAppToken = {
@@ -217,6 +227,33 @@ export const ghostApps = () =>
       ),
     },
   }) satisfies BetterAuthPlugin;
+
+// The provider's default user token lifetime
+const DEFAULT_ACCESS_TOKEN_SECONDS = 3600;
+
+async function findStaffSession(
+  ctx: { context: { adapter: Parameters<typeof getCurrentAdapter>[0] } },
+  sessionId: string,
+): Promise<StaffSessionRow | null> {
+  const adapter = await getCurrentAdapter(ctx.context.adapter);
+  return adapter.findOne<StaffSessionRow>({
+    model: 'session',
+    where: [{ field: 'id', value: sessionId }],
+  });
+}
+
+/** A staff session an app token can be issued in or used with: the user's, verified, unexpired */
+function isUsableStaffSession(
+  session: StaffSessionRow | null,
+  userId: string,
+): session is StaffSessionRow {
+  return (
+    !!session &&
+    session.userId === userId &&
+    session.verified === true &&
+    new Date(session.expiresAt) > new Date()
+  );
+}
 
 function providerOptions(ctx: {
   context: { getPlugin(id: string): unknown };

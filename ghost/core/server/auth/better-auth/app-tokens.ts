@@ -20,12 +20,15 @@ export interface AppTokenRequest {
 /** A user token issued at app session start or renewal. */
 export interface IssuedAppToken {
   accessToken: string;
-  /** Seconds from when it was issued */
+  /** Seconds from when it was issued; never past the end of the staff session */
   expiresIn: number;
 }
 
-/** Why no token was issued: the installation's client is missing or disabled, or the user is gone. */
-export type AppTokenRefusal = 'client_unavailable' | 'user_not_found';
+/**
+ * Why no token was issued: the installation's client is missing or disabled, the user is gone,
+ * or the staff session is gone, unverified, expired or another user's.
+ */
+export type AppTokenRefusal = 'client_unavailable' | 'user_not_found' | 'session_unavailable';
 
 /**
  * Whether app tokens can be issued here. The legacy engine runs no OAuth provider. Under

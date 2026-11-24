@@ -513,6 +513,58 @@ describe("Better Auth's OAuth provider for apps", function () {
       );
     });
 
+    it("issues nothing in a staff session that is gone, unverified, expired or another user's", async function () {
+      const auth = build({ apps: true });
+      const id = installationId();
+      const editor = testUtils.DataGenerator.Content.users[2];
+      await auth.api.reconcileAppClient({
+        body: { installationId: id, active: true, scopes: ['post:browse'] },
+      });
+      const refusedIn = async (sessionId: string) =>
+        auth.api.issueAppUserToken({
+          body: { installationId: id, userId: owner.id, sessionId, scopes: [] },
+        });
+      const refused = { token: null, refused: 'session_unavailable' };
+
+      assert.deepEqual(await refusedIn(new ObjectId().toHexString()), refused);
+
+      const unverified = await staffSession(auth);
+      await knex('user_sessions').where({ id: unverified.id }).update({ verified: false });
+      assert.deepEqual(await refusedIn(unverified.id), refused);
+
+      const expired = await staffSession(auth);
+      await knex('user_sessions')
+        .where({ id: expired.id })
+        .update({ expires_at: new Date(Date.now() - 1000) });
+      assert.deepEqual(await refusedIn(expired.id), refused);
+
+      const { session: editorSession } = await auth.api.createVerifiedSession({
+        body: { userId: editor.id, origin },
+      });
+      assert.deepEqual(await refusedIn(editorSession.id), refused);
+
+      assert.equal(await tokenCount(), 0);
+    });
+
+    it('issues a token no longer than its staff session has left', async function () {
+      const auth = build({ apps: true });
+      const id = installationId();
+      await auth.api.reconcileAppClient({
+        body: { installationId: id, active: true, scopes: ['post:browse'] },
+      });
+      const session = await staffSession(auth);
+      const sessionExpiresAt = new Date(Date.now() + 600_000);
+      await knex('user_sessions')
+        .where({ id: session.id })
+        .update({ expires_at: sessionExpiresAt });
+
+      const token = await issue(auth, { id, sessionId: session.id });
+      const [row] = await knex('oauth_access_tokens');
+
+      assert.ok(token.expiresIn > 590 && token.expiresIn <= 600, `expiresIn ${token.expiresIn}`);
+      assert.ok(new Date(row.expires_at).getTime() <= sessionExpiresAt.getTime());
+    });
+
     it('refuses a token once its session, client or installation is gone', async function () {
       const auth = build({ apps: true });
       const id = installationId();
@@ -561,8 +613,10 @@ describe("Better Auth's OAuth provider for apps", function () {
       const { session } = await auth.api.createVerifiedSession({
         body: { userId: editor.id, origin },
       });
+      const token = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
 
-      const token = await issue(auth, { id, sessionId: session.id });
+      // Issuing refuses another user's session, so the row is moved to one
+      await knex('oauth_access_tokens').update({ session_id: session.id });
 
       assert.equal(await validate(auth, token.accessToken), null);
     });
