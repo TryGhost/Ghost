@@ -333,13 +333,15 @@ describe('Installing an app', () => {
       );
     // Every changed field is shown, including the description that needs no approval on its own.
     await expect(appsScreen.changes()).toHaveCount(3);
-    await expect.element(appsScreen.changes().nth(0)).toHaveTextContent('NamePodcastPodcasts');
+    await expect
+      .element(appsScreen.changes().nth(0))
+      .toHaveTextContent('NameWas: PodcastNow: Podcasts');
     await expect
       .element(appsScreen.changes().nth(1))
-      .toHaveTextContent('DescriptionPublish episodes and embed players.New words.');
+      .toHaveTextContent('DescriptionWas: Publish episodes and embed players.Now: New words.');
     await expect
       .element(appsScreen.changes().nth(2))
-      .toHaveTextContent('DeveloperExample AudioPodcast Network');
+      .toHaveTextContent('DeveloperWas: Example AudioNow: Podcast Network');
 
     await appsScreen.approveChangesButton().click();
 
@@ -381,11 +383,11 @@ describe('Installing an app', () => {
     await expect(appsScreen.changes()).toHaveCount(2);
     await expect
       .element(appsScreen.changes().first())
-      .toHaveTextContent(`Install link${MANIFEST_URL}${elsewhere}`);
+      .toHaveTextContent(`Install linkWas: ${MANIFEST_URL}Now: ${elsewhere}`);
     await expect
       .element(appsScreen.changes().nth(1))
       .toHaveTextContent(
-        'Page in Adminhttps://podcast.example.com/adminhttps://audio.example.org/admin',
+        'Page in AdminWas: https://podcast.example.com/adminNow: https://audio.example.org/admin',
       );
 
     await appsScreen.approveChangesButton().click();
@@ -571,7 +573,7 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await expect
       .element(appsScreen.changes().filter({ hasText: 'Install link' }))
-      .toHaveTextContent(`https://new.example.com/ghost-app.json${MANIFEST_URL}`);
+      .toHaveTextContent(`Was: https://new.example.com/ghost-app.jsonNow: ${MANIFEST_URL}`);
     expect(previewApi.requests).toHaveLength(1);
     expect(approveApi.requests).toHaveLength(1);
   });

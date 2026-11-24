@@ -2,7 +2,10 @@ import React from 'react';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { ChangeRow } from '@/apps/lib/changes';
 
-/** One side of a change. The approved side reads as replaced, struck through when it had a value. */
+/**
+ * One side of a change. The approved side reads as replaced, struck through when it had a value.
+ * A screen reader can't tell the sides apart by their look, so each value is labelled for it.
+ */
 const Value: React.FC<{ value: string | null; missing: string; approved?: boolean }> = ({
   value,
   missing,
@@ -14,7 +17,14 @@ const Value: React.FC<{ value: string | null; missing: string; approved?: boolea
     size="sm"
     tone={approved ? 'secondary' : undefined}
   >
-    {value ?? <em>{missing}</em>}
+    {value === null ? (
+      <em>{missing}</em>
+    ) : (
+      <>
+        <span className="sr-only">{approved ? 'Was: ' : 'Now: '}</span>
+        {value}
+      </>
+    )}
   </Text>
 );
 
