@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {focusEditor, initialize, insertCard} from '../utils/e2e';
+import type {Page} from '@playwright/test';
 
 for (const insertion of ['URL', 'dropdown']) {
     test.describe(`Bookmark loading from ${insertion}`, () => {
@@ -25,14 +26,14 @@ for (const insertion of ['URL', 'dropdown']) {
         await expect(page.getByTestId('bookmark-url-loading-container')).toBeVisible();
     });
 
-    async function finishRequest(page) {
+    async function finishRequest(page: Page) {
         await page.evaluate(async () => {
             window.finishBookmarkRequest();
             await new Promise(resolve => setTimeout(resolve, 0));
         });
     }
 
-    async function failRequest(page) {
+    async function failRequest(page: Page) {
         await page.evaluate(async () => {
             window.failBookmarkRequest();
             await new Promise(resolve => setTimeout(resolve, 0));
@@ -49,7 +50,7 @@ for (const insertion of ['URL', 'dropdown']) {
     });
 
     test('ignores a preview that arrives after the writer deletes the card', async ({page}) => {
-        const errors = [];
+        const errors: string[] = [];
         page.on('pageerror', error => errors.push(error.message));
         page.on('console', message => {
             if (message.type() === 'error') {

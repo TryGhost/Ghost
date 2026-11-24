@@ -413,7 +413,11 @@ test.describe('Gallery card', async () => {
     test.describe('dragging image cards onto a gallery with visibility', function () {
         const paidOnly = {web: {nonMember: false, memberSegment: 'status:-free'}, email: {memberSegment: 'status:-free'}};
 
-        async function loadGalleryAndImage(galleryVisibility, imageVisibility) {
+        type Visibility = typeof paidOnly;
+        type SerializedCard = {type: string; src?: string; visibility?: Visibility; images?: Array<{visibility?: Visibility}>};
+        type SerializedState = {root: {children: SerializedCard[]}};
+
+        async function loadGalleryAndImage(galleryVisibility: Visibility | null, imageVisibility: Visibility | null) {
             await focusEditor(page);
             await insertCard(page, {cardName: 'gallery'});
             await page.keyboard.press('Enter');
@@ -427,7 +431,7 @@ test.describe('Gallery card', async () => {
             await fileChooser.setFiles([filePath]);
 
             await page.waitForFunction(() => {
-                const state = window.lexicalEditor.getEditorState().toJSON();
+                const state = window.lexicalEditor.getEditorState().toJSON() as SerializedState;
                 const imageNode = state.root.children.find(c => c.type === 'image');
                 return imageNode && imageNode.src;
             }, {timeout: 5000});
@@ -435,7 +439,7 @@ test.describe('Gallery card', async () => {
             // set the audiences directly in the editor state
             await page.evaluate(({galleryVis, imageVis}) => {
                 const editor = window.lexicalEditor;
-                const json = editor.getEditorState().toJSON();
+                const json = editor.getEditorState().toJSON() as SerializedState;
                 for (const node of json.root.children) {
                     if (node.type === 'gallery' && galleryVis) {
                         node.visibility = galleryVis;
@@ -467,10 +471,10 @@ test.describe('Gallery card', async () => {
             await expect(page.locator('[data-kg-card="gallery"] [data-image]')).toHaveCount(1);
             await expect(page.locator('[data-kg-card="image"]')).toHaveCount(0);
 
-            const state = await getEditorState(page);
+            const state = await getEditorState(page) as SerializedState;
             const gallery = state.root.children.find(c => c.type === 'gallery');
-            expect(gallery.visibility).toEqual(paidOnly);
-            expect(gallery.images[0].visibility).toBeUndefined();
+            expect(gallery?.visibility).toEqual(paidOnly);
+            expect(gallery?.images?.[0].visibility).toBeUndefined();
         });
     });
 

@@ -11,6 +11,9 @@ declare interface Window {
     lexicalEditor: KoenigTestEditor;
     originalEditorState: unknown;
     navigate: (path: string) => void;
+    // set by bookmark-loading.test.ts's stubbed fetchEmbed
+    finishBookmarkRequest: () => void;
+    failBookmarkRequest: () => void;
 }
 
 declare module 'fs-extra' {

@@ -1,6 +1,6 @@
 import {createSnippet, ctrlOrCmd, focusEditor, getEditorStateJSON, initialize, insertCard} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
-import type {Page} from '@playwright/test';
+import type {Locator, Page} from '@playwright/test';
 
 // Every card with settings has one Edit button that opens a single settings
 // panel in edit mode. Visibility is always the panel's last tab. Each rule is
@@ -74,25 +74,25 @@ test.describe('Content Visibility', async () => {
         await page.close();
     });
 
-    async function selectCard(cardName, nth = 0) {
+    async function selectCard(cardName: string, nth = 0) {
         const card = page.locator(`[data-kg-card="${cardName}"]`).nth(nth);
         await card.click();
         await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
         return card;
     }
 
-    async function expectPanelOnTab(card, tab) {
+    async function expectPanelOnTab(card: Locator, tab: string) {
         await expect(card.getByTestId('settings-panel')).toBeVisible();
         await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
         await expect(card.getByTestId(`tab-contents-${tab}`)).toBeVisible();
     }
 
     // the indicator's position is measured from the media, so wait for it to have a size
-    async function expectImageLoaded(card) {
-        await expect.poll(() => card.locator('figure img').first().evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    async function expectImageLoaded(card: Locator) {
+        await expect.poll(() => card.locator('figure img').first().evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
     }
 
-    async function expectToolbarWithoutPanel(card) {
+    async function expectToolbarWithoutPanel(card: Locator) {
         await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
         await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
         await expect(card.getByTestId('settings-panel')).not.toBeVisible();
@@ -435,9 +435,9 @@ test.describe('Content Visibility', async () => {
             await expect(indicator).toBeVisible();
             await expectImageLoaded(card);
 
-            const cardBox = await card.boundingBox();
-            const imageBox = await card.locator('figure img').first().boundingBox();
-            const indicatorBox = await indicator.boundingBox();
+            const cardBox = (await card.boundingBox())!;
+            const imageBox = (await card.locator('figure img').first().boundingBox())!;
+            const indicatorBox = (await indicator.boundingBox())!;
 
             // the indicator must not add space above the image
             expect(imageBox.y - cardBox.y).toBeLessThan(4);
@@ -458,8 +458,8 @@ test.describe('Content Visibility', async () => {
             await expect(indicator).toBeVisible();
             await expectImageLoaded(card);
 
-            const videoBox = await card.locator('figure img').first().boundingBox();
-            const indicatorBox = await indicator.boundingBox();
+            const videoBox = (await card.locator('figure img').first().boundingBox())!;
+            const indicatorBox = (await indicator.boundingBox())!;
 
             expect(indicatorBox.x - videoBox.x).toBeGreaterThan(8);
             expect(indicatorBox.x - videoBox.x).toBeLessThan(24);
@@ -484,11 +484,11 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('tab-design').click();
             await expectPanelOnTab(card, 'design');
             const preview = card.getByTestId('settings-panel').locator('img').first();
-            await expect.poll(() => preview.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+            await expect.poll(() => preview.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 
             // the indicator can stick anywhere within this area while the page scrolls
-            const area = await indicator.locator('xpath=../..').boundingBox();
-            const videoBox = await card.getByAltText('Video thumbnail').boundingBox();
+            const area = (await indicator.locator('xpath=../..').boundingBox())!;
+            const videoBox = (await card.getByAltText('Video thumbnail').boundingBox())!;
             expect(area.y + area.height).toBeLessThanOrEqual(videoBox.y + videoBox.height + 1);
         });
 
@@ -504,9 +504,9 @@ test.describe('Content Visibility', async () => {
             await expect(indicator).toBeVisible();
             await expectImageLoaded(card);
 
-            const cardBox = await card.boundingBox();
-            const imageBox = await card.locator('figure img').first().boundingBox();
-            const indicatorBox = await indicator.boundingBox();
+            const cardBox = (await card.boundingBox())!;
+            const imageBox = (await card.locator('figure img').first().boundingBox())!;
+            const indicatorBox = (await indicator.boundingBox())!;
 
             expect(imageBox.x - cardBox.x).toBeGreaterThan(100);
             expect(indicatorBox.x - imageBox.x).toBeGreaterThan(8);
@@ -516,7 +516,7 @@ test.describe('Content Visibility', async () => {
         });
 
         test('the visibility indicator can follow every row of a gallery', async function () {
-            const galleryImage = row => ({row, src: '/Koenig-editor-1.png', width: 1600, height: 900, fileName: 'image.png'});
+            const galleryImage = (row: number) => ({row, src: '/Koenig-editor-1.png', width: 1600, height: 900, fileName: 'image.png'});
             const gallery = {type: 'gallery', version: 1, images: [0, 0, 0, 1, 1, 1].map(galleryImage), caption: '', visibility: hidden};
             await initialize({page, uri: `/#/?content=${content(paragraph('some text'), gallery)}`});
             const card = page.locator('[data-kg-card="gallery"]');
@@ -524,8 +524,8 @@ test.describe('Content Visibility', async () => {
             await expectImageLoaded(card);
 
             // the indicator can stick anywhere within this area while the page scrolls
-            const area = await card.getByTestId('visibility-indicator').locator('xpath=../..').boundingBox();
-            const lastImage = await card.locator('figure img').last().boundingBox();
+            const area = (await card.getByTestId('visibility-indicator').locator('xpath=../..').boundingBox())!;
+            const lastImage = (await card.locator('figure img').last().boundingBox())!;
 
             expect(area.y + area.height).toBeGreaterThanOrEqual(lastImage.y + lastImage.height - 1);
         });
@@ -552,8 +552,8 @@ test.describe('Content Visibility', async () => {
             const card = page.locator('[data-kg-card="image"]');
             await card.getByTestId('visibility-indicator').click();
 
-            const box = await card.getByTestId('settings-panel').boundingBox();
-            const viewport = page.viewportSize();
+            const box = (await card.getByTestId('settings-panel').boundingBox())!;
+            const viewport = page.viewportSize()!;
 
             expect(box.x).toBeGreaterThanOrEqual(0);
             expect(box.y).toBeGreaterThanOrEqual(0);
