@@ -71,12 +71,11 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
  *
  * @param {string} encodedData - A string encoding the response from Stripe Connect
  * @param {(prop: string) => Promise<any>} getSessionProp - A function to retrieve data from the current session.
- * @param {(prop: string) => Promise<void>} deleteSessionProp - A function to remove data from the current session.
- *   The state is good for one key: the key that passes every check uses it up.
+ *   The caller uses the state up once the key is saved, so it is good for one key.
  *
  * @returns {Promise<{secret_key: string, public_key: string, livemode: boolean, display_name: string, account_id: string}>}
  */
-async function getStripeConnectTokenData(encodedData, getSessionProp, deleteSessionProp) {
+async function getStripeConnectTokenData(encodedData, getSessionProp) {
   const data = JSON.parse(Buffer.from(encodedData, 'base64').toString());
 
   const state = await getSessionProp(STATE_PROP);
@@ -98,8 +97,6 @@ async function getStripeConnectTokenData(encodedData, getSessionProp, deleteSess
   if (![data.p, data.a].every((value) => typeof value === 'string' && value)) {
     throw new errors.ValidationError({ message: tpl(messages.incompleteKey) });
   }
-  // Used up only once the key passes every check.
-  await deleteSessionProp(STATE_PROP);
 
   return {
     public_key: data.p,

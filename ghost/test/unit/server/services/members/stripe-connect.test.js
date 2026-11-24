@@ -71,9 +71,7 @@ describe('Members - Stripe Connect', function () {
         }),
       ).toString('base64');
     return {
-      session,
       getSessionProp: (prop) => session.get(prop),
-      deleteSessionProp: (prop) => session.delete(prop),
       key,
     };
   }
@@ -87,13 +85,9 @@ describe('Members - Stripe Connect', function () {
     );
 
   it('getStripeConnectTokenData returns token data when the state is correct', async function () {
-    const { session, getSessionProp, deleteSessionProp, key } = await startConnection('live');
+    const { getSessionProp, key } = await startConnection('live');
 
-    const tokenData = await stripeConnect.getStripeConnectTokenData(
-      key(),
-      getSessionProp,
-      deleteSessionProp,
-    );
+    const tokenData = await stripeConnect.getStripeConnectTokenData(key(), getSessionProp);
 
     assert.deepEqual(tokenData, {
       public_key: 'pk_connected',
@@ -102,94 +96,57 @@ describe('Members - Stripe Connect', function () {
       display_name: 'Rediverge',
       account_id: 'acct_1',
     });
-    // The state is good for one key.
-    assert.equal(session.has(stripeConnect.STATE_PROP), false);
-    await rejects(
-      stripeConnect.getStripeConnectTokenData(key(), getSessionProp, deleteSessionProp),
-    );
   });
 
   it('getStripeConnectTokenData throws when the state is incorrect, and keeps the connection going', async function () {
-    const { getSessionProp, deleteSessionProp, key } = await startConnection();
+    const { getSessionProp, key } = await startConnection();
 
     // Any well-formed key, say one in a link from another site.
     await rejects(
-      stripeConnect.getStripeConnectTokenData(
-        Buffer.from('{}').toString('base64'),
-        getSessionProp,
-        deleteSessionProp,
-      ),
+      stripeConnect.getStripeConnectTokenData(Buffer.from('{}').toString('base64'), getSessionProp),
     );
-    await rejects(
-      stripeConnect.getStripeConnectTokenData(
-        key({ s: 'other' }),
-        getSessionProp,
-        deleteSessionProp,
-      ),
-    );
+    await rejects(stripeConnect.getStripeConnectTokenData(key({ s: 'other' }), getSessionProp));
 
     // The key for this connection still works.
-    const tokenData = await stripeConnect.getStripeConnectTokenData(
-      key(),
-      getSessionProp,
-      deleteSessionProp,
-    );
+    const tokenData = await stripeConnect.getStripeConnectTokenData(key(), getSessionProp);
     assert.equal(tokenData.account_id, 'acct_1');
   });
 
   it('getStripeConnectTokenData throws for a key without a state when no connection started', async function () {
     const { key } = await startConnection();
 
-    await rejects(
-      stripeConnect.getStripeConnectTokenData(
-        key({ s: undefined }),
-        () => undefined,
-        () => {},
-      ),
-    );
+    await rejects(stripeConnect.getStripeConnectTokenData(key({ s: undefined }), () => undefined));
   });
 
   it('getStripeConnectTokenData throws an hour after the connection started', async function () {
     const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
     try {
-      const { getSessionProp, deleteSessionProp, key } = await startConnection();
+      const { getSessionProp, key } = await startConnection();
       clock.tick(60 * 60 * 1000);
 
-      await rejects(
-        stripeConnect.getStripeConnectTokenData(key(), getSessionProp, deleteSessionProp),
-      );
+      await rejects(stripeConnect.getStripeConnectTokenData(key(), getSessionProp));
     } finally {
       clock.restore();
     }
   });
 
-  it('getStripeConnectTokenData throws for a key without its API keys, and keeps the state', async function () {
-    const { session, getSessionProp, deleteSessionProp, key } = await startConnection('live');
+  it('getStripeConnectTokenData throws for a key without its API keys, ', async function () {
+    const { getSessionProp, key } = await startConnection('live');
 
     for (const fields of [{ p: '' }, { a: undefined }, { a: 42 }]) {
-      await assert.rejects(
-        stripeConnect.getStripeConnectTokenData(key(fields), getSessionProp, deleteSessionProp),
-        { errorType: 'ValidationError' },
-      );
+      await assert.rejects(stripeConnect.getStripeConnectTokenData(key(fields), getSessionProp), {
+        errorType: 'ValidationError',
+      });
     }
-    assert.equal(session.has(stripeConnect.STATE_PROP), true);
     // The complete key for this connection still works.
-    const tokenData = await stripeConnect.getStripeConnectTokenData(
-      key(),
-      getSessionProp,
-      deleteSessionProp,
-    );
+    const tokenData = await stripeConnect.getStripeConnectTokenData(key(), getSessionProp);
     assert.equal(tokenData.secret_key, 'sk_connected');
   });
 
-  it('getStripeConnectTokenData throws for a test-mode account in a live-mode connection, and keeps the state', async function () {
-    const { session, getSessionProp, deleteSessionProp, key } = await startConnection('live');
+  it('getStripeConnectTokenData throws for a test-mode account in a live-mode connection, ', async function () {
+    const { getSessionProp, key } = await startConnection('live');
 
-    await rejects(
-      stripeConnect.getStripeConnectTokenData(key({ l: false }), getSessionProp, deleteSessionProp),
-    );
-    // Only a key that passes every check uses the state up.
-    assert.equal(session.has(stripeConnect.STATE_PROP), true);
+    await rejects(stripeConnect.getStripeConnectTokenData(key({ l: false }), getSessionProp));
   });
 
   for (const stored of [null, undefined, '']) {

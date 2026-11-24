@@ -14,7 +14,7 @@ const isBetterAuth = auth.isBetterAuth;
 
 /**
  * @param {Object} frame
- * @param {{state?: string}} checked - Gets the Better Auth state the token was checked against
+ * @param {{state?: string, prop?: string}} checked - Gets the state the token was checked against
  */
 async function getStripeConnectData(frame, checked) {
   const stripeConnectIntegrationToken = frame.data.settings.find(
@@ -22,31 +22,28 @@ async function getStripeConnectData(frame, checked) {
   );
 
   if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
-    // Better Auth has no session object. Its state is used up once the
-    // settings are saved (editSettings); the legacy session's, once a key
-    // passes every check.
+    // Better Auth has no session object
     const getSessionProp = isBetterAuth
       ? async () => {
           checked.state = await auth.stripeConnectState.get(frame.options.context.user);
           return checked.state;
         }
-      : (prop) => frame.original.session?.[prop];
-    const deleteSessionProp = isBetterAuth
-      ? async () => {}
       : (prop) => {
-          delete frame.original.session[prop];
+          checked.prop = prop;
+          checked.state = frame.original.session?.[prop];
+          return checked.state;
         };
 
     return await settingsBREADService.getStripeConnectData(
       stripeConnectIntegrationToken,
       getSessionProp,
-      deleteSessionProp,
       membersService.stripeConnect.getStripeConnectTokenData,
     );
   }
 }
 
-// Only a saved token uses up its Better Auth state, so a failed save can be retried
+// Only a saved token uses up its state, so a failed save can be retried and
+// the state is good for one key, under either auth engine
 async function editSettings(frame) {
   const checked = {};
   const stripeConnectData = await getStripeConnectData(frame, checked);
@@ -57,7 +54,12 @@ async function editSettings(frame) {
   );
 
   if (stripeConnectData && checked.state) {
-    await auth.stripeConnectState.clear(frame.options.context.user, checked.state);
+    if (isBetterAuth) {
+      await auth.stripeConnectState.clear(frame.options.context.user, checked.state);
+    } else if (frame.original.session?.[checked.prop] === checked.state) {
+      // A connection started meanwhile keeps its own state
+      delete frame.original.session[checked.prop];
+    }
   }
   return result;
 }
