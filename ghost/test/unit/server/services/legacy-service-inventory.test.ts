@@ -196,24 +196,27 @@ describe('legacy service inventory', function () {
     (item) => !metadata.includes(item.name),
   );
   const isFile = (file: string) => statSync(file, { throwIfNoEntry: false })?.isFile() === true;
-  // A service that is not listed as legacy must meet the standard.
+  // A service that is not listed as legacy must meet the standard: an index.ts root that boot
+  // starts, or a provider.ts that the application registers.
   const standard = onDisk
     .filter(
       (item) =>
         !legacy[item.name] &&
         item.isDirectory() &&
-        isFile(path.join(servicesRoot, item.name, 'index.ts')),
+        ['index.ts', 'provider.ts'].some((root) =>
+          isFile(path.join(servicesRoot, item.name, root)),
+        ),
     )
     .map((item) => item.name);
 
-  it('requires everything that is not a legacy entry to be a directory with an index.ts root', function () {
+  it('requires everything that is not a legacy entry to be a directory with an index.ts or provider.ts root', function () {
     for (const name of metadata) {
       assertFileWithin(servicesRoot, name);
     }
     for (const item of onDisk) {
       assert.ok(
         legacy[item.name] || standard.includes(item.name),
-        `${item.name} is not a legacy entry, so it must be a directory with an index.ts root`,
+        `${item.name} is not a legacy entry, so it must be a directory with an index.ts or provider.ts root`,
       );
     }
   });
@@ -269,7 +272,10 @@ describe('legacy service inventory', function () {
     }
   });
 
-  for (const name of standard) {
+  // Extras accompany an index.ts root. A provider.ts declares services and has none.
+  for (const name of standard.filter((service) =>
+    isFile(path.join(servicesRoot, service, 'index.ts')),
+  )) {
     it(`${name} has exactly the catalogued extras`, function () {
       const extras = open[name]?.extras ?? {};
       assert.deepEqual(

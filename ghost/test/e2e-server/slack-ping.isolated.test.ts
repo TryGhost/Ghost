@@ -118,11 +118,14 @@ taxonomies:
   });
 
   it('returns HTTP success while a test notification is pending after repeated init, then absorbs delivery failure', async function () {
-    const root: typeof import('../../core/server/services/slack-ping').default =
-      require('../../core/server/services/slack-ping').default;
-    const service = root.service;
-    await Promise.all([root.init(), root.init()]);
-    assert.equal(root.service, service);
+    const {
+      SlackPing,
+    }: typeof import('../../core/server/services/slack-ping/provider') = require('../../core/server/services/slack-ping/provider');
+    const singleSite: typeof import('../../bootstrap/transition/single-site') = require('../../bootstrap/transition/single-site');
+    const service = singleSite.site().get(SlackPing);
+    singleSite.start();
+    singleSite.start();
+    assert.equal(singleSite.site().get(SlackPing), service);
     const received = Promise.withResolvers<unknown>();
     const release = Promise.withResolvers<void>();
     const scope = nock(webhook, { reqheaders: { 'content-type': 'application/json' } })

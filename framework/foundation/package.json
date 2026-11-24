@@ -1,0 +1,26 @@
+{
+  "name": "@tryghost/foundation",
+  "version": "private",
+  "private": true,
+  "description": "Framework code that creates the application and builds its services. Only bootstrap imports it.",
+  "type": "module",
+  "imports": {
+    "#foundation/*": "./src/*.ts",
+    "#support/*": "@tryghost/support/*"
+  },
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tryghost/support": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "vitest": "catalog:"
+  }
+}

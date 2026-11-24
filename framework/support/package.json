@@ -1,0 +1,20 @@
+{
+  "name": "@tryghost/support",
+  "version": "private",
+  "private": true,
+  "description": "Framework code that holds no state. Any file may import it.",
+  "type": "module",
+  "imports": {
+    "#support/*": "./src/*.ts"
+  },
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "test:types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:"
+  }
+}

@@ -7,7 +7,8 @@ const servicesRoot = 'ghost/core/server/services';
 const serviceImplementations = {
   path: `^${servicesRoot}/([^/]+)(?:/|$)`,
   // Legacy JS roots remain wiring candidates; nested indexes are implementations.
-  pathNot: `^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`,
+  // A provider.ts is wiring too, and has its own rule: provider-dependencies.
+  pathNot: `^${servicesRoot}/[^/]+/(?:index\\.(?:js|ts)|provider\\.ts)$`,
 };
 
 // The service checks apply to the services directory only, so a defineService
@@ -463,6 +464,48 @@ module.exports = {
       },
       to: {
         path: '^ghost/core/kernel/define-service\\.ts$',
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    // ============================================================
+    // Framework and application
+    // ============================================================
+    {
+      name: 'framework-not-application',
+      comment: 'Framework code knows nothing about Ghost. It must not import application code.',
+      severity: 'error',
+      from: { path: '^framework/' },
+      to: { path: '^(ghost|apps|packages|koenig|contracts|e2e)/' },
+    },
+    {
+      name: 'support-not-foundation',
+      comment: 'framework/support holds no state, so it must not import framework/foundation.',
+      severity: 'error',
+      from: { path: '^framework/support/' },
+      to: { path: '^framework/foundation/' },
+    },
+    {
+      name: 'foundation-only-from-bootstrap',
+      comment:
+        'Only ghost/bootstrap imports framework/foundation. Other code declares what it needs and is handed it.',
+      severity: 'error',
+      from: { pathNot: ['^framework/foundation/', '^ghost/bootstrap/'] },
+      to: { path: '^framework/foundation/' },
+    },
+    {
+      name: 'provider-dependencies',
+      comment:
+        'A provider only declares. It names what its services need by importing their definitions: from ghost/shared, another provider, or its own folder.',
+      severity: 'error',
+      from: { path: `^${servicesRoot}/([^/]+)/provider\\.ts$` },
+      to: {
+        pathNot: [
+          '^framework/support/',
+          '^ghost/shared/',
+          `^${servicesRoot}/[^/]+/provider\\.ts$`,
+          // $1 is the service name captured by from.path.
+          `^${servicesRoot}/$1/`,
+        ],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },

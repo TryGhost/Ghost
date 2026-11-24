@@ -368,7 +368,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const tiers = require('./server/services/tiers').default;
   const indexnow = require('./server/services/indexnow-ping').default;
   const upgrades = require('./server/services/upgrades').default;
-  const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
   const postScheduling = require('./server/services/post-scheduling').default;
   const comments = require('./server/services/comments').default;
@@ -442,6 +441,13 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   // Explore captures the ready Stats aggregate during initialization.
   await statsService.init();
 
+  // Opens the site scope: declared listeners are subscribed, and each service is built on first use.
+  const singleSite = require('../bootstrap/transition/single-site');
+  singleSite.start();
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(() => singleSite.stop(), 'Site scope');
+  }
+
   await Promise.all([
     identityTokens.init(),
     staffService.init(),
@@ -452,7 +458,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     membersEvents.init(),
     indexnow.init(),
     upgrades.init(),
-    slack.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
@@ -484,7 +489,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   if (ghostServer) {
     // Each releases what its start acquired; the next boot in this process starts it again.
     ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
-    ghostServer.registerCleanupTask(() => slack.stop(), 'Slack ping');
   }
   // Member welcome emails captures the ready Email address and Link tracking instances during
   // initialization, and automation polling sends through it once jobs start.

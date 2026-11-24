@@ -42,10 +42,7 @@ function createService() {
 
   const logging = createLoggingFake();
 
-  // Chainable so `events.removeListener(...).on(...)` works.
-  const events = { removeListener: sinon.stub().returnsThis(), on: sinon.stub().returnsThis() };
-
-  const deps = { blogIcon, events, logging, request, settingsCache, urlService, urlUtils };
+  const deps = { blogIcon, logging, request, settingsCache, urlService, urlUtils };
   const service = new SlackPingService(deps);
 
   return { service, deps };
@@ -93,18 +90,6 @@ describe('Slack Ping', function () {
   afterEach(function () {
     sinon.restore();
     nock.cleanAll();
-  });
-
-  describe('subscribeEvents()', function () {
-    it('registers listeners for post.published and slack.test', function () {
-      const { service, deps } = createService();
-
-      service.subscribeEvents();
-
-      sinon.assert.calledTwice(deps.events.on);
-      sinon.assert.calledWith(deps.events.on, 'post.published', service.postListener);
-      sinon.assert.calledWith(deps.events.on, 'slack.test', service.testListener);
-    });
   });
 
   describe('handlePostEvent()', function () {

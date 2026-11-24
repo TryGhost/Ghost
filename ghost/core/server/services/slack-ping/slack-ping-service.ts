@@ -31,15 +31,6 @@ type PostModel = {
   toJSON(): Record<string, unknown>;
 };
 
-type ModelEventListener = (model: PostModel, options?: { importing?: boolean }) => void;
-
-type ModelEvents = {
-  removeListener(event: 'post.published', listener: ModelEventListener): ModelEvents;
-  removeListener(event: 'slack.test', listener: () => void): ModelEvents;
-  on(event: 'post.published', listener: ModelEventListener): ModelEvents;
-  on(event: 'slack.test', listener: () => void): ModelEvents;
-};
-
 type SlackAuthor = {
   name?: string;
   profile_image?: string;
@@ -61,7 +52,6 @@ type SlackPingPayload = {
 
 export type SlackPingServiceDeps = {
   blogIcon: BlogIcon;
-  events: ModelEvents;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: RequestFn;
   settingsCache: SettingsCache;
@@ -78,18 +68,14 @@ function hasPostProperties(data: Record<string, unknown>): boolean {
 
 export class SlackPingService {
   blogIcon: BlogIcon;
-  events: ModelEvents;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: RequestFn;
   settingsCache: SettingsCache;
   urlService: UrlService;
   urlUtils: UrlUtils;
-  postListener: ModelEventListener;
-  testListener: () => void;
 
   constructor({
     blogIcon,
-    events,
     logging,
     request,
     settingsCache,
@@ -97,16 +83,11 @@ export class SlackPingService {
     urlUtils,
   }: SlackPingServiceDeps) {
     this.blogIcon = blogIcon;
-    this.events = events;
     this.logging = logging;
     this.request = request;
     this.settingsCache = settingsCache;
     this.urlService = urlService;
     this.urlUtils = urlUtils;
-
-    // Stable references let this instance remove its own listeners.
-    this.postListener = this.handlePostEvent.bind(this);
-    this.testListener = this.handleTestEvent.bind(this);
   }
 
   getSlackSettings(): { username: string | undefined; url: string | undefined } {
@@ -258,7 +239,7 @@ export class SlackPingService {
   }
 
   /**
-   * Event listener for post.published events
+   * Handles post.published, as declared in provider.ts
    */
   handlePostEvent(model: PostModel, options?: { importing?: boolean }): void {
     // CASE: do not ping slack if we import a database
@@ -278,32 +259,13 @@ export class SlackPingService {
   }
 
   /**
-   * Event listener for the slack.test event fired by the Admin API to
-   * verify the webhook configuration.
+   * Handles slack.test, as declared in provider.ts. The Admin API emits it
+   * to verify the webhook configuration.
    */
   handleTestEvent(): void {
     this.ping({
       message:
         'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!',
     });
-  }
-
-  /**
-   * Register event listeners for the Slack ping integration.
-   *
-   * The slack.test event comes from the API rather than a direct call,
-   * which was done long ago to avoid circular dependencies.
-   */
-  subscribeEvents(): void {
-    this.events
-      .removeListener('post.published', this.postListener)
-      .on('post.published', this.postListener);
-
-    this.events.removeListener('slack.test', this.testListener).on('slack.test', this.testListener);
-  }
-
-  unsubscribeEvents(): void {
-    this.events.removeListener('post.published', this.postListener);
-    this.events.removeListener('slack.test', this.testListener);
   }
 }

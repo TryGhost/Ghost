@@ -24,8 +24,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const memberWelcomeEmails = sinon.stub().resolves();
   const indexnow = sinon.stub().resolves();
   const indexnowStop = sinon.stub().resolves();
-  const slack = sinon.stub().resolves();
-  const slackStop = sinon.stub().resolves();
+  const siteScopeStart = sinon.stub();
+  const siteScopeStop = sinon.stub();
   // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
   const webhooks = sinon.stub();
   const register = sinon.stub();
@@ -81,7 +81,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/webhooks': { listen: webhooks },
       './server/services/indexnow-ping': { default: { init: indexnow, stop: indexnowStop } },
-      './server/services/slack-ping': { default: { init: slack, stop: slackStop } },
+      '../bootstrap/transition/single-site': { start: siteScopeStart, stop: siteScopeStop },
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
@@ -111,8 +111,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     webhooks,
     indexnow,
     indexnowStop,
-    slack,
-    slackStop,
+    siteScopeStart,
+    siteScopeStop,
     register,
     signingKeys,
     start,
@@ -250,7 +250,7 @@ it('registers the webhook listeners once, after mentions initialization', async 
 
 for (const [label, init, stop] of [
   ['IndexNow', 'indexnow', 'indexnowStop'],
-  ['Slack ping', 'slack', 'slackStop'],
+  ['Site scope', 'siteScopeStart', 'siteScopeStop'],
 ] as const) {
   it(`registers ${label} stop as a server cleanup task once it has initialized`, async function () {
     const boot = createServicesHarness();
@@ -322,7 +322,6 @@ for (const dependency of [
   'webhooks',
   'staff',
   'indexnow',
-  'slack',
 ] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();

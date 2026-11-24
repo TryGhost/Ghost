@@ -20,6 +20,7 @@
     "url": "git://github.com/TryGhost/Ghost.git"
   },
   "files": [
+    "bootstrap/",
     "core/",
     "!core/built/**/*.map",
     "content/*/README.md",
@@ -29,6 +30,7 @@
     "!content/themes/source/pnpm-lock.yaml",
     "bin/",
     "scripts/prune.mts",
+    "shared/",
     "types/",
     "index.js",
     "loggingrc.js",
@@ -36,6 +38,10 @@
     "nodemon.json",
     "tsconfig.json"
   ],
+  "imports": {
+    "#foundation/*": "@tryghost/foundation/*",
+    "#support/*": "@tryghost/support/*"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -101,6 +107,7 @@
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "workspace:*",
     "@tryghost/errors": "catalog:",
+    "@tryghost/foundation": "workspace:*",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.17",
     "@tryghost/i18n": "workspace:*",
@@ -134,6 +141,7 @@
     "@tryghost/security": "catalog:",
     "@tryghost/social-urls": "0.1.68",
     "@tryghost/string": "catalog:",
+    "@tryghost/support": "workspace:*",
     "@tryghost/tpl": "catalog:",
     "@tryghost/url-utils": "catalog:",
     "@tryghost/validator": "catalog:",
