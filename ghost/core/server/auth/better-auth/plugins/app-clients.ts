@@ -1,6 +1,7 @@
 import { getCurrentAdapter } from 'better-auth';
 import type { AuthContext, Where } from 'better-auth';
 import { z } from 'zod';
+import { DbJson } from '../../../lib/db-types/json';
 import { APP_PROVIDER_ID } from '../app-tokens';
 
 type Adapter = Awaited<ReturnType<typeof getCurrentAdapter>>;
@@ -25,12 +26,25 @@ export const appClientInstallationSchema = z.object({
 export type AppClientInstallation = z.infer<typeof appClientInstallationSchema>;
 
 /**
- * Which installation an app client belongs to, and which of its clients it is. Each
- * installation has one client of each kind; only the user client exists so far.
+ * Which installation an app client belongs to, and which of its clients it is, as the client's
+ * metadata records it. Each installation has one client of each kind; only the user client
+ * exists so far.
  */
-export type AppClientOwner = { installationId: string; kind: 'user' };
+const appClientMetadataSchema = z.object({
+  ghost_app_installation_id: z.string(),
+  ghost_app_client: z.enum(['user']),
+});
 
-const CLIENT_KINDS: ReadonlySet<string> = new Set<AppClientOwner['kind']>(['user']);
+// The provider hands metadata back as stored, JSON text, or decoded
+const storedAppClientMetadataSchema = z.union([
+  DbJson(appClientMetadataSchema, { message: "The app client's metadata is not JSON." }),
+  appClientMetadataSchema,
+]);
+
+export type AppClientOwner = {
+  installationId: string;
+  kind: z.infer<typeof appClientMetadataSchema>['ghost_app_client'];
+};
 
 /**
  * The client's id. Lowercase, since MySQL compares client ids case-insensitively; installation
@@ -40,7 +54,10 @@ export function appClientId({ installationId, kind }: AppClientOwner): string {
   return `${APP_CLIENT_PREFIX}${kind}-${installationId.toLowerCase()}`;
 }
 
-function appClientMetadata({ installationId, kind }: AppClientOwner) {
+function appClientMetadata({
+  installationId,
+  kind,
+}: AppClientOwner): z.infer<typeof appClientMetadataSchema> {
   return { ghost_app_installation_id: installationId, ghost_app_client: kind };
 }
 
@@ -52,28 +69,15 @@ export function appClientOwnerOf(client: {
   clientId: string;
   metadata?: unknown;
 }): AppClientOwner | null {
-  const metadata: unknown =
-    typeof client.metadata === 'string' ? parsedOrNull(client.metadata) : client.metadata;
-  if (typeof metadata !== 'object' || metadata === null) {
+  const parsed = storedAppClientMetadataSchema.safeParse(client.metadata);
+  if (!parsed.success) {
     return null;
   }
-  const { ghost_app_installation_id: installationId, ghost_app_client: kind } = metadata as Record<
-    string,
-    unknown
-  >;
-  if (typeof installationId !== 'string' || typeof kind !== 'string' || !CLIENT_KINDS.has(kind)) {
-    return null;
-  }
-  const owner = { installationId, kind: kind as AppClientOwner['kind'] };
+  const owner: AppClientOwner = {
+    installationId: parsed.data.ghost_app_installation_id,
+    kind: parsed.data.ghost_app_client,
+  };
   return appClientId(owner) === client.clientId ? owner : null;
-}
-
-function parsedOrNull(json: string): unknown {
-  try {
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
 }
 
 /** The user client row Ghost keeps for an installation, in the provider's model. */

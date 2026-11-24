@@ -186,27 +186,21 @@ export const ghostApps = () =>
             }
             throw err;
           }
-          // A JWT access token has an audience; apps never get one. User tokens are always issued
-          // with a user and a staff session.
-          if (
-            !payload.active ||
-            payload.aud !== undefined ||
-            typeof payload.client_id !== 'string' ||
-            typeof payload.sub !== 'string' ||
-            typeof payload.sid !== 'string'
-          ) {
+          const parsed = appUserTokenPayloadSchema.safeParse(payload);
+          if (!parsed.success) {
             return ctx.json({ token: null });
           }
-          const client = await provider.getClient(payload.client_id);
+          const { client_id: clientId, sub: userId, sid: sessionId } = parsed.data;
+          const client = await provider.getClient(clientId);
           const owner = client ? appClientOwnerOf(client) : null;
           // The provider checks the session exists and hasn't expired, but not that it's verified
-          const session = await findStaffSession(ctx, payload.sid);
-          if (owner?.kind !== 'user' || !isUsableStaffSession(session, payload.sub)) {
+          const session = await findStaffSession(ctx, sessionId);
+          if (owner?.kind !== 'user' || !isUsableStaffSession(session, userId)) {
             return ctx.json({ token: null });
           }
           const validated: ValidatedAppToken = {
             installationId: owner.installationId,
-            userId: payload.sub,
+            userId,
             session: {
               id: session.id,
               expiresAt: new Date(session.expiresAt),
@@ -218,6 +212,18 @@ export const ghostApps = () =>
       ),
     },
   }) satisfies BetterAuthPlugin;
+
+/**
+ * What validation needs of an introspected token. A JWT access token has an audience; apps never
+ * get one. User tokens are always issued with a user and a staff session.
+ */
+const appUserTokenPayloadSchema = z.object({
+  active: z.literal(true),
+  aud: z.never().optional(),
+  client_id: z.string(),
+  sub: z.string(),
+  sid: z.string(),
+});
 
 // The provider's default user token lifetime
 const DEFAULT_ACCESS_TOKEN_SECONDS = 3600;
