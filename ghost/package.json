@@ -23,6 +23,8 @@
     "bootstrap/",
     "core/",
     "!core/built/**/*.map",
+    "domains/",
+    "!domains/*/test/",
     "content/*/README.md",
     "content/themes/casper/",
     "!content/themes/casper/pnpm-lock.yaml",
@@ -77,9 +79,10 @@
     "lint:kernel": "eslint 'core/kernel/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
+    "lint:application": "eslint 'bootstrap/**/*.ts' 'domains/**/*.{js,ts}' 'shared/**/*.ts' --cache",
     "lint:test": "eslint 'test/**/*.{js,ts}' --cache",
-    "lint:code": "pnpm run '/^lint:(server|kernel|shared|frontend)$/'",
-    "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
+    "lint:code": "pnpm run '/^lint:(server|kernel|shared|frontend|application)$/'",
+    "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|application|test)$/'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",

@@ -5,29 +5,31 @@ import { createApplication, instance } from '#foundation/application';
 import type { Scope } from '#foundation/application';
 import { defineProvider } from '#support/define-provider';
 import { defineService } from '#support/define-service';
-import slackPingProvider, {
-  SlackPing,
-} from '../../../../../core/server/services/slack-ping/provider';
+import appsProvider from '../../provider';
+import { EditIntegration } from '../../actions/edit-integration.action';
+import { Integrations } from '../../services/integrations';
+import { SlackPing } from '../../services/slack-ping';
 import {
   BlogIcon,
   ExternalRequest,
   LegacyEvents,
   Logging,
+  Models,
   SettingsCache,
   UrlService,
   UrlUtils,
-} from '../../../../../shared/transition/legacy';
+} from '../../../../shared/transition/legacy';
 
 const {
   SlackPingService,
-}: typeof import('../../../../../core/server/services/slack-ping/slack-ping-service') = require('../../../../../core/server/services/slack-ping/slack-ping-service');
-const events: EventEmitter = require('../../../../../core/server/lib/common/events');
-const settingsCache = require('../../../../../core/shared/settings-cache');
+}: typeof import('../../services/slack-ping/slack-ping.service') = require('../../services/slack-ping/slack-ping.service');
+const events: EventEmitter = require('../../../../core/server/lib/common/events');
+const settingsCache = require('../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
-const { blogIcon } = require('../../../../../core/server/lib/image');
-const urlService = require('../../../../../core/server/services/url');
-const urlUtils = require('../../../../../core/shared/url-utils').default;
-const requestExternal = require('../../../../../core/server/lib/request-external');
+const { blogIcon } = require('../../../../core/server/lib/image');
+const urlService = require('../../../../core/server/services/url');
+const urlUtils = require('../../../../core/shared/url-utils').default;
+const requestExternal = require('../../../../core/server/lib/request-external');
 
 const EVENTS = ['post.published', 'slack.test'];
 const postModel = {
@@ -36,7 +38,7 @@ const postModel = {
 };
 const listenerCounts = (bus: EventEmitter) => EVENTS.map((name) => bus.listenerCount(name));
 
-describe('Slack ping provider', function () {
+describe('Apps provider', function () {
   describe('with the legacy modules, as Ghost boots it', function () {
     let originalListeners: Map<string, ReturnType<EventEmitter['rawListeners']>>;
     let sandbox: sinon.SinonSandbox;
@@ -48,7 +50,7 @@ describe('Slack ping provider', function () {
       for (const name of EVENTS) {
         events.removeAllListeners(name);
       }
-      const application = createApplication({ providers: [slackPingProvider] });
+      const application = createApplication({ providers: [appsProvider] });
       application.boot();
       site = application.createSiteScope();
     });
@@ -178,7 +180,7 @@ describe('Slack ping provider', function () {
           }
           return events;
         });
-        const application = createApplication({ providers: [slackPingProvider] });
+        const application = createApplication({ providers: [appsProvider] });
         application.boot();
 
         assert.throws(
@@ -223,7 +225,7 @@ describe('Slack ping provider', function () {
     it('gives each site its own Slack ping, and an event reaches only its own site', async function () {
       const logger = { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() };
       const application = createApplication({
-        providers: [slackPingProvider],
+        providers: [appsProvider],
         instances: [instance(Logging, logger as unknown as typeof logging)],
       });
       application.boot();
@@ -259,6 +261,29 @@ describe('Slack ping provider', function () {
     });
   });
 
+  describe('what other code may ask the domain to do', function () {
+    it("edits an integration through the action, with the site scope's models", async function () {
+      const edited = { toJSON: () => ({ id: 'integration-id' }) };
+      const models = {
+        Integration: { edit: sinon.stub().resolves(edited), findOne: sinon.stub() },
+        ApiKey: { findOne: sinon.stub(), refreshSecret: sinon.stub() },
+      };
+      const application = createApplication({ providers: [appsProvider] });
+      application.boot();
+      const site = application.createSiteScope({ instances: [instance(Models, models)] });
+
+      const editIntegration = site.get(EditIntegration);
+      assert.equal(await editIntegration({ name: 'Zapier' }, { id: 'integration-id' }), edited);
+      sinon.assert.calledOnceWithExactly(
+        models.Integration.edit,
+        { name: 'Zapier' },
+        { id: 'integration-id', require: true },
+      );
+      assert.equal(site.get(Integrations).IntegrationModel, models.Integration);
+      site.dispose();
+    });
+  });
+
   describe('lifetime mistakes are rejected at boot', function () {
     it('rejects Slack ping declared for the whole process, because it needs per-site services', function () {
       const ProcessWideSlackPing = defineService({ ...SlackPing, lifetime: 'process' });
@@ -268,7 +293,7 @@ describe('Slack ping provider', function () {
 
       assert.throws(
         () => application.boot(),
-        /"slack-ping" lives for the process but needs "blog-icon" \(as blogIcon\), which lives only for one site\./,
+        /"apps\/slack-ping" lives for the process but needs "blog-icon" \(as blogIcon\), which lives only for one site\./,
       );
     });
   });

@@ -24,8 +24,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const memberWelcomeEmails = sinon.stub().resolves();
   const indexnow = sinon.stub().resolves();
   const indexnowStop = sinon.stub().resolves();
-  const siteScopeStart = sinon.stub();
-  const siteScopeStop = sinon.stub();
   // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
   const webhooks = sinon.stub();
   const register = sinon.stub();
@@ -81,7 +79,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/webhooks': { listen: webhooks },
       './server/services/indexnow-ping': { default: { init: indexnow, stop: indexnowStop } },
-      '../bootstrap/transition/single-site': { start: siteScopeStart, stop: siteScopeStop },
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
@@ -111,8 +108,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     webhooks,
     indexnow,
     indexnowStop,
-    siteScopeStart,
-    siteScopeStop,
     register,
     signingKeys,
     start,
@@ -248,10 +243,7 @@ it('registers the webhook listeners once, after mentions initialization', async 
   sinon.assert.callOrder(boot.mentions, boot.webhooks);
 });
 
-for (const [label, init, stop] of [
-  ['IndexNow', 'indexnow', 'indexnowStop'],
-  ['Site scope', 'siteScopeStart', 'siteScopeStop'],
-] as const) {
+for (const [label, init, stop] of [['IndexNow', 'indexnow', 'indexnowStop']] as const) {
   it(`registers ${label} stop as a server cleanup task once it has initialized`, async function () {
     const boot = createServicesHarness();
     const registerCleanupTask = sinon.stub();

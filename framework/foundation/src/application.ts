@@ -74,7 +74,7 @@ function validate(providers: readonly Provider[]): void {
   }
 
   for (const provider of providers) {
-    for (const definition of provider.services) {
+    for (const definition of [...provider.services, ...provider.actions]) {
       visit(definition);
     }
     for (const listener of provider.listeners) {

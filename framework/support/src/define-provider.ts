@@ -34,18 +34,24 @@ export function listen<Service>(declaration: {
 /** The one place a module plugs itself into the application. It only declares. */
 export interface Provider {
   readonly name: string;
+  /** The module's own services. */
   readonly services: readonly AnyServiceDefinition[];
+  /** What other modules may ask this one to do. */
+  readonly actions: readonly AnyServiceDefinition[];
+  /** What this module does when something happens. */
   readonly listeners: readonly ListenerDeclaration[];
 }
 
 export function defineProvider(provider: {
   readonly name: string;
   readonly services?: readonly AnyServiceDefinition[];
+  readonly actions?: readonly AnyServiceDefinition[];
   readonly listeners?: readonly ListenerDeclaration[];
 }): Provider {
   return Object.freeze({
     name: provider.name,
     services: Object.freeze([...(provider.services ?? [])]),
+    actions: Object.freeze([...(provider.actions ?? [])]),
     listeners: Object.freeze([...(provider.listeners ?? [])]),
   });
 }

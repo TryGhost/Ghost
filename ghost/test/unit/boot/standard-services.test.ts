@@ -14,6 +14,12 @@ const legacy = Object.keys(
     }
   ).services,
 );
+// A root that only describes its service is registered by a provider and built on first use,
+// so boot has nothing of its own to start or wait for.
+const describesItsService = (service: string) => {
+  const root = path.join(servicesRoot, service, 'index.ts');
+  return existsSync(root) && readFileSync(root, 'utf8').includes("'#support/define-service'");
+};
 // A service directory that the legacy service inventory does not list is standard.
 // A directory with no root is not a service: switching branches can leave one behind.
 const standard = readdirSync(servicesRoot, { withFileTypes: true })
@@ -21,6 +27,7 @@ const standard = readdirSync(servicesRoot, { withFileTypes: true })
     (item) =>
       item.isDirectory() &&
       !legacy.includes(item.name) &&
+      !describesItsService(item.name) &&
       ['index.ts', 'index.js'].some((file) => existsSync(path.join(servicesRoot, item.name, file))),
   )
   .map((item) => item.name);

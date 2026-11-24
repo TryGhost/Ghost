@@ -2,7 +2,7 @@ import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
+import { describesItsService, readLegacyServices, servicesRoot } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const serviceRoot = new RegExp(`^${servicesRoot}/([^/]+)/index\\.ts$`);
@@ -50,6 +50,11 @@ export const serviceRootShape: CreateRule = {
     }
     legacyServices ??= readLegacyServices(root);
     if (legacyServices.has(service)) {
+      return {};
+    }
+    // A root that only describes its service is registered by a provider. It holds no
+    // instance, so it has no init, stop, service or extras to keep in shape.
+    if (describesItsService(root, service)) {
       return {};
     }
     const sourceCode = context.sourceCode;

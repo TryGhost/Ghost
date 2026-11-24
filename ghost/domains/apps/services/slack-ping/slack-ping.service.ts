@@ -1,9 +1,23 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { GhostLogger } from '@tryghost/logging';
-import { getUnixTime } from '../../../kernel/clock';
+import { getUnixTime } from '../../../../core/kernel/clock';
 
-import { messages, defaultPostSlugs } from './constants';
+const messages = {
+  requestFailedError:
+    'The {service} service was unable to send a ping request, your site will continue to function.',
+  requestFailedHelp: 'If you get this error repeatedly, please seek help on {url}.',
+};
+
+const defaultPostSlugs = [
+  'welcome',
+  'the-editor',
+  'using-tags',
+  'managing-users',
+  'private-sites',
+  'advanced-markdown',
+  'themes',
+];
 
 type SettingsCache = {
   get(key: string): unknown;
@@ -239,7 +253,7 @@ export class SlackPingService {
   }
 
   /**
-   * Handles post.published, as declared in provider.ts
+   * Handles post.published, as declared in listeners/
    */
   handlePostEvent(model: PostModel, options?: { importing?: boolean }): void {
     // CASE: do not ping slack if we import a database
@@ -259,7 +273,7 @@ export class SlackPingService {
   }
 
   /**
-   * Handles slack.test, as declared in provider.ts. The Admin API emits it
+   * Handles slack.test, as declared in listeners/. The Admin API emits it
    * to verify the webhook configuration.
    */
   handleTestEvent(): void {

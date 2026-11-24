@@ -3,7 +3,7 @@ import type { CreateRule, ESTree } from '@oxlint/plugins';
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
+import { describesItsService, readLegacyServices, servicesRoot } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const bootFile = 'ghost/core/boot.js';
@@ -23,6 +23,7 @@ function readStandardServices() {
         (item) =>
           item.isDirectory() &&
           !legacy.has(item.name) &&
+          !describesItsService(root, item.name) &&
           ['index.ts', 'index.js'].some((file) =>
             existsSync(path.join(directory, item.name, file)),
           ),

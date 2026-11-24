@@ -26,7 +26,9 @@ const {
   createCSVTransform: createPostsCSVTransform,
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
-const exportRequests = require('../../services/export-requests').default;
+const { ExportRequests } = require('../../services/export-requests');
+// The endpoint is not built by the application yet, so it reaches the one site scope directly.
+const singleSite = require('../../../../bootstrap/transition/single-site');
 
 const postsService = getPostServiceInstance();
 
@@ -192,7 +194,7 @@ const controller = {
         components[key] = frame.data.components[key] === true;
       }
 
-      await exportRequests.service.requestExport({
+      await singleSite.site().get(ExportRequests).requestExport({
         components,
         requestedByUserId: frame.options.context.user,
       });

@@ -8,7 +8,8 @@ import ts from 'typescript';
 const coreRoot = path.resolve(__dirname, '../../../..');
 const servicesRoot = path.join(coreRoot, 'core/server/services');
 const inventoryFile = 'legacy-service-inventory.yaml';
-const metadata = ['README.md', inventoryFile];
+// provider.ts registers the services here that describe themselves with defineService.
+const metadata = ['README.md', inventoryFile, 'provider.ts'];
 // The section for standard services that still have something open.
 const followUpsSection = 'followUps';
 // The section for bugs in any service, legacy or standard.
@@ -196,27 +197,24 @@ describe('legacy service inventory', function () {
     (item) => !metadata.includes(item.name),
   );
   const isFile = (file: string) => statSync(file, { throwIfNoEntry: false })?.isFile() === true;
-  // A service that is not listed as legacy must meet the standard: an index.ts root that boot
-  // starts, or a provider.ts that the application registers.
+  // A service that is not listed as legacy must meet the standard.
   const standard = onDisk
     .filter(
       (item) =>
         !legacy[item.name] &&
         item.isDirectory() &&
-        ['index.ts', 'provider.ts'].some((root) =>
-          isFile(path.join(servicesRoot, item.name, root)),
-        ),
+        isFile(path.join(servicesRoot, item.name, 'index.ts')),
     )
     .map((item) => item.name);
 
-  it('requires everything that is not a legacy entry to be a directory with an index.ts or provider.ts root', function () {
+  it('requires everything that is not a legacy entry to be a directory with an index.ts root', function () {
     for (const name of metadata) {
       assertFileWithin(servicesRoot, name);
     }
     for (const item of onDisk) {
       assert.ok(
         legacy[item.name] || standard.includes(item.name),
-        `${item.name} is not a legacy entry, so it must be a directory with an index.ts or provider.ts root`,
+        `${item.name} is not a legacy entry, so it must be a directory with an index.ts root`,
       );
     }
   });
@@ -272,10 +270,12 @@ describe('legacy service inventory', function () {
     }
   });
 
-  // Extras accompany an index.ts root. A provider.ts declares services and has none.
-  for (const name of standard.filter((service) =>
-    isFile(path.join(servicesRoot, service, 'index.ts')),
-  )) {
+  // Extras accompany a root that boot starts. A root that only describes its service has none.
+  const describesItsService = (name: string) =>
+    readFileSync(path.join(servicesRoot, name, 'index.ts'), 'utf8').includes(
+      "'#support/define-service'",
+    );
+  for (const name of standard.filter((service) => !describesItsService(service))) {
     it(`${name} has exactly the catalogued extras`, function () {
       const extras = open[name]?.extras ?? {};
       assert.deepEqual(

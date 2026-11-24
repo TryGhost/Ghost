@@ -8828,7 +8828,7 @@ services:
           - core/server/services/member-attribution/index.ts
           - core/server/services/members/api.js
           - core/server/services/mentions/index.ts
-          - core/server/services/slack-ping/provider.ts
+          - domains/apps/services/slack-ping/index.ts
           - core/server/services/stats/index.ts
           - core/server/services/webhooks/index.js
         tests:
@@ -9715,12 +9715,6 @@ followUps:
         pings in flight. Boot registers stop only when a server exists; boot units cover
         both cases and that boot waits for init and fails with its error. An isolated
         server test covers a stop followed by boots without a server.
-  integrations:
-    lifecycle:
-      - >-
-        Preparation now pins direct model-failure translation and pending edit/rotation
-        settlement. Resource drain, cleanup, same-process reboot and transaction rollback remain
-        unproven; do not introduce those guarantees as part of initializer adoption.
   internal-keys:
     futureHome: core/server/auth/internal-keys
     lifecycle:
@@ -9838,22 +9832,6 @@ followUps:
         not root scheduling, shutdown or crypto-generation failure paths. The public-jwk
         failure test only checks repeated rejection, so it does not prove failed entries
         are evicted rather than returning the same rejected promise.
-  slack-ping:
-    lifecycle:
-      - >-
-        Decide and test listener ownership across replacement and externally cleared
-        emitters. Stable callbacks prevent duplication only for one implementation object;
-        successful init does not restore externally removed callbacks. Stop removes the
-        listeners and the next init restores them on the same instance; root units cover
-        that, failed-start cleanup and explicit retry. Boot registers stop only when a server
-        exists; boot units cover both cases and that boot waits for init and fails with its
-        error. An isolated server test covers a stop followed by boots without a server.
-      - >-
-        Characterize shutdown with pending or overlapping sends through the real request helper,
-        plus production timeout, cancellation, DNS and shared-agent disposal behavior. The HTTP
-        suite verifies pending delivery and logged rejection under test hooks, and root tests
-        overlap stubbed requests; neither establishes shutdown draining or production HTTP policy.
-        Keep per-request timeout distinct from an overall deadline.
   staff:
     lifecycle:
       - >-

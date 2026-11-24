@@ -57,3 +57,17 @@ export const ExternalRequest = defineService({
   lifetime: 'site',
   create: () => require('../../core/server/lib/request-external'),
 });
+
+/** The loaded config. One site's values today, so it is per site. */
+export const Config = defineService({
+  name: 'config',
+  lifetime: 'site',
+  create: () => require('../../core/shared/config'),
+});
+
+/** Bookshelf models. Each is bound to one database connection when its file loads, so they are per site. */
+export const Models = defineService({
+  name: 'models',
+  lifetime: 'site',
+  create: () => require('../../core/server/models'),
+});

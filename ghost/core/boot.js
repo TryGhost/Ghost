@@ -171,20 +171,19 @@ async function initCore({ ghostServer, config }) {
   await appInstallationsService.init();
   debug('End: App Installations Service');
 
-  debug('Begin: Export Requests Service');
-  const exportRequests = require('./server/services/export-requests').default;
-  await exportRequests.init();
-  debug('End: Export Requests Service');
+  // Declared listeners are subscribed here, and each provided service is built on first use.
+  debug('Begin: Site scope');
+  const singleSite = require('../bootstrap/transition/single-site');
+  singleSite.start();
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(() => singleSite.stop(), 'Site scope');
+  }
+  debug('End: Site scope');
 
   debug('Begin: Invites Service');
   const invites = require('./server/services/invites').default;
   await invites.init();
   debug('End: Invites Service');
-
-  debug('Begin: Integrations Service');
-  const integrations = require('./server/services/integrations').default;
-  await integrations.init();
-  debug('End: Integrations Service');
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
@@ -440,13 +439,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await mentionsService.init();
   // Explore captures the ready Stats aggregate during initialization.
   await statsService.init();
-
-  // Opens the site scope: declared listeners are subscribed, and each service is built on first use.
-  const singleSite = require('../bootstrap/transition/single-site');
-  singleSite.start();
-  if (ghostServer) {
-    ghostServer.registerCleanupTask(() => singleSite.stop(), 'Site scope');
-  }
 
   await Promise.all([
     identityTokens.init(),

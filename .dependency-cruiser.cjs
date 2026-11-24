@@ -7,8 +7,8 @@ const servicesRoot = 'ghost/core/server/services';
 const serviceImplementations = {
   path: `^${servicesRoot}/([^/]+)(?:/|$)`,
   // Legacy JS roots remain wiring candidates; nested indexes are implementations.
-  // A provider.ts is wiring too, and has its own rule: provider-dependencies.
-  pathNot: `^${servicesRoot}/[^/]+/(?:index\\.(?:js|ts)|provider\\.ts)$`,
+  // The folder's provider.ts is wiring too, and has its own rule: provider-dependencies.
+  pathNot: [`^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`, `^${servicesRoot}/provider\\.ts$`],
 };
 
 // The service checks apply to the services directory only, so a defineService
@@ -495,18 +495,52 @@ module.exports = {
     {
       name: 'provider-dependencies',
       comment:
-        'A provider only declares. It names what its services need by importing their definitions: from ghost/shared, another provider, or its own folder.',
+        'The legacy services provider only declares. It imports the roots it lists, and names anything else through ghost/shared.',
       severity: 'error',
-      from: { path: `^${servicesRoot}/([^/]+)/provider\\.ts$` },
+      from: { path: `^${servicesRoot}/provider\\.ts$` },
+      to: {
+        pathNot: ['^framework/support/', '^ghost/shared/', `^${servicesRoot}/[^/]+/index\\.ts$`],
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'domain-dependencies',
+      comment:
+        'A domain imports its own files, framework/support and the definitions in ghost/shared. Everything else is named in needs and handed to it. Another domain is used only through its actions, data and events.',
+      severity: 'error',
+      from: { path: '^ghost/domains/([^/]+)/' },
       to: {
         pathNot: [
+          ...serviceDependencyAllowlist,
+          ...typesOnlyPackages.map(npm),
           '^framework/support/',
           '^ghost/shared/',
-          `^${servicesRoot}/[^/]+/provider\\.ts$`,
-          // $1 is the service name captured by from.path.
-          `^${servicesRoot}/$1/`,
+          // $1 is the domain captured by from.path.
+          '^ghost/domains/$1/',
+          '^ghost/domains/[^/]+/(actions|data|events)/',
         ],
         dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'domain-public-surface',
+      comment:
+        'Code outside a domain uses only its actions, data and events. Bootstrap also imports its provider.',
+      severity: 'error',
+      from: { pathNot: ['^ghost/domains/', '^ghost/bootstrap/'] },
+      to: {
+        path: '^ghost/domains/[^/]+/',
+        pathNot: '^ghost/domains/[^/]+/(actions|data|events)/',
+      },
+    },
+    {
+      name: 'bootstrap-only-providers',
+      comment: 'Bootstrap lists providers. It reaches into nothing else in a domain.',
+      severity: 'error',
+      from: { path: '^ghost/bootstrap/' },
+      to: {
+        path: '^ghost/domains/[^/]+/',
+        pathNot: '^ghost/domains/[^/]+/provider\\.ts$',
       },
     },
     // Kernel primitives must be independent of the application they support.

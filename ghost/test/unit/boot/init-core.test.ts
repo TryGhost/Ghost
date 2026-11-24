@@ -11,7 +11,7 @@ function createCoreHarness() {
   const signingKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
   const giftLinks = { init: sinon.stub().resolves() };
-  const integrations = { init: sinon.stub().resolves() };
+  const siteScope = { start: sinon.stub(), stop: sinon.stub() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
   const applyImageUploadConfig = sinon.stub();
   const uploads = {};
@@ -29,21 +29,24 @@ function createCoreHarness() {
     './server/services/gift-links': { default: giftLinks },
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },
-    './server/services/export-requests': { default: { init() {} } },
+    '../bootstrap/transition/single-site': siteScope,
+    './server/services/jobs-service': { shutdown() {} },
     './server/services/invites': { default: { init() {} } },
-    './server/services/integrations': { default: integrations },
     './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
   });
   return {
-    init: (): Promise<void> =>
-      initCore({ config: { get: (key: string) => (key === 'uploads' ? uploads : {}) } }),
+    init: (ghostServer?: { registerCleanupTask: sinon.SinonStub }): Promise<void> =>
+      initCore({
+        ghostServer,
+        config: { get: (key: string) => (key === 'uploads' ? uploads : {}) },
+      }),
     applyImageUploadConfig,
     uploads,
     settings,
     signingKeys,
     i18n,
     giftLinks,
-    integrations,
+    siteScope,
     stripeCheckoutConfig,
   };
 }
@@ -144,39 +147,38 @@ it('propagates the original i18n initialization error without continuing initCor
   sinon.assert.notCalled(boot.giftLinks.init);
 });
 
-it('waits for Integrations initialization before continuing or resolving initCore', async function () {
+it('opens the site scope once, before the services that follow it', async function () {
   const boot = createCoreHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.integrations.init.returns(ready.promise);
-  let completed = false;
-  const startup = boot.init().then(() => {
-    completed = true;
-  });
 
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.integrations.init);
-    sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
-    assert.equal(completed, false);
-  } finally {
-    ready.resolve();
-    await Promise.allSettled([startup]);
-  }
-  await startup;
+  await boot.init();
 
-  sinon.assert.calledOnce(boot.stripeCheckoutConfig.init);
-  assert.equal(completed, true);
+  sinon.assert.calledOnceWithExactly(boot.siteScope.start);
+  sinon.assert.callOrder(boot.siteScope.start, boot.stripeCheckoutConfig.init);
+  sinon.assert.notCalled(boot.siteScope.stop);
 });
 
-it('propagates the original Integrations initialization error without continuing initCore', async function () {
+it('fails initCore with the same error when the site scope cannot open', async function () {
   const boot = createCoreHarness();
-  const failure = new Error('Integrations initialization failed');
-  boot.integrations.init.rejects(failure);
+  const failure = new Error('A declaration is invalid');
+  boot.siteScope.start.throws(failure);
 
   await assert.rejects(boot.init(), (error) => error === failure);
 
-  sinon.assert.calledOnce(boot.integrations.init);
   sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
+});
+
+it('ends the site scope as a server cleanup task', async function () {
+  const boot = createCoreHarness();
+  const registerCleanupTask = sinon.stub();
+
+  await boot.init({ registerCleanupTask });
+
+  const registrations = registerCleanupTask
+    .getCalls()
+    .filter((call) => call.args[1] === 'Site scope');
+  assert.equal(registrations.length, 1);
+  registrations[0]!.args[0]();
+  sinon.assert.calledOnceWithExactly(boot.siteScope.stop);
 });
 
 it('applies the uploads config to image handling before anything initializes', async function () {

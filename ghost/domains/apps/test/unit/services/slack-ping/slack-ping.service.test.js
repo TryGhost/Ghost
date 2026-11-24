@@ -2,12 +2,10 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
-const testUtils = require('../../../../utils');
-const { createLoggingFake } = require('../../../../utils/logging-utils');
+const testUtils = require('../../../../../../test/utils');
+const { createLoggingFake } = require('../../../../../../test/utils/logging-utils');
 const request = require('@tryghost/request');
-const {
-  SlackPingService,
-} = require('../../../../../core/server/services/slack-ping/slack-ping-service');
+const { SlackPingService } = require('../../../../services/slack-ping/slack-ping.service');
 
 // Test data
 const slackURL = 'https://hooks.slack.com/services/a-b-c-d';

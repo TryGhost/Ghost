@@ -3,18 +3,20 @@ import crypto from 'node:crypto';
 import sinon from 'sinon';
 import type { buildSignedWebhookRequest } from '../../../../../core/server/lib/signed-webhook';
 
-const rootPath = require.resolve('../../../../../core/server/services/export-requests');
 const endpointPath = require.resolve('../../../../../core/server/api/endpoints/exports');
 const requestPath = require.resolve('@tryghost/request');
 const config = require('../../../../../core/shared/config');
 const logging = require('@tryghost/logging');
-type Root = typeof import('../../../../../core/server/services/export-requests').default;
+const {
+  ExportRequests,
+}: typeof import('../../../../../core/server/services/export-requests') = require('../../../../../core/server/services/export-requests');
+const singleSite: typeof import('../../../../../bootstrap/transition/single-site') = require('../../../../../bootstrap/transition/single-site');
+type Service = ReturnType<typeof ExportRequests.create>;
 type RequestOptions = ReturnType<typeof buildSignedWebhookRequest>;
 
-describe('Export requests root with its endpoint', function () {
+describe('Export requests with its endpoint', function () {
   const sandbox = sinon.createSandbox();
-  let previousModules: Map<string, NodeJS.Module | undefined>;
-  let root: Root;
+  let service: Service;
   let endpoint: {
     add: {
       query(frame: {
@@ -27,10 +29,6 @@ describe('Export requests root with its endpoint', function () {
   let getConfig: sinon.SinonStub;
 
   beforeEach(async function () {
-    previousModules = new Map([rootPath, endpointPath].map((path) => [path, require.cache[path]]));
-    for (const path of previousModules.keys()) {
-      delete require.cache[path];
-    }
     require(requestPath);
     request = sandbox.stub().resolves({ statusCode: 202 });
 
@@ -42,8 +40,8 @@ describe('Export requests root with its endpoint', function () {
     const previousTransport = transportModule.exports;
     try {
       transportModule.exports = request;
-      root = require(rootPath).default;
-      await root.init();
+      // The service is built on first use, which is when it picks up the transport.
+      service = singleSite.start().get(ExportRequests);
     } finally {
       transportModule.exports = previousTransport;
     }
@@ -53,12 +51,7 @@ describe('Export requests root with its endpoint', function () {
 
   afterEach(function () {
     sandbox.restore();
-    for (const [path, previous] of previousModules) {
-      delete require.cache[path];
-      if (previous) {
-        require.cache[path] = previous;
-      }
-    }
+    singleSite.stop();
   });
 
   function configure(host: string, secret: string, siteId: string) {
@@ -75,8 +68,8 @@ describe('Export requests root with its endpoint', function () {
   it('constructs without export config or delivery and the retained endpoint reads current config', async function () {
     sinon.assert.notCalled(request);
     assert.equal(getConfig.calledWith('hostSettings:export:webhookUrl'), false);
-    // The endpoint must call the root's singleton, not an instance of its own.
-    const requestExport = sandbox.spy(root.service, 'requestExport');
+    // The endpoint must call the site scope's instance, not one of its own.
+    const requestExport = sandbox.spy(service, 'requestExport');
 
     for (const [host, secret, siteId] of [
       ['https://first.example/export/', 'first-test-secret', 'first-site'],

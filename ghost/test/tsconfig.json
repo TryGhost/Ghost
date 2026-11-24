@@ -5,5 +5,11 @@
     "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["**/*.ts", "../bin/**/*.d.ts", "../core/**/*.d.ts", "../types/**/*.d.ts"]
+  "include": [
+    "**/*.ts",
+    "../domains/*/test/**/*.ts",
+    "../bin/**/*.d.ts",
+    "../core/**/*.d.ts",
+    "../types/**/*.d.ts"
+  ]
 }

@@ -1,10 +1,17 @@
-import { defineService } from '../../../kernel/define-service';
-import { ExportRequestsService } from './export-requests-service';
+import { defineService } from '#support/define-service';
+import { Config, Logging } from '../../../../shared/transition/legacy';
+import type { ExportRequestsService } from './export-requests-service';
 
-export default defineService('Export Requests', () => {
-  const config = require('../../../shared/config');
-  const logging = require('@tryghost/logging');
-  const request = require('@tryghost/request');
-
-  return new ExportRequestsService({ config, logging, request });
+export const ExportRequests = defineService({
+  name: 'export-requests',
+  lifetime: 'site',
+  needs: { config: Config, logging: Logging },
+  create: (needs): ExportRequestsService => {
+    const implementation: typeof import('./export-requests-service') = require('./export-requests-service');
+    // The request library holds no state, so it is imported and not named in needs.
+    return new implementation.ExportRequestsService({
+      ...needs,
+      request: require('@tryghost/request'),
+    });
+  },
 });

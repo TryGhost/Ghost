@@ -7,7 +7,7 @@ const events: EventEmitter = require('../../core/server/lib/common/events');
 const indexnow: typeof indexNowRoot = require('../../core/server/services/indexnow-ping').default;
 const {
   SlackPing,
-}: typeof import('../../core/server/services/slack-ping/provider') = require('../../core/server/services/slack-ping/provider');
+}: typeof import('../../domains/apps/services/slack-ping') = require('../../domains/apps/services/slack-ping');
 const singleSite: typeof import('../../bootstrap/transition/single-site') = require('../../bootstrap/transition/single-site');
 
 describe('Service roots across boots in one process', function () {

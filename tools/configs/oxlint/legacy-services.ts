@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 
@@ -37,4 +37,14 @@ export function parseLegacyServices(source: string): Map<string, LegacyService> 
 
 export function readLegacyServices(repository: string) {
   return parseLegacyServices(readFileSync(path.join(repository, legacyInventoryFile), 'utf8'));
+}
+
+/**
+ * A root that only describes its service imports defineService from framework/support.
+ * A provider registers it and the application builds it on first use, so it has no
+ * init() for boot to await and holds no instance or extras.
+ */
+export function describesItsService(repository: string, service: string) {
+  const file = path.join(repository, servicesRoot, service, 'index.ts');
+  return existsSync(file) && readFileSync(file, 'utf8').includes("'#support/define-service'");
 }

@@ -110,7 +110,9 @@
     "bin/**/*.ts",
     "bootstrap/**/*.ts",
     "core/**/*.ts",
+    "domains/**/*.ts",
     "shared/**/*.ts",
     "types/**/*.d.ts"
-  ]
+  ],
+  "exclude": ["domains/*/test/**"]
 }

@@ -100,7 +100,7 @@ export default defineConfig({
           name: 'unit',
           isolate: false,
           sequence,
-          include: ['test/unit/**/*.test.{js,ts}'],
+          include: ['test/unit/**/*.test.{js,ts}', 'domains/*/test/unit/**/*.test.{js,ts}'],
           exclude: ['**/node_modules/**'],
         },
       },

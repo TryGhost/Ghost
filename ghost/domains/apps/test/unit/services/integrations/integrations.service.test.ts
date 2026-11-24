@@ -3,18 +3,18 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { NotFoundError, InternalServerError } from '@tryghost/errors';
 
-const createService = require('../../../../../core/server/services/integrations/integrations-service');
+import { IntegrationsService } from '../../../../services/integrations/integrations.service';
 
 describe('Integrations service', function () {
   const sandbox = sinon.createSandbox();
   let IntegrationModel: { edit: sinon.SinonStub; findOne: sinon.SinonStub };
   let ApiKeyModel: { findOne: sinon.SinonStub; refreshSecret: sinon.SinonStub };
-  let service: ReturnType<typeof createService>;
+  let service: IntegrationsService;
 
   beforeEach(function () {
     IntegrationModel = { edit: sandbox.stub(), findOne: sandbox.stub() };
     ApiKeyModel = { findOne: sandbox.stub(), refreshSecret: sandbox.stub().resolves() };
-    service = createService({ IntegrationModel, ApiKeyModel });
+    service = new IntegrationsService({ IntegrationModel, ApiKeyModel });
   });
 
   afterEach(function () {
@@ -22,7 +22,7 @@ describe('Integrations service', function () {
   });
 
   it('constructs independent instances that borrow models without querying them', function () {
-    const other = createService({ IntegrationModel, ApiKeyModel });
+    const other = new IntegrationsService({ IntegrationModel, ApiKeyModel });
     assert.notEqual(service, other);
     assert.equal(service.IntegrationModel, IntegrationModel);
     assert.equal(service.ApiKeyModel, ApiKeyModel);

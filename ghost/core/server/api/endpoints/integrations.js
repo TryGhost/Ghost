@@ -1,7 +1,9 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const integrations = require('../../services/integrations').default;
+const { EditIntegration } = require('../../../../domains/apps/actions/edit-integration.action');
+// The endpoint is not built by the application yet, so it reaches the one site scope directly.
+const singleSite = require('../../../../bootstrap/transition/single-site');
 
 const messages = {
   resourceNotFound: '{resource} not found.',
@@ -76,7 +78,7 @@ const controller = {
       },
     },
     query({ data, options }) {
-      return integrations.service.edit(data, options);
+      return singleSite.site().get(EditIntegration)(data, options);
     },
   },
   add: {

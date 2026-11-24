@@ -7,14 +7,14 @@ import sinon from 'sinon';
 import supertest from 'supertest';
 import type { Response } from 'supertest';
 import type { GhostServer } from '../../core/server/ghost-server';
-import type { SlackPingService as SlackPingInstance } from '../../core/server/services/slack-ping/slack-ping-service';
+import type { SlackPingService as SlackPingInstance } from '../../domains/apps/services/slack-ping/slack-ping.service';
 
 const { startGhost, fixtureManager, configUtils } = require('../utils/e2e-framework');
 const { AdminAPITestAgent } = require('../utils/agents');
 const { GhostServer: GhostServerClass } = require('../../core/server/ghost-server');
 const {
   SlackPingService,
-}: typeof import('../../core/server/services/slack-ping/slack-ping-service') = require('../../core/server/services/slack-ping/slack-ping-service');
+}: typeof import('../../domains/apps/services/slack-ping/slack-ping.service') = require('../../domains/apps/services/slack-ping/slack-ping.service');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const sentry = require('../../core/shared/sentry');
@@ -120,7 +120,7 @@ taxonomies:
   it('returns HTTP success while a test notification is pending after repeated init, then absorbs delivery failure', async function () {
     const {
       SlackPing,
-    }: typeof import('../../core/server/services/slack-ping/provider') = require('../../core/server/services/slack-ping/provider');
+    }: typeof import('../../domains/apps/services/slack-ping') = require('../../domains/apps/services/slack-ping');
     const singleSite: typeof import('../../bootstrap/transition/single-site') = require('../../bootstrap/transition/single-site');
     const service = singleSite.site().get(SlackPing);
     singleSite.start();
