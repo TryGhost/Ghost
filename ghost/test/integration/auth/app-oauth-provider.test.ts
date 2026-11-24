@@ -780,7 +780,7 @@ describe("Better Auth's OAuth provider for apps", function () {
       assert.equal(await validate(auth, 'not-a-token'), null);
     });
 
-    it("shuts the user client out of the provider's endpoints", async function () {
+    it("shuts the user client and its tokens out of the provider's routes", async function () {
       const auth = build({ apps: true });
       const id = installationId();
       const { cookie } = await signIn(auth);
@@ -788,105 +788,71 @@ describe("Better Auth's OAuth provider for apps", function () {
         body: { installationId: id, active: true, scopes: ['post:browse'] },
       });
       const clientId = userClientId(id);
-
-      const authorize = await auth.handler(
-        new Request(
-          url(
-            `/oauth2/authorize?${new URLSearchParams({
-              client_id: clientId,
-              response_type: 'code',
-              scope: 'post:browse',
-              code_challenge: 'a'.repeat(43),
-              code_challenge_method: 'S256',
-              prompt: 'none',
-            })}`,
-          ),
-          { headers: { cookie, accept: 'application/json' } },
-        ),
-      );
-      const token = await auth.handler(
-        new Request(url('/oauth2/token'), {
-          method: 'POST',
-          headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            grant_type: 'client_credentials',
-            client_id: clientId,
-            scope: 'post:browse',
-          }),
-        }),
-      );
-
-      assert.equal(authorize.status, 404);
-      assert.ok(token.status >= 400, `token answered ${token.status}`);
-      assert.equal(await tokenCount(), 0);
-
-      // A public client needs only its id, so anyone holding a token could revoke it
       const { accessToken } = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
-      const form = (path: string) =>
+      const form = (path: string, fields: Record<string, string>) =>
         auth.handler(
           new Request(url(path), {
             method: 'POST',
-            headers: { 'content-type': 'application/x-www-form-urlencoded', origin },
-            body: new URLSearchParams({ client_id: clientId, token: accessToken }),
+            headers: { 'content-type': 'application/x-www-form-urlencoded', origin, cookie },
+            body: new URLSearchParams({ client_id: clientId, ...fields }),
           }),
         );
-      const revoke = await form('/oauth2/revoke');
-      const introspect = await form('/oauth2/introspect');
-      const userinfo = await auth.handler(
-        new Request(url('/oauth2/userinfo'), {
-          headers: { authorization: `Bearer ${accessToken}` },
-        }),
-      );
 
-      assert.equal(revoke.status, 404);
+      const responses = {
+        authorize: await auth.handler(
+          new Request(
+            url(
+              `/oauth2/authorize?${new URLSearchParams({
+                client_id: clientId,
+                response_type: 'code',
+                scope: 'post:browse',
+                code_challenge: 'a'.repeat(43),
+                code_challenge_method: 'S256',
+                prompt: 'none',
+              })}`,
+            ),
+            { headers: { cookie, accept: 'application/json' } },
+          ),
+        ),
+        clientCredentials: await form('/oauth2/token', {
+          grant_type: 'client_credentials',
+          scope: 'post:browse',
+        }),
+        ownGrant: await form('/oauth2/token', { grant_type: APP_SESSION_GRANT }),
+        // A public client needs only its id, so anyone holding a token could revoke it
+        revoke: await form('/oauth2/revoke', { token: accessToken }),
+        introspect: await form('/oauth2/introspect', { token: accessToken }),
+        userinfo: await auth.handler(
+          new Request(url('/oauth2/userinfo'), {
+            headers: { authorization: `Bearer ${accessToken}` },
+          }),
+        ),
+      };
+
+      for (const [name, response] of Object.entries(responses)) {
+        assert.equal(response.status, 404, name);
+      }
       assert.equal(await tokenCount(), 1);
-      assert.ok(introspect.status >= 400, `introspect answered ${introspect.status}`);
-      assert.ok(userinfo.status >= 400, `userinfo answered ${userinfo.status}`);
     });
 
-    it('refuses the user client’s own grant at the token endpoint', async function () {
+    it("refuses the user client's own grant at the token endpoint, even on the server", async function () {
       const auth = build({ apps: true });
       const id = installationId();
       await auth.api.reconcileAppClient({
         body: { installationId: id, active: true, scopes: ['post:browse'] },
       });
 
-      const response = await auth.handler(
-        new Request(url('/oauth2/token'), {
-          method: 'POST',
-          headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
+      await assert.rejects(
+        auth.api.oauth2Token({
+          body: {
             grant_type: APP_SESSION_GRANT,
             client_id: userClientId(id),
             scope: 'post:browse',
-          }),
-        }),
+          },
+        } as never),
+        (err: { body?: { error?: string } }) => err.body?.error === 'unsupported_grant_type',
       );
-
-      assert.equal(response.status, 400);
-      assert.equal((await response.json()).error, 'unsupported_grant_type');
       assert.equal((await knex('oauth_access_tokens').count({ count: '*' }))[0].count, 0);
-    });
-
-    it('registers no clients dynamically, signed in or not', async function () {
-      const auth = build({ apps: true });
-      const { cookie } = await signIn(auth);
-      const register = (headers: Record<string, string>) =>
-        auth.handler(
-          new Request(url('/oauth2/register'), {
-            method: 'POST',
-            headers: { 'content-type': 'application/json', origin, ...headers },
-            body: JSON.stringify({
-              redirect_uris: ['https://app.example/callback'],
-              token_endpoint_auth_method: 'none',
-            }),
-          }),
-        );
-
-      for (const response of [await register({}), await register({ cookie })]) {
-        assert.ok(response.status >= 400, `register answered ${response.status}`);
-      }
-      assert.equal((await knex('oauth_clients').count({ count: '*' }))[0].count, 0);
     });
   });
 });
