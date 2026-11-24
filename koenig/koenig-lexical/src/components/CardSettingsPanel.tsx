@@ -3,10 +3,11 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {SettingsPanel} from './ui/SettingsPanel';
 import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
+import type {VisibilityToggleKey} from '../utils/visibility';
 
 interface CardSettingsPanelProps {
     // visibility toggles that don't apply to this card, e.g. `nonMembers`
-    hiddenVisibilityToggles?: string[];
+    hiddenVisibilityToggles?: VisibilityToggleKey[];
 }
 
 // The settings panel of a card with no settings of its own, which only has

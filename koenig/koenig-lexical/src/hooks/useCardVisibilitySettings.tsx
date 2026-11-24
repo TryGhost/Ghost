@@ -30,7 +30,7 @@ export function useCardVisibilityAvailable(nodeKey: NodeKey) {
 // Returns the contents of a card's Visibility tab while the card is being
 // edited, or null when it isn't or the card has no visibility settings.
 // `showVisibilitySettings` is true when the panel should open on that tab.
-export function useCardVisibilitySettings(nodeKey: NodeKey, {hiddenToggles = []}: {hiddenToggles?: string[]} = {}) {
+export function useCardVisibilitySettings(nodeKey: NodeKey, {hiddenToggles = []}: {hiddenToggles?: VisibilityToggleKey[]} = {}) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);

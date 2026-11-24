@@ -25,7 +25,7 @@ export interface VisibilityToggles {
     };
 }
 
-export type VisibilityGroupKey = keyof VisibilityToggles;
+export type VisibilityGroupKey = 'web' | 'email';
 
 export type VisibilityToggleKey = 'nonMembers' | 'freeMembers' | 'paidMembers';
 
