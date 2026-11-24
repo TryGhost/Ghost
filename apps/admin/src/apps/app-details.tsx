@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import type { ScopeChange } from '@tryghost/app-contracts';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
   Badge,
   Banner,
   Breadcrumb,
@@ -22,7 +25,6 @@ import {
 import { Box, Container, H1, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { DetailPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
-import { useShade } from '@tryghost/shade/app';
 import { LucideIcon, cn, formatDisplayDate } from '@tryghost/shade/utils';
 import { Link, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import {
@@ -34,11 +36,7 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { NotFound } from '@/shared/not-found';
-import {
-  AccessChanges,
-  AccessIndicator,
-  OPENED_APP_ACCESS_INTRO,
-} from './components/access-indicator';
+import { AccessChanges, AccessIndicator } from './components/access-indicator';
 import { describeScopeChanges, historyScopeChanges } from './lib/scope-changes';
 import { AppIcon } from './components/app-icon';
 import { AppsGate } from './components/apps-gate';
@@ -54,7 +52,7 @@ import { AppAuthor, UnverifiedDeveloperBadge } from './components/app-author';
 
 /** A fact in the sidebar, its label over its value, as on a member's details. */
 const InfoRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <Stack className="min-w-0" data-testid="app-fact" gap="sm">
+  <Stack className="min-w-0" data-testid="app-fact" gap="xs">
     <p className="stat-label text-muted-foreground">{label}</p>
     <div className="min-w-0 text-md break-words text-foreground">{children}</div>
   </Stack>
@@ -64,48 +62,47 @@ const InfoRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label
 const Section: React.FC<{
   id: string;
   title: string;
-  /** A line under the heading, kept close to it rather than spaced like the section's content. */
-  description?: string;
   children: React.ReactNode;
-}> = ({ id, title, description, children }) => (
+}> = ({ id, title, children }) => (
   <section aria-labelledby={id}>
-    {/* Admin 7 spaces sections a little wider than the scale's md step */}
-    <Stack className="in-data-[admin7-design=true]:gap-4" gap="md">
-      <Stack gap="xs">
-        <h2 className="section-heading text-base font-semibold" id={id}>
-          {title}
-        </h2>
-        {description && (
-          <Text size="sm" tone="secondary">
-            {description}
-          </Text>
-        )}
-      </Stack>
+    {/* The section step, as a tag's details use in Admin 7 */}
+    <Stack gap="lg">
+      <h2 className="section-heading text-base font-semibold" id={id}>
+        {title}
+      </h2>
       {children}
     </Stack>
   </section>
 );
 
+/** A suspension is left to the banner over the sections. */
 const StatusBadges: React.FC<{ installation: AppInstallation }> = ({ installation }) => (
   <>
     {installation.manifest.development && <Badge variant="secondary">Development</Badge>}
-    {installation.status === 'suspended' && <Badge variant="warning">Needs approval</Badge>}
     {installation.status === 'uninstalled' && <Badge variant="secondary">Uninstalled</Badge>}
   </>
 );
 
-/**
- * What an entry changed in the app's access, in the review screen's words. A suspension's are
- * what it asked for.
- */
-const EntryAccessChanges: React.FC<{
-  entry: AppInstallationHistoryEntry;
-  changes: ScopeChange[];
-}> = ({ entry, changes }) => {
-  const groups = describeScopeChanges(changes, { pending: entry.event === 'suspended' });
-  return groups.length > 0 ? <AccessChanges groups={groups} /> : null;
-};
+/** An entry's title, with who made the change, and its date, across one row. */
+const EntrySummary: React.FC<{ entry: AppInstallationHistoryEntry; timezone: string }> = ({
+  entry,
+  timezone,
+}) => (
+  <Inline align="baseline" as="span" className="min-w-0 grow" gap="md" justify="between">
+    <span className="text-md" data-testid="app-history-entry-title">
+      {historyTitle(entry)}
+      {entry.actor?.name && <span className="text-muted-foreground"> by {entry.actor.name}</span>}
+    </span>
+    <span className="shrink-0 text-base text-muted-foreground">
+      {formatDisplayDate(entry.created_at, timezone)}
+    </span>
+  </Inline>
+);
 
+/**
+ * Each entry, newest first. One that changed the app's access opens to show what changed; one that
+ * changed nothing in it is a plain row, laid out as the others are while closed.
+ */
 const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: string }> = ({
   entries,
   timezone,
@@ -113,30 +110,47 @@ const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: stri
   // Each change is shown once: an approval shows what it granted, not the suspension too.
   const accessChanges = historyScopeChanges(entries);
   return (
-    <ol className="m-0 list-none divide-y divide-border p-0">
-      {entries.map((entry, index) => (
-        <li
-          key={entry.id}
-          className="py-3 in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
-          data-testid="app-history-entry"
-        >
-          <Stack gap="sm">
-            <Inline align="baseline" gap="md" justify="between">
-              <span className="text-sm in-data-[admin7-design=true]:text-md">
-                {historyTitle(entry)}
-                {entry.actor?.name && (
-                  <span className="text-muted-foreground"> by {entry.actor.name}</span>
-                )}
-              </span>
-              <span className="shrink-0 text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
-                {formatDisplayDate(entry.created_at, timezone)}
-              </span>
-            </Inline>
-            <EntryAccessChanges changes={accessChanges[index]} entry={entry} />
-          </Stack>
-        </li>
-      ))}
-    </ol>
+    <Accordion type="single" asChild collapsible>
+      <ol className="m-0 list-none p-0">
+        {entries.map((entry, index) => {
+          const groups = describeScopeChanges(accessChanges[index], {
+            pending: entry.event === 'suspended',
+          });
+          if (groups.length === 0) {
+            return (
+              <li
+                key={entry.id}
+                className="flex items-center gap-3 border-b py-4 text-sm first:pt-0 last:border-b-0"
+                data-testid="app-history-entry"
+              >
+                <EntrySummary entry={entry} timezone={timezone} />
+                {/* As wide as the chevron of an entry that opens, so the dates line up. */}
+                <span className="size-4 shrink-0" />
+              </li>
+            );
+          }
+          return (
+            <AccordionItem
+              key={entry.id}
+              className="group/entry last:border-b-0"
+              data-testid="app-history-entry"
+              value={entry.id}
+              asChild
+            >
+              <li>
+                {/* The first entry sits flush under the section's heading. */}
+                <AccordionTrigger className="gap-3 font-normal group-first/entry:pt-0 hover:no-underline">
+                  <EntrySummary entry={entry} timezone={timezone} />
+                </AccordionTrigger>
+                <AccordionContent>
+                  <AccessChanges groups={groups} />
+                </AccordionContent>
+              </li>
+            </AccordionItem>
+          );
+        })}
+      </ol>
+    </Accordion>
   );
 };
 
@@ -145,15 +159,9 @@ interface SidebarProps {
   timezone: string;
   /** Where the header doesn't show the app's name large, the sidebar leads with it. */
   showIdentity: boolean;
-  admin7Design: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
-  installation,
-  timezone,
-  showIdentity,
-  admin7Design,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ installation, timezone, showIdentity }) => {
   const { manifest, history = [] } = installation;
   const installer = history.find((entry) => entry.event === 'installed')?.actor?.name;
   // Several surfaces of one kind read as one line.
@@ -165,13 +173,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={cn(
-        // Admin 7 shows the sidebar above the main column on narrow screens, and on its right on
-        // wide ones, wherever it comes in the DOM.
-        'flex w-full shrink-0 flex-col gap-6 in-data-[admin7-design=true]:max-lg:order-first lg:w-80 in-data-[admin7-design=true]:lg:order-last',
-        admin7Design &&
-          "relative lg:self-stretch lg:before:pointer-events-none lg:before:absolute lg:before:inset-y-0 lg:before:-left-10 lg:before:border-l lg:before:border-border lg:before:content-['']",
-      )}
+      // Above the main column on narrow screens, and on its right on wide ones past a rule,
+      // wherever it comes in the DOM.
+      className="relative flex w-full shrink-0 flex-col gap-6 max-lg:order-first lg:order-last lg:w-80 lg:self-stretch lg:before:pointer-events-none lg:before:absolute lg:before:inset-y-0 lg:before:-left-10 lg:before:border-l lg:before:border-border lg:before:content-['']"
     >
       {showIdentity && (
         <Stack gap="md">
@@ -228,31 +232,23 @@ const Details: React.FC<{
   installation: AppInstallation;
   timezone: string;
   showIdentity: boolean;
-  admin7Design: boolean;
-}> = ({ installation, timezone, showIdentity, admin7Design }) => {
+}> = ({ installation, timezone, showIdentity }) => {
   const { manifest, status, history = [] } = installation;
   const sidebar = (
-    <Sidebar
-      admin7Design={admin7Design}
-      installation={installation}
-      showIdentity={showIdentity}
-      timezone={timezone}
-    />
+    <Sidebar installation={installation} showIdentity={showIdentity} timezone={timezone} />
   );
-  // Lists in a section sit in a ruled card in Admin 7, and an outlined one before it.
-  const cardVariant = admin7Design ? 'ruled' : 'outline';
-  // Admin 7 puts the sidebar after the main column, as it shows on wide screens. Where it
-  // carries the app's name, though, it comes first, so the page's heading comes before its
+  // The sidebar comes after the main column, as it shows on wide screens. Where it carries the
+  // app's name (showIdentity), though, it comes first, so the page's heading comes before its
   // sections for the keyboard and screen readers too.
-  const sidebarFirst = !admin7Design || showIdentity;
 
   return (
-    // Side by side on wide screens, at the member page's gaps, which go past the scale
+    // Side by side on wide screens. Admin 7 spaces the columns and sections past the scale, as
+    // a member's and a tag's details do.
     <Stack
-      className="flex-1 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)] lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20"
+      className="flex-1 [--text-section-heading:var(--text-section-heading-lg)] lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20"
       gap="2xl"
     >
-      {sidebarFirst && sidebar}
+      {showIdentity && sidebar}
       <Stack className="min-w-0 flex-1 in-data-[admin7-design=true]:gap-18" gap="2xl">
         {status === 'suspended' && (
           <Banner data-testid="app-needs-approval" size="md" variant="warning">
@@ -264,13 +260,9 @@ const Details: React.FC<{
         )}
 
         {status !== 'uninstalled' && (
-          <Section
-            description={manifest.scopes.length > 0 ? OPENED_APP_ACCESS_INTRO : undefined}
-            id="app-permissions-heading"
-            title="Permissions"
-          >
-            <Card variant={cardVariant}>
-              <CardContent className={admin7Design ? undefined : 'pt-6'}>
+          <Section id="app-permissions-heading" title="Permissions">
+            <Card variant="ruled">
+              <CardContent>
                 <AccessIndicator manifest={manifest} bare />
               </CardContent>
             </Card>
@@ -278,14 +270,14 @@ const Details: React.FC<{
         )}
 
         <Section id="app-history-heading" title="History">
-          <Card variant={cardVariant}>
+          <Card variant="ruled">
             <CardContent className="pt-3">
               <History entries={history} timezone={timezone} />
             </CardContent>
           </Card>
         </Section>
       </Stack>
-      {!sidebarFirst && sidebar}
+      {!showIdentity && sidebar}
     </Stack>
   );
 };
@@ -350,7 +342,6 @@ export const AppDetails: React.FC = () => {
   // Where list pages show their titles large (admin7Design), the app's name shows large under
   // the breadcrumb, as a tag's and a member's do.
   const { largeTitles } = usePageChrome();
-  const { admin7Design } = useShade();
   const { installationId = '' } = useParams();
   const navigate = useNavigate();
   const [uninstalling, setUninstalling] = useState(false);
@@ -437,10 +428,7 @@ export const AppDetails: React.FC = () => {
           </DetailPage.Header>
 
           <DetailPage.Body
-            className={cn(
-              'in-data-[admin7-design=true]:-mx-3 in-data-[admin7-design=true]:px-3',
-              largeTitles && 'min-h-auto overflow-visible',
-            )}
+            className={cn('-mx-3 px-3', largeTitles && 'min-h-auto overflow-visible')}
           >
             {/* While the app loads: the sidebar's column, its name (where the header doesn't
                 show it large) over its facts */}
@@ -467,7 +455,6 @@ export const AppDetails: React.FC = () => {
             )}
             {installation && (
               <Details
-                admin7Design={admin7Design}
                 installation={installation}
                 showIdentity={!largeTitles}
                 timezone={timezone}

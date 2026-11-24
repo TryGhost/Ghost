@@ -33,6 +33,7 @@ export const appNotInstalled = 'app-not-installed';
 export const appNotFramed = 'app-not-framed';
 export const appNeedsApproval = 'app-needs-approval';
 export const appHistoryEntry = 'app-history-entry';
+export const appHistoryEntryTitle = 'app-history-entry-title';
 export const appUninstallDialog = 'app-uninstall-dialog';
 export const appUninstallIntegrationKeyNote = 'app-uninstall-integration-key-note';
 export const navApps = 'nav-apps';

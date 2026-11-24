@@ -42,9 +42,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
 
     await expect(appPage.needsApproval).toBeVisible();
     await expect(appPage.frame).toHaveCount(0);
-    await expect(appPage.installDialog.modal).toContainText(
-      `Review changes to ${fixtureApp.manifest.name}`,
-    );
+    await expect(appPage.installDialog.approveChangesButton).toBeVisible();
     await appPage.installDialog.approveChanges();
 
     await expect(appPage.frame).toBeVisible();

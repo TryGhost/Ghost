@@ -17,7 +17,7 @@ export const appsScreen = {
   accessIndicator: () => page.getByTestId(sel.accessIndicator),
   accessItems: () => page.getByTestId(sel.accessItem),
   noAccess: () => page.getByTestId(sel.appNoAccess),
-  // An update's new scopes, marked where the review lists them, and what it no longer has.
+  // An update's new scopes, marked where the review lists them, and what it no longer requires.
   newAccess: () => page.getByTestId(sel.accessNew),
   removedAccess: () => page.getByTestId(sel.appAccessRemoved),
   capabilities: () => page.getByTestId(sel.appCapability),
@@ -55,6 +55,9 @@ export const appsScreen = {
   notFramed: () => page.getByTestId(sel.appNotFramed),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),
   historyEntries: () => page.getByTestId(sel.appHistoryEntry),
+  /** Opens a history entry to show what it changed in the app's access. */
+  openHistoryEntry: (index: number) =>
+    page.getByTestId(sel.appHistoryEntry).nth(index).getByRole('button').click(),
   uninstallDialog: () => page.getByTestId(sel.appUninstallDialog),
   integrationKeyNote: () => page.getByTestId(sel.appUninstallIntegrationKeyNote),
 

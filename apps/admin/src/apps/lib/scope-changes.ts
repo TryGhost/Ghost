@@ -18,8 +18,8 @@ type Headings = Record<ScopeChangeGroup['kind'], string>;
 
 /** For changes that took effect: an install, an update or an approval. */
 const HEADINGS: Headings = {
-  added: 'New access',
-  removed: 'No longer has',
+  added: 'Permissions approved',
+  removed: 'No longer requires',
 };
 
 /**
@@ -27,8 +27,8 @@ const HEADINGS: Headings = {
  * asked at the time, so a history entry stays true once it is approved, withdrawn or replaced.
  */
 const PENDING_HEADINGS: Headings = {
-  added: 'Asked for',
-  removed: 'Would drop',
+  added: 'Requested',
+  removed: 'Would no longer require',
 };
 
 const scopesOf = (changes: readonly ScopeChange[], kind: ScopeChange['change']) =>
@@ -52,7 +52,7 @@ export function describeScopeChanges(
 
 /**
  * How an update changes the access its review lists: which of the new version's scopes are new,
- * and what it no longer has, one line per resource.
+ * and what it no longer requires, one line per resource.
  */
 export interface ScopeMarks {
   added: ReadonlySet<AppPermissionKey>;

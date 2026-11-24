@@ -95,6 +95,7 @@ test.describe('Ghost Admin - App access approval', () => {
     });
     await detailsPage.gotoDetails(installationId);
     await expect(detailsPage.historyTitle(0)).toHaveText(/^Changes approved/);
+    await detailsPage.openHistoryEntry(0);
     await expect(detailsPage.historyEntries.first()).toContainText(
       'Edit, publish and email posts and pages',
     );

@@ -29,7 +29,12 @@ export class AppDetailsPage extends AdminPage {
 
   /** A history entry's title, with who made the change if anyone did, but not its date. */
   historyTitle(index: number): Locator {
-    return this.historyEntries.nth(index).locator('span').first();
+    return this.historyEntries.nth(index).getByTestId(sel.appHistoryEntryTitle);
+  }
+
+  /** Opens a history entry to show what it changed in the app's access. */
+  async openHistoryEntry(index: number): Promise<void> {
+    await this.historyEntries.nth(index).getByRole('button').click();
   }
 
   /** The text shown under the app's name. */
