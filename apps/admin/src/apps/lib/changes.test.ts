@@ -108,8 +108,8 @@ describe('describeChanges', () => {
       {
         field: 'backend_key',
         label: 'Backend key',
-        before: '{"kty":"OKP","crv":"Ed25519","x":"H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk"}',
-        after: '{"kty":"OKP","crv":"Ed25519","x":"Z_QKSqF5_5W5r2LfGwj1UyVOFyFew44-bMShKMwpCfo"}',
+        before: 'H7aU67-o…',
+        after: 'Z_QKSqF5…',
       },
     ]);
   });
