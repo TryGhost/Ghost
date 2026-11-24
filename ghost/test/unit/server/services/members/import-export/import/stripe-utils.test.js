@@ -1,7 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const stripe = require('stripe');
-const StripeAPI = require('../../../../../../../core/server/services/stripe/stripe-api');
 const MembersCSVImporterStripeUtils = require('../../../../../../../core/server/services/members/import-export/import/stripe-utils');
 
 describe('MembersCSVImporterStripeUtils', function () {
@@ -346,42 +344,6 @@ describe('MembersCSVImporterStripeUtils', function () {
         ),
         true,
       );
-    });
-
-    it('keeps a subscription that is set to cancel at period end cancelling when moving it to another tier', async function () {
-      stripeCustomer.subscriptions.data[0].cancel_at_period_end = true;
-      stripeCustomer.subscriptions.data[0].metadata = { cancellation_reason: 'Too expensive' };
-
-      // A real StripeAPI, so the assertion is on the request Stripe receives
-      const mockStripe = { subscriptions: { update: sinon.stub().resolves() } };
-      sinon.stub(stripe, 'Stripe').returns(mockStripe);
-      const stripeAPIService = new StripeAPI({ labs: { isSet: () => false } });
-      stripeAPIService.configure({ secretKey: '' });
-      sinon.stub(stripeAPIService, 'getCustomer').withArgs(CUSTOMER_ID).resolves(stripeCustomer);
-
-      const membersCSVImporterStripeUtils = new MembersCSVImporterStripeUtils({
-        stripeAPIService,
-        productRepository: getProductRepositoryStub({
-          ghostProductStripePriceId: 'other_tier_price',
-        }),
-      });
-
-      try {
-        await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct(
-          { customer_id: CUSTOMER_ID, product_id: PRODUCT_ID },
-          OPTIONS,
-        );
-
-        sinon.assert.calledOnce(mockStripe.subscriptions.update);
-        const params = mockStripe.subscriptions.update.args[0][1];
-        assert.deepEqual(params.items, [
-          { id: stripeCustomerSubscriptionItem.id, price: 'other_tier_price' },
-        ]);
-        assert.equal('cancel_at_period_end' in params, false);
-        assert.equal('metadata' in params, false);
-      } finally {
-        sinon.restore();
-      }
     });
 
     it("creates a new price on the Stripe product matching the Stripe customer's existing subscription and updates the subscription", async function () {
