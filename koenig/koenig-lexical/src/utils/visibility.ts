@@ -41,6 +41,8 @@ export interface VisibilityOption {
     toggles: VisibilityToggle[];
 }
 
+export type ToggleVisibility = (groupKey: VisibilityGroupKey, toggleKey: VisibilityToggleKey, value: boolean) => void;
+
 // image and gallery nodes expose these; other cards don't
 interface PlaceholderCandidate {
     isEmpty?: () => boolean;
