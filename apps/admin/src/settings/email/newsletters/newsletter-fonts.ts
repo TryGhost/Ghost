@@ -12,3 +12,49 @@ export const MONO_BODY_FONT_SIZE = { desktop: 16, mobile: 15 };
 
 /** Mono body text reads loose at its default spacing, so it's pulled in slightly. */
 export const MONO_BODY_TRACKING_CLASS = 'tracking-[-0.02em]';
+
+/** Which fonts are set to System mono. Kept outside the form, as the server can't save mono yet. */
+export interface MonoFonts {
+  title: boolean;
+  body: boolean;
+}
+
+export const NO_MONO_FONTS: MonoFonts = { title: false, body: false };
+
+type FontFields = { title_font_category?: string; body_font_category?: string };
+
+/** The newsletter as the preview and font selects show it, with any mono choices applied. */
+export function withMonoFonts<T extends FontFields>(newsletter: T, monoFonts: MonoFonts): T {
+  return {
+    ...newsletter,
+    ...(monoFonts.title && { title_font_category: MONO_FONT_CATEGORY }),
+    ...(monoFonts.body && { body_font_category: MONO_FONT_CATEGORY }),
+  };
+}
+
+/**
+ * Takes mono choices out of a form update so they never reach the server. Picking mono
+ * leaves the saved font as it was; picking any other font clears the mono choice.
+ */
+export function splitMonoFonts<T extends FontFields>(
+  fields: T,
+  monoFonts: MonoFonts,
+): { fields: T; monoFonts: MonoFonts } {
+  const next = { ...fields };
+  const nextMono = { ...monoFonts };
+
+  if (next.title_font_category !== undefined) {
+    nextMono.title = next.title_font_category === MONO_FONT_CATEGORY;
+    if (nextMono.title) {
+      delete next.title_font_category;
+    }
+  }
+  if (next.body_font_category !== undefined) {
+    nextMono.body = next.body_font_category === MONO_FONT_CATEGORY;
+    if (nextMono.body) {
+      delete next.body_font_category;
+    }
+  }
+
+  return { fields: next, monoFonts: nextMono };
+}

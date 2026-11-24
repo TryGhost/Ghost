@@ -71,7 +71,13 @@ import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { DEFAULT_CARD_DESIGN, type NewsletterCardDesign } from './newsletter-card';
 import { DEFAULT_TITLE_META, type NewsletterTitleMeta } from './newsletter-title-meta';
-import { MONO_FONT_CATEGORY, SYSTEM_MONO_CLASS } from './newsletter-fonts';
+import {
+  MONO_FONT_CATEGORY,
+  NO_MONO_FONTS,
+  SYSTEM_MONO_CLASS,
+  splitMonoFonts,
+  withMonoFonts,
+} from './newsletter-fonts';
 import { downloadPreviewPng } from './newsletter-preview-screenshot';
 import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
 import { navigateTo } from '@/utils/navigation';
@@ -192,7 +198,7 @@ const Sidebar: React.FC<{
   const fontOptions: FontOption[] = [
     { value: 'serif', label: 'Elegant serif', className: 'font-serif' },
     { value: 'sans_serif', label: 'Clean sans-serif' },
-    // Prototype: preview only; saving it needs server support first.
+    // Prototype: preview only, never saved; see splitMonoFonts.
     { value: MONO_FONT_CATEGORY, label: 'System mono', className: SYSTEM_MONO_CLASS },
   ];
 
@@ -1072,9 +1078,14 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
     },
   });
 
+  // Prototype: System mono is preview only, so it's kept out of the saved fonts.
+  const [monoFonts, setMonoFonts] = useState(NO_MONO_FONTS);
   const updateNewsletter = (fields: Partial<Newsletter>) => {
-    updateForm((state) => ({ ...state, ...fields }));
+    const split = splitMonoFonts(fields, monoFonts);
+    setMonoFonts(split.monoFonts);
+    updateForm((state) => ({ ...state, ...split.fields }));
   };
+  const displayedNewsletter = withMonoFonts(formState, monoFonts);
 
   useEffect(() => {
     setFormState(() => newsletter);
@@ -1094,7 +1105,7 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
         card={card}
         device={previewDevice}
         dividerStyle={dividerStyle}
-        newsletter={formState}
+        newsletter={displayedNewsletter}
         spacing={spacing}
         titleMeta={titleMeta}
       />
@@ -1149,7 +1160,7 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
       clearError={clearError}
       dividerStyle={dividerStyle}
       errors={errors}
-      newsletter={formState}
+      newsletter={displayedNewsletter}
       onlyOne={onlyOne}
       spacing={spacing}
       titleMeta={titleMeta}
