@@ -93,8 +93,9 @@ async function initDatabase({ config }) {
  * @param {object} options
  * @param {object} options.ghostServer
  * @param {object} options.config
+ * @param {import('#kernel/foundation').Foundation} options.foundation
  */
-async function initCore({ ghostServer, config }) {
+async function initCore({ ghostServer, config, foundation }) {
   debug('Begin: initCore');
 
   // Validate configured adapters up-front so misconfiguration fails at boot
@@ -132,10 +133,11 @@ async function initCore({ ghostServer, config }) {
   require('./shared/url-utils');
   debug('End: Load urlUtils');
 
-  // Limit service is booted before settings, so that limits are available for calculated settings
+  // Limit service is booted before settings, so that limits are available for calculated settings.
+  // The limits are handed the foundation; they import no config, logger or database themselves
   debug('Begin: limits');
-  const limits = require('./server/services/limits');
-  await limits.init();
+  const { limitService } = require('./server/services/limits');
+  require('../shared/limits').loadLimits(limitService, foundation);
   debug('End: limits');
 
   // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
@@ -687,6 +689,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   let bootLogger;
   let config;
   let flushLogsAndMetrics;
+  let foundation;
   let ghostServer;
   let logging;
   let metrics;
@@ -706,9 +709,11 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     debug('End: Load config');
 
     // Logging is also used absolutely everywhere, so Ghost's logger is built here, before
-    // anything else can load @tryghost/logging and have it build one of its own
+    // anything else can load @tryghost/logging and have it build one of its own. It is built
+    // as part of Ghost's foundation, which boot hands to the code that needs it
     debug('Begin: Load logging');
-    logging = require('../bootstrap/logging').buildLogger(config);
+    foundation = require('../bootstrap/foundation').ghostFoundation();
+    logging = foundation.logging;
     metrics = require('@tryghost/metrics');
     flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
     bootLogger = new BootLogger(logging, metrics, startTime);
@@ -772,7 +777,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     // Step 4 - Load Ghost with all its services
     debug('Begin: Load Ghost Services & Apps');
-    await initCore({ ghostServer, config });
+    await initCore({ ghostServer, config, foundation });
 
     // Instrument the knex instance and connection pool if prometheus is enabled
     // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners

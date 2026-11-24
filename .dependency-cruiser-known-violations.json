@@ -572,17 +572,12 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/limits.ts",
-    "to": "@tryghost/logging"
+    "to": "ghost/bootstrap/foundation.ts"
   },
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/limits.ts",
-    "to": "ghost/core/server/data/db/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "ghost/core/shared/config/index.ts"
+    "to": "ghost/shared/limits/index.ts"
   },
   {
     "rule": "service-dependencies",

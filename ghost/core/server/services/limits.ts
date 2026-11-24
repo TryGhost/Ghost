@@ -1,49 +1,12 @@
-import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import { LimitService } from '@tryghost/limit-service';
-import type { Subscription } from '@tryghost/limit-service';
-import config from '../../shared/config';
-import db from '../data/db';
+import { ghostFoundation } from '../../../bootstrap/foundation';
+import { loadLimits } from '../../../shared/limits';
 
+// The bridge to shared/limits, which now holds the logic. 23 files import this
+// instance, some as they load, so it is still created here. It goes when those
+// files are handed the limit service instead of importing it.
 export const limitService = new LimitService();
 
-export const init = () => {
-  let helpLink;
-
-  if (
-    config.get('hostSettings:billing:enabled') === true &&
-    config.get('hostSettings:billing:url')
-  ) {
-    helpLink = config.get('hostSettings:billing:url');
-  } else {
-    helpLink = 'https://ghost.org/help/';
-  }
-
-  let subscription: Subscription | undefined;
-
-  if (config.get('hostSettings:subscription')) {
-    subscription = {
-      startDate: config.get('hostSettings:subscription:start'),
-      interval: 'month',
-    };
-  }
-
-  const hostLimits = config.get('hostSettings:limits') || {};
-
-  try {
-    limitService.loadLimits({
-      limits: hostLimits,
-      subscription,
-      db,
-      helpLink,
-      errors,
-    });
-  } catch (error) {
-    // Do not block the boot process for an incorrect usage error
-    if (error instanceof errors.IncorrectUsageError) {
-      logging.warn(error);
-    } else {
-      throw error;
-    }
-  }
-};
+// Boot hands the foundation to shared/limits itself. This is for the tests
+// that reload the limits after changing config.
+export const init = () => loadLimits(limitService, ghostFoundation());
