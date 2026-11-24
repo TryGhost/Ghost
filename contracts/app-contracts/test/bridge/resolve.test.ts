@@ -230,8 +230,6 @@ describe('checking an Admin API request', () => {
     expect(check('/tags/?filter=visibility:public&anything=else').problem).toBe('blocked');
   });
 
-  // How a post performed is `post:read_stats`'s, so reads and writes of posts and pages can't
-  // include it, or sort by it.
   it('refuses a route whose scope the installation wasn’t approved for', () => {
     const approved = new Set<AppPermissionKey>(['post:browse']);
     expect(check('/posts/', 'GET', root, undefined, approved).problem).toBeUndefined();
@@ -247,8 +245,6 @@ describe('checking an Admin API request', () => {
     expect(check('/site/', 'GET', root, undefined, new Set()).problem).toBeUndefined();
   });
 
-  // How a post performed is `post:read_stats`'s, so reads and writes of posts and pages can
-  // include it, or sort by it, only with that scope.
   // Ghost includes how a post performed when a request names nothing, so the bridge names what
   // the app may have instead.
   it('names the includes an app may have when it names none', () => {
@@ -268,14 +264,17 @@ describe('checking an Admin API request', () => {
     );
     // What an app names is left as it is.
     expect(include('/posts/?include=tags')).toBe('tags');
-    // Asking for some fields gets the same defaults, as an empty `fields` would otherwise leave
-    // Ghost to add its own, how the post performed included.
+    // An empty `fields` asks for nothing, so Ghost would add its defaults, how the post
+    // performed included.
     expect(include('/posts/?fields=', new Set(['post:browse']))).toBe('authors');
     expect(include('/pages/?fields=', new Set(['post:browse']))).toBe('authors');
-    expect(include('/posts/?fields=title')).toBe('tags,authors,tiers,newsletter');
     expect(include('/posts/5ddc9141c35e7700383b2937/?fields=', new Set(['post:read']))).toBe(
       'authors',
     );
+    // Asking for some fields, Ghost adds no defaults, so neither does the bridge.
+    expect(include('/posts/?fields=id,title')).toBeNull();
+    expect(include('/posts/?fields=%20')).toBeNull();
+    expect(include('/posts/?fields=&fields=')).toBeNull();
     // The rest of the query keeps the spelling the app sent.
     const result = check("/posts/?filter=slug:'a%2Cb'&include=&limit=5");
     expect(result.problem === undefined && result.url.search).toBe(
@@ -374,6 +373,8 @@ describe('checking an Admin API request', () => {
     expect(result.problem === undefined && result.url.search).toBe('');
   });
 
+  // How a post performed is `post:read_stats`'s, so reads and writes of posts and pages can
+  // include it, or sort by it, only with that scope.
   it('includes or sorts by how posts performed only with post:read_stats', () => {
     const id = '5ddc9141c35e7700383b2937';
     const cases = [

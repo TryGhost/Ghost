@@ -18,16 +18,16 @@ import type { FetchMethod } from './rules.ts';
  *   work with the publisher's content. Bulk edits, bulk deletes, exports, copies, uploads and
  *   gift links are left out.
  * - Staff users, tiers and newsletters: list only, for showing an author, an access level or a
- *   newsletter. A newsletter's member counts are left out, as no scope grants member data. Members, settings, integrations and everything that hands out lasting access
- *   are left out.
+ *   newsletter. A newsletter's member counts are left out, as no scope grants member data.
+ *   Members, settings, integrations and everything that hands out lasting access are left out.
  * - The search index of posts, pages and tags, and slug generation, which Admin's own editor
  *   uses to pick a slug before saving.
  * - The site's public details: its title, description, logo, icon, cover image and accent
  *   colour, for showing the site's branding. They need no scope.
  * - A post's related tags, tiers and newsletter only with their own scopes, and how a post
  *   performed, through the includes and sort fields that reach it, only with `post:read_stats`.
- *   Ghost includes some of both by default, so a request that names no `include`, with or
- *   without `fields`, is sent with the defaults the app may have.
+ *   Ghost includes some of both by default, so a request that names no `include` and no
+ *   `fields`, which Ghost adds no defaults to, is sent with the defaults the app may have.
  * - Every request may carry only the query parameters its group lists, by exact name, so an
  *   `include` spelled `include[]` can't slip past the checks on it.
  *
@@ -98,9 +98,9 @@ export interface AdminApiResource {
   readonly fieldScopes?: Readonly<Record<string, AppPermissionKey | null>>;
   /**
    * What Ghost includes when a request names nothing, by the route's first path segment, such as
-   * `posts`. Ghost's defaults hold how a post performed, so when an app names no `include` on a
-   * route that takes one, the bridge names these itself, keeping only the ones `fieldScopes`
-   * lets the app have.
+   * `posts`. Ghost's defaults hold how a post performed, so when an app names no `include` and no
+   * `fields` on a route that takes one, the bridge names these itself, keeping only the ones
+   * `fieldScopes` lets the app have.
    */
   readonly defaultIncludes?: Readonly<Record<string, readonly string[]>>;
 }
@@ -165,8 +165,9 @@ export const ADMIN_API_ALLOWLIST: Readonly<Record<AppResourceName | 'site', Admi
       },
     ],
     // A related object needs its own scope, other than a post's authors, which come with reading
-    // posts, as full user records with their emails. How a post performed by email, in signups and conversions, and in
-    // feedback is `post:read_stats`'s. Authors' roles and revisions' authors aren't for apps.
+    // posts, as full user records with their emails. How a post performed by email, in signups
+    // and conversions, and in feedback is `post:read_stats`'s. Authors' roles and revisions'
+    // authors aren't for apps.
     fieldScopes: {
       tags: 'tag:browse',
       authors: null,

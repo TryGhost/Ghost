@@ -163,13 +163,16 @@ export function checkAdminApiRequest(
   }
 
   // Ghost includes how a post performed by default, so a request that names nothing names what
-  // the app may have, whether or not it asks for some `fields`: Ghost's rule for when its
-  // defaults apply isn't copied here, as an empty `fields` falls back to them. A route that
-  // takes no `include`, such as a delete, is left alone. `authors` needs no scope of its own, so
-  // what's named is never empty, which Ghost would refuse.
+  // the app may have. Ghost leaves its defaults out when a request asks for some `fields`: any
+  // value but one empty one, as it reads a repeated parameter as a list. Such a request is left
+  // alone, so it isn't sent relations it never asked for. A route that takes no `include`, such
+  // as a delete, is left alone too. `authors` needs no scope of its own, so what's named is
+  // never empty, which Ghost would refuse.
   const defaults = resource.defaultIncludes?.[pathname.split('/')[1]?.toLowerCase() ?? ''];
   const takesInclude = allowedParameters.includes('include');
-  if (defaults && fieldScopes && takesInclude) {
+  const fields = url.searchParams.getAll('fields');
+  const asksForFields = fields.length > 1 || (fields.length === 1 && fields[0] !== '');
+  if (defaults && fieldScopes && takesInclude && !asksForFields) {
     const named = url.searchParams
       .getAll('include')
       .flatMap((value) => value.split(','))

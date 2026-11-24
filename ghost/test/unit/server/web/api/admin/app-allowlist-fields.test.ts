@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
-import { ADMIN_API_ALLOWLIST } from '@tryghost/app-contracts/bridge';
+import { ADMIN_API_ALLOWLIST, scopeForField } from '@tryghost/app-contracts/bridge';
+import { serializers } from '@tryghost/api-framework';
 
 // @ts-expect-error This module lacks type definitions.
 import postsInput from '../../../../../../core/server/api/endpoints/utils/serializers/input/posts';
@@ -16,14 +17,18 @@ import models from '../../../../../../core/server/models';
 type Serializer = { browse(apiConfig: unknown, frame: unknown): void };
 type Controller = Record<string, { validation?: { options?: { include?: { values: string[] } } } }>;
 
-/** What Ghost includes for a request that names nothing, as the Admin API reads it. */
-function defaultsOf(serializer: Serializer): string[] {
+/**
+ * What Ghost includes for a request that names no `include`, as the Admin API reads it, given the
+ * request's other options as its query parser reads them.
+ */
+function defaultsOf(serializer: Serializer, query: Record<string, unknown> = {}): string[] {
   const frame = {
     apiType: 'admin',
-    options: { context: { user: '1' } } as Record<string, unknown>,
+    options: { context: { user: '1' }, ...query } as Record<string, unknown>,
   };
+  serializers.input.all.all({}, frame as never);
   serializer.browse({}, frame);
-  return frame.options.withRelated as string[];
+  return (frame.options.withRelated as string[] | undefined) ?? [];
 }
 
 /** Every relation a controller's routes let a request include. */
@@ -41,14 +46,7 @@ const fieldScopes = ADMIN_API_ALLOWLIST.post.fieldScopes!;
 const defaultIncludes = ADMIN_API_ALLOWLIST.post.defaultIncludes!;
 
 /** The scope a field needs, as the bridge reads its map, or undefined when apps can't have it. */
-const scopeOf = (field: string) => {
-  for (const [key, scope] of Object.entries(fieldScopes)) {
-    if (key.endsWith('.*') ? field.startsWith(key.slice(0, -1)) : field === key) {
-      return scope;
-    }
-  }
-  return undefined;
-};
+const scopeOf = (field: string) => scopeForField(fieldScopes, field);
 
 // Relations apps can't include at all.
 const REFUSED = new Set(['authors.roles', 'post_revisions.author']);
@@ -68,6 +66,26 @@ describe('the app bridge’s post and page fields', function () {
       );
     });
   }
+
+  // The bridge names the defaults only for a request that asks for no `fields`, as Ghost does.
+  it('adds no defaults for a request that asks for some fields', function () {
+    for (const serializer of [postsInput, pagesInput]) {
+      for (const fields of ['id,title', ' ', ['', '']]) {
+        const included = defaultsOf(serializer, { fields });
+        assert.deepEqual(
+          included.filter((relation) => scopeOf(relation) === 'post:read_stats'),
+          [],
+          JSON.stringify(fields),
+        );
+      }
+      assert.notDeepEqual(
+        defaultsOf(serializer, { fields: '' }).filter(
+          (relation) => scopeOf(relation) === 'post:read_stats',
+        ),
+        [],
+      );
+    }
+  });
 
   it('knows every relation Ghost lets posts and pages include', function () {
     for (const relation of new Set([...includesOf(posts), ...includesOf(pages)])) {

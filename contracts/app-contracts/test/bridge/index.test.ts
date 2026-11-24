@@ -39,6 +39,7 @@ describe('the bridge entry point', () => {
       'isTheme',
       'methodAllowsBody',
       'normaliseAppPath',
+      'scopeForField',
     ]);
   });
 
