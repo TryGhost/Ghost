@@ -63,14 +63,14 @@ const INSTALLATION_COLUMNS = [
 
 const LockedRow = DbAppInstallation.pick({ status: true, revision: true });
 
+const AccessStatusRow = DbAppInstallation.pick({ id: true, status: true });
+
 // Only the scopes are read from the approved manifest, so nothing else in it is decoded
-const AccessRow = DbAppInstallation.pick({ id: true, status: true })
-  .extend({
-    manifest: DbJson(z.object({ scopes: z.array(z.string()) }), {
-      message: 'The stored manifest is not JSON.',
-    }),
-  })
-  .transform(({ id, status, manifest }) => ({ id, status, scopes: manifest.scopes }));
+const AccessRow = AccessStatusRow.extend({
+  manifest: DbJson(z.object({ scopes: z.array(z.string()) }), {
+    message: 'The stored manifest is not JSON.',
+  }),
+}).transform(({ id, status, manifest }) => ({ id, status, scopes: manifest.scopes }));
 
 /** What an app's calls are checked against: whether it's active, and its approved scopes. */
 export type InstallationAccess = z.output<typeof AccessRow>;
@@ -224,7 +224,11 @@ export class AppInstallationsRepository {
     return row ? z.decode(InstallationRow, row) : undefined;
   }
 
-  /** An installation's status and approved scopes, uninstalled or not. */
+  /**
+   * An installation's status and approved scopes, uninstalled or not. Only an active
+   * installation's manifest is decoded, so one stored under an older contract refuses an
+   * inactive installation rather than failing the call; an inactive one has no scopes.
+   */
   async findAccess(id: string): Promise<InstallationAccess | undefined> {
     const row = await this.withApprovedManifest()
       .where('installation.id', id)
@@ -233,7 +237,13 @@ export class AppInstallationsRepository {
         'installation.status',
         'approved.manifest',
       );
-    return row ? z.decode(AccessRow, row) : undefined;
+    if (!row) {
+      return undefined;
+    }
+    if (row.status !== 'active') {
+      return { ...z.decode(AccessStatusRow, { id: row.id, status: row.status }), scopes: [] };
+    }
+    return z.decode(AccessRow, row);
   }
 
   /** The app's current installation, if it has one. */

@@ -150,6 +150,22 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     });
   }
 
+  it('refuses a token once the installation is suspended, whatever its stored manifest', async function () {
+    const id = await installation(['post:browse']);
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+    await knex()('app_installations').where({ id }).update({ status: 'suspended' });
+    await knex()('app_installation_manifests')
+      .where({ installation_id: id })
+      .update({ manifest: 'not json' });
+
+    const { body } = await agent
+      .get('posts/')
+      .header('Authorization', bearer(token))
+      .expectStatus(401);
+
+    assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
+  });
+
   it('refuses a token once the user is suspended', async function () {
     const id = await installation(['post:browse']);
     const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
