@@ -5,6 +5,7 @@ import {
     parseVisibilityToToggles,
     serializeOptionsToVisibility
 } from '../../../src/utils/visibility';
+import type {Visibility} from '@tryghost/kg-default-nodes/visibility';
 
 describe('parseVisibilityToToggles', function () {
     it('should return correct truthy toggles based on the visibility object', function () {
@@ -308,8 +309,8 @@ describe('isSameVisibility', function () {
     // the renderer only shows a card to public visitors when nonMember is exactly true
     it('does not treat a nonMember value other than true as public', function () {
         // stored data the editor doesn't produce itself
-        const nullNonMember = {...everyone, web: {...everyone.web, nonMember: null}} as unknown as typeof everyone;
-        const stringNonMember = {...everyone, web: {...everyone.web, nonMember: 'true'}} as unknown as typeof everyone;
+        const nullNonMember = {...everyone, web: {...everyone.web, nonMember: null}} as unknown as Visibility;
+        const stringNonMember = {...everyone, web: {...everyone.web, nonMember: 'true'}} as unknown as Visibility;
         const membersOnly = {...everyone, web: {...everyone.web, nonMember: false}};
 
         expect(isSameVisibility(nullNonMember, everyone)).toBe(false);
