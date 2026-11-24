@@ -8,6 +8,7 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
 import { DEFAULT_CARD_DESIGN, type NewsletterCardDesign, hasCard } from './newsletter-card';
 import { DEFAULT_TITLE_META, type NewsletterTitleMeta } from './newsletter-title-meta';
+import { DEFAULT_DIVIDER_STYLE, type DividerStyle } from './newsletter-divider';
 
 const NewsletterPreview: React.FC<{
   newsletter: Newsletter;
@@ -18,12 +19,14 @@ const NewsletterPreview: React.FC<{
   card?: NewsletterCardDesign;
   /** Prototype: byline and "View in browser" visibility, preview only. */
   titleMeta?: NewsletterTitleMeta;
+  dividerStyle?: DividerStyle;
 }> = ({
   newsletter,
   spacing = DEFAULT_SPACING,
   device = 'desktop',
   card = DEFAULT_CARD_DESIGN,
   titleMeta = DEFAULT_TITLE_META,
+  dividerStyle = DEFAULT_DIVIDER_STYLE,
 }) => {
   const { currentUser, settings, siteData, config } = useGlobalData();
   const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] =
@@ -247,7 +250,7 @@ const NewsletterPreview: React.FC<{
       cardBackgroundColor={cardBackgroundColor()}
       cardCorners={card.contentCorners}
       device={device}
-      dividerStyle={newsletter.divider_style || 'solid'}
+      dividerStyle={dividerStyle}
       footerContent={newsletter.footer_content}
       headerBackgroundColor={colors.headerBackgroundColor || 'transparent'}
       headerIcon={newsletter.show_header_icon ? icon : undefined}

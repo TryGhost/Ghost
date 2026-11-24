@@ -14,6 +14,8 @@ import {
   resolveNewsletterSpacing,
 } from './newsletter-spacing';
 import { CARD_PAGE_BAND_PX, CARD_RADIUS_PX, type ContentCorners } from './newsletter-card';
+import { DEFAULT_DIVIDER_STYLE, type DividerStyle } from './newsletter-divider';
+import { DividerLine } from './newsletter-divider-line';
 import {
   MONO_BODY_FONT_SIZE,
   MONO_BODY_TRACKING_CLASS,
@@ -84,7 +86,7 @@ const NewsletterPreviewContent: React.FC<{
   buttonCorners?: string;
   imageCorners?: string;
   linkStyle?: string;
-  dividerStyle?: string;
+  dividerStyle?: DividerStyle;
 
   /** Prototype: margin and line spacing stops. Defaults match today's email. */
   spacing?: NewsletterSpacing;
@@ -137,7 +139,7 @@ const NewsletterPreviewContent: React.FC<{
   buttonStyle,
   imageCorners,
   linkStyle,
-  dividerStyle,
+  dividerStyle = DEFAULT_DIVIDER_STYLE,
   spacing = DEFAULT_SPACING,
   device = 'desktop',
 }) => {
@@ -357,9 +359,7 @@ const NewsletterPreviewContent: React.FC<{
     <>
       <div
         className={clsx(
-          'max-w-[600px] border-b border-gray-200 pb-[52px] leading-[27.2px] text-black',
-          dividerStyle === 'dashed' && 'border-dashed',
-          dividerStyle === 'dotted' && 'border-b-2 border-dotted',
+          'max-w-[600px] pb-[52px] leading-[27.2px] text-black',
           bodyFontCategory === 'serif' && 'font-serif',
           bodyFontCategory === MONO_FONT_CATEGORY && [SYSTEM_MONO_CLASS, MONO_BODY_TRACKING_CLASS],
           bodyFontCategory !== 'serif' &&
@@ -367,7 +367,7 @@ const NewsletterPreviewContent: React.FC<{
             'tracking-tight',
           showFeatureImage || showPostTitleSection ? '' : 'pt-8',
         )}
-        style={{ borderColor: dividerColor, fontSize: bodyFontSize }}
+        style={{ fontSize: bodyFontSize }}
       >
         <p style={paragraphStyle}>
           This is what your content will look like when you send one of your posts as an email
@@ -384,13 +384,11 @@ const NewsletterPreviewContent: React.FC<{
           types. So, you can trust that every email you send with Ghost will look great and work
           well. Just like the rest of your site.
         </p>
-        <hr
-          className={clsx(
-            'my-[52px] border-[#e0e7eb]',
-            dividerStyle === 'dashed' && 'border-dashed',
-            dividerStyle === 'dotted' && 'border-t-0 border-b-2 border-dotted',
-          )}
-          style={{ borderColor: dividerColor, ...(isPhone && { margin: PHONE_HR_MARGIN }) }}
+        <DividerLine
+          className="my-[52px]"
+          color={dividerColor}
+          dividerStyle={dividerStyle}
+          style={isPhone ? { margin: PHONE_HR_MARGIN } : undefined}
         />
         <h3
           className={clsx(
@@ -451,236 +449,225 @@ const NewsletterPreviewContent: React.FC<{
           Learn more
         </a>
       </div>
+      <DividerLine color={dividerColor} dividerStyle="thin" />
 
       {/* Feedback */}
       {(showFeedback || showCommentCta || showShareButton) && (
-        <div
-          className={clsx(
-            'grid gap-5 border-b border-gray-200 px-6 py-5',
-            dividerStyle === 'dashed' && 'border-dashed',
-            dividerStyle === 'dotted' && 'border-b-2 border-dotted',
-          )}
-          style={{ borderColor: dividerColor }}
-        >
-          <div className="grid auto-cols-fr grid-flow-col gap-4">
-            {showFeedback && (
-              <>
+        <>
+          <div className="grid gap-5 px-6 py-5">
+            <div className="grid auto-cols-fr grid-flow-col gap-4">
+              {showFeedback && (
+                <>
+                  <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
+                    <span
+                      className="inline-flex size-[54px] items-center justify-center rounded-full border"
+                      style={{ borderColor: dividerColor, color: textColor }}
+                    >
+                      <LucideIcon.ThumbsUp className="size-5" />
+                    </span>
+                    <span
+                      className="font-sans text-[1.3rem] leading-[1.4] font-medium"
+                      style={{ color: textColor }}
+                    >
+                      More like this
+                    </span>
+                  </div>
+                  <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
+                    <span
+                      className="inline-flex size-[54px] items-center justify-center rounded-full border"
+                      style={{ borderColor: dividerColor, color: textColor }}
+                    >
+                      <LucideIcon.ThumbsDown className="size-5" />
+                    </span>
+                    <span
+                      className="font-sans text-[1.3rem] leading-[1.4] font-medium"
+                      style={{ color: textColor }}
+                    >
+                      Less like this
+                    </span>
+                  </div>
+                </>
+              )}
+              {showCommentCta && (
                 <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
                   <span
                     className="inline-flex size-[54px] items-center justify-center rounded-full border"
                     style={{ borderColor: dividerColor, color: textColor }}
                   >
-                    <LucideIcon.ThumbsUp className="size-5" />
+                    <LucideIcon.MessageCircle className="size-5" />
                   </span>
                   <span
                     className="font-sans text-[1.3rem] leading-[1.4] font-medium"
                     style={{ color: textColor }}
                   >
-                    More like this
+                    Comment
                   </span>
                 </div>
+              )}
+              {showShareButton && (
                 <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
                   <span
                     className="inline-flex size-[54px] items-center justify-center rounded-full border"
                     style={{ borderColor: dividerColor, color: textColor }}
                   >
-                    <LucideIcon.ThumbsDown className="size-5" />
+                    <LucideIcon.Share2 className="size-5" />
                   </span>
                   <span
                     className="font-sans text-[1.3rem] leading-[1.4] font-medium"
                     style={{ color: textColor }}
                   >
-                    Less like this
+                    Share
                   </span>
                 </div>
-              </>
-            )}
-            {showCommentCta && (
-              <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
-                <span
-                  className="inline-flex size-[54px] items-center justify-center rounded-full border"
-                  style={{ borderColor: dividerColor, color: textColor }}
-                >
-                  <LucideIcon.MessageCircle className="size-5" />
-                </span>
-                <span
-                  className="font-sans text-[1.3rem] leading-[1.4] font-medium"
-                  style={{ color: textColor }}
-                >
-                  Comment
-                </span>
-              </div>
-            )}
-            {showShareButton && (
-              <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
-                <span
-                  className="inline-flex size-[54px] items-center justify-center rounded-full border"
-                  style={{ borderColor: dividerColor, color: textColor }}
-                >
-                  <LucideIcon.Share2 className="size-5" />
-                </span>
-                <span
-                  className="font-sans text-[1.3rem] leading-[1.4] font-medium"
-                  style={{ color: textColor }}
-                >
-                  Share
-                </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+          <DividerLine color={dividerColor} dividerStyle="thin" />
+        </>
       )}
 
       {/* Latest posts */}
       {showLatestPosts && (
-        <div
-          className={clsx(
-            'border-b border-gray-200 py-6',
-            dividerStyle === 'dashed' && 'border-dashed',
-            dividerStyle === 'dotted' && 'border-b-2 border-dotted',
-          )}
-          style={{ borderColor: dividerColor }}
-        >
-          <h3
-            className="mt-2 mb-4 pb-1 text-[1.2rem] font-semibold tracking-wide text-black uppercase"
-            style={{ color: textColor }}
-          >
-            Keep reading
-          </h3>
-          <div className="flex justify-between gap-4 py-2">
-            <div>
-              <h4
-                className={clsx(
-                  'mt-0.5 text-[1.9rem] text-black',
-                  titleFontCategory === 'serif' && 'font-serif',
-                  titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
-                  titleFontWeight === 'normal' && 'font-normal',
-                  titleFontWeight === 'medium' && 'font-medium',
-                  titleFontWeight === 'semibold' && 'font-semibold',
-                  titleFontWeight === 'bold' && 'font-bold',
-                )}
-                style={{ color: sectionTitleColor, ...latestPostTitleStyle }}
-              >
-                The three latest posts published on your site
-              </h4>
-              <p className="m-0 text-base text-gray-700" style={{ color: secondaryTextColor }}>
-                Posts sent as an email only will never be shown here.
-              </p>
+        <>
+          <div className="py-6">
+            <h3
+              className="mt-2 mb-4 pb-1 text-[1.2rem] font-semibold tracking-wide text-black uppercase"
+              style={{ color: textColor }}
+            >
+              Keep reading
+            </h3>
+            <div className="flex justify-between gap-4 py-2">
+              <div>
+                <h4
+                  className={clsx(
+                    'mt-0.5 text-[1.9rem] text-black',
+                    titleFontCategory === 'serif' && 'font-serif',
+                    titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
+                    titleFontWeight === 'normal' && 'font-normal',
+                    titleFontWeight === 'medium' && 'font-medium',
+                    titleFontWeight === 'semibold' && 'font-semibold',
+                    titleFontWeight === 'bold' && 'font-bold',
+                  )}
+                  style={{ color: sectionTitleColor, ...latestPostTitleStyle }}
+                >
+                  The three latest posts published on your site
+                </h4>
+                <p className="m-0 text-base text-gray-700" style={{ color: secondaryTextColor }}>
+                  Posts sent as an email only will never be shown here.
+                </p>
+              </div>
+              <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                <img
+                  alt="Latest post"
+                  className={clsx(
+                    imageCorners === 'square' && 'rounded-none',
+                    imageCorners === 'rounded' && 'rounded-md',
+                  )}
+                  src={LatestPosts1}
+                />
+              </div>
             </div>
-            <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
-              <img
-                alt="Latest post"
-                className={clsx(
-                  imageCorners === 'square' && 'rounded-none',
-                  imageCorners === 'rounded' && 'rounded-md',
-                )}
-                src={LatestPosts1}
-              />
+            <div className="flex justify-between gap-4 py-2">
+              <div>
+                <h4
+                  className={clsx(
+                    'mt-0.5 text-[1.9rem] text-black',
+                    titleFontCategory === 'serif' && 'font-serif',
+                    titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
+                    titleFontWeight === 'normal' && 'font-normal',
+                    titleFontWeight === 'medium' && 'font-medium',
+                    titleFontWeight === 'semibold' && 'font-semibold',
+                    titleFontWeight === 'bold' && 'font-bold',
+                  )}
+                  style={{ color: sectionTitleColor, ...latestPostTitleStyle }}
+                >
+                  Displayed at the bottom of each newsletter
+                </h4>
+                <p className="m-0 text-base text-gray-700" style={{ color: secondaryTextColor }}>
+                  Giving your readers one more place to discover your stories.
+                </p>
+              </div>
+              <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                <img
+                  alt="Latest post"
+                  className={clsx(
+                    imageCorners === 'square' && 'rounded-none',
+                    imageCorners === 'rounded' && 'rounded-md',
+                  )}
+                  src={LatestPosts2}
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex justify-between gap-4 py-2">
-            <div>
-              <h4
-                className={clsx(
-                  'mt-0.5 text-[1.9rem] text-black',
-                  titleFontCategory === 'serif' && 'font-serif',
-                  titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
-                  titleFontWeight === 'normal' && 'font-normal',
-                  titleFontWeight === 'medium' && 'font-medium',
-                  titleFontWeight === 'semibold' && 'font-semibold',
-                  titleFontWeight === 'bold' && 'font-bold',
-                )}
-                style={{ color: sectionTitleColor, ...latestPostTitleStyle }}
-              >
-                Displayed at the bottom of each newsletter
-              </h4>
-              <p className="m-0 text-base text-gray-700" style={{ color: secondaryTextColor }}>
-                Giving your readers one more place to discover your stories.
-              </p>
-            </div>
-            <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
-              <img
-                alt="Latest post"
-                className={clsx(
-                  imageCorners === 'square' && 'rounded-none',
-                  imageCorners === 'rounded' && 'rounded-md',
-                )}
-                src={LatestPosts2}
-              />
-            </div>
-          </div>
-          <div className="flex justify-between gap-4 py-2">
-            <div>
-              <h4
-                className={clsx(
-                  'mt-0.5 text-[1.9rem] text-black',
-                  titleFontCategory === 'serif' && 'font-serif',
-                  titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
-                  titleFontWeight === 'normal' && 'font-normal',
-                  titleFontWeight === 'medium' && 'font-medium',
-                  titleFontWeight === 'semibold' && 'font-semibold',
-                  titleFontWeight === 'bold' && 'font-bold',
-                )}
-                style={{ color: sectionTitleColor, ...latestPostTitleStyle }}
-              >
-                To keep your work front and center
-              </h4>
-              <p className="m-0 text-base text-gray-700" style={{ color: secondaryTextColor }}>
-                Making sure that your audience stays engaged.
-              </p>
-            </div>
-            <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
-              <img
-                alt="Latest post"
-                className={clsx(
-                  imageCorners === 'square' && 'rounded-none',
-                  imageCorners === 'rounded' && 'rounded-md',
-                )}
-                src={LatestPosts3}
-              />
+            <div className="flex justify-between gap-4 py-2">
+              <div>
+                <h4
+                  className={clsx(
+                    'mt-0.5 text-[1.9rem] text-black',
+                    titleFontCategory === 'serif' && 'font-serif',
+                    titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
+                    titleFontWeight === 'normal' && 'font-normal',
+                    titleFontWeight === 'medium' && 'font-medium',
+                    titleFontWeight === 'semibold' && 'font-semibold',
+                    titleFontWeight === 'bold' && 'font-bold',
+                  )}
+                  style={{ color: sectionTitleColor, ...latestPostTitleStyle }}
+                >
+                  To keep your work front and center
+                </h4>
+                <p className="m-0 text-base text-gray-700" style={{ color: secondaryTextColor }}>
+                  Making sure that your audience stays engaged.
+                </p>
+              </div>
+              <div className="aspect-square h-auto w-full max-w-[100px] bg-cover bg-no-repeat">
+                <img
+                  alt="Latest post"
+                  className={clsx(
+                    imageCorners === 'square' && 'rounded-none',
+                    imageCorners === 'rounded' && 'rounded-md',
+                  )}
+                  src={LatestPosts3}
+                />
+              </div>
             </div>
           </div>
-        </div>
+          <DividerLine color={dividerColor} dividerStyle="thin" />
+        </>
       )}
 
       {/* Subscription details */}
       {showSubscriptionDetails && (
-        <div
-          className={clsx(
-            'border-b border-gray-200 py-8',
-            dividerStyle === 'dashed' && 'border-dashed',
-            dividerStyle === 'dotted' && 'border-b-2 border-dotted',
-          )}
-          style={{ borderColor: dividerColor }}
-        >
-          <h4
-            className="mb-3 text-[1.2rem] tracking-wide text-black uppercase"
-            style={{ color: textColor }}
-          >
-            Subscription details
-          </h4>
-          <p className="m-0 mb-4 text-base" style={{ color: textColor }}>
-            You are receiving this because you are a paid subscriber to {siteTitle}. Your
-            subscription will renew on 17 Jul 2024.
-          </p>
-          <div className="flex">
-            <div className="shrink-0 text-base">
-              <p style={{ color: textColor }}>Name: Jamie Larson</p>
-              <p style={{ color: textColor }}>Email: jamie@example.com</p>
-              <p style={{ color: textColor }}>Member since: 17 July 2023</p>
-            </div>
-            <span
-              className={clsx(
-                'w-full self-end text-right text-base whitespace-nowrap',
-                linkStyle === 'underline' && 'underline',
-                linkStyle === 'bold' && 'font-bold',
-              )}
-              style={{ color: linkColor || accentColor }}
+        <>
+          <div className="py-8">
+            <h4
+              className="mb-3 text-[1.2rem] tracking-wide text-black uppercase"
+              style={{ color: textColor }}
             >
-              Manage subscription
-            </span>
+              Subscription details
+            </h4>
+            <p className="m-0 mb-4 text-base" style={{ color: textColor }}>
+              You are receiving this because you are a paid subscriber to {siteTitle}. Your
+              subscription will renew on 17 Jul 2024.
+            </p>
+            <div className="flex">
+              <div className="shrink-0 text-base">
+                <p style={{ color: textColor }}>Name: Jamie Larson</p>
+                <p style={{ color: textColor }}>Email: jamie@example.com</p>
+                <p style={{ color: textColor }}>Member since: 17 July 2023</p>
+              </div>
+              <span
+                className={clsx(
+                  'w-full self-end text-right text-base whitespace-nowrap',
+                  linkStyle === 'underline' && 'underline',
+                  linkStyle === 'bold' && 'font-bold',
+                )}
+                style={{ color: linkColor || accentColor }}
+              >
+                Manage subscription
+              </span>
+            </div>
           </div>
-        </div>
+          <DividerLine color={dividerColor} dividerStyle="thin" />
+        </>
       )}
 
       {/* Footer */}

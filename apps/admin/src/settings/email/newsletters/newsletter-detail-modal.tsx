@@ -9,6 +9,8 @@ import IconToggleGroup from '@/settings/components/icon-toggle-group';
 import NewsletterCardFields from './newsletter-card-fields';
 import NewsletterPreview from './newsletter-preview';
 import { ContentWidthField, LineSpacingField } from './newsletter-spacing-fields';
+import { DEFAULT_DIVIDER_STYLE, type DividerStyle } from './newsletter-divider';
+import { DividerStyleField } from './newsletter-divider-field';
 import React, { useCallback, useEffect, useState } from 'react';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import validator from 'validator';
@@ -142,6 +144,8 @@ const Sidebar: React.FC<{
   onCardChange: (card: NewsletterCardDesign) => void;
   titleMeta: NewsletterTitleMeta;
   onTitleMetaChange: (titleMeta: NewsletterTitleMeta) => void;
+  dividerStyle: DividerStyle;
+  onDividerStyleChange: (dividerStyle: DividerStyle) => void;
 }> = ({
   newsletter,
   onlyOne,
@@ -155,6 +159,8 @@ const Sidebar: React.FC<{
   onCardChange,
   titleMeta,
   onTitleMetaChange,
+  dividerStyle,
+  onDividerStyleChange,
 }) => {
   type FontOption = { value: string; label: string; className?: string };
   const upgradeRoute = useUpgradeRoute();
@@ -813,6 +819,27 @@ const Sidebar: React.FC<{
               value={spacing.lineSpacing}
               onChange={(lineSpacing) => onSpacingChange({ ...spacing, lineSpacing })}
             />
+            <Inline className="w-full" gap="sm" justify="between">
+              <FieldTitle>Image corners</FieldTitle>
+              <IconToggleGroup
+                label="Image corners"
+                options={[
+                  {
+                    value: 'square',
+                    label: 'Squared',
+                    icon: <LucideIcon.Square className="size-3.5!" />,
+                  },
+                  {
+                    value: 'rounded',
+                    label: 'Rounded',
+                    icon: <LucideIcon.Squircle className="size-3.5!" />,
+                  },
+                ]}
+                value={newsletter.image_corners || 'square'}
+                onValueChange={(imageCorners) => updateNewsletter({ image_corners: imageCorners })}
+              />
+            </Inline>
+            <Separator className="my-1 bg-border-default" />
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -879,6 +906,7 @@ const Sidebar: React.FC<{
                 }
               />
             </Inline>
+            <Separator className="my-1 bg-border-default" />
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -923,26 +951,8 @@ const Sidebar: React.FC<{
                 onValueChange={(linkStyle) => updateNewsletter({ link_style: linkStyle })}
               />
             </Inline>
-            <Inline className="w-full" gap="sm" justify="between">
-              <FieldTitle>Image corners</FieldTitle>
-              <IconToggleGroup
-                label="Image corners"
-                options={[
-                  {
-                    value: 'square',
-                    label: 'Squared',
-                    icon: <LucideIcon.Square className="size-3.5!" />,
-                  },
-                  {
-                    value: 'rounded',
-                    label: 'Rounded',
-                    icon: <LucideIcon.Squircle className="size-3.5!" />,
-                  },
-                ]}
-                value={newsletter.image_corners || 'square'}
-                onValueChange={(imageCorners) => updateNewsletter({ image_corners: imageCorners })}
-              />
-            </Inline>
+            <Separator className="my-1 bg-border-default" />
+            <DividerStyleField value={dividerStyle} onChange={onDividerStyleChange} />
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -1070,10 +1080,11 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
     setFormState(() => newsletter);
   }, [setFormState, newsletter]);
 
-  // Prototype: spacing, card and device only drive the preview; nothing is saved.
+  // Prototype: spacing, card, title meta, divider style and device only drive the preview; nothing is saved.
   const [spacing, setSpacing] = useState<NewsletterSpacing>(DEFAULT_SPACING);
   const [card, setCard] = useState<NewsletterCardDesign>(DEFAULT_CARD_DESIGN);
   const [titleMeta, setTitleMeta] = useState<NewsletterTitleMeta>(DEFAULT_TITLE_META);
+  const [dividerStyle, setDividerStyle] = useState<DividerStyle>(DEFAULT_DIVIDER_STYLE);
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
 
   // The preview toolbar centres its content in a row; stretch so the preview keeps its full height.
@@ -1082,6 +1093,7 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
       <NewsletterPreview
         card={card}
         device={previewDevice}
+        dividerStyle={dividerStyle}
         newsletter={formState}
         spacing={spacing}
         titleMeta={titleMeta}
@@ -1135,6 +1147,7 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
     <Sidebar
       card={card}
       clearError={clearError}
+      dividerStyle={dividerStyle}
       errors={errors}
       newsletter={formState}
       onlyOne={onlyOne}
@@ -1143,6 +1156,7 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
       updateNewsletter={updateNewsletter}
       validate={validate}
       onCardChange={setCard}
+      onDividerStyleChange={setDividerStyle}
       onSpacingChange={setSpacing}
       onTitleMetaChange={setTitleMeta}
     />
