@@ -1,6 +1,34 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 reviews:
   profile: quiet
+  merge_risk_instructions: |
+    Classify Ghost changes using these categories, even without a confirmed bug.
+
+    High risk:
+    - Database migrations, schema changes, backfills, indexes, constraints, and migration execution or rollback; consider locks and existing production data.
+    - Tinybird queries, pipes, endpoints, datasources, and ingestion, especially materialized views: fixing a query may not repair persisted historical data.
+    - State-mutating database queries, bulk updates/deletes, relation writes, transaction boundaries, and locking order; consider concurrency and partial failure.
+    - Interactions with Stripe, Mailgun, the scheduler, or other external systems, including webhooks, retries, idempotency, timeouts, and execution order.
+    - Boot/shutdown, service initialization, dependency ordering, readiness, background job startup, and interrupted-work recovery.
+    - Authentication, sessions, staff permissions, and enforcement of access to paid or private content.
+    - Decisions about who is charged, which members receive email, or whether posts are published or sent.
+    - Email rendering: newsletter/automation templates, personalization, link rewriting, unsubscribe links, tracking pixels, HTML/plaintext generation, and member-specific content/access rules. Sent emails cannot be corrected by reverting.
+    - Large PRs combining multiple behavior changes across Core and frontend apps, especially coordinated deployment or rollback assumptions.
+    - Release/deployment changes affecting published packages, CDN assets, production configuration, or deployment gates.
+
+    Moderate risk:
+    - Incidental removal or weakening of logging, Sentry reporting, tracing, metrics, or other production observability signals.
+    - Read-only database query, pagination, or caching changes affecting results or large-site performance. Tinybird remains High.
+    - Removing or weakening regression tests, compatibility checks, or CI gates without equivalent protection.
+
+    Low risk:
+    - Behavior-preserving JavaScript-to-TypeScript conversions and small, contained backend refactors such as helper extraction, equivalent conditionals, or deduplication.
+    - Internal renames with references updated; removal of demonstrably unused code/imports after checking dynamic callers and exports.
+    - Test additions/improvements, fixed clocks, seeded fixtures, or isolation fixes that preserve assertions and edge cases.
+    - Trivial frontend styling or copy without behavior changes; not email output.
+    - Documentation, comment, or type corrections without executable configuration or operational policy changes.
+
+    Low examples apply even in High subsystems when preservation is verified, not merely claimed. Changes to queries, transactions, async ordering, validation, serialization, exports, or module loading are not automatically behavior-preserving. Flags do not protect ungated migrations, boot, or shared paths. Explain the category, what could fail, and any evidence justifying a lower rating.
   request_changes_workflow: false
   review_details: true
   review_status: true
