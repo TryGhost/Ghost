@@ -4,6 +4,7 @@ import {
   JSONError,
   SessionExpiredError,
 } from '@tryghost/admin-x-framework/errors';
+import type { Setting } from '@tryghost/admin-x-framework/api/settings';
 import {
   AppsTurnedOffError,
   appsFlagOn,
@@ -58,7 +59,7 @@ describe('siteBlocksApps', () => {
   });
 });
 
-const labsSettings = (labs: string) => [{ key: 'labs', value: labs }];
+const labsSettings = (labs: unknown) => [{ key: 'labs', value: labs }] as Setting[];
 
 describe('appsFlagOn', () => {
   it('reads the apps flag from the site’s Labs settings', () => {
@@ -67,6 +68,15 @@ describe('appsFlagOn', () => {
     expect(appsFlagOn(labsSettings('{}'))).toBe(false);
     expect(appsFlagOn([])).toBe(false);
     expect(appsFlagOn(labsSettings('not json'))).toBeUndefined();
+  });
+
+  it.each([
+    ['JSON that isn’t an object', 'null'],
+    ['a list', '[]'],
+    ['a flag that isn’t true or false', '{"apps":"false"}'],
+    ['a value that isn’t JSON text', { apps: false }],
+  ])('can’t read Labs settings with %s', (_, labs) => {
+    expect(appsFlagOn(labsSettings(labs))).toBeUndefined();
   });
 });
 
@@ -84,7 +94,12 @@ describe('sessionStartFailure', () => {
   });
 
   it('keeps a 404 without a code as it is while the Labs show apps on, or can’t be read', async () => {
-    for (const settings of [labsSettings('{"apps":true}'), labsSettings('not json'), undefined]) {
+    for (const settings of [
+      labsSettings('{"apps":true}'),
+      labsSettings('not json'),
+      labsSettings('{"apps":0}'),
+      undefined,
+    ]) {
       expect(await sessionStartFailure(uncodedNotFound, () => Promise.resolve(settings))).toBe(
         uncodedNotFound,
       );
@@ -132,6 +147,20 @@ describe('endsAppSession', () => {
     expect(endsAppSession(apiError(500, null, 'InternalServerError'))).toBe(false);
     expect(endsAppSession(new Error('offline'))).toBe(false);
   });
+
+  it.each([
+    ['no body', null],
+    ['a body that isn’t an object', 'Not Found'],
+    ['no errors', {}],
+    ['errors that aren’t a list', { errors: { code: 'APP_SESSION_ENDED' } }],
+    ['an empty list of errors', { errors: [] }],
+    ['an error that isn’t an object', { errors: ['APP_SESSION_ENDED'] }],
+    ['a code that isn’t text', { errors: [{ code: 404, type: 'NotFoundError' }] }],
+    ['a type that isn’t text', { errors: [{ code: 'APP_SESSION_ENDED', type: 409 }] }],
+  ])('keeps it for a failure with %s', (_, body) => {
+    const failure = new JSONError(new Response(null, { status: 404 }), body as ErrorResponse);
+    expect(endsAppSession(failure)).toBe(false);
+  });
 });
 
 describe('isRefusedToken', () => {
@@ -141,9 +170,16 @@ describe('isRefusedToken', () => {
 
     expect(isRefusedToken(await failureOfResponse(refused))).toBe(true);
     expect(isRefusedToken(await failureOfResponse(other))).toBe(false);
-    expect(isRefusedToken(await failureOfResponse(new Response('not json', { status: 401 })))).toBe(
-      false,
-    );
+    for (const body of [
+      'not json',
+      '"APP_TOKEN_INVALID"',
+      '{"errors":"APP_TOKEN_INVALID"}',
+      '{"errors":[{"code":["APP_TOKEN_INVALID"]}]}',
+    ]) {
+      expect(isRefusedToken(await failureOfResponse(new Response(body, { status: 401 })))).toBe(
+        false,
+      );
+    }
     // The response can still be read
     expect(await refused.json()).toEqual({ errors: [{ code: 'APP_TOKEN_INVALID' }] });
   });

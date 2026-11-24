@@ -5,28 +5,30 @@ import {
 } from '@tryghost/app-contracts';
 import { getSettingValue, type Setting } from '@tryghost/admin-x-framework/api/settings';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
+import { z } from 'zod';
+
+// Ghost sends `null` for an error without a code
+const errorField = z
+  .string()
+  .nullish()
+  .transform((value) => value || undefined);
+
+const FailureSchema = z.object({ code: errorField, type: errorField });
+
+const ErrorBodySchema = z.object({
+  errors: z.tuple([FailureSchema]).rest(z.unknown()),
+});
 
 /**
  * What Ghost said about a failed apps request: the first error's code, and its type for an error
  * without one. Every decision about what an apps failure means reads this, never the status: an
  * unrelated error can share a status with one that ends a session.
  */
-export interface Failure {
-  code?: string;
-  type?: string;
-}
+export type Failure = z.infer<typeof FailureSchema>;
 
 function failureOfBody(body: unknown): Failure | undefined {
-  const errors = (body as { errors?: unknown } | null | undefined)?.errors;
-  const first: unknown = Array.isArray(errors) ? errors[0] : undefined;
-  if (typeof first !== 'object' || first === null) {
-    return undefined;
-  }
-  const { code, type } = first as { code?: unknown; type?: unknown };
-  return {
-    code: typeof code === 'string' && code ? code : undefined,
-    type: typeof type === 'string' && type ? type : undefined,
-  };
+  const parsed = ErrorBodySchema.safeParse(body);
+  return parsed.success ? parsed.data.errors[0] : undefined;
 }
 
 /** What Ghost said about a request Admin's API layer failed with. */
@@ -73,17 +75,28 @@ export function isUncodedNotFound(error: unknown): boolean {
   return failure?.type === 'NotFoundError' && failure.code === undefined;
 }
 
+const LabsSchema = z.object({ apps: z.boolean().optional() });
+
 /**
  * Whether the site's Labs settings have the `apps` flag on, or undefined when they can't be read.
  * They're where Admin's Labs screen turns it on and off.
  */
 export function appsFlagOn(settings: Setting[]): boolean | undefined {
+  const value = getSettingValue<unknown>(settings, 'labs');
+  if (value === null) {
+    return false;
+  }
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  let json: unknown;
   try {
-    const labs: unknown = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
-    return typeof labs === 'object' && labs !== null && (labs as { apps?: unknown }).apps === true;
+    json = JSON.parse(value);
   } catch {
     return undefined;
   }
+  const labs = LabsSchema.safeParse(json);
+  return labs.success ? labs.data.apps === true : undefined;
 }
 
 /** A session start Ghost turned away because the `apps` flag is off, as the site's Labs show. */
