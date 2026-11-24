@@ -73,9 +73,28 @@ describe("Better Auth's OAuth provider for apps", function () {
       const auth = build({ apps: false });
       const { cookie } = await signIn(auth);
 
-      for (const path of ['/oauth2/token', '/oauth2/authorize', '/token', '/jwks']) {
-        const response = await auth.handler(new Request(url(path), { headers: { cookie } }));
-        assert.equal(response.status, 404, path);
+      const routes = [
+        ['POST', '/oauth2/token'],
+        ['GET', '/oauth2/authorize'],
+        ['POST', '/oauth2/introspect'],
+        ['POST', '/oauth2/revoke'],
+        ['GET', '/token'],
+        ['GET', '/jwks'],
+        ['GET', '/.well-known/oauth-authorization-server'],
+      ];
+      for (const [method, path] of routes) {
+        const response = await auth.handler(
+          new Request(url(path), {
+            method,
+            headers: {
+              cookie,
+              origin,
+              ...(method === 'POST' ? { 'content-type': 'application/x-www-form-urlencoded' } : {}),
+            },
+            ...(method === 'POST' ? { body: 'token=x' } : {}),
+          }),
+        );
+        assert.equal(response.status, 404, `${method} ${path}`);
       }
       const session = await auth.handler(new Request(url('/get-session'), { headers: { cookie } }));
       assert.equal(session.status, 200);
