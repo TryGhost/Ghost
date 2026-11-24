@@ -52,18 +52,31 @@ export function isRefusedToken(failure: Failure | undefined): boolean {
 
 /**
  * Why no app opens on this site, whichever app it is: it runs the legacy auth engine, which can't
- * issue the tokens apps need, or the apps flag was turned on since Ghost started.
+ * issue the tokens apps need, the apps flag was turned on since Ghost started, or it's off.
  */
-export type SiteBlocksApps = 'new-auth-engine' | 'restart';
+export type SiteBlocksApps = 'new-auth-engine' | 'restart' | 'off';
 
 const SITE_BLOCKS_APPS: Partial<Record<AppFailureCode, SiteBlocksApps>> = {
   APP_AUTH_ENGINE_UNSUPPORTED: 'new-auth-engine',
   APP_TOKENS_UNAVAILABLE: 'restart',
 };
 
+/**
+ * Ghost turns the apps routes away with a 404 that has no code while the `apps` flag is off. The
+ * routes that start a session and renew its token answer an installation that doesn't exist with
+ * `APP_NOT_INSTALLED`, so from them, a 404 without a code means apps are off.
+ */
+function appsTurnedOff(failure: Failure | undefined): boolean {
+  return failure?.type === 'NotFoundError' && failure.code === undefined;
+}
+
+/** Why no app opens on this site, read from a failed session start. */
 export function siteBlocksApps(error: unknown): SiteBlocksApps | undefined {
-  const code = failureOf(error)?.code;
-  return isAppFailureCode(code) ? SITE_BLOCKS_APPS[code] : undefined;
+  const failure = failureOf(error);
+  if (appsTurnedOff(failure)) {
+    return 'off';
+  }
+  return isAppFailureCode(failure?.code) ? SITE_BLOCKS_APPS[failure.code] : undefined;
 }
 
 /** Codes that end an open app session: nothing it can do opens it again as it was. */
@@ -77,13 +90,14 @@ const ENDS_SESSION: ReadonlySet<string> = new Set<AppFailureCode>([
 
 /**
  * Whether Ghost refused a renewal for good: the installation changed or is gone, the site can't
- * issue app tokens, or the staff user may no longer open apps.
+ * issue app tokens or has apps turned off, or the staff user may no longer open apps.
  */
 export function endsAppSession(error: unknown): boolean {
   const failure = failureOf(error);
   return (
     (failure?.code !== undefined && ENDS_SESSION.has(failure.code)) ||
-    failure?.type === 'NoPermissionError'
+    failure?.type === 'NoPermissionError' ||
+    appsTurnedOff(failure)
   );
 }
 

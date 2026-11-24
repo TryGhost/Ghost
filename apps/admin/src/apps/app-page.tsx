@@ -574,35 +574,66 @@ const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () =>
   );
 };
 
+const SITE_BLOCKS_APPS: Record<
+  SiteBlocksApps,
+  { testId: string; title: string; description: string; retry: boolean }
+> = {
+  'new-auth-engine': {
+    testId: 'app-needs-new-auth-engine',
+    title: 'Apps aren’t available on this site',
+    description:
+      'Apps need Ghost’s new auth engine, which this site doesn’t use yet. Your site isn’t affected.',
+    retry: false,
+  },
+  restart: {
+    testId: 'apps-need-restart',
+    title: 'Apps aren’t available on this site',
+    description:
+      'Apps were turned on after Ghost started, so they open once Ghost restarts. Your site isn’t affected.',
+    retry: true,
+  },
+  off: {
+    testId: 'apps-turned-off',
+    title: 'Apps are turned off on this site',
+    description: 'Apps can’t open while they’re turned off. Your site isn’t affected.',
+    retry: false,
+  },
+};
+
 /**
- * Apps get their tokens from Better Auth, which a site on the legacy auth engine doesn't run, so
- * none of them opens there. Nothing about the app is wrong, so there's no Try again.
+ * Shown when no app opens on the site, whichever app it is. Nothing about the app is wrong. Only
+ * a restart that Ghost is waiting for clears without changing the site's setup, so that's the one
+ * reason with a Try again. With apps turned off, Admin's Apps screens can't load either, so the
+ * way back leads out of Apps.
  */
 const AppsBlocked: React.FC<{ reason: SiteBlocksApps; onRetry: () => void }> = ({
   reason,
   onRetry,
-}) => (
-  <Centered testId={reason === 'restart' ? 'apps-need-restart' : 'app-needs-new-auth-engine'}>
-    <EmptyIndicator
-      actions={
-        <>
-          <Button variant="outline" asChild>
-            <Link to="/apps">Back to Apps</Link>
-          </Button>
-          {reason === 'restart' && <Button onClick={onRetry}>Try again</Button>}
-        </>
-      }
-      description={
-        reason === 'restart'
-          ? 'Apps were turned on after Ghost started, so they open once Ghost restarts. Your site isn’t affected.'
-          : 'Apps need Ghost’s new auth engine, which this site doesn’t use yet. Your site isn’t affected.'
-      }
-      title="Apps aren’t available on this site"
-    >
-      <LucideIcon.LayoutGrid />
-    </EmptyIndicator>
-  </Centered>
-);
+}) => {
+  const { testId, title, description, retry } = SITE_BLOCKS_APPS[reason];
+  return (
+    <Centered testId={testId}>
+      <EmptyIndicator
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              {reason === 'off' ? (
+                <Link to="/">Back to Admin</Link>
+              ) : (
+                <Link to="/apps">Back to Apps</Link>
+              )}
+            </Button>
+            {retry && <Button onClick={onRetry}>Try again</Button>}
+          </>
+        }
+        description={description}
+        title={title}
+      >
+        <LucideIcon.LayoutGrid />
+      </EmptyIndicator>
+    </Centered>
+  );
+};
 
 const NotInstalled: React.FC = () => (
   <Centered testId="app-not-installed">
@@ -664,9 +695,10 @@ export const AppPage: React.FC = () => {
   const { installationId = '' } = useParams();
   const { settled, session, error, restart } = useAppSession(installationId);
   const installation = session?.installation;
-  const notFound = isInstallationNotFound(error);
   const failure = sessionFailureOf(error);
   const blocked = siteBlocksApps(error);
+  // Apps being turned off is a 404 too
+  const notFound = !blocked && isInstallationNotFound(error);
   const appFailed = failure !== undefined || blocked !== undefined;
   useEffect(() => {
     if (error && !notFound && !appFailed) {

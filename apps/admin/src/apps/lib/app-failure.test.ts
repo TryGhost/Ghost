@@ -43,6 +43,11 @@ describe('siteBlocksApps', () => {
     expect(siteBlocksApps(apiError(409, 'APP_TOKENS_UNAVAILABLE'))).toBe('restart');
     expect(siteBlocksApps(apiError(409, 'APP_SESSION_ENDED'))).toBeUndefined();
   });
+
+  it('reads a 404 without a code, how Ghost turns the apps routes away, as apps turned off', () => {
+    expect(siteBlocksApps(apiError(404, null, 'NotFoundError'))).toBe('off');
+    expect(siteBlocksApps(apiError(404, 'APP_NOT_INSTALLED', 'NotFoundError'))).toBeUndefined();
+  });
 });
 
 describe('endsAppSession', () => {
@@ -50,11 +55,13 @@ describe('endsAppSession', () => {
     expect(endsAppSession(apiError(409, 'APP_SESSION_ENDED'))).toBe(true);
     expect(endsAppSession(apiError(404, 'APP_NOT_INSTALLED'))).toBe(true);
     expect(endsAppSession(apiError(403, null, 'NoPermissionError'))).toBe(true);
+    // Apps were turned off
+    expect(endsAppSession(apiError(404, null, 'NotFoundError'))).toBe(true);
   });
 
   it('keeps it for anything else with the same status', () => {
     expect(endsAppSession(apiError(409, 'SOME_OTHER_CONFLICT'))).toBe(false);
-    expect(endsAppSession(apiError(404, null, 'NotFoundError'))).toBe(false);
+    expect(endsAppSession(apiError(500, null, 'InternalServerError'))).toBe(false);
     expect(endsAppSession(new Error('offline'))).toBe(false);
   });
 });

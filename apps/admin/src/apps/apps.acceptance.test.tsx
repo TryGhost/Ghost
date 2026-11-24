@@ -97,6 +97,15 @@ const apiError = (status: number, message: string, code?: string) =>
     headers: { 'content-type': 'application/json' },
   });
 
+/** How Ghost turns away the apps routes while the `apps` flag is off: a 404 without a code. */
+const appsTurnedOff = () =>
+  new Response(
+    JSON.stringify({
+      errors: [{ type: 'NotFoundError', message: 'Resource could not be found.' }],
+    }),
+    { status: 404, headers: { 'content-type': 'application/json' } },
+  );
+
 /**
  * Sets `appFrameTimeouts.ready` to `ms` while `run` runs, or until `run` calls `restore` to give
  * the rest of the spec the usual timeout.
@@ -618,6 +627,21 @@ describe('Managing apps', () => {
     await page.getByRole('button', { name: 'Try again' }).click();
 
     await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('says apps are turned off when Ghost turns the session away for that, with no Try again', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(appsTurnedOff());
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('apps-turned-off'))
+      .toHaveTextContent('Apps are turned off on this site');
+    await expect.element(appsScreen.notInstalled()).not.toBeInTheDocument();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 
   // Uninstalling and installing it again from a link is how another developer's key gets pinned.
@@ -2016,6 +2040,29 @@ describe('Managing apps', () => {
 
       // Ended as any session is: Admin starts a new one
       await expect.poll(() => sessionsApi.requests.length).toBe(2);
+    });
+
+    it('shows apps are turned off when they were while it was open, renewing nothing more', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const renewApi = fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        appsTurnedOff(),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'Apps are not enabled on this site.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      sessionsApi.set(appsTurnedOff());
+
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      await expect.element(page.getByTestId('apps-turned-off')).toBeVisible();
+      expect(renewApi.requests).toHaveLength(1);
+      expect(sessionsApi.requests).toHaveLength(2);
     });
 
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
