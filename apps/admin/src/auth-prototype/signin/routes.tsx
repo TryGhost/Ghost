@@ -33,6 +33,11 @@ export const authPrototypeRoutes: RouteObject[] = [
     lazy: async () => ({ Component: (await import('./demo-code')).DemoCode }),
   },
   {
+    path: '/auth-demo/setup-two-step',
+    handle,
+    lazy: async () => ({ Component: (await import('./demo-setup-two-step')).default }),
+  },
+  {
     path: '/auth-demo/backup',
     handle,
     lazy: async () => ({ Component: (await import('./demo-code')).DemoBackup }),

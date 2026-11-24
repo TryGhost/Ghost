@@ -29,11 +29,22 @@ export default function DemoPassword() {
     setError('');
     setState('running');
     await fakeDelay();
-    // Anything works as the password. A code is always asked for next.
-    const { twoFactor } = getDemoState();
-    navigate(twoFactor.method === 'app' ? '/auth-demo/code' : '/auth-demo/email-code', {
-      state: location.state,
-    });
+    // Anything works as the password. What comes next follows Settings > Security.
+    const { twoFactor, policy, signinScenario } = getDemoState();
+    const owner = Boolean(location.state?.owner);
+    if (twoFactor.method === 'app') {
+      navigate('/auth-demo/code', { state: location.state });
+    } else if (policy.requireTwoStep) {
+      // The site requires two-step and this person hasn't set it up: they do it now.
+      navigate('/auth-demo/setup-two-step', { state: location.state });
+    } else if (owner || policy.emailCodeEverySignin || signinScenario.newDevice) {
+      // The owner's way round SSO always needs a code; otherwise only a new
+      // device does, unless the site asks for one every time.
+      const reason = owner ? 'owner' : policy.emailCodeEverySignin ? 'every-time' : 'new-device';
+      navigate('/auth-demo/email-code', { state: { ...location.state, reason } });
+    } else {
+      navigate('/auth-demo/done', { state: { via: 'password' } });
+    }
   };
 
   return (

@@ -52,6 +52,8 @@ export interface DemoState {
     providerOutcome: 'success' | 'rejected' | 'unreachable';
     /** false shows "You don't have access yet" on the SSO flow. */
     hasStaffAccount: boolean;
+    /** Signing in on a device Ghost hasn't seen. Without two-step, only then is a code emailed. */
+    newDevice: boolean;
     /** Wrong codes in a row on the sign-in demo, since the last pause. */
     failedCodes: number;
     /** When the current sign-in pause ends (ms since epoch), or null. */
@@ -101,6 +103,7 @@ const FRESH: DemoState = {
   signinScenario: {
     providerOutcome: 'success',
     hasStaffAccount: true,
+    newDevice: true,
     failedCodes: 0,
     pausedUntil: null,
     pauses: 0,

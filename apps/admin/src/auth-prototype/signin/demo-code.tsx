@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from '@tryghost/admin-x-framework';
+import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import {
   Button,
   Field,
@@ -256,8 +256,18 @@ export function DemoBackup() {
 }
 
 /** Today's emailed-code step, for staff who use email codes. */
+const EMAIL_CODE_REASONS = {
+  'new-device': 'You’re signing in on a new device, so we’ve emailed you a 6-digit code.',
+  'every-time':
+    'This site asks for a code every time you sign in. We’ve emailed you a 6-digit code.',
+  owner:
+    'You’re signing in with your password instead of single sign-on, so we’ve emailed you a 6-digit code.',
+} as const;
+
 export function DemoEmailCode() {
   const navigate = useNavigate();
+  const location = useLocation() as { state: { reason?: keyof typeof EMAIL_CODE_REASONS } | null };
+  const reason = EMAIL_CODE_REASONS[location.state?.reason ?? 'new-device'];
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [state, setState] = useState<SubmitState>('idle');
@@ -286,11 +296,7 @@ export function DemoEmailCode() {
       <form noValidate onSubmit={(event) => void verify(event)}>
         <Stack gap="lg">
           <AuthHeader title="Verify it’s really you">
-            <p className="text-lg text-muted-foreground">
-              A <span className="whitespace-nowrap">6-digit</span>{' '}
-              <span className="whitespace-nowrap">sign-in</span> verification code has been sent to
-              your email to keep your account safe.
-            </p>
+            <p className="text-lg text-muted-foreground">{reason}</p>
           </AuthHeader>
           <Field>
             <FieldLabel htmlFor="demo-email-code">Verification code</FieldLabel>

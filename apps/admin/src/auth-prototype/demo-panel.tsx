@@ -365,6 +365,12 @@ function PanelBody({ onJump }: { onJump: () => void }) {
           label="Has a staff account"
           onChange={(hasStaffAccount) => updateSignin({ hasStaffAccount })}
         />
+        <ControlSwitch
+          checked={state.signinScenario.newDevice}
+          id="auth-prototype-new-device"
+          label="Signing in on a new device"
+          onChange={(newDevice) => updateSignin({ newDevice })}
+        />
       </PanelSection>
     </Stack>
   );

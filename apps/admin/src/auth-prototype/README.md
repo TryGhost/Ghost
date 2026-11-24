@@ -70,6 +70,14 @@ every scenario control, shortcuts to each flow, and **Reset prototype**.
     code, signed in. A backup code works once. Five wrong codes pause sign-in
     with a countdown and point you to the Owner or an Administrator.
     The _Codes running low_ preset shows the warning after signing in.
+13. **What happens after the password** follows Settings > Security:
+    - Authenticator app on: the app code.
+    - "Require two-step verification" on (the _Two-step required_ preset):
+      set up the authenticator app right there, then sign in.
+    - Otherwise an emailed code, but only on a new device (panel: "Signing
+      in on a new device"), unless "Email a code on every sign-in" is on.
+      The owner's way round SSO always asks for one.
+    - Known device, no rules: straight in.
 
 ## How it hooks in
 
