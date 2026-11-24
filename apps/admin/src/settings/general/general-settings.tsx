@@ -9,15 +9,27 @@ import TimeZone from './time-zone';
 import TitleAndDescription from './title-and-description';
 import Users from './users';
 import { searchKeywords } from './search-keywords';
+import {
+  SecuritySettingsGroup,
+  isAuthPrototypeEnabled,
+  securitySearchKeywords,
+} from '@/auth-prototype/api'; // auth-prototype
 
 const GeneralSettings: React.FC = () => {
   // This section is going to be updated with merging Twitter and Facebook to the Metadata group,
   // that's why we're using a dedicated searchKeywords array for it.
   return (
-    <SearchableSection keywords={Object.values(searchKeywords).flat()} title="General settings">
+    <SearchableSection
+      keywords={[
+        ...Object.values(searchKeywords).flat(),
+        ...(isAuthPrototypeEnabled() ? securitySearchKeywords : []), // auth-prototype
+      ]}
+      title="General settings"
+    >
       <TitleAndDescription keywords={searchKeywords.titleAndDescription} />
       <TimeZone keywords={searchKeywords.timeZone} />
       <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
+      <SecuritySettingsGroup /> {/* auth-prototype */}
       <Users keywords={searchKeywords.users} />
       <SEOMeta keywords={searchKeywords.metadata} />
       <SocialAccounts keywords={searchKeywords.socialAccounts} />

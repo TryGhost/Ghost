@@ -54,6 +54,11 @@ export const settingsRouteChildren: RouteObject[] = [
     handle: { dialogGroup: 'staff' } satisfies SettingsRouteHandle,
     lazy: lazyComponent(() => import('./general/user-detail-modal')),
   },
+  {
+    path: 'staff/:slug/security', // auth-prototype
+    handle: { dialogGroup: 'staff' } satisfies SettingsRouteHandle,
+    lazy: lazyComponent(() => import('./general/user-detail-modal')),
+  },
   { path: 'portal/edit', lazy: lazyComponent(() => import('./membership/portal/portal-modal')) },
   { path: 'tiers/add', lazy: lazyComponent(() => import('./membership/tiers/tier-detail-modal')) },
   {

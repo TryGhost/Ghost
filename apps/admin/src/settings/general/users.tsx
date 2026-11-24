@@ -43,6 +43,7 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+import { StaffMethodBadges, useAuthPrototypeEnabled } from '@/auth-prototype/api'; // auth-prototype
 
 interface OwnerProps {
   user: User;
@@ -83,7 +84,8 @@ const Owner: React.FC<OwnerProps> = ({ user }) => {
       <Avatar className="size-12" {...memberAvatarProps(user)} src={user.profile_image} />
       <div className="flex flex-col">
         <span>
-          {user.name} &mdash; <strong>Owner</strong>{' '}
+          {user.name} &mdash; <strong>Owner</strong>
+          <StaffMethodBadges user={user} /> {/* auth-prototype */}{' '}
           {hasAdminAccess(currentUser) && (
             <Button
               className="ml-2 group-hover:visible md:invisible"
@@ -153,7 +155,10 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
                     src={user.profile_image}
                   />
                   <span className="min-w-0 grow">
-                    <span className="block">{title}</span>
+                    <span className="block">
+                      {title}
+                      <StaffMethodBadges user={user} /> {/* auth-prototype */}
+                    </span>
                     <span className="block truncate text-sm text-muted-foreground">
                       {user.email}
                     </span>
@@ -167,7 +172,10 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
                     src={user.profile_image}
                   />
                   <span className="min-w-0 grow">
-                    <span className="block">{title}</span>
+                    <span className="block">
+                      {title}
+                      <StaffMethodBadges user={user} /> {/* auth-prototype */}
+                    </span>
                     <span className="block truncate text-sm text-muted-foreground">
                       {user.email}
                     </span>
@@ -368,6 +376,7 @@ const Users: React.FC<{ keywords: string[]; highlight?: boolean }> = ({
   };
 
   const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
+  const authPrototype = useAuthPrototypeEnabled(); // auth-prototype: the switch moves to Security
 
   const updateRequire2fa = async (newValue: boolean) => {
     try {
@@ -468,24 +477,28 @@ const Users: React.FC<{ keywords: string[]; highlight?: boolean }> = ({
         >{`Load more (showing ${formatNumber(invites.length)}/${formatNumber(totalInvites)} invites)`}</Button>
       )}
 
-      {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (
-        <div
-          className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}
-        >
-          <Separator />
-          <div className="flex items-baseline justify-between">
-            <div className="flex flex-col">
-              <span className="text-[1.5rem] font-semibold tracking-tight">Security settings</span>
-              <span>Require email 2FA codes to be used on all staff logins</span>
+      {!authPrototype /* auth-prototype */ &&
+        config?.security?.staffDeviceVerification &&
+        hasAdminAccess(currentUser) && (
+          <div
+            className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}
+          >
+            <Separator />
+            <div className="flex items-baseline justify-between">
+              <div className="flex flex-col">
+                <span className="text-[1.5rem] font-semibold tracking-tight">
+                  Security settings
+                </span>
+                <span>Require email 2FA codes to be used on all staff logins</span>
+              </div>
+              <Switch
+                aria-label="Require email 2FA codes on staff logins"
+                checked={require2fa}
+                onCheckedChange={(newValue) => void updateRequire2fa(newValue)}
+              />
             </div>
-            <Switch
-              aria-label="Require email 2FA codes on staff logins"
-              checked={require2fa}
-              onCheckedChange={(newValue) => void updateRequire2fa(newValue)}
-            />
           </div>
-        </div>
-      )}
+        )}
     </TopLevelGroup>
   );
 };

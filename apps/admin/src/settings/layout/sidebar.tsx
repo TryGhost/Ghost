@@ -33,6 +33,7 @@ import ExitSettingsButton from '@/settings/components/exit-settings-button';
 import { ADMIN7_NAV_ICON_CLASS_NAME } from '@/layout/app-sidebar/nav-icon-class';
 import { NavHelpItem } from '@/layout/app-sidebar/nav-help-item';
 import { PrivateSiteBadge } from '@/shared/private-site-badge';
+import { SecurityNavItem } from '@/auth-prototype/api'; // auth-prototype
 
 interface NavItemProps {
   icon?: React.ReactNode;
@@ -437,6 +438,7 @@ const Sidebar: React.FC = () => {
             title="Publication language"
             onClick={handleSectionClick}
           />
+          <SecurityNavItem NavItem={NavItem} onClick={handleSectionClick} /> {/* auth-prototype */}
           <NavItem
             icon={<LucideIcon.UserPen />}
             keywords={generalSearchKeywords.users}

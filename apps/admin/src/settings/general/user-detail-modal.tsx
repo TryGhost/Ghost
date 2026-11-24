@@ -2,6 +2,7 @@ import EmailNotificationsTab from './users/email-notifications-tab';
 import ProfileTab from './users/profile-tab';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import SocialLinksTab from './users/social-links-tab';
+import { SecurityTab, useShowSecurityTab } from '@/auth-prototype/api'; // auth-prototype
 import clsx from 'clsx';
 import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
@@ -128,7 +129,11 @@ const UserDetailModalContent: React.FC<{
   const getTabFromPath = (path: string): string => {
     const lastSegment = path.split('/').pop() || '';
 
-    if (lastSegment === 'social-links' || lastSegment === 'email-notifications') {
+    if (
+      lastSegment === 'social-links' ||
+      lastSegment === 'email-notifications' ||
+      lastSegment === 'security' // auth-prototype
+    ) {
       return lastSegment;
     }
 
@@ -390,6 +395,7 @@ const UserDetailModalContent: React.FC<{
   // The footer carries the modal's own p-10 gutters, so its cap has to grow by them to line up with the content column.
   const standaloneFooterClasses = 'mx-auto w-full max-w-[calc(536px+5rem)]';
 
+  const showSecurityTab = useShowSecurityTab(user); // auth-prototype
   const initialTab = getTabFromPath(location.pathname);
   const [selectedTab, setSelectedTab] = useState<string>(initialTab);
 
@@ -623,6 +629,8 @@ const UserDetailModalContent: React.FC<{
               <TabsTrigger title="Email Notifications" value="email-notifications">
                 Email Notifications
               </TabsTrigger>
+              {showSecurityTab && <TabsTrigger value="security">Security</TabsTrigger>}{' '}
+              {/* auth-prototype */}
             </TabsList>
             <TabsContent className="pt-4" value="profile">
               <ProfileTab
@@ -645,6 +653,12 @@ const UserDetailModalContent: React.FC<{
             <TabsContent className="pt-4" value="email-notifications">
               <EmailNotificationsTab setUserData={setUserData} user={formState} />
             </TabsContent>
+            {showSecurityTab && (
+              <TabsContent className="pt-4" value="security">
+                <SecurityTab user={user} />
+              </TabsContent>
+            )}{' '}
+            {/* auth-prototype */}
           </Tabs>
         </div>
       </div>

@@ -22,6 +22,7 @@ import { usePrivateSiteLogin } from './hooks/use-private-site-login';
 import { SignedOutApp, useAuthNotice } from './auth/api';
 import { useSentry } from './sentry';
 import { BootError, BootLoader } from './boot-states';
+import { AuthPrototypePanel } from './auth-prototype/api'; // auth-prototype
 
 function App() {
   const { data: currentUser, error, errorUpdatedAt } = useCurrentUser();
@@ -53,6 +54,7 @@ function App() {
           <Outlet />
           <BillingFrame alerts={alerts} />
           <ClientExtensionScript />
+          <AuthPrototypePanel /> {/* auth-prototype */}
         </AdminLayout>
       ) : bootError ? (
         <BootError error={bootError} />

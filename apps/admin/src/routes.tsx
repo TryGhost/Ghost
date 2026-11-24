@@ -51,6 +51,7 @@ import {
 
 import { NotFound } from './shared/not-found';
 import { authRoutes } from './auth/api';
+import { authPrototypeRoutes } from './auth-prototype/api'; // auth-prototype
 
 const appRoutes: RouteObject[] = [
   {
@@ -219,6 +220,7 @@ const appRoutes: RouteObject[] = [
     Component: BillingRoute,
     handle: { allowInForceUpgrade: true } satisfies AdminRouteHandle,
   },
+  ...authPrototypeRoutes, // auth-prototype
   {
     // 404 catch-all
     path: '*',
