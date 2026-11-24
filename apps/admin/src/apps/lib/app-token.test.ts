@@ -168,7 +168,7 @@ describe('createAppTokenHolder', () => {
     expect(holder.current()).toBe('ghost_app_renewed');
   });
 
-  it('backs off a renewal that keeps failing, then ends the session', async () => {
+  it('backs off a renewal that keeps failing, then stops renewing on a timer but keeps the session', async () => {
     const renew = vi.fn(() => Promise.reject(apiError(500)));
     const { holder, onEnded, onError, start } = holderWith(renew);
     start();
@@ -178,21 +178,89 @@ describe('createAppTokenHolder', () => {
       [MINUTE, 2],
       [2 * MINUTE, 3],
       [4 * MINUTE, 4],
+      [8 * MINUTE, 5],
     ] as const) {
       await vi.advanceTimersByTimeAsync(wait - 1);
       expect(renew).toHaveBeenCalledTimes(calls - 1);
       await vi.advanceTimersByTimeAsync(1);
       expect(renew).toHaveBeenCalledTimes(calls);
     }
+
+    await vi.advanceTimersByTimeAsync(2 * HOUR);
+    expect(renew).toHaveBeenCalledTimes(5);
+    // Ghost being unreachable isn't a refusal: the app keeps running, with its unsaved work
     expect(onEnded).not.toHaveBeenCalled();
+    // One outage, one report
+    expect(onError).toHaveBeenCalledOnce();
+  });
 
-    await vi.advanceTimersByTimeAsync(8 * MINUTE);
-    expect(renew).toHaveBeenCalledTimes(5);
-    expect(onEnded).toHaveBeenCalledOnce();
-    expect(onError).toHaveBeenCalledTimes(5);
+  describe('once Ghost answers again', () => {
+    const refusedToken = () =>
+      new Response('{"errors":[{"code":"APP_TOKEN_INVALID"}]}', { status: 401 });
 
-    await vi.advanceTimersByTimeAsync(HOUR);
-    expect(renew).toHaveBeenCalledTimes(5);
+    it('renews on the next call Ghost refuses for its token, then on a timer again', async () => {
+      let reachable = false;
+      const renew = vi.fn(() =>
+        reachable
+          ? Promise.resolve(tokenExpiringIn(HOUR, `ghost_app_${renew.mock.calls.length}`))
+          : Promise.reject(new TypeError('Failed to fetch')),
+      );
+      const { holder, onEnded, start } = holderWith(renew);
+      start();
+      await holder.renew();
+      await vi.advanceTimersByTimeAsync(2 * HOUR);
+      expect(renew).toHaveBeenCalledTimes(5);
+
+      reachable = true;
+      const call = vi.fn((token: string) =>
+        Promise.resolve(token === 'ghost_app_first' ? refusedToken() : new Response('{}')),
+      );
+      expect((await holder.send(call)).status).toBe(200);
+      expect(renew).toHaveBeenCalledTimes(6);
+      expect(onEnded).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(50 * MINUTE);
+      expect(renew).toHaveBeenCalledTimes(7);
+    });
+
+    it('asks Ghost at most once a minute for calls refused while renewals fail', async () => {
+      const renew = vi.fn(() => Promise.reject(apiError(503)));
+      const { holder, onError, start } = holderWith(renew);
+      start();
+      const call = vi.fn(() => Promise.resolve(refusedToken()));
+
+      for (let sent = 0; sent < 5; sent += 1) {
+        expect((await holder.send(call)).status).toBe(401);
+      }
+      expect(renew).toHaveBeenCalledOnce();
+      expect(onError).toHaveBeenCalledOnce();
+
+      await vi.advanceTimersByTimeAsync(MINUTE - 1);
+      await holder.send(call);
+      expect(renew).toHaveBeenCalledOnce();
+
+      // The retry the timer had set out, which the calls share
+      await vi.advanceTimersByTimeAsync(1);
+      expect(renew).toHaveBeenCalledTimes(2);
+      expect(onError).toHaveBeenCalledOnce();
+    });
+
+    it('reports a new outage after a renewal worked in between', async () => {
+      const renew = vi
+        .fn<() => Promise<ReturnType<typeof tokenExpiringIn>>>()
+        .mockRejectedValueOnce(apiError(500))
+        .mockResolvedValueOnce(tokenExpiringIn(HOUR, 'ghost_app_renewed'))
+        .mockRejectedValueOnce(apiError(500));
+      const { holder, onError, start } = holderWith(renew);
+      start();
+
+      await holder.renew();
+      await vi.advanceTimersByTimeAsync(MINUTE);
+      await vi.advanceTimersByTimeAsync(50 * MINUTE);
+
+      expect(renew).toHaveBeenCalledTimes(3);
+      expect(onError).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('counts a token’s lifetime from when it arrived, whatever the browser’s clock says', async () => {

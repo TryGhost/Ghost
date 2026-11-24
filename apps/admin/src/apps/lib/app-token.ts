@@ -9,10 +9,13 @@ const RENEW_BEFORE_EXPIRY_MS = 10 * 60 * 1000;
  * issues for less than its usual hour, isn't renewed back to back.
  */
 const MIN_RENEW_DELAY_MS = 5 * 60 * 1000;
-/** A renewal that failed otherwise is tried again after this, doubling each time. */
+/**
+ * A renewal that failed otherwise is tried again after this, doubling each time. Nothing asks
+ * Ghost again sooner than this after a failed renewal.
+ */
 const RETRY_MS = 60 * 1000;
-/** Consecutive failed renewals that end the session. */
-const MAX_FAILED_RENEWALS = 5;
+/** Consecutive failed renewals after which the timer stops trying. */
+const MAX_TIMED_RENEWALS = 5;
 /** `setTimeout` fires at once for a longer delay. */
 const MAX_DELAY_MS = 2 ** 31 - 1;
 
@@ -40,7 +43,8 @@ export interface AppTokenHolder extends AppTokenSource {
   current(): string;
   /**
    * Renews the token now, sharing a renewal already under way. Resolves to whether there's a
-   * new token; false when Ghost refused it, which ends the session.
+   * new token: false when Ghost refused it, which ends the session, when it failed, and without
+   * asking within a minute of a renewal that failed.
    */
   renew(): Promise<boolean>;
   /**
@@ -63,9 +67,17 @@ function isToken(token: AppSessionToken | undefined): token is AppSessionToken {
 /**
  * Holds an app session's token, owned by the session and outside React state, so renewing it
  * never re-renders or reloads the app's frame. It renews ahead of expiry, and on demand when a
- * call is refused because the token expired, such as after a laptop slept. A renewal Ghost
- * refuses ends the session through `onEnded`, as does one that keeps failing. A staff session
- * that expired is handled by Admin's API layer, which sends the publisher to sign in.
+ * call is refused because the token expired, such as after a laptop slept.
+ *
+ * - A renewal Ghost refuses ends the session through `onEnded`.
+ * - A staff session that expired stops renewing, and is left to Admin's API layer, which sends
+ *   the publisher to sign in.
+ * - A renewal that fails otherwise, such as with Ghost unreachable, keeps the session and the
+ *   app's frame, and its unsaved work with it. The timer tries again after 1, 2, 4 and 8 minutes,
+ *   then stops; from then the next call Ghost refuses for its token renews it, so the app
+ *   recovers once Ghost answers. A call that renews on demand shares the timer's backoff: no
+ *   renewal is asked for within a minute of one that failed. Only the first failure of a run is
+ *   reported.
  */
 export function createAppTokenHolder({
   token,
@@ -86,6 +98,7 @@ export function createAppTokenHolder({
   let timer: ReturnType<typeof setTimeout> | undefined;
   let renewing: Promise<boolean> | undefined;
   let failures = 0;
+  let failedAt = 0;
 
   const schedule = (delay: number) => {
     clearTimeout(timer);
@@ -94,6 +107,14 @@ export function createAppTokenHolder({
       : undefined;
   };
   const untilRenewal = () => expiresAt - RENEW_BEFORE_EXPIRY_MS - Date.now();
+  const scheduleRetry = () => {
+    if (failures < MAX_TIMED_RENEWALS) {
+      schedule(failedAt + RETRY_MS * 2 ** (failures - 1) - Date.now());
+    } else {
+      clearTimeout(timer);
+      timer = undefined;
+    }
+  };
   const stopRenewing = () => {
     ended = true;
     clearTimeout(timer);
@@ -122,10 +143,13 @@ export function createAppTokenHolder({
     },
 
     renew() {
-      if (ended || !renewal) {
+      if (renewing) {
+        return renewing;
+      }
+      if (ended || !renewal || (failures > 0 && Date.now() - failedAt < RETRY_MS)) {
         return Promise.resolve(false);
       }
-      renewing ??= renewal
+      renewing = renewal
         .renew()
         .then((next) => {
           if (!isToken(next)) {
@@ -149,13 +173,12 @@ export function createAppTokenHolder({
             end();
             return false;
           }
-          onError(error);
-          failures += 1;
-          if (failures >= MAX_FAILED_RENEWALS) {
-            end();
-          } else {
-            schedule(RETRY_MS * 2 ** (failures - 1));
+          if (failures === 0) {
+            onError(error);
           }
+          failures += 1;
+          failedAt = Date.now();
+          scheduleRetry();
           return false;
         })
         .finally(() => {
@@ -166,7 +189,12 @@ export function createAppTokenHolder({
 
     start(next) {
       renewal = next;
-      if (!ended) {
+      if (ended) {
+        return;
+      }
+      if (failures > 0) {
+        scheduleRetry();
+      } else {
         schedule(untilRenewal());
       }
     },
