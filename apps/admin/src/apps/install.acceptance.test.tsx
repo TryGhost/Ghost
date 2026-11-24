@@ -3,6 +3,7 @@ import { page } from 'vitest/browser';
 import type {
   AppInstallation,
   AppInstallationPreview,
+  AppManifest,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
   currentRoute,
@@ -23,6 +24,9 @@ import {
   labs,
   manifest,
 } from './apps.test-utils';
+
+/** Reads and edits posts, reading on its own too, and lists tags. */
+const SCOPES: AppManifest['scopes'] = ['post:browse', 'post:edit', 'tag:browse'];
 
 const INSTALL_ROUTE = `/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`;
 
@@ -96,7 +100,9 @@ describe('Installing an app', () => {
 
   it('shows who the app is and where it runs, and installs the version reviewed', async () => {
     const installations = fakeInstallations();
-    const previewApi = fakePreview(previewResponse(preview()));
+    const previewApi = fakePreview(
+      previewResponse(preview({ manifest: manifest({ scopes: SCOPES }) })),
+    );
     const installApi = fakeAdminEndpoint('POST', '/apps/installations/', () => {
       installations.set([installation()]);
       return { app_installations: [installation()] };
@@ -119,13 +125,23 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
     await expect
       .element(appsScreen.accessIndicator())
-      .toHaveTextContent('The app acts as whoever opens it, within their role.');
-    await expect(appsScreen.accessItems()).toHaveCount(6);
-    // Where the app's data goes closes the box, but isn't one of the permissions
-    await expect(appsScreen.accessIndicator().getByRole('listitem')).toHaveCount(6);
+      .toHaveTextContent(
+        'Make sure you trust Example Audio. Ghost does not review apps such as Podcast. Only install apps from developers you trust.',
+      );
+    // One line per resource the app declares, in Ghost's words.
+    await expect(appsScreen.accessItems()).toHaveCount(2);
     await expect
       .element(appsScreen.accessItems().first())
-      .toHaveTextContent('View, create, edit, publish and delete posts and pages');
+      .toHaveTextContent(
+        'Posts and pagesList, search and read every post and page, drafts included.Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them.',
+      );
+    await expect
+      .element(appsScreen.accessItems().nth(1))
+      .toHaveTextContent('TagsList and search tags.');
+    // Where the app's data goes closes the box, but isn't one of the permissions.
+    await expect(
+      appsScreen.accessIndicator().getByRole('listitem').filter({ hasText: 'Data accessed by' }),
+    ).toHaveCount(0);
     // What the app does: where it appears, and, with its permissions, where what it reads goes.
     await expect(appsScreen.capabilities()).toHaveCount(1);
     await expect
@@ -153,6 +169,52 @@ describe('Installing an app', () => {
     await expect.poll(currentRoute).toBe('/apps');
     await expect(appsScreen.rows()).toHaveCount(1);
     await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
+  });
+
+  it('says when an app asks for no access', async () => {
+    fakeInstallations();
+    fakePreview(previewResponse(preview()));
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.noAccess()).toBeVisible();
+    // Whatever it asks for, Ghost hasn't reviewed it.
+    await expect
+      .element(appsScreen.accessIndicator())
+      .toHaveTextContent('Only install apps from developers you trust.');
+    await expect(appsScreen.accessItems()).toHaveCount(0);
+  });
+
+  it('marks what changed in access in the list when approving an installed app’s changes', async () => {
+    fakeInstallations([installation()]);
+    fakePreview(
+      previewResponse(
+        preview({
+          manifest: manifest({ scopes: SCOPES }),
+          digest: 'digest-2',
+          installation: {
+            ...existing([
+              { kind: 'scope', scope: 'post:edit', change: 'added' },
+              { kind: 'scope', scope: 'product:browse', change: 'removed' },
+            ]),
+            manifest: manifest({ scopes: ['post:browse', 'tag:browse', 'product:browse'] }),
+          },
+        }),
+      ),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    // A new scope is marked where it's listed.
+    await expect(appsScreen.newAccess()).toHaveCount(1);
+    await expect
+      .element(appsScreen.newAccess())
+      .toHaveTextContent('Edit, publish and email posts and pages');
+    await expect
+      .element(appsScreen.removedAccess())
+      .toHaveTextContent('No longer requiresTiersList your tiers and their prices.');
+    // Access isn't repeated among the field-by-field changes.
+    await expect(appsScreen.changes()).toHaveCount(0);
   });
 
   it('shows the app’s own icon from the copy Ghost would store, never from the app', async () => {
@@ -235,15 +297,20 @@ describe('Installing an app', () => {
 
   it('reviews what changed for an app the site already has, and approves it in place', async () => {
     fakeInstallations([installation()]);
-    const renamed = manifest({ name: 'Podcasts', description: 'New words.' });
+    const renamed = manifest({
+      name: 'Podcasts',
+      description: 'New words.',
+      author: { name: 'Podcast Network', url: 'https://podcasts.example.com/' },
+    });
     fakePreview(
       previewResponse(
         preview({
           manifest: renamed,
           digest: 'digest-2',
           installation: existing([
-            { path: 'description', requires_approval: false },
-            { path: 'name', requires_approval: true },
+            { kind: 'field', path: 'description', requires_approval: false },
+            { kind: 'field', path: 'name', requires_approval: true },
+            { kind: 'field', path: 'author.name', requires_approval: true },
           ]),
         }),
       ),
@@ -254,11 +321,27 @@ describe('Installing an app', () => {
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
-    await expect(appsScreen.changes()).toHaveCount(2);
-    // What needs approval comes first.
-    await expect.element(appsScreen.changes().nth(0)).toHaveTextContent('NamePodcastPodcasts');
-    await expect.element(appsScreen.changes().nth(1)).toHaveTextContent('Description');
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    // The header shows the approved app, while the warning names the version being reviewed.
+    await expect
+      .element(appsScreen.installDialog().getByRole('heading', { name: 'Podcast', exact: true }))
+      .toBeVisible();
+    await expect
+      .element(appsScreen.accessIndicator())
+      .toHaveTextContent(
+        'Make sure you trust Podcast Network. Ghost does not review apps such as Podcasts. Only approve changes from developers you trust.',
+      );
+    // Every changed field is shown, including the description that needs no approval on its own.
+    await expect(appsScreen.changes()).toHaveCount(3);
+    await expect
+      .element(appsScreen.changes().nth(0))
+      .toHaveTextContent('NameWas: PodcastNow: Podcasts');
+    await expect
+      .element(appsScreen.changes().nth(1))
+      .toHaveTextContent('DescriptionWas: Publish episodes and embed players.Now: New words.');
+    await expect
+      .element(appsScreen.changes().nth(2))
+      .toHaveTextContent('DeveloperWas: Example AudioNow: Podcast Network');
 
     await appsScreen.approveChangesButton().click();
 
@@ -284,8 +367,8 @@ describe('Installing an app', () => {
           digest: 'digest-2',
           trusted_origins: ['https://audio.example.org'],
           installation: existing([
-            { path: 'manifest_url', requires_approval: true },
-            { path: 'surfaces[0].url', requires_approval: true },
+            { kind: 'field', path: 'manifest_url', requires_approval: true },
+            { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
           ]),
         }),
       ),
@@ -296,14 +379,16 @@ describe('Installing an app', () => {
 
     await renderAdminApp(`/apps/install?manifest=${encodeURIComponent(elsewhere)}`, { labs });
 
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     await expect(appsScreen.changes()).toHaveCount(2);
     await expect
       .element(appsScreen.changes().first())
-      .toHaveTextContent(`Install link${MANIFEST_URL}${elsewhere}`);
+      .toHaveTextContent(`Install linkWas: ${MANIFEST_URL}Now: ${elsewhere}`);
     await expect
-      .element(appsScreen.changes().last())
-      .toHaveTextContent('https://podcast.example.com/adminhttps://audio.example.org/admin');
+      .element(appsScreen.changes().nth(1))
+      .toHaveTextContent(
+        'Page in AdminWas: https://podcast.example.com/adminNow: https://audio.example.org/admin',
+      );
 
     await appsScreen.approveChangesButton().click();
 
@@ -432,7 +517,7 @@ describe('Installing an app', () => {
         previews === 1
           ? preview()
           : preview({
-              installation: existing([{ path: 'name', requires_approval: true }]),
+              installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
               manifest: manifest({ name: 'Podcasts' }),
             }),
       );
@@ -445,7 +530,7 @@ describe('Installing an app', () => {
     await appsScreen.installButton().click();
 
     await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('Review changes to Podcast');
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
     expect(previews).toBe(2);
   });
 
@@ -456,7 +541,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );
@@ -466,9 +551,9 @@ describe('Installing an app', () => {
       digest: 'digest-2',
       installation: {
         ...existing([
-          { path: 'manifest_url', requires_approval: true },
-          { path: 'name', requires_approval: true },
-          { path: 'surfaces[0].url', requires_approval: true },
+          { kind: 'field', path: 'manifest_url', requires_approval: true },
+          { kind: 'field', path: 'name', requires_approval: true },
+          { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
         ]),
         revision: 1,
         manifest_url: 'https://new.example.com/ghost-app.json',
@@ -488,7 +573,7 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     await expect
       .element(appsScreen.changes().filter({ hasText: 'Install link' }))
-      .toHaveTextContent(`https://new.example.com/ghost-app.json${MANIFEST_URL}`);
+      .toHaveTextContent(`Was: https://new.example.com/ghost-app.jsonNow: ${MANIFEST_URL}`);
     expect(previewApi.requests).toHaveLength(1);
     expect(approveApi.requests).toHaveLength(1);
   });
@@ -502,7 +587,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       );
     });
@@ -524,7 +609,9 @@ describe('Installing an app', () => {
       previews += 1;
       return previewResponse(
         previews === 1
-          ? preview({ installation: existing([{ path: 'name', requires_approval: true }]) })
+          ? preview({
+              installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
+            })
           : preview(),
       );
     });
@@ -546,7 +633,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );

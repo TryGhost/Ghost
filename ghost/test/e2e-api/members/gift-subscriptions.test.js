@@ -753,6 +753,31 @@ describe('Gift Subscriptions', function () {
         offerId: 'some-offer-id',
       });
     });
+
+    it.each([
+      ['an unknown id', '0123456789abcdef01234567'],
+      ['a malformed id', 'free'],
+    ])(
+      'refuses a gift of a tier named by %s, as no such tier exists',
+      async function (_name, tierId) {
+        const giftsBefore = (await models.Gift.findAll()).length;
+
+        const { body } = await membersAgent
+          .post('/api/create-stripe-checkout-session/')
+          .body({
+            type: 'gift',
+            tierId,
+            cadence: 'month',
+            customerEmail: 'gift-unknown-tier@example.com',
+            metadata: {},
+          })
+          .expectStatus(400);
+
+        assert.equal(body.errors[0].message, 'This tier does not exist.');
+        assert.deepEqual(stripeMocker.checkoutSessions, []);
+        assert.equal((await models.Gift.findAll()).length, giftsBefore);
+      },
+    );
   });
 
   describe('Refund a gift', function () {

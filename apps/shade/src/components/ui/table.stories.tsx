@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   Table,
@@ -13,6 +14,9 @@ import {
 import { CardDescription, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
 import { ArrowUpDown } from 'lucide-react';
+import { Box } from '@/primitives';
+import { Button } from '@/components/ui/button';
+import { rowSurfaceClasses } from '@/components/ui/row-surface';
 
 const meta = {
   title: 'Components / Table',
@@ -22,7 +26,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Flexible table components for displaying structured data with sorting, headers, and footers. Built with semantic HTML and accessible markup.',
+          'Use Table when people need to compare the same details across several items, such as names, statuses and amounts. Column headings explain each value. Use List for browsing items with titles and descriptions when columns are not needed.',
       },
     },
   },
@@ -248,5 +252,75 @@ export const SimpleTable: Story = {
         </TableBody>
       </>
     ),
+  },
+};
+
+export const InteractiveRows: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use clickable rows when each item opens another page. Clicking the highlighted space opens the same link; the Edit button keeps its own action. Selected rows stay highlighted, while information-only rows do not react to hover.',
+      },
+    },
+  },
+  render: function Render() {
+    const [status, setStatus] = useState('');
+    return (
+      <Box padding="lg">
+        <Table className="table-fixed">
+          <colgroup>
+            <col className="w-4/5" />
+            <col className="w-1/5" />
+          </colgroup>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Publication</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow interactive>
+              <TableCell className="static">
+                <a className={rowSurfaceClasses.primaryAction} href="#publication">
+                  A linked publication
+                </a>
+              </TableCell>
+              <TableCell className="static text-right">
+                <Button
+                  className="relative z-10 text-foreground"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setStatus('Editing A linked publication')}
+                >
+                  Edit
+                </Button>
+              </TableCell>
+            </TableRow>
+            <TableRow data-state="selected" interactive>
+              <TableCell className="static">
+                <a className={rowSurfaceClasses.primaryAction} href="#selected">
+                  Selected publication
+                </a>
+              </TableCell>
+              <TableCell className="static text-right">Selected</TableCell>
+            </TableRow>
+            <TableRow data-state="selected" interactive>
+              <TableCell className="static">
+                <a className={rowSurfaceClasses.primaryAction} href="#adjacent">
+                  Adjacent selected publication
+                </a>
+              </TableCell>
+              <TableCell className="static text-right">Selected</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Static publication information</TableCell>
+              <TableCell className="text-right">No row action</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <p role="status">{status}</p>
+      </Box>
+    );
   },
 };

@@ -6,6 +6,7 @@ const {
   getHtmlEscapedIds,
   replaceTokensWithRecipientVariables,
 } = require('../../lib/mailgun/mailgun-recipient-variables');
+const { buildRecipientMessageId } = require('../../lib/mailgun/mailgun-recipient-message-id');
 const {
   RECIPIENT_VERIFICATION_CODE,
   recipientVerificationError,
@@ -106,8 +107,8 @@ class MailgunEmailProvider {
         id: emailId,
         track_opens: !!options.openTrackingEnabled,
         track_clicks: !!options.clickTrackingEnabled,
-        // only newsletters opt in; automation and gift emails rely on the id Mailgun returns
-        perRecipientMessageId: true,
+        buildRecipientMessageId: ({ recipientEmail, domain }) =>
+          buildRecipientMessageId({ emailId, recipientEmail, domain }),
       };
 
       const mailgunTagFromConfig = this.#config.get('bulkEmail:mailgun:tag');

@@ -5,6 +5,8 @@ import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../../../components/ui/ActionToolbar';
 import {EDIT_CARD_COMMAND} from '../../../plugins/KoenigBehaviourPlugin';
+import {useCardVisibilitySettings} from '../../../hooks/useCardVisibilitySettings';
+import {useEditModeAfterReadOnly} from '../../../hooks/useIsDocumentEditable';
 // import {SignupCard} from '../components/ui/cards/SignupCard.jsx';
 import {HeaderCard} from '../../../components/ui/cards/HeaderCard/v2/HeaderCard';
 import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.jsx';
@@ -44,6 +46,7 @@ function HeaderNodeComponent({
     accentColor
 }) {
     const [editor] = useLexicalComposerContext();
+    const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
     const {cardConfig} = useContext(KoenigComposerContext);
     const {fileUploader} = useContext(KoenigComposerContext);
     const {isEditing, isSelected} = useContext(CardContext);
@@ -241,6 +244,7 @@ function HeaderNodeComponent({
         headerTextEditor.setEditable(isEditing);
         subheaderTextEditor.setEditable(isEditing);
     }, [isEditing, headerTextEditor, subheaderTextEditor]);
+    useEditModeAfterReadOnly(isEditing, headerTextEditor, subheaderTextEditor);
 
     return (
         <>
@@ -281,10 +285,12 @@ function HeaderNodeComponent({
                 openImageEditor={openImageEditor}
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showBackgroundImage={showBackgroundImage}
+                showVisibilitySettings={showVisibilitySettings}
                 subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
                 textColor={textColor}
+                visibilitySettings={visibilitySettings}
                 onFileChange={onFileChange}
             />
             <ActionToolbar

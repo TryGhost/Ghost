@@ -1032,19 +1032,22 @@ describe('applyOffer action', () => {
 });
 
 describe('verifyOTC action', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let originalLocation: any;
+  let originalLocation: PropertyDescriptor | undefined;
   let mockLocationAssign: MockInstance;
 
   beforeEach(() => {
     mockLocationAssign = vi.fn();
-    originalLocation = window.location;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    window.location = { assign: mockLocationAssign } as any;
+    originalLocation = Object.getOwnPropertyDescriptor(window, 'location');
+    Object.defineProperty(window, 'location', {
+      value: { assign: mockLocationAssign },
+      writable: true,
+    });
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    if (originalLocation) {
+      Object.defineProperty(window, 'location', originalLocation);
+    }
   });
 
   test('redirects on successful verification', async () => {

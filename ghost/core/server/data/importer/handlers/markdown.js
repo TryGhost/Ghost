@@ -86,7 +86,7 @@ const MarkdownHandler = {
     const posts = [];
     const ops = [];
 
-    _.each(files, function (file) {
+    files.forEach(function (file) {
       ops.push(
         fs.readFile(file.path).then(function (content) {
           // normalize the file name

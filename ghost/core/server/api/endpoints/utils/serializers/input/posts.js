@@ -128,7 +128,7 @@ function defaultFormat(frame) {
 }
 
 function handlePostsMeta(frame) {
-  const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+  const metaAttrs = Object.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
   const meta = _.pick(frame.data.posts[0], metaAttrs);
   frame.data.posts[0].posts_meta = meta;
 }
@@ -220,7 +220,7 @@ module.exports = {
   add(apiConfig, frame, options = { add: true }) {
     debug('add');
 
-    if (_.get(frame, 'options.source')) {
+    if (frame.options?.source) {
       const html = frame.data.posts[0].html;
 
       if (frame.options.source === 'html' && !_.isEmpty(html)) {
@@ -253,7 +253,7 @@ module.exports = {
     // CASE: Transform short to long format
     if (frame.data.posts[0].authors) {
       frame.data.posts[0].authors.forEach((author, index) => {
-        if (_.isString(author)) {
+        if (typeof author === 'string') {
           frame.data.posts[0].authors[index] = {
             email: author,
           };
@@ -263,7 +263,7 @@ module.exports = {
 
     if (frame.data.posts[0].tags) {
       frame.data.posts[0].tags.forEach((tag, index) => {
-        if (_.isString(tag)) {
+        if (typeof tag === 'string') {
           frame.data.posts[0].tags[index] = {
             name: tag,
           };

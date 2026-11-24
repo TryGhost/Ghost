@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Custom SVG icons auto-generated from `src/assets/icons`. Import via `Icon.<Name>` and adjust with `size` and `className`.',
+          "Custom SVG icons auto-generated from `src/assets/icons`. Import via `Icon.<Name>` and adjust with `size` and `className`. Icons are hidden from screen readers by default. When an icon carries meaning on its own, name it with `title`, `aria-label` or `aria-labelledby`. `title` sets `aria-label`; it doesn't show a tooltip.",
       },
     },
   },

@@ -35,6 +35,7 @@ const GA_FEATURES = [
   'membersCustomFields',
   'stripeCheckoutCollection',
   'customFieldTypePhone',
+  'inAppSupport',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -63,10 +64,11 @@ const PRIVATE_FEATURES = [
   'paywallImprovements',
   'machinePayments',
   'apps',
-  'inAppSupport',
   'editorPresencePolling',
   'editorPresence',
+  'editorLease',
   'commentsAnalytics',
+  'oauthBridge',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -149,7 +151,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
 
   const { SafeString } = require('express-hbs');
   const errString = new SafeString(
-    `<script>console.error("${_.values(errDetails).join(' ')}");</script>`,
+    `<script>console.error("${Object.values(errDetails).join(' ')}");</script>`,
   );
 
   return errString;

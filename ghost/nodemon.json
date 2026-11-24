@@ -22,6 +22,7 @@
     "../packages/api-framework/src",
     "../contracts/app-contracts/src",
     "../packages/checkout/src",
+    "../packages/domain-events/src",
     "../packages/i18n/src",
     "../packages/image-transform/src",
     "../packages/limit-service/src",

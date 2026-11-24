@@ -7,6 +7,7 @@ const defaultSettings = require('../../../schema').defaultSettings;
 const keyGroupMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-group-mapper');
 const keyTypeMapper = require('../../../../api/endpoints/utils/serializers/input/utils/settings-key-type-mapper');
 const { WRITABLE_KEYS_ALLOWLIST } = require('../../../../../shared/labs');
+const { withoutSavedMemberViews } = require('./segments-importer');
 
 const labsDefaults = JSON.parse(defaultSettings.labs.labs.defaultValue);
 const defaultSettingsGroups = Object.fromEntries(
@@ -112,7 +113,7 @@ class SettingsImporter extends BaseImporter {
 
     // Don't import any old, deprecated or excluded settings
     this.dataToImport = _.filter(this.dataToImport, (data) => {
-      return !_.includes(ignoredSettings, data.key);
+      return !ignoredSettings.includes(data.key);
     });
 
     // NOTE: import settings removed in v3 and move them to ignored once Ghost v4 changes are done
@@ -128,7 +129,7 @@ class SettingsImporter extends BaseImporter {
       const deprecatedSetting = this.dataToImport.find((setting) => setting.key === key);
 
       // NOTE: filtering before mapping in case the key name is the same
-      this.dataToImport = _.filter(this.dataToImport, (data) => key !== data.key);
+      this.dataToImport = this.dataToImport.filter((data) => key !== data.key);
 
       if (deprecatedSetting) {
         let deprecatedSettingValue;
@@ -189,23 +190,23 @@ class SettingsImporter extends BaseImporter {
     });
 
     // Remove core and theme data types, using the schema's group rather than the file's
-    this.dataToImport = _.filter(this.dataToImport, (data) => {
+    this.dataToImport = this.dataToImport.filter((data) => {
       const group = defaultSettingsGroups[data.key] ?? data.group;
       return ['core', 'theme'].indexOf(group) === -1;
     });
 
-    const newIsPrivate = _.find(this.dataToImport, { key: 'is_private' });
+    const newIsPrivate = this.dataToImport.find((data) => data.key === 'is_private');
     const oldIsPrivate = _.find(this.existingData, { key: 'is_private' });
 
-    this.dataToImport = _.filter(this.dataToImport, (data) => {
+    this.dataToImport = this.dataToImport.filter((data) => {
       return data.key !== 'is_private';
     });
 
-    this.dataToImport = _.filter(this.dataToImport, (data) => {
+    this.dataToImport = this.dataToImport.filter((data) => {
       return data.key !== 'password';
     });
 
-    this.dataToImport = _.filter(this.dataToImport, (data) => {
+    this.dataToImport = this.dataToImport.filter((data) => {
       return ![
         'members_subscription_settings',
         'stripe_connect_integration',
@@ -223,7 +224,7 @@ class SettingsImporter extends BaseImporter {
       });
     }
 
-    _.each(this.dataToImport, (obj) => {
+    this.dataToImport.forEach((obj) => {
       if (obj.key === 'labs' && obj.value) {
         const inputLabsValue = JSON.parse(obj.value);
         const filteredLabsValue = {};
@@ -236,7 +237,13 @@ class SettingsImporter extends BaseImporter {
 
         // Overwrite the labs setting with our current defaults
         // Ensures things that are enabled in new versions, are turned on
-        obj.value = JSON.stringify(_.assign({}, filteredLabsValue, labsDefaults));
+        obj.value = JSON.stringify(Object.assign({}, filteredLabsValue, labsDefaults));
+      }
+
+      // CASE: saved member views are segments, which the segments importer adds. The setting
+      // keeps the views of the posts list.
+      if (obj.key === 'shared_views') {
+        obj.value = withoutSavedMemberViews(obj.value);
       }
 
       // CASE: we do not import "from address" for members settings as that needs to go via validation with magic link

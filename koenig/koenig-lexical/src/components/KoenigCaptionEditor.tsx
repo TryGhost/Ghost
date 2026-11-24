@@ -30,11 +30,16 @@ function CaptionPlugin({parentEditor}) {
             return;
         }
 
+        // don't focus caption input if an editable element outside the editor containing this card is focused
+        if (event.target.isContentEditable && !parentEditor.getRootElement()?.contains(event.target)) {
+            return;
+        }
+
         // only if key is printable key, focus on editor
         if (!captionHasFocus && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
             editor.focus();
         }
-    }, [editor, captionHasFocus, isSelected]);
+    }, [editor, parentEditor, captionHasFocus, isSelected]);
 
     React.useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);

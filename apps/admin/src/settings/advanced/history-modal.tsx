@@ -8,9 +8,9 @@ import {
   useBrowseActions,
 } from '@tryghost/admin-x-framework/api/actions';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemContent,
   Avatar,
   Button,
   Field,
@@ -503,7 +503,7 @@ function HistoryModal() {
       }}
     >
       <div className="relative mt-6">
-        <ActionList>
+        <List>
           {data?.actions ? (
             data.actions.length > 0 ? (
               <>
@@ -511,8 +511,8 @@ function HistoryModal() {
                 {data.actions.map(
                   (action) =>
                     !action.skip && (
-                      <ActionListItem key={action.id}>
-                        <ActionListItemContent className="flex items-center gap-3 py-3">
+                      <ListItem key={action.id}>
+                        <ListItemContent className="flex items-center gap-3 py-3">
                           <HistoryAvatar action={action} />
                           <div className="min-w-0 grow">
                             <div>
@@ -539,8 +539,8 @@ function HistoryModal() {
                               ].join(' | ')}
                             </div>
                           </div>
-                        </ActionListItemContent>
-                      </ActionListItem>
+                        </ListItemContent>
+                      </ListItem>
                     ),
                 )}
                 {isFetchingNextPage && (
@@ -573,7 +573,7 @@ function HistoryModal() {
               End of history log
             </div>
           )}
-        </ActionList>
+        </List>
       </div>
     </SettingsModal>
   );

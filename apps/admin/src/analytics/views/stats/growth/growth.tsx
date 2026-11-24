@@ -28,6 +28,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   CONTENT_TYPES,
@@ -327,20 +328,22 @@ const Growth: React.FC = () => {
                         <TableCell>
                           <div className="group/link inline-flex flex-col items-start gap-px">
                             {post.post_id && post.attribution_type === 'post' ? (
-                              <Button
-                                className="h-auto p-0 text-left leading-tight font-medium whitespace-normal hover:underline!"
-                                title="View post analytics"
-                                variant="link"
-                                onClick={getClickHandler(
-                                  post.attribution_url,
-                                  post.post_id,
-                                  site.url || '',
-                                  navigate,
-                                  post.attribution_type,
-                                )}
-                              >
-                                {post.title}
-                              </Button>
+                              <RowPrimaryAction asChild>
+                                <Button
+                                  className="h-auto p-0 text-left leading-tight font-medium whitespace-normal hover:underline!"
+                                  title="View post analytics"
+                                  variant="link"
+                                  onClick={getClickHandler(
+                                    post.attribution_url,
+                                    post.post_id,
+                                    site.url || '',
+                                    navigate,
+                                    post.attribution_type,
+                                  )}
+                                >
+                                  {post.title}
+                                </Button>
+                              </RowPrimaryAction>
                             ) : (
                               <span className="font-medium">{post.title}</span>
                             )}

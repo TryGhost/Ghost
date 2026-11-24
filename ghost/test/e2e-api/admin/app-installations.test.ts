@@ -36,6 +36,7 @@ function manifest(overrides: Record<string, unknown> = {}): Record<string, unkno
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    scopes: [],
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
     development: false,
@@ -325,8 +326,8 @@ describe('App installations Admin API', function () {
         manifest: installed.manifest,
         icon_data_url: null,
         changes: [
-          { path: 'description', requires_approval: false },
-          { path: 'name', requires_approval: true },
+          { kind: 'field', path: 'description', requires_approval: false },
+          { kind: 'field', path: 'name', requires_approval: true },
         ],
       });
     });
@@ -569,8 +570,8 @@ describe('App installations Admin API', function () {
       serve(moved, NEW_URL);
       const reviewed = await preview(NEW_URL);
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'manifest_url', requires_approval: true },
-        { path: 'surfaces[0].url', requires_approval: true },
+        { kind: 'field', path: 'manifest_url', requires_approval: true },
+        { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
       ]);
       serve(moved, NEW_URL);
 
@@ -620,7 +621,7 @@ describe('App installations Admin API', function () {
       serve(manifest({ description: 'Episodes and players.' }));
       const reviewed = await preview();
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'description', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ]);
       serve(manifest({ description: 'Episodes and players.' }));
 
@@ -697,7 +698,7 @@ describe('App installations Admin API', function () {
       assert.equal(error.details.installation.status, 'suspended');
       assert.equal(error.details.installation.revision, 1);
       assert.deepEqual(error.details.installation.changes, [
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'name', requires_approval: true },
       ]);
       const row = await installationRow(installed.id);
       assert.equal(row.status, 'suspended');
@@ -741,6 +742,64 @@ describe('App installations Admin API', function () {
       const row = await installationRow(installed.id);
       assert.equal(row.pending_manifest_id, null);
       assert.equal(row.revision, 2);
+    });
+
+    it('reviews and records scope changes by meaning, in the preview and the history', async function () {
+      const installed = await install({ scopes: ['post:read'] });
+      const widened = manifest({ scopes: ['post:edit', 'post:read'] });
+      serve(widened);
+
+      const reviewed = await preview();
+
+      const added = [{ kind: 'scope', scope: 'post:edit', change: 'added' }];
+      assert.deepEqual(reviewed.installation.changes, added);
+
+      serve(widened);
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes]),
+        [
+          ['changes_approved', added],
+          ['installed', [{ kind: 'scope', scope: 'post:read', change: 'added' }]],
+        ],
+      );
+    });
+
+    it('records what each manifest version changed in the history', async function () {
+      const installed = await install();
+      await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      const renamed = [{ kind: 'field', path: 'name', requires_approval: true }];
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes ?? []]),
+        [
+          ['changes_approved', renamed],
+          ['suspended', renamed],
+          ['installed', []],
+        ],
+      );
     });
 
     it('approves the manifest waiting for approval as its own row, not a copy', async function () {
@@ -897,7 +956,7 @@ describe('App installations Admin API', function () {
       serve(manifest({ description: 'Episodes and players.' }));
       const reviewed = await preview();
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'description', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ]);
       serve(manifest({ description: 'Episodes and players.' }));
 

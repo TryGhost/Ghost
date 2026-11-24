@@ -1,4 +1,4 @@
-import type { AppManifest } from '@tryghost/app-contracts';
+import type { AppManifest, ManifestChange } from '@tryghost/app-contracts';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
@@ -36,13 +36,11 @@ export interface AppInstallationHistoryEntry {
   created_at: string;
   /** The host the app moved to. Only set when an approval moved the app. */
   moved_to?: string;
-}
-
-/** One field that differs from what was approved before. */
-export interface AppManifestChange {
-  /** A path in the manifest, such as `surfaces[0].url`, or `manifest_url` when the app moved. */
-  path: string;
-  requires_approval: boolean;
+  /**
+   * What the entry changed, as Ghost stored it with the manifest: fields, then scopes. A
+   * suspension lists what waits for approval. Left out when nothing changed.
+   */
+  changes?: ManifestChange[];
 }
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
@@ -69,7 +67,11 @@ export interface AppInstallationPreview {
     manifest_url: string;
     manifest: AppManifest;
     icon_data_url: string | null;
-    changes: AppManifestChange[];
+    /**
+     * Field changes by path, such as `surfaces[0].url`, or `manifest_url` when the app moved,
+     * then scope changes in the registry's order.
+     */
+    changes: ManifestChange[];
   } | null;
 }
 

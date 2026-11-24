@@ -105,18 +105,61 @@ for that surface: Admin ignores a hello from any other origin and addresses the
 connect only to this one. The manifest lists no other origins.
 _Avoid_: allowed origin, app origin
 
+### Access
+
+**Scope**:
+A named permission an app asks for, such as `post:edit`: the resource, then the
+action, as Platform names the permission in Core. Every scope is defined once,
+in the scope registry, and a manifest that names any other, or a wildcard, is
+refused. There are no member scopes, and pages come under the `post:*` scopes.
+_Avoid_: permission, grant, capability
+
+**Permission key**:
+A permission written `object_type:action`, such as `post:edit`, as Platform
+names it in Core. Each scope in the registry is one, and a manifest's `scopes`
+lists them.
+_Avoid_: scope name, key, permission name, permission string
+
+**Resource**:
+The kind of object a scope acts on: Platform's object type, exactly, such as
+`post` or `slug`. The review screen shows one line per resource.
+_Avoid_: object, entity
+
+**Scope registry**:
+The one list of scopes, with each scope's resource and the words the review
+screen uses for it. Manifest validation, Admin's review screen and the
+allowlist all read it. The words are Ghost's own, never the developer's.
+_Avoid_: permission list, scope list
+
+**Scopes field**:
+The `scopes` a manifest asks for: a list of permission keys, each once, such as
+`["post:browse", "post:edit"]`. `[]` asks for nothing. Every scope is required,
+so approving a manifest approves exactly its scopes. A parsed and a stored
+manifest hold them in the registry's order, so the same scopes always store
+the same way. `optional_scopes` is refused until optional scopes exist.
+_Avoid_: access field, permissions
+
+**Scope change**:
+A scope added or removed between two versions of a manifest. Scopes are
+compared by meaning, not position, so reordering changes nothing. An added
+scope needs approval; a removed one is silent.
+_Avoid_: permission change, scope diff
+
 ### Changes
 
 **Change**:
-One field that differs between two versions of an app's manifest, the manifest
-URL included.
+One thing that differs between two versions of an app's manifest: a field, by
+its path, the manifest URL included, or a scope change, by its scope. Each
+kind decides whether it needs approval. Ghost compares, stores and serves a
+change in the one shape App Contracts defines, which names its kind.
 _Avoid_: diff, update
 
 **Silent change**:
 A change that applies without the publisher approving it again. Only the
-description, the accent colour, the name of an icon Admin ships and the backend
-key qualify; anything else that says who the app is, or is a URL Ghost loads or
-links to, does not.
+description, the accent colour, the name of an icon Admin ships, the backend
+key and a removed scope qualify; anything else that says
+who the app is, adds a scope, or is a URL Ghost loads or links to, does
+not.
 _Avoid_: minor change, safe change
 
 **Move**:
@@ -187,11 +230,19 @@ permissions, and takes an Admin API path, never a URL.
 _Avoid_: proxy, API access, app token
 
 **Allowlist**:
-The Admin API routes the fetch escape hatch allows, by method, grouped under
-the scope names Permissions and auth will use (`posts:read`, `posts:write`),
-in `ADMIN_API_ALLOWLIST`. Everything else is refused. Writes of posts, pages
-and tags are also checked so they can't send email, set code injection or
-write mobiledoc. It stands in for apps' own token, which takes the scopes over.
+The Admin API routes the fetch escape hatch allows, by method, grouped by
+resource and then under the scope registry's names (`post:browse`,
+`post:edit`), in `ADMIN_API_ALLOWLIST`; the site's public details need no
+scope. Every scope in the registry opens a route, an `include` or a sort, so
+none can be approved and grant nothing. What a resource's objects can include
+or be sorted by is listed once for the resource. Everything else is refused, and
+so is a route, an `include` or a sort whose scope the installation wasn't
+approved for: a related object needs its own scope, and how a post performed
+needs `post:read_stats`. When an app names no `include` and no `fields`, the
+bridge names the includes it may have, as Ghost's defaults include how a post
+performed. Writes of posts, pages and tags are also checked so they can't send
+email, set code injection or write mobiledoc. It stands in for apps' own token:
+the server checks nothing an app does through the bridge.
 _Avoid_: permissions, blocklist, denylist
 
 **Feature name**:

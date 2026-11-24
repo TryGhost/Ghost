@@ -14,21 +14,31 @@ export interface ActivityPollerOptions {
   /** true when served, false when the endpoint is not there, undefined to skip without touching backoff. */
   poll: (isCurrent: () => boolean) => Promise<boolean | undefined>;
   onPause: (reason: PauseReason) => void;
+  /** Keeps polling at the idle cadence while the tab is hidden, for a caller whose place must outlast a tab switch. */
+  keepAliveWhileHidden?: boolean;
   document?: Document;
   now?: () => number;
+}
+
+export interface ActivityPoller {
+  stop: () => void;
+  /** Polls at once, or as soon as the request in flight has answered. */
+  pollNow: () => void;
 }
 
 /** Polls while the tab is visible, every 10 s with input and every 30 s without, one request at a time. */
 export function startActivityPoller({
   poll,
   onPause,
+  keepAliveWhileHidden = false,
   document: target = document,
   now = Date.now,
-}: ActivityPollerOptions) {
+}: ActivityPollerOptions): ActivityPoller {
   let disposed = false;
   let retryAt = 0;
   let active = false;
   let inFlight = false;
+  let again = false;
   let generation = 0;
   let lastInteraction = now();
   let failures = 0;
@@ -37,9 +47,10 @@ export function startActivityPoller({
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
   const idleFor = () => now() - lastInteraction;
-  const eligible = () =>
-    !disposed && now() >= retryAt && !target.hidden && idleFor() < STOP_AFTER_MS;
-  const interval = () => (idleFor() < IDLE_AFTER_MS ? ACTIVE_INTERVAL_MS : IDLE_INTERVAL_MS);
+  const away = () => target.hidden && !keepAliveWhileHidden;
+  const eligible = () => !disposed && now() >= retryAt && !away() && idleFor() < STOP_AFTER_MS;
+  const interval = () =>
+    !target.hidden && idleFor() < IDLE_AFTER_MS ? ACTIVE_INTERVAL_MS : IDLE_INTERVAL_MS;
 
   function pause(reason: PauseReason) {
     const wasActive = active;
@@ -57,6 +68,7 @@ export function startActivityPoller({
       return;
     }
     inFlight = true;
+    again = false;
     const requestGeneration = generation;
     const isCurrent = () => eligible() && requestGeneration === generation;
     try {
@@ -78,9 +90,9 @@ export function startActivityPoller({
     } finally {
       inFlight = false;
       if (active && eligible()) {
-        // Poll at once when the tab became active again during this request.
+        // Poll at once when the tab became active again, or a poll was asked for, during this request.
         const delay =
-          requestGeneration !== generation
+          requestGeneration !== generation || again
             ? 0
             : Math.min(interval() * 2 ** failures, MAX_BACKOFF_MS);
         nextPoll = setTimeout(() => void run(), delay);
@@ -122,10 +134,39 @@ export function startActivityPoller({
     resume();
   }
 
+  function pollNow() {
+    if (!active || !eligible()) {
+      return;
+    }
+    if (inFlight) {
+      again = true;
+      return;
+    }
+    clearTimeout(nextPoll);
+    void run();
+  }
+
   function visibilityChanged() {
-    if (target.hidden) {
+    if (away()) {
       pause('hidden');
-    } else {
+    } else if (!target.hidden) {
+      const wasActive = active;
+      interact();
+      // A tab that kept polling while hidden asks at once what changed while the writer was away.
+      if (wasActive) {
+        pollNow();
+      }
+    }
+  }
+
+  // A closing or reloading page gives its place up; one that keeps polling while hidden would otherwise hold it.
+  function pageHidden() {
+    pause('hidden');
+  }
+
+  // A page restored from the back/forward cache was paused by its pagehide.
+  function pageShown() {
+    if (!target.hidden) {
       interact();
     }
   }
@@ -135,9 +176,12 @@ export function startActivityPoller({
     target.addEventListener(event, interact, { passive: true, capture: true });
   }
   target.addEventListener('visibilitychange', visibilityChanged);
+  const view = target.defaultView;
+  view?.addEventListener('pagehide', pageHidden);
+  view?.addEventListener('pageshow', pageShown);
   interact();
 
-  return () => {
+  const stop = () => {
     disposed = true;
     clearTimeout(retryTimer);
     pause('disposed');
@@ -145,5 +189,8 @@ export function startActivityPoller({
       target.removeEventListener(event, interact, true);
     }
     target.removeEventListener('visibilitychange', visibilityChanged);
+    view?.removeEventListener('pagehide', pageHidden);
+    view?.removeEventListener('pageshow', pageShown);
   };
+  return { stop, pollNow };
 }

@@ -430,6 +430,30 @@ describe('Network notification badge', () => {
     await expect.poll(currentRoute).toBe('/posts');
     await expect.element(sidebarScreen.networkBadge()).toBeVisible();
   });
+
+  // Only Owners and Administrators see Network, and ActivityPub rejects the
+  // identity tokens of every other role. Contributors have no sidebar.
+  it.each(['Super Editor', 'Editor', 'Author'] as const)(
+    'does not request the count for a %s',
+    async (role) => {
+      fakeSidebarLists();
+      const identities = fakeAdminEndpoint('GET', '/identities/', {
+        identities: [{ token: 'test-token' }],
+      });
+      const unreadCount = fakeEndpoint('GET', UNREAD_COUNT_URL, { count: 5 });
+      const me = currentUserResponse();
+      me.users[0].roles = [staffRole({ name: role })];
+      await renderAdminApp('/posts', {
+        boot: { ...socialWebEnabled().boot, browseMe: { response: me } },
+      });
+
+      // Waiting for the posts list gives the sidebar time to send its requests.
+      await expect.element(postsListScreen.emptyCold()).toBeVisible();
+      await expect.element(sidebarScreen.navLink('Network')).not.toBeInTheDocument();
+      expect(identities.requests).toHaveLength(0);
+      expect(unreadCount.requests).toHaveLength(0);
+    },
+  );
 });
 
 describe('Theme error notification', () => {

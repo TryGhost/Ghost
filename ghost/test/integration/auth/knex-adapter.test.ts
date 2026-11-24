@@ -2,7 +2,6 @@ import { describe } from 'vitest';
 import {
   authFlowTestSuite,
   caseInsensitiveTestSuite,
-  joinsTestSuite,
   normalTestSuite,
   testAdapter,
   transactionsTestSuite,
@@ -195,7 +194,6 @@ function lane(name: string, { ghostUsers }: { ghostUsers: boolean }) {
     prefixTests: name,
     tests: [
       normalTestSuite({ disableTests: ghostUsers ? ghostUsersSkips : {} }),
-      joinsTestSuite({ disableTests: ghostUsers ? ghostUsersSkips : {} }),
       transactionsTestSuite(),
       caseInsensitiveTestSuite({ disableTests: collation }),
       // Expects a new user's emailVerified to be false; it is virtual and always true

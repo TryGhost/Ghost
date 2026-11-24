@@ -120,11 +120,9 @@ the subdirectory, and `baseURL` is the admin origin only, because Better Auth
 ignores `basePath` when `baseURL` has a path.
 
 The session cookie is `ghost-admin-api-session` with the legacy path and
-`httpOnly`. When the admin URL is HTTPS, `defaultCookieAttributes` makes it
-`Secure`, so a browser only accepts it over HTTPS, and `sameSite` is `none`;
-otherwise it is `lax`. It has no `__Secure-` prefix for now (`useSecureCookies`
-is off) because Ghost(Pro)'s Fastly config drops the prefixed name; the prefix
-comes back once Fastly passes it. Unlike the legacy
+`httpOnly`. When the admin URL is HTTPS, `useSecureCookies` makes it `Secure`
+and names it `__Secure-ghost-admin-api-session`, so a browser only accepts it
+over HTTPS, and `sameSite` is `none`; otherwise it is `lax`. Unlike the legacy
 cookie this follows the admin URL rather than the site URL, since the cookie
 lives on the admin origin: an HTTPS site with an HTTP admin URL still gets a
 cookie the browser accepts. It is not `__Host-`, which would need `Path=/` and
@@ -361,7 +359,7 @@ so this only matters once Better Auth provisions users (SSO, Phase 8).
 ## Adapter suite
 
 `test/integration/auth/knex-adapter.test.ts` runs Better Auth's adapter suite
-(`normal`, `joins`, `transactions`, `case-insensitive`, `auth-flow`) on MySQL
+(`normal`, `transactions`, `case-insensitive`, `auth-flow`) on MySQL
 in two lanes, each in its own database:
 
 - **better-auth tables**: every model in Better Auth's shape under Ghost's
@@ -374,19 +372,22 @@ in two lanes, each in its own database:
   keys follow a renamed user table.
 
 `numberIdTestSuite` and `uuidTestSuite` are not run: Ghost ids are ObjectIds.
+`joinsTestSuite` is not run: the adapter has no native joins and rejects
+`advanced.database.joins`, so Better Auth fetches relations with separate
+queries. The `normal` suite's join tests cover that path.
 
-Last run (Better Auth 1.7.15, MySQL 8): 480 tests, 465 pass, 15 skipped, 0
+Last run (Better Auth 1.7.22, MySQL 8): 266 tests, 257 pass, 9 skipped, 0
 fail. Each skip is a test that cannot pass against Ghost's schema. None comes
 from the three new tables: their millisecond dates round-trip, and their
 foreign keys and `NOT NULL` columns hold for every test.
 
-| Test                                                                                                                                                                                                                                    | Lanes                         | Cause                                                                                                                                                                  |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `findOne - eq with mode sensitive (default) should not match different case`                                                                                                                                                            | both                          | MySQL's default `_ci` collation compares case-insensitively. A binary collation per query would stop token and email lookups using their indexes, so this is accepted. |
-| `create - should create a model`                                                                                                                                                                                                        | ghost users, normal and joins | `users.created_at`/`updated_at` are `DATETIME` without fractional seconds, so dates lose their milliseconds. The new tables use `DATETIME(3)` and are unaffected.      |
-| `update - should return null when a multi-predicate where matches no row`, `deleteMany - should delete many models with boolean values`, `findMany - eq and ne operators with null value in AND group should use IS NULL / IS NOT NULL` | ghost users, normal and joins | Virtual `emailVerified` is always `true`, so `false` is never stored or matched.                                                                                       |
-| `should successfully sign up`                                                                                                                                                                                                           | ghost users                   | Expects a new user's `emailVerified` to be `false`, for the same reason.                                                                                               |
-| `findOne - should find a model with modified field name`, `findOne - should join a model with modified field name`                                                                                                                      | ghost users, normal and joins | The suite renames `users.email`, which Ghost's fixed table cannot follow.                                                                                              |
+| Test                                                                                                                                                                                                                                    | Lanes       | Cause                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `findOne - eq with mode sensitive (default) should not match different case`                                                                                                                                                            | both        | MySQL's default `_ci` collation compares case-insensitively. A binary collation per query would stop token and email lookups using their indexes, so this is accepted. |
+| `create - should create a model`                                                                                                                                                                                                        | ghost users | `users.created_at`/`updated_at` are `DATETIME` without fractional seconds, so dates lose their milliseconds. The new tables use `DATETIME(3)` and are unaffected.      |
+| `update - should return null when a multi-predicate where matches no row`, `deleteMany - should delete many models with boolean values`, `findMany - eq and ne operators with null value in AND group should use IS NULL / IS NOT NULL` | ghost users | Virtual `emailVerified` is always `true`, so `false` is never stored or matched.                                                                                       |
+| `should successfully sign up`                                                                                                                                                                                                           | ghost users | Expects a new user's `emailVerified` to be `false`, for the same reason.                                                                                               |
+| `findOne - should find a model with modified field name`, `findOne - should join a model with modified field name`                                                                                                                      | ghost users | The suite renames `users.email`, which Ghost's fixed table cannot follow.                                                                                              |
 
 The virtual columns cost only the tests that store `emailVerified: false`, so
 they stay (plan §10).

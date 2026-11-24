@@ -48,10 +48,9 @@ describe('Live automation label trigger', () => {
       .element(picker())
       .toHaveAccessibleDescription('Turn off automation to edit trigger');
     await expect.element(hint()).toBeVisible();
-    // Playwright treats a label associated with a disabled control as disabled too.
     await page
       .getByText('Triggered when this label is added to a member:', { exact: true })
-      .click({ force: true });
+      .click();
     await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
     expect(browse.requests).toHaveLength(0);
 

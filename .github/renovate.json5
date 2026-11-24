@@ -345,7 +345,6 @@
         '@tryghost/bookshelf-plugins',
         '@tryghost/database-info',
         '@tryghost/debug',
-        '@tryghost/domain-events',
         '@tryghost/errors',
         '@tryghost/http-cache-utils',
         '@tryghost/logging',

@@ -1,4 +1,4 @@
-import type { AppFailureCode } from '@tryghost/app-contracts';
+import type { AppFailureCode, ManifestChange } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
@@ -16,6 +16,7 @@ import type { LoadedManifest } from './load-manifest';
 import {
   DbAppInstallation,
   DbAppInstallationManifest,
+  StoredChanges,
   type AppInstallationManifestSource,
 } from './schema';
 
@@ -26,6 +27,7 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
   id: true,
   source: true,
   requires_approval: true,
+  changes: true,
   created_at: true,
 });
 
@@ -98,6 +100,8 @@ export interface AddedRow {
   loaded: LoadedManifest;
   source: z.infer<typeof AppInstallationManifestSource>;
   requiresApproval: boolean;
+  /** What differs from the manifest approved when the row is added. */
+  changes: ManifestChange[];
   iconDataUrl: string | null;
 }
 
@@ -120,7 +124,13 @@ class LockedInstallation {
   }
 
   /** Adds a manifest row for the installation, and returns its ID. */
-  async addManifest({ loaded, source, requiresApproval, iconDataUrl }: AddedRow): Promise<string> {
+  async addManifest({
+    loaded,
+    source,
+    requiresApproval,
+    changes,
+    iconDataUrl,
+  }: AddedRow): Promise<string> {
     const id = new ObjectId().toHexString();
     await this.trx(MANIFESTS).insert({
       id,
@@ -132,6 +142,7 @@ class LockedInstallation {
       icon_data_url: iconDataUrl,
       source,
       requires_approval: requiresApproval,
+      changes: z.encode(StoredChanges, changes),
       created_at: toDatabaseDate(new Date()),
     });
     return id;
@@ -260,7 +271,11 @@ export class AppInstallationsRepository {
     return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
   }
 
-  /** An installation's manifest rows and staff actions, oldest first. */
+  /**
+   * An installation's manifest rows and staff actions, oldest first. A manifest row whose
+   * changes no longer decode keeps its entry without them, and one that doesn't decode at all
+   * is left out.
+   */
   async historyRows(
     id: string,
   ): Promise<{ manifests: HistoryManifest[]; actions: HistoryAction[] }> {
@@ -272,6 +287,7 @@ export class AppInstallationsRepository {
         'id',
         'source',
         'requires_approval',
+        'changes',
         'created_at',
       );
     const actionRows = this.knex('actions as action')
@@ -290,7 +306,17 @@ export class AppInstallationsRepository {
       );
     const [manifestData, actionData] = await Promise.all([manifestRows, actionRows]);
     return {
-      manifests: manifestData.map((row) => z.decode(HistoryManifestRow, row)),
+      manifests: manifestData.flatMap((row) => {
+        const decoded = HistoryManifestRow.safeDecode(row);
+        if (decoded.success) {
+          return [decoded.data];
+        }
+        const withoutChanges = HistoryManifestRow.safeDecode({
+          ...row,
+          changes: z.encode(StoredChanges, []),
+        });
+        return withoutChanges.success ? [withoutChanges.data] : [];
+      }),
       actions: actionData.map((row) => z.decode(HistoryActionRow, row)),
     };
   }
@@ -326,6 +352,7 @@ export class AppInstallationsRepository {
   async insert(
     loaded: LoadedManifest,
     iconDataUrl: string | null,
+    changes: ManifestChange[],
     { transacting }: { transacting: Knex.Transaction },
   ): Promise<Installation> {
     const { manifest } = loaded;
@@ -372,6 +399,7 @@ export class AppInstallationsRepository {
       icon_data_url: iconDataUrl,
       source: 'install',
       requires_approval: false,
+      changes: z.encode(StoredChanges, changes),
       created_at: now,
     });
     return z.decode(InstallationRow, written);

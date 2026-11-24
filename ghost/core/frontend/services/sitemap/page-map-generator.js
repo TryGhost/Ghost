@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const BaseMapGenerator = require('./base-site-map-generator');
 
 class PageMapGenerator extends BaseMapGenerator {
@@ -7,7 +6,7 @@ class PageMapGenerator extends BaseMapGenerator {
 
     this.name = 'pages';
 
-    _.extend(this, opts);
+    Object.assign(this, opts);
   }
 }
 

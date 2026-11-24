@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import { AppManifestSchema } from '@tryghost/app-contracts/manifest';
+import { AppManifestSchema, ManifestChangeSchema } from '@tryghost/app-contracts/manifest';
 import { DbBoolean } from '../../lib/db-types/boolean';
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
@@ -27,6 +27,14 @@ export const StoredManifest = DbJson(AppManifestSchema, {
   message: 'The stored manifest is not JSON.',
 });
 
+/**
+ * What differs from the manifest approved when a row was added: fields by path, then access in
+ * the registry's order, in the shape App Contracts defines.
+ */
+export const StoredChanges = DbJson(z.array(ManifestChangeSchema), {
+  message: 'The stored changes are not JSON.',
+});
+
 // Mirrors schema.ts's `isIn` on the column, which stays static config and does not import this.
 export const AppInstallationManifestSource = z.enum(['install', 'approval', 'update', 'resume']);
 
@@ -41,6 +49,7 @@ export const DbAppInstallationManifest = z.object({
   icon_data_url: z.string().nullable(),
   source: AppInstallationManifestSource,
   requires_approval: DbBoolean,
+  changes: StoredChanges,
   created_at: DbDate,
 });
 

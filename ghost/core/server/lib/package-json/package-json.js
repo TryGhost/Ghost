@@ -83,7 +83,7 @@ function filter(packages, active) {
         item = {
           name: key,
           package: pkg['package.json'] || false,
-          active: _.indexOf(active, key) !== -1,
+          active: active.indexOf(key) !== -1,
         };
 
         result.push(item);
@@ -162,7 +162,7 @@ async function readPackages(packagePath) {
       ),
     );
 
-  return _.keyBy(packages, 'name');
+  return Object.fromEntries(packages.map((pkg) => [pkg.name, pkg]));
 }
 
 module.exports = {

@@ -115,7 +115,7 @@ describe('Mailgun Email Provider', function () {
           deliveryTime,
           track_opens: true,
           track_clicks: true,
-          perRecipientMessageId: true,
+          buildRecipientMessageId: sinon.match.func,
           tags: ['bulk-email', 'newsletter-email'],
         },
         { 'member@example.com': { name: 'John', name_html: 'John' } },
@@ -214,13 +214,26 @@ describe('Mailgun Email Provider', function () {
 
       const sendOptions = { clickTrackingEnabled: false, openTrackingEnabled: false };
 
-      it('requests per-recipient Message-Ids', async function () {
+      it('builds per-recipient Message-Ids from the email id and sending domain', async function () {
         const mailgunEmailProvider = new MailgunEmailProvider({ mailgunClient, config });
 
         await mailgunEmailProvider.send(buildEmailData(), sendOptions);
 
         const [messageData] = sendStub.firstCall.args;
-        assert.equal(messageData.perRecipientMessageId, true);
+        const build = (recipientEmail, domain) =>
+          messageData.buildRecipientMessageId({ recipientEmail, domain });
+        assert.match(
+          build('member@example.com', 'mg.example.com'),
+          /^123\.[a-f0-9]{32}@mg\.example\.com$/,
+        );
+        assert.equal(
+          build('member@example.com', 'mg.example.com'),
+          build('member@example.com', 'mg.example.com'),
+        );
+        assert.notEqual(
+          build('member@example.com', 'mg.example.com'),
+          build('other@example.com', 'mg.example.com'),
+        );
       });
 
       it('passes through a missing provider id without failing the send', async function () {

@@ -84,7 +84,7 @@ const fakeReview = () =>
           revision: 0,
           manifest_url: MANIFEST_URL,
           manifest: manifest(),
-          changes: [{ path: 'name', requires_approval: true }],
+          changes: [{ kind: 'field', path: 'name', requires_approval: true }],
         },
       },
     ],
@@ -222,6 +222,28 @@ describe('Managing apps', () => {
     // Retried until the page there has loaded.
     await expect.poll(() => callAppFrame(elsewhere, 'canShare').catch(() => undefined)).toBe(false);
   });
+
+  it.each([
+    { admin7Design: false, edge: false },
+    { admin7Design: false, edge: true },
+    { admin7Design: true, edge: false },
+    { admin7Design: true, edge: true },
+  ])(
+    'opens from blank action-cell space with admin7Design $admin7Design and edge $edge',
+    async ({ admin7Design, edge }) => {
+      fakeInstallations([installation()]);
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      await fakeAppPage(installation());
+      await renderAdminApp('/apps', { labs: { ...labs, admin7Design } });
+      const row = appsScreen.row('Podcast');
+      await expect.element(row).toBeVisible();
+      const bounds = row.element().getBoundingClientRect();
+      await row.click({ position: { x: bounds.width + (edge ? 8 : -8), y: bounds.height - 4 } });
+      await expect.poll(currentRoute).toBe(APP_ROUTE);
+      await expect.element(appsScreen.frame()).toBeVisible();
+    },
+  );
 
   it('opens an app’s details from the row’s menu, and the app from its details', async () => {
     fakeInstallations([installation()]);
@@ -1246,9 +1268,18 @@ describe('Managing apps', () => {
   });
 
   describe('the Admin API, on the app’s behalf', () => {
+    /** An installation approved to work with posts and pages and add tags, as these calls need. */
+    const postsApp = () =>
+      installation({
+        manifest: manifest({
+          scopes: ['post:browse', 'post:read', 'post:add', 'post:edit', 'post:destroy', 'tag:add'],
+        }),
+      });
+
     it('sends an app’s request with Admin’s headers and the app’s own, and returns the response', async () => {
-      await fakeAppPage(installation());
-      const postsApi = fakeAdminEndpoint('GET', '/posts/?limit=5', {
+      await fakeAppPage(postsApp());
+      // The app named no include, so Admin names the ones it may have.
+      const postsApi = fakeAdminEndpoint('GET', '/posts/?limit=5&include=authors', {
         posts: [{ id: 'post-1', title: 'Episode 1' }],
       });
       await renderAdminApp(APP_ROUTE, { labs });
@@ -1272,9 +1303,9 @@ describe('Managing apps', () => {
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
       // Uses a page without the SDK, which refuses these itself, because Admin can't rely on the
       // SDK.
-      await fakeAppPage(installation(), { kind: 'raw' });
+      await fakeAppPage(postsApp(), { kind: 'raw' });
       // Faked so that a request that got through is recorded, rather than failing as unhandled.
-      const postsApi = fakeAdminEndpoint('GET', '/posts/', { posts: [] });
+      const postsApi = fakeAdminEndpoint('GET', '/posts/?include=authors', { posts: [] });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -1309,7 +1340,7 @@ describe('Managing apps', () => {
     });
 
     it('sends a write with its body, labelled as JSON', async () => {
-      await fakeAppPage(installation());
+      await fakeAppPage(postsApp());
       const tagsApi = fakeAdminEndpoint('POST', '/tags/', ({ body }) => body, { status: 201 });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -1326,8 +1357,10 @@ describe('Managing apps', () => {
     });
 
     it('sends a write with cards in its content as it is', async () => {
-      await fakeAppPage(installation());
-      const postsApi = fakeAdminEndpoint('POST', '/posts/', ({ body }) => body, { status: 201 });
+      await fakeAppPage(postsApp());
+      const postsApi = fakeAdminEndpoint('POST', '/posts/?include=authors', ({ body }) => body, {
+        status: 201,
+      });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -1353,11 +1386,11 @@ describe('Managing apps', () => {
 
     // An app's request can be refused as unauthorized while the staff session still works.
     it('stays with the app when its request is unauthorized while the session works', async () => {
-      await fakeAppPage(installation());
-      const path = '/tags/';
+      await fakeAppPage(postsApp());
+      const path = '/posts/';
       fakeAdminEndpoint(
         'GET',
-        path,
+        `${path}?include=authors`,
         { errors: [{ type: 'UnauthorizedError', message: 'Invalid token' }] },
         { status: 401 },
       );
@@ -1374,10 +1407,12 @@ describe('Managing apps', () => {
     });
 
     it('refuses what the allowlist doesn’t allow without sending it', async () => {
-      await fakeAppPage(installation());
+      await fakeAppPage(postsApp());
       // Faked so that a request that got through is recorded, rather than failing as unhandled.
       const tokenApi = fakeAdminEndpoint('GET', /^\/users\/.*\/token\//i, { apiKey: {} });
-      const postsApi = fakeAdminEndpoint('POST', '/posts/', ({ body }) => body, { status: 201 });
+      const postsApi = fakeAdminEndpoint('POST', '/posts/?include=authors', ({ body }) => body, {
+        status: 201,
+      });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -1386,6 +1421,8 @@ describe('Managing apps', () => {
         '/USERS/6500000000000000000000c3/Token',
         '/apps/installations/',
         '/members/',
+        // Not among the scopes the installation was approved for.
+        '/tiers/',
         // Core's rewrite for its old versioned addresses would send both of these to /db/.
         '/v4/db/?x=ghost/api/v4/admin/',
         '/dbv4//?x=ghost/api/v4/admin/',
@@ -1450,11 +1487,11 @@ describe('Managing apps', () => {
     });
 
     it('refuses a path the Admin API only redirects, and says its paths end in /', async () => {
-      await fakeAppPage(installation());
+      await fakeAppPage(postsApp());
       // As Ghost responds to a path without its trailing `/`.
       const postsApi = fakeAdminEndpoint(
         'GET',
-        '/posts',
+        '/posts?include=authors',
         () => new Response(null, { status: 301, headers: { location: '/ghost/api/admin/posts/' } }),
       );
       await renderAdminApp(APP_ROUTE, { labs });
@@ -1469,7 +1506,7 @@ describe('Managing apps', () => {
     it('refuses a path that would leave the Admin API, without sending it', async () => {
       // Uses a page without the SDK, which refuses a URL itself, because Admin can't rely on the
       // SDK.
-      await fakeAppPage(installation(), { kind: 'raw' });
+      await fakeAppPage(postsApp(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -1487,24 +1524,36 @@ describe('Managing apps', () => {
     });
   });
 
-  it('opens an app in a new tab from a modified click on its row', async () => {
+  it('preserves the native app link and modifiers when its row is clicked', async () => {
     fakeInstallations([installation()]);
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    await renderAdminApp('/apps', { labs });
+    const link = appsScreen.row('Podcast').getByRole('link', { name: 'Podcast', exact: true });
+    await expect.element(link).toBeVisible();
+    const activation = vi.fn<(event: { modified: boolean; prevented: boolean }) => void>();
+    const linkElement = link.element();
+    const observeActivation = (event: Event) => {
+      if (
+        !(event instanceof MouseEvent) ||
+        !(event.target instanceof Node) ||
+        !linkElement.contains(event.target)
+      ) {
+        return;
+      }
+      activation({ modified: event.ctrlKey || event.metaKey, prevented: event.defaultPrevented });
+      // Observe the app's result, then prevent a popup from opening another test runner.
+      event.preventDefault();
+    };
+    document.addEventListener('click', observeActivation);
     try {
-      await renderAdminApp('/apps', { labs });
       await appsScreen
         .row('Podcast')
         .getByText('Publish episodes and embed players.')
         .click({ modifiers: ['ControlOrMeta'] });
-
-      expect(openSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/#\/apps\/installation-1$/),
-        '_blank',
-        'noopener',
-      );
+      expect(activation).toHaveBeenCalledExactlyOnceWith({ modified: true, prevented: false });
+      await expect.element(link).toHaveAttribute('href', '#/apps/installation-1');
       await expect.poll(currentRoute).toBe('/apps');
     } finally {
-      openSpy.mockRestore();
+      document.removeEventListener('click', observeActivation);
     }
   });
 
@@ -1551,6 +1600,74 @@ describe('Managing apps', () => {
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
   });
 
+  it('describes each change to access in its history entry, in the review screen’s words', async () => {
+    fakeDetails(
+      installation({
+        manifest: manifest({ scopes: ['post:browse', 'post:edit'] }),
+        history: [
+          entry('h4', 'changes_approved', '2026-10-04T10:00:00.000Z', {
+            changes: [
+              { kind: 'scope', scope: 'post:edit', change: 'added' },
+              { kind: 'scope', scope: 'product:browse', change: 'removed' },
+            ],
+          }),
+          entry('h3', 'suspended', '2026-10-03T10:00:00.000Z', {
+            changes: [
+              { kind: 'scope', scope: 'post:edit', change: 'added' },
+              { kind: 'scope', scope: 'product:browse', change: 'removed' },
+            ],
+          }),
+          // Replaced by the next update before anyone approved it.
+          entry('h2', 'suspended', '2026-10-02T10:00:00.000Z', {
+            changes: [{ kind: 'scope', scope: 'tag:edit', change: 'added' }],
+          }),
+          {
+            ...installedOn('2026-10-01T10:00:00.000Z'),
+            changes: [{ kind: 'scope', scope: 'post:browse', change: 'added' }],
+          },
+        ],
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    // An entry that changed access opens to show what changed.
+    await expect(appsScreen.historyEntries()).toHaveCount(4);
+    await expect
+      .element(appsScreen.historyEntries().nth(0))
+      .not.toHaveTextContent('Permissions approved');
+    await appsScreen.openHistoryEntry(0);
+    await expect
+      .element(appsScreen.historyEntries().nth(0))
+      .toHaveTextContent(
+        /Permissions approved\s*Posts and pages\s*Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them\.\s*No longer requires\s*Tiers/,
+      );
+    // The approved suspension leaves its changes to the approval, so they show once.
+    await expect
+      .element(appsScreen.historyEntries().nth(1))
+      .toHaveTextContent(/^Updated, needs approval/);
+    await expect.element(appsScreen.historyEntries().nth(1)).not.toHaveTextContent('Requested');
+    // It has nothing to open, so it's a plain row.
+    await expect
+      .element(appsScreen.historyEntries().nth(1).getByRole('button'))
+      .not.toBeInTheDocument();
+    // The replaced one never took effect, so it keeps what it asked for. Opening it closes the
+    // first: one entry is open at a time.
+    await appsScreen.openHistoryEntry(2);
+    await expect
+      .element(appsScreen.historyEntries().nth(2))
+      .toHaveTextContent(/^Updated, needs approval.*Requested\s*Tags\s*Edit tags\./);
+    await expect
+      .element(appsScreen.historyEntries().nth(0))
+      .not.toHaveTextContent('Permissions approved');
+    await appsScreen.openHistoryEntry(3);
+    await expect
+      .element(appsScreen.historyEntries().nth(3))
+      .toHaveTextContent(
+        /Permissions approved\s*Posts and pages\s*List, search and read every post and page, drafts included\.$/,
+      );
+  });
+
   it('shows the app’s name large under the breadcrumb, with its badges and description, in Admin 7', async () => {
     // Admin 7's sidebar shows the site's member count and revenue.
     fakeAdminStats.memberCount();
@@ -1573,6 +1690,38 @@ describe('Managing apps', () => {
     await expect.element(page.getByRole('heading', { name: 'Permissions' })).toBeVisible();
     await expect.element(appsScreen.openLink()).toBeVisible();
   });
+
+  // Admin 7's large titles move the name and its badges from the sidebar into the header.
+  it.each([
+    { admin7Design: false, nameIn: 'the sidebar' },
+    { admin7Design: true, nameIn: 'the header' },
+  ])(
+    'leaves a suspension to the banner, with no badge by the name in $nameIn',
+    async ({ admin7Design }) => {
+      // Admin 7's sidebar shows the site's member count and revenue.
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      fakeDetails(
+        installation({
+          status: 'suspended',
+          history: [
+            entry('h2', 'suspended', '2026-10-02T10:00:00.000Z'),
+            installedOn('2026-10-01T10:00:00.000Z'),
+          ],
+        }),
+      );
+
+      await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design } });
+
+      await expect
+        .element(appsScreen.needsApproval())
+        .toHaveTextContent('Podcast has been updated, and the changes need your approval.');
+      await expect.element(page.getByRole('heading', { name: 'Podcast', level: 1 })).toBeVisible();
+      await expect
+        .element(page.getByText('Needs approval', { exact: true }))
+        .not.toBeInTheDocument();
+    },
+  );
 
   it('shows that an app’s details are loading', async () => {
     let respond: ((response: Response) => void) | undefined;
@@ -1814,7 +1963,7 @@ describe('Managing apps', () => {
 
   it('keeps the dialog open while uninstalling, even on Escape', async () => {
     fakeInstallations([installation()]);
-    let respond: (response: Response) => void = () => {};
+    let respond: ((response: Response) => void) | undefined;
     fakeAdminEndpoint(
       'DELETE',
       '/apps/installations/installation-1/',
@@ -1831,7 +1980,8 @@ describe('Managing apps', () => {
     await userEvent.keyboard('{Escape}');
 
     await expect.element(appsScreen.uninstallDialog()).toBeVisible();
-    respond(new Response(null, { status: 204 }));
+    await expect.poll(() => respond).toBeDefined();
+    respond?.(new Response(null, { status: 204 }));
     await expect.element(appsScreen.uninstallDialog()).not.toBeInTheDocument();
   });
 
@@ -1848,9 +1998,11 @@ describe('Managing apps', () => {
     fakeReview();
 
     await renderAdminApp('/apps', { labs });
+    // The row's Review changes button marks it; there's no badge by the name.
     await expect
-      .element(appsScreen.row('Podcast').getByTestId('app-needs-approval-badge'))
-      .toHaveTextContent('Needs approval');
+      .element(appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }))
+      .toBeVisible();
+    await expect.element(appsScreen.row('Podcast')).not.toHaveTextContent('Needs approval');
     await appsScreen.rowActions('Podcast').click();
     await appsScreen.detailsMenuItem().click();
 
@@ -1883,6 +2035,26 @@ describe('Managing apps', () => {
     expect(reviewApi.requests[0].body).toEqual({
       app_installation_previews: [{ manifest_url: MANIFEST_URL }],
     });
+  });
+
+  it('styles a row as hovered by where the pointer is once its menu closes', async () => {
+    fakeInstallations([installation()]);
+    await renderAdminApp('/apps', { labs });
+
+    const actions = appsScreen.rowActions('Podcast');
+    await actions.click();
+    // The menu hangs below the row, so the pointer leaves the row for it.
+    await appsScreen.menuItem('Uninstall').hover();
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(appsScreen.menuItem('Uninstall')).not.toBeInTheDocument();
+    await expect.element(actions).not.toHaveClass('bg-background');
+
+    // Closed with the pointer still on the row, it stays hovered.
+    await actions.click();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(appsScreen.menuItem('Uninstall')).not.toBeInTheDocument();
+    await expect.element(actions).toHaveClass('bg-background');
   });
 
   it('shows an uninstalled app’s record without offering to uninstall it again', async () => {

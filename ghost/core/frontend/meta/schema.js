@@ -43,11 +43,11 @@ function schemaPublisherObject(metaDataVal) {
 function trimSchema(schema) {
   const schemaObject = {};
 
-  _.each(schema, function (value, key) {
+  for (const [key, value] of Object.entries(schema)) {
     if (value !== null && typeof value !== 'undefined') {
       schemaObject[key] = value;
     }
-  });
+  }
 
   return schemaObject;
 }

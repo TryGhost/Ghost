@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import {
   approvalWrite,
+  changesFrom,
   decideOnManifest,
   recheckWrite,
 } from '../../../../../core/server/services/app-installations/decide-on-manifest';
@@ -18,6 +19,7 @@ const approvedManifest: AppManifest = {
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  scopes: [],
   manifest_url: MANIFEST_URL,
   identity_key: FIXTURE_IDENTITY_KEY,
   backend_key: FIXTURE_BACKEND_KEY,
@@ -38,7 +40,7 @@ function loaded(overrides: Partial<AppManifest> = {}): LoadedManifest {
     manifestUrl: manifest.manifest_url,
     manifest,
     serialised,
-    digest: serialised,
+    digest: JSON.stringify(manifest),
     identityKeyThumbprint: 'identity',
     backendKeyThumbprint: 'backend',
   };
@@ -46,6 +48,8 @@ function loaded(overrides: Partial<AppManifest> = {}): LoadedManifest {
 
 const silent = { description: 'Episodes and players.' };
 const needsApproval = { name: 'Podcasts' };
+const SILENT_CHANGES = [{ kind: 'field' as const, path: 'description', requires_approval: false }];
+const APPROVAL_CHANGES = [{ kind: 'field' as const, path: 'name', requires_approval: true }];
 
 const pending = { id: 'pending-manifest', digest: loaded(needsApproval).digest };
 
@@ -55,8 +59,8 @@ describe('decideOnManifest', function () {
       decideOnManifest({ current, pending: null, loaded: loaded({ ...silent, ...needsApproval }) })
         .changes,
       [
-        { path: 'description', requires_approval: false },
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'description', requires_approval: false },
+        { kind: 'field', path: 'name', requires_approval: true },
       ],
     );
     assert.deepEqual(decideOnManifest({ current, pending: null, loaded: loaded() }).changes, []);
@@ -122,7 +126,7 @@ describe('decideOnManifest', function () {
     it('uses the pending manifest when it is the one loaded, saying which it is', function () {
       assert.deepEqual(decideOnManifest({ current, pending, loaded: loaded(needsApproval) }), {
         kind: 'use_pending',
-        changes: [{ path: 'name', requires_approval: true }],
+        changes: [{ kind: 'field', path: 'name', requires_approval: true }],
         pendingManifestId: 'pending-manifest',
       });
     });
@@ -181,16 +185,28 @@ describe('approvalWrite', function () {
   });
 
   it('adds an approval row for any other manifest, which becomes the approved one', function () {
-    for (const [name, manifest, pendingManifest, requiresApproval] of [
-      ['silent changes', loaded(silent), null, false],
-      ['silent changes kept after reverting the pending ones', loaded(silent), pending, false],
-      ['changes that need approval', loaded({ ...silent, ...needsApproval }), null, true],
+    for (const [name, manifest, pendingManifest, requiresApproval, changes] of [
+      ['silent changes', loaded(silent), null, false, SILENT_CHANGES],
+      [
+        'silent changes kept after reverting the pending ones',
+        loaded(silent),
+        pending,
+        false,
+        SILENT_CHANGES,
+      ],
+      [
+        'changes that need approval',
+        loaded({ ...silent, ...needsApproval }),
+        null,
+        true,
+        [...SILENT_CHANGES, ...APPROVAL_CHANGES],
+      ],
     ] as const) {
       assert.deepEqual(
         approvalWrite({ current, pending: pendingManifest, loaded: manifest }),
         {
           kind: 'add_approved',
-          row: { loaded: manifest, source: 'approval', requiresApproval },
+          row: { loaded: manifest, source: 'approval', requiresApproval, changes },
         },
         name,
       );
@@ -212,7 +228,7 @@ describe('recheckWrite', function () {
     const manifest = loaded(silent);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'update', requiresApproval: false },
+      row: { loaded: manifest, source: 'update', requiresApproval: false, changes: SILENT_CHANGES },
     });
   });
 
@@ -220,7 +236,7 @@ describe('recheckWrite', function () {
     const manifest = loaded();
     assert.deepEqual(recheckWrite({ current, pending, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'resume', requiresApproval: false },
+      row: { loaded: manifest, source: 'resume', requiresApproval: false, changes: [] },
     });
   });
 
@@ -228,7 +244,53 @@ describe('recheckWrite', function () {
     const manifest = loaded(needsApproval);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_pending',
-      row: { loaded: manifest, source: 'update', requiresApproval: true },
+      row: {
+        loaded: manifest,
+        source: 'update',
+        requiresApproval: true,
+        changes: APPROVAL_CHANGES,
+      },
     });
+  });
+});
+
+describe('a change to scopes alone', function () {
+  const reading = {
+    ...current,
+    manifest: {
+      ...approvedManifest,
+      scopes: ['post:read' as const],
+    },
+  };
+  const removed = [
+    {
+      kind: 'scope' as const,
+      scope: 'post:read' as const,
+      change: 'removed' as const,
+    },
+  ];
+
+  it('applies a removed scope at once, as it narrows access', function () {
+    const manifest = loaded();
+    assert.deepEqual(recheckWrite({ current: reading, pending: null, loaded: manifest }), {
+      kind: 'add_approved',
+      row: { loaded: manifest, source: 'update', requiresApproval: false, changes: removed },
+    });
+  });
+
+  it('approves a removed scope as a new row, not the old manifest again', function () {
+    const manifest = loaded();
+    assert.deepEqual(approvalWrite({ current: reading, pending: null, loaded: manifest }), {
+      kind: 'add_approved',
+      row: { loaded: manifest, source: 'approval', requiresApproval: false, changes: removed },
+    });
+  });
+
+  it('suspends the app for a new scope, and lists it in the preview', function () {
+    const manifest = loaded({ scopes: ['post:edit'] });
+    assert.equal(recheckWrite({ current, pending: null, loaded: manifest }).kind, 'add_pending');
+    assert.deepEqual(changesFrom(current, manifest), [
+      { kind: 'scope', scope: 'post:edit', change: 'added' },
+    ]);
   });
 });

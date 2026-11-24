@@ -20,14 +20,17 @@ describe('Exporter', function () {
 
   describe('doExport', function () {
     beforeEach(function () {
-      tablesStub = sinon.stub(schema.commands, 'getTables').returns(schemaTables);
-
       queryMock = {
         whereNot: sinon.stub(),
         select: sinon.stub(),
       };
 
       knexMock = sinon.stub().returns(queryMock);
+      // schema commands are a TypeScript module whose exports can't be stubbed,
+      // so the fake connection answers the query getTables makes.
+      knexMock.client = { config: { client: 'better-sqlite3' } };
+      tablesStub = sinon.stub().resolves(schemaTables.map((tbl_name) => ({ tbl_name })));
+      knexMock.raw = tablesStub;
 
       sinon.stub(db, 'knex').get(function () {
         return knexMock;
@@ -70,6 +73,7 @@ describe('Exporter', function () {
         'offers',
         'offer_redemptions',
         'snippets',
+        'segments',
       ]);
       const actualTables = new Set(knexMock.getCalls().map((call) => call.args[0]));
       assert.deepEqual(actualTables, expectedTables);
@@ -114,6 +118,7 @@ describe('Exporter', function () {
         'offers',
         'offer_redemptions',
         'snippets',
+        'segments',
         ...include,
       ]);
       const actualTables = new Set(knexMock.getCalls().map((call) => call.args[0]));

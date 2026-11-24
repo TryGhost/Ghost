@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const {
@@ -402,7 +401,7 @@ module.exports = class CheckoutSessionEventService {
     // still created by this checkout, so only one created before it started counts.
     const memberPreexisted =
       Boolean(member) && !(session.created && member.get('created_at') >= session.created * 1000);
-    const checkoutType = _.get(session, 'metadata.checkoutType');
+    const checkoutType = session.metadata?.checkoutType;
     // Typing an email address into a checkout doesn't prove owning it, so a checkout an existing
     // member didn't start signed in links their subscription and saves what it collected into
     // custom fields, but can't change their name.
@@ -412,8 +411,8 @@ module.exports = class CheckoutSessionEventService {
     attempt.buying({ existing: memberPreexisted, verified: buyerVerified });
 
     if (!member) {
-      const metadataName = _.get(session, 'metadata.name');
-      const metadataNewsletters = _.get(session, 'metadata.newsletters');
+      const metadataName = session.metadata?.name;
+      const metadataNewsletters = session.metadata?.newsletters;
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
         url: session.metadata?.attribution_url ?? null,
@@ -423,10 +422,8 @@ module.exports = class CheckoutSessionEventService {
         referrerUrl: session.metadata?.referrer_url ?? null,
       };
 
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
+      const payerName =
+        customer.subscriptions?.data?.[0]?.default_payment_method?.billing_details?.name;
       const name = metadataName || payerName || null;
 
       const memberData = { email: customer.email, name, attribution };
@@ -451,10 +448,8 @@ module.exports = class CheckoutSessionEventService {
       };
       member = await memberRepository.create(memberDataWithStripeCustomer);
     } else {
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
+      const payerName =
+        customer.subscriptions?.data?.[0]?.default_payment_method?.billing_details?.name;
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
         url: session.metadata?.attribution_url ?? null,
@@ -509,10 +504,15 @@ module.exports = class CheckoutSessionEventService {
       attempt,
     });
 
-    if (checkoutType !== 'upgrade') {
-      const ghostSignupContext = /** @type {SignupContext | undefined} */ (
-        session.metadata?.ghostSignupContext
-      );
+    const ghostSignupContext = /** @type {SignupContext | undefined} */ (
+      session.metadata?.ghostSignupContext
+    );
+    // The client sets checkoutType; Ghost sets the signup context when it creates the session.
+    // When Ghost marked the buyer as having no guaranteed sign-in path, the signup email goes out
+    // even on an upgrade.
+    const buyerNeedsMagicLinkEmail = ghostSignupContext === SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
+
+    if (checkoutType !== 'upgrade' || buyerNeedsMagicLinkEmail) {
       const shouldSkipSignupEmailWhenWelcomeEmailActive =
         canWelcomeEmailReplaceSignupPaidEmail(ghostSignupContext);
 

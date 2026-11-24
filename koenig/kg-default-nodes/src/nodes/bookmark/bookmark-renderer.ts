@@ -1,3 +1,4 @@
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
@@ -6,6 +7,7 @@ import {escapeHtml} from '../../utils/escape-html.js';
 import {truncateHtml} from '../../utils/truncate.js';
 
 interface BookmarkNodeData {
+    visibility?: Visibility;
     url: string;
     title: string;
     description: string;
@@ -28,9 +30,9 @@ export function renderBookmarkNode(node: BookmarkNodeData, options: RenderOption
     }
 
     if (options.target === 'email') {
-        return emailTemplate(node, document);
+        return renderWithVisibility(emailTemplate(node, document), node.visibility, options);
     } else {
-        return frontendTemplate(node, document);
+        return renderWithVisibility(frontendTemplate(node, document), node.visibility, options);
     }
 }
 

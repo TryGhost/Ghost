@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 
 import {
   RECIPIENT_MESSAGE_ID_VARIABLE,
-  addRecipientMessageIds,
   buildRecipientMessageId,
   isTemplatedRecipientMessageId,
+  setRecipientMessageIds,
 } from '../../../../../core/server/lib/mailgun/mailgun-recipient-message-id';
 
 const EMAIL_ID = '64f0c7a5e2b3a1d4c5b6a7f8';
@@ -104,38 +104,30 @@ describe('Mailgun recipient Message-Id generation', function () {
     });
   });
 
-  describe('addRecipientMessageIds', function () {
-    it('adds a message_id variable for every recipient and keeps the existing variables', function () {
+  describe('setRecipientMessageIds', function () {
+    const buildId = (recipientEmail: string) =>
+      buildRecipientMessageId({ emailId: EMAIL_ID, recipientEmail, domain: DOMAIN });
+
+    it('adds the built message_id for every recipient and keeps the existing variables', function () {
       const recipientData = {
         'first@example.com': { name: 'First', list_unsubscribe: 'https://example.com/unsub/1' },
         'second@example.com': { name: 'Second', list_unsubscribe: 'https://example.com/unsub/2' },
       };
 
-      const result = addRecipientMessageIds(recipientData, { emailId: EMAIL_ID, domain: DOMAIN });
+      const result = setRecipientMessageIds(recipientData, buildId);
 
-      assert.deepEqual(Object.keys(result), ['first@example.com', 'second@example.com']);
-      assert.equal(result['first@example.com'].name, 'First');
-      assert.equal(result['first@example.com'].list_unsubscribe, 'https://example.com/unsub/1');
-      assert.equal(
-        result['first@example.com'].message_id,
-        buildRecipientMessageId({
-          emailId: EMAIL_ID,
-          recipientEmail: 'first@example.com',
-          domain: DOMAIN,
-        }),
-      );
-      assert.equal(
-        result['second@example.com'].message_id,
-        buildRecipientMessageId({
-          emailId: EMAIL_ID,
-          recipientEmail: 'second@example.com',
-          domain: DOMAIN,
-        }),
-      );
-      assert.notEqual(
-        result['first@example.com'].message_id,
-        result['second@example.com'].message_id,
-      );
+      assert.deepEqual(result, {
+        'first@example.com': {
+          name: 'First',
+          list_unsubscribe: 'https://example.com/unsub/1',
+          message_id: buildId('first@example.com'),
+        },
+        'second@example.com': {
+          name: 'Second',
+          list_unsubscribe: 'https://example.com/unsub/2',
+          message_id: buildId('second@example.com'),
+        },
+      });
     });
 
     it('does not mutate the recipient data passed in', function () {
@@ -144,16 +136,30 @@ describe('Mailgun recipient Message-Id generation', function () {
       };
       const snapshot = JSON.stringify(recipientData);
 
-      const result = addRecipientMessageIds(recipientData, { emailId: EMAIL_ID, domain: DOMAIN });
+      const result = setRecipientMessageIds(recipientData, buildId);
 
       assert.equal(JSON.stringify(recipientData), snapshot);
-      assert.notEqual(result, recipientData);
       assert.notEqual(result['member@example.com'], recipientData['member@example.com']);
     });
 
-    it('returns an empty object when there are no recipients', function () {
-      assert.deepEqual(addRecipientMessageIds({}, { emailId: EMAIL_ID, domain: DOMAIN }), {});
-    });
+    for (const [description, badId] of [
+      ['no id', undefined],
+      ['an empty id', ''],
+      ['an id in angle brackets', '<x@example.com>'],
+      ['an id with whitespace', 'x @example.com'],
+    ] as const) {
+      it(`throws when the builder returns ${description}`, function () {
+        assert.throws(
+          () =>
+            setRecipientMessageIds(
+              { 'first@example.com': {}, 'second@example.com': {} },
+              (recipientEmail) =>
+                (recipientEmail === 'first@example.com' ? 'ok@example.com' : badId) as string,
+            ),
+          { errorType: 'IncorrectUsageError' },
+        );
+      });
+    }
   });
 
   describe('isTemplatedRecipientMessageId', function () {

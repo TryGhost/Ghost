@@ -9,8 +9,8 @@ import path from 'node:path';
 import semver from 'semver';
 import { knex as dbKnex } from '../../../core/server/data/db';
 import { v4Schema } from '../../utils/fixtures/schema/v4';
+import type { TableDefinition } from '../../../core/server/data/schema/types';
 import rawSchema from '../../../core/server/data/schema/schema';
-// @ts-expect-error This module lacks type definitions.
 import * as commands from '../../../core/server/data/schema/commands';
 import { isInDevelopmentTable } from '../../../core/server/data/schema/in-development';
 import { type ForeignKey, foreignKeysOf } from '../../../core/server/data/schema/lib/foreign-keys';
@@ -362,7 +362,7 @@ async function createMigratedDatabase(knex: Knex) {
   await knexMigrator.init({ noScripts: true });
 
   for (const [tableName, tableSpec] of Object.entries(v4Schema)) {
-    await commands.createTable(tableName, knex, tableSpec);
+    await commands.createTable(tableName, knex, tableSpec as TableDefinition);
   }
 
   await knex.schema.createTable('migrations', function (table) {
@@ -372,14 +372,16 @@ async function createMigratedDatabase(knex: Knex) {
     table.string('currentVersion');
   });
 
+  // knex-migrator records a .ts migration under its .js name, as a real 4.47 database has it
+  const recordedName = (file: string) => file.replace(/\.ts$/, '.js');
   const executed: ExecutedMigration[] = [];
   for (const name of fs.readdirSync(path.join(MIGRATIONS_PATH, 'init'))) {
-    executed.push({ name, version: 'init', currentVersion: V4_VERSION });
+    executed.push({ name: recordedName(name), version: 'init', currentVersion: V4_VERSION });
   }
   for (const version of fs.readdirSync(path.join(MIGRATIONS_PATH, 'versions'))) {
     if (semver.lte(semver.coerce(version)!, semver.coerce(V4_VERSION)!)) {
       for (const name of fs.readdirSync(path.join(MIGRATIONS_PATH, 'versions', version))) {
-        executed.push({ name, version, currentVersion: V4_VERSION });
+        executed.push({ name: recordedName(name), version, currentVersion: V4_VERSION });
       }
     }
   }

@@ -137,7 +137,7 @@ module.exports = function (Bookshelf) {
             if (!Array.isArray(data[property])) {
               relations = [data[property]];
             }
-            _.each(relations, (relation, indexInArr) => {
+            relations.forEach((relation, indexInArr) => {
               _.each(relation, (relationValue, relationProperty) => {
                 if (
                   relationValue !== null &&

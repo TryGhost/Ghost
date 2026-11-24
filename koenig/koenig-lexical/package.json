@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Ghost's Lexical-based rich text post editor",
   "repository": {
     "type": "git",
@@ -90,6 +90,7 @@
     "@tryghost/kg-markdown-html-renderer": "workspace:~",
     "@tryghost/kg-simplemde": "workspace:~",
     "@tryghost/kg-unsplash-selector": "workspace:~",
+    "@types/lodash": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",

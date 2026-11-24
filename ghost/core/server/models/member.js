@@ -503,7 +503,7 @@ const Member = ghostBookshelf.Model.extend(
     onSaving: function onSaving(model, attr, options) {
       const rawLabels = this.get('labels');
 
-      if (_.isUndefined(rawLabels)) {
+      if (rawLabels === undefined) {
         this.unset('labels');
         return;
       }

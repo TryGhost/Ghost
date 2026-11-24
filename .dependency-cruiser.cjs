@@ -52,6 +52,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/common/to-plain\\.ts$', // Bookshelf/plain-object normalization; no application instances or captured state.
   '^ghost/core/server/lib/link-replacer\\.ts$', // HTML link rewriting with caller-owned callbacks; no retained state or application dependencies.
   '^ghost/core/server/lib/mailgun/mailgun-recipient-variables\\.ts$', // Converts supplied replacement tokens and values into Mailgun recipient variables; no client, config or I/O.
+  '^ghost/core/server/lib/mailgun/mailgun-recipient-message-id\\.ts$', // Builds and sets per-recipient Message-Id variables from supplied values; no client, config or I/O.
   '^ghost/core/server/lib/magic-link/magic-link\\.js$', // Magic-link constructor with caller-supplied transporter, token provider and content callbacks; no application instances.
   '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
   '^ghost/core/server/lib/ensure-transaction\\.ts$', // Runs a callback in the caller's transaction or a new one on the supplied connection; no application instances.
@@ -64,7 +65,10 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
   '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
+  '^ghost/core/server/lib/sortable\\.ts$', // Ordered reads, inserts and reorders for a schema-declared collection, on the caller's connection; no application instances.
+  '^ghost/core/server/lib/db-errors\\.ts$', // Recognises the errors a database rejects a write with.
   '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
+  '^ghost/core/server/lib/db-types/text\\.ts$', // Byte-length check for text columns.
   '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
   '^ghost/core/server/lib/db-types/object-id\\.ts$', // Database ObjectId codec.
   '^ghost/core/server/lib/mailgun/mailgun-message-id\\.ts$', // Mailgun message ID normalisation; no client.
@@ -321,7 +325,7 @@ const serviceDependencyDecisions = {
     '^ghost/core/shared/settings-cache/', // Settings.
     '^ghost/core/server/models/index\\.js$', // Models.
     '^ghost/core/server/data/db/', // The database connection.
-    '^@tryghost/domain-events$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
+    '^@tryghost/domain-events$|^packages/domain-events/(src|build)/index\\.(ts|js)$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
     `^${servicesRoot}/`, // Other services, including the events and helpers they own.
     '^ghost/core/shared/url-utils\\.ts$', // URL utils, built from config.
     '^ghost/core/shared/labs\\.js$', // Labs flags, read from settings and config.

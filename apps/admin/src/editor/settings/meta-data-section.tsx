@@ -64,7 +64,7 @@ function SearchPreview({
       gap="xs"
     >
       <Inline className="mb-5" gap="lg">
-        <GoogleLogo aria-hidden="true" className="h-5 w-auto shrink-0" />
+        <GoogleLogo className="h-5 w-auto shrink-0" title="Google" />
         <Inline className="h-7 min-w-0 flex-1 rounded-full bg-muted px-3" justify="end">
           <LucideIcon.Search className="size-4 text-muted-foreground" />
         </Inline>

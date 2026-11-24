@@ -28,11 +28,17 @@ export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';
 export { isPlainText, toPlainText } from './plain-text.ts';
 export { appPageUrl, servedFrom } from './manifest/served-from.ts';
+export type { AppPermissionKey, AppResourceName } from './scopes.ts';
+export { approvedScopes, describeScopes, type ScopeLine } from './manifest/scopes.ts';
+export { isScopeChange, isFieldChange, splitChanges } from './manifest/changes.ts';
 export type {
+  ScopeChange,
   AppIcon,
   AppManifest,
   AppSurface,
   AppSurfaceType,
+  FieldChange,
+  ManifestChange,
   ManifestError,
   ParseManifestOptions,
   ParseManifestResult,
@@ -64,7 +70,8 @@ export {
   normaliseAppPath,
 } from './bridge/rules.ts';
 export type {
-  AdminApiScope,
+  AdminApiResource,
+  AdminApiRouteGroup,
   AppErrorCode,
   AppExports,
   AppPath,

@@ -8,7 +8,7 @@ import type { Segment } from './models';
 export type SegmentChange =
   /** A segment was added after the others. */
   | Added<'SegmentAdded', Segment>
-  /** A segment's name changed. Its filter, and so its id, stay the same. */
+  /** A segment's name changed. Its id and its filter stay the same. */
   | Edited<'SegmentRenamed', Segment>
   /** A segment was deleted. */
   | Deleted<'SegmentDeleted', Segment>;

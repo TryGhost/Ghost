@@ -1,6 +1,6 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
-import { Avatar, Button, TooltipProvider } from '@tryghost/shade/components';
+import { Avatar, Button, TooltipProvider, ListItem } from '@tryghost/shade/components';
 import {
   type Comment,
   useHideComment,
@@ -129,11 +129,10 @@ function CommentsList({
                 return <PlaceholderRow key={key} {...props} />;
               }
 
-              return (
+              const row = (
                 <div
-                  key={key}
                   {...props}
-                  className="group/comment grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-table-row-hover md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                  className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b px-0 py-3 md:py-5 lg:grid-cols-[minmax(0,1fr)_144px]"
                   data-testid="comment-list-row"
                   onClick={() => {
                     // Close sidebar when clicking on a comment in the main list
@@ -202,7 +201,7 @@ function CommentsList({
                       <div className="flex flex-row flex-nowrap items-center gap-3">
                         {item.status === 'published' && (
                           <Button
-                            className={cn('text-foreground', 'group-hover/comment:bg-background')}
+                            className="text-foreground"
                             size="sm"
                             variant="outline"
                             onClick={() => hideComment({ id: item.id })}
@@ -213,7 +212,7 @@ function CommentsList({
                         )}
                         {item.status === 'hidden' && (
                           <Button
-                            className={cn('text-foreground', 'group-hover/comment:bg-background')}
+                            className="text-foreground"
                             size="sm"
                             variant="outline"
                             onClick={() => showComment({ id: item.id })}
@@ -242,6 +241,11 @@ function CommentsList({
                     ) : null}
                   </div>
                 </div>
+              );
+              return (
+                <ListItem key={key} hover={false} asChild>
+                  {row}
+                </ListItem>
               );
             })}
             <SpacerRow height={spaceAfter} />

@@ -51,3 +51,15 @@
         translate: none;
     }
 }
+
+/* a read-only editor's cards take no pointer input. Every descendant, and with
+   !important: card controls such as the image buttons set pointer-events themselves */
+.koenig-lexical [data-kg-card][data-kg-read-only],
+.koenig-lexical [data-kg-card][data-kg-read-only] * {
+    pointer-events: none !important;
+}
+
+/* a card toolbar kept open by the card's own state, such as "save as snippet" */
+.koenig-lexical [data-kg-card][data-kg-read-only] [data-kg-card-toolbar] {
+    display: none !important;
+}

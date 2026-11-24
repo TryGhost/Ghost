@@ -13,7 +13,6 @@ const { SafeString } = require('../services/handlebars');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const isUndefined = require('lodash/isUndefined');
 
 const messages = {
   valuesMustBeDefined: 'All values must be defined for empty, singular and plural',
@@ -21,10 +20,10 @@ const messages = {
 
 module.exports = function plural(number, options) {
   if (
-    isUndefined(options.hash) ||
-    isUndefined(options.hash.empty) ||
-    isUndefined(options.hash.singular) ||
-    isUndefined(options.hash.plural)
+    options.hash === undefined ||
+    options.hash.empty === undefined ||
+    options.hash.singular === undefined ||
+    options.hash.plural === undefined
   ) {
     throw new errors.IncorrectUsageError({
       message: tpl(messages.valuesMustBeDefined),

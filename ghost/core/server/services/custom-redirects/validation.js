@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
@@ -23,7 +22,7 @@ const validate = (redirects) => {
     });
   }
 
-  _.each(redirects, function (redirect) {
+  redirects.forEach(function (redirect) {
     // Guard the entry shape before property access. Without this,
     // a `null` / scalar entry would throw a raw `TypeError` from
     // `redirect.from` rather than the user-facing ValidationError.

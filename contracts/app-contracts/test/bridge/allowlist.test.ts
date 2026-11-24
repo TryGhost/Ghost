@@ -2,37 +2,66 @@ import { describe, expect, it } from 'vitest';
 
 import { ADMIN_API_ALLOWLIST, findAllowedAdminApiRoute } from '../../src/bridge/allowlist.ts';
 import { FETCH_METHODS, type FetchMethod } from '../../src/bridge/rules.ts';
+import { APP_PERMISSION_KEYS, APP_SCOPES, isAppPermissionKey } from '../../src/scopes.ts';
 
 const ID = '5ddc9141c35e7700383b2937';
 
 const allowed = (method: FetchMethod, path: string) =>
   findAllowedAdminApiRoute(path, method)?.route;
 
+const RESOURCES = Object.entries(ADMIN_API_ALLOWLIST);
+const GROUPS = RESOURCES.flatMap(([, resource]) => resource.groups);
+
 describe('the Admin API allowlist', () => {
-  it('groups its routes under scope names, each with a description', () => {
-    expect(ADMIN_API_ALLOWLIST.map((scope) => scope.name)).toEqual([
-      'posts:read',
-      'posts:write',
-      'pages:read',
-      'pages:write',
-      'tags:read',
-      'tags:write',
-      'users:read',
-      'tiers:read',
-      'newsletters:read',
-      'site:read',
-      'slugs:read',
+  it('groups its routes under the registry’s scopes, each once, by the scope’s resource', () => {
+    const named = GROUPS.flatMap((group) => (group.scope ? [group.scope] : []));
+    expect(new Set(named).size).toBe(named.length);
+    for (const name of named) {
+      expect(isAppPermissionKey(name), name).toBe(true);
+    }
+    for (const [resource, { groups }] of RESOURCES) {
+      for (const { scope } of groups) {
+        expect(scope === null ? 'site' : APP_SCOPES[scope].resource, scope ?? 'no scope').toBe(
+          resource,
+        );
+      }
+    }
+  });
+
+  it('allows only the site’s public details without a scope', () => {
+    expect(GROUPS.filter((group) => group.scope === null).flatMap((group) => group.routes)).toEqual(
+      ['GET /site'],
+    );
+  });
+
+  // Otherwise a scope could be declared and approved, and grant nothing.
+  it('opens something for every scope in the registry: a route, an include or a sort', () => {
+    const opened = new Set([
+      ...GROUPS.map((group) => group.scope),
+      ...RESOURCES.flatMap(([, resource]) => Object.values(resource.fieldScopes ?? {})),
     ]);
-    for (const scope of ADMIN_API_ALLOWLIST) {
-      expect(scope.name).toMatch(/^[a-z]+:(?:read|write)$/);
-      expect(scope.description).not.toBe('');
-      expect(scope.routes.length).toBeGreaterThan(0);
-      for (const route of scope.routes) {
+    for (const name of APP_PERMISSION_KEYS) {
+      expect(opened.has(name), name).toBe(true);
+    }
+  });
+
+  it('keeps each scope to the methods its action allows', () => {
+    const METHOD_OF: Record<string, FetchMethod> = {
+      browse: 'GET',
+      read: 'GET',
+      generate: 'GET',
+      add: 'POST',
+      edit: 'PUT',
+      destroy: 'DELETE',
+    };
+    for (const group of GROUPS) {
+      expect(group.routes.length).toBeGreaterThan(0);
+      for (const route of group.routes) {
         const [method, path] = route.split(' ');
         expect(FETCH_METHODS, route).toContain(method);
         expect(path, route).toMatch(/^(?:\/(?:[a-z_-]+|:[a-z]+))+$/);
-        // Reads are only GETs, and writes never are.
-        expect(method === 'GET', route).toBe(scope.name.endsWith(':read'));
+        const action = group.scope?.split(':')[1] ?? 'read';
+        expect(method, route).toBe(METHOD_OF[action]);
       }
     }
   });
