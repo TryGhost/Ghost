@@ -24,6 +24,9 @@ const configUtils = require('../../utils/config-utils');
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 
+// Apps get tokens from Better Auth's OAuth provider, so they open only under its engine
+const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+
 /** The app's keys. A test that needs another developer, or a new backend key, makes its own. */
 let keys: TestAppKeys;
 
@@ -48,7 +51,7 @@ function manifest(overrides: Record<string, unknown> = {}): Record<string, unkno
   };
 }
 
-describe('App installations Admin API', function () {
+describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
   let agent: {
     get: (_url: string) => any;
     post: (_url: string) => any;
@@ -64,6 +67,33 @@ describe('App installations Admin API', function () {
   let owner: { actor: { id: string; type: 'user' } };
 
   const service = () => appInstallations.service;
+  const appTokens = () => require('../../../core/server/auth').appTokens;
+  /** The Owner's signed-in staff session, as a session started through the API would have it. */
+  const ownerPrincipal = async () => {
+    const user = fixtureManager.get('users', 0);
+    const session = await models.Base.knex('user_sessions')
+      .where({ user_id: user.id })
+      .orderBy('created_at', 'desc')
+      .first();
+    return {
+      kind: 'user' as const,
+      method: 'session' as const,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        status: 'active',
+        roles: [{ id: 'owner', name: 'Owner' }],
+      },
+      session: {
+        id: session.id,
+        userId: user.id,
+        expiresAt: Date.now() + 60_000,
+        verified: true,
+        origin: null,
+      },
+    };
+  };
   const MANIFEST_HOST = 'https://podcast.example.com';
   const MANIFEST_PATH = '/ghost-app.json';
   /** The backend key each origin answers challenges with, as the last `serve` set it. */
@@ -710,7 +740,7 @@ describe('App installations Admin API', function () {
           // An app session starts during the fetch, and its re-check finds other changes
           // that need approval, so it suspends the app.
           serve(manifest({ name: 'Podcasts!' }));
-          await service().startSession(installed.id);
+          await service().startSession(installed.id, await ownerPrincipal());
           return signed(manifest({ name: 'Podcasts' }));
         });
 
@@ -1112,7 +1142,7 @@ describe('App installations Admin API', function () {
 
       assert.deepEqual(Object.keys(body), ['app_sessions']);
       const [session] = body.app_sessions;
-      assert.deepEqual(Object.keys(session), ['installation']);
+      assert.deepEqual(Object.keys(session), ['installation', 'token']);
       assert.equal(session.installation.id, installed.id);
       assert.equal(session.installation.status, 'active');
       assert.equal(session.installation.revision, 0);
@@ -1441,12 +1471,12 @@ describe('App installations Admin API', function () {
       const bothStartedPromise = new Promise<void>((resolve) => {
         bothStarted = resolve;
       });
-      sinon.stub(service(), 'startSession').callsFake(function (id: string) {
+      sinon.stub(service(), 'startSession').callsFake(function (id, principal) {
         started += 1;
         if (started === 2) {
           bothStarted();
         }
-        return startSession.call(service(), id);
+        return startSession.call(service(), id, principal);
       });
       // The wait is bounded, so a second session that never starts fails the check below
       // with a reason, rather than the test by timing out.
@@ -1537,6 +1567,129 @@ describe('App installations Admin API', function () {
       const [session] = body.app_sessions;
       assert.equal(session.installation.revision, 1);
       assert.equal(session.installation.manifest.name, 'Podcasts');
+    });
+
+    describe('app tokens', function () {
+      /** The installation's user tokens, as the provider stores them. */
+      const tokenRowsOf = (id: string) =>
+        models.Base.knex('oauth_access_tokens').where({ client_id: `ghost-app-user-${id}` });
+
+      /** Renews a session started at `revision`, as Admin does before its token expires. */
+      const renew = (id: string, revision: number, status = 201) =>
+        agent
+          .post(`apps/installations/${id}/tokens/`)
+          .body({ app_tokens: [{ revision }] })
+          .expectStatus(status);
+
+      it('gives an active installation a user token for an hour, holding no more than its approved scopes', async function () {
+        const installed = await install({ scopes: ['post:browse', 'tag:browse'] });
+        serve(manifest({ scopes: ['post:browse', 'tag:browse'] }));
+
+        const { body } = await start(installed.id);
+
+        const { token } = body.app_sessions[0];
+        assert.deepEqual(Object.keys(token), ['access_token', 'expires_in']);
+        assert.ok(token.access_token.startsWith('ghost_app_'));
+        // Seconds, counted from when Ghost answered, so the browser's clock doesn't matter
+        assert.equal(token.expires_in, 3600);
+        const validated = await appTokens().validate(token.access_token);
+        assert.equal(validated?.userId, fixtureManager.get('users', 0).id);
+        const [row] = await tokenRowsOf(installed.id);
+        assert.deepEqual(JSON.parse(row.scopes).sort(), ['post:browse', 'tag:browse']);
+      });
+
+      it('gives a suspended installation no token, and refuses the tokens it had', async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body: opened } = await start(installed.id);
+        serve(manifest({ name: 'Podcasts' }));
+
+        const { body } = await start(installed.id);
+
+        assert.equal(body.app_sessions[0].installation.status, 'suspended');
+        assert.equal(body.app_sessions[0].token, null);
+        assert.equal(await appTokens().validate(opened.app_sessions[0].token.access_token), null);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it("refuses an installation's tokens once it is uninstalled", async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body } = await start(installed.id);
+
+        assert.equal((await tokenRowsOf(installed.id)).length, 1);
+
+        await agent.delete(`apps/installations/${installed.id}/`).expectStatus(204);
+
+        assert.equal(await appTokens().validate(body.app_sessions[0].token.access_token), null);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it('renews the token for the revision the session started with, without fetching the manifest', async function () {
+        const installed = await install({ scopes: ['post:browse'] });
+        serve(manifest({ scopes: ['post:browse'] }));
+        const { body: started } = await start(installed.id);
+
+        const { body } = await renew(installed.id, 0);
+
+        assert.deepEqual(Object.keys(body), ['app_tokens']);
+        const [token] = body.app_tokens;
+        // The shape session start returns its token in
+        assert.deepEqual(Object.keys(token), Object.keys(started.app_sessions[0].token));
+        assert.notEqual(token.access_token, started.app_sessions[0].token.access_token);
+        assert.ok(await appTokens().validate(token.access_token));
+        const rows = await tokenRowsOf(installed.id);
+        assert.deepEqual(
+          rows.map((row: { scopes: string }) => JSON.parse(row.scopes)),
+          [['post:browse'], ['post:browse']],
+        );
+      });
+
+      it('ends the session when the installation changed since it started', async function () {
+        const installed = await install();
+        serve(manifest({ description: 'Changed' }));
+        await start(installed.id);
+
+        const { body } = await renew(installed.id, 0, 409);
+
+        assert.equal(body.errors[0].code, 'APP_SESSION_ENDED');
+      });
+
+      it('ends the session when the installation is suspended', async function () {
+        const installed = await install();
+        serve(manifest({ name: 'Podcasts' }));
+        const { body: started } = await start(installed.id);
+        const { revision } = started.app_sessions[0].installation;
+
+        const { body } = await renew(installed.id, revision, 409);
+
+        assert.equal(body.errors[0].code, 'APP_SESSION_ENDED');
+      });
+
+      it('answers 404 once the app is uninstalled', async function () {
+        const installed = await install();
+        await service().uninstall(owner, installed.id);
+
+        const { body } = await renew(installed.id, 1, 404);
+
+        assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+      });
+
+      it('needs the revision the session started with, as a whole number', async function () {
+        const installed = await install();
+
+        await agent
+          .post(`apps/installations/${installed.id}/tokens/`)
+          .body({ app_tokens: [{ revision: 'latest' }] })
+          .expectStatus(422);
+        // Refused by the framework before the revision is read
+        await agent.post(`apps/installations/${installed.id}/tokens/`).expectStatus(400);
+        await agent.post(`apps/installations/${installed.id}/tokens/`).body({}).expectStatus(400);
+        await agent
+          .post(`apps/installations/${installed.id}/tokens/`)
+          .body({ app_tokens: [] })
+          .expectStatus(400);
+      });
     });
 
     it('answers 404 for an installation that does not exist, saying it is not installed', async function () {
@@ -2573,6 +2726,10 @@ describe('App installations Admin API', function () {
       await agent.get('apps/installations/').expectStatus(404);
       await agent.get(`apps/installations/${installation.id}/`).expectStatus(404);
       await start(installation.id, 404);
+      await agent
+        .post(`apps/installations/${installation.id}/tokens/`)
+        .body({ app_tokens: [{ revision: 0 }] })
+        .expectStatus(404);
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
       assert.equal((await service().read(installation.id)).status, 'active');
     });
@@ -2609,6 +2766,10 @@ describe('App installations Admin API', function () {
       await agent.get('apps/installations/').expectStatus(403);
       await agent.get(`apps/installations/${installationId}/`).expectStatus(403);
       await agent.post(`apps/installations/${installationId}/sessions/`).expectStatus(403);
+      await agent
+        .post(`apps/installations/${installationId}/tokens/`)
+        .body({ app_tokens: [{ revision: 0 }] })
+        .expectStatus(403);
       await agent.delete(`apps/installations/${installationId}/`).expectStatus(403);
       assert.equal((await service().read(installationId)).status, 'active');
     };
@@ -2637,14 +2798,36 @@ describe('App installations Admin API', function () {
       await assertRefused();
     });
 
-    it("an administrator's staff token, which acts as the administrator", async function () {
+    it("an administrator's staff token, which acts as the administrator but gets no app token", async function () {
       await agent.useStaffTokenForAdmin();
       await agent.get('apps/installations/').expectStatus(200);
+      const { body } = await agent
+        .post(`apps/installations/${installationId}/sessions/`)
+        .expectStatus(403);
+      assert.equal(body.errors[0].code, 'APP_STAFF_SESSION_REQUIRED');
       await agent.delete(`apps/installations/${installationId}/`).expectStatus(204);
 
       const [, action] = await actions();
       assert.equal(action.event, 'uninstalled');
       assert.equal(action.actor_type, 'user');
     });
+  });
+});
+
+describe.skipIf(isBetterAuth)('App sessions under auth:engine legacy', function () {
+  let agent: { loginAsOwner(): Promise<void>; post(path: string): any };
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users');
+    await agent.loginAsOwner();
+  });
+
+  it('refuses to start, since app tokens need the Better Auth engine', async function () {
+    const { body } = await agent
+      .post(`apps/installations/${new ObjectId().toHexString()}/sessions/`)
+      .expectStatus(409);
+
+    assert.equal(body.errors[0].code, 'APP_AUTH_ENGINE_UNSUPPORTED');
   });
 });

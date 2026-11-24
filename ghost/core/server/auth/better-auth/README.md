@@ -186,10 +186,10 @@ whose password hasn't changed since still carry their old hash there, unread.
 
 ## App tokens
 
-Apps are to get app tokens from `@better-auth/oauth-provider`, under
-`better-auth` only: an app user token for the staff user, bound to their staff
-session. The Admin API accepts one as `Authorization: Bearer`; nothing issues
-one in a request yet.
+Apps open only under `better-auth`. When an app session starts, Ghost issues
+the staff user an app user token for the app from `@better-auth/oauth-provider`,
+bound to their staff session, which the Admin API accepts as
+`Authorization: Bearer`.
 
 ### How the pieces fit
 
@@ -325,9 +325,10 @@ upload then never runs for an app request that can't succeed.
   the provider's default hour, or until their staff session ends if that's
   sooner. The provider registers no scopes, `openid`
   included, so it issues no ID tokens; an ID token would last 5 minutes. No
-  refresh token is issued. Nobody manages clients through the provider's
-  endpoints (`clientPrivileges` refuses every action), and none registers
-  itself.
+  refresh token is issued; a session renews through Ghost
+  (`POST /apps/installations/:id/tokens/`). Nobody manages clients through the
+  provider's endpoints (`clientPrivileges` refuses every action), and none
+  registers itself.
 - Neither plugin's routes are mounted. Ghost issues and validates app tokens
   through the provider's server API, so every path either plugin declares is
   in `disabledPaths` (`appOAuthDisabledPaths`): token, authorize,
@@ -402,7 +403,8 @@ upload then never runs for an app request that can't succeed.
   spend the user's budget. The error is the one the pipeline would give. An
   app approved for the scope goes on to the route and spends the budget as
   the user would.
-- Reconciling an installation that isn't active disables its client and
+- Reconciling an installation that isn't active (suspension at session
+  start, uninstall) disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event
   under [Revocation](#revocation) deletes the user's, but nothing depends on

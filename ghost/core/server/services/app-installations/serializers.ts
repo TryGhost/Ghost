@@ -3,6 +3,7 @@ import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { AppInstallationHistoryEntry, InstallationWithHistory } from './codec';
 import { AppInstallationStatus } from './schema';
 import type { AppSession } from './service';
+import type { AppSessionToken } from './session-tokens';
 
 const AppInstallationResource = z.object({
   id: z.string(),
@@ -24,8 +25,24 @@ export type AppInstallation = z.output<typeof AppInstallationResource>;
 const AppInstallationsResponse = z.object({
   app_installations: z.array(AppInstallationResource),
 });
+// Admin's alone: it never reaches the app's frame. Session start and renewal return the same
+// shape.
+const AppSessionTokenResource = z.object({
+  access_token: z.string(),
+  expires_in: z.number().int().positive(),
+});
+
 const AppSessionsResponse = z.object({
-  app_sessions: z.tuple([z.object({ installation: AppInstallationResource })]),
+  app_sessions: z.tuple([
+    z.object({
+      installation: AppInstallationResource,
+      token: AppSessionTokenResource.nullable(),
+    }),
+  ]),
+});
+
+const AppTokensResponse = z.object({
+  app_tokens: z.tuple([AppSessionTokenResource]),
 });
 
 export const toAppInstallationsResponse = z
@@ -39,3 +56,8 @@ export const toAppSessionsResponse = z
   .custom<AppSession>()
   .transform((session): z.input<typeof AppSessionsResponse> => ({ app_sessions: [session] }))
   .pipe(AppSessionsResponse);
+
+export const toAppTokensResponse = z
+  .custom<AppSessionToken>()
+  .transform((token): z.input<typeof AppTokensResponse> => ({ app_tokens: [token] }))
+  .pipe(AppTokensResponse);

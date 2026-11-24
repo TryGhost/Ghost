@@ -94,6 +94,10 @@ const READINGS: Record<AppFailureCode, Reading> = {
   // Never the answer to a review.
   APP_NOT_INSTALLED: notExplained,
   APP_UNAVAILABLE: notExplained,
+  APP_AUTH_ENGINE_UNSUPPORTED: notExplained,
+  APP_STAFF_SESSION_REQUIRED: notExplained,
+  APP_SESSION_ENDED: notExplained,
+  APP_TOKENS_UNAVAILABLE: notExplained,
 };
 
 /** Turns an error from previewing, installing or approving into what the screen shows. */

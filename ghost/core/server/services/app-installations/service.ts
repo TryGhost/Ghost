@@ -1,5 +1,6 @@
 import type { AppFailureCode, ManifestChange } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
+import type { GhostLogger } from '@tryghost/logging';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import {
@@ -31,8 +32,12 @@ import { approvalManifestIds, buildHistory } from './history';
 import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
+import type { AppTokens } from '../../auth/better-auth/app-tokens';
+import type { Principal } from '../../auth/principal';
+import { AppSessionTokens, type AppSessionToken } from './session-tokens';
 
 export type { AppInstallationHistoryEntry } from './codec';
+export type { AppSessionToken } from './session-tokens';
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
 export interface AppInstallationPreview {
@@ -72,10 +77,11 @@ export interface AppInstallationPreview {
 /**
  * The session is pinned to `installation.revision` as it was when the session started.
  * Every change to the installation increments the revision, so the session ends once it
- * changes.
+ * changes. Only an active installation gets a token.
  */
 export interface AppSession {
   installation: Installation;
+  token: AppSessionToken | null;
 }
 
 function notFound() {
@@ -152,6 +158,7 @@ export class AppInstallationsService {
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
+  private sessionTokens: AppSessionTokens;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -161,6 +168,8 @@ export class AppInstallationsService {
     loadManifest,
     identity,
     fetchIcon,
+    appTokens,
+    logging,
   }: {
     knex: Knex;
     /** Called with each change a command makes, inside the command's transaction. */
@@ -168,6 +177,8 @@ export class AppInstallationsService {
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;
+    appTokens: AppTokens;
+    logging: Pick<GhostLogger, 'error'>;
   }) {
     this.knex = knex;
     this.repository = new AppInstallationsRepository(knex);
@@ -175,6 +186,11 @@ export class AppInstallationsService {
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
+    this.sessionTokens = new AppSessionTokens({
+      appTokens,
+      findInstallation: (id) => this.currentInstallation(id),
+      logging,
+    });
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -252,7 +268,9 @@ export class AppInstallationsService {
       });
     // A deadlock rolls back the whole transaction, so only one this command opened can be run
     // again. A caller's transaction is the caller's to retry.
-    return transactionOf(executor) ? install() : retryOnDeadlock(install);
+    const installation = await (transactionOf(executor) ? install() : retryOnDeadlock(install));
+    await this.sessionTokens.keepClientInStep(installation);
+    return installation;
   }
 
   /**
@@ -313,22 +331,35 @@ export class AppInstallationsService {
     if (stored.status === 'changed') {
       throw await this.changedSinceReview(checked, id);
     }
-    return this.read(id, { executor });
+    const approved = await this.read(id, { executor });
+    await this.sessionTokens.keepClientInStep(approved);
+    return approved;
   }
 
   /**
    * Starts an app session when Admin opens an app page. Re-checks the manifest, then
-   * returns the installation, which Admin decides what to show from. Nothing about the
-   * session is stored.
+   * returns the installation, which Admin decides what to show from, and for an active one a
+   * user token for the staff user. Nothing about the session is stored.
    */
-  async startSession(id: string): Promise<AppSession> {
+  async startSession(id: string, principal: Principal | null): Promise<AppSession> {
+    const staff = this.sessionTokens.staffSessionFor(principal);
     await this.recheck(id);
     const installation = await this.read(id);
+    // A re-check that suspended the app, or an uninstall, ends its tokens
+    await this.sessionTokens.keepClientInStep(installation);
     // Uninstalled after the re-check, or during a re-check this session shared.
     if (installation.status === 'uninstalled') {
       throw notInstalled();
     }
-    return { installation };
+    if (installation.status !== 'active') {
+      return { installation, token: null };
+    }
+    return { installation, token: await this.sessionTokens.issue(installation, staff) };
+  }
+
+  /** A fresh user token for a session started at `revision`; see `AppSessionTokens.renew`. */
+  createToken(id: string, revision: number, principal: Principal | null): Promise<AppSessionToken> {
+    return this.sessionTokens.renew(id, revision, principal);
   }
 
   /**
@@ -341,22 +372,21 @@ export class AppInstallationsService {
    * plain read yet; given a plain connection it opens its own.
    */
   async uninstall(context: RequestContext, id: string, executor: Knex = this.knex): Promise<void> {
-    return ensureTransaction(executor, async (transacting) => {
+    const ended = await ensureTransaction(executor, async (transacting) => {
       // Before any plain read, which would fix the snapshot and miss a manifest applied meanwhile.
       await this.repository.lock(id, { transacting });
       const installation = await this.read(id, { executor: transacting });
 
-      const ended = await this.repository.uninstall(id, { transacting });
-      if (!ended) {
-        return;
+      if (await this.repository.uninstall(id, { transacting })) {
+        await this.onAppInstallationUpdated(
+          transacting,
+          context,
+          new AppUninstalled(installation, await this.read(id, { executor: transacting })),
+        );
       }
-
-      await this.onAppInstallationUpdated(
-        transacting,
-        context,
-        new AppUninstalled(installation, await this.read(id, { executor: transacting })),
-      );
+      return installation;
     });
+    await this.sessionTokens.keepClientInStep({ ...ended, status: 'uninstalled' });
   }
 
   private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {

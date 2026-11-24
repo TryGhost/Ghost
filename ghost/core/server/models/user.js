@@ -1399,6 +1399,7 @@ const User = ghostBookshelf.Model.extend(
           }
         });
     },
+    activeStates: activeStates,
     inactiveStates: inactiveStates,
   },
 );
