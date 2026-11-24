@@ -49,8 +49,9 @@ export interface ValidatedAppToken {
 }
 
 /**
- * App tokens, for Ghost's own code to keep clients for, issue and validate. Nothing here names
- * an OAuth client: which client a token belongs to stays inside the provider's plugin.
+ * App tokens, for Ghost's own code to keep clients for, issue and validate; the Admin API
+ * validates them through here. Nothing here names an OAuth client: which client a token
+ * belongs to stays inside the provider's plugin.
  */
 export interface AppTokens {
   /** Until it's `ready`, nothing is issued or validated, and the other writes do nothing */
