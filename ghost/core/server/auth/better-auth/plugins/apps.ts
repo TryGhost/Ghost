@@ -1,8 +1,34 @@
+import { getCurrentAdapter } from 'better-auth';
+import { isAPIError } from 'better-auth/api';
 import type { BetterAuthPlugin } from 'better-auth';
+import { createAuthEndpoint } from 'better-auth/api';
 import { jwt } from 'better-auth/plugins';
-import { oauthProvider, type OAuthOptions, type Scope } from '@better-auth/oauth-provider';
+import {
+  getOAuthProviderApi,
+  oauthProvider,
+  type OAuthOptions,
+  type Scope,
+  type SchemaClient,
+} from '@better-auth/oauth-provider';
+import { z } from 'zod';
 import { ghostJwtSchema, ghostOAuthProviderSchema } from '../ghost-models';
+import {
+  APP_SESSION_GRANT,
+  appClientId,
+  appClientOwnerOf,
+  reconcileAppUserClient,
+  type AppClientOwner,
+} from './app-clients';
 import { APP_TOKEN_PREFIX } from '../../app-token-prefix';
+import { APP_PROVIDER_ID, type AppTokenRefusal, type ValidatedAppToken } from '../app-tokens';
+
+type StaffSessionRow = {
+  id: string;
+  userId: string;
+  expiresAt: Date;
+  verified?: boolean | null;
+  origin?: string | null;
+};
 
 /** The tables the provider and jwt plugins need; neither is registered without them. */
 export const APP_OAUTH_TABLES: readonly string[] = [
@@ -15,7 +41,7 @@ export type AppProviderOptions = {
   adminOrigin: string;
 };
 
-/** The provider's options. */
+/** The provider's options, shared with the test that compares client rows with its own. */
 export function appProviderOptions({ adminOrigin }: AppProviderOptions) {
   // No client can reach the authorize endpoint, so neither page is ever shown
   const adminPage = `${adminOrigin}/ghost/`;
@@ -61,4 +87,144 @@ export function appOAuthDisabledPaths(plugins: readonly BetterAuthPlugin[]): str
   return [...new Set(paths)].filter(
     (path): path is string => !!path && !APP_OAUTH_MOUNTED_PATHS.includes(path),
   );
+}
+
+/**
+ * Ghost's app endpoints, all server-only. With `app-clients.ts`, the one place that knows the
+ * provider's table layout. Registered always, so `auth.api`'s type doesn't depend on the `apps`
+ * flag; only `AppTokens` calls them, and only once the provider is registered.
+ */
+export const ghostApps = () =>
+  ({
+    id: 'ghost-apps',
+
+    endpoints: {
+      /** Makes an installation's user client match it; see `reconcileAppUserClient`. */
+      reconcileAppClient: createAuthEndpoint.serverOnly(
+        {
+          method: 'POST',
+          body: z.object({
+            installationId: z.string(),
+            active: z.boolean(),
+            scopes: z.array(z.string()),
+          }),
+        },
+        async (ctx) => {
+          await reconcileAppUserClient(await getCurrentAdapter(ctx.context.adapter), ctx.body);
+          return ctx.json({ status: true });
+        },
+      ),
+
+      /**
+       * A user token for an installation's user client, bound to a staff session. The
+       * provider checks no scopes when issuing, so `scopes` must already be narrowed to the
+       * installation's approved scopes; they are also held to the client's. No refresh or ID
+       * token is issued.
+       */
+      issueAppUserToken: createAuthEndpoint.serverOnly(
+        {
+          method: 'POST',
+          body: z.object({
+            installationId: z.string(),
+            userId: z.string(),
+            sessionId: z.string(),
+            scopes: z.array(z.string()),
+          }),
+        },
+        async (ctx) => {
+          const refuse = (refused: AppTokenRefusal) => ctx.json({ token: null, refused });
+          const provider = getOAuthProviderApi(ctx, providerOptions(ctx), APP_SESSION_GRANT);
+          const owner: AppClientOwner = { installationId: ctx.body.installationId, kind: 'user' };
+          const client = await provider.getClient(appClientId(owner));
+          const user = await ctx.context.internalAdapter.findUserById(ctx.body.userId);
+          if (!client || client.disabled || !isClientOf(client, owner)) {
+            return refuse('client_unavailable');
+          }
+          if (!user) {
+            return refuse('user_not_found');
+          }
+          const allowed = new Set(client.scopes ?? []);
+          const scopes = [...new Set(ctx.body.scopes)].filter((scope) => allowed.has(scope));
+          const issued = await provider.issueTokens({
+            client,
+            user,
+            scopes,
+            sessionId: ctx.body.sessionId,
+          });
+          return ctx.json({
+            refused: null,
+            token: {
+              accessToken: issued.access_token,
+              expiresIn: issued.expires_in,
+            },
+          });
+        },
+      ),
+
+      /** Who an app token acts for, or null unless it is an active user token of an app's. */
+      validateAppToken: createAuthEndpoint.serverOnly(
+        { method: 'POST', body: z.object({ token: z.string() }) },
+        async (ctx) => {
+          const provider = getOAuthProviderApi(ctx, providerOptions(ctx));
+          let payload;
+          try {
+            payload = await provider.validateAccessToken(ctx.body.token);
+          } catch (err) {
+            if (isAPIError(err)) {
+              return ctx.json({ token: null });
+            }
+            throw err;
+          }
+          // A JWT access token has an audience; apps never get one. User tokens are always issued
+          // with a user and a staff session.
+          if (
+            !payload.active ||
+            payload.aud !== undefined ||
+            typeof payload.client_id !== 'string' ||
+            typeof payload.sub !== 'string' ||
+            typeof payload.sid !== 'string'
+          ) {
+            return ctx.json({ token: null });
+          }
+          const client = await provider.getClient(payload.client_id);
+          const owner = client ? appClientOwnerOf(client) : null;
+          // The provider checks the session exists and hasn't expired, but not that it's verified
+          const adapter = await getCurrentAdapter(ctx.context.adapter);
+          const session = await adapter.findOne<StaffSessionRow>({
+            model: 'session',
+            where: [{ field: 'id', value: payload.sid }],
+          });
+          if (
+            owner?.kind !== 'user' ||
+            !session ||
+            session.userId !== payload.sub ||
+            session.verified !== true ||
+            new Date(session.expiresAt) <= new Date()
+          ) {
+            return ctx.json({ token: null });
+          }
+          const validated: ValidatedAppToken = {
+            installationId: owner.installationId,
+            userId: payload.sub,
+            session: {
+              id: session.id,
+              expiresAt: new Date(session.expiresAt),
+              origin: session.origin ?? null,
+            },
+          };
+          return ctx.json({ token: validated });
+        },
+      ),
+    },
+  }) satisfies BetterAuthPlugin;
+
+function providerOptions(ctx: {
+  context: { getPlugin(id: string): unknown };
+}): OAuthOptions<Scope[]> {
+  return (ctx.context.getPlugin(APP_PROVIDER_ID) as { options: OAuthOptions<Scope[]> }).options;
+}
+
+function isClientOf(client: SchemaClient<Scope[]>, owner: AppClientOwner): boolean {
+  const found = appClientOwnerOf(client);
+  return found?.installationId === owner.installationId && found.kind === owner.kind;
 }

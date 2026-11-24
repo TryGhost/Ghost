@@ -113,8 +113,15 @@ until Phase 4.
   does, and a successful save deletes it, so a token saves once.
 - `routes.ts`: the Better Auth paths that matchers, limiters and
   `disabledPaths` refer to. A mistyped path matches nothing, silently.
-- `plugins/apps.ts`: the OAuth provider and `jwt` plugins that issue app
-  tokens. See [App tokens](#app-tokens).
+- `plugins/apps.ts`: `ghostApps`, and the OAuth provider and `jwt` plugins
+  that issue app tokens. `plugins/app-clients.ts` holds the user client's row
+  and keeps it in step with its installation. See [App tokens](#app-tokens).
+- `app-tokens.ts`: the interface the app installations service and the Admin
+  API use for app tokens, over `ghostApps`'s server-only endpoints. It loads
+  under either engine and answers whether app tokens are available: `ready`,
+  `legacy_engine`, or `needs_restart` while the provider isn't registered.
+  Until they're `ready` it issues and validates nothing, and its other writes
+  do nothing.
 
 Ghost mounts at the subdirectory, so on a subdirectory install requests reach
 Better Auth as `/blog/ghost/api/admin/auth/...`. `basePath` therefore carries
@@ -179,7 +186,8 @@ whose password hasn't changed since still carry their old hash there, unread.
 ## App tokens
 
 Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
-`better-auth` only.
+`better-auth` only: a user token for the staff user, bound to their staff
+session. Nothing issues one in a request yet.
 
 - The provider and the `jwt` plugin it signs with are registered only when the
   `apps` labs flag is on at boot and their in-development tables exist, so a
@@ -190,10 +198,12 @@ Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
 - Boot reads the flag before remote flags load, so it must come from config
   or the Labs setting. A flag turned on only through remote flags never
   registers the provider, however often Ghost restarts.
-- Opaque access tokens carry the `ghost_app_` prefix. The provider registers
-  no scopes, `openid` included, so it issues no ID tokens; an ID token would
-  last 5 minutes. Nobody manages clients through the provider's endpoints
-  (`clientPrivileges` refuses every action), and none registers itself.
+- Opaque access tokens carry the `ghost_app_` prefix. User tokens last the
+  provider's default hour. The provider registers no scopes, `openid`
+  included, so it issues no ID tokens; an ID token would last 5 minutes. No
+  refresh token is issued. Nobody manages clients through the provider's
+  endpoints (`clientPrivileges` refuses every action), and none registers
+  itself.
 - Neither plugin's routes are mounted. Ghost issues and validates app tokens
   through the provider's server API, so every path either plugin declares is
   in `disabledPaths` (`appOAuthDisabledPaths`): token, authorize,
@@ -211,6 +221,23 @@ Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
   signature, a response that sets a session cookie resumes a pending
   authorization (there never is one), and deleting a session runs back-channel
   logout for clients that registered a URI (none does).
+- `ghostApps` (`plugins/apps.ts`, with `plugins/app-clients.ts`) is the one
+  place that knows the provider's table layout. Its server-only endpoints
+  reconcile an installation's user client and issue and validate user tokens;
+  one codec maps a client row to its installation and kind. The user client
+  is unowned, lists only a marker grant and no redirect URIs, so it is shut out
+  of every provider endpoint, and its id is lowercase because MySQL compares
+  client ids case-insensitively.
+  `test/integration/auth/app-oauth-provider.test.ts` compares its row with
+  what the provider's own create-client writes, so an upgrade that changes the
+  layout fails a test.
+- The provider checks no scopes when issuing, so Ghost holds a token to the
+  installation's approved scopes and the client's.
+- `validateAppToken` accepts a token only while the staff session it was
+  issued in exists, is verified and hasn't expired.
+- Reconciling an installation that isn't active disables its client and
+  deletes its tokens, and each security event under
+  [Revocation](#revocation) deletes the user's.
 
 The provider's per-IP rate limits don't apply: the `customStorage` limiter
 allows every path it doesn't map.
@@ -350,6 +377,14 @@ Under `better-auth`, security events go through `staff-sessions.ts` (plan §5.4)
   commits, which holds the user's rows until then.
 - The authentication reset (`POST /authentication/reset`) calls
   `revokeAllSessions` after it deletes every legacy session.
+
+Revoking sessions also deletes app tokens: `revokeUserSessions` deletes the
+user's, `revokeAllSessions` every app's, and native `/change-password` the
+user's in the same hook that deletes their legacy rows. Every event above
+goes through one of them. The delete goes through Better Auth's adapter and
+doesn't rely on token rows cascading with their staff session, which stops
+once either is stored outside MySQL. It does nothing unless the OAuth
+provider is registered.
 
 Revoking a user's sessions also deletes their legacy `sessions` rows, so a
 rollback to `legacy` (plan §8) can't revive a session a security event ended.
