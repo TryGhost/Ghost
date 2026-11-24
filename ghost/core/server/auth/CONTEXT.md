@@ -255,6 +255,12 @@ _Avoid_: system context, admin context
 - Scopes narrower than a permission aren't built yet. They will have names of
   their own, never an existing permission key, so until they land every scope
   is a permission key or a wildcard.
+- The **scopes** an app's manifest asks for are defined in
+  [App Contracts](../../../../contracts/app-contracts/CONTEXT.md), and the
+  **approved scopes** of an installation in
+  [App Installations](../services/app-installations/CONTEXT.md). Each is a
+  permission key, never a wildcard, and **resource** there means an object
+  type. The policy doesn't check them yet: Admin's bridge holds an app to them.
 - These names are reserved for app credentials that aren't built yet, so they
   aren't coined twice:
   - **User token**: what Admin holds for an app while a staff user has it

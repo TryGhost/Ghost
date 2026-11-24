@@ -66,7 +66,8 @@ _Avoid_: session id, which is not secret
 
 **Session cookie**:
 The cookie that carries the session token. Both engines use the same cookie
-name.
+name, except that under the Better Auth engine it takes a `__Secure-` prefix
+when the admin URL is HTTPS.
 
 **Admin origin**:
 The origin of the site's configured admin URL.
