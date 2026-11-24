@@ -226,6 +226,21 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
   });
 
+  it('refuses an app on the routes staff tokens are refused on', async function () {
+    const id = await installation(['post:browse']);
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+
+    for (const [method, path] of [
+      ['delete', 'db/'],
+      ['put', 'users/owner/'],
+      ['post', 'authentication/reset/'],
+    ]) {
+      const send = (agent as any)[method].bind(agent);
+      const { body } = await send(path).header('Authorization', bearer(token)).expectStatus(403);
+      assert.equal(body.errors[0].message, 'Apps are not allowed to access this endpoint', path);
+    }
+  });
+
   describe('on routes with no standard permission check', function () {
     // Each acts for the Owner in ways no scope covers
     const refusedRoutes = (ownerId: string) => [
