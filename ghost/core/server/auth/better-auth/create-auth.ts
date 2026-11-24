@@ -7,7 +7,7 @@ import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
 import { ghostSso } from './plugins/sso';
-import { appOAuthPlugins } from './plugins/apps';
+import { appOAuthDisabledPaths, appOAuthPlugins } from './plugins/apps';
 import {
   DEVICE_TRUST_COOKIE,
   ghostDeviceVerification,
@@ -107,6 +107,7 @@ export function createAuth(deps: CreateAuthDeps) {
   const adminOrigin = urlUtils.getAdminOrigin();
   // The cookie lives on the admin origin, so its security follows the admin URL
   const ssl = urlUtils.isSSL(adminOrigin);
+  const appPlugins = deps.apps ? appOAuthPlugins({ adminOrigin }) : [];
 
   return betterAuth({
     // Also Better Auth's only trusted origin, matching the legacy login-CSRF check
@@ -161,11 +162,7 @@ export function createAuth(deps: CreateAuthDeps) {
       ROUTES.changeEmail,
       ROUTES.deleteUser,
       ROUTES.signInSocial,
-      // The jwt plugin's session JWT; apps get tokens from Ghost's own endpoints. Nothing
-      // discovers the provider, so its metadata would only advertise endpoints to strangers
-      ...(deps.apps
-        ? [ROUTES.jwtToken, ROUTES.oauthServerMetadata, ROUTES.openIdConfiguration]
-        : []),
+      ...appOAuthDisabledPaths(appPlugins),
     ],
     hooks: {
       // A password change ends every other session, as PUT /users/password does
@@ -243,7 +240,7 @@ export function createAuth(deps: CreateAuthDeps) {
         emailLimiter: deps.limiters.verificationEmail,
         sendCode: deps.sendDeviceVerificationCode,
       }),
-      ...(deps.apps ? appOAuthPlugins({ adminOrigin }) : []),
+      ...appPlugins,
     ],
     telemetry: { enabled: false },
     logger: {

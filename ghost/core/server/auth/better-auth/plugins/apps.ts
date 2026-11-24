@@ -1,7 +1,9 @@
+import type { BetterAuthPlugin } from 'better-auth';
 import { jwt } from 'better-auth/plugins';
 import { oauthProvider, type OAuthOptions, type Scope } from '@better-auth/oauth-provider';
 import { ghostJwtSchema, ghostOAuthProviderSchema } from '../ghost-models';
 import { APP_TOKEN_PREFIX } from '../../app-token-prefix';
+import { ROUTES } from '../routes';
 
 /** The tables the provider and jwt plugins need; neither is registered without them. */
 export const APP_OAUTH_TABLES: readonly string[] = [
@@ -41,4 +43,23 @@ export function appOAuthPlugins(options: AppProviderOptions) {
     jwt({ schema: ghostJwtSchema, disableSettingJwtHeader: true }),
     oauthProvider(appProviderOptions(options)),
   ] as const;
+}
+
+/**
+ * The provider and jwt routes left mounted. ID tokens will need `/jwks`; Ghost issues and
+ * validates app tokens through the provider's server API, so it serves none of the rest.
+ */
+export const APP_OAUTH_MOUNTED_PATHS: readonly string[] = [ROUTES.jwks];
+
+/**
+ * Every path the plugins declare but the mounted ones, so a route an upgrade adds is disabled
+ * too. Server-only paths are included: the provider serves its metadata paths from `onRequest`.
+ */
+export function appOAuthDisabledPaths(plugins: readonly BetterAuthPlugin[]): string[] {
+  const paths = plugins.flatMap((plugin) =>
+    Object.values(plugin.endpoints ?? {}).map((endpoint) => endpoint.path),
+  );
+  return [...new Set(paths)].filter(
+    (path): path is string => !!path && !APP_OAUTH_MOUNTED_PATHS.includes(path),
+  );
 }

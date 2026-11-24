@@ -25,10 +25,7 @@ export const ROUTES = {
   deviceVerificationSend: '/device-verification/send',
   deviceVerificationVerify: '/device-verification/verify',
   // jwt plugin
-  jwtToken: '/token',
-  // @better-auth/oauth-provider
-  oauthServerMetadata: '/.well-known/oauth-authorization-server',
-  openIdConfiguration: '/.well-known/openid-configuration',
+  jwks: '/jwks',
 } as const;
 
 /** ghostDeviceVerification's paths, which an unverified session may use */

@@ -4,6 +4,10 @@ import { knex } from '../../../core/server/data/db';
 import config from '../../../core/shared/config';
 import urlUtils from '../../../core/shared/url-utils';
 import { createAuth } from '../../../core/server/auth/better-auth/create-auth';
+import {
+  APP_OAUTH_MOUNTED_PATHS,
+  appOAuthPlugins,
+} from '../../../core/server/auth/better-auth/plugins/apps';
 
 // @ts-expect-error Test utilities do not have type definitions.
 import testUtils from '../../utils';
@@ -35,6 +39,22 @@ function build({ apps }: { apps: boolean }) {
     getRequestOrigin: (headers) => headers.get('origin'),
     apps,
   });
+}
+
+type AppRoute = { method: string; path: string; serverOnly: boolean };
+
+/** Every route the provider and jwt plugins declare, one per method */
+function appRoutes(): AppRoute[] {
+  return appOAuthPlugins({ adminOrigin: urlUtils.getAdminOrigin() }).flatMap((plugin) =>
+    Object.values(plugin.endpoints).flatMap(({ path, options }) => {
+      if (!path) {
+        return [];
+      }
+      const methods = Array.isArray(options.method) ? options.method : [options.method];
+      const serverOnly = options.metadata?.SERVER_ONLY === true;
+      return methods.map((method: string) => ({ method, path, serverOnly }));
+    }),
+  );
 }
 
 describe("Better Auth's OAuth provider for apps", function () {
@@ -73,25 +93,16 @@ describe("Better Auth's OAuth provider for apps", function () {
       const auth = build({ apps: false });
       const { cookie } = await signIn(auth);
 
-      const routes = [
-        ['POST', '/oauth2/token'],
-        ['GET', '/oauth2/authorize'],
-        ['POST', '/oauth2/introspect'],
-        ['POST', '/oauth2/revoke'],
-        ['GET', '/token'],
-        ['GET', '/jwks'],
-        ['GET', '/.well-known/oauth-authorization-server'],
-      ];
-      for (const [method, path] of routes) {
+      for (const { method, path } of appRoutes()) {
         const response = await auth.handler(
-          new Request(url(path), {
+          new Request(url(path.replace(/:[^/]+/g, 'x')), {
             method,
             headers: {
               cookie,
               origin,
-              ...(method === 'POST' ? { 'content-type': 'application/x-www-form-urlencoded' } : {}),
+              ...(method === 'GET' ? {} : { 'content-type': 'application/json' }),
             },
-            ...(method === 'POST' ? { body: 'token=x' } : {}),
+            ...(method === 'GET' ? {} : { body: '{}' }),
           }),
         );
         assert.equal(response.status, 404, `${method} ${path}`);
@@ -109,18 +120,63 @@ describe("Better Auth's OAuth provider for apps", function () {
       await assert.rejects(auth.api.getOpenIdConfig(), { statusCode: 404 });
     });
 
-    it('serves no authorization server metadata, signed in or not', async function () {
+    it('serves none of the provider or jwt routes but /jwks, signed in or not', async function () {
       const auth = build({ apps: true });
       const { cookie } = await signIn(auth);
 
-      for (const path of [
-        '/.well-known/oauth-authorization-server',
-        '/.well-known/openid-configuration',
-      ]) {
-        for (const headers of [{}, { cookie }] as Array<Record<string, string>>) {
-          const response = await auth.handler(new Request(url(path), { headers }));
-          assert.equal(response.status, 404, path);
+      const disabled = appRoutes().filter(({ path }) => !APP_OAUTH_MOUNTED_PATHS.includes(path));
+      assert.ok(disabled.length > 0);
+      for (const { method, path } of disabled) {
+        const requestPath = path.replace(/:[^/]+/g, 'x');
+        for (const variant of [requestPath, `${requestPath}/`, requestPath.toUpperCase()]) {
+          for (const headers of [{}, { cookie }] as Array<Record<string, string>>) {
+            const response = await auth.handler(
+              new Request(url(variant), {
+                method,
+                headers: {
+                  origin,
+                  ...headers,
+                  ...(method === 'GET' ? {} : { 'content-type': 'application/json' }),
+                },
+                ...(method === 'GET' ? {} : { body: '{}' }),
+              }),
+            );
+            assert.equal(response.status, 404, `${method} ${variant}`);
+          }
         }
+      }
+      assert.equal((await knex('oauth_clients').count({ count: '*' }))[0].count, 0);
+    });
+
+    it('serves the public signing keys on /jwks to anyone', async function () {
+      const auth = build({ apps: true });
+      const { cookie } = await signIn(auth);
+
+      const anonymous = await auth.handler(new Request(url('/jwks')));
+      const signedIn = await auth.handler(new Request(url('/jwks'), { headers: { cookie } }));
+
+      for (const response of [anonymous, signedIn]) {
+        assert.equal(response.status, 200);
+        const body = await response.json();
+        assert.deepEqual(Object.keys(body), ['keys']);
+        for (const key of body.keys) {
+          assert.equal(key.d, undefined, 'a private key part');
+        }
+      }
+    });
+
+    it('leaves no provider or jwt route mounted that is neither disabled nor deliberately kept', async function () {
+      const auth = build({ apps: true });
+      const disabledPaths: string[] = auth.options.disabledPaths ?? [];
+
+      assert.deepEqual(APP_OAUTH_MOUNTED_PATHS, ['/jwks']);
+      for (const { path, serverOnly } of appRoutes()) {
+        if (serverOnly || APP_OAUTH_MOUNTED_PATHS.includes(path)) {
+          continue;
+        }
+        // disabledPaths compares whole paths, so it can't disable a route with a parameter
+        assert.ok(!path.includes(':'), `${path} takes a parameter`);
+        assert.ok(disabledPaths.includes(path), `${path} is mounted`);
       }
     });
 
@@ -128,26 +184,20 @@ describe("Better Auth's OAuth provider for apps", function () {
       const auth = build({ apps: true });
 
       for (const grantType of ['authorization_code', 'client_credentials', 'refresh_token']) {
-        const response = await auth.handler(
-          new Request(url('/oauth2/token'), {
-            method: 'POST',
-            headers: { 'content-type': 'application/x-www-form-urlencoded', origin },
-            body: new URLSearchParams({
+        await assert.rejects(
+          auth.api.oauth2Token({
+            body: {
               grant_type: grantType,
               client_id: 'any',
               client_secret: 'any',
               code: 'any',
               refresh_token: 'any',
-            }).toString(),
-          }),
+            },
+          } as never),
+          (err: { body?: { error?: string } }) => err.body?.error === 'unsupported_grant_type',
+          grantType,
         );
-        assert.equal(response.status, 400, grantType);
-        assert.equal((await response.json()).error, 'unsupported_grant_type', grantType);
       }
-      const authorize = await auth.handler(
-        new Request(url('/oauth2/authorize?response_type=code&client_id=any')),
-      );
-      assert.equal(authorize.status, 404);
     });
 
     it('sends no JWT on session reads and serves no session JWT', async function () {
@@ -160,27 +210,6 @@ describe("Better Auth's OAuth provider for apps", function () {
       assert.equal(session.status, 200);
       assert.equal(session.headers.get('set-auth-jwt'), null);
       assert.equal(jwtToken.status, 404);
-    });
-
-    it('registers no clients dynamically, signed in or not', async function () {
-      const auth = build({ apps: true });
-      const { cookie } = await signIn(auth);
-      const register = (headers: Record<string, string>) =>
-        auth.handler(
-          new Request(url('/oauth2/register'), {
-            method: 'POST',
-            headers: { 'content-type': 'application/json', origin, ...headers },
-            body: JSON.stringify({
-              redirect_uris: ['https://app.example/callback'],
-              token_endpoint_auth_method: 'none',
-            }),
-          }),
-        );
-
-      for (const response of [await register({}), await register({ cookie })]) {
-        assert.ok(response.status >= 400, `register answered ${response.status}`);
-      }
-      assert.equal((await knex('oauth_clients').count({ count: '*' }))[0].count, 0);
     });
   });
 });
