@@ -69,15 +69,18 @@ function isToken(token: AppSessionToken | undefined): token is AppSessionToken {
  */
 export function createAppTokenHolder({
   token,
+  receivedAt,
   onError,
 }: {
   token: AppSessionToken;
+  /** When the token arrived, by `Date.now()`, which can be well before the holder is made. */
+  receivedAt: number;
   onError: (error: unknown) => void;
 }): AppTokenHolder {
   let current = token;
   // On the browser's clock, from when the token arrived, so it doesn't matter if it differs from
-  // Ghost's. The first token arrived just before the holder was made.
-  let expiresAt = Date.now() + token.expires_in * 1000;
+  // Ghost's.
+  let expiresAt = receivedAt + token.expires_in * 1000;
   let ended = false;
   let renewal: AppTokenRenewal | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;

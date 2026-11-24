@@ -32,6 +32,7 @@ describe('createAppTokenHolder', () => {
     const onError = vi.fn();
     const holder = createAppTokenHolder({
       token: tokenExpiringIn(HOUR, 'ghost_app_first'),
+      receivedAt: Date.now(),
       onError,
     });
     return { holder, onEnded, onError, start: () => holder.start({ renew, onEnded }) };
@@ -152,6 +153,7 @@ describe('createAppTokenHolder', () => {
     const onError = vi.fn();
     const holder = createAppTokenHolder({
       token: tokenExpiringIn(HOUR, 'ghost_app_first'),
+      receivedAt: Date.now(),
       onError,
     });
     holder.start({ renew, onEnded });
@@ -205,10 +207,56 @@ describe('createAppTokenHolder', () => {
     expect(renew).toHaveBeenCalledOnce();
   });
 
+  it('counts the first token’s lifetime from when it arrived, not from when the holder was made', async () => {
+    const receivedAt = Date.now();
+    await vi.advanceTimersByTimeAsync(30 * MINUTE);
+    const renew = vi.fn(() => Promise.resolve(tokenExpiringIn(HOUR, 'ghost_app_renewed')));
+    const holder = createAppTokenHolder({
+      token: tokenExpiringIn(HOUR, 'ghost_app_first'),
+      receivedAt,
+      onError: vi.fn(),
+    });
+    holder.start({ renew, onEnded: vi.fn() });
+
+    await vi.advanceTimersByTimeAsync(20 * MINUTE - 1);
+    expect(renew).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(renew).toHaveBeenCalledOnce();
+  });
+
+  it('renews a token that ends with the staff session every 5 minutes, until Ghost refuses', async () => {
+    // Ghost issues no token that outlives the staff session behind it, which ends in 4 minutes
+    const sessionEndsAt = Date.now() + 4 * MINUTE;
+    const renew = vi.fn(() =>
+      Date.now() < sessionEndsAt
+        ? Promise.resolve(tokenExpiringIn(sessionEndsAt - Date.now(), 'ghost_app_renewed'))
+        : Promise.reject(apiError(403, { code: 'APP_STAFF_SESSION_REQUIRED' })),
+    );
+    const onEnded = vi.fn();
+    const holder = createAppTokenHolder({
+      token: tokenExpiringIn(4 * MINUTE, 'ghost_app_first'),
+      receivedAt: Date.now(),
+      onError: vi.fn(),
+    });
+    holder.start({ renew, onEnded });
+
+    // Due at once, as it expires within 10 minutes, then not again for 5 minutes, by which time
+    // the staff session has ended
+    await vi.advanceTimersByTimeAsync(0);
+    expect(renew).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(5 * MINUTE);
+    expect(renew).toHaveBeenCalledTimes(2);
+    expect(onEnded).toHaveBeenCalledOnce();
+
+    await vi.advanceTimersByTimeAsync(HOUR);
+    expect(renew).toHaveBeenCalledTimes(2);
+  });
+
   it('renews at most every 5 minutes, even for a token that’s due at once', async () => {
     const renew = vi.fn(() => Promise.resolve(tokenExpiringIn(5 * MINUTE, 'ghost_app_renewed')));
     const holder = createAppTokenHolder({
       token: tokenExpiringIn(5 * MINUTE, 'ghost_app_first'),
+      receivedAt: Date.now(),
       onError: vi.fn(),
     });
     holder.start({ renew, onEnded: vi.fn() });
@@ -242,6 +290,7 @@ describe('createAppTokenHolder', () => {
     const renew = vi.fn(() => Promise.resolve(tokenExpiringIn(HOUR, 'ghost_app_renewed')));
     const holder = createAppTokenHolder({
       token: tokenExpiringIn(365 * 24 * HOUR, 'ghost_app_first'),
+      receivedAt: Date.now(),
       onError: vi.fn(),
     });
     holder.start({ renew, onEnded: vi.fn() });

@@ -197,6 +197,9 @@ function useAppTitle(appName: string, title: string | undefined) {
   usePageTitle(title === undefined ? undefined : title ? `${title} · ${appName}` : appName);
 }
 
+/** A session with when it arrived, by `Date.now()`, which its token's lifetime counts from. */
+type ReceivedSession<Session extends AppSession = AppSession> = Session & { receivedAt: number };
+
 const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
 
 /**
@@ -244,7 +247,7 @@ const NO_INSETS: SafeArea = { top: 0, right: 0, bottom: 0, left: 0 };
  * component renders the session's state and keeps the session updated with Admin's location.
  */
 const AppFrame: React.FC<{
-  session: ActiveAppSession;
+  session: ReceivedSession<ActiveAppSession>;
   site: SiteData;
   user: User;
   timezone: string;
@@ -258,7 +261,11 @@ const AppFrame: React.FC<{
   // never reloads the frame. A renewal Ghost refuses ends the session the way a revision change
   // does.
   const [tokenHolder] = useState(() =>
-    createAppTokenHolder({ token: session.token, onError: reportAppsError }),
+    createAppTokenHolder({
+      token: session.token,
+      receivedAt: session.receivedAt,
+      onError: reportAppsError,
+    }),
   );
   useEffect(() => {
     tokenHolder.start({
@@ -459,7 +466,7 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  * to the URL the frame starts from; `isGhostHost` describes what it doesn't cover.
  */
 const ActiveApp: React.FC<{
-  session: ActiveAppSession;
+  session: ReceivedSession<ActiveAppSession>;
   onEnded: () => void;
 }> = ({ session, onEnded }) => {
   const { installation } = session;
@@ -630,7 +637,7 @@ const NotInstalled: React.FC = () => (
  */
 function useAppSession(installationId: string): {
   settled: boolean;
-  session?: AppSession;
+  session?: ReceivedSession;
   error?: unknown;
   /** Ends this session and starts a new one, for example after approving changes. */
   restart: () => void;
@@ -642,9 +649,12 @@ function useAppSession(installationId: string): {
   // retried, and is removed once nothing renders it.
   const { data, error, isPending } = useQuery({
     queryKey: ['app-session', installationId, generation],
-    // `null` when there's nothing to open, because a query can't return `undefined`.
-    queryFn: async (): Promise<AppSession | null> =>
-      (await start(installationId)).app_sessions[0] ?? null,
+    // `null` when there's nothing to open, because a query can't return `undefined`. Stamped as
+    // it arrives: the frame that holds its token can mount much later.
+    queryFn: async (): Promise<ReceivedSession | null> => {
+      const session = (await start(installationId)).app_sessions[0];
+      return session ? { ...session, receivedAt: Date.now() } : null;
+    },
     staleTime: Infinity,
     gcTime: 0,
     retry: false,
