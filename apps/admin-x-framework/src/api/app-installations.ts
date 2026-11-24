@@ -177,6 +177,10 @@ export const useCreateAppToken = createMutation<
   method: 'POST',
   path: ({ id }) => `/apps/installations/${id}/tokens/`,
   body: ({ revision }) => ({ app_tokens: [{ revision }] }),
+  // Every app call refused for its token waits on the renewal, so a stalled one mustn't hold
+  // them. The token holder backs off and retries itself.
+  timeout: 10_000,
+  retry: false,
 });
 
 export const useAddAppInstallation = createMutation<
