@@ -9,7 +9,6 @@ import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
-import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const CallToActionNodeComponent = ({
@@ -157,7 +156,6 @@ export const CallToActionNodeComponent = ({
     React.useEffect(() => {
         htmlEditor.setEditable(isEditing);
     }, [isEditing, htmlEditor]);
-    useEditModeAfterReadOnly(isEditing, htmlEditor, sponsorLabelHtmlEditor);
 
     return (
         <>
