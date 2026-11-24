@@ -150,7 +150,8 @@ async function toPreGraduationDatabase() {
   for (const account of accounts) {
     await db.knex('users').where({ id: account.user_id }).update({ password: account.password });
   }
-  // Newer than the auth tables, and some reference them; boot creates them again
+  // Newer than the auth tables and some reference them, so they go first. The
+  // Ghost these tests boot doesn't create in-development tables, so they stay gone
   for (const table of getInDevelopmentTables().toReversed()) {
     await db.knex.schema.dropTableIfExists(table);
   }
