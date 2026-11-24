@@ -103,9 +103,9 @@ catalog:
   '@tryghost/logging': 6.1.0
   '@tryghost/mg-clean-html': 0.12.7
   '@tryghost/metrics': 3.8.0
-  '@tryghost/mongo-knex': 0.11.2
-  '@tryghost/nql': 0.13.5
-  '@tryghost/nql-lang': 0.7.1
+  '@tryghost/mongo-knex': 0.12.0
+  '@tryghost/nql': 0.13.6
+  '@tryghost/nql-lang': 0.7.2
   '@tryghost/pretty-cli': 3.4.4
   '@tryghost/promise': 2.4.0
   '@tryghost/request': 4.1.0

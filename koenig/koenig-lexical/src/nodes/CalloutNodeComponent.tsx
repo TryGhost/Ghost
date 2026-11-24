@@ -9,6 +9,7 @@ import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {sanitizeHtml} from '../utils/sanitize-html';
 import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
+import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, backgroundColor, calloutEmoji}) {
@@ -72,6 +73,7 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
     React.useEffect(() => {
         textEditor.setEditable(isEditing);
     }, [isEditing, textEditor]);
+    useEditModeAfterReadOnly(isEditing, textEditor);
 
     return (
         <>

@@ -406,6 +406,20 @@ describe('Batch sending tests', function () {
     );
   });
 
+  // Sending puts brackets around a recipient filter before it adds the newsletter's own
+  // clauses, so a filter that arrives in brackets ends up inside two pairs of them
+  it('Only sends to the members a recipient filter in brackets matches', async function () {
+    await testEmailBatches(
+      {
+        mobiledoc: mobileDocExample, // = same content for free and paid, no need to split batches
+      },
+      '(label:label-1)',
+      [
+        { segment: null, recipients: 1 }, // one subscribed member has the label
+      ],
+    );
+  });
+
   it('Only sends to members with a specific label and paid content', async function () {
     await testEmailBatches(
       {

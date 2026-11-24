@@ -8,10 +8,12 @@ import {getVisibilityToggle} from './useVisibilityToggle';
 import {isCardVisibilityAvailable} from '../utils/visibility';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {NodeKey} from 'lexical';
+import type {ToggleVisibility, VisibilityToggleKey} from '../utils/visibility';
 
 // Whether the editor offers visibility settings for this card: it has a
 // visibility property and the host supports visibility for its type.
-export function useCardVisibilityAvailable(nodeKey) {
+export function useCardVisibilityAvailable(nodeKey: NodeKey) {
     const [editor] = useLexicalComposerContext();
     const {cardConfig} = React.useContext(KoenigComposerContext);
 
@@ -28,7 +30,7 @@ export function useCardVisibilityAvailable(nodeKey) {
 // Returns the contents of a card's Visibility tab while the card is being
 // edited, or null when it isn't or the card has no visibility settings.
 // `showVisibilitySettings` is true when the panel should open on that tab.
-export function useCardVisibilitySettings(nodeKey, {hiddenToggles = []} = {}) {
+export function useCardVisibilitySettings(nodeKey: NodeKey, {hiddenToggles = []}: {hiddenToggles?: VisibilityToggleKey[]} = {}) {
     const [editor] = useLexicalComposerContext();
     const {isEditing, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
@@ -49,9 +51,9 @@ export function useCardVisibilitySettings(nodeKey, {hiddenToggles = []} = {}) {
 
     // Nested text editors can leave a range selection in the parent editor.
     // Restore the card selection before updating, as the card's other toggles do.
-    const handleToggleVisibility = (type, key, value) => {
+    const handleToggleVisibility: ToggleVisibility = (groupKey, toggleKey, value) => {
         setEditing(true);
-        toggleVisibility(type, key, value);
+        toggleVisibility(groupKey, toggleKey, value);
     };
 
     return {

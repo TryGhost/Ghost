@@ -1,29 +1,21 @@
-import type { Meter } from '../../lib/tracing/meter';
 import type { Tracer } from '../../lib/tracing/tracer';
 
-// The span names, attribute names and counter names for segments, which dashboards query. The
-// service and its repository report what happened, and this module decides how it is recorded.
+// The span names and attribute names for segments, which dashboards query. The service reports
+// what happened, and this module decides how it is recorded.
 
 /**
  * Why a change to a segment was rejected:
  *
  * - `not_found`: no segment has the id in the request.
- * - `name_taken`: another saved member view already has the name.
- * - `filter_taken`: another segment already has the new segment's filter.
+ * - `name_taken`: another segment already has the name, or a name the database counts as the
+ *   same.
  * - `filter_changed`: the request has a filter that isn't the segment's own.
- * - `stored_views_too_long`: the saved views would exceed the maximum length of their store.
  *
- * Any other error is a failure, including stored views that are invalid: the request didn't
- * cause that and can't fix it.
+ * Any other error is a failure.
  */
-export type SegmentRejection =
-  | 'not_found'
-  | 'name_taken'
-  | 'filter_taken'
-  | 'filter_changed'
-  | 'stored_views_too_long';
+export type SegmentRejection = 'not_found' | 'name_taken' | 'filter_changed';
 
-/** What a command that changes a segment, and the repository the command uses, report. */
+/** What a command that changes a segment reports. */
 export interface SegmentChangeAttempt {
   /**
    * Call before throwing the error that rejects the change. The span still fails with that
@@ -43,9 +35,7 @@ const CHANGE_SPANS = {
 
 export type SegmentsTracking = ReturnType<typeof segmentsTracking>;
 
-export function segmentsTracking({ tracer, meter }: { tracer: Tracer; meter: Meter }) {
-  const failedCacheRefreshes = meter.createCounter('segments.failed_settings_cache_refreshes');
-
+export function segmentsTracking({ tracer }: { tracer: Tracer }) {
   return {
     /**
      * Records one span for each command that changes a segment. When the command opens its own
@@ -67,14 +57,6 @@ export function segmentsTracking({ tracer, meter }: { tracer: Tracer; meter: Met
           },
         }),
       );
-    },
-
-    /**
-     * Counts a failed refresh of the settings cache after a change to a segment. This is a
-     * counter, not a span, because the refresh runs after the command's span has ended.
-     */
-    settingsCacheRefreshFailed(): void {
-      failedCacheRefreshes.add(1);
     },
   };
 }

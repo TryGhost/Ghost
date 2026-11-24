@@ -119,3 +119,64 @@ describe('compareManifests', function () {
     ]);
   });
 });
+
+describe('compareManifests, for scopes', function () {
+  const POSTS = ['post:browse', 'post:read'];
+  const before = manifestOf(manifest({ scopes: POSTS }));
+  const withScopes = (scopes: unknown) =>
+    compareManifests(before, manifestOf(manifest({ scopes })));
+
+  it('needs approval for a new scope', function () {
+    assert.deepEqual(withScopes([...POSTS, 'post:edit', 'tag:browse']), {
+      changes: [
+        { kind: 'scope', scope: 'post:edit', change: 'added' },
+        { kind: 'scope', scope: 'tag:browse', change: 'added' },
+      ],
+      requiresApproval: true,
+    });
+  });
+
+  it('narrows access at once when a scope goes', function () {
+    assert.deepEqual(withScopes(['post:browse']), {
+      changes: [{ kind: 'scope', scope: 'post:read', change: 'removed' }],
+      requiresApproval: false,
+    });
+    assert.equal(withScopes([]).requiresApproval, false);
+  });
+
+  it('finds no change when only the order differs', function () {
+    assert.deepEqual(withScopes(['post:read', 'post:browse']), {
+      changes: [],
+      requiresApproval: false,
+    });
+  });
+
+  it('lists field changes by path, then scope changes in the registry’s order', function () {
+    assert.deepEqual(
+      compareManifests(
+        before,
+        manifestOf(manifest({ scopes: [], name: 'Podcasts', accent_color: '#000000' })),
+      ).changes,
+      [
+        { kind: 'field', path: 'accent_color', requires_approval: false },
+        { kind: 'field', path: 'name', requires_approval: true },
+        { kind: 'scope', scope: 'post:browse', change: 'removed' },
+        { kind: 'scope', scope: 'post:read', change: 'removed' },
+      ],
+    );
+  });
+
+  it('adds every scope and changes no field without an approved manifest, as at install', function () {
+    assert.deepEqual(compareManifests(undefined, before), {
+      changes: [
+        { kind: 'scope', scope: 'post:browse', change: 'added' },
+        { kind: 'scope', scope: 'post:read', change: 'added' },
+      ],
+      requiresApproval: true,
+    });
+    assert.deepEqual(compareManifests(undefined, approved), {
+      changes: [],
+      requiresApproval: false,
+    });
+  });
+});

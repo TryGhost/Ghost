@@ -49,7 +49,6 @@ function UserMenuProfile() {
 /** Help and Feedback, which Admin 7 moves here from the sidebar. */
 function UserMenuHelp({ closeMenu }: { closeMenu: () => void }) {
   const { data: currentUser } = useCurrentUser();
-  const inAppSupport = useFeatureFlag('inAppSupport');
   const {
     isAvailable: featurebaseAvailable,
     openFeedbackWidget,
@@ -58,7 +57,7 @@ function UserMenuHelp({ closeMenu }: { closeMenu: () => void }) {
   const { isMobile, setOpenMobile } = useSidebar();
   const showFeedback = currentUser && featurebaseAvailable && !isContributorUser(currentUser);
   // On desktop, the frame's top bar has Help instead (see AdminFrameTopBar)
-  const helpInTopBar = inAppSupport && !isMobile;
+  const helpInTopBar = !isMobile;
 
   // Leaving the menu for another tab or the feedback widget also closes the mobile sheet
   const closeMobileSidebar = () => {
@@ -72,7 +71,7 @@ function UserMenuHelp({ closeMenu }: { closeMenu: () => void }) {
       {!helpInTopBar && (
         <UserMenuItem onSelect={closeMobileSidebar}>
           <a
-            data-ghost-help={inAppSupport ? '' : undefined}
+            data-ghost-help=""
             href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
             rel="noopener noreferrer"
             target="_blank"

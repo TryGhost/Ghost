@@ -43,6 +43,7 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   "accent_color": "#ff5500",
   "icon": { "name": "audio-lines" },
   "surfaces": [{ "type": "admin_page", "url": "/admin" }],
+  "scopes": ["post:browse", "post:edit"],
   "manifest_url": "https://podcast.example.com/ghost-app.json",
   "identity_key": { "kty": "OKP", "crv": "Ed25519", "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo" },
   "backend_key": { "kty": "OKP", "crv": "Ed25519", "x": "H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk" },
@@ -92,6 +93,11 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   machine itself. A production site may run a development build to test it.
 - `surfaces` lists what the app asks for. Only `admin_page` exists today, at
   most once.
+- `scopes` lists the permission keys the app needs from the site, such as
+  `["post:browse", "post:edit"]`; `[]` asks for nothing. The scope registry,
+  `src/scopes.ts`, is the one list of scopes Ghost knows and the words Admin
+  shows for them; the field's exact rules are in
+  `src/manifest/scopes-schema.ts` and its tests.
 - URLs must be `https`. `localhost` and other addresses of the machine itself are
   accepted, over `http` too, only when Ghost runs in development. The manifest
   still can't be on Ghost's own host, on any port: serve the app from a name of
@@ -205,8 +211,16 @@ compareManifests(approved, next);
 // }
 ```
 
-Each change has a `kind`, which is `field`, and its path. Ghost serves changes
-in this shape: `ManifestChangeSchema`, from `/manifest`, reads one back.
+Each change has a `kind`: a `field` by its path, or one `scope`.
+`ManifestChangeSchema`, from `/manifest`, reads a stored change back, and the
+root entry point tells them apart without zod: `isFieldChange`,
+`isScopeChange` and `splitChanges`.
+
+Scopes are compared by meaning, not field by field. Adding a scope needs
+approval; removing one applies at once, and reordering them changes nothing.
+At install every scope counts as added. `approvedScopes` gives the scopes an
+approval grants, and `describeScopes` words scopes the way the review screen
+shows them.
 
 ## Identity
 
@@ -322,29 +336,27 @@ What Admin sends has no schema, because Admin builds it and never parses it;
 what a page sends does, and those schemas build on the same rules, so both
 sides read a path, a header or a refusal the same way.
 
-`fetch` takes an Admin API path, never a URL. Admin checks the request with
-`checkAdminApiRequest({ path, method, body }, apiRoot)`, which resolves the path
-against the Admin API root and returns the URL to request and the allowlist
-group that allows it, or `invalid_path` for anything that leaves the root and
-`blocked` for anything else it refuses, with a `detail` naming the method and
-path or what was refused. `ADMIN_API_ALLOWLIST` lists the routes apps can
-reach, by method, grouped by resource and then under the scope registry's
-names; its header comment says what the security review (BER-3992) must look
-at. The scopes, their resources and the words Admin shows for them are in the
-scope registry, `src/scopes.ts`, which the root entry point exports. Writes of
-posts, pages and tags are also checked for code injection and mobiledoc
-(`content.ts`). It all stands in for apps' own token.
+`fetch` takes an Admin API path, never a URL. Admin checks each request with
+`checkAdminApiRequest({ path, method, body }, apiRoot, approvedScopes)`, which
+returns the URL to request, or the reason it refused. An app can only reach
+the routes in `ADMIN_API_ALLOWLIST`, and only the routes, includes and sorts
+its installation's approved scopes cover. Writes of posts, pages and tags are
+also checked for code injection and mobiledoc (`content.ts`). It all stands in
+for apps' own token until the server checks what an app does. The exact rules,
+and what the security review must look at, are in the header of
+`src/bridge/allowlist.ts` and in `src/bridge/resolve.ts`.
 
 ```ts
 import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
 
 const root = new URL('https://site.example/ghost/api/admin/');
-checkAdminApiRequest({ path: '/posts/?limit=5' }, root);
-// { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/', group: { scope: 'post:browse', … } }
-checkAdminApiRequest({ path: '/../content/' }, root); // { problem: 'invalid_path' }
-checkAdminApiRequest({ path: '/db/' }, root);
+const approved = new Set(['post:browse', 'post:add']);
+checkAdminApiRequest({ path: '/posts/?limit=5' }, root, approved);
+// { url: …/ghost/api/admin/posts/?limit=5&include=authors, pathname: '/posts/', group: { scope: 'post:browse', … } }
+checkAdminApiRequest({ path: '/../content/' }, root, approved); // { problem: 'invalid_path' }
+checkAdminApiRequest({ path: '/db/' }, root, approved);
 // { problem: 'blocked', pathname: '/db/', detail: "Apps can't use GET /db/" }
-checkAdminApiRequest({ path: '/posts/', method: 'POST', body: '{"posts":[{"codeinjection_head":""}]}' }, root);
+checkAdminApiRequest({ path: '/posts/', method: 'POST', body: '{"posts":[{"codeinjection_head":""}]}' }, root, approved);
 // { problem: 'blocked', …, detail: "Apps can't send codeinjection_head to POST /posts/" }
 ```
 

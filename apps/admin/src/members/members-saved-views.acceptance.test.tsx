@@ -147,6 +147,36 @@ describe('Members saved views', () => {
 
     await membersScreen.viewPopoverButton('Save').click();
 
+    // Two views can have one filter, so the new view is saved beside the one that arrived.
+    await expect.element(sidebarScreen.navLink('Gold')).toBeVisible();
+    expect(sentWrites(segmentsApi)).toEqual([
+      {
+        method: 'POST',
+        path: '/segments/',
+        body: { segments: [{ name: 'Gold', filter: vipFilter }] },
+      },
+    ]);
+    await expect.element(sidebarScreen.navLink('VIPs')).toBeVisible();
+  });
+
+  it('shows the rejection of a server that lets no two views share a filter', async () => {
+    vipMembers();
+    // A version of Ghost from before segments had ids of their own.
+    const segmentsApi = fakeSegmentWrites({ filtersAreUnique: true });
+    const releaseSegments = holdSegmentsList();
+    await renderAdminApp(vipRoute, withSavedViews(vips));
+
+    try {
+      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Save view');
+      await membersScreen.manageViewButton().click();
+      await membersScreen.viewNameInput().fill('Gold');
+    } finally {
+      releaseSegments();
+    }
+    await expect.element(sidebarScreen.navLink('VIPs')).toBeVisible();
+
+    await membersScreen.viewPopoverButton('Save').click();
+
     await expect
       .element(membersScreen.dialog())
       .toHaveTextContent('A view with this filter already exists');
@@ -413,8 +443,8 @@ describe('Members saved views', () => {
       await expect(settingsApi).toHaveEditedSettings([
         {
           key: 'shared_views',
+          // The setting holds the views of the posts list alone: a member view is a segment.
           value: JSON.stringify([
-            vips,
             {
               name: 'Members only',
               route: 'posts',

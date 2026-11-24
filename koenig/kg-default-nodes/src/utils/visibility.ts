@@ -6,9 +6,25 @@ export const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped + gift
 export const FREE_MEMBERS_SEGMENT = 'status:free';
 export const NO_MEMBERS_SEGMENT = '';
 
-const WEB_SEGMENTS = [NO_MEMBERS_SEGMENT, ALL_MEMBERS_SEGMENT, FREE_MEMBERS_SEGMENT, PAID_MEMBERS_SEGMENT];
+export type MemberSegment =
+    | typeof NO_MEMBERS_SEGMENT
+    | typeof ALL_MEMBERS_SEGMENT
+    | typeof FREE_MEMBERS_SEGMENT
+    | typeof PAID_MEMBERS_SEGMENT;
 
-const DEFAULT_VISIBILITY = {
+const MEMBER_SEGMENTS: readonly unknown[] = [NO_MEMBERS_SEGMENT, ALL_MEMBERS_SEGMENT, FREE_MEMBERS_SEGMENT, PAID_MEMBERS_SEGMENT];
+
+export function isMemberSegment(value: unknown): value is MemberSegment {
+    return MEMBER_SEGMENTS.includes(value);
+}
+
+// A card's audiences in the current format, with every field present
+export interface RenderedVisibility {
+    web: {nonMember: boolean; memberSegment: MemberSegment};
+    email: {memberSegment: MemberSegment};
+}
+
+const DEFAULT_VISIBILITY: RenderedVisibility = {
     web: {
         nonMember: true,
         memberSegment: ALL_MEMBERS_SEGMENT
@@ -23,7 +39,7 @@ function isNullish(value: unknown) {
 }
 
 // ensure we always work with a deep copy to avoid accidental ref mutations
-export function buildDefaultVisibility(): typeof DEFAULT_VISIBILITY {
+export function buildDefaultVisibility(): RenderedVisibility {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
 }
 
@@ -128,13 +144,13 @@ export function getEmailMediaHref(src: string, visibility: Visibility | undefine
 // memberSegment: 'status:free,status:-free' = everyone
 // memberSegment: 'status:free' = free members
 // memberSegment: 'status:-free' = paid + comped + gift members
-export function migrateOldVisibilityFormat(visibility: Visibility) {
+export function migrateOldVisibilityFormat(visibility: Visibility): Visibility {
     if (!visibility || !isOldVisibilityFormat(visibility)) {
         return visibility;
     }
 
     // deep clone to avoid mutating the original object
-    const newVisibility = JSON.parse(JSON.stringify(visibility));
+    const newVisibility: Visibility = JSON.parse(JSON.stringify(visibility));
 
     // ensure we have expected objects ready to populate
     newVisibility.web ??= {};
@@ -169,22 +185,24 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
     return newVisibility;
 }
 
-// The audiences a card is rendered for. Only Ghost's own web segments and a
-// true or false visitor setting are valid; any other value hides the card on the web.
-export function getRenderedVisibility(visibility: Visibility | undefined) {
+// The audiences a card is rendered for. Only Ghost's own member segments and a
+// true or false visitor setting are valid. Any other web value hides the card on
+// the web, and any other email segment sends it to no-one, which is how the email
+// service already treats segments it doesn't recognise.
+export function getRenderedVisibility(visibility: Visibility | undefined): RenderedVisibility {
     const migrated = visibility ? migrateOldVisibilityFormat(visibility) : buildDefaultVisibility();
 
-    const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
-    const storedWeb = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
-    const validSegment = WEB_SEGMENTS.includes(storedWeb.memberSegment as string);
+    const {nonMember, memberSegment: webSegment} = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
+    const {memberSegment: emailSegment} = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
+    const validWebSegment = isMemberSegment(webSegment);
 
     return {
         web: {
-            nonMember: validSegment && storedWeb.nonMember === true,
-            memberSegment: validSegment ? storedWeb.memberSegment as string : NO_MEMBERS_SEGMENT
+            nonMember: validWebSegment && nonMember === true,
+            memberSegment: validWebSegment ? webSegment : NO_MEMBERS_SEGMENT
         },
         email: {
-            memberSegment: email.memberSegment as string
+            memberSegment: isMemberSegment(emailSegment) ? emailSegment : NO_MEMBERS_SEGMENT
         }
     };
 }
@@ -213,7 +231,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
             return originalRenderOutput;
         }
 
-        return _renderWithEmailVisibility(document, _getRenderContent(originalRenderOutput), email as {memberSegment: string});
+        return _renderWithEmailVisibility(document, _getRenderContent(originalRenderOutput), email);
     }
 
     const isNotVisibleOnWeb =
@@ -229,7 +247,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
         web.memberSegment !== ALL_MEMBERS_SEGMENT;
 
     if (hasWebVisibilityRestrictions) {
-        return _renderWithWebVisibility(document, _getRenderContent(originalRenderOutput), web as {nonMember: boolean; memberSegment: string});
+        return _renderWithWebVisibility(document, _getRenderContent(originalRenderOutput), web);
     }
 
     return originalRenderOutput;
@@ -259,7 +277,7 @@ function _getRenderContent({element, type}: ExportDOMOutput) {
     }
 }
 
-function _renderWithEmailVisibility(document: Document, content: string, emailVisibility: {memberSegment: string}): ExportDOMOutput<'html'> {
+function _renderWithEmailVisibility(document: Document, content: string, emailVisibility: RenderedVisibility['email']): ExportDOMOutput<'html'> {
     const {memberSegment} = emailVisibility;
     const container = document.createElement('div');
     container.innerHTML = content;
@@ -268,7 +286,7 @@ function _renderWithEmailVisibility(document: Document, content: string, emailVi
     return {element: container, type: 'html' as const};
 }
 
-function _renderWithWebVisibility(document: Document, content: string, webVisibility: {nonMember: boolean; memberSegment: string}): ExportDOMOutput<'value'> {
+function _renderWithWebVisibility(document: Document, content: string, webVisibility: RenderedVisibility['web']): ExportDOMOutput<'value'> {
     const {nonMember, memberSegment} = webVisibility;
     const wrappedContent = `\n<!--kg-gated-block:begin nonMember:${nonMember} memberSegment:"${memberSegment}" -->${content}<!--kg-gated-block:end-->\n`;
     const textarea = document.createElement('textarea');

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ADMIN_API_ALLOWLIST, findAllowedAdminApiRoute } from '../../src/bridge/allowlist.ts';
 import { FETCH_METHODS, type FetchMethod } from '../../src/bridge/rules.ts';
-import { APP_SCOPES, isAppPermissionKey } from '../../src/scopes.ts';
+import { APP_PERMISSION_KEYS, APP_SCOPES, isAppPermissionKey } from '../../src/scopes.ts';
 
 const ID = '5ddc9141c35e7700383b2937';
 
@@ -32,6 +32,17 @@ describe('the Admin API allowlist', () => {
     expect(GROUPS.filter((group) => group.scope === null).flatMap((group) => group.routes)).toEqual(
       ['GET /site'],
     );
+  });
+
+  // Otherwise a scope could be declared and approved, and grant nothing.
+  it('opens something for every scope in the registry: a route, an include or a sort', () => {
+    const opened = new Set([
+      ...GROUPS.map((group) => group.scope),
+      ...RESOURCES.flatMap(([, resource]) => Object.values(resource.fieldScopes ?? {})),
+    ]);
+    for (const name of APP_PERMISSION_KEYS) {
+      expect(opened.has(name), name).toBe(true);
+    }
   });
 
   it('keeps each scope to the methods its action allows', () => {

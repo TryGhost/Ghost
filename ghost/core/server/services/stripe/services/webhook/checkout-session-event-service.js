@@ -504,10 +504,15 @@ module.exports = class CheckoutSessionEventService {
       attempt,
     });
 
-    if (checkoutType !== 'upgrade') {
-      const ghostSignupContext = /** @type {SignupContext | undefined} */ (
-        session.metadata?.ghostSignupContext
-      );
+    const ghostSignupContext = /** @type {SignupContext | undefined} */ (
+      session.metadata?.ghostSignupContext
+    );
+    // The client sets checkoutType; Ghost sets the signup context when it creates the session.
+    // When Ghost marked the buyer as having no guaranteed sign-in path, the signup email goes out
+    // even on an upgrade.
+    const buyerNeedsMagicLinkEmail = ghostSignupContext === SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
+
+    if (checkoutType !== 'upgrade' || buyerNeedsMagicLinkEmail) {
       const shouldSkipSignupEmailWhenWelcomeEmailActive =
         canWelcomeEmailReplaceSignupPaidEmail(ghostSignupContext);
 

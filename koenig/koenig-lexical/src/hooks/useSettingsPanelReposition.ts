@@ -144,11 +144,13 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
             return;
         }
         const containerRect = cardElement.getBoundingClientRect();
+        // positions are relative to the card when it has a transform, see getCardOrigin
+        const origin = getCardOrigin(cardElement);
 
         if (isMobile()) {
             // Mobile behaviour: position below card
-            const x = window.innerWidth / 2 - panelElem.offsetWidth / 2;
-            const y = containerRect.bottom + CARD_SPACING;
+            const x = window.innerWidth / 2 - panelElem.offsetWidth / 2 - origin.x;
+            const y = containerRect.bottom + CARD_SPACING - origin.y;
             return keepWithinSpacingOnDrag(panelElem, {x, y});
         }
 
@@ -159,12 +161,12 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
         // if we already have top set, leave it so that toggling additional settings doesn't cause the panel to jump (unless it would be offscreen)
         const containerMiddle = containerRect.top + (visibleHeight / 2);
 
-        let y = containerMiddle - (panelHeight) / 2;
+        let y = containerMiddle - (panelHeight) / 2 - origin.y;
 
         // position to right of panel
-        let x = containerRect.right + CARD_SPACING;
+        let x = containerRect.right + CARD_SPACING - origin.x;
 
-        return keepWithinSpacingOnResize(panelElem, {x, y, origin: getCardOrigin(cardElement)});
+        return keepWithinSpacingOnResize(panelElem, {x, y, origin});
     }, [positionToRef]);
 
     const onResize = useCallback((panelElem) => {

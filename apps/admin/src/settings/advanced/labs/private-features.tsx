@@ -96,12 +96,6 @@ const features: Feature[] = [
     flag: 'apps',
   },
   {
-    title: 'In-app support',
-    description:
-      'Open Help in a sidebar inside Admin instead of a new tab. Needs a host script that provides the support app.',
-    flag: 'inAppSupport',
-  },
-  {
     title: 'Editor presence polling',
     description:
       'Record which staff have a post open in the editor and poll for it. Shows nothing yet.',
@@ -123,6 +117,12 @@ const features: Feature[] = [
     title: 'Comments analytics',
     description: 'Show comment volume, top posts and top commenters beside the comments list.',
     flag: 'commentsAnalytics',
+  },
+  {
+    title: 'OAuth bridge',
+    description:
+      'Connect Stripe through account.ghost.org, which sends the connection back to Admin, instead of pasting a secure key.',
+    flag: 'oauthBridge',
   },
 ];
 

@@ -91,9 +91,9 @@ me.users[0].accessibility = JSON.stringify({whatsNew: {lastSeenDate: "2025-01-01
 await renderAdminApp("/tags", {boot: {browseMe: {response: me}}});
 ```
 
-Boot responses are STATELESS — a canned reply per request, nothing is stored — with two exceptions. `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write). The `shared_views` setting is stored, as described next.
+Boot responses are STATELESS — a canned reply per request, nothing is stored — with two exceptions. `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write). Saved views are stored, as described next.
 
-The fake stores the `shared_views` setting in `shared-views.ts`. Ghost serves the saved member views in it through both `/settings/` and `/segments/`, so the fake keeps one copy for both: `browseSegments` lists the member views in the `shared_views` value of the test's `browseSettings` response, with ids derived from each view's filter as Ghost derives them, and a `shared_views` saved through `fakeEditSettings` replaces that value for the rest of the test, in later `GET /settings/` responses and the PUT's own echo too. Seed saved views with `withSavedViews(...)`.
+The fake stores saved views in `shared-views.ts`, in the two places Ghost keeps them. The views of the posts and pages lists are entries of the `shared_views` setting, which `/settings/` serves: a `shared_views` saved through `fakeEditSettings` replaces that value for the rest of the test, in later `GET /settings/` responses and the PUT's own echo too. The saved member views are segments, which `/segments/` serves from a store of their own, each with the id it was given when it was added, which it keeps. Ghost doesn't read the setting for member views, and neither does the fake. Seed saved views of every kind with `withSavedViews(...)`: the fake stores the member views among them as segments and the rest in the setting.
 
 ## Faking a resource that has no fake yet
 
