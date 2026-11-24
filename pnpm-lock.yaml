@@ -2203,7 +2203,11 @@ importers:
         specifier: 6.1.0
         version: 6.1.0(supports-color@10.2.2)
 
-  framework/kernel: {}
+  framework/kernel:
+    dependencies:
+      knex:
+        specifier: 'catalog:'
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
 
   ghost:
     dependencies:

@@ -494,6 +494,21 @@ module.exports = {
       from: { pathNot: '^ghost/bootstrap/|^framework/foundry/' },
       to: { path: '^framework/foundry/' },
     },
+    {
+      name: 'shared-is-handed-the-foundation',
+      comment:
+        'ghost/shared is handed config, the logger and the database. It imports none of them, nor the bootstrap that holds them.',
+      severity: 'error',
+      from: { path: '^ghost/shared/' },
+      to: {
+        path: [
+          '^ghost/bootstrap/',
+          '^ghost/core/shared/config/',
+          '^ghost/core/server/data/db/',
+          '(^|/)node_modules/@tryghost/logging/',
+        ],
+      },
+    },
     // ============================================================
     // shared/ must not require server/* or frontend/*
     // ============================================================

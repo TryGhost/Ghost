@@ -6,5 +6,8 @@
   "type": "module",
   "exports": {
     "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "knex": "catalog:"
   }
 }
