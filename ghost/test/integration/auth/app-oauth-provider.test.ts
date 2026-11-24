@@ -429,6 +429,7 @@ describe("Better Auth's OAuth provider for apps", function () {
 
       const before = Date.now();
       const token = await issue(auth, { id, sessionId: session.id });
+      const after = Date.now();
       const rows = await knex('oauth_access_tokens');
       const validated = await validate(auth, token.accessToken);
 
@@ -446,8 +447,10 @@ describe("Better Auth's OAuth provider for apps", function () {
         0,
       );
       assert.equal(token.expiresIn, 3600);
-      const lifetime = new Date(rows[0].expires_at).getTime() - before;
-      assert.ok(lifetime > 3590_000 && lifetime <= 3601_000, `lifetime ${lifetime}`);
+      // Issued in whole seconds, between the two timestamps
+      const expiresAt = new Date(rows[0].expires_at).getTime();
+      assert.ok(expiresAt >= before - 1000 + 3600_000, `expires ${expiresAt - before}ms after`);
+      assert.ok(expiresAt <= after + 3600_000, `expires ${expiresAt - after}ms after`);
       assert.deepEqual(validated, {
         installationId: id,
         userId: owner.id,
@@ -565,7 +568,7 @@ describe("Better Auth's OAuth provider for apps", function () {
       assert.ok(new Date(row.expires_at).getTime() <= sessionExpiresAt.getTime());
     });
 
-    it('refuses a token once its session, client or installation is gone', async function () {
+    it('refuses a token once its session is gone or its client is disabled or gone', async function () {
       const auth = build({ apps: true });
       const id = installationId();
       await auth.api.reconcileAppClient({
@@ -576,12 +579,31 @@ describe("Better Auth's OAuth provider for apps", function () {
       await knex('user_sessions').del();
       assert.equal(await validate(auth, signedOut.accessToken), null);
 
+      // Disabled behind reconcile's back, so the token row is still there
+      const disabled = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+      await knex('oauth_clients')
+        .where({ client_id: userClientId(id) })
+        .update({ disabled: true });
+      assert.equal(await validate(auth, disabled.accessToken), null);
+      await knex('oauth_clients')
+        .where({ client_id: userClientId(id) })
+        .update({ disabled: false });
+
       const deactivated = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
       await auth.api.reconcileAppClient({
         body: { installationId: id, active: false, scopes: ['post:browse'] },
       });
       assert.equal(await validate(auth, deactivated.accessToken), null);
       assert.equal((await knex('oauth_access_tokens').count({ count: '*' }))[0].count, 0);
+
+      await auth.api.reconcileAppClient({
+        body: { installationId: id, active: true, scopes: ['post:browse'] },
+      });
+      const deleted = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+      await knex('oauth_clients')
+        .where({ client_id: userClientId(id) })
+        .del();
+      assert.equal(await validate(auth, deleted.accessToken), null);
     });
 
     it('refuses a token once its staff session is unverified or has expired', async function () {
