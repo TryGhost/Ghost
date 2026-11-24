@@ -99,6 +99,8 @@ export function createAppTokenHolder({
   let renewing: Promise<boolean> | undefined;
   let failures = 0;
   let failedAt = 0;
+  // Ghost refused a renewal while the holder was stopped, which ends the session once started
+  let endedWhileStopped = false;
 
   const schedule = (delay: number) => {
     clearTimeout(timer);
@@ -122,8 +124,11 @@ export function createAppTokenHolder({
   };
   const end = () => {
     stopRenewing();
-    // The session this holder is running for now; none once stopped
-    renewal?.onEnded();
+    if (renewal) {
+      renewal.onEnded();
+    } else {
+      endedWhileStopped = true;
+    }
   };
 
   const holder: AppTokenHolder = {
@@ -189,6 +194,10 @@ export function createAppTokenHolder({
 
     start(next) {
       renewal = next;
+      if (endedWhileStopped) {
+        endedWhileStopped = false;
+        next.onEnded();
+      }
       if (ended) {
         return;
       }

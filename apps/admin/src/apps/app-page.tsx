@@ -27,7 +27,6 @@ import {
   isActiveAppSession,
   useBrowseAppInstallations,
   useReadAppInstallation,
-  useCreateAppToken,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
@@ -54,6 +53,7 @@ import {
   isAppLocation,
 } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
+import { useAppTokenRenewal } from './lib/use-app-token-renewal';
 import { placeRoute } from './lib/bridge-places';
 import { supportLink } from './lib/developer';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
@@ -256,10 +256,8 @@ const AppFrame: React.FC<{
 }> = ({ session, site, user, timezone, accentColor, onEnded }) => {
   const { installation } = session;
   useSessionEnd(session, onEnded);
-  const { mutateAsync: createToken } = useCreateAppToken();
   // Owned by this session, like the frame's session below, and renewed in place, so a new token
-  // never reloads the frame. A renewal Ghost refuses ends the session the way a revision change
-  // does.
+  // never reloads the frame.
   const [tokenHolder] = useState(() =>
     createAppTokenHolder({
       token: session.token,
@@ -267,15 +265,6 @@ const AppFrame: React.FC<{
       onError: reportAppsError,
     }),
   );
-  useEffect(() => {
-    tokenHolder.start({
-      renew: async () =>
-        (await createToken({ id: installation.id, revision: installation.revision }))
-          .app_tokens?.[0],
-      onEnded,
-    });
-    return () => tokenHolder.stop();
-  }, [tokenHolder, createToken, installation.id, installation.revision, onEnded]);
   const navigate = useNavigate();
   const location = useLocation();
   const { ghostVersion } = useFramework();
@@ -372,6 +361,7 @@ const AppFrame: React.FC<{
   }
 
   useAppTitle(manifest.name, title);
+  useAppTokenRenewal(tokenHolder, { installation, running: status !== 'failed', onEnded });
 
   // Runs for every location, keyed by `location.key`. React Router commits in a transition, so a
   // location it commits can lag behind the app, which may have moved on since, and quick moves can

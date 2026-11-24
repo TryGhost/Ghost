@@ -354,6 +354,29 @@ describe('createAppTokenHolder', () => {
     expect(onEnded).not.toHaveBeenCalled();
   });
 
+  it('ends the session once started again, when Ghost refused a renewal while it was stopped', async () => {
+    let refuse!: () => void;
+    const renew = vi.fn(
+      () =>
+        new Promise<ReturnType<typeof tokenExpiringIn>>((_resolve, reject) => {
+          refuse = () => reject(apiError(409, { code: 'APP_SESSION_ENDED' }));
+        }),
+    );
+    const { holder, onEnded, start } = holderWith(renew);
+    start();
+
+    const renewing = holder.renew();
+    holder.stop();
+    refuse();
+    await renewing;
+    expect(onEnded).not.toHaveBeenCalled();
+
+    start();
+    expect(onEnded).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(2 * HOUR);
+    expect(renew).toHaveBeenCalledOnce();
+  });
+
   it('waits for a token that expires further off than a timer can wait', async () => {
     const renew = vi.fn(() => Promise.resolve(tokenExpiringIn(HOUR, 'ghost_app_renewed')));
     const holder = createAppTokenHolder({
