@@ -34,10 +34,11 @@ import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
 import type { AppTokens } from '../../auth/better-auth/app-tokens';
 import type { Principal } from '../../auth/principal';
-import { AppSessionTokens, type AppSessionToken } from './session-tokens';
+import type { AppSessionToken } from './serializers';
+import { AppSessionTokens } from './session-tokens';
 
 export type { AppInstallationHistoryEntry } from './codec';
-export type { AppSessionToken } from './session-tokens';
+export type { AppSessionToken } from './serializers';
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
 export interface AppInstallationPreview {

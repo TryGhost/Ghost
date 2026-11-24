@@ -3,7 +3,6 @@ import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { AppInstallationHistoryEntry, InstallationWithHistory } from './codec';
 import { AppInstallationStatus } from './schema';
 import type { AppSession } from './service';
-import type { AppSessionToken } from './session-tokens';
 
 const AppInstallationResource = z.object({
   id: z.string(),
@@ -25,12 +24,20 @@ export type AppInstallation = z.output<typeof AppInstallationResource>;
 const AppInstallationsResponse = z.object({
   app_installations: z.array(AppInstallationResource),
 });
-// Admin's alone: it never reaches the app's frame. Session start and renewal return the same
-// shape.
-const AppSessionTokenResource = z.object({
+/**
+ * The user token Admin sends for the app, as `Authorization: Bearer`. It acts for the staff
+ * user within the installation's approved scopes, and is bound to their staff session.
+ *
+ * Admin's alone: it never reaches the app's frame. Session start and renewal return the same
+ * shape.
+ */
+export const AppSessionTokenResource = z.object({
   access_token: z.string(),
+  /** Seconds from when Ghost answered, so the browser's clock doesn't matter */
   expires_in: z.number().int().positive(),
 });
+
+export type AppSessionToken = z.output<typeof AppSessionTokenResource>;
 
 const AppSessionsResponse = z.object({
   app_sessions: z.tuple([

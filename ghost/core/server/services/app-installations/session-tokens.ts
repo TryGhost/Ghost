@@ -8,17 +8,8 @@ import type {
 } from '../../auth/better-auth/app-tokens';
 import type { Principal } from '../../auth/principal';
 import type { Installation } from './codec';
+import type { AppSessionToken } from './serializers';
 import { staffSessionOf, staffSessionRequired, type StaffSession } from './staff-session';
-
-/**
- * The user token Admin sends for the app, as `Authorization: Bearer`. It acts for the staff
- * user within the installation's approved scopes, and is bound to their staff session.
- */
-export interface AppSessionToken {
-  access_token: string;
-  /** Seconds from when Ghost answered, so the browser's clock doesn't matter */
-  expires_in: number;
-}
 
 /** Why app tokens can't be issued on this site, whichever app it is. */
 function tokensUnavailable(availability: Exclude<AppTokensAvailability, 'ready'>) {
