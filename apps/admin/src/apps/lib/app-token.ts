@@ -39,8 +39,6 @@ export interface AppTokenRenewal {
 }
 
 export interface AppTokenHolder extends AppTokenSource {
-  /** The current token's value. */
-  current(): string;
   /**
    * Renews the token now, sharing a renewal already under way. Resolves to whether there's a
    * new token: false when Ghost refused it, which ends the session, when it failed, and without
@@ -132,8 +130,6 @@ export function createAppTokenHolder({
   };
 
   const holder: AppTokenHolder = {
-    current: () => current.access_token,
-
     async send(call) {
       const sent = current.access_token;
       const response = await call(sent);

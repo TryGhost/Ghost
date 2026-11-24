@@ -4,7 +4,7 @@ import {
   SessionExpiredError,
 } from '@tryghost/admin-x-framework/errors';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createAppTokenHolder } from './app-token';
+import { type AppTokenSource, createAppTokenHolder } from './app-token';
 
 const HOUR = 60 * 60 * 1000;
 const MINUTE = 60 * 1000;
@@ -17,6 +17,16 @@ const tokenExpiringIn = (ms: number, value: string) => ({
 /** An error as Admin's API layer raises it for a response with this status and error. */
 const apiError = (status: number, error: { code?: string; type?: string } = {}) =>
   new JSONError(new Response('{}', { status }), { errors: [error] } as unknown as ErrorResponse);
+
+/** The token the holder sends a call with now. */
+async function tokenOf(holder: AppTokenSource) {
+  let sent = '';
+  await holder.send((token) => {
+    sent = token;
+    return Promise.resolve(new Response('{}'));
+  });
+  return sent;
+}
 
 describe('createAppTokenHolder', () => {
   beforeEach(() => {
@@ -49,15 +59,15 @@ describe('createAppTokenHolder', () => {
 
     await vi.advanceTimersByTimeAsync(49 * MINUTE);
     expect(renew).not.toHaveBeenCalled();
-    expect(holder.current()).toBe('ghost_app_first');
+    expect(await tokenOf(holder)).toBe('ghost_app_first');
 
     await vi.advanceTimersByTimeAsync(1 * MINUTE);
     expect(renew).toHaveBeenCalledOnce();
-    expect(holder.current()).toBe('ghost_app_2');
+    expect(await tokenOf(holder)).toBe('ghost_app_2');
 
     await vi.advanceTimersByTimeAsync(50 * MINUTE);
     expect(renew).toHaveBeenCalledTimes(2);
-    expect(holder.current()).toBe('ghost_app_3');
+    expect(await tokenOf(holder)).toBe('ghost_app_3');
   });
 
   it('shares one renewal between the calls that ask for one at the same time', async () => {
@@ -136,7 +146,7 @@ describe('createAppTokenHolder', () => {
     expect(onEnded).not.toHaveBeenCalled();
 
     await vi.advanceTimersByTimeAsync(MINUTE);
-    expect(holder.current()).toBe('ghost_app_renewed');
+    expect(await tokenOf(holder)).toBe('ghost_app_renewed');
   });
 
   it.each([
@@ -159,13 +169,13 @@ describe('createAppTokenHolder', () => {
     holder.start({ renew, onEnded });
 
     expect(await holder.renew()).toBe(false);
-    expect(holder.current()).toBe('ghost_app_first');
+    expect(await tokenOf(holder)).toBe('ghost_app_first');
     expect(onError).toHaveBeenCalledOnce();
     expect(onEnded).not.toHaveBeenCalled();
 
     // Tried again as any failed renewal is
     await vi.advanceTimersByTimeAsync(MINUTE);
-    expect(holder.current()).toBe('ghost_app_renewed');
+    expect(await tokenOf(holder)).toBe('ghost_app_renewed');
   });
 
   it('backs off a renewal that keeps failing, then stops renewing on a timer but keeps the session', async () => {
@@ -263,16 +273,19 @@ describe('createAppTokenHolder', () => {
     });
   });
 
-  it('counts a token’s lifetime from when it arrived, whatever the browser’s clock says', async () => {
-    vi.setSystemTime(new Date('2001-01-01T00:00:00Z'));
+  it('keeps renewing on schedule when the browser’s clock jumps mid-life', async () => {
     const renew = vi.fn(() => Promise.resolve(tokenExpiringIn(HOUR, 'ghost_app_renewed')));
     const { start } = holderWith(renew);
     start();
 
-    await vi.advanceTimersByTimeAsync(49 * MINUTE);
-    expect(renew).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(1 * MINUTE);
+    await vi.advanceTimersByTimeAsync(30 * MINUTE);
+    vi.setSystemTime(Date.now() - 24 * HOUR);
+    await vi.advanceTimersByTimeAsync(20 * MINUTE);
     expect(renew).toHaveBeenCalledOnce();
+
+    vi.setSystemTime(Date.now() + 24 * HOUR);
+    await vi.advanceTimersByTimeAsync(50 * MINUTE);
+    expect(renew).toHaveBeenCalledTimes(2);
   });
 
   it('counts the first token’s lifetime from when it arrived, not from when the holder was made', async () => {
@@ -340,7 +353,7 @@ describe('createAppTokenHolder', () => {
     const renew = vi.fn(
       () =>
         new Promise<ReturnType<typeof tokenExpiringIn>>((_resolve, reject) => {
-          refuse = () => reject(apiError(409));
+          refuse = () => reject(apiError(409, { code: 'APP_SESSION_ENDED' }));
         }),
     );
     const { holder, onEnded, start } = holderWith(renew);
