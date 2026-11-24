@@ -70,6 +70,38 @@ for (const [status, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
 const getMemberStatus = (slug: unknown): undefined | MemberStatus =>
   typeof slug === 'string' ? slugToMemberStatus.get(slug) : undefined;
 
+// The read that finds due runs joins other tables, and locking it would lock
+// their rows too. This locks the runs alone, in id order. Only a locking read
+// sees what another poll committed while this one waited, so it checks again
+// that each run is still due.
+async function lockRuns(
+  trx: Knex.Transaction,
+  dueRuns: Run[],
+  now: Readonly<Date>,
+  lockCutoff: Readonly<Date>,
+): Promise<Run[]> {
+  if (dueRuns.length === 0) {
+    return [];
+  }
+
+  const lockedRuns: ReadonlyArray<{ id: string }> = await trx('welcome_email_automation_runs')
+    .select('id')
+    .whereIn(
+      'id',
+      dueRuns.map((run) => run.id),
+    )
+    .whereNotNull('next_welcome_email_automated_email_id')
+    .where('ready_at', '<=', now)
+    .where((builder) => {
+      builder.whereNull('step_started_at').orWhere('step_started_at', '<', lockCutoff);
+    })
+    .orderBy('id')
+    .forUpdate();
+  const lockedIds = new Set(lockedRuns.map((run) => run.id));
+
+  return dueRuns.filter((run) => lockedIds.has(run.id));
+}
+
 async function fetchAndLockRuns(): Promise<{
   runs: Run[];
   nextFutureReadyAt: null | Date;
@@ -78,7 +110,7 @@ async function fetchAndLockRuns(): Promise<{
   const lockCutoff = new Date(now.getTime() - LOCK_TIMEOUT);
 
   return await db.knex.transaction(async (trx: Knex.Transaction) => {
-    const runs = await trx<Run>('welcome_email_automation_runs as r')
+    const dueRuns = await trx<Run>('welcome_email_automation_runs as r')
       .join('automations as a', 'r.welcome_email_automation_id', 'a.id')
       .join(
         'welcome_email_automated_emails as e',
@@ -100,6 +132,8 @@ async function fetchAndLockRuns(): Promise<{
         'e.id as automated_email_id',
       )
       .limit(MAX_RUNS_PER_BATCH);
+
+    const runs = await lockRuns(trx, dueRuns, now, lockCutoff);
 
     if (runs.length === 0) {
       const result = await trx('welcome_email_automation_runs')

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import { setTimeout as sleep } from 'node:timers/promises';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
@@ -660,5 +661,62 @@ describe('welcome email automations poll', function () {
       options.enqueueAnotherPollAt,
       sinon.match((date) => date instanceof Date && date <= new Date() && date >= beforePoll),
     );
+  });
+
+  it('takes a run again when it was started longer ago than the lock timeout', async function () {
+    const automation = await createAutomation();
+    const automatedEmail = await createAutomatedEmail({
+      welcome_email_automation_id: automation.id,
+    });
+    const member = await createMember();
+    const run = await createRun({
+      welcome_email_automation_id: automation.id,
+      member_id: member.id,
+      next_welcome_email_automated_email_id: automatedEmail.id,
+      ready_at: new Date(Date.now() - LOCK_TIMEOUT_MS - 120 * 1000),
+      step_started_at: new Date(Date.now() - LOCK_TIMEOUT_MS - 60 * 1000),
+      step_attempts: 1,
+    });
+
+    await welcomeEmailAutomationPoll(options);
+
+    sinon.assert.calledOnce(options.memberWelcomeEmailService.send);
+    assert.equal((await readRun(run.id)).exit_reason, 'finished');
+  });
+
+  it('sends each due email once when two polls run at the same moment', async function () {
+    const automation = await createAutomation();
+    const automatedEmail = await createAutomatedEmail({
+      welcome_email_automation_id: automation.id,
+    });
+    const runs = [];
+    for (let i = 0; i < 3; i += 1) {
+      const member = await createMember();
+      runs.push(
+        await createRun({
+          welcome_email_automation_id: automation.id,
+          member_id: member.id,
+          next_welcome_email_automated_email_id: automatedEmail.id,
+          ready_at: new Date(Date.now() - 1000),
+        }),
+      );
+    }
+
+    // Holding the runs until both polls have read them makes the overlap certain.
+    const holder = await testUtils.knex.transaction();
+    await holder('welcome_email_automation_runs').select('id').forUpdate();
+    const polls = Promise.all([
+      welcomeEmailAutomationPoll(options),
+      welcomeEmailAutomationPoll(options),
+    ]);
+    await sleep(250);
+    await holder.commit();
+    await polls;
+
+    sinon.assert.callCount(options.memberWelcomeEmailService.send, runs.length);
+    assert.equal((await readTrackedRecipients()).length, runs.length);
+    for (const run of runs) {
+      assert.equal((await readRun(run.id)).exit_reason, 'finished');
+    }
   });
 });
