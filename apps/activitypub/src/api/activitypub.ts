@@ -127,6 +127,14 @@ const accountMigrationStatusSchema = z
 
 export type AccountMigrationStatus = z.infer<typeof accountMigrationStatusSchema>;
 
+export const PostType = {
+  Note: 0,
+  Article: 1,
+  Tombstone: 2,
+} as const;
+
+export type PostType = (typeof PostType)[keyof typeof PostType];
+
 const replyContextAuthorSchema = z.object({
   name: z.string(),
   handle: z.string(),
@@ -135,6 +143,15 @@ const replyContextAuthorSchema = z.object({
 
 const inReplyToSchema = z.object({
   id: z.string().min(1),
+  // Missing/invalid type → unknown (open current reply thread).
+  type: z
+    .union([
+      z.literal(PostType.Note),
+      z.literal(PostType.Article),
+      z.literal(PostType.Tombstone),
+      z.null(),
+    ])
+    .catch(null),
   author: replyContextAuthorSchema.nullable().catch(null),
 });
 
@@ -260,14 +277,6 @@ function parsePreferences(json: object | null): Preferences {
       json !== null && 'showSensitiveMedia' in json && json.showSensitiveMedia === true,
   };
 }
-
-export const PostType = {
-  Note: 0,
-  Article: 1,
-  Tombstone: 2,
-} as const;
-
-export type PostType = (typeof PostType)[keyof typeof PostType];
 
 export interface Post {
   id: string;

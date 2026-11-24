@@ -18,7 +18,11 @@ import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
 import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
-import { ObjectWithReplyContext, getReplyBanner } from '../../utils/reply-context';
+import {
+  ObjectWithReplyContext,
+  getReplyBanner,
+  getReplyParentPath,
+} from '../../utils/reply-context';
 import { handleProfileClick } from '../../utils/handle-profile-click';
 import { openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
 import { renderTimestamp } from '../../utils/render-timestamp';
@@ -875,35 +879,30 @@ const FeedItem: React.FC<FeedItemProps> = ({
               </div>
             )}
             {replyBanner && (
-              <div
-                className="z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600"
+              <button
+                className="z-10 mb-2 flex items-center gap-1.5 text-gray-700 hover:underline dark:text-gray-600"
                 data-testid="reply-context-banner"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!object?.inReplyTo || !object.id) {
+                    return;
+                  }
+                  navigate(getReplyParentPath(object.inReplyTo, object.id));
+                }}
               >
                 {replyIcon}
-                <div className="flex min-w-0 items-center gap-1 text-sm">
+                <span className="flex min-w-0 items-center gap-1 text-sm">
                   {replyBanner.kind === 'continuing' && 'Continuing a thread'}
                   {replyBanner.kind === 'generic' && 'Replying to a post'}
                   {replyBanner.kind === 'named' && (
                     <>
                       Replying to
-                      {replyBanner.handle ? (
-                        <button
-                          className="break-anywhere truncate hover:underline"
-                          data-testid="reply-context-profile-link"
-                          type="button"
-                          onClick={(e) => {
-                            handleProfileClick(replyBanner.handle as string, navigate, e);
-                          }}
-                        >
-                          {replyBanner.name}
-                        </button>
-                      ) : (
-                        <span className="break-anywhere truncate">{replyBanner.name}</span>
-                      )}
+                      <span className="break-anywhere truncate">{replyBanner.name}</span>
                     </>
                   )}
-                </div>
-              </div>
+                </span>
+              </button>
             )}
             <div className={`flex flex-col gap-2.5`} data-test-activity>
               <div className="flex items-center justify-between">

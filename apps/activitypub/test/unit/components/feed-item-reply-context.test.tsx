@@ -3,7 +3,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ActorProperties } from '@tryghost/admin-x-framework/api/activitypub';
-import type { InReplyTo } from '../../../src/api/activitypub';
+import { PostType, type InReplyTo } from '../../../src/api/activitypub';
 import type { ObjectWithReplyContext } from '../../../src/utils/reply-context';
 
 const mocks = vi.hoisted(() => ({
@@ -86,6 +86,7 @@ function makeObject(inReplyTo?: InReplyTo | null): ObjectWithReplyContext {
 
 const bobParent: InReplyTo = {
   id: 'https://other.example/notes/parent',
+  type: PostType.Note,
   author: { name: 'Bob', handle: '@bob@other.example', url: 'https://other.example/users/bob' },
 };
 
@@ -117,7 +118,7 @@ describe('FeedItem reply context banner', () => {
 
     const banner = screen.getByTestId('reply-context-banner');
     expect(banner.textContent).toContain('Replying to');
-    expect(screen.getByTestId('reply-context-profile-link').textContent).toContain('Bob');
+    expect(banner.textContent).toContain('Bob');
   });
 
   it('falls back to the parent handle when the name is empty', () => {
@@ -125,54 +126,144 @@ describe('FeedItem reply context banner', () => {
       object: makeObject({ ...bobParent, author: { ...bobParent.author!, name: '' } }),
     });
 
-    expect(screen.getByTestId('reply-context-profile-link').textContent).toContain(
-      '@bob@other.example',
-    );
+    expect(screen.getByTestId('reply-context-banner').textContent).toContain('@bob@other.example');
   });
 
-  it('shows "Continuing a thread" without a profile link for self-replies', () => {
+  it('shows "Continuing a thread" for self-replies', () => {
     renderItem({
       object: makeObject({
         id: 'https://fake.host/notes/0',
+        type: PostType.Note,
         author: { name: 'Alice', handle: '@alice@fake.host', url: 'https://fake.host/users/alice' },
       }),
     });
 
     expect(screen.getByTestId('reply-context-banner').textContent).toContain('Continuing a thread');
-    expect(screen.queryByTestId('reply-context-profile-link')).toBeNull();
   });
 
-  it('shows "Replying to a post" without a profile link when the author is unknown', () => {
-    renderItem({ object: makeObject({ id: 'https://other.example/notes/parent', author: null }) });
+  it('shows "Replying to a post" when the author is unknown', () => {
+    renderItem({
+      object: makeObject({
+        id: 'https://other.example/notes/parent',
+        type: PostType.Note,
+        author: null,
+      }),
+    });
 
     expect(screen.getByTestId('reply-context-banner').textContent).toContain('Replying to a post');
-    expect(screen.queryByTestId('reply-context-profile-link')).toBeNull();
   });
 
-  it('opens the parent author profile without opening the note', () => {
+  it('opens the parent note without opening the current note', () => {
     const { onClick } = renderItem({ object: makeObject(bobParent) });
 
-    const link = screen.getByTestId('reply-context-profile-link');
-    expect(link.tagName).toBe('BUTTON');
-    fireEvent.click(link);
+    const banner = screen.getByTestId('reply-context-banner');
+    expect(banner.tagName).toBe('BUTTON');
+    fireEvent.click(banner);
 
-    expect(mocks.navigate).toHaveBeenCalledWith('/profile/@bob@other.example');
+    expect(mocks.navigate).toHaveBeenCalledWith(
+      `/notes/${encodeURIComponent('https://other.example/notes/parent')}`,
+    );
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it('is a focusable button so keyboard users can activate the profile link', () => {
+  it('opens article parents in the reader', () => {
+    const { onClick } = renderItem({
+      object: makeObject({
+        ...bobParent,
+        id: 'https://other.example/articles/parent',
+        type: PostType.Article,
+      }),
+    });
+
+    fireEvent.click(screen.getByTestId('reply-context-banner'));
+
+    expect(mocks.navigate).toHaveBeenCalledWith(
+      `/reader/${encodeURIComponent('https://other.example/articles/parent')}`,
+    );
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('opens the current reply thread when the parent is soft-deleted or type-unknown', () => {
+    const { onClick } = renderItem({
+      object: makeObject({
+        id: 'https://other.example/notes/deleted-parent',
+        type: PostType.Tombstone,
+        author: {
+          name: 'Bob',
+          handle: '@bob@other.example',
+          url: 'https://other.example/users/bob',
+        },
+      }),
+    });
+
+    fireEvent.click(screen.getByTestId('reply-context-banner'));
+
+    expect(mocks.navigate).toHaveBeenCalledWith(
+      `/notes/${encodeURIComponent('https://fake.host/notes/1')}`,
+    );
+    expect(onClick).not.toHaveBeenCalled();
+
+    cleanup();
+    mocks.navigate.mockClear();
+
+    renderItem({
+      object: makeObject({
+        id: 'https://remote.example/notes/parent',
+        type: null,
+        author: null,
+      }),
+    });
+    fireEvent.click(screen.getByTestId('reply-context-banner'));
+    expect(mocks.navigate).toHaveBeenCalledWith(
+      `/notes/${encodeURIComponent('https://fake.host/notes/1')}`,
+    );
+  });
+
+  it('links continuing and generic banners to the parent note', () => {
+    renderItem({
+      object: makeObject({
+        id: 'https://fake.host/notes/0',
+        type: PostType.Note,
+        author: { name: 'Alice', handle: '@alice@fake.host', url: 'https://fake.host/users/alice' },
+      }),
+    });
+    fireEvent.click(screen.getByTestId('reply-context-banner'));
+    expect(mocks.navigate).toHaveBeenCalledWith(
+      `/notes/${encodeURIComponent('https://fake.host/notes/0')}`,
+    );
+
+    cleanup();
+    mocks.navigate.mockClear();
+
+    const { onClick } = renderItem({
+      object: makeObject({
+        id: 'https://remote.example/notes/parent',
+        type: PostType.Note,
+        author: null,
+      }),
+    });
+    fireEvent.click(screen.getByTestId('reply-context-banner'));
+    expect(mocks.navigate).toHaveBeenCalledWith(
+      `/notes/${encodeURIComponent('https://remote.example/notes/parent')}`,
+    );
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('is a focusable button so keyboard users can activate the parent link', () => {
     const { onClick } = renderItem({ object: makeObject(bobParent) });
 
-    const link = screen.getByTestId('reply-context-profile-link');
-    expect(link.tagName).toBe('BUTTON');
-    expect((link as HTMLButtonElement).type).toBe('button');
+    const banner = screen.getByTestId('reply-context-banner');
+    expect(banner.tagName).toBe('BUTTON');
+    expect((banner as HTMLButtonElement).type).toBe('button');
 
-    link.focus();
-    expect(document.activeElement).toBe(link);
+    banner.focus();
+    expect(document.activeElement).toBe(banner);
 
-    fireEvent.click(link);
+    fireEvent.click(banner);
 
-    expect(mocks.navigate).toHaveBeenCalledWith('/profile/@bob@other.example');
+    expect(mocks.navigate).toHaveBeenCalledWith(
+      `/notes/${encodeURIComponent('https://other.example/notes/parent')}`,
+    );
     expect(onClick).not.toHaveBeenCalled();
   });
 
@@ -197,6 +288,7 @@ describe('FeedItem reply context banner', () => {
       type: 'Announce',
       object: makeObject({
         id: 'https://fake.host/notes/0',
+        type: PostType.Note,
         author: { name: 'Alice', handle: '@alice@fake.host', url: 'https://fake.host/users/alice' },
       }),
     });

@@ -149,6 +149,7 @@ test.describe('My Profile', async () => {
 
       const namedReply = makeReply('named', 'Reply to Bob', {
         id: 'https://other.example/notes/parent',
+        type: 0,
         author: {
           name: 'Bob Parent',
           handle: '@bob@other.example',
@@ -157,6 +158,7 @@ test.describe('My Profile', async () => {
       });
       const continuingReply = makeReply('continuing', 'Reply to myself', {
         id: 'https://fake.host/.ghost/activitypub/note/earlier',
+        type: 0,
         author: {
           name: myPosts.posts[0].author.name,
           handle: myPosts.posts[0].author.handle,
@@ -165,6 +167,7 @@ test.describe('My Profile', async () => {
       });
       const genericReply = makeReply('generic', 'Reply to unknown', {
         id: 'https://remote.example/notes/parent',
+        type: 0,
         author: null,
       });
 
@@ -206,21 +209,19 @@ test.describe('My Profile', async () => {
 
       const named = profileItems.filter({ hasText: 'Reply to Bob' });
       await expect(named.getByTestId('reply-context-banner')).toContainText('Replying to');
-      await expect(named.getByTestId('reply-context-profile-link')).toHaveText('Bob Parent');
+      await expect(named.getByTestId('reply-context-banner')).toContainText('Bob Parent');
 
       const continuing = profileItems.filter({ hasText: 'Reply to myself' });
       await expect(continuing.getByTestId('reply-context-banner')).toContainText(
         'Continuing a thread',
       );
-      await expect(continuing.getByTestId('reply-context-profile-link')).toHaveCount(0);
 
       const generic = profileItems.filter({ hasText: 'Reply to unknown' });
       await expect(generic.getByTestId('reply-context-banner')).toContainText('Replying to a post');
-      await expect(generic.getByTestId('reply-context-profile-link')).toHaveCount(0);
 
-      // Clicking the parent author opens their profile, not the note
-      await named.getByTestId('reply-context-profile-link').click();
-      await expect(page).toHaveURL(/#\/profile\/@bob@other\.example$/);
+      // Clicking the banner opens the parent note, not the current note or a profile
+      await named.getByTestId('reply-context-banner').click();
+      await expect(page).toHaveURL(/#\/notes\/https%3A%2F%2Fother\.example%2Fnotes%2Fparent$/);
     });
 
     test('I can delete a post I created from my profile', async ({ page }) => {

@@ -1,4 +1,4 @@
-import type { InReplyTo } from '../api/activitypub';
+import { type InReplyTo, PostType } from '../api/activitypub';
 import type { ObjectProperties } from '@tryghost/admin-x-framework/api/activitypub';
 
 export type ObjectWithReplyContext = ObjectProperties & {
@@ -8,7 +8,18 @@ export type ObjectWithReplyContext = ObjectProperties & {
 export type ReplyBanner =
   | { kind: 'continuing' }
   | { kind: 'generic' }
-  | { kind: 'named'; name: string; handle: string | null };
+  | { kind: 'named'; name: string };
+
+/** Path to open for a reply-context banner click. */
+export function getReplyParentPath(inReplyTo: InReplyTo, currentPostId: string): string {
+  // Soft-deleted or unknown-type parents: open this reply's thread instead.
+  if (inReplyTo.type === PostType.Tombstone || inReplyTo.type === null) {
+    return `/notes/${encodeURIComponent(currentPostId)}`;
+  }
+
+  const base = inReplyTo.type === PostType.Article ? 'reader' : 'notes';
+  return `/${base}/${encodeURIComponent(inReplyTo.id)}`;
+}
 
 /** Complete `@user@host` only; reject empty/placeholder hosts (username `unknown` is allowed). */
 export function normalizeHandle(handle: string | null | undefined): string | null {
@@ -65,6 +76,5 @@ export function getReplyBanner(
   return {
     kind: 'named',
     name,
-    handle: parentHandle ? parent.handle.trim() : null,
   };
 }

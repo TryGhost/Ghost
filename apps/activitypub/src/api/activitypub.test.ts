@@ -1,4 +1,4 @@
-import { ActivityPubAPI, sanitizeInReplyTo } from './activitypub';
+import { ActivityPubAPI, PostType, sanitizeInReplyTo } from './activitypub';
 import { describe, expect, test } from 'vitest';
 
 function NotFound() {
@@ -51,17 +51,20 @@ describe('sanitizeInReplyTo', function () {
     expect(
       sanitizeInReplyTo({
         id: 'https://example.com/notes/1',
+        type: PostType.Article,
         author: validAuthor,
       }),
     ).toEqual({
       id: 'https://example.com/notes/1',
+      type: PostType.Article,
       author: validAuthor,
     });
   });
 
-  test('keeps a valid parent id with a null author', function () {
+  test('defaults a missing type to unknown (null)', function () {
     expect(sanitizeInReplyTo({ id: 'https://example.com/notes/1', author: null })).toEqual({
       id: 'https://example.com/notes/1',
+      type: null,
       author: null,
     });
   });
@@ -70,18 +73,20 @@ describe('sanitizeInReplyTo', function () {
     expect(
       sanitizeInReplyTo({
         id: 'https://example.com/notes/1',
+        type: PostType.Note,
         author: { ...validAuthor, handle: 123 },
       }),
-    ).toEqual({ id: 'https://example.com/notes/1', author: null });
+    ).toEqual({ id: 'https://example.com/notes/1', type: PostType.Note, author: null });
   });
 
   test('nulls the author when name is not a string', function () {
     expect(
       sanitizeInReplyTo({
         id: 'https://example.com/notes/1',
+        type: PostType.Note,
         author: { ...validAuthor, name: { display: 'Bob' } },
       }),
-    ).toEqual({ id: 'https://example.com/notes/1', author: null });
+    ).toEqual({ id: 'https://example.com/notes/1', type: PostType.Note, author: null });
   });
 
   test('discards unusable context without a parent id', function () {

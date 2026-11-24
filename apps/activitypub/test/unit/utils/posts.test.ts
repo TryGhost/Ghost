@@ -199,6 +199,7 @@ describe('mapPostToActivity', function () {
       ...post,
       inReplyTo: {
         id: 'https://example.com/notes/parent',
+        type: 0,
         author: {
           name: 'Parent Author',
           handle: '@parent@example.org',
@@ -209,6 +210,7 @@ describe('mapPostToActivity', function () {
 
     expect(object.inReplyTo).toEqual({
       id: 'https://example.com/notes/parent',
+      type: 0,
       author: {
         name: 'Parent Author',
         handle: '@parent@example.org',
@@ -220,10 +222,14 @@ describe('mapPostToActivity', function () {
   test('it maps inReplyTo with an unknown parent author', function () {
     const object = mapPostToActivity({
       ...post,
-      inReplyTo: { id: 'https://example.com/notes/parent', author: null },
+      inReplyTo: { id: 'https://example.com/notes/parent', type: 0, author: null },
     }).object;
 
-    expect(object.inReplyTo).toEqual({ id: 'https://example.com/notes/parent', author: null });
+    expect(object.inReplyTo).toEqual({
+      id: 'https://example.com/notes/parent',
+      type: 0,
+      author: null,
+    });
   });
 
   test('it nulls a malformed inReplyTo author and drops unusable context', function () {
@@ -232,11 +238,12 @@ describe('mapPostToActivity', function () {
         ...post,
         inReplyTo: {
           id: 'https://example.com/notes/parent',
+          type: 0,
           // @ts-expect-error — malformed API payload
           author: { name: 'Bob', handle: 42, url: 'https://example.com/@bob' },
         },
       }).object.inReplyTo,
-    ).toEqual({ id: 'https://example.com/notes/parent', author: null });
+    ).toEqual({ id: 'https://example.com/notes/parent', type: 0, author: null });
 
     expect(
       mapPostToActivity({
