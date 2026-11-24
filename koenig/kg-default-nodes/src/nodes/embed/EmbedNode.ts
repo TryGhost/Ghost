@@ -30,6 +30,10 @@ export class EmbedNode extends generateDecoratorNode({
     isEmpty() {
         return !this.__url && !this.__html;
     }
+
+    hasEditMode() {
+        return false;
+    }
 }
 
 export const $createEmbedNode = (dataset: EmbedData = {}) => {

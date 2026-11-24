@@ -8,6 +8,7 @@ import {HeaderCard} from '../../../components/ui/cards/HeaderCard/v1/HeaderCard'
 import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../../../components/ui/ToolbarMenu';
 import {backgroundImageUploadHandler} from '../../../utils/imageUploadHandler';
+import {useCardVisibilitySettings} from '../../../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function HeaderNodeComponent({
@@ -29,6 +30,7 @@ function HeaderNodeComponent({
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {fileUploader} = React.useContext(KoenigComposerContext);
     const {isEditing, setEditing, isSelected} = React.useContext(CardContext);
+    const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const handleToolbarEdit = (event) => {
@@ -133,11 +135,13 @@ function HeaderNodeComponent({
                 headerTextEditorInitialState={headerTextEditorInitialState}
                 isEditing={isEditing}
                 openFilePicker={openFilePicker}
+                showVisibilitySettings={showVisibilitySettings}
                 size={size}
                 subheader={subheader}
                 subheaderTextEditor={subheaderTextEditor}
                 subheaderTextEditorInitialState={subheaderTextEditorInitialState}
                 type={type}
+                visibilitySettings={visibilitySettings}
                 onFileChange={onFileChange}
             />
             <ActionToolbar

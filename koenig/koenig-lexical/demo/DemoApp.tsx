@@ -325,6 +325,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setSelectionWord
         embedPreviewUrl: searchParams.get('embedPreviewUrl') || undefined,
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
+        // `/#/?visibility=none` simulates a site with members turned off
+        visibilitySettings: searchParams.get('visibility') || undefined,
         deprecated: {
             headerV1: hideDeprecatedCardInMenu(searchParams),
             emailCta: hideDeprecatedCardInMenu(searchParams)

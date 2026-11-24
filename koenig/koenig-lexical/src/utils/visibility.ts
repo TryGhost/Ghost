@@ -1,4 +1,5 @@
-import {buildDefaultVisibility} from '@tryghost/kg-default-nodes/visibility';
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import {buildDefaultVisibility, getRenderedVisibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
     WEB_AND_EMAIL: 'web and email',
@@ -6,6 +7,44 @@ export const VISIBILITY_SETTINGS = {
     EMAIL_ONLY: 'email only',
     NONE: 'none'
 };
+
+export function isVisibilityEnabled(cardConfig) {
+    return (cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL) !== VISIBILITY_SETTINGS.NONE;
+}
+
+// Whether the editor should offer visibility settings for a card type.
+// `cardConfig.visibilityCardTypes` lists the cards whose visibility the
+// backend can honour; Admin passes it because it can deploy ahead of the
+// server. Without a list every card with a visibility property is allowed.
+export function isCardVisibilityAvailable(cardType, cardConfig) {
+    if (!isVisibilityEnabled(cardConfig)) {
+        return false;
+    }
+
+    const supportedTypes = cardConfig?.visibilityCardTypes;
+    return !Array.isArray(supportedTypes) || supportedTypes.includes(cardType);
+}
+
+// an image or gallery placeholder has no content to hide yet
+function isPlaceholderCard(cardNode) {
+    return cardNode.isEmpty?.() === true
+        || cardNode.src === ''
+        || (Array.isArray(cardNode.images) && cardNode.images.length === 0);
+}
+
+// Cards without an edit mode of their own (image, gallery) still open
+// their settings panel in edit mode when visibility is something to edit
+export function cardHasEditMode(cardNode, cardConfig) {
+    if (!$isKoenigCard(cardNode)) {
+        return false;
+    }
+
+    if (cardNode.hasEditMode()) {
+        return true;
+    }
+
+    return cardNode.hasVisibility?.() === true && isCardVisibilityAvailable(cardNode.getType(), cardConfig) && !isPlaceholderCard(cardNode);
+}
 
 export function parseVisibilityToToggles(visibility) {
     visibility = visibility || buildDefaultVisibility();
@@ -102,4 +141,16 @@ export function serializeOptionsToVisibility(options, existingVisibility) {
             memberSegment: emailSegments.join(',')
         }
     };
+}
+
+// Whether two cards show to exactly the same audiences. Missing visibility
+// counts as the default (everyone), so a plain image matches a plain gallery.
+// Used to stop drag-and-drop merging images with different audiences, which
+// would otherwise silently widen who can see one of them.
+export function isSameVisibility(a, b) {
+    const x = getRenderedVisibility(a);
+    const y = getRenderedVisibility(b);
+    return x.web.nonMember === y.web.nonMember
+        && x.web.memberSegment === y.web.memberSegment
+        && x.email.memberSegment === y.email.memberSegment;
 }

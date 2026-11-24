@@ -44,6 +44,7 @@ describe('useVisibilityToggle', () => {
         koenigMocks.$isKoenigCard.mockReturnValue(true);
         node = {
             visibility: DEFAULT_VISIBILITY,
+            getType: vi.fn(() => 'image'),
             getIsVisibilityActive: vi.fn(() => true)
         };
 
@@ -246,5 +247,25 @@ describe('useVisibilityToggle', () => {
 
         act(() => result.current.toggleVisibility('email', 'freeMembers', false));
         expect(node.visibility).toEqual(beforeVisibility);
+    });
+
+    describe('backend support', () => {
+        it('is enabled when the backend lists the card type', () => {
+            cardConfig.visibilityCardTypes = ['html', 'image'];
+            const {result} = renderHook(() => useVisibilityToggle(editor, 'key', cardConfig));
+            expect(result.current.isVisibilityEnabled).toBe(true);
+        });
+
+        it('is disabled when the backend does not list the card type', () => {
+            cardConfig.visibilityCardTypes = ['html', 'call-to-action', 'transistor'];
+            const {result} = renderHook(() => useVisibilityToggle(editor, 'key', cardConfig));
+            expect(result.current.isVisibilityEnabled).toBe(false);
+        });
+
+        it('is enabled for every card when no list is given', () => {
+            delete cardConfig.visibilityCardTypes;
+            const {result} = renderHook(() => useVisibilityToggle(editor, 'key', cardConfig));
+            expect(result.current.isVisibilityEnabled).toBe(true);
+        });
     });
 });
