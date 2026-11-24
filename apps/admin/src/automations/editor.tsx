@@ -541,32 +541,6 @@ const AutomationEditorContent: React.FC<{
       data-sentry-mask="true"
       data-testid="automation-editor"
     >
-      <AutomationHeader
-        automation={draft}
-        isLoadingAutomation={isEditorLoading}
-        isPublishButtonEnabled={isPublishButtonEnabled && !selectedRunId}
-        isSaveButtonEnabled={isSaveButtonEnabled && !selectedRunId}
-        isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
-        publishButtonChildren={publishButtonChildren}
-        publishButtonVariant={publishButtonVariant}
-        saveButtonChildren={saveButtonChildren}
-        saveButtonVariant={saveButtonVariant}
-        validationFeedback={selectedRunId ? null : validationFeedback}
-        onDismissValidationFeedback={() => setValidationFeedback(null)}
-        onNameChange={
-          !selectedRunId && draft ? (name) => onDraftChange({ ...draft, name }) : undefined
-        }
-        onPublish={onPublish}
-        onSave={() => void save()}
-        onTurnOff={() => {
-          if (draft && !validateForAction(draft, 'unpublish')) {
-            return;
-          }
-          setValidationFeedback(null);
-          setEditState({ phase: 'confirming', action: 'unpublish' });
-        }}
-      />
-
       <AutomationCanvas
         automation={draft}
         canvasErrors={canvasErrors}
@@ -582,6 +556,36 @@ const AutomationEditorContent: React.FC<{
         initialTriggerTop={creation?.triggerTop}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        renderHeader={({ chrome, sidebar, run }) => (
+          <AutomationHeader
+            automation={draft}
+            chrome={chrome}
+            isLoadingAutomation={isEditorLoading}
+            isPublishButtonEnabled={isPublishButtonEnabled && !selectedRunId}
+            isSaveButtonEnabled={isSaveButtonEnabled && !selectedRunId}
+            isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
+            publishButtonChildren={publishButtonChildren}
+            publishButtonVariant={publishButtonVariant}
+            run={run}
+            saveButtonChildren={saveButtonChildren}
+            saveButtonVariant={saveButtonVariant}
+            sidebar={sidebar}
+            validationFeedback={selectedRunId ? null : validationFeedback}
+            onDismissValidationFeedback={() => setValidationFeedback(null)}
+            onNameChange={
+              !selectedRunId && draft ? (name) => onDraftChange({ ...draft, name }) : undefined
+            }
+            onPublish={onPublish}
+            onSave={() => void save()}
+            onTurnOff={() => {
+              if (draft && !validateForAction(draft, 'unpublish')) {
+                return;
+              }
+              setValidationFeedback(null);
+              setEditState({ phase: 'confirming', action: 'unpublish' });
+            }}
+          />
+        )}
         savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
         selectedTriggerLabel={selectedTriggerLabel}

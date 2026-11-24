@@ -6,6 +6,7 @@ import { isEmptyEmailLexical } from '@/automations/utils';
 import { emailTextExcerpt } from '@/automations/utils/history-email-preview';
 import { AutomationCardMenu } from './automation-card-menu';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { useCollapsibleCard } from './use-collapsible-card';
 import { EmailCardExcerpt, EmailCardMessage } from './email-card-content';
 import {
   EMAIL_CARD_EASE,
@@ -106,9 +107,15 @@ export const EditableEmailCard: React.FC<
     analytics?: EmailCardAnalyticsData;
   }>
 > = ({ email, isNew, errorMessage, menuItems, analytics, children }) => {
-  const warning =
-    email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
+  const unmetRequirement = getEmailWarning(email, errorMessage);
+  const warning = email.suppressWarning && !errorMessage ? undefined : unmetRequirement;
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
+  // The preview stays when collapsed; only the header shrinks to "Send <subject>".
+  const card = useCollapsibleCard({
+    held: Boolean(unmetRequirement),
+    startExpanded: isNew,
+    onInteract: email.onInteract,
+  });
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   // Reveal a new field error and return to it on every blocked Publish.
   const [seenValidation, setSeenValidation] = useState({
@@ -123,46 +130,49 @@ export const EditableEmailCard: React.FC<
       setAnalyticsOpen(false);
     }
   }
-  const showAnalytics = analyticsOpen && Boolean(analytics);
+  const showAnalytics = analyticsOpen && Boolean(analytics) && !card.collapsed;
   const emailView = useEmailViewHeight(showAnalytics);
   const previewTextId = useId();
   const errorId = useId();
   return (
     <AutomationCard
       aria-label={email.subject ? `Send email: ${email.subject}` : 'Send email'}
+      {...card.cardProps}
       className={cn(
         'nodrag nopan w-[400px] text-left',
+        card.cardProps.className,
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
       onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
-      onFocusCapture={email.onInteract}
-      onPointerDownCapture={email.onInteract}
     >
       {children}
       <AutomationCardHeader
         actions={
-          <Inline gap="xs">
-            {analytics && (
-              // Pressed matches a ghost button with its menu open, like the ⋯ beside it.
-              <Button
-                aria-label="Email analytics"
-                aria-pressed={showAnalytics}
-                className="aria-pressed:bg-button-ghost-hover aria-pressed:shadow-control-pressed"
-                size="icon"
-                type="button"
-                variant="ghost"
-                onClick={() => setAnalyticsOpen((open) => !open)}
-              >
-                <LucideIcon.ChartNoAxesColumn />
-              </Button>
-            )}
-            <AutomationCardMenu label="Email actions" menuItems={menuItems} />
-          </Inline>
+          // Hidden while collapsed, to see how the plain rows feel.
+          !card.collapsed && (
+            <Inline gap="xs">
+              {analytics && (
+                // Pressed matches a ghost button with its menu open, like the ⋯ beside it.
+                <Button
+                  aria-label="Email analytics"
+                  aria-pressed={showAnalytics}
+                  className="aria-pressed:bg-button-ghost-hover aria-pressed:shadow-control-pressed"
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setAnalyticsOpen((open) => !open)}
+                >
+                  <LucideIcon.ChartNoAxesColumn />
+                </Button>
+              )}
+              <AutomationCardMenu label="Email actions" menuItems={menuItems} />
+            </Inline>
+          )
         }
         icon={<LucideIcon.Mail className="size-4" />}
         iconClassName="p-2.5 text-foreground"
-        title="Send email"
+        title={card.title('Send email', `Send ${email.subject.trim()}`)}
       />
       <div className="mt-3" style={{ minHeight: emailView.height }}>
         <div ref={emailView.ref}>

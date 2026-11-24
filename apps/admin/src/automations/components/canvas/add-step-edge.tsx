@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import StepPicker, { type StepPickerType } from './step-picker';
+import { KEEPS_CARDS_OPEN } from './use-collapsible-card';
 import { useDismissOnOutsidePress } from './use-dismiss-on-outside-press';
 import { ENTRANCE_EASE, useRevealAfterMount } from './use-reveal-after-mount';
 import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath } from '@xyflow/react';
@@ -77,6 +78,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
   const button = (
     <button
       ref={triggerRef}
+      {...KEEPS_CARDS_OPEN}
       aria-label={edgeData.label ?? 'Insert step here'}
       className={cn(
         'flex size-8 items-center justify-center rounded-full border focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-none',
@@ -111,6 +113,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         <PopoverTrigger asChild>{button}</PopoverTrigger>
         <PopoverContent
           ref={contentRef}
+          {...KEEPS_CARDS_OPEN}
           align="center"
           className="border-0 p-0 shadow-lg"
           side="top"

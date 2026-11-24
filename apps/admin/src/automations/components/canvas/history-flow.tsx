@@ -14,7 +14,9 @@ export const HistoryFlow: React.FC<{
   history: AutomationRunHistory;
   automationSlug: string | null | undefined;
   plan?: AutomationRunPlan;
-}> = ({ history, plan, automationSlug }) => {
+  // SHAPING PROTOTYPE ONLY: cards styled like the editor's.
+  editorStyle?: boolean;
+}> = ({ history, plan, automationSlug, editorStyle = false }) => {
   const cards = useMemo(
     () => [
       ...mapRunHistory(history, automationSlug),
@@ -41,9 +43,13 @@ export const HistoryFlow: React.FC<{
               )}
             />
           )}
-          <HistoryCard card={card}>
+          <HistoryCard card={card} editorStyle={editorStyle}>
             {card.email && (
-              <HistoryEmailContent email={card.email} planned={card.state === 'planned'} />
+              <HistoryEmailContent
+                editorStyle={editorStyle}
+                email={card.email}
+                planned={card.state === 'planned'}
+              />
             )}
           </HistoryCard>
         </Stack>
