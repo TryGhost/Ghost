@@ -1813,6 +1813,7 @@ const schema = {
       ['email_id', 'opened_at'],
       ['email_id', 'failed_at'],
       ['member_id', 'opened_at', 'email_id'],
+      ['member_id', 'email_id', 'opened_at'],
     ],
   },
   email_recipient_failures: {
