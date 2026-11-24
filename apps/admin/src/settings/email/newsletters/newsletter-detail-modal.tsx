@@ -1,11 +1,14 @@
 import ColorPickerField from '@/settings/components/color-picker-field';
-import FormSection from '@/settings/components/form-section';
+import FormSection, {
+  FormAccordion,
+  FormAccordionSection,
+} from '@/settings/components/form-section';
 import HeaderImageField from '@/settings/email-design/header-image-field';
 import HtmlField from '@/settings/components/html-field';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
 import NewsletterCardFields from './newsletter-card-fields';
 import NewsletterPreview from './newsletter-preview';
-import NewsletterSpacingFields from './newsletter-spacing-fields';
+import { ContentWidthField, LineSpacingField } from './newsletter-spacing-fields';
 import React, { useCallback, useEffect, useState } from 'react';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import validator from 'validator';
@@ -453,8 +456,8 @@ const Sidebar: React.FC<{
       id: 'content',
       title: 'Content',
       contents: (
-        <>
-          <FormSection title="Header" compact>
+        <FormAccordion defaultValue="header">
+          <FormAccordionSection title="Header" value="header" compact>
             <HeaderImageField
               inputId="newsletter-header-image"
               value={newsletter.header_image || ''}
@@ -487,9 +490,9 @@ const Sidebar: React.FC<{
                 onCheckedChange={(checked) => updateNewsletter({ show_header_name: checked })}
               />
             </Field>
-          </FormSection>
+          </FormAccordionSection>
 
-          <FormSection title="Title section" compact>
+          <FormAccordionSection title="Title section" value="title-section" compact>
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-show-post-title">Post title</FieldLabel>
               <Switch
@@ -545,9 +548,9 @@ const Sidebar: React.FC<{
                 onCheckedChange={(checked) => updateNewsletter({ show_feature_image: checked })}
               />
             </Field>
-          </FormSection>
+          </FormAccordionSection>
 
-          <FormSection title="Footer" compact>
+          <FormAccordionSection title="Footer" value="footer" compact>
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-feedback-enabled">
                 Ask your readers for feedback
@@ -609,40 +612,40 @@ const Sidebar: React.FC<{
               value={newsletter.footer_content || ''}
               onChange={(html) => updateNewsletter({ footer_content: html })}
             />
-          </FormSection>
-          <Separator className="mt-8" />
-          <div className="my-5 flex w-full items-start">
-            <span>
-              <LucideIcon.Heart className="mt-[-1px] mr-2 size-5 text-red" />
-            </span>
-            <FieldGroup className="gap-8">
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldLabel htmlFor="newsletter-show-badge">
-                    Promote independent publishing
-                  </FieldLabel>
-                  <FieldDescription>
-                    Show you&apos;re a part of the indie publishing movement with a small badge in
-                    the footer
-                  </FieldDescription>
-                </FieldContent>
-                <Switch
-                  checked={Boolean(newsletter.show_badge)}
-                  id="newsletter-show-badge"
-                  onCheckedChange={(checked) => updateNewsletter({ show_badge: checked })}
-                />
-              </Field>
-            </FieldGroup>
-          </div>
-        </>
+            <Separator className="mt-6" />
+            <div className="mt-2 flex w-full items-start">
+              <span>
+                <LucideIcon.Heart className="mt-[-1px] mr-2 size-5 text-red" />
+              </span>
+              <FieldGroup className="gap-8">
+                <Field orientation="horizontal">
+                  <FieldContent>
+                    <FieldLabel htmlFor="newsletter-show-badge">
+                      Promote independent publishing
+                    </FieldLabel>
+                    <FieldDescription>
+                      Show you&apos;re a part of the indie publishing movement with a small badge in
+                      the footer
+                    </FieldDescription>
+                  </FieldContent>
+                  <Switch
+                    checked={Boolean(newsletter.show_badge)}
+                    id="newsletter-show-badge"
+                    onCheckedChange={(checked) => updateNewsletter({ show_badge: checked })}
+                  />
+                </Field>
+              </FieldGroup>
+            </div>
+          </FormAccordionSection>
+        </FormAccordion>
       ),
     },
     {
       id: 'design',
       title: 'Design',
       contents: (
-        <>
-          <FormSection title="Global">
+        <FormAccordion defaultValue="global">
+          <FormAccordionSection title="Global" value="global">
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -721,9 +724,12 @@ const Sidebar: React.FC<{
                 </Select>
               </Field>
             </Inline>
-            <NewsletterSpacingFields spacing={spacing} onChange={onSpacingChange} />
-          </FormSection>
-          <FormSection title="Header">
+            <ContentWidthField
+              value={spacing.contentWidth}
+              onChange={(contentWidth) => onSpacingChange({ ...spacing, contentWidth })}
+            />
+          </FormAccordionSection>
+          <FormAccordionSection title="Header" value="header">
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -781,9 +787,9 @@ const Sidebar: React.FC<{
                 }
               />
             </Inline>
-          </FormSection>
+          </FormAccordionSection>
 
-          <FormSection title="Body">
+          <FormAccordionSection title="Body" value="body">
             <ColorPickerField
               direction="rtl"
               eyedropper={true}
@@ -802,6 +808,10 @@ const Sidebar: React.FC<{
               title="Section title color"
               value={newsletter.section_title_color}
               onChange={(color) => updateNewsletter({ section_title_color: color })}
+            />
+            <LineSpacingField
+              value={spacing.lineSpacing}
+              onChange={(lineSpacing) => onSpacingChange({ ...spacing, lineSpacing })}
             />
             <ColorPickerField
               direction="rtl"
@@ -952,8 +962,8 @@ const Sidebar: React.FC<{
               value={newsletter.divider_color || 'light'}
               onChange={(color) => updateNewsletter({ divider_color: color })}
             />
-          </FormSection>
-        </>
+          </FormAccordionSection>
+        </FormAccordion>
       ),
     },
   ];

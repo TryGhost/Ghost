@@ -1,57 +1,90 @@
-import React, { useId } from 'react';
-import { FieldTitle, Slider } from '@tryghost/shade/components';
+import IconToggleGroup from '@/settings/components/icon-toggle-group';
+import React from 'react';
+import {
+  Field,
+  FieldLabel,
+  FieldTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
-import { LINE_SPACING_STOPS, MARGIN_STOPS, type NewsletterSpacing } from './newsletter-spacing';
+import type { ContentWidth, LineSpacing } from './newsletter-spacing';
 
-// Prototype: these sliders only drive the preview. Nothing is saved.
+// Prototype: these controls only drive the preview. Nothing is saved.
 
-const SpacingSlider: React.FC<{
-  title: string;
-  stopCount: number;
-  value: number;
-  onChange: (stop: number) => void;
-}> = ({ title, stopCount, value, onChange }) => {
-  const titleId = useId();
+const CONTENT_WIDTH_OPTIONS: { value: ContentWidth; label: string }[] = [
+  { value: 'narrow', label: 'Narrow' },
+  { value: 'default', label: 'Default' },
+  { value: 'wide', label: 'Wide' },
+];
 
-  return (
-    // Exactly the standard control height, like the dropdown and colour rows around it.
-    <Inline align="center" className="h-(--control-height) w-full" gap="sm" justify="between">
-      <FieldTitle className="shrink-0" id={titleId}>
-        {title}
-      </FieldTitle>
-      <Slider
-        aria-labelledby={titleId}
-        aria-valuetext={`${value + 1} of ${stopCount}`}
-        className="max-w-[200px]"
-        max={stopCount - 1}
-        min={0}
-        step={1}
-        value={[value]}
-        showSteps
-        onValueChange={([stop]: number[]) => onChange(stop)}
-      />
-    </Inline>
-  );
-};
-
-const NewsletterSpacingFields: React.FC<{
-  spacing: NewsletterSpacing;
-  onChange: (spacing: NewsletterSpacing) => void;
-}> = ({ spacing, onChange }) => (
-  <>
-    <SpacingSlider
-      stopCount={MARGIN_STOPS.length}
-      title="Margins"
-      value={spacing.marginStop}
-      onChange={(marginStop) => onChange({ ...spacing, marginStop })}
-    />
-    <SpacingSlider
-      stopCount={LINE_SPACING_STOPS.length}
-      title="Line spacing"
-      value={spacing.lineSpacingStop}
-      onChange={(lineSpacingStop) => onChange({ ...spacing, lineSpacingStop })}
-    />
-  </>
+export const ContentWidthField: React.FC<{
+  value: ContentWidth;
+  onChange: (value: ContentWidth) => void;
+}> = ({ value, onChange }) => (
+  <Inline className="w-full" gap="sm" justify="between">
+    <FieldTitle className="shrink-0">Content width</FieldTitle>
+    <Field className="max-w-[200px]">
+      <FieldLabel className="sr-only">Content width</FieldLabel>
+      <Select
+        value={value}
+        onValueChange={(next) => {
+          const option = CONTENT_WIDTH_OPTIONS.find((candidate) => candidate.value === next);
+          if (option) {
+            onChange(option.value);
+          }
+        }}
+      >
+        <SelectTrigger aria-label="Content width">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {CONTENT_WIDTH_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </Field>
+  </Inline>
 );
 
-export default NewsletterSpacingFields;
+/** Three lines whose spacing shows how dense the text will be. */
+const LineDensityIcon: React.FC<{ gap: number }> = ({ gap }) => (
+  <svg
+    aria-hidden="true"
+    className="size-3.5!"
+    fill="none"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeWidth={1.25}
+    viewBox="0 0 14 14"
+  >
+    {[-gap, 0, gap].map((offset) => (
+      <line key={offset} x1={2} x2={12} y1={7 + offset} y2={7 + offset} />
+    ))}
+  </svg>
+);
+
+export const LineSpacingField: React.FC<{
+  value: LineSpacing;
+  onChange: (value: LineSpacing) => void;
+}> = ({ value, onChange }) => (
+  <Inline className="w-full" gap="sm" justify="between">
+    <FieldTitle>Line spacing</FieldTitle>
+    <IconToggleGroup
+      label="Line spacing"
+      options={[
+        { value: 'tight', label: 'Tight', icon: <LineDensityIcon gap={2.5} /> },
+        { value: 'default', label: 'Default', icon: <LineDensityIcon gap={3.75} /> },
+        { value: 'loose', label: 'Loose', icon: <LineDensityIcon gap={5} /> },
+      ]}
+      value={value}
+      onValueChange={onChange}
+    />
+  </Inline>
+);
