@@ -354,6 +354,8 @@ describe("Better Auth's OAuth provider for apps", function () {
           oauthProvider({
             ...appProviderOptions({ adminOrigin: origin }),
             scopes: ['post:browse'],
+            // Ghost's provider supports no grant, so it registers no client of its own
+            grantTypes: ['authorization_code'],
             clientPrivileges: () => true,
           }),
         ],
@@ -718,10 +720,7 @@ describe("Better Auth's OAuth provider for apps", function () {
         }),
       );
 
-      // Sent to the provider's error page, not to the app with a code
-      const { url: redirect } = await authorize.json();
-      assert.equal(new URL(redirect).searchParams.get('error'), 'unauthorized_client');
-      assert.equal(new URL(redirect).searchParams.has('code'), false);
+      assert.equal(authorize.status, 404);
       assert.ok(token.status >= 400, `token answered ${token.status}`);
       assert.equal((await knex('oauth_access_tokens').count({ count: '*' }))[0].count, 0);
     });
