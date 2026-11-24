@@ -10,6 +10,7 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
     const {isSearching, listOptions} = useSearchLinks(value, searchLinks);
     const {isSelected} = React.useContext(CardContext);
     const containerRef = React.useRef(null);
+    const showsField = !isLoading && !hasError;
 
     React.useEffect(() => {
         if (!value) {
@@ -19,9 +20,11 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
     }, []);
 
     React.useEffect(() => {
-        // window hears Escape from the whole page, and the error and loading states have no field to focus
+        // window hears Escape from the whole page, so a card showing its field answers only for that field
+        // or when selected. The error and loading states have no field and answer any Escape
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape' && (isSelected || containerRef.current?.contains(e.target))) {
+            const inField = e.target instanceof Node && containerRef.current?.contains(e.target);
+            if (e.key === 'Escape' && (!showsField || isSelected || inField)) {
                 handleClose();
             }
         };
@@ -29,7 +32,7 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handleClose, isSelected]);
+    }, [handleClose, isSelected, showsField]);
 
     if (isLoading) {
         return (

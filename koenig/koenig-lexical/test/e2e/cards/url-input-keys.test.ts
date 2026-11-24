@@ -90,6 +90,78 @@ for (const {name, type, card, params, input, submitted} of variants) {
             });
         });
 
+        test.describe('with an unselected card whose field took focus on load', async () => {
+            test.beforeEach(async () => {
+                await initialize({page, uri: withContent([paragraph('First'), card, paragraph('Last')], params)});
+                await expect(page.getByTestId(input)).toBeFocused();
+                await expect(page.locator(`[data-kg-card="${type}"]`)).toHaveAttribute('data-kg-card-selected', 'false');
+            });
+
+            test('Escape closes the card', async function () {
+                await page.keyboard.press('Escape');
+
+                await expect(page.getByTestId(input)).toHaveCount(0);
+                expect(await documentTypes(page)).toEqual(['paragraph', 'paragraph', 'paragraph']);
+            });
+
+            test('Escape closes the card once it shows an error', async function () {
+                await page.getByTestId(input).fill('badurl');
+                await expect(page.getByTestId(input)).toHaveValue('badurl');
+                await page.getByTestId(input).press('Enter');
+                await expect(page.getByTestId(`${input}-error-message`)).toBeVisible();
+                await expect(page.locator(`[data-kg-card="${type}"]`)).toHaveAttribute('data-kg-card-selected', 'false');
+
+                await page.keyboard.press('Escape');
+
+                await expect(page.locator(`[data-kg-card="${type}"]`)).toHaveCount(0);
+            });
+
+            test('Escape closes the card while its preview loads', async function ({page: loadingPage}) {
+                await loadingPage.route('**/demo/utils/fetchEmbed.ts', route => route.fulfill({
+                    contentType: 'text/javascript',
+                    body: 'export async function fetchEmbed() { return new Promise(() => {}); }'
+                }));
+                await initialize({page: loadingPage, uri: withContent([paragraph('First'), card, paragraph('Last')], params)});
+                await loadingPage.getByTestId(input).fill('https://ghost.org/');
+                await loadingPage.getByTestId(input).press('Enter');
+                await expect(loadingPage.getByTestId(`${input}-loading-container`)).toBeVisible();
+                await expect(loadingPage.locator(`[data-kg-card="${type}"]`)).toHaveAttribute('data-kg-card-selected', 'false');
+
+                await loadingPage.keyboard.press('Escape');
+
+                await expect(loadingPage.locator(`[data-kg-card="${type}"]`)).toHaveCount(0);
+            });
+
+            test('an Escape event with no element as its target is ignored', async function () {
+                const errors = [];
+                const onError = error => errors.push(error.message);
+                page.on('pageerror', onError);
+
+                await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'})));
+
+                await expect(page.getByTestId(input)).toBeVisible();
+                page.off('pageerror', onError);
+                expect(errors).toEqual([]);
+            });
+        });
+
+        test.describe('with the card selected and focus outside its field', async () => {
+            test.beforeEach(async () => {
+                await initialize({page, uri: withContent([paragraph('First'), card, paragraph('Last')], params)});
+                await page.getByTestId(input).click();
+                await page.getByTestId(input).blur();
+                await expect(page.getByTestId(input)).not.toBeFocused();
+                await expect(page.locator(`[data-kg-card="${type}"]`)).toHaveAttribute('data-kg-card-selected', 'true');
+            });
+
+            test('Escape closes the card', async function () {
+                await page.keyboard.press('Escape');
+
+                await expect(page.getByTestId(input)).toHaveCount(0);
+                expect(await documentTypes(page)).toEqual(['paragraph', 'paragraph', 'paragraph']);
+            });
+        });
+
         test.describe('with two empty cards', async () => {
             test.beforeEach(async () => {
                 await initialize({page, uri: withContent([card, paragraph('Between'), card], params)});

@@ -5,11 +5,13 @@ import React from 'react';
 export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading}) {
     const {isSelected} = React.useContext(CardContext);
     const inputRef = React.useRef(null);
+    const showsField = !isLoading && !hasError;
 
     React.useEffect(() => {
-        // window hears Escape from the whole page, and the error and loading states have no field to focus
+        // window hears Escape from the whole page, so a card showing its field answers only for that field
+        // or when selected. The error and loading states have no field and answer any Escape
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape' && (isSelected || e.target === inputRef.current)) {
+            if (e.key === 'Escape' && (!showsField || isSelected || e.target === inputRef.current)) {
                 handleClose();
             }
         };
@@ -17,7 +19,7 @@ export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handl
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handleClose, isSelected]);
+    }, [handleClose, isSelected, showsField]);
 
     if (isLoading) {
         return (
