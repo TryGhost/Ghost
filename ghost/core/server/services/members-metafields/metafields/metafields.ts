@@ -4,7 +4,7 @@ import type { OnDefinitionUpdated, OnValuesWritten } from './changes';
 import { MetafieldDefinitionsService } from './definitions-service';
 import {
   createNamespaces,
-  type AccessPolicy,
+  type Access,
   type CountLimit,
   type NamespaceRegistration,
   type Namespaces,
@@ -37,7 +37,7 @@ export function metafieldsFor<R extends ResourceKind>(
     knex: Knex;
     namespaces: readonly NamespaceRegistration<R>[];
     /** Who reaches the definitions of a namespace nobody registered. */
-    unowned: AccessPolicy<R>;
+    unowned: Access<R>;
     /** How many definitions each namespace may hold, in the resource's own words when refused. */
     definitionLimit: CountLimit;
     /** How many fields one write of values can name, asked each time as config can change. */
@@ -57,6 +57,7 @@ export function metafieldsFor<R extends ResourceKind>(
   const namespaces = createNamespaces(wiring.namespaces, {
     unowned: wiring.unowned,
     definitionLimit: wiring.definitionLimit,
+    storedLevelFor: resource.storedLevelFor,
   });
   const fields = fieldSource(resource, namespaces);
   const definitions = new MetafieldDefinitionsService({

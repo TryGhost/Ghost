@@ -36,6 +36,11 @@ export interface MetafieldResource<R extends ResourceKind = ResourceKind> {
     /** Which field each port another domain declares writes into. */
     bindings: string;
   };
-  /** The column of the values and change events that holds the id of the member or post. */
+  /** The column of the values that holds the id of the member or post. */
   idColumn: string;
+  /**
+   * The caller every definition stores its own level for, in the fields table's `member_access`
+   * column, laid over its namespace's access. None when the resource stores no such level.
+   */
+  storedLevelFor?: R['Caller'];
 }

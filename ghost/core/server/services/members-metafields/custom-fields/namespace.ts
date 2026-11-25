@@ -1,19 +1,12 @@
 import type { LimitService } from '@tryghost/limit-service';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { MEMBER_ACCESS, type Caller } from '../callers';
 import type { Members } from '../members-resource';
-import type {
-  AvailabilityLimit,
-  Grant,
-  AccessPolicy,
-  NamespaceRegistration,
-} from '../metafields/namespaces';
+import type { Access, AvailabilityLimit, NamespaceRegistration } from '../metafields/namespaces';
 
 /**
- * Custom fields: the publisher's own namespace on members, with its owner, limits and access
- * policy. Staff with the custom fields permission manage them, and a host can switch them off.
- * How many a site can hold is Members' limit, the one every namespace on members has. Staff reach
- * every field, and the publisher opens each one to members, or not, with its member access.
+ * Custom fields: the publisher's own namespace on members, with its owner, limits and access.
+ * Staff with the custom fields permission manage them, and a host can switch them off. How many
+ * a site can hold is Members' limit, the one every namespace on members has.
  */
 export function customFields({
   limitService,
@@ -24,37 +17,15 @@ export function customFields({
     namespace: CUSTOM_NAMESPACE,
     owner: { staff: 'member_custom_field' },
     limits: [hostSwitch(limitService, 'limitCustomFields')],
-    accessPolicy: memberAccessPolicy,
+    access: CUSTOM_FIELDS_ACCESS,
   };
 }
 
-const EVERY_FIELD: Grant = { fields: 'all' };
-
 /**
- * What each caller can read: staff and Ghost itself can read every custom field, and a member
- * can read the ones whose member access is set to read or write.
+ * Staff and Ghost itself read and write every custom field. Members get nothing from the
+ * namespace: each field stores what its member may do, which the publisher sets per field.
  */
-const READABLE: Record<Caller, Grant> = {
-  admin: EVERY_FIELD,
-  internal: EVERY_FIELD,
-  members: { fields: 'by member access', levels: [MEMBER_ACCESS.read, MEMBER_ACCESS.write] },
-};
-
-/**
- * What each caller can write: a member can write only the custom fields whose member access
- * is set to write.
- */
-const WRITABLE: Record<Caller, Grant> = {
-  admin: EVERY_FIELD,
-  internal: EVERY_FIELD,
-  members: { fields: 'by member access', levels: [MEMBER_ACCESS.write] },
-};
-
-/** The custom namespace's access policy, which depends on each field's member access setting. */
-export const memberAccessPolicy: AccessPolicy<Members> = {
-  read: (caller) => READABLE[caller],
-  write: (caller) => WRITABLE[caller],
-};
+export const CUSTOM_FIELDS_ACCESS: Access<Members> = { admin: 'write', internal: 'write' };
 
 /**
  * A host limit that switches a feature off. The limit service is asked each time, as a host's
