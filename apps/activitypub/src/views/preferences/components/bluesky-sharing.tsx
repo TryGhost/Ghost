@@ -320,23 +320,25 @@ const BlueskySharing: React.FC = () => {
     wasSettingUpRef.current = isSettingUp;
   }, [isSettingUp, account?.blueskyEnabled]);
 
-  // A switch the publisher asked for earlier may still be in progress
-  useEffect(() => {
-    if (domainHandleStatus === 'claiming' && domainHandle?.automatic === false) {
-      setDomainHandleRequested(true);
-    }
-  }, [domainHandleStatus, domainHandle?.automatic]);
-
   // Keep checking while the domain is being switched to
   const shouldCheckDomainHandle =
     domainHandlesSupported &&
     !!account?.blueskyEnabled &&
     !!account?.blueskyHandleConfirmed &&
     domainHandleStatus === 'claiming';
+  const [wasCheckingDomainHandle, setWasCheckingDomainHandle] = useState(shouldCheckDomainHandle);
+
+  // A switch the publisher asked for earlier may still be in progress
+  if (shouldCheckDomainHandle && domainHandle?.automatic === false && !domainHandleRequested) {
+    setDomainHandleRequested(true);
+  }
+
+  if (wasCheckingDomainHandle !== shouldCheckDomainHandle) {
+    setWasCheckingDomainHandle(shouldCheckDomainHandle);
+    setDomainHandleTakingLong(false);
+  }
 
   useEffect(() => {
-    setDomainHandleTakingLong(false);
-
     if (!shouldCheckDomainHandle) {
       return;
     }
