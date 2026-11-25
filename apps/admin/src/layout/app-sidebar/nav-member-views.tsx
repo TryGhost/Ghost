@@ -14,7 +14,7 @@ const SHOWN_WHEN_FOLDED = 5;
  * a row that shows them, so a long list of pins can't push the rest of the sidebar out of view.
  * That matters most under the Admin 7 design, where the list opens whenever the members screen
  * does and can't be closed. The segment on screen always shows: past the fold, it is listed
- * with the first few.
+ * with the first few while the rest are folded away.
  *
  * The rest unfold below the first few and fold away again as the sidebar's own lists open and
  * close, so "Show more" and "Show less" move like Members or Posts opening and closing.
@@ -27,9 +27,13 @@ export function NavMemberViews() {
   const { showsAllPins, setShowsAllPins } = useSidebarShowsAllPins();
 
   const folds = memberViews.length > SHOWN_WHEN_FOLDED + 1;
-  // Listed the same whether the rest are shown or not, so showing them moves nothing above.
+  // While the rest are folded away, the segment on screen joins the first few so it still
+  // shows. With the rest shown, every segment keeps its place, so opening one never reorders
+  // the list under the pointer.
   const first = folds
-    ? memberViews.filter((view, index) => index < SHOWN_WHEN_FOLDED || view.isActive)
+    ? memberViews.filter(
+        (view, index) => index < SHOWN_WHEN_FOLDED || (!showsAllPins && view.isActive),
+      )
     : memberViews;
   const rest = folds ? memberViews.filter((view) => !first.includes(view)) : [];
 
