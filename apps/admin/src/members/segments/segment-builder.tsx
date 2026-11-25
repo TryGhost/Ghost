@@ -377,11 +377,13 @@ export function SegmentBuilderDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => !builder.draft.isPending && onOpenChange(next)}>
       {/* Small until there is a filter, then wide enough for the filters and the members they
-          match. The dialog's own timing animates the change, as it does in the members import. */}
+          match. Small is the width of Admin's other create dialogs, a custom field's or a
+          newsletter's (SettingsModal's "sm"). The dialog's own timing animates the change, as it
+          does in the members import. */}
       <DialogContent
         className={cn(
           'transition-[max-width] ease-out',
-          builder.hasFilters ? 'max-w-2xl' : 'max-w-lg',
+          builder.hasFilters ? 'max-w-2xl' : 'max-w-[480px]',
         )}
         data-testid="segment-builder-dialog"
         onEscapeKeyDown={(event) => {
