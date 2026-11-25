@@ -1,6 +1,7 @@
 import generateEditorState from '../generateEditorState';
-import type {LexicalEditor} from 'lexical';
+import type {EditorState} from 'lexical';
+import type {GenerateEditorStateOptions} from '../generateEditorState';
 
-export default function populateEditor({editor, initialHtml}: {editor: LexicalEditor; initialHtml?: string}) {
-    generateEditorState({editor, initialHtml});
+export default function populateEditor(options: GenerateEditorStateOptions): EditorState {
+    return generateEditorState(options);
 }

@@ -11,7 +11,12 @@ export function _$generateNodesFromHTML(editor: LexicalEditor, html: string) {
     return nodes;
 }
 
-export default function generateEditorState({editor, initialHtml}: {editor: LexicalEditor; initialHtml?: string}): EditorState {
+export interface GenerateEditorStateOptions {
+    editor: LexicalEditor;
+    initialHtml?: string;
+}
+
+export default function generateEditorState({editor, initialHtml}: GenerateEditorStateOptions): EditorState {
     if (initialHtml) {
         // convert html in `text` to Lexical nodes and populate the editor
         editor.update(() => {
