@@ -2462,6 +2462,103 @@ describe('App installations Admin API', function () {
       assert.equal((await actions()).length, 2);
     });
 
+    // An approval is held open, with the installation's row locked, until the uninstall is
+    // waiting for that row. The approval then commits, so it lands after the uninstall began and
+    // before the uninstall writes.
+    it('uninstalls the app as an approval left it, when the approval commits while the uninstall runs', async function () {
+      const installation = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      const waitingForTheInstallation = async (): Promise<number> => {
+        const [rows] = await models.Base.knex.raw(`
+          SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
+          FROM performance_schema.data_lock_waits AS waits
+          JOIN performance_schema.data_locks AS requested
+            ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+          WHERE requested.OBJECT_SCHEMA = DATABASE()
+            AND requested.OBJECT_NAME = 'app_installations'
+        `);
+        return Number(rows[0].waiting);
+      };
+
+      const approval = await models.Base.knex.transaction();
+      let uninstall: Promise<{ statusCode: number }> | undefined;
+      let uninstalled: { statusCode: number };
+      try {
+        await service().approve(
+          owner,
+          installation.id,
+          {
+            manifestUrl: MANIFEST_URL,
+            digest: reviewed.digest,
+            revision: reviewed.installation.revision,
+          },
+          approval,
+        );
+        const sent: Promise<{ statusCode: number }> = agent
+          .delete(`apps/installations/${installation.id}/`)
+          .then((response: { statusCode: number }) => response);
+        uninstall = sent;
+        await vi.waitFor(async () => assert.equal(await waitingForTheInstallation(), 1), {
+          timeout: 5000,
+        });
+        await approval.commit();
+        uninstalled = await sent;
+      } finally {
+        if (!approval.isCompleted()) {
+          await approval.rollback();
+        }
+        // Waited for however the test ends, so the uninstall is not still running when the next
+        // test starts.
+        await Promise.allSettled([uninstall]);
+      }
+
+      assert.equal(uninstalled.statusCode, 204);
+      assert.equal((await installationRow(installation.id)).status, 'uninstalled');
+      const recorded = (await actions()).filter((action: any) => action.event === 'uninstalled');
+      assert.equal(recorded.length, 1);
+      assert.equal(JSON.parse(recorded[0].context).primary_name, 'Podcasts');
+    });
+
+    // An uninstall can join a transaction that read the database before the installation last
+    // changed. A read without a lock inside it sees the installation as it was back then.
+    it('uninstalls the app as an approval left it, in a transaction opened before the approval', async function () {
+      const installation = await install();
+      const trx = await models.Base.knex.transaction();
+      try {
+        // On MySQL a transaction's first read decides what its reads without a lock see.
+        await trx('app_installations').where({ id: installation.id }).first('id');
+
+        serve(manifest({ name: 'Podcasts' }));
+        const reviewed = await preview();
+        serve(manifest({ name: 'Podcasts' }));
+        await agent
+          .put(`apps/installations/${installation.id}/`)
+          .body({
+            app_installations: [
+              {
+                manifest_url: MANIFEST_URL,
+                digest: reviewed.digest,
+                revision: reviewed.installation.revision,
+              },
+            ],
+          })
+          .expectStatus(200);
+
+        await service().uninstall(owner, installation.id, trx);
+        await trx.commit();
+      } catch (err) {
+        await trx.rollback();
+        throw err;
+      }
+
+      assert.equal((await installationRow(installation.id)).status, 'uninstalled');
+      const uninstalled = (await actions()).filter((action: any) => action.event === 'uninstalled');
+      assert.equal(uninstalled.length, 1);
+      assert.equal(JSON.parse(uninstalled[0].context).primary_name, 'Podcasts');
+    });
+
     it('answers 404 for an installation that does not exist', async function () {
       await agent.delete('apps/installations/abcdefabcdefabcdefabcdef/').expectStatus(404);
     });
