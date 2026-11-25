@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import type { Principal } from '../../../../../core/server/auth/principal';
-import {
-  ACTIVE_STAFF_STATUSES,
-  staffSessionOf,
-} from '../../../../../core/server/services/app-installations/staff-session';
+import { ACTIVE_STAFF_STATUSES } from '../../../../../core/shared/staff-status';
+import { staffSessionOf } from '../../../../../core/server/services/app-installations/staff-session';
 
 function sessionPrincipal({
   role = 'Administrator',
@@ -42,7 +40,7 @@ describe('staffSessionOf', function () {
     }
   });
 
-  it('accepts every status the User model counts as active, as the token lookup does', function () {
+  it('accepts every status the User model counts as active, as each call with the token does', function () {
     const { User } = require('../../../../../core/server/models/user');
     assert.deepEqual([...ACTIVE_STAFF_STATUSES], User.activeStates);
     for (const status of ACTIVE_STAFF_STATUSES) {
