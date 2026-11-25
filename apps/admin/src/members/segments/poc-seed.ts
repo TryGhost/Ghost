@@ -2,6 +2,7 @@ import {
   useAddSegment,
   useBrowseSegments,
   useDeleteSegment,
+  useInvalidateSegments,
 } from '@tryghost/admin-x-framework/api/segments';
 import { useState } from 'react';
 import { pinSegments, resetPrototypeState } from './poc-store';
@@ -36,6 +37,7 @@ export function usePrototypeSeed() {
   const { data } = useBrowseSegments();
   const { mutateAsync: addSegment } = useAddSegment();
   const { mutateAsync: deleteSegment } = useDeleteSegment();
+  const refetchSegments = useInvalidateSegments();
   const [working, setWorking] = useState<'clearing' | 'seeding' | null>(null);
   const segments = data?.segments ?? [];
 
@@ -44,10 +46,16 @@ export function usePrototypeSeed() {
     setWorking('clearing');
     try {
       for (const segment of segments) {
-        await deleteSegment(segment.id);
+        try {
+          await deleteSegment(segment.id);
+        } catch {
+          // Gone already, deleted elsewhere since this page loaded the list: carry on.
+        }
       }
       resetPrototypeState();
     } finally {
+      // The list as the server has it, whatever was deleted elsewhere meanwhile.
+      refetchSegments();
       setWorking(null);
     }
   };
@@ -70,6 +78,7 @@ export function usePrototypeSeed() {
       }
       pinSegments(pinned);
     } finally {
+      refetchSegments();
       setWorking(null);
     }
   };
