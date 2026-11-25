@@ -37,6 +37,7 @@ import type { EditLease } from './use-edit-lease';
 const NOBODY: ActivePresence[] = [];
 /** Long enough to cross from the avatar onto its card. */
 const HOVER_CLOSE_MS = 150;
+const TAKEOVER_SUCCESS_MS = 3_000;
 
 type Held = Extract<EditLease, { reason: 'held' }>;
 
@@ -231,6 +232,11 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   const hovered = useRef(false);
 
   const taking = lease.locked && lease.reason === 'taking';
+  const [wasTaking, setWasTaking] = useState(taking);
+  if (taking !== wasTaking) {
+    setWasTaking(taking);
+  }
+  const [takeoverSucceeded, setTakeoverSucceeded] = useState(false);
   const shown = held !== null || taking || editingHere;
   const urgent = (held?.lost ?? false) || (held?.raced ?? false);
   const [showTakeoverNotice, setShowTakeoverNotice] = useState(false);
@@ -246,9 +252,23 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   if (editingHere !== wasEditingHere) {
     setWasEditingHere(editingHere);
     if (editingHere) {
-      setOpen(false);
+      setTakeoverSucceeded(wasTaking);
+      setOpen(wasTaking);
+    } else {
+      setTakeoverSucceeded(false);
     }
   }
+
+  useEffect(() => {
+    if (!takeoverSucceeded) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setTakeoverSucceeded(false);
+      setOpen(false);
+    }, TAKEOVER_SUCCESS_MS);
+    return () => clearTimeout(timer);
+  }, [takeoverSucceeded]);
 
   useEffect(() => {
     if (!shown || !lease.locked) {
@@ -273,6 +293,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     setOpen(nextOpen);
     if (!nextOpen) {
       setShowTakeoverNotice(false);
+      setTakeoverSucceeded(false);
     }
   };
 
@@ -348,7 +369,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     </button>
   );
 
-  if (editingHere) {
+  if (editingHere && !takeoverSucceeded) {
     return (
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>{trigger}</TooltipTrigger>
@@ -367,10 +388,22 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
         sideOffset={8}
         // The card explains; it must not pull focus out of whatever the writer was reading.
         onOpenAutoFocus={(event) => event.preventDefault()}
-        onPointerEnter={enter}
-        onPointerLeave={leave}
+        onPointerEnter={takeoverSucceeded ? undefined : enter}
+        onPointerLeave={takeoverSucceeded ? undefined : leave}
       >
-        <LeaseCard {...props} holder={holder} showTakeoverNotice={showTakeoverNotice} />
+        {takeoverSucceeded ? (
+          <Inline align="start" gap="sm" role="status">
+            <LucideIcon.Check
+              aria-hidden="true"
+              className="mt-0.5 size-3.5 shrink-0 text-state-success"
+            />
+            <Text className="text-pretty" size="sm" weight="semibold">
+              You’re now editing this {resourceType}.
+            </Text>
+          </Inline>
+        ) : (
+          <LeaseCard {...props} holder={holder} showTakeoverNotice={showTakeoverNotice} />
+        )}
       </PopoverContent>
     </Popover>
   );

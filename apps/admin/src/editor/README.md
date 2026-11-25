@@ -324,6 +324,8 @@ settings fields. The card opens by itself when the writer needs
 to know without asking: the lease was just taken from them, what they typed
 was put back, or they typed into the read-only document. While a takeover
 waits, the avatar carries a spinner.
+Once a takeover finishes and this tab is editable, its avatar shows a success
+popover with a green checkmark for three seconds, then returns to its normal tooltip.
 After the takeover notification is dismissed, reopening the avatar shows the
 normal editing status. Any unsaved-content message and Copy content action remain.
 

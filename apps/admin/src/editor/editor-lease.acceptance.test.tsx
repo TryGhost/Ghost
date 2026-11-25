@@ -379,6 +379,16 @@ describe('Post editor lease', () => {
       await expect.element(avatar(), { timeout: 8_000 }).not.toBeInTheDocument();
       await expect.poll(canvasLocked).toBe(false);
       expect(reads.requests.length).toBeGreaterThan(readsBefore);
+      await expect
+        .element(card().getByRole('status'))
+        .toHaveTextContent('You’re now editing this post.');
+      expect(card().element().querySelector('svg')).toHaveClass('text-state-success');
+      await expect.element(card()).not.toBeInTheDocument();
+      const editing = page.getByRole('button', { name: 'You are editing this post', exact: true });
+      await userEvent.hover(editing);
+      await expect
+        .element(page.getByRole('tooltip'))
+        .toHaveTextContent('You are editing this post.');
     });
 
     it('reads the latest copy and opens by itself once they have gone', async () => {
@@ -522,6 +532,9 @@ describe('Post editor lease', () => {
     await expect.poll(() => told).toEqual(['taken']);
     // Without the other tab's word this waits twelve seconds, since the server never lists it.
     await expect.poll(canvasLocked, { timeout: 7_000 }).toBe(false);
+    await expect
+      .element(card().getByRole('status'))
+      .toHaveTextContent('You’re now editing this post.');
   });
 
   it('puts back what was typed, and locks, when someone else began a moment earlier', async () => {
@@ -635,6 +648,9 @@ describe('Post editor lease', () => {
       expect(canvasLocked()).toBe(true);
       await expect.element(editorScreen.titleInput()).toHaveValue('My unsaved title');
       await expect.element(editorScreen.updateButton()).toBeDisabled();
+      await expect
+        .element(page.getByText('You’re now editing this post.', { exact: true }))
+        .not.toBeInTheDocument();
 
       const readsBefore = reads.requests.length;
       await notice.getByRole('button', { name: 'Reload' }).click();
