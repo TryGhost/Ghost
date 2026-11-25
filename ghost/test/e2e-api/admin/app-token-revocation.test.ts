@@ -50,8 +50,8 @@ describe.skipIf(!appTokensAtBoot)('App tokens on security events', function () {
       scopes: ['post:browse'],
     });
     assert.ok('accessToken' in issued, `refused: ${JSON.stringify(issued)}`);
-    // Cut loose from its staff session, so ending sessions can't cascade to it and only an
-    // explicit delete removes it
+    // Cut loose from its staff session, so ending sessions can't cascade to it. Validation
+    // refuses it from here on, so only its row shows whether it was deleted
     await knex()('oauth_access_tokens').where({ user_id: userId }).update({ session_id: null });
     assert.ok((await tokenRowsOf(userId)) > 0);
     return issued.accessToken as string;
@@ -73,7 +73,7 @@ describe.skipIf(!appTokensAtBoot)('App tokens on security events', function () {
 
   it("deletes a user's app tokens when they are suspended", async function () {
     const adminId = user(ADMIN).id;
-    const token = await tokenFor(adminId);
+    await tokenFor(adminId);
 
     await agent
       .put(`users/${adminId}/`)
@@ -81,10 +81,11 @@ describe.skipIf(!appTokensAtBoot)('App tokens on security events', function () {
       .expectStatus(200);
 
     assert.equal(await tokenRowsOf(adminId), 0);
-    assert.equal(await auth().appTokens.validate(token), null);
   });
 
-  it("deletes a user's app tokens when they are deleted", async function () {
+  // The token row references the user, so deleting the user removes it whether or not the
+  // explicit delete runs: this covers the outcome, not the explicit delete
+  it("removes a user's app tokens when they are deleted", async function () {
     const editorId = user(EDITOR).id;
     await tokenFor(editorId);
 
@@ -95,7 +96,7 @@ describe.skipIf(!appTokensAtBoot)('App tokens on security events', function () {
 
   it("deletes a user's app tokens when their password changes", async function () {
     const ownerId = user(OWNER).id;
-    const token = await tokenFor(ownerId);
+    await tokenFor(ownerId);
 
     await agent
       .put('users/password/')
@@ -112,12 +113,11 @@ describe.skipIf(!appTokensAtBoot)('App tokens on security events', function () {
       .expectStatus(200);
 
     assert.equal(await tokenRowsOf(ownerId), 0);
-    assert.equal(await auth().appTokens.validate(token), null);
   });
 
   it("deletes a user's app tokens when they reset their password with an emailed token", async function () {
     const ownerId = user(OWNER).id;
-    const token = await tokenFor(ownerId);
+    await tokenFor(ownerId);
     const owner = await models.User.findOne({ id: ownerId }, { context: { internal: true } });
     const resetToken = security.tokens.resetToken.generateHash({
       expires: Date.now() + 24 * 60 * 60 * 1000,
@@ -140,7 +140,6 @@ describe.skipIf(!appTokensAtBoot)('App tokens on security events', function () {
       .expectStatus(200);
 
     assert.equal(await tokenRowsOf(ownerId), 0);
-    assert.equal(await auth().appTokens.validate(token), null);
   });
 
   // Last: it ends every session, the Owner's included
