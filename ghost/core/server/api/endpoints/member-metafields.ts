@@ -79,7 +79,7 @@ const controller = {
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions: { docName: 'member', method: 'browse' },
     query(frame: ReadFrame) {
-      return booted().values.heldValues(fieldRoute(frame.options));
+      return booted().values.heldValues(fieldRoute(frame.options), ADMIN);
     },
   },
 

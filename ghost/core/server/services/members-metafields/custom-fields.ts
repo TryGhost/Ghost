@@ -23,7 +23,7 @@ export function customFields({
   limitService: Pick<LimitService, 'isDisabled' | 'errorIfWouldGoOverLimit'>;
   /** Asked on every add, as an operator can change it while Ghost runs. */
   getMaxDefinitions: () => number;
-}): NamespaceRegistration {
+}): NamespaceRegistration<Audience> {
   return {
     namespace: CUSTOM_NAMESPACE,
     owner: { staff: 'member_custom_field' },
@@ -55,7 +55,7 @@ const WRITABLE: Record<Audience['entry'], Grant> = {
 };
 
 /** The custom namespace's access policy, which depends on each field's member access setting. */
-export const memberAccessPolicy: AccessPolicy = {
+export const memberAccessPolicy: AccessPolicy<Audience> = {
   read: (audience) => READABLE[audience.entry],
   write: (audience) => WRITABLE[audience.entry],
 };

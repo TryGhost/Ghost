@@ -8,7 +8,6 @@ import {
   SHAPE_SETTINGS,
   withTypedSettings,
   type FieldStatus,
-  type MetafieldChangeEntry,
   type MetafieldChangeSource,
   type TypedSettings,
 } from '@tryghost/metafield-types';
@@ -120,12 +119,12 @@ const VALUE_COLUMN_SCHEMAS = {
   value_text: z.string(),
 } satisfies { readonly [C in ValueColumn]: z.ZodType<ValueColumns[C]> };
 
-// One part of a member's value. What a `path` means is storage.ts's business, so the row
-// carries it as a plain string.
+// One part of a value. What a `path` means is storage.ts's business, so the row carries it as a
+// plain string. The id column is named by the resource, so it is left out here and added by
+// whoever knows which resource the table is for.
 export const DbMetafieldValue = z.object({
   metafield_namespace: z.string(),
   metafield_key: z.string(),
-  member_id: z.string(),
   path: z.string(),
   ...VALUE_COLUMN_SCHEMAS,
   // Plain columns rather than the `WrittenBy` union: the rule holds at the write
@@ -137,13 +136,14 @@ export const DbMetafieldValue = z.object({
   updated_at: DbDate.nullable(),
 });
 
-type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
+export type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
 // `type` drops a value whose type has left the catalog: its definition is no longer listed either,
 // and the row fails to parse. What a field's rows add up to is read once per field, with its
 // settings, from its definition rather than from each row.
 export const DbStoredValueRow = z.object({
-  member_id: z.string(),
+  /** The id of the member or post holding the value, whatever its column is called. */
+  resource_id: z.string(),
   namespace: NamespaceSchema,
   key: KeySchema,
   type: FieldTypeSchema,
@@ -160,7 +160,7 @@ export const DbMetafieldBinding = z.object({
   updated_at: DbDate.nullable(),
 });
 
-type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
+export type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
 
 /** A binding joined to the field it points at, which is how a collected value is routed. */
 export const DbBoundField = z.object({
@@ -214,10 +214,12 @@ export const StoredFieldList = DbJson(MetafieldChangeEventFields, {
   message: 'The stored field list is not JSON.',
 });
 
-/** An entry as the table holds it. Writer and source are plain strings, as on the values table. */
+/**
+ * An entry as the table holds it, except for the id column, which the resource
+ * names. Writer and source are plain strings, as on the values table.
+ */
 export const DbMetafieldChangeEvent = z.object({
   id: z.string(),
-  member_id: z.string(),
   written_by_type: z.string(),
   written_by_id: z.string().nullable(),
   source: z.string(),
@@ -231,53 +233,22 @@ export const DbMetafieldChangeEvent = z.object({
  */
 export type MetafieldChangeEventRow = z.input<typeof DbMetafieldChangeEvent>;
 
-/** The member columns an entry is shown with: only what a feed row needs. */
-export const DbChangeEventMember = z.object({
-  id: z.string(),
-  uuid: z.string(),
-  name: z.string().nullable(),
-  email: z.string(),
-});
-
-/** An activity feed entry with its member, as the metafields domain reads it. */
-export type MetafieldChangeEvent = MetafieldChangeEntry<Date> & {
-  member: z.output<typeof DbChangeEventMember>;
-};
+/**
+ * Every resource's fields table, as a query builder types it. A resource's tables are named by
+ * its descriptor rather than registered with knex, so a query names this type instead.
+ */
+export type FieldsTable = Knex.CompositeTableType<
+  MetafieldRow,
+  // `status` is DB-defaulted and only set via update, so it's absent here. The
+  // rank is required: letting it default would land a new field at the top.
+  Omit<z.input<typeof DbMetafield.asStored>, 'updated_at' | 'status'> & MetafieldRank,
+  Partial<MetafieldRow>
+>;
 
 /**
- * An entry and its member read back together. Parses and nothing else: what to do with an
- * entry that doesn't parse is the reading service's decision.
+ * An entry as it is written: with the date already in the string form SQLite orders against the
+ * feed's time filters, which a `Date` would silently break.
  */
-export const DbMetafieldChangeEventWithMember = z
-  .object({ event: DbMetafieldChangeEvent, member: DbChangeEventMember })
-  .transform(({ event, member }): MetafieldChangeEvent => ({ ...event, member }));
-
-declare module 'knex/types/tables' {
-  interface Tables {
-    members_metafields: Knex.CompositeTableType<
-      MetafieldRow,
-      // `status` is DB-defaulted and only set via update, so it's absent here. The
-      // rank is required: letting it default would land a new field at the top.
-      Omit<z.input<typeof DbMetafield.asStored>, 'updated_at' | 'status'> & MetafieldRank,
-      Partial<MetafieldRow>
-    >;
-    members_metafield_values: Knex.CompositeTableType<
-      MetafieldValueRow,
-      Omit<z.input<typeof DbMetafieldValue>, 'updated_at'>,
-      Partial<MetafieldValueRow>
-    >;
-    // Read as the schema reads it; written with the date already in the string form SQLite
-    // orders against the feed's time filters, which a `Date` would silently break.
-    members_metafield_change_events: Knex.CompositeTableType<
-      MetafieldChangeEventRow,
-      Omit<MetafieldChangeEventRow, 'created_at'> & { created_at: string }
-    >;
-    members_metafield_bindings: Knex.CompositeTableType<
-      MetafieldBindingRow,
-      // `updated_at` is set on insert as well as update: a binding is a setting, and
-      // "when was this last stated" is the same question whichever way it got there.
-      z.input<typeof DbMetafieldBinding>,
-      Partial<MetafieldBindingRow>
-    >;
-  }
-}
+export type MetafieldChangeEventInsert = Omit<MetafieldChangeEventRow, 'created_at'> & {
+  created_at: string;
+};

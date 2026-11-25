@@ -456,24 +456,24 @@ describe('Commands and transactions', function () {
       },
     },
     {
-      name: 'custom field values: getValuesForMember',
+      name: 'custom field values: getValuesFor',
       arrange: async () => {
         const { memberId, planned } = await plannedValue();
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesForMember(memberId, metafields.ADMIN, executor),
+          read: (executor) => values.getValuesFor(memberId, metafields.ADMIN, executor),
         };
       },
     },
     {
-      name: 'custom field values: getValuesForMembers',
+      name: 'custom field values: getValuesForMany',
       arrange: async () => {
         const { memberId, planned } = await plannedValue();
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesForMembers([memberId], metafields.ADMIN, executor),
+          read: (executor) => values.getValuesForMany([memberId], metafields.ADMIN, executor),
         };
       },
     },

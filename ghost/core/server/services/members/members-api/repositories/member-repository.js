@@ -157,7 +157,7 @@ module.exports = class MemberRepository {
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
    * @param {any} deps.productRepository
    * @param {any} deps.offersAPI
-   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues
+   * @param {import('../../../members-metafields').MemberMetafieldValues} deps.metafieldValues
    * @param {ITokenService} deps.tokenService
    * @param {any} deps.newslettersService
    * @param {Pick<automationsApi, 'notify'>} deps.automationsApi
@@ -1268,7 +1268,7 @@ module.exports = class MemberRepository {
     // transaction, and kept on the deleted member, whose member.deleted webhook is sent
     // once the transaction commits.
     const destroy = async (transacting) => {
-      const previousMetafields = await this._metafieldValues.getValuesForMember(
+      const previousMetafields = await this._metafieldValues.getValuesFor(
         member.id,
         ADMIN,
         transacting,

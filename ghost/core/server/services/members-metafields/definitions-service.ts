@@ -30,7 +30,6 @@ import {
 import {
   ACTIVE_ONLY,
   ANY_STATUS,
-  FIELDS_TABLE,
   inFieldOrder,
   nql,
   type DefinitionQuery,
@@ -44,16 +43,7 @@ import { fieldAction, reorderAction, type FieldAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 
-// Column limits come from the canonical schema — the same source the migration and
-// Bookshelf models read — so the service can never drift from the database. The
-// name cap turns an over-long input into a clean 422 (not a DB error), and the key
-// base is capped so even the longest collision suffix stays within the column.
-const columns = require('../../data/schema').tables[FIELDS_TABLE];
-const MAX_NAME_LENGTH: number = columns.name.maxlength;
-const MAX_KEY_LENGTH: number = columns.key.maxlength;
 const MAX_KEY_ITERATIONS = 1000;
-// Reserve room for a `_<n>` suffix (n up to MAX_KEY_ITERATIONS).
-const MAX_KEY_BASE_LENGTH = MAX_KEY_LENGTH - (String(MAX_KEY_ITERATIONS).length + 1);
 
 // A key becomes a property name on the plain objects that carry a member's values —
 // on both sides of the wire, since `custom_fields` is JSON and a client gets a plain
@@ -69,36 +59,13 @@ const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter(
   (name) => KeySchema.safeParse(name).success,
 );
 
-const FieldName = z
-  .string()
-  .trim()
-  .min(1, { message: 'Custom field name is required.' })
-  .max(MAX_NAME_LENGTH, { message: 'Custom field name is too long.' });
-
 const FieldAccess = z.object({ member: MemberAccessSchema });
-
-// No key: the backend mints it from the name. The type is checked with the settings it takes.
-
-const AddFieldInput = withTypedSettings(
-  { name: FieldName, access: FieldAccess.optional() },
-  WRITTEN_SETTINGS,
-);
 
 // A bound on the work one request can ask for, separate from how many definitions
 // a site may hold in total. Every definition in a batch costs several queries
 // inside one open write transaction, so an operator raising the site ceiling must
 // not also mean a single request can ask for an unbounded amount of that work.
 const MAX_FIELDS_PER_REQUEST = 100;
-
-// Create accepts a batch. The framework guarantees a non-empty array by the time a
-// query runs, but the service validates the whole payload up front so a bad item
-// anywhere fails the request before anything is written.
-const AddFieldsInput = z
-  .array(AddFieldInput)
-  .min(1)
-  .max(MAX_FIELDS_PER_REQUEST, {
-    message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`,
-  });
 
 // Only the key is read; the client sends whole field objects because that is the shape
 // the API speaks in.
@@ -113,17 +80,44 @@ const ReorderInput = z
   )
   .min(1, { message: 'The order must name every custom field.' });
 
-// Name, settings, status and access are mutable. `key` and `type` are accepted so the
-// immutability rules can reject a change loudly; they are never persisted. Settings are checked
-// against the field's type once the field is read.
-const EditFieldInput = z.object({
-  name: FieldName.optional(),
-  settings: z.unknown().optional(),
-  status: FieldStatusSchema.optional(),
-  access: FieldAccess.optional(),
-  key: z.optional(KeySchema),
-  type: FieldTypeSchema.optional(),
-});
+/**
+ * The add and edit inputs, validated against the fields table's column lengths so an over-long
+ * name is a validation error rather than a database error.
+ */
+function definitionInputs(maxLength: FieldSource<Audience>['maxLength']) {
+  const name = z
+    .string()
+    .trim()
+    .min(1, { message: 'Custom field name is required.' })
+    .max(maxLength.name, { message: 'Custom field name is too long.' });
+
+  return {
+    // No key: the backend mints it from the name. The type is checked with the settings it takes.
+    // Create accepts a batch. The framework guarantees a non-empty array by the time a query
+    // runs, but the service validates the whole payload up front so a bad item anywhere fails
+    // the request before anything is written.
+    add: z
+      .array(withTypedSettings({ name, access: FieldAccess.optional() }, WRITTEN_SETTINGS))
+      .min(1)
+      .max(MAX_FIELDS_PER_REQUEST, {
+        message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`,
+      }),
+    // Name, settings, status and access are mutable. `key` and `type` are accepted so the
+    // immutability rules can reject a change loudly; they are never persisted. Settings are
+    // checked against the field's type once the field is read.
+    edit: z.object({
+      name: name.optional(),
+      settings: z.unknown().optional(),
+      status: FieldStatusSchema.optional(),
+      access: FieldAccess.optional(),
+      key: z.optional(KeySchema),
+      type: FieldTypeSchema.optional(),
+    }),
+    // Leaves room for a `_<n>` suffix, with n up to MAX_KEY_ITERATIONS, so even the longest
+    // minted key fits the column.
+    maxKeyBase: maxLength.key - (String(MAX_KEY_ITERATIONS).length + 1),
+  };
+}
 
 /** A field as an edit left it. */
 export interface EditedField {
@@ -137,11 +131,12 @@ export interface EditedField {
 
 export class MetafieldDefinitionsService {
   private knex: Knex;
-  private fields: FieldSource;
+  private fields: FieldSource<Audience>;
   private actionLog: ActionLog;
-  private namespaces: Namespaces;
+  private namespaces: Namespaces<Audience>;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
+  private inputs: ReturnType<typeof definitionInputs>;
 
   constructor({
     knex,
@@ -152,9 +147,9 @@ export class MetafieldDefinitionsService {
     labs,
   }: {
     knex: Knex;
-    fields: FieldSource;
+    fields: FieldSource<Audience>;
     actionLog: ActionLog;
-    namespaces: Namespaces;
+    namespaces: Namespaces<Audience>;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
     labs: { isSet(flag: string): boolean };
@@ -165,6 +160,7 @@ export class MetafieldDefinitionsService {
     this.namespaces = namespaces;
     this.tracking = tracking;
     this.labs = labs;
+    this.inputs = definitionInputs(fields.maxLength);
   }
 
   async browse(
@@ -196,7 +192,7 @@ export class MetafieldDefinitionsService {
   }
 
   private async list(query: DefinitionQuery): Promise<Metafield[]> {
-    const rows = await inFieldOrder(query.read).select('*');
+    const rows = await inFieldOrder(query.read, this.fields.name).select('*');
     return rows.flatMap((row) => this.readField(row) ?? []);
   }
 
@@ -251,7 +247,7 @@ export class MetafieldDefinitionsService {
       await this.namespaces.assertChangeable(namespace);
       const requestedCount = Array.isArray(input) ? input.length : 0;
 
-      const parsed = AddFieldsInput.safeParse(input);
+      const parsed = this.inputs.add.safeParse(input);
       if (!parsed.success) {
         const issue = parsed.error.issues[0];
         throw new errors.ValidationError({
@@ -355,7 +351,7 @@ export class MetafieldDefinitionsService {
       sortOrder: number;
     },
   ): Promise<void> {
-    await db(FIELDS_TABLE).insert({
+    await this.fields.table(db).insert({
       id: new ObjectID().toHexString(),
       namespace: field.namespace,
       key: field.key,
@@ -390,7 +386,7 @@ export class MetafieldDefinitionsService {
    * lock across every create to make it exact would cost more than the overshoot it prevents.
    */
   private async assertRoom(db: Knex, namespace: Namespace, adding: number): Promise<void> {
-    const row = await db(FIELDS_TABLE).where({ namespace }).count({ count: '*' }).first();
+    const row = await this.fields.table(db).where({ namespace }).count({ count: '*' }).first();
     await this.namespaces.assertRoom(namespace, Number(row?.count ?? 0), adding);
   }
 
@@ -431,7 +427,7 @@ export class MetafieldDefinitionsService {
           .map((key, rank) => ({ key, rank }))
           .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
         for (const { key, rank } of ranked) {
-          await trx(FIELDS_TABLE).where({ namespace, key }).update({ sort_order: rank });
+          await this.fields.table(trx).where({ namespace, key }).update({ sort_order: rank });
         }
 
         // An order covers the whole list, archived definitions included.
@@ -452,7 +448,7 @@ export class MetafieldDefinitionsService {
   private async assertNamesEveryField(db: Knex, namespace: Namespace, keys: Key[]): Promise<void> {
     const named = new Set(keys);
     const existing = new Set(
-      await db(FIELDS_TABLE).where('namespace', namespace).pluck<string[]>('key'),
+      await this.fields.table(db).where('namespace', namespace).pluck<string[]>('key'),
     );
 
     const matches =
@@ -470,7 +466,8 @@ export class MetafieldDefinitionsService {
 
   /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
   private async nextSortOrder(db: Knex, namespace: Namespace): Promise<number> {
-    const row = await db(FIELDS_TABLE)
+    const row = await this.fields
+      .table(db)
       .where('namespace', namespace)
       .max({ highest: 'sort_order' })
       .first();
@@ -484,7 +481,8 @@ export class MetafieldDefinitionsService {
 
   /** Read back a batch in the order its keys were created, not the table's order. */
   private async readMany(db: Knex, namespace: Namespace, keys: Key[]): Promise<Metafield[]> {
-    const rows = await db(FIELDS_TABLE)
+    const rows = await this.fields
+      .table(db)
       .where('namespace', namespace)
       .whereIn('key', keys)
       .select('*');
@@ -510,10 +508,11 @@ export class MetafieldDefinitionsService {
     // Trimmed again after cutting, because the cut can land mid-separator and
     // a key that ends in one is not a shape minting is allowed to produce. The
     // base starts with an alphanumeric, so something always survives.
-    const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
+    const safeBase = base.slice(0, this.inputs.maxKeyBase).replace(/_+$/, '');
     const taken = new Set([
       ...RESERVED_KEYS,
-      ...(await db(FIELDS_TABLE)
+      ...(await this.fields
+        .table(db)
         .where('namespace', namespace)
         .where('key', 'like', `${safeBase}%`)
         .pluck('key')),
@@ -551,7 +550,8 @@ export class MetafieldDefinitionsService {
     name: string,
     exceptKey?: Key,
   ): Promise<void> {
-    const query = db(FIELDS_TABLE)
+    const query = this.fields
+      .table(db)
       .where('namespace', namespace)
       .whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
     if (exceptKey) {
@@ -575,7 +575,7 @@ export class MetafieldDefinitionsService {
   ): Promise<EditedField> {
     return this.tracking.definition('edit', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
-      const parsed = EditFieldInput.safeParse(input);
+      const parsed = this.inputs.edit.safeParse(input);
       if (!parsed.success) {
         throw new errors.ValidationError({
           message: parsed.error.issues[0].message,
@@ -628,7 +628,8 @@ export class MetafieldDefinitionsService {
           attempt.changing('rename');
           await this.assertNameAvailable(trx, namespace, patch.name, key);
           try {
-            await trx(FIELDS_TABLE)
+            await this.fields
+              .table(trx)
               .where({ namespace, key })
               .update({ name: patch.name, updated_at: new Date() });
           } catch (err) {
@@ -650,7 +651,8 @@ export class MetafieldDefinitionsService {
 
         if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
           attempt.changing('changeSettings');
-          await trx(FIELDS_TABLE)
+          await this.fields
+            .table(trx)
             .where({ namespace, key })
             .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
           recorded.push(fieldAction('changeSettings', { id: existing.id, name, key }));
@@ -658,7 +660,8 @@ export class MetafieldDefinitionsService {
 
         if (patch.access !== undefined && patch.access.member !== existing.access.member) {
           attempt.changing('changeAccess');
-          await trx(FIELDS_TABLE)
+          await this.fields
+            .table(trx)
             .where({ namespace, key })
             .update({ member_access: patch.access.member, updated_at: new Date() });
           recorded.push(
@@ -677,7 +680,8 @@ export class MetafieldDefinitionsService {
         if (patch.status !== undefined && patch.status !== existing.status) {
           const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
           attempt.changing(verb);
-          await trx(FIELDS_TABLE)
+          await this.fields
+            .table(trx)
             .where({ namespace, key })
             .update({ status: patch.status, updated_at: new Date() });
           recorded.push(fieldAction(verb, { id: existing.id, name, key }));
@@ -702,7 +706,8 @@ export class MetafieldDefinitionsService {
     trx: Knex.Transaction,
     field: FieldIdentity,
   ): Promise<Metafield | null> {
-    const row = await trx(FIELDS_TABLE)
+    const row = await this.fields
+      .table(trx)
       .where({ namespace: field.namespace, key: field.key })
       .forUpdate()
       .first();
@@ -737,7 +742,7 @@ export class MetafieldDefinitionsService {
       await ensureTransaction(executor, async (trx) => {
         // Locked, so a restore that lands between this check and the delete waits, rather than
         // having the field it just restored deleted.
-        const stored = await trx(FIELDS_TABLE).where({ namespace, key }).forUpdate().first();
+        const stored = await this.fields.table(trx).where({ namespace, key }).forUpdate().first();
         if (!stored) {
           throw new errors.NotFoundError({ message: 'Custom field not found.' });
         }
@@ -747,7 +752,7 @@ export class MetafieldDefinitionsService {
             message: 'Only archived custom fields can be deleted. Archive the field first.',
           });
         }
-        await trx(FIELDS_TABLE).where({ namespace, key }).del();
+        await this.fields.table(trx).where({ namespace, key }).del();
         await this.record(trx, context, [
           fieldAction('delete', { id: stored.id, name: stored.name, key }),
         ]);

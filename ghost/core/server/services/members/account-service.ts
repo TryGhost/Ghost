@@ -2,14 +2,14 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { isRecordValue } from '@tryghost/metafield-types/structure';
 import { CHECKOUT_PORTS, matchRequirement } from '@tryghost/checkout';
-import { MEMBERS } from '../members-metafields';
-import type { MetafieldBindingsService } from '../members-metafields/bindings-service';
 import {
+  MEMBERS,
   refusalError,
+  type MemberMetafieldValues,
+  type MetafieldBindingsService,
   type MetafieldPlan,
-  type MetafieldValuesService,
   type Refusal,
-} from '../members-metafields/values-service';
+} from '../members-metafields';
 import { parseRequest } from '../../lib/parse-request';
 import { COLLECTION_FLAG } from '../stripe-checkout-config/models';
 import type { TierRequirement, TierRequirements } from '../tiers/requirements';
@@ -73,7 +73,7 @@ interface EmailSuppressionList {
   removeEmail(email: string): Promise<unknown>;
 }
 
-type MetafieldValues = Pick<MetafieldValuesService, 'unwrapWire' | 'planWrite'>;
+type MetafieldValues = Pick<MemberMetafieldValues, 'unwrapWire' | 'planWrite'>;
 type MetafieldBindings = Pick<MetafieldBindingsService, 'planThrough'>;
 
 const AnswersInput = z.object({

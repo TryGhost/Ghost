@@ -124,7 +124,8 @@ export function optionPath(text: string): string {
 }
 
 export type StoredValueRow = ValueRow & {
-  member_id: string;
+  /** The id of the member or post holding the value. */
+  resource_id: string;
   namespace: string;
   key: string;
 };
@@ -294,30 +295,30 @@ export function pathsHolding(texts: readonly string[]): string[] {
 }
 
 /**
- * Every member's values, keyed by member, then namespace, then field key. `valueOf` gets one of a
+ * Every member's or post's values, keyed by its id, then namespace, then field key. `valueOf` gets one of a
  * field's rows, to say which field it is, and all of them, and returns what the field holds; a
- * field it returns undefined for is left out, and so is a namespace or member left with nothing.
+ * field it returns undefined for is left out, and so is a namespace, member or post left with nothing.
  */
 export function valuesFromRows<Row extends StoredValueRow>(
   rows: readonly Row[],
   valueOf: (row: Row, rows: readonly ValueRow[]) => unknown,
 ): Map<string, Record<string, Record<string, unknown>>> {
   type FieldRows = { row: Row; rows: ValueRow[] };
-  const byMember = new Map<string, Map<string, Map<string, FieldRows>>>();
+  const byResource = new Map<string, Map<string, Map<string, FieldRows>>>();
 
   for (const row of rows) {
-    const { member_id: memberId, namespace, key } = row;
-    const namespaces = byMember.get(memberId) ?? new Map<string, Map<string, FieldRows>>();
+    const { resource_id: resourceId, namespace, key } = row;
+    const namespaces = byResource.get(resourceId) ?? new Map<string, Map<string, FieldRows>>();
     const fields = namespaces.get(namespace) ?? new Map<string, FieldRows>();
     const forField: FieldRows = fields.get(key) ?? { row, rows: [] };
     forField.rows.push(row);
     fields.set(key, forField);
     namespaces.set(namespace, fields);
-    byMember.set(memberId, namespaces);
+    byResource.set(resourceId, namespaces);
   }
 
   const values = new Map<string, Record<string, Record<string, unknown>>>();
-  for (const [memberId, namespaces] of byMember) {
+  for (const [resourceId, namespaces] of byResource) {
     const held: Record<string, Record<string, unknown>> = {};
     for (const [namespace, fields] of namespaces) {
       const inNamespace = Object.fromEntries(
@@ -331,7 +332,7 @@ export function valuesFromRows<Row extends StoredValueRow>(
       }
     }
     if (Object.keys(held).length > 0) {
-      values.set(memberId, held);
+      values.set(resourceId, held);
     }
   }
   return values;

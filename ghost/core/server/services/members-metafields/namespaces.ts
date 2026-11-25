@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Namespace } from '@tryghost/metafield-types/identity';
 import type { ObjectType, permissions } from '../../auth/permissions/permissions-data';
-import type { Audience, MemberAccess } from './access';
+import type { MemberAccess } from './access';
 
 /** The staff permissions that cover managing fields: each grants adding, editing and deleting. */
 type ManagingPermission = {
@@ -62,7 +62,7 @@ export type Grant =
  * Who may read and write a namespace's fields. The namespace's owner decides it, as reaching
  * another's fields is a grant of the owner's, not a property of the field or of the caller.
  */
-export interface AccessPolicy {
+export interface AccessPolicy<Audience> {
   /** The fields `audience` may read. A field it can't read is one it can't tell exists. */
   read(audience: Audience): Grant;
   /** The fields `audience` may write the values of, of the ones it can read. */
@@ -74,12 +74,12 @@ export interface AccessPolicy {
  * fields in a namespace registers it, and this domain applies the rules, so it never has to know
  * whose namespace it is or why its limits are what they are.
  */
-export interface NamespaceRegistration {
+export interface NamespaceRegistration<Audience> {
   namespace: Namespace;
   owner: Owner;
   /** Every limit on the namespace. They stack: each one applies. */
   limits: readonly NamespaceLimit[];
-  accessPolicy: AccessPolicy;
+  accessPolicy: AccessPolicy<Audience>;
 }
 
 /** A namespace and what one audience is granted of its fields. */
@@ -96,9 +96,9 @@ export interface Grants {
   unowned: Grant;
 }
 
-export interface Namespaces {
+export interface Namespaces<Audience> {
   /** The registration of a namespace someone owns. Nobody owns any other, so no field can be defined there. */
-  owned(namespace: Namespace): NamespaceRegistration;
+  owned(namespace: Namespace): NamespaceRegistration<Audience>;
   /** The namespaces unavailable right now, whose fields read as archived. */
   unavailable(): Namespace[];
   /** Refuses any change to the namespace's fields its limits don't allow. */
@@ -122,8 +122,8 @@ export interface Namespaces {
  * would be refused for want of a permission, telling the caller to go and get one, when no
  * permission would have helped.
  */
-export function createNamespaces(
-  registrations: readonly NamespaceRegistration[],
+export function createNamespaces<Audience>(
+  registrations: readonly NamespaceRegistration<Audience>[],
   {
     unowned,
   }: {
@@ -131,16 +131,16 @@ export function createNamespaces(
      * Who reaches the fields of a namespace nobody owns. Nobody can define a field in one, but a
      * field can still be stored there, as an app's is.
      */
-    unowned: AccessPolicy;
+    unowned: AccessPolicy<Audience>;
   },
-): Namespaces {
+): Namespaces<Audience> {
   const byNamespace = new Map(
     registrations.map((registration) => [registration.namespace, registration]),
   );
   const accessPolicyOf = (namespace: Namespace) =>
     byNamespace.get(namespace)?.accessPolicy ?? unowned;
 
-  const owned = (namespace: Namespace): NamespaceRegistration => {
+  const owned = (namespace: Namespace): NamespaceRegistration<Audience> => {
     const registration = byNamespace.get(namespace);
     if (!registration) {
       throw new errors.ValidationError({
