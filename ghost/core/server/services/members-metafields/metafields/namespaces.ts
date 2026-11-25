@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import { unreachable } from '../../../lib/unreachable';
 import type { Namespace } from '@tryghost/metafield-types/identity';
 import type { ObjectType, permissions } from '../../../auth/permissions/permissions-data';
 import type { MemberAccess } from '@tryghost/metafield-types';
@@ -182,10 +183,8 @@ export function createNamespaces<Caller>(
           case 'count':
             // Asked of adding only: no other change holds more fields.
             break;
-          default: {
-            const _exhaustive: never = limit;
-            throw new errors.InternalServerError({ message: `Unhandled limit: ${_exhaustive}` });
-          }
+          default:
+            unreachable(limit, 'limit');
         }
       }
     },
@@ -201,10 +200,8 @@ export function createNamespaces<Caller>(
           case 'count':
             await limit.assertRoom(held, adding);
             break;
-          default: {
-            const _exhaustive: never = limit;
-            throw new errors.InternalServerError({ message: `Unhandled limit: ${_exhaustive}` });
-          }
+          default:
+            unreachable(limit, 'limit');
         }
       }
     },
@@ -219,10 +216,8 @@ function reaches(grant: Grant, field: { memberAccess: MemberAccess }): boolean {
       return false;
     case 'by member access':
       return grant.levels.includes(field.memberAccess);
-    default: {
-      const _exhaustive: never = grant;
-      throw new errors.InternalServerError({ message: `Unhandled grant: ${_exhaustive}` });
-    }
+    default:
+      return unreachable(grant, 'grant');
   }
 }
 
@@ -233,9 +228,7 @@ function makesUnavailable(limit: NamespaceLimit): boolean {
     case 'count':
       // A namespace with no room left still reads as it is stored.
       return false;
-    default: {
-      const _exhaustive: never = limit;
-      throw new errors.InternalServerError({ message: `Unhandled limit: ${_exhaustive}` });
-    }
+    default:
+      return unreachable(limit, 'limit');
   }
 }
