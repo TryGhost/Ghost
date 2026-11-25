@@ -1,3 +1,4 @@
+import type { AssetJournal, StoredAsset } from './asset-journal';
 import type { PostImportRow } from './row';
 import {
   createContentFileHandlers,
@@ -12,12 +13,6 @@ export interface PreparedAsset {
   originalPath: string;
   newPath: string;
   targetDir: string;
-}
-
-interface StoredAsset {
-  originalPath: string;
-  newPath: string;
-  stored: string;
 }
 
 interface AssetHandler {
@@ -53,7 +48,7 @@ export interface AssetPreparationDeps {
 
 export interface ImportAssetBatch {
   readonly files: PreparedAsset[];
-  store(): Promise<void>;
+  store(journal: AssetJournal): Promise<void>;
   rewriteRows(rows: PostImportRow[]): void;
 }
 
@@ -68,31 +63,49 @@ export class PreparedAssetBatch implements ImportAssetBatch {
     return this.groups.flatMap((group) => group.files);
   }
 
-  async store(): Promise<void> {
-    const results = await Promise.allSettled(
-      this.groups.map((group) => group.importer.doImport(group.files)),
-    );
-    const failure = results.find((result) => result.status === 'rejected');
-    if (failure) {
-      const rollbackResults = await Promise.allSettled(
-        results.flatMap((result, index) =>
-          result.status === 'fulfilled' ? [this.groups[index].importer.rollback(result.value)] : [],
-        ),
-      );
-      const rollbackFailures = rollbackResults.flatMap((result) =>
-        result.status === 'rejected' ? [result.reason] : [],
-      );
-      if (rollbackFailures.length > 0) {
-        // AggregateError is the native error for preserving storage and rollback
-        // failures; unlike GhostError it takes an iterable before its options.
+  async store(journal: AssetJournal): Promise<void> {
+    const storedByImporter = new Map<AssetImporter, StoredAsset[]>();
+    try {
+      for (const group of this.groups) {
+        const newlyStored: StoredAsset[] = [];
+        storedByImporter.set(group.importer, newlyStored);
+        for (const file of group.files) {
+          const saved = journal.assets.get(file.originalPath);
+          if (saved) {
+            file.newPath = saved.newPath;
+            continue;
+          }
+          const [result] = await group.importer.doImport([file]);
+          newlyStored.push(result);
+          file.newPath = result.stored;
+          await journal.append({ ...result, newPath: file.newPath });
+        }
+      }
+      await journal.flush();
+    } catch (error) {
+      // Persist the failure before rolling back so redelivery cannot use a
+      // committed mapping to an asset that this attempt removed.
+      await journal.stop(error);
+      const failures = [];
+      for (const [importer, stored] of storedByImporter) {
+        if (!stored.length) {
+          continue;
+        }
+        try {
+          await importer.rollback(stored);
+        } catch (failure) {
+          failures.push(failure);
+        }
+      }
+      if (failures.length) {
         // oxlint-disable-next-line ghost/ghost-custom/ghost-error-usage
         throw new AggregateError(
-          [failure.reason, ...rollbackFailures],
+          [error, ...failures],
           'Asset storage failed and rollback was incomplete.',
-          { cause: failure.reason },
+          { cause: error },
         );
       }
-      throw failure.reason;
+      throw error;
     }
   }
 
@@ -132,11 +145,11 @@ export async function prepareAssetBatch(
         return;
       }
 
-      return {
-        type: handler.type,
-        files: await handler.loadFile(files, baseDirectory),
-        importer,
-      };
+      const prepared: PreparedAsset[] = [];
+      for (let index = 0; index < files.length; index += 25) {
+        prepared.push(...(await handler.loadFile(files.slice(index, index + 25), baseDirectory)));
+      }
+      return { type: handler.type, files: prepared, importer };
     }),
   );
   const presentGroups = groups.filter((group): group is PreparedAssetGroup => group !== undefined);

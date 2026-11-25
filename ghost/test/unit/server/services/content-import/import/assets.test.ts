@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { mkdtemp, rm } from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import LocalStorageBase from '../../../../../../core/server/adapters/storage/LocalStorageBase';
+import { openAssetJournal } from '../../../../../../core/server/services/content-import/import/asset-journal';
 import {
   belongsToAssetDirectory,
   prepareAssetBatch,
@@ -10,8 +15,16 @@ import type { PostImportRow } from '../../../../../../core/server/services/conte
 const ContentFileImporter = require('../../../../../../core/server/data/importer/importers/content-file-importer');
 
 describe('content import assets', function () {
-  afterEach(function () {
+  let directory: string;
+  let storage: LocalStorageBase;
+  beforeEach(async function () {
+    directory = await mkdtemp(path.join(os.tmpdir(), 'csv-asset-journal-'));
+    storage = new LocalStorageBase({ storagePath: directory });
+  });
+
+  afterEach(async function () {
     sinon.restore();
+    await rm(directory, { recursive: true, force: true });
   });
 
   it('recognizes top-level, content, and wrapper asset directories', function () {
@@ -31,7 +44,7 @@ describe('content import assets', function () {
   });
 
   it('prepares, stores, and rewrites assets with the existing content-file importer', async function () {
-    const save = sinon.stub().resolves('/content/images/unique.jpg');
+    const save = sinon.stub().resolves('/blog/content/images/unique.jpg');
     const handler = {
       type: 'images' as const,
       extensions: ['.jpg'],
@@ -67,7 +80,7 @@ describe('content import assets', function () {
     assert.ok(batch);
     assert.equal(batch.files.length, 1);
     assert.equal(batch.files[0].newPath, '/blog/content/images/unique.jpg');
-    await batch.store();
+    await batch.store(await openAssetJournal(storage));
     sinon.assert.calledOnceWithExactly(
       save,
       sinon.match({ name: 'unique.jpg', originalPath: 'content/images/original.jpg' }),
@@ -109,121 +122,87 @@ describe('content import assets', function () {
     sinon.assert.notCalled(loadFile);
   });
 
-  it('waits for every asset group to settle before reporting a storage failure', async function () {
-    let finishMediaWrite: () => void = () => {};
-    const failedWrite = new Error('image storage failed');
-    const batch = new PreparedAssetBatch([
-      {
-        type: 'images',
-        files: [],
-        importer: {
-          type: 'images',
-          doImport: async () => {
-            throw failedWrite;
-          },
-          rollback: sinon.stub().resolves(),
-          preProcess: (data: Record<string, unknown>) => data,
-        },
-      },
-      {
-        type: 'media',
-        files: [],
-        importer: {
-          type: 'media',
-          doImport: () =>
-            new Promise<[]>((resolve) => {
-              finishMediaWrite = () => resolve([]);
-            }),
-          rollback: sinon.stub().resolves(),
-          preProcess: (data: Record<string, unknown>) => data,
-        },
-      },
-    ]);
-    let rejected = false;
-    const storePromise = batch.store().catch((error) => {
-      rejected = true;
-      throw error;
-    });
-
-    await new Promise<void>((resolve) => {
-      setImmediate(resolve);
-    });
-    assert.equal(rejected, false);
-
-    finishMediaWrite();
-    await assert.rejects(storePromise, /image storage failed/);
-  });
-
-  it('rolls back successful asset groups when another group fails', async function () {
-    const failedWrite = new Error('image storage failed');
-    const storedMedia = {
+  it('uses committed storage URLs on redelivery and skips the storage call', async function () {
+    const stored = {
       originalPath: 'content/media/movie.mp4',
       newPath: '/content/media/movie.mp4',
-      stored: '/content/media/movie.mp4',
+      stored: '/content/media/movie-1.mp4',
     };
-    const rollbackMedia = sinon.stub().resolves();
-    const batch = new PreparedAssetBatch([
-      {
-        type: 'images',
-        files: [],
-        importer: {
-          type: 'images',
-          doImport: async () => {
-            throw failedWrite;
-          },
-          rollback: sinon.stub().resolves(),
-          preProcess: (data: Record<string, unknown>) => data,
-        },
-      },
-      {
-        type: 'media',
-        files: [],
-        importer: {
-          type: 'media',
-          doImport: async () => [storedMedia],
-          rollback: rollbackMedia,
-          preProcess: (data: Record<string, unknown>) => data,
-        },
-      },
-    ]);
+    const file = { ...stored, name: 'movie.mp4', path: '/tmp/movie.mp4', targetDir: '.' };
+    const save = sinon.stub().resolves([stored]);
+    const importer = {
+      type: 'media' as const,
+      doImport: save,
+      rollback: sinon.stub().resolves(),
+      preProcess: (data: Record<string, unknown>) => data,
+    };
 
-    await assert.rejects(batch.store(), (error: unknown) => error === failedWrite);
-    sinon.assert.calledOnceWithExactly(rollbackMedia, [storedMedia]);
+    const initial = new PreparedAssetBatch([{ type: 'media', files: [{ ...file }], importer }]);
+    await initial.store(await openAssetJournal(storage));
+
+    const replay = new PreparedAssetBatch([
+      { type: 'media', files: [{ ...file, newPath: '/other.mp4' }], importer },
+    ]);
+    await replay.store(await openAssetJournal(storage));
+    sinon.assert.calledOnce(save);
+    assert.equal(replay.files[0].newPath, stored.stored);
   });
 
-  it('preserves storage and rollback failures when rollback is incomplete', async function () {
-    const failedWrite = new Error('image storage failed');
-    const failedRollback = new Error('media rollback failed');
-    const batch = new PreparedAssetBatch([
-      {
-        type: 'images',
-        files: [],
-        importer: {
-          type: 'images',
-          doImport: async () => {
-            throw failedWrite;
-          },
-          rollback: sinon.stub().resolves(),
-          preProcess: (data: Record<string, unknown>) => data,
-        },
-      },
-      {
-        type: 'media',
-        files: [],
-        importer: {
+  it.each([false, true])(
+    'records the terminal failure before rollback (rollback fails: %s)',
+    async function (rollbackFails) {
+      const failedWrite = new Error('file storage failed');
+      const failedRollback = new Error('media rollback failed');
+      const stored = {
+        originalPath: 'content/media/movie.mp4',
+        newPath: '/content/media/movie.mp4',
+        stored: '/content/media/movie.mp4',
+      };
+      const media = { ...stored, name: 'movie.mp4', path: '/tmp/movie.mp4', targetDir: '.' };
+      const file = { ...media, name: 'file.pdf', originalPath: 'content/files/file.pdf' };
+      const rollback = sinon.stub().callsFake(async () => {
+        await assert.rejects(openAssetJournal(storage), /file storage failed/);
+        if (rollbackFails) {
+          throw failedRollback;
+        }
+      });
+      const batch = new PreparedAssetBatch([
+        {
           type: 'media',
-          doImport: async () => [],
-          rollback: sinon.stub().rejects(failedRollback),
-          preProcess: (data: Record<string, unknown>) => data,
+          files: [media],
+          importer: {
+            type: 'media',
+            doImport: async () => [stored],
+            rollback,
+            preProcess: (data: Record<string, unknown>) => data,
+          },
         },
-      },
-    ]);
+        {
+          type: 'files',
+          files: [file],
+          importer: {
+            type: 'files',
+            doImport: async () => {
+              throw failedWrite;
+            },
+            rollback: sinon.stub().resolves(),
+            preProcess: (data: Record<string, unknown>) => data,
+          },
+        },
+      ]);
 
-    await assert.rejects(batch.store(), (error: unknown) => {
-      assert.ok(error instanceof AggregateError);
-      assert.equal(error.cause, failedWrite);
-      assert.deepEqual(error.errors, [failedWrite, failedRollback]);
-      return true;
-    });
-  });
+      const journal = await openAssetJournal(storage);
+      await assert.rejects(batch.store(journal), (error: unknown) => {
+        if (rollbackFails) {
+          assert.ok(error instanceof AggregateError);
+          assert.equal(error.cause, failedWrite);
+          assert.deepEqual(error.errors, [failedWrite, failedRollback]);
+        } else {
+          assert.equal(error, failedWrite);
+        }
+        return true;
+      });
+      sinon.assert.calledOnceWithExactly(rollback, [stored]);
+    },
+  );
 });

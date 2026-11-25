@@ -10,6 +10,7 @@ import type { PostsRepository, PostWriteResult, WrittenPost } from './post-repos
 import type { ImportRequest } from './schema';
 import type { Clock, RowOutcome } from './store';
 import { ImportJournal, type JournalStorage } from './journal';
+import { openAssetJournal } from './asset-journal';
 import { readImportReports, type ImportReportContents } from './journal-report';
 import { createSummary, type ImportSummary } from './summary';
 import type { PreparedImportSource } from './source';
@@ -280,6 +281,9 @@ class ContentCSVImporter {
       source = prepared.source;
       preparedRows = prepared.preparedRows;
       journal = new ImportJournal(storage, preparedRows.columns, { record: 0, part: 0 });
+      if (source.assets) {
+        await source.assets.store(await openAssetJournal(storage));
+      }
       await this.processRows(journal, job.importTagNames, preparedRows.rows, prepared.source);
       await journal.flush();
     } catch (error) {
@@ -347,10 +351,6 @@ class ContentCSVImporter {
     let media: PostMediaInlining | undefined;
 
     try {
-      if (source.assets) {
-        await source.assets.store();
-      }
-
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();

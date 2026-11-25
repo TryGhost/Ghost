@@ -65,7 +65,7 @@ function partKey(kind: 'outcomes' | 'errors', part: number): string {
   return `${kind}/${part}.csv`;
 }
 
-export async function* readOutcomeParts(storage: JournalStorage, { part }: JournalPosition) {
+export async function* readJSONParts<T>(storage: JournalStorage, { part }: JournalPosition) {
   for (let index = 1; index <= part; index++) {
     const source = await storage.readStream({ path: partKey('outcomes', index) });
     for await (const cells of parseCSVStream(source, {
@@ -76,9 +76,21 @@ export async function* readOutcomeParts(storage: JournalStorage, { part }: Journ
       if (cells.length !== 1) {
         throw new errors.InternalServerError({ message: 'Invalid CSV import journal record.' });
       }
-      yield JSON.parse(cells[0]) as RowOutcome;
+      yield JSON.parse(cells[0]) as T;
     }
   }
+}
+
+export function readOutcomeParts(storage: JournalStorage, position: JournalPosition) {
+  return readJSONParts<RowOutcome>(storage, position);
+}
+
+export function scopeJournalStorage(storage: JournalStorage, prefix: string): JournalStorage {
+  return {
+    readStream: ({ path }) => storage.readStream({ path: `${prefix}/${path}` }),
+    writeStream: (key, source) => storage.writeStream(`${prefix}/${key}`, source),
+    replaceMetadata: (key, bytes) => storage.replaceMetadata(`${prefix}/${key}`, bytes),
+  };
 }
 
 export async function* readErrorParts(storage: JournalStorage, { part }: JournalPosition) {
@@ -88,31 +100,23 @@ export async function* readErrorParts(storage: JournalStorage, { part }: Journal
   }
 }
 
-export function journalRecord(value: unknown): string {
-  return serialize([{ outcome: JSON.stringify(value) }], { header: false });
-}
-
-export class ImportJournal {
+export class JournalBatch {
   private storage: JournalStorage;
-  private formatError: ReturnType<typeof createErrorsFileFormatter>;
+  private readonly includeErrorParts: boolean;
   private position: JournalPosition;
   private batch: Part[] = [];
   private bytes = 0;
   private timer?: ReturnType<typeof setTimeout>;
   private flushing?: Promise<void>;
 
-  constructor(storage: JournalStorage, columns: string[], position: JournalPosition) {
+  constructor(storage: JournalStorage, position: JournalPosition, includeErrorParts: boolean) {
     this.storage = storage;
-    this.formatError = createErrorsFileFormatter(columns);
     this.position = position;
+    this.includeErrorParts = includeErrorParts;
   }
 
-  async append(row: RowOutcome): Promise<void> {
+  async append(entry: Part): Promise<void> {
     await this.flushing;
-    const entry = {
-      outcome: journalRecord({ ...row, source: undefined }),
-      error: this.formatError.row(row),
-    };
     const bytes = Buffer.byteLength(entry.outcome) + Buffer.byteLength(entry.error ?? '') + 4;
     if (this.batch.length && this.bytes + bytes > BATCH_BYTES) {
       await this.flush();
@@ -148,11 +152,38 @@ export class ImportJournal {
     const encoded = (kind: keyof Part) =>
       Readable.from(this.batch.flatMap((entry) => (entry[kind] ? [entry[kind], '\r\n'] : [])));
     await this.storage.writeStream(partKey('outcomes', part), encoded('outcome'));
-    await this.storage.writeStream(partKey('errors', part), encoded('error'));
+    if (this.includeErrorParts) {
+      await this.storage.writeStream(partKey('errors', part), encoded('error'));
+    }
     await this.storage.replaceMetadata(`commits/${record}.txt`, Buffer.from(String(part)));
     await this.storage.replaceMetadata(CHECKPOINT, Buffer.from(String(record)));
     this.position = { record, part };
     this.batch = [];
     this.bytes = 0;
+  }
+}
+
+export function journalRecord(value: unknown): string {
+  return serialize([{ outcome: JSON.stringify(value) }], { header: false });
+}
+
+export class ImportJournal {
+  private batch: JournalBatch;
+  private formatError: ReturnType<typeof createErrorsFileFormatter>;
+
+  constructor(storage: JournalStorage, columns: string[], position: JournalPosition) {
+    this.batch = new JournalBatch(storage, position, true);
+    this.formatError = createErrorsFileFormatter(columns);
+  }
+
+  append(row: RowOutcome): Promise<void> {
+    return this.batch.append({
+      outcome: journalRecord({ ...row, source: undefined }),
+      error: this.formatError.row(row),
+    });
+  }
+
+  flush(): Promise<JournalPosition> {
+    return this.batch.flush();
   }
 }
