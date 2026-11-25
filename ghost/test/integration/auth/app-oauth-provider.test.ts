@@ -154,7 +154,7 @@ describe("Better Auth's OAuth provider for apps", function () {
       const auth = build({ apps: true });
       const disabledPaths: string[] = auth.options.disabledPaths ?? [];
 
-      assert.deepEqual(APP_OAUTH_MOUNTED_PATHS, []);
+      assert.deepEqual(APP_OAUTH_MOUNTED_PATHS, [] as string[]);
       for (const { path, serverOnly } of appRoutes()) {
         if (serverOnly || APP_OAUTH_MOUNTED_PATHS.includes(path)) {
           continue;

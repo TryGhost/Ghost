@@ -60,11 +60,11 @@ describe('Better Auth service root', function () {
     /** Answers the table listing with the given tables, on either database */
     function listTables(tables: string[]) {
       const raw = db.knex.raw.bind(db.knex);
-      sinon.stub(db.knex, 'raw').callsFake((sql: string, ...args: unknown[]) => {
-        if (/show full tables/.test(sql)) {
+      sinon.stub(db.knex, 'raw').callsFake((sql: unknown, ...args: unknown[]) => {
+        if (/show full tables/.test(String(sql))) {
           return Promise.resolve([tables.map((name) => ({ name }))]);
         }
-        if (/sqlite_master/.test(sql)) {
+        if (/sqlite_master/.test(String(sql))) {
           return Promise.resolve(tables.map((name) => ({ tbl_name: name })));
         }
         return raw(sql, ...args);
