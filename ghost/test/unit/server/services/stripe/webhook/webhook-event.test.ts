@@ -5,8 +5,11 @@ import {
   type WebhookEvent,
 } from '../../../../../../core/server/services/stripe/webhook/webhook-event';
 
-/** The uuid of the site that reads each event. */
-const thisSite = '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11';
+/** The site that reads each event, which ignores no customers. */
+const thisSite = {
+  siteUuid: '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11',
+  listedCustomers: new Set<string>(),
+};
 
 /** The webhook event for a Checkout session event of `type` carrying `session`. */
 function checkout(type: CheckoutSessionEventType, session: Record<string, unknown>): WebhookEvent {

@@ -1,5 +1,7 @@
+import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { StripeName } from '../codecs';
+import { FAILURE_CODES } from './failures';
 
 /** A Stripe object from an event's `data.object`, as Stripe sent it. */
 export type StripeObject = Record<string, unknown>;
@@ -43,18 +45,27 @@ export type IgnoreReason =
   | 'conflicting_checkout_markers';
 
 /**
- * The data for each webhook event kind. Each kind has exactly one command that handles it (see
- * `WebhookController`). An event Ghost doesn't act on is `ignored`, with the reason.
+ * An event Ghost doesn't act on, with the reason. An event ignored for its customer being on the
+ * ignore list names the customer, which the webhook logs.
+ */
+export type Ignored =
+  | { reason: Exclude<IgnoreReason, 'listed_customer'> }
+  | { reason: 'listed_customer'; customerId: string };
+
+/**
+ * The data for each webhook event kind: the input its command takes, named after the kind. Each
+ * kind has exactly one command that handles it (see `WebhookController`). An event Ghost doesn't
+ * act on is `ignored`, with the reason.
  */
 export interface WebhookEvents {
   subscription_checkout: { session: CheckoutSessionObject };
   card_update_checkout: { session: CheckoutSessionObject };
   gift_checkout: { session: CheckoutSessionObject };
   donation_checkout: { session: CheckoutSessionObject };
-  subscription: { type: SubscriptionEventType; subscription: StripeObject };
-  invoice: { invoice: StripeObject };
-  refund: { charge: StripeObject };
-  ignored: { reason: IgnoreReason };
+  subscription: Subscription;
+  invoice: Invoice;
+  refund: Refund;
+  ignored: Ignored;
 }
 
 export type WebhookEventKind = keyof WebhookEvents;
@@ -79,9 +90,108 @@ const Envelope = z
 
 export type StripeEventEnvelope = z.output<typeof Envelope>;
 
+/**
+ * What the webhook needs to know about the site that receives each event: its uuid, which tells
+ * the Checkout sessions it created from other sites', and the Stripe customers whose subscription
+ * updates it ignores, from the `stripeWebhookCustomerIgnoreList` config.
+ */
+export interface WebhookSite {
+  siteUuid: string;
+  listedCustomers: ReadonlySet<string>;
+}
+
+/** An event with its object, which every event type Ghost handles has. */
 const WithObject = z
   .object({ data: z.object({ object: z.record(z.string(), z.unknown()) }).loose() })
   .loose();
+
+/**
+ * Reads what Stripe sent for an event of `type` with `schema`. An event Ghost can't read fails
+ * here, naming its type and the fields that didn't match, as Ghost's failure: Stripe sends every
+ * field Ghost reads, so Ghost's expectation of the event is what's wrong. A schema's transforms
+ * mustn't throw, as the failure would then escape this classification.
+ */
+function readPayload<Schema extends z.ZodType>(
+  schema: Schema,
+  received: unknown,
+  type: string,
+): z.output<Schema> {
+  const read = schema.safeParse(received);
+  if (!read.success) {
+    throw new errors.InternalServerError({
+      message: "Stripe sent an event Ghost can't read",
+      code: FAILURE_CODES.unreadableEvent,
+      context: `${type}: ${z.prettifyError(read.error)}`,
+      err: read.error,
+    });
+  }
+  return read.data;
+}
+
+/**
+ * A change to a subscription, from a `customer.subscription.*` event: which subscription, its
+ * customer, and how many prices it has, as Ghost supports subscriptions with one price only.
+ * Ghost fetches the subscription again to save it, so nothing else is read here.
+ */
+const SubscriptionPayload = z
+  .object({
+    id: z.string(),
+    customer: z.string(),
+    items: z.object({ data: z.array(z.object({}).loose()) }).loose(),
+  })
+  .loose()
+  .transform(({ id, customer, items }) => ({
+    subscriptionId: id,
+    customerId: customer,
+    prices: items.data.length,
+  }));
+
+export type Subscription = z.output<typeof SubscriptionPayload>;
+
+/**
+ * A paid invoice: the subscription it's for, or null for a one-off payment such as a donation or a
+ * gift, and what was paid. Stripe sends `invoice.payment_succeeded` only once an invoice is paid.
+ */
+const InvoicePayload = z
+  .object({
+    subscription: z.string().nullable(),
+    amount_paid: z.number(),
+    currency: z.string(),
+  })
+  .loose()
+  .transform(({ subscription, amount_paid: amountPaid, currency }) => ({
+    subscriptionId: subscription,
+    amountPaid,
+    currency,
+  }));
+
+export type Invoice = z.output<typeof InvoicePayload>;
+
+/**
+ * A refunded charge: the payment intent it was paid through, which identifies a gift, or null for
+ * a charge made without one.
+ */
+const RefundPayload = z
+  .object({ payment_intent: z.string().nullable() })
+  .loose()
+  .transform(({ payment_intent: paymentIntentId }) => ({ paymentIntentId }));
+
+export type Refund = z.output<typeof RefundPayload>;
+
+/**
+ * The webhook event for a subscription event of `type`. An update to the subscription of a
+ * customer on the site's ignore list is ignored. Its other events aren't, so Ghost still ends the
+ * subscription when Stripe deletes it.
+ */
+function subscriptionEvent(type: SubscriptionEventType) {
+  return (object: StripeObject, { listedCustomers }: WebhookSite): WebhookEvent => {
+    const subscription = readPayload(SubscriptionPayload, object, type);
+    if (type === 'customer.subscription.updated' && listedCustomers.has(subscription.customerId)) {
+      return { kind: 'ignored', reason: 'listed_customer', customerId: subscription.customerId };
+    }
+    return { kind: 'subscription', ...subscription };
+  };
+}
 
 /**
  * A Checkout session as the webhook reads it from Stripe. Every field it doesn't declare passes
@@ -138,7 +248,10 @@ const CheckoutSession = z
     };
   });
 
-const ignored = (reason: IgnoreReason): WebhookEvent => ({ kind: 'ignored', reason });
+const ignored = (reason: Exclude<IgnoreReason, 'listed_customer'>): WebhookEvent => ({
+  kind: 'ignored',
+  reason,
+});
 
 /**
  * The webhook event for a Checkout session event, to the site whose uuid is `siteUuid`. Every
@@ -156,12 +269,12 @@ function checkoutEvent(
   if (type === 'checkout.session.async_payment_failed') {
     return ignored('payment_failed');
   }
-  const session = CheckoutSessionObject.parse(received);
+  const session = readPayload(CheckoutSessionObject, received, type);
   const createdBy = session.metadata?.ghost_site_uuid;
   if (createdBy && createdBy !== siteUuid) {
     return ignored('another_site');
   }
-  const { mode, paid, gift, donation, conflicting } = CheckoutSession.parse(session);
+  const { mode, paid, gift, donation, conflicting } = readPayload(CheckoutSession, session, type);
   if (type === 'checkout.session.async_payment_succeeded') {
     if (mode !== 'payment' || !gift) {
       return ignored('not_a_gift');
@@ -187,50 +300,38 @@ function checkoutEvent(
 }
 
 /**
- * Builds the webhook event for each Stripe event type Ghost handles, from its `data.object`, to
- * the site whose uuid is `siteUuid`.
+ * Builds the webhook event for each Stripe event type Ghost handles, from its `data.object`, for
+ * the site that receives it.
  */
-const KINDS = new Map<string, (object: StripeObject, siteUuid: string) => WebhookEvent>([
+const KINDS = new Map<string, (object: StripeObject, site: WebhookSite) => WebhookEvent>([
   [
     'checkout.session.completed',
-    (session, siteUuid) => checkoutEvent('checkout.session.completed', session, siteUuid),
+    (session, { siteUuid }) => checkoutEvent('checkout.session.completed', session, siteUuid),
   ],
   [
     'checkout.session.async_payment_succeeded',
-    (session, siteUuid) =>
+    (session, { siteUuid }) =>
       checkoutEvent('checkout.session.async_payment_succeeded', session, siteUuid),
   ],
   [
     'checkout.session.async_payment_failed',
-    (session, siteUuid) =>
+    (session, { siteUuid }) =>
       checkoutEvent('checkout.session.async_payment_failed', session, siteUuid),
   ],
+  ['customer.subscription.created', subscriptionEvent('customer.subscription.created')],
+  ['customer.subscription.updated', subscriptionEvent('customer.subscription.updated')],
+  ['customer.subscription.deleted', subscriptionEvent('customer.subscription.deleted')],
   [
-    'customer.subscription.created',
-    (subscription) => ({
-      kind: 'subscription',
-      type: 'customer.subscription.created',
-      subscription,
+    'invoice.payment_succeeded',
+    (invoice) => ({
+      kind: 'invoice',
+      ...readPayload(InvoicePayload, invoice, 'invoice.payment_succeeded'),
     }),
   ],
   [
-    'customer.subscription.updated',
-    (subscription) => ({
-      kind: 'subscription',
-      type: 'customer.subscription.updated',
-      subscription,
-    }),
+    'charge.refunded',
+    (charge) => ({ kind: 'refund', ...readPayload(RefundPayload, charge, 'charge.refunded') }),
   ],
-  [
-    'customer.subscription.deleted',
-    (subscription) => ({
-      kind: 'subscription',
-      type: 'customer.subscription.deleted',
-      subscription,
-    }),
-  ],
-  ['invoice.payment_succeeded', (invoice) => ({ kind: 'invoice', invoice })],
-  ['charge.refunded', (charge) => ({ kind: 'refund', charge })],
 ]);
 
 /** Reads the envelope of a Stripe event whose signature Ghost has verified. */
@@ -239,12 +340,12 @@ export function readEnvelope(verified: unknown): StripeEventEnvelope {
 }
 
 /**
- * Returns the webhook event for a verified Stripe event of `type`, to the site whose uuid is
- * `siteUuid`. Throws when an event of a type Ghost handles has no `data.object`.
+ * Returns the webhook event for a verified Stripe event of `type`, for the site that receives it.
+ * An event of a type Ghost handles that Ghost can't read fails as `unreadable_stripe_event`.
  */
-export function toWebhookEvent(type: string, verified: unknown, siteUuid: string): WebhookEvent {
+export function toWebhookEvent(type: string, verified: unknown, site: WebhookSite): WebhookEvent {
   const build = KINDS.get(type);
   return build
-    ? build(WithObject.parse(verified).data.object, siteUuid)
+    ? build(readPayload(WithObject, verified, type).data.object, site)
     : ignored('unhandled_type');
 }

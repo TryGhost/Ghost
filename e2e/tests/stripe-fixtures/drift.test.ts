@@ -102,7 +102,7 @@ test.describe('Stripe fixtures - builder shapes match captured Stripe responses'
     { object: 'subscription', path: 'plan.amount', readAt: 'next-payment-calculator' },
     { object: 'subscription', path: 'plan.interval', readAt: 'next-payment-calculator' },
     { object: 'subscription', path: 'plan.currency', readAt: 'next-payment-calculator' },
-    { object: 'subscription', path: 'plan.product', readAt: 'invoice-event-service' },
+    { object: 'subscription', path: 'plan.product', readAt: 'invoice recordInvoicePayment' },
     {
       object: 'subscription',
       path: 'status',

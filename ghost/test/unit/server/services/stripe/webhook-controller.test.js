@@ -32,10 +32,15 @@ describe('WebhookController', function () {
     deps = {
       apiVersion: '2020-08-27',
       siteUuid: () => '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11',
-      subscriptionEventService: { handleSubscriptionEvent: sinon.stub() },
-      invoiceEventService: { handleInvoiceEvent: sinon.stub() },
-      checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },
-      chargeRefundedEventService: { handleEvent: sinon.stub() },
+      commands: {
+        subscription_checkout: sinon.stub(),
+        card_update_checkout: sinon.stub(),
+        gift_checkout: sinon.stub(),
+        donation_checkout: sinon.stub(),
+        subscription: sinon.stub(),
+        invoice: sinon.stub(),
+        refund: sinon.stub().resolves({ result: 'handled' }),
+      },
       webhookManager: { parseWebhook: sinon.stub() },
       tracking,
       sentry: { captureException: sinon.stub() },
@@ -77,7 +82,7 @@ describe('WebhookController', function () {
     deps.webhookManager.parseWebhook.resolves({
       type: 'charge.refunded',
       api_version: '2025-08-27.basil',
-      data: { object: { id: 'ch_1' } },
+      data: { object: { id: 'ch_1', payment_intent: 'pi_1' } },
     });
 
     await controller.handle(req, res);
@@ -87,7 +92,7 @@ describe('WebhookController', function () {
       api_version: '2025-08-27.basil',
       expected_api_version: '2020-08-27',
     });
-    sinon.assert.calledOnce(deps.chargeRefundedEventService.handleEvent);
+    sinon.assert.calledOnce(deps.commands.refund);
     sinon.assert.calledWith(res.writeHead, 200);
   });
 
@@ -96,7 +101,7 @@ describe('WebhookController', function () {
     deps.webhookManager.parseWebhook.resolves({
       type: 'charge.refunded',
       api_version: '2020-08-27',
-      data: { object: { id: 'ch_1' } },
+      data: { object: { id: 'ch_1', payment_intent: 'pi_1' } },
     });
 
     await controller.handle(req, res);
@@ -108,9 +113,11 @@ describe('WebhookController', function () {
   function failingWith(failure) {
     deps.webhookManager.parseWebhook.resolves({
       type: 'customer.subscription.created',
-      data: { object: { customer: 'cust_123' } },
+      data: {
+        object: { id: 'sub_123', customer: 'cust_123', items: { data: [{ id: 'si_123' }] } },
+      },
     });
-    deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+    deps.commands.subscription.throws(failure);
     return failure;
   }
 

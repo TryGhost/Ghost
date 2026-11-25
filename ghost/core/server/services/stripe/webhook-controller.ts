@@ -2,17 +2,15 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { ExpandableId } from './codecs';
 import type { StripeTracking, WebhookOutcome } from './tracking';
 import { classifyFailure, FAILURE_CODES } from './webhook/failures';
 import {
   readEnvelope,
   toWebhookEvent,
-  type CheckoutSessionObject,
   type StripeEventEnvelope,
-  type StripeObject,
   type WebhookEvent,
   type WebhookEventKind,
+  type WebhookEvents,
 } from './webhook/webhook-event';
 
 export interface WebhookControllerDeps {
@@ -23,27 +21,22 @@ export interface WebhookControllerDeps {
   webhookManager: {
     parseWebhook(body: unknown, signature: string): Promise<unknown>;
   };
-  checkoutSessionEventService: {
-    completeSubscriptionCheckout(session: CheckoutSessionObject): Promise<unknown>;
-    updateCard(session: CheckoutSessionObject): Promise<unknown>;
-    completeGiftPurchase(session: CheckoutSessionObject): Promise<unknown>;
-    recordDonation(session: CheckoutSessionObject): Promise<unknown>;
-  };
-  subscriptionEventService: {
-    handleSubscriptionEvent(subscription: StripeObject): Promise<unknown>;
-  };
-  invoiceEventService: { handleInvoiceEvent(invoice: StripeObject): Promise<unknown> };
-  chargeRefundedEventService: { handleEvent(charge: StripeObject): Promise<unknown> };
+  commands: WebhookCommands;
   tracking: Pick<StripeTracking, 'webhook'>;
   sentry: { captureException(err: unknown): unknown };
 }
 
-/** The command that handles each kind of webhook event. */
+/** The command that handles each kind of webhook event, which takes the kind's input. */
 type Commands = {
-  [K in WebhookEventKind]: (event: WebhookEvent<K>) => Promise<WebhookOutcome>;
+  [K in WebhookEventKind]: (input: WebhookEvents[K]) => Promise<WebhookOutcome>;
 };
 
-const HANDLED: WebhookOutcome = { result: 'handled' };
+/**
+ * The command for each kind of webhook event Ghost acts on, which `webhookCommands` builds with
+ * each command's dependencies (see `webhook/commands.ts`). The controller ignores an `ignored`
+ * event itself.
+ */
+export type WebhookCommands = Omit<Commands, 'ignored'>;
 
 /** Runs the command for the event's kind. */
 function run<K extends WebhookEventKind>(
@@ -52,9 +45,6 @@ function run<K extends WebhookEventKind>(
 ): Promise<WebhookOutcome> {
   return commands[event.kind](event);
 }
-
-/** The id of an object's Stripe customer, whether Stripe sent the id or the expanded customer. */
-const CustomerId = z.object({ customer: ExpandableId }).transform(({ customer }) => customer);
 
 const WithStatus = z.object({ statusCode: z.number() });
 
@@ -83,46 +73,7 @@ export class WebhookController {
   constructor(deps: WebhookControllerDeps) {
     this.#deps = deps;
     this.#commands = {
-      subscription_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.completeSubscriptionCheckout(session);
-        return HANDLED;
-      },
-      card_update_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.updateCard(session);
-        return HANDLED;
-      },
-      gift_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.completeGiftPurchase(session);
-        return HANDLED;
-      },
-      donation_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.recordDonation(session);
-        return HANDLED;
-      },
-      subscription: async ({ type, subscription }) => {
-        const listedCustomer = this.#listedCustomerOf(subscription);
-        if (type === 'customer.subscription.updated' && listedCustomer) {
-          logging.info(
-            {
-              event: { name: 'stripe.webhook.ignored' },
-              stripe_event_type: type,
-              customer_id: listedCustomer,
-            },
-            'Ignored a Stripe webhook for a customer on stripeWebhookCustomerIgnoreList',
-          );
-          return { result: 'ignored', reason: 'listed_customer' };
-        }
-        await deps.subscriptionEventService.handleSubscriptionEvent(subscription);
-        return HANDLED;
-      },
-      invoice: async ({ invoice }) => {
-        await deps.invoiceEventService.handleInvoiceEvent(invoice);
-        return HANDLED;
-      },
-      refund: async ({ charge }) => {
-        await deps.chargeRefundedEventService.handleEvent(charge);
-        return HANDLED;
-      },
+      ...deps.commands,
       ignored: async ({ reason }) => ({ result: 'ignored', reason }),
     };
   }
@@ -150,7 +101,10 @@ export class WebhookController {
         // Before the event is parsed into its kind, so a mismatch is still logged when it's the
         // reason the event doesn't parse.
         this.#checkApiVersion(envelope);
-        const event = toWebhookEvent(envelope.type, verified, this.#deps.siteUuid());
+        const event = toWebhookEvent(envelope.type, verified, {
+          siteUuid: this.#deps.siteUuid(),
+          listedCustomers: this.#listedCustomers,
+        });
         attempt.matching(event.kind);
         logging.info(
           {
@@ -160,6 +114,16 @@ export class WebhookController {
           },
           'Handling a Stripe webhook',
         );
+        if (event.kind === 'ignored' && event.reason === 'listed_customer') {
+          logging.info(
+            {
+              event: { name: 'stripe.webhook.ignored' },
+              stripe_event_type: envelope.type,
+              customer_id: event.customerId,
+            },
+            'Ignored a Stripe webhook for a customer on stripeWebhookCustomerIgnoreList',
+          );
+        }
         return run(this.#commands, event);
       });
       res.writeHead(200);
@@ -214,13 +178,5 @@ export class WebhookController {
         'Stripe sent a webhook rendered at a different API version than Ghost expects',
       );
     }
-  }
-
-  /** The subscription's Stripe customer, when it's on the ignore list. */
-  #listedCustomerOf(subscription: StripeObject): string | undefined {
-    const customerId = CustomerId.safeParse(subscription);
-    return customerId.success && this.#listedCustomers.has(customerId.data)
-      ? customerId.data
-      : undefined;
   }
 }
