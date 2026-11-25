@@ -16,7 +16,7 @@ module.exports = {
 
     // Looked up when an event arrives: the members service starts alongside this one.
     const readMemberMetafields = (memberId) =>
-      membersService.api.memberBREADService.readMetafieldsForMember(memberId, 'admin');
+      membersService.api.memberBREADService.readMetafieldsForMember(memberId, { kind: 'internal' });
 
     const serialize = createSerialize({ urlService, readMemberMetafields });
     const payload = createPayload({ serialize });

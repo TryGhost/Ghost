@@ -1267,9 +1267,10 @@ module.exports = class MemberRepository {
     // transaction, and kept on the deleted member, whose member.deleted webhook is sent
     // once the transaction commits.
     const destroy = async (transacting) => {
+      // Read as Ghost itself, as what it finds is what the site's webhooks are sent.
       const previousMetafields = await this._metafieldValues.getValuesFor(
         member.id,
-        'admin',
+        { kind: 'internal' },
         transacting,
       );
       // require: false so concurrent deletes don't throw "No Rows Deleted"

@@ -1,5 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { booted } from '../../services/members-metafields';
+import { booted, callerOf } from '../../services/members-metafields';
 import { namespaceRoute } from '../../services/members-metafields/serializers';
 
 /**
@@ -18,6 +18,7 @@ import { namespaceRoute } from '../../services/members-metafields/serializers';
 type BrowseFrame = Frame<{
   options: {
     namespace: string;
+    context: unknown;
   };
 }>;
 
@@ -36,7 +37,10 @@ const controller = {
       // No `filter`, which Admin offers: whether a field is archived is a
       // publisher's business, and a member is only ever shown what they can still
       // fill in.
-      return booted().definitions.browse(namespaceRoute(frame.options), 'members');
+      return booted().definitions.browse(
+        namespaceRoute(frame.options),
+        callerOf(frame.options.context),
+      );
     },
   },
 } satisfies Controller<{ browse: BrowseFrame }>;

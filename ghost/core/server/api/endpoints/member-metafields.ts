@@ -1,6 +1,6 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import { actingContext } from '../../lib/actor';
-import { booted, changedForMembers } from '../../services/members-metafields';
+import { booted, callerOf, changedForMembers } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
 const permissionsService = require('../../auth/permissions');
@@ -55,7 +55,7 @@ const controller = {
     query(frame: ReadFrame) {
       return booted().definitions.browse(
         { ...namespaceRoute(frame.options), filter: frame.options.filter },
-        'admin',
+        callerOf(frame.options.context),
       );
     },
   },
@@ -67,7 +67,7 @@ const controller = {
     permissions: false,
     query(frame: ReadFrame) {
       const { namespace, key } = fieldRoute(frame.options);
-      return booted().definitions.read(namespace, key, 'admin');
+      return booted().definitions.read(namespace, key, callerOf(frame.options.context));
     },
   },
 
@@ -79,7 +79,7 @@ const controller = {
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions: { docName: 'member', method: 'browse' },
     query(frame: ReadFrame) {
-      return booted().values.heldValues(fieldRoute(frame.options), 'admin');
+      return booted().values.heldValues(fieldRoute(frame.options), callerOf(frame.options.context));
     },
   },
 

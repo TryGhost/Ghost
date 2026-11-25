@@ -40,7 +40,7 @@ export type { MetafieldChangeEvent, Members } from './members-resource';
 
 // The API a request came through decides which custom fields it can read and write. Every read
 // and write takes one, so a new caller has to state which API it is rather than get a default.
-export { MEMBER_ACCESS, type Caller, type MemberAccess } from './callers';
+export { MEMBER_ACCESS, callerOf, type Caller, type MemberAccess } from './callers';
 
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the
@@ -114,7 +114,7 @@ export function init(): void {
     unowned: CUSTOM_FIELDS_ACCESS,
     definitionLimit: definitionLimit(getMaxDefinitions),
     maxDefinitions: getMaxDefinitions,
-    internal: 'internal',
+    internal: { kind: 'internal' },
     // Each change to a definition is logged as a staff action inside the command that made it.
     onDefinitionUpdated: recordMemberDefinitionChanges(new ActionLog()),
     onValuesWritten: activity.record,

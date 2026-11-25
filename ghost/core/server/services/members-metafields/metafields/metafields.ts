@@ -10,7 +10,7 @@ import {
   type Namespaces,
 } from './namespaces';
 import { fieldSource, type FieldSource } from './queries';
-import type { MetafieldResource, ResourceKind } from './resource';
+import type { Asking, MetafieldResource, ResourceKind } from './resource';
 import type { MetafieldsTracking } from './tracking';
 import { MetafieldValuesService } from './values-service';
 
@@ -43,7 +43,7 @@ export function metafieldsFor<R extends ResourceKind>(
     /** How many fields one write of values can name, asked each time as config can change. */
     maxDefinitions: () => number;
     /** The caller Ghost itself reads and writes as. */
-    internal: R['Caller'];
+    internal: Asking<R>;
     /** Called with each change to a definition, inside the command's transaction. */
     onDefinitionUpdated: OnDefinitionUpdated;
     /** Called with each write of values, inside its transaction. */

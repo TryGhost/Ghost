@@ -12,7 +12,7 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import type { MetafieldResource, ResourceKind } from './resource';
+import type { Asking, MetafieldResource, ResourceKind } from './resource';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS, type MetafieldBindingRow } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
@@ -58,7 +58,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
   private table: string;
   private fields: FieldSource<R>;
   private values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
-  private internal: R['Caller'];
+  private internal: Asking<R>;
 
   constructor({
     knex,
@@ -75,7 +75,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
      * The caller Ghost itself writes as. A port's values are planned as Ghost's, since the
      * binding, not whoever sent them, is what admits them.
      */
-    internal: R['Caller'];
+    internal: Asking<R>;
   }) {
     this.knex = knex;
     this.table = resource.tables.bindings;
@@ -133,7 +133,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
    */
   async boundPorts(
     ports: readonly string[],
-    caller: R['Caller'],
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<Map<string, string | null>> {
     if (!ports.length) {

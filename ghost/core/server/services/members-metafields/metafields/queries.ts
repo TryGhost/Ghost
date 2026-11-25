@@ -4,7 +4,7 @@ import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
 import type { Grant, Grants, Namespaces } from './namespaces';
-import type { MetafieldResource, ResourceKind } from './resource';
+import type { Asking, MetafieldResource, ResourceKind } from './resource';
 import { FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
 
 /**
@@ -117,7 +117,7 @@ export type DefinitionQuery = ScopedDefinitions;
 
 /** Which fields a definitions read is for, and who for. */
 export interface DefinitionScope<R extends ResourceKind> {
-  caller: R['Caller'];
+  caller: Asking<R>;
   status: StatusScope;
   /** One namespace's fields. Without it, every namespace's. */
   namespace?: Namespace;
@@ -146,7 +146,7 @@ export interface FieldSource<R extends ResourceKind> {
    * Narrows a read that joins the fields to the ones `caller` may read, as each namespace's
    * owner grants them.
    */
-  readable<T extends Knex.QueryBuilder>(query: T, caller: R['Caller']): T;
+  readable<T extends Knex.QueryBuilder>(query: T, caller: Asking<R>): T;
   /** The longest name and key the fields table can store. */
   maxLength: { name: number; key: number };
   /**

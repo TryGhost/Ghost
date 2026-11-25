@@ -97,10 +97,9 @@ describe('Commands and transactions', function () {
     const key = await createField('Nickname');
     const memberId = await createMember();
     const { values } = metafields.booted();
-    const planned = await values.planWrite(
-      values.unwrapWire({ custom: { [key]: 'Bex' } }),
-      'admin',
-    );
+    const planned = await values.planWrite(values.unwrapWire({ custom: { [key]: 'Bex' } }), {
+      kind: 'staff',
+    });
     return { memberId, planned };
   }
 
@@ -440,7 +439,7 @@ describe('Commands and transactions', function () {
         read: (executor) =>
           metafields
             .booted()
-            .definitions.browse({ namespace: CUSTOM_NAMESPACE }, 'admin', executor),
+            .definitions.browse({ namespace: CUSTOM_NAMESPACE }, { kind: 'staff' }, executor),
       }),
     },
     {
@@ -451,7 +450,7 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             definitions.edit(context, CUSTOM_NAMESPACE, key, { name: 'Employer' }, trx),
-          read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, 'admin', executor),
+          read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, { kind: 'staff' }, executor),
         };
       },
     },
@@ -462,7 +461,7 @@ describe('Commands and transactions', function () {
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesFor(memberId, 'admin', executor),
+          read: (executor) => values.getValuesFor(memberId, { kind: 'staff' }, executor),
         };
       },
     },
@@ -473,7 +472,7 @@ describe('Commands and transactions', function () {
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesForMany([memberId], 'admin', executor),
+          read: (executor) => values.getValuesForMany([memberId], { kind: 'staff' }, executor),
         };
       },
     },
@@ -505,7 +504,7 @@ describe('Commands and transactions', function () {
           read: async (executor) => {
             const { writes } = await values.planOrRefuse(
               values.unwrapWire({ custom: { nickname: 'Bex' } }),
-              'admin',
+              { kind: 'staff' },
               undefined,
               executor,
             );
@@ -528,7 +527,11 @@ describe('Commands and transactions', function () {
             ),
           read: (executor) =>
             values
-              .planWrite(values.unwrapWire({ custom: { nickname: 'Bex' } }), 'admin', executor)
+              .planWrite(
+                values.unwrapWire({ custom: { nickname: 'Bex' } }),
+                { kind: 'staff' },
+                executor,
+              )
               .then(
                 (writes) => writes.length,
                 () => 'refused',
@@ -545,7 +548,7 @@ describe('Commands and transactions', function () {
           change: (trx) =>
             bindings.bind(PHONE_PORT, { namespace: CUSTOM_NAMESPACE, key }, new Date(), trx),
           read: async (executor) => [
-            ...(await bindings.boundPorts([PHONE_PORT], 'members', executor)).keys(),
+            ...(await bindings.boundPorts([PHONE_PORT], { kind: 'member' }, executor)).keys(),
           ],
         };
       },
