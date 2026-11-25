@@ -8,10 +8,10 @@ const { chainTransformers } = require('@tryghost/mongo-utils');
 const { memberAvatarImage } = require('../services/members/member-avatar');
 const { MemberCommentingCodec } = require('../services/members/commenting');
 const { LabelAddedToMembersEvent } = require('../../shared/events/label-added-to-members-event');
+const { METAFIELDS_RELATION } = require('../services/members-metafields/members-resource');
 const {
-  METAFIELDS_RELATION,
   createMetafieldsFilterTransformer,
-} = require('../services/members-metafields/filter');
+} = require('../services/members-metafields/metafields/filter');
 
 const DEEP_OFFSET_THRESHOLD = 1000;
 

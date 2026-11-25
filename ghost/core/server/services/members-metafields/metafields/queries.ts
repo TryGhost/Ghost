@@ -182,7 +182,7 @@ export function fieldSource<Audience>(
   const tableName = resource.tables.fields;
   // The canonical schema, which the migrations and models also read, so these can't drift from
   // the database.
-  const columns = require('../../data/schema').tables[tableName];
+  const columns = require('../../../data/schema').tables[tableName];
   const asRead = (db: Knex, rows: Knex.QueryBuilder) => {
     const unavailable = namespaces.unavailable();
     return rows.select(

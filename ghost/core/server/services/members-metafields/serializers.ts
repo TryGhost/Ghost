@@ -3,7 +3,7 @@ import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { type Identity, IdentitySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { parseRequest } from '../../lib/parse-request';
-import { Metafield } from './models';
+import { Metafield } from './metafields/models';
 
 const NamespaceRoute = z.object({ namespace: NamespaceSchema });
 

@@ -3,7 +3,7 @@ import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { Metafield } from './models';
+import { Metafield } from '../metafields/models';
 import {
   FieldTypeSchema,
   TypedSettingsInputSchema,
@@ -14,11 +14,11 @@ import {
   type FieldType,
   type TypedSettings,
 } from '@tryghost/metafield-types';
-import { metafieldCodec, metafieldCodecWithDefaults } from './codec';
-import { readStoredField } from './stored-fields';
+import { metafieldCodec, metafieldCodecWithDefaults } from '../metafields/codec';
+import { readStoredField } from '../metafields/stored-fields';
 import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
-import type { Namespaces } from './namespaces';
-import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from './schema';
+import type { Namespaces } from '../metafields/namespaces';
+import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from '../metafields/schema';
 import {
   ADMIN,
   MEMBERS,
@@ -26,7 +26,7 @@ import {
   MemberAccessSchema,
   type Audience,
   type MemberAccess,
-} from './access';
+} from '../audiences';
 import {
   ACTIVE_ONLY,
   ANY_STATUS,
@@ -35,13 +35,13 @@ import {
   type DefinitionQuery,
   type FieldIdentity,
   type FieldSource,
-} from './queries';
+} from '../metafields/queries';
 import { mintableKey } from './key';
-import type { ActionLog } from '../../lib/action-log/action-log';
-import type { RequestContext } from '../../lib/actor';
+import type { ActionLog } from '../../../lib/action-log/action-log';
+import type { RequestContext } from '../../../lib/actor';
 import { fieldAction, reorderAction, type FieldAction } from './field-actions';
-import type { MetafieldsTracking } from './tracking';
-import { ensureTransaction } from '../../lib/ensure-transaction';
+import type { MetafieldsTracking } from '../metafields/tracking';
+import { ensureTransaction } from '../../../lib/ensure-transaction';
 
 const MAX_KEY_ITERATIONS = 1000;
 

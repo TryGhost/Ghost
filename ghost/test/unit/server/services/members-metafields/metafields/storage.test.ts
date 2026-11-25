@@ -20,8 +20,8 @@ import {
   valuesFromRows,
   type RowsToWrite,
   type ValueRow,
-} from '../../../../../core/server/services/members-metafields/storage';
-import schema from '../../../../../core/server/data/schema/schema';
+} from '../../../../../../core/server/services/members-metafields/metafields/storage';
+import schema from '../../../../../../core/server/data/schema/schema';
 
 /**
  * What the values service's statements do to a field's rows for a write's changes: a merge

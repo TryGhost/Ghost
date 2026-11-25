@@ -1,17 +1,18 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import type { MetafieldChangeEntry } from '@tryghost/metafield-types';
-import type { MetafieldResource } from './resource';
+import { FieldTypeSchema, type MetafieldChangeEntry } from '@tryghost/metafield-types';
+import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
+import { DbDate } from '../../lib/db-types/date';
+import { metafieldsRelation } from './metafields/filter';
+import type { MetafieldResource } from './metafields/resource';
 import {
   DbMetafieldChangeEvent,
   DbMetafieldValue,
   type FieldsTable,
-  type MetafieldBindingRow,
   type MetafieldChangeEventInsert,
   type MetafieldChangeEventRow,
   type MetafieldValueRow,
-  DbMetafieldBinding,
-} from './schema';
+} from './metafields/schema';
 
 /** Members, the one resource that holds metafields so far. */
 export const MEMBERS_RESOURCE: MetafieldResource = {
@@ -22,6 +23,12 @@ export const MEMBERS_RESOURCE: MetafieldResource = {
   },
   idColumn: 'member_id',
 };
+
+/**
+ * The Member filter relation that exposes metafield values, so a member filter can ask about
+ * the member's values.
+ */
+export const METAFIELDS_RELATION = metafieldsRelation(MEMBERS_RESOURCE);
 
 /** The column a member's values and change events hold the member's id in. */
 type OwnedByMember = { member_id: string };
@@ -54,6 +61,33 @@ export type MetafieldChangeEvent = MetafieldChangeEntry<Date> & {
 export const DbMetafieldChangeEventWithMember = z
   .object({ event: DbMemberChangeEvent, member: DbChangeEventMember })
   .transform(({ event, member }): MetafieldChangeEvent => ({ ...event, member }));
+
+export const DbMetafieldBinding = z.object({
+  id: z.string(),
+  port: z.string(),
+  metafield_namespace: z.string(),
+  metafield_key: z.string(),
+  created_at: DbDate,
+  updated_at: DbDate.nullable(),
+});
+
+export type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
+
+/** A binding joined to the field it points at, which is how a collected value is routed. */
+export const DbBoundField = z.object({
+  port: z.string(),
+  binding_id: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+  type: FieldTypeSchema,
+});
+
+/** A binding joined to the field it points at, by that field's identity. */
+export const DbNamedBinding = z.object({
+  port: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+});
 
 declare module 'knex/types/tables' {
   interface Tables {

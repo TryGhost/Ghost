@@ -11,9 +11,9 @@ import {
   type MetafieldChangeSource,
   type TypedSettings,
 } from '@tryghost/metafield-types';
-import { DbDate } from '../../lib/db-types/date';
-import { DbJson } from '../../lib/db-types/json';
-import { MemberAccessSchema } from './access';
+import { DbDate } from '../../../lib/db-types/date';
+import { DbJson } from '../../../lib/db-types/json';
+import { MemberAccessSchema } from '@tryghost/metafield-types';
 import type { ValueColumn, ValueColumns } from './storage';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
@@ -149,33 +149,6 @@ export const DbStoredValueRow = z.object({
   type: FieldTypeSchema,
   path: z.string(),
   ...VALUE_COLUMN_SCHEMAS,
-});
-
-export const DbMetafieldBinding = z.object({
-  id: z.string(),
-  port: z.string(),
-  metafield_namespace: z.string(),
-  metafield_key: z.string(),
-  created_at: DbDate,
-  updated_at: DbDate.nullable(),
-});
-
-export type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
-
-/** A binding joined to the field it points at, which is how a collected value is routed. */
-export const DbBoundField = z.object({
-  port: z.string(),
-  binding_id: z.string(),
-  namespace: NamespaceSchema,
-  key: KeySchema,
-  type: FieldTypeSchema,
-});
-
-/** A binding joined to the field it points at, by that field's identity. */
-export const DbNamedBinding = z.object({
-  port: z.string(),
-  namespace: NamespaceSchema,
-  key: KeySchema,
 });
 
 /**

@@ -1,19 +1,19 @@
 import errors from '@tryghost/errors';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { limitService } from '../limits';
-import { MetafieldDefinitionsService } from './definitions-service';
+import { MetafieldDefinitionsService } from './custom-fields/definitions-service';
 import { MemberMetafieldValues } from './member-values';
 import { MEMBERS_RESOURCE } from './members-resource';
 import { MetafieldBindingsService } from './bindings-service';
-import { resolveMaxDefinitions } from './config';
-import { customFields, memberAccessPolicy } from './custom-fields';
-import { createNamespaces, type Namespaces } from './namespaces';
-import { fieldSource, type FieldSource as ResourceFieldSource } from './queries';
-import type { Audience } from './access';
+import { resolveMaxDefinitions } from './custom-fields/config';
+import { customFields, memberAccessPolicy } from './custom-fields/namespace';
+import { createNamespaces, type Namespaces } from './metafields/namespaces';
+import { fieldSource, type FieldSource as ResourceFieldSource } from './metafields/queries';
+import type { Audience } from './audiences';
 import { meter, tracer } from '../../lib/tracing';
-import { metafieldsTracking } from './tracking';
+import { metafieldsTracking } from './metafields/tracking';
 
-export type { Metafield } from './models';
+export type { Metafield } from './metafields/models';
 /** The members' fields as this site reads them, for every read here and in the domains that join them. */
 export type FieldSource = ResourceFieldSource<Audience>;
 export type { MemberMetafieldValues } from './member-values';
@@ -22,12 +22,12 @@ export {
   type MetafieldPlan,
   type PlannedWrite,
   type Refusal,
-} from './values-service';
+} from './metafields/values-service';
 export type { MetafieldBindingsService } from './bindings-service';
-export type { MetafieldDefinitionsService } from './definitions-service';
+export type { MetafieldDefinitionsService } from './custom-fields/definitions-service';
 export { adminWriteOrigin } from './write-origin';
 export type { BoundField } from './bindings-service';
-export type { WriteOrigin, WrittenBy } from './schema';
+export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
 export type { MetafieldChangeEvent } from './members-resource';
 
 // Which door a request came through, which is what decides how much of a member's
@@ -40,7 +40,7 @@ export {
   MEMBER_ACCESS,
   type Audience,
   type MemberAccess,
-} from './access';
+} from './audiences';
 
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the

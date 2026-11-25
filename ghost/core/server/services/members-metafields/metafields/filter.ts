@@ -20,6 +20,7 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
+import type { MetafieldResource } from './resource';
 import { ROOT_PATH, pathOf, pathsHolding, valueColumnFor } from './storage';
 
 const RELATION = 'metafields';
@@ -238,15 +239,16 @@ export function createMetafieldsFilterTransformer() {
 }
 
 /**
- * The Member filter relation that exposes metafield values. A member has many value
- * rows (one per field, or per part of a composite field), and a predicate asks whether
- * one of them matches, so this joins the values table on member_id and mongo-knex emits
- * it as a correlated `members.id IN (…)` subquery — composing with every other member
- * filter.
+ * The filter relation that exposes a resource's metafield values. A member or post has many value
+ * rows (one per field, or per part of a composite field), and a predicate asks whether one of them
+ * matches, so this joins the values table on its id and mongo-knex emits it as a correlated
+ * `<resource>.id IN (…)` subquery, composing with every other filter on the resource.
  */
-export const METAFIELDS_RELATION = {
-  tableName: 'members_metafield_values',
-  tableNameAs: RELATION,
-  type: 'oneToOne',
-  joinFrom: 'member_id',
-} as const;
+export function metafieldsRelation(resource: MetafieldResource) {
+  return {
+    tableName: resource.tables.values,
+    tableNameAs: RELATION,
+    type: 'oneToOne',
+    joinFrom: resource.idColumn,
+  } as const;
+}

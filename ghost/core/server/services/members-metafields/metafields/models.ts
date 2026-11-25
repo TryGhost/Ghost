@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { READ_SETTINGS, withTypedSettings } from '@tryghost/metafield-types';
-import { MemberAccessSchema } from './access';
+import { MemberAccessSchema } from '@tryghost/metafield-types';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 import { FieldStatusSchema } from './schema';
 

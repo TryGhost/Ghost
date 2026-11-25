@@ -5,16 +5,17 @@ import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { INTERNAL, MEMBERS, type Audience } from './access';
+import { INTERNAL, MEMBERS, type Audience } from './audiences';
 import {
   ACTIVE_ONLY,
   fieldReference,
   onField,
   type FieldIdentity,
   type FieldSource,
-} from './queries';
-import { DbBoundField, DbNamedBinding, FIELD_STATUS } from './schema';
-import type { MetafieldPlan, MetafieldValuesService } from './values-service';
+} from './metafields/queries';
+import { DbBoundField, DbNamedBinding } from './members-resource';
+import { FIELD_STATUS } from './metafields/schema';
+import type { MetafieldPlan, MetafieldValuesService } from './metafields/values-service';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';

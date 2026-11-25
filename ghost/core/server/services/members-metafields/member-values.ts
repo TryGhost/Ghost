@@ -1,10 +1,10 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
-import type { Audience } from './access';
+import type { Audience } from './audiences';
 import { DbMetafieldChangeEventWithMember, type MetafieldChangeEvent } from './members-resource';
-import { knexify } from './queries';
-import { StoredFieldList } from './schema';
-import { MetafieldValuesService } from './values-service';
+import { knexify } from './metafields/queries';
+import { StoredFieldList } from './metafields/schema';
+import { MetafieldValuesService } from './metafields/values-service';
 
 const MEMBERS_TABLE = 'members';
 

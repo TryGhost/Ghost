@@ -1,12 +1,12 @@
 import type { FieldType } from '@tryghost/metafield-types';
-import type { Meter } from '../../lib/tracing/meter';
-import type { Tracer } from '../../lib/tracing/tracer';
-import type { MetafieldVerb } from './field-actions';
+import type { Meter } from '../../../lib/tracing/meter';
+import type { Tracer } from '../../../lib/tracing/tracer';
 import type { SingleWriteOrigin } from './schema';
 
-// The spans the custom fields commands record, and the counts the custom fields services keep, in
-// one place: a service reports what happened in its own terms, and this module decides the names
-// and attributes dashboards read.
+// The spans the metafields commands record, and the counts the metafields services keep, in one
+// place: a service reports what happened in its own terms, and this module decides the names and
+// attributes dashboards read. The definition spans are the custom fields commands', named before
+// custom fields moved out of the core, and kept so dashboards keep reading them.
 
 type Fields = readonly { type: FieldType }[];
 
@@ -17,7 +17,10 @@ const CHANGES = {
   changeSettings: 'change_settings',
   archive: 'archive',
   restore: 'restore',
-} as const satisfies Partial<Record<MetafieldVerb, string>>;
+} as const;
+
+/** A change an edit of a definition makes, as tracking names it. */
+export type DefinitionChange = keyof typeof CHANGES;
 
 /** What a command on the field definitions reports about its attempt. */
 interface DefinitionAttempt {

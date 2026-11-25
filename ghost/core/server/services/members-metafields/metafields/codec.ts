@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { camelKeys, snakeKeys } from '../../lib/case-keys';
+import { camelKeys, snakeKeys } from '../../../lib/case-keys';
 import { DbMetafield } from './schema';
 import { Metafield } from './models';
 

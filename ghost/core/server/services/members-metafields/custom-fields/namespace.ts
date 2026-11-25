@@ -1,14 +1,14 @@
 import errors from '@tryghost/errors';
 import type { LimitService } from '@tryghost/limit-service';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { MEMBER_ACCESS, type Audience } from './access';
+import { MEMBER_ACCESS, type Audience } from '../audiences';
 import type {
   AvailabilityLimit,
   CountLimit,
   Grant,
   AccessPolicy,
   NamespaceRegistration,
-} from './namespaces';
+} from '../metafields/namespaces';
 
 /**
  * Custom fields: the publisher's own namespace, with its owner, limits and access policy. Staff with

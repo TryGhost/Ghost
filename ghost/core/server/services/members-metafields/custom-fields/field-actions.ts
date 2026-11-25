@@ -1,5 +1,6 @@
-import type { ActionRow } from '../../lib/action-log/action-log';
-import type { MemberAccess } from './access';
+import type { ActionRow } from '../../../lib/action-log/action-log';
+import type { MemberAccess } from '../audiences';
+import type { DefinitionChange } from '../metafields/tracking';
 
 export type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;
 
@@ -14,7 +15,9 @@ const COMMANDS = {
   archive: 'archived',
   restore: 'restored',
   delete: 'deleted',
-} as const satisfies Record<string, FieldAction['event']>;
+} as const satisfies Record<string, FieldAction['event']> &
+  // Every change tracking reports an edit making is one an edit records.
+  Record<DefinitionChange, FieldAction['event']>;
 
 export type MetafieldVerb = keyof typeof COMMANDS;
 
