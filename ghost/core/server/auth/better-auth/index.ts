@@ -24,7 +24,13 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   // In-development tables exist only in development and testing databases
   const hasAppTables = async () => {
     const tables: string[] = await getTables(knex);
-    return APP_OAUTH_TABLES.every((table) => tables.includes(table));
+    const missing = APP_OAUTH_TABLES.filter((table) => !tables.includes(table));
+    if (missing.length) {
+      logging.warn(
+        `Apps are turned on, but their tables are missing, so apps can't open: ${missing.join(', ')}`,
+      );
+    }
+    return !missing.length;
   };
   const apps = labs.isSet('apps') && (await hasAppTables());
 

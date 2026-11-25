@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import sinon from 'sinon';
+import { APP_OAUTH_TABLES } from '../../../../../core/server/auth/better-auth/plugins/apps';
 
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const labs = require('../../../../../core/shared/labs');
 const db = require('../../../../../core/server/data/db');
+const logging = require('@tryghost/logging');
 
 const rootPath = require.resolve('../../../../../core/server/auth/better-auth');
 type Root = typeof import('../../../../../core/server/auth/better-auth').default;
@@ -51,5 +54,53 @@ describe('Better Auth service root', function () {
     await betterAuth.init();
 
     sinon.assert.neverCalledWithMatch(raw, sinon.match(/show full tables|sqlite_master/));
+  });
+
+  describe('with the apps flag on', function () {
+    /** Answers the table listing with the given tables, on either database */
+    function listTables(tables: string[]) {
+      const raw = db.knex.raw.bind(db.knex);
+      sinon.stub(db.knex, 'raw').callsFake((sql: string, ...args: unknown[]) => {
+        if (/show full tables/.test(sql)) {
+          return Promise.resolve([tables.map((name) => ({ name }))]);
+        }
+        if (/sqlite_master/.test(sql)) {
+          return Promise.resolve(tables.map((name) => ({ tbl_name: name })));
+        }
+        return raw(sql, ...args);
+      });
+    }
+
+    async function initWith(tables: string[]) {
+      const betterAuth = loadRoot();
+      sinon
+        .stub(settingsCache, 'get')
+        .withArgs('admin_session_secret')
+        .returns(randomBytes(32).toString('hex'));
+      sinon.stub(labs, 'isSet').withArgs('apps').returns(true);
+      listTables(tables);
+      await betterAuth.init();
+      return betterAuth.service.options.plugins?.map((plugin) => plugin.id) ?? [];
+    }
+
+    it('registers the provider when every app table exists', async function () {
+      const warn = sinon.stub(logging, 'warn');
+
+      const plugins = await initWith([...APP_OAUTH_TABLES]);
+
+      assert.ok(plugins.includes('oauth-provider'));
+      sinon.assert.notCalled(warn);
+    });
+
+    it("doesn't register the provider with an app table missing, and says which", async function () {
+      const warn = sinon.stub(logging, 'warn');
+      const [missing, ...present] = APP_OAUTH_TABLES;
+
+      const plugins = await initWith(present);
+
+      assert.ok(!plugins.includes('oauth-provider'));
+      assert.ok(!plugins.includes('jwt'));
+      sinon.assert.calledOnceWithMatch(warn, sinon.match(missing!));
+    });
   });
 });
