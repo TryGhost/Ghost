@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 const DomainEvents = require('@tryghost/domain-events');
 const { agentProvider, mockManager, fixtureManager, dbUtils } = require('../utils/e2e-framework');
 const models = require('../../core/server/models');
+const events = require('../../core/server/lib/common/events');
 
 // The importer's key safety guarantee: a bulk import sends zero newsletter emails
 // and fires zero per-post webhooks. Every consumer of post events checks
@@ -81,12 +82,15 @@ describe('CSV content import side-effects', function () {
     const publishedURL = 'https://test-webhook-receiver.com/post-published-import/';
     const addedURL = 'https://test-webhook-receiver.com/post-added-import/';
     const editedURL = 'https://test-webhook-receiver.com/post-edited-import/';
+    const changedURL = 'https://test-webhook-receiver.com/site-changed-import/';
     await webhookMockReceiver.mock(publishedURL);
     await webhookMockReceiver.mock(addedURL);
     await webhookMockReceiver.mock(editedURL);
+    await webhookMockReceiver.mock(changedURL);
     await fixtureManager.insertWebhook({ event: 'post.published', url: publishedURL });
     await fixtureManager.insertWebhook({ event: 'post.added', url: addedURL });
     await fixtureManager.insertWebhook({ event: 'post.edited', url: editedURL });
+    await fixtureManager.insertWebhook({ event: 'site.changed', url: changedURL });
 
     const csvPath = path.join(tmpDir, 'posts-import-side-effects.csv');
     await fs.writeFile(
@@ -96,18 +100,44 @@ describe('CSV content import side-effects', function () {
         'Side effect check two,<p>Second</p>,2024-07-02T00:00:00.000Z,2024-07-02T00:00:00.000Z,side-effect-two\n',
     );
 
-    await adminAPIAgent.post('posts/upload/').attach('postsfile', csvPath).expectStatus(202);
-    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+    const signals: string[] = [];
+    const observe = async (
+      _model: unknown,
+      options?: { importing?: boolean; importId: string },
+    ) => {
+      if (options?.importing) {
+        signals.push(options.importId);
+      }
+    };
+    const failing = async () => {
+      throw new Error('Injected cache listener failure');
+    };
+    events.once('site.changed', failing);
+    events.on('site.changed', observe);
+    try {
+      const { body: first } = await adminAPIAgent
+        .post('posts/upload/')
+        .attach('postsfile', csvPath)
+        .expectStatus(202);
+      await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+      assert.deepEqual(signals, [first.meta.import_id]);
 
-    const updateCsvPath = path.join(tmpDir, 'posts-import-update-side-effects.csv');
-    await fs.writeFile(
-      updateCsvPath,
-      'title,slug,html,updated_at,comment_id\n' +
-        'Side effect check one updated,side-effect-check-one-updated,<p>Updated</p>,2024-08-01T00:00:00.000Z,side-effect-one\n',
-    );
-    await adminAPIAgent.post('posts/upload/').attach('postsfile', updateCsvPath).expectStatus(202);
-
-    await vi.waitFor(() => mockManager.assert.sentEmailCount(2), { timeout: 5000 });
+      const updateCsvPath = path.join(tmpDir, 'posts-import-update-side-effects.csv');
+      await fs.writeFile(
+        updateCsvPath,
+        'title,slug,html,updated_at,comment_id\n' +
+          'Side effect check one updated,side-effect-check-one-updated,<p>Updated</p>,2024-08-01T00:00:00.000Z,side-effect-one\n',
+      );
+      const { body: second } = await adminAPIAgent
+        .post('posts/upload/')
+        .attach('postsfile', updateCsvPath)
+        .expectStatus(202);
+      await vi.waitFor(() => mockManager.assert.sentEmailCount(2), { timeout: 5000 });
+      assert.deepEqual(signals, [first.meta.import_id, second.meta.import_id]);
+    } finally {
+      events.removeListener('site.changed', failing);
+      events.removeListener('site.changed', observe);
+    }
     await DomainEvents.allSettled();
     // The negative needs a settle window: a wrongly-fired webhook reaches nock a
     // beat after the model event, and asserting too early would pass vacuously

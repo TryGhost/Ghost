@@ -13,9 +13,7 @@ export default defineService('Tags Public', () => {
     : undefined;
 
   if (cache) {
-    events.on('site.changed', () => {
-      cache.reset();
-    });
+    events.on('site.changed', () => cache.reset());
   }
 
   return { cache };

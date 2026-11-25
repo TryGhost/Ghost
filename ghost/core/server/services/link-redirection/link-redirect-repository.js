@@ -34,9 +34,7 @@ module.exports = class LinkRedirectRepository {
       // - a redirect is edited
       // - a site's subdirectory is changed (rare)
       // - analytics settings are changed
-      deps.EventRegistry.on('site.changed', () => {
-        this.#cache.reset();
-      });
+      deps.EventRegistry.on('site.changed', () => this.#cache.reset());
     }
   }
 

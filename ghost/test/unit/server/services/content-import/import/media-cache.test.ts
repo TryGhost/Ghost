@@ -41,8 +41,10 @@ describe('CSV disk media cache', function () {
       },
     };
     let requests = 0;
+    const onStored = vi.fn(async () => {});
     const inliner = new PostMediaInliner({
       cache: new DiskMediaCache(importFiles),
+      onStored,
       isLocalMediaUrl: () => false,
       media: {
         importUrl: async (sourceUrl) => {
@@ -74,6 +76,7 @@ describe('CSV disk media cache', function () {
         }
       }
       assert.equal(requests, 2);
+      expect(onStored).toHaveBeenCalledTimes(1);
     } finally {
       await inliner.close();
     }

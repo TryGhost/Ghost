@@ -80,7 +80,7 @@ describe('content import assets', function () {
     assert.ok(batch);
     assert.equal(batch.files.length, 1);
     assert.equal(batch.files[0].newPath, '/blog/content/images/unique.jpg');
-    await batch.store(await openAssetJournal(storage));
+    await batch.store(await openAssetJournal(storage), async () => {});
     sinon.assert.calledOnceWithExactly(
       save,
       sinon.match({ name: 'unique.jpg', originalPath: 'content/images/original.jpg' }),
@@ -138,14 +138,16 @@ describe('content import assets', function () {
     };
 
     const initial = new PreparedAssetBatch([{ type: 'media', files: [{ ...file }], importer }]);
-    await initial.store(await openAssetJournal(storage));
+    await initial.store(await openAssetJournal(storage), async () => {});
 
     const replay = new PreparedAssetBatch([
       { type: 'media', files: [{ ...file, newPath: '/other.mp4' }], importer },
     ]);
-    await replay.store(await openAssetJournal(storage));
+    await replay.store(await openAssetJournal(storage), async () => {});
     sinon.assert.calledOnce(save);
     assert.equal(replay.files[0].newPath, stored.stored);
+    assert.equal(replay.isStoredUrl(stored.stored), true);
+    assert.equal(replay.isStoredUrl(stored.newPath), false);
   });
 
   it.each([false, true])(
@@ -192,16 +194,19 @@ describe('content import assets', function () {
       ]);
 
       const journal = await openAssetJournal(storage);
-      await assert.rejects(batch.store(journal), (error: unknown) => {
-        if (rollbackFails) {
-          assert.ok(error instanceof AggregateError);
-          assert.equal(error.cause, failedWrite);
-          assert.deepEqual(error.errors, [failedWrite, failedRollback]);
-        } else {
-          assert.equal(error, failedWrite);
-        }
-        return true;
-      });
+      await assert.rejects(
+        batch.store(journal, async () => {}),
+        (error: unknown) => {
+          if (rollbackFails) {
+            assert.ok(error instanceof AggregateError);
+            assert.equal(error.cause, failedWrite);
+            assert.deepEqual(error.errors, [failedWrite, failedRollback]);
+          } else {
+            assert.equal(error, failedWrite);
+          }
+          return true;
+        },
+      );
       sinon.assert.calledOnceWithExactly(rollback, [stored]);
     },
   );

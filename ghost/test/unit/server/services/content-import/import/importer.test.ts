@@ -142,6 +142,8 @@ function harness(
     getMarkdownToHtml: () => markdownToHtmlFactory(),
     getCleanHTML: () => cleanHTMLFactory(),
     createMediaInliner,
+    hasRunPosts: async () => false,
+    signalSiteChanged: sinon.stub().resolves(),
     email: {
       send: sendEmail,
       getDefaultRecipient,
@@ -168,6 +170,7 @@ function harness(
       acknowledge: async () => {},
       start: async () => true,
       claimEmail: async () => true,
+      claimCacheInvalidation: async () => true,
       cleanupExpired: async () => {},
       cancel: async () => {},
       lookup: async () => ({ status: 'accepted' as const }),
@@ -379,6 +382,53 @@ describe('ContentCSVImporter', function () {
     sinon.assert.notCalled(open);
     sinon.assert.notCalled(h.sendEmail);
     assert.deepEqual(h.removedFiles, [{ key: 'staged-1', name: 'posts.csv' }]);
+  });
+
+  it.each([false, true])(
+    'signals once after writes, including a terminal partial run (%s)',
+    async function (partial) {
+      const h = harness([row('Written'), row('Later'), row('Last')]);
+      const cacheError = new Error('cache unavailable');
+      if (partial) {
+        h.inlineMedia.onSecondCall().rejects(new Error('media importer stopped'));
+      }
+      h.deps.signalSiteChanged.callsFake(async () => {
+        assert.equal(h.created.length, partial ? 1 : 3);
+        sinon.assert.notCalled(h.sendEmail);
+        throw cacheError;
+      });
+      await h.run();
+      sinon.assert.calledOnceWithExactly(h.deps.signalSiteChanged, 'run_test');
+      assert.equal(h.reported.at(-1), cacheError);
+      assert.equal(h.sentRuns[0].status, partial ? 'failed' : 'complete');
+      assert.equal(h.files.size, 0);
+    },
+  );
+
+  it('does not invalidate caches for a duplicate-only import', async function () {
+    const h = harness([row('Duplicate')]);
+    h.duplicateSlugs.add('duplicate');
+    await h.run();
+    sinon.assert.notCalled(h.deps.signalSiteChanged);
+  });
+
+  it('invalidates caches for a stored asset even if the row fails', async function () {
+    const h = harness([row('Partially stored media')]);
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      createMediaInliner: ({ onStored }) => ({
+        async inline() {
+          await onStored();
+          throw new MediaInliningFailure([
+            { sourceUrl: 'https://example.com/failed', reason: 'Unavailable' },
+          ]);
+        },
+      }),
+    });
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await importer.handle(h.jobs[0]);
+    assert.equal(h.created.length, 0);
+    sinon.assert.calledOnceWithExactly(h.deps.signalSiteChanged, 'run_test');
   });
 
   it('keeps original source columns and cells in the actionable error report', async function () {

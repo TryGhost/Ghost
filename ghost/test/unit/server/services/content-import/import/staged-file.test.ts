@@ -119,8 +119,11 @@ describe('content import staged file', function () {
     const adapter = stager();
     await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv', owner }, 'email', now);
     assert.equal(await adapter.claimEmail('email'), false);
+    assert.equal(await adapter.claimCacheInvalidation('email'), false);
     await adapter.begin('email');
     assert.equal(await adapter.start('email', now), true);
+    assert.equal(await adapter.claimCacheInvalidation('email'), true);
+    assert.equal(await adapter.claimCacheInvalidation('email'), false);
     assert.equal(await adapter.start('email', now), true);
     assert.deepEqual(
       (await Promise.all([adapter.claimEmail('email'), adapter.claimEmail('email')]))

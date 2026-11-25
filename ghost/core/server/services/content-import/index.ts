@@ -82,6 +82,8 @@ function makeImporter(): ContentCSVImporter {
   const urlUtils = require('../../../shared/url-utils').default;
   const mediaInlinerService = require('../media-inliner').default;
   const config = require('../../../shared/config');
+  const db = require('../../data/db');
+  const events = require('../../lib/common/events');
   const { GhostMailer } = require('../../lib/mail');
   const ghostMailer = new GhostMailer();
 
@@ -117,11 +119,13 @@ function makeImporter(): ContentCSVImporter {
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
     getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
-    createMediaInliner: () =>
+    createMediaInliner: ({ onStored, isArchiveAsset }) =>
       new PostMediaInliner({
         cache: new DiskMediaCache(files),
         media: mediaInlinerService.service,
+        onStored,
         isLocalMediaUrl: (sourceUrl) =>
+          isArchiveAsset(sourceUrl) ||
           isLocalMediaUrl(sourceUrl, {
             siteUrl: config.getSiteUrl(),
             subdir: config.getSubdir(),
@@ -132,6 +136,26 @@ function makeImporter(): ContentCSVImporter {
             ],
           }),
       }),
+    hasRunPosts: async (tagName) =>
+      Boolean(
+        await db
+          .knex('posts_tags')
+          .join('tags', 'tags.id', 'posts_tags.tag_id')
+          .where('tags.name', tagName)
+          .first('posts_tags.post_id'),
+      ),
+    signalSiteChanged: async (importId) => {
+      const results: PromiseSettledResult<unknown>[] = await events.emitSettled(
+        'site.changed',
+        undefined,
+        { importing: true, importId },
+      );
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          report(result.reason);
+        }
+      }
+    },
     email,
     dispatchJob: (job) => getJobsService().dispatch(job),
     fileStager: createImportFileStager({

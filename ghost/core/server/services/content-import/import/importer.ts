@@ -11,6 +11,7 @@ import type { ImportRequest } from './schema';
 import type { Clock, RowOutcome } from './store';
 import { ImportJournal, readJournalPosition, readMetadata, type JournalStorage } from './journal';
 import { openAssetJournal } from './asset-journal';
+import { ImportMutations } from './mutations';
 import { deliverReports, writeImportReports, type ImportReportContents } from './journal-report';
 import { createSummary, type ImportSummary } from './summary';
 import type { PreparedImportSource } from './source';
@@ -85,7 +86,12 @@ interface ImporterDeps {
   getHtmlToLexical: () => HtmlToLexical;
   getMarkdownToHtml: () => MarkdownToHtml;
   getCleanHTML: () => CleanHTML;
-  createMediaInliner: () => PostMediaInlining;
+  createMediaInliner: (options: {
+    onStored: () => Promise<void>;
+    isArchiveAsset: (url: string) => boolean;
+  }) => PostMediaInlining;
+  hasRunPosts: (tagName: string) => Promise<boolean>;
+  signalSiteChanged: (importId: string) => Promise<void>;
   email: EmailNotifications;
   dispatchJob: (job: ContentCSVImportJob) => Promise<void>;
   fileStager: ImportFileStager;
@@ -112,7 +118,9 @@ class ContentCSVImporter {
   private _getHtmlToLexical: () => HtmlToLexical;
   private _getMarkdownToHtml: () => MarkdownToHtml;
   private _getCleanHTML: () => CleanHTML;
-  private _createMediaInliner: () => PostMediaInlining;
+  private _createMediaInliner: ImporterDeps['createMediaInliner'];
+  private _hasRunPosts: ImporterDeps['hasRunPosts'];
+  private _signalSiteChanged: ImporterDeps['signalSiteChanged'];
   private _email: EmailNotifications;
   private _dispatchJob: ImporterDeps['dispatchJob'];
   private _fileStager: ImportFileStager;
@@ -132,6 +140,8 @@ class ContentCSVImporter {
     getMarkdownToHtml,
     getCleanHTML,
     createMediaInliner,
+    hasRunPosts,
+    signalSiteChanged,
     email,
     dispatchJob,
     fileStager,
@@ -150,6 +160,8 @@ class ContentCSVImporter {
     this._getMarkdownToHtml = getMarkdownToHtml;
     this._getCleanHTML = getCleanHTML;
     this._createMediaInliner = createMediaInliner;
+    this._hasRunPosts = hasRunPosts;
+    this._signalSiteChanged = signalSiteChanged;
     this._email = email;
     this._dispatchJob = dispatchJob;
     this._fileStager = fileStager;
@@ -272,6 +284,7 @@ class ContentCSVImporter {
     let started = false;
     let canProcess = false;
     let storage: JournalStorage | undefined;
+    let mutations: ImportMutations | undefined;
     let journal: ImportJournal | undefined;
     let failureReason: string | undefined;
     this.track(job.importId);
@@ -283,6 +296,9 @@ class ContentCSVImporter {
         return;
       }
       storage = this._fileStager.artifacts(job.importId);
+      const runMutations = new ImportMutations(storage);
+      mutations = runMutations;
+      const onStored = () => runMutations.recordAssetWrite();
       materialized = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
         filePath: materialized.path,
@@ -298,13 +314,14 @@ class ContentCSVImporter {
       const position = await readJournalPosition(storage);
       journal = new ImportJournal(storage, preparedRows.columns, position);
       if (source.assets) {
-        await source.assets.store(await openAssetJournal(storage));
+        await source.assets.store(await openAssetJournal(storage), onStored);
       }
       await this.processRows(
         journal,
         job.importTagNames,
         rowsAfterCheckpoint(preparedRows.rows, position.record),
         source,
+        onStored,
       );
       await journal.flush();
     } catch (error) {
@@ -356,6 +373,18 @@ class ContentCSVImporter {
                 this._report(error);
               }
             }
+            await this.settle(async () => {
+              const hasTaggedPosts = () => this._hasRunPosts(job.importTagNames[1]);
+              summary.changed = mutations
+                ? await mutations.changed(summary.counts, hasTaggedPosts)
+                : await hasTaggedPosts();
+              if (
+                summary.changed &&
+                (await this._fileStager.claimCacheInvalidation(job.importId))
+              ) {
+                await this._signalSiteChanged(job.importId);
+              }
+            });
             if (await this._fileStager.claimEmail(job.importId)) {
               await this._email.send(summary, job.emailRecipient, reports);
             }
@@ -400,6 +429,7 @@ class ContentCSVImporter {
     importTagNames: string[],
     rows: AsyncIterable<PreparedPostRow>,
     source: PreparedImportSource,
+    onStored: () => Promise<void>,
   ): Promise<void> {
     let urlFailureCount = 0;
     let firstUrlFailure: unknown;
@@ -409,7 +439,10 @@ class ContentCSVImporter {
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
-      media = this._createMediaInliner();
+      media = this._createMediaInliner({
+        onStored,
+        isArchiveAsset: (url) => source.assets?.isStoredUrl?.(url) ?? false,
+      });
       let successfulWrites = 0;
       let failedRows = 0;
       let firstRowFailure: unknown;

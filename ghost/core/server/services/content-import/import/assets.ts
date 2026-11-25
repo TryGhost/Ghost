@@ -48,12 +48,14 @@ export interface AssetPreparationDeps {
 
 export interface ImportAssetBatch {
   readonly files: PreparedAsset[];
-  store(journal: AssetJournal): Promise<void>;
+  store(journal: AssetJournal, onStored: () => Promise<void>): Promise<void>;
+  isStoredUrl?(url: string): boolean;
   rewriteRows(rows: PostImportRow[]): void;
 }
 
 export class PreparedAssetBatch implements ImportAssetBatch {
   private groups: PreparedAssetGroup[];
+  private storedUrls = new Set<string>();
 
   constructor(groups: PreparedAssetGroup[]) {
     this.groups = groups;
@@ -63,7 +65,11 @@ export class PreparedAssetBatch implements ImportAssetBatch {
     return this.groups.flatMap((group) => group.files);
   }
 
-  async store(journal: AssetJournal): Promise<void> {
+  isStoredUrl(url: string): boolean {
+    return this.storedUrls.has(url.trim());
+  }
+
+  async store(journal: AssetJournal, onStored: () => Promise<void>): Promise<void> {
     const storedByImporter = new Map<AssetImporter, StoredAsset[]>();
     try {
       for (const group of this.groups) {
@@ -73,11 +79,14 @@ export class PreparedAssetBatch implements ImportAssetBatch {
           const saved = journal.assets.get(file.originalPath);
           if (saved) {
             file.newPath = saved.newPath;
+            this.storedUrls.add(saved.newPath);
             continue;
           }
           const [result] = await group.importer.doImport([file]);
           newlyStored.push(result);
           file.newPath = result.stored;
+          this.storedUrls.add(result.stored);
+          await onStored();
           await journal.append({ ...result, newPath: file.newPath });
         }
       }

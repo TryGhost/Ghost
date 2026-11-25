@@ -14,6 +14,14 @@
 const events = require('events');
 
 class EventRegistry extends events.EventEmitter {
+  // Background finalizers can observe listener failures without interrupting
+  // the other listeners. Raw listeners preserve EventEmitter's once handling.
+  emitSettled(eventName, ...args) {
+    return Promise.allSettled(
+      this.rawListeners(eventName).map(async (listener) => listener.apply(this, args)),
+    );
+  }
+
   /**
    * This is method is semi-hack to make sure listeners are only registered once
    * during the lifetime of the process. And example problem it solves is

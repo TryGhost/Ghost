@@ -124,20 +124,24 @@ export class PostMediaInliner implements PostMediaInlining {
   private _originSchemes = createOriginSchemes();
   private _pending = new Map<string, Promise<ExternalMediaImportResult>>();
   private _cache?: MediaCache;
+  private _onStored?: () => Promise<void>;
   private _failures = new Map<string, MediaFailure>();
 
   constructor({
     media,
     isLocalMediaUrl,
     cache,
+    onStored,
   }: {
     media: ExternalMediaImporter;
     isLocalMediaUrl: (sourceUrl: string) => boolean;
     cache?: MediaCache;
+    onStored?: () => Promise<void>;
   }) {
     this._media = media;
     this._isLocalMediaUrl = isLocalMediaUrl;
     this._cache = cache;
+    this._onStored = onStored;
   }
 
   async close(): Promise<void> {
@@ -200,6 +204,9 @@ export class PostMediaInliner implements PostMediaInlining {
       return cached;
     }
     const result = await this._media.importUrl(sourceUrl, { originSchemes: this._originSchemes });
+    if (result.status === 'stored') {
+      await this._onStored?.();
+    }
     await this._cache?.set(sourceUrl, result);
     return result;
   }

@@ -12,6 +12,7 @@ export interface ImportSummary {
   previewRows: RowOutcome[];
   hasPages: boolean;
   hasPosts: boolean;
+  changed?: boolean;
 }
 
 export function createSummary(

@@ -66,6 +66,7 @@ export interface ImportFileStager {
   acknowledge(id: string): Promise<void>;
   start(id: string, now: Date): Promise<boolean>;
   claimEmail(id: string): Promise<boolean>;
+  claimCacheInvalidation(id: string): Promise<boolean>;
   remove(id: string, file: StagedImportFile): Promise<void>;
   cancel(id: string, owner: ImportOwner): Promise<void>;
   lookup(id: string, owner: ImportOwner, now: Date): Promise<Submission>;
@@ -231,6 +232,15 @@ export function createImportFileStager({
           return { value: false };
         }
         return { value: true, change: { receipt: 'email-claimed' } };
+      });
+    },
+
+    async claimCacheInvalidation(id) {
+      return uploads.change(id, (row) => {
+        if (row?.state !== 'accepted' || row.receipt !== null) {
+          return { value: false };
+        }
+        return { value: true, change: { receipt: 'cache-invalidation-claimed' } };
       });
     },
 
