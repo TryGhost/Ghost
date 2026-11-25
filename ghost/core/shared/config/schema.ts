@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { auth } from './schema/auth';
 import { database } from './schema/database';
 import { explore } from './schema/explore';
+import { invalidations } from './schema/invalidations';
 import { httpUrl } from './schema/primitives';
 import { spam } from './schema/spam';
 import { makePathsAbsolute } from './utils';
@@ -135,6 +136,7 @@ const configShape = z.looseObject({
   // Feature config, one file per area in ./schema. See SCHEMA.md.
   auth,
   explore,
+  invalidations,
   spam,
 });
 

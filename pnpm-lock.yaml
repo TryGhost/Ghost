@@ -401,6 +401,9 @@ catalogs:
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
+    '@types/ioredis':
+      specifier: 4.28.10
+      version: 4.28.10
     '@types/js-yaml':
       specifier: 4.0.9
       version: 4.0.9
@@ -611,6 +614,9 @@ catalogs:
     inquirer:
       specifier: 8.2.7
       version: 8.2.7
+    ioredis:
+      specifier: 4.31.0
+      version: 4.31.0
     ipaddr.js:
       specifier: 2.5.0
       version: 2.5.0
@@ -2544,6 +2550,9 @@ importers:
       intl-messageformat:
         specifier: 5.4.3
         version: 5.4.3
+      ioredis:
+        specifier: 'catalog:'
+        version: 4.31.0(supports-color@10.2.2)
       ipaddr.js:
         specifier: 'catalog:'
         version: 2.5.0
@@ -2722,6 +2731,9 @@ importers:
       '@types/fs-extra':
         specifier: 11.0.4
         version: 11.0.4
+      '@types/ioredis':
+        specifier: 'catalog:'
+        version: 4.28.10
       '@types/js-yaml':
         specifier: 'catalog:'
         version: 4.0.9
@@ -9188,6 +9200,9 @@ packages:
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
+
+  '@types/ioredis@4.28.10':
+    resolution: {integrity: sha512-69LyhUgrXdgcNDv7ogs1qXZomnfOEnSmrmMFqKgt1XMJxmoOSG/u3wYy13yACIfKuMJ8IhKgHafDO3sx19zVQQ==}
 
   '@types/is-empty@1.2.3':
     resolution: {integrity: sha512-4J1l5d79hoIvsrKh5VUKVRA1aIdsOb10Hu5j3J2VfP/msDnfTdGPmNp2E1Wg+vs97Bktzo+MZePFFXSGoykYJw==}
@@ -21278,6 +21293,10 @@ snapshots:
   '@types/http-cache-semantics@4.2.0': {}
 
   '@types/http-errors@2.0.5': {}
+
+  '@types/ioredis@4.28.10':
+    dependencies:
+      '@types/node': 22.20.5
 
   '@types/is-empty@1.2.3': {}
 

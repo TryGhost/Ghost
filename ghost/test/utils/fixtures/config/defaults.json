@@ -2,6 +2,9 @@
     "auth": {
         "engine": "legacy"
     },
+    "invalidations": {
+        "transport": "local"
+    },
     "database": {
         "client": "better-sqlite3",
         "connection": {
