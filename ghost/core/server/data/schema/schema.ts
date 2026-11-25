@@ -673,8 +673,22 @@ const schema = {
   },
   oauth_client_resources: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    client_id: { type: 'string', maxlength: 191, nullable: false, index: true },
-    resource_id: { type: 'string', maxlength: 191, nullable: false, index: true },
+    client_id: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      index: true,
+      references: 'oauth_clients.client_id',
+      cascadeDelete: true,
+    },
+    resource_id: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      index: true,
+      references: 'oauth_resources.identifier',
+      cascadeDelete: true,
+    },
     metadata: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', precision: 3, nullable: true },
     '@@UNIQUE_CONSTRAINTS@@': [['client_id', 'resource_id']],
@@ -682,7 +696,14 @@ const schema = {
   oauth_refresh_tokens: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     token: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    client_id: { type: 'string', maxlength: 191, nullable: false, index: true },
+    client_id: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      index: true,
+      references: 'oauth_clients.client_id',
+      cascadeDelete: true,
+    },
     session_id: {
       type: 'string',
       maxlength: 24,
@@ -714,7 +735,14 @@ const schema = {
   oauth_access_tokens: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     token: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    client_id: { type: 'string', maxlength: 191, nullable: false, index: true },
+    client_id: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      index: true,
+      references: 'oauth_clients.client_id',
+      cascadeDelete: true,
+    },
     session_id: {
       type: 'string',
       maxlength: 24,
@@ -733,7 +761,14 @@ const schema = {
     authorization_code_id: { type: 'string', maxlength: 191, nullable: true, index: true },
     resources: { type: 'text', maxlength: 65535, nullable: true },
     requested_user_info_claims: { type: 'text', maxlength: 65535, nullable: true },
-    refresh_id: { type: 'string', maxlength: 24, nullable: true, index: true },
+    refresh_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: true,
+      index: true,
+      references: 'oauth_refresh_tokens.id',
+      cascadeDelete: true,
+    },
     expires_at: { type: 'dateTime', precision: 3, nullable: true, index: true },
     created_at: { type: 'dateTime', precision: 3, nullable: true },
     revoked: { type: 'dateTime', precision: 3, nullable: true },
@@ -742,7 +777,14 @@ const schema = {
   },
   oauth_consents: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    client_id: { type: 'string', maxlength: 191, nullable: false, index: true },
+    client_id: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      index: true,
+      references: 'oauth_clients.client_id',
+      cascadeDelete: true,
+    },
     user_id: {
       type: 'string',
       maxlength: 24,
