@@ -396,11 +396,13 @@ describe('Batch Sending Service', function () {
 
     function createAudienceService(rows = []) {
       const getSegments = sinon.stub().resolves([null]);
-      const getFilteredCollectionQuery = sinon.stub().callsFake(() => {
-        const query = createDb({ all: rows });
-        query.clone = () => query;
-        return query;
-      });
+      const resolveFilter = sinon.stub().callsFake(async () => ({
+        query() {
+          const query = createDb({ all: rows });
+          query.clone = () => query;
+          return query;
+        },
+      }));
       const db = {
         knex(table) {
           let counted = false;
@@ -447,7 +449,7 @@ describe('Batch Sending Service', function () {
         db,
         models: {
           EmailBatch: createModelClass({ findAll: [] }),
-          Member: { getFilteredCollectionQuery },
+          Member: { resolveFilter },
         },
         domainWarmingService: { isEnabled: () => false },
         emailRenderer: { getSegments },
@@ -457,11 +459,11 @@ describe('Batch Sending Service', function () {
           getTargetDeliveryWindow: () => 0,
         },
       });
-      return { service, getSegments, getFilteredCollectionQuery };
+      return { service, getSegments, resolveFilter };
     }
 
     it('freezes an empty accounted audience and reuses it on retry', async function () {
-      const { service, getSegments, getFilteredCollectionQuery } = createAudienceService();
+      const { service, getSegments, resolveFilter } = createAudienceService();
       const email = createModel({ preflight_email_count: 0, email_count: 0 });
       const args = { email, post: createModel({}), newsletter: createModel({}) };
 
@@ -472,7 +474,7 @@ describe('Batch Sending Service', function () {
 
       assert.deepEqual(await service.createBatches(args), []);
       sinon.assert.calledOnce(getSegments);
-      sinon.assert.calledOnce(getFilteredCollectionQuery);
+      sinon.assert.calledOnce(resolveFilter);
     });
 
     it('verifies an empty prepared audience through submission', async function () {
@@ -626,11 +628,13 @@ describe('Batch Sending Service', function () {
         models: {
           EmailBatch,
           Member: {
-            getFilteredCollectionQuery: () => {
-              const query = createDb({ all: [member] });
-              query.clone = () => query;
-              return query;
-            },
+            resolveFilter: async () => ({
+              query() {
+                const query = createDb({ all: [member] });
+                query.clone = () => query;
+                return query;
+              },
+            }),
           },
         },
         domainWarmingService: { isEnabled: () => false },

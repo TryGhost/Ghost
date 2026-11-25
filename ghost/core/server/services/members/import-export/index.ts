@@ -187,7 +187,8 @@ export function makeExporter({
           { ...options, transacting, activeNewsletterIds },
           'findPage',
         );
-        const query: Knex.QueryBuilder = models.Member.getFilteredCollectionQuery(filterOptions);
+        const filter = await models.Member.resolveFilter(filterOptions);
+        const query: Knex.QueryBuilder = filter.query();
         return (columns, limit, afterId) => {
           const batch = query.clone();
           if (afterId !== undefined) {

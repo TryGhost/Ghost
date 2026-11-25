@@ -1,6 +1,10 @@
 import type { Knex } from 'knex';
 import { mapKeys, chainTransformers } from '@tryghost/mongo-utils';
 import errors from '@tryghost/errors';
+import type {
+  FilterTransformer,
+  ResolvedFilter,
+} from '../../../models/base/plugins/resolved-filter';
 
 type Entity<T> = {
   id: T;
@@ -12,15 +16,21 @@ type Order<T> = {
   direction: 'asc' | 'desc';
 };
 
+/** A model whose query has a filter applied, as a resolved filter's collection() returns it. */
+export type FilteredCollection<T> = {
+  count(): Promise<number>;
+  query: (f?: (q: Knex.QueryBuilder) => void) => Knex.QueryBuilder;
+  fetchAll: () => Promise<ModelInstance<T>[]>;
+};
+
 export type ModelClass<T> = {
   destroy: (data: { id: T }) => Promise<void>;
   findOne: (data: { id: T }, options?: { require?: boolean }) => Promise<ModelInstance<T> | null>;
   add: (data: object) => Promise<ModelInstance<T>>;
-  getFilteredCollection: (options: { filter?: string; mongoTransformer?: unknown }) => {
-    count(): Promise<number>;
-    query: (f?: (q: Knex.QueryBuilder) => void) => Knex.QueryBuilder;
-    fetchAll: () => Promise<ModelInstance<T>[]>;
-  };
+  resolveFilter: (options: {
+    filter?: string;
+    mongoTransformer?: FilterTransformer;
+  }) => Promise<ResolvedFilter<FilteredCollection<T>>>;
 };
 
 export type ModelInstance<T> = {
@@ -127,10 +137,11 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
       }
     }
 
-    const collection = this.Model.getFilteredCollection({
+    const resolved = await this.Model.resolveFilter({
       filter,
       mongoTransformer: this.#getNQLKeyTransformer(),
     });
+    const collection = resolved.collection();
     const orderString = this.#orderToString(order);
 
     collection.query((q) => {
@@ -182,11 +193,11 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
   }
 
   async getCount({ filter }: { filter?: string } = {}): Promise<number> {
-    const collection = this.Model.getFilteredCollection({
+    const resolved = await this.Model.resolveFilter({
       filter,
       mongoTransformer: this.#getNQLKeyTransformer(),
     });
-    return await collection.count();
+    return await resolved.collection().count();
   }
 
   async getGroupedCount<K extends keyof T>({
@@ -198,10 +209,11 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
   }): Promise<({ count: number } & Record<K, T[K]>)[]> {
     const columnName = this.#entityFieldToColumn(groupBy);
 
-    const data = (await this.Model.getFilteredCollection({
+    const resolved = await this.Model.resolveFilter({
       filter,
       mongoTransformer: this.#getNQLKeyTransformer(),
-    })
+    });
+    const data = (await resolved
       .query()
       .select(columnName)
       .count('* as count')

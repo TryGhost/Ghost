@@ -55,9 +55,11 @@ function createLinkRedirectRepository(deps = {}) {
     LinkRedirect: deps.LinkRedirect || {
       findOne: sinon.stub().returns(model),
       findAll: sinon.stub().returns(models),
-      getFilteredCollectionQuery: sinon.stub().returns({
-        select: sinon.stub().returns({
-          distinct: sinon.stub().returns(linkRows),
+      resolveFilter: sinon.stub().resolves({
+        query: sinon.stub().returns({
+          select: sinon.stub().returns({
+            distinct: sinon.stub().returns(linkRows),
+          }),
         }),
       }),
       add: sinon.stub().callsFake((data) => {
@@ -215,7 +217,7 @@ describe('LinkRedirectRepository class', function () {
         LinkRedirect: {
           findOne,
           findAll: sinon.stub(),
-          getFilteredCollectionQuery: sinon.stub(),
+          resolveFilter: sinon.stub(),
           add: sinon.stub(),
         },
       });
@@ -244,7 +246,7 @@ describe('LinkRedirectRepository class', function () {
         LinkRedirect: {
           findOne: sinon.stub().returns(null),
           findAll: sinon.stub(),
-          getFilteredCollectionQuery: sinon.stub(),
+          resolveFilter: sinon.stub(),
           add: sinon.stub(),
         },
       });
@@ -263,7 +265,7 @@ describe('LinkRedirectRepository class', function () {
         LinkRedirect: {
           findOne: sinon.stub(),
           findAll: sinon.stub(),
-          getFilteredCollectionQuery: sinon.stub(),
+          resolveFilter: sinon.stub(),
           add,
         },
       });

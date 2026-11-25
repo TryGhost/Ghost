@@ -578,16 +578,19 @@ class BatchSendingService {
     const startedAt = Date.now();
     this.#checkPreparationActive();
     // Parse once outside retries: malformed filters and newsletter settings cannot recover.
-    const queries = segments.map((segment) => {
-      const filter = this.#emailSegmenter.getMemberFilterForSegment(
-        newsletter,
-        email.get('recipient_filter'),
-        segment,
-      );
-      return this.#models.Member.getFilteredCollectionQuery({
-        filter: filter + `+id:<'${email.id}'`,
-      });
-    });
+    const filters = await Promise.all(
+      segments.map((segment) => {
+        const filter = this.#emailSegmenter.getMemberFilterForSegment(
+          newsletter,
+          email.get('recipient_filter'),
+          segment,
+        );
+        return this.#models.Member.resolveFilter({
+          filter: filter + `+id:<'${email.id}'`,
+        });
+      }),
+    );
+    const queries = filters.map((filter) => filter.query());
     const candidates = await this.retryDb(
       () => {
         this.#checkPreparationActive();

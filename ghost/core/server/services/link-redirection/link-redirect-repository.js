@@ -155,13 +155,12 @@ module.exports = class LinkRedirectRepository {
 
   /**
    * Get all LinkRedirect IDs from the DB, with optional filters
-   * @param {object} options - options passed directly to LinkRedirect.getFilteredCollectionQuery
+   * @param {object} options - options passed directly to LinkRedirect.resolveFilter
    * @returns {Promise<string[]>} array of LinkRedirect IDs
    */
   async getFilteredIds(options) {
-    const linkRows = await this.#LinkRedirect.getFilteredCollectionQuery(options)
-      .select('redirects.id')
-      .distinct();
+    const filter = await this.#LinkRedirect.resolveFilter(options);
+    const linkRows = await filter.query().select('redirects.id').distinct();
     return linkRows.map((row) => row.id);
   }
 
