@@ -707,17 +707,69 @@ describe('Comments analytics', () => {
       });
     };
 
-    // Native bottom sticking starts flush below the header, without a top inset.
+    // Start flush below the header and pin the bottom after scrolling down.
     expect(panel.getBoundingClientRect().top).toBeCloseTo(header.getBoundingClientRect().bottom, 0);
     const pinAt = rail.getBoundingClientRect().bottom - scrollportBottom();
     expect(pinAt).toBeGreaterThan(0);
     await scrollTo(pinAt + 200);
     await expect.poll(() => rail.getBoundingClientRect().bottom).toBeCloseTo(scrollportBottom(), 0);
 
-    // Unlike the direction-aware JS version, CSS stays pinned on reversal until
-    // the rail's original position comes back into view.
-    await scrollTo(pinAt + 100);
+    // Reverse far from the page's top: release without a jump, then let the
+    // sidebar travel back down into view as the page scrolls upward.
+    await scrollTo(pinAt + 2000);
     await expect.poll(() => rail.getBoundingClientRect().bottom).toBeCloseTo(scrollportBottom(), 0);
+    const deepScroll = scroller.scrollTop;
+    await scrollTo(deepScroll - 100);
+    await expect.poll(() => rail.getBoundingClientRect().bottom).toBeCloseTo(scrollportBottom(), 0);
+    await scrollTo(deepScroll - 200);
+    await expect
+      .poll(() => rail.getBoundingClientRect().bottom)
+      .toBeCloseTo(scrollportBottom() + 100, 0);
+
+    // Reach the top of the sidebar without returning to the top of the list.
+    await scrollTo(deepScroll - 1000);
+    await expect
+      .poll(() => panel.getBoundingClientRect().top)
+      .toBeCloseTo(header.getBoundingClientRect().bottom, 0);
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+
+    // Reverse again without jumping, then travel naturally toward the bottom.
+    const topPinnedAt = scroller.scrollTop;
+    await scrollTo(topPinnedAt + 100);
+    await expect
+      .poll(() => panel.getBoundingClientRect().top)
+      .toBeCloseTo(header.getBoundingClientRect().bottom, 0);
+    await scrollTo(topPinnedAt + 150);
+    await expect
+      .poll(() => panel.getBoundingClientRect().top)
+      .toBeCloseTo(header.getBoundingClientRect().bottom - 50, 0);
+
+    // Steady scrolling should use native positioning, with no style writes.
+    const styleChanges: MutationRecord[] = [];
+    const observer = new MutationObserver((changes) => styleChanges.push(...changes));
+    observer.observe(rail, { attributes: true, attributeFilter: ['style'] });
+    observer.observe(rail.previousElementSibling!, {
+      attributes: true,
+      attributeFilter: ['style'],
+    });
+    try {
+      for (let step = 1; step <= 3; step += 1) {
+        await scrollTo(topPinnedAt + 150 + step * 10);
+        await expect
+          .poll(() => panel.getBoundingClientRect().top)
+          .toBeCloseTo(header.getBoundingClientRect().bottom - 50 - step * 10, 0);
+      }
+      expect(styleChanges).toHaveLength(0);
+    } finally {
+      observer.disconnect();
+    }
+
+    // Resize while deep in the list: a sidebar that fits should stay visible.
+    await page.viewport(1280, 1400);
+    await expect
+      .poll(() => panel.getBoundingClientRect().top)
+      .toBeCloseTo(header.getBoundingClientRect().bottom, 0);
+    await page.viewport(1280, 800);
     await scrollTo(0);
     await expect
       .poll(() => panel.getBoundingClientRect().top)
@@ -775,7 +827,7 @@ describe('Comments analytics', () => {
     }
   });
 
-  it('hides analytics for an empty filtered list and restores it after resetting the shared scope', async () => {
+  it('shows a plain empty state and restores analytics after clearing the scope in the header', async () => {
     const entity = comment({ html: '<p>Visible after resetting</p>' });
     const commentsApi = fakeComments(({ filter }) =>
       filter?.includes('status:hidden') ? [] : [entity],
@@ -798,7 +850,10 @@ describe('Comments analytics', () => {
     await expect.element(commentsScreen.filteredEmptyState()).toBeVisible();
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
     await expect.element(commentsScreen.analyticsButton()).not.toBeInTheDocument();
-    await commentsScreen.resetFiltersButton().click();
+    await expect.element(commentsScreen.resetFiltersButton()).not.toBeInTheDocument();
+    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await commentsScreen.analyticsDateRange().click();
+    await commentsScreen.analyticsDateRangeOption('All time').click();
 
     await expect.element(commentsScreen.commentRow('Visible after resetting')).toBeVisible();
     await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
@@ -818,6 +873,12 @@ describe('Comments analytics', () => {
       await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
       await expect.element(commentsScreen.analyticsButton()).not.toBeInTheDocument();
       await expect.element(commentsScreen.analyticsDateRange()).toBeVisible();
+      await expect.element(commentsScreen.resetFiltersButton()).not.toBeInTheDocument();
+
+      await commentsScreen.analyticsDateRange().click();
+      await commentsScreen.analyticsDateRangeOption('Last 7 days').click();
+      await expect.element(commentsScreen.filteredEmptyState()).toBeVisible();
+      await expect.element(commentsScreen.resetFiltersButton()).not.toBeInTheDocument();
     },
   );
 

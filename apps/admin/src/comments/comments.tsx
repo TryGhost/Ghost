@@ -168,9 +168,9 @@ const CommentsPage: React.FC<{
       >
         <LucideIcon.MessageSquare />
       </EmptyIndicator>
-      {(singleCommentId || hasSharedFilters) && (
+      {singleCommentId && (
         <Button className="mt-4" variant="outline" onClick={handleShowAllComments}>
-          {singleCommentId ? 'Show all comments' : 'Reset filters'}
+          Show all comments
         </Button>
       )}
     </Stack>
