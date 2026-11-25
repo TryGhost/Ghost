@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import type { Promisable } from 'type-fest';
 import type {
   RescheduleOpts,
   Rescheduler,
@@ -48,14 +49,9 @@ function report(err: unknown, operation: 'schedule' | 'unschedule', job: Schedul
 }
 
 /**
- * Decorates a scheduling adapter so that failures from `schedule`/`unschedule`
- * are reported by Ghost rather than by each adapter. Adapters signal failure
- * however the contract permits — throwing, or rejecting the returned promise —
- * and both are handled here.
- *
- * Failures are reported rather than propagated because no caller awaits these:
- * `rescheduleAll` queues one job per scheduled post, and awaiting each would
- * stall boot behind an adapter's rate limiting.
+ * Wraps a scheduling adapter so that failures from `schedule`/`unschedule` are
+ * reported by Ghost rather than by each adapter. Should work the same
+ * otherwise.
  */
 export class ErrorCapturingSchedulingAdapter implements SchedulingAdapter {
   readonly #adapter: SchedulingAdapter;
@@ -84,30 +80,28 @@ export class ErrorCapturingSchedulingAdapter implements SchedulingAdapter {
     return this.#adapter.rescheduleAll(opts);
   }
 
-  schedule(job: SchedulerJob): void {
-    this.#capture(() => this.#adapter.schedule(job), 'schedule', job);
+  schedule(job: SchedulerJob): Promise<void> {
+    return this.#capture(() => this.#adapter.schedule(job), 'schedule', job);
   }
 
-  unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }): void {
-    this.#capture(() => this.#adapter.unschedule(job, opts), 'unschedule', job);
+  unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }): Promise<void> {
+    return this.#capture(() => this.#adapter.unschedule(job, opts), 'unschedule', job);
   }
 
-  #capture(
-    run: () => void | Promise<void>,
+  async #capture<T>(
+    run: () => Promisable<T>,
     operation: 'schedule' | 'unschedule',
     job: SchedulerJob,
-  ): void {
+  ): Promise<T> {
     try {
-      const result = run();
-      if (result) {
-        Promise.resolve(result).catch((err) => report(err, operation, job));
-      }
+      return await Promise.resolve(run());
     } catch (err) {
       report(err, operation, job);
+      throw err;
     }
   }
 }
 
-export function withErrorCapture(adapter: SchedulingAdapter): SchedulingAdapter {
+export function withErrorCapture(adapter: SchedulingAdapter): ErrorCapturingSchedulingAdapter {
   return new ErrorCapturingSchedulingAdapter(adapter);
 }

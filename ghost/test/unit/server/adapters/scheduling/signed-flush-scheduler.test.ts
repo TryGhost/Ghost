@@ -124,17 +124,16 @@ describe('SignedFlushScheduler', function () {
       sinon.assert.calledOnce(logError);
     });
 
-    it('retries after a synchronous adapter failure', async function () {
+    it('leaves failed adapter calls to the recovery pass', async function () {
       const deps = buildDeps();
       deps.adapter.schedule.onFirstCall().throws(new Error('adapter failed'));
       const scheduler = new SignedFlushScheduler(deps);
-      sinon.stub(logging, 'error');
       const time = Date.now() + 60_000;
 
       await scheduler.scheduleAt(time);
       await scheduler.scheduleAt(time);
 
-      sinon.assert.calledTwice(deps.adapter.schedule);
+      sinon.assert.calledOnce(deps.adapter.schedule);
     });
 
     it('retries scheduling a time whose earlier attempt failed to fetch a key', async function () {
@@ -254,6 +253,19 @@ describe('SignedFlushScheduler', function () {
 
       sinon.assert.notCalled(deps.adapter.schedule);
       sinon.assert.notCalled(deps.adapter.unschedule);
+    });
+
+    it('dispatches all pending flushes even when adapter calls reject', async function () {
+      const pending = [Date.now() + 30_000, Date.now() + 60_000];
+      const deps = buildDeps({ pending });
+      deps.adapter.unschedule.onFirstCall().rejects(new Error('unschedule failed'));
+      deps.adapter.schedule.onFirstCall().rejects(new Error('schedule failed'));
+      const scheduler = new SignedFlushScheduler(deps);
+
+      await scheduler.rescheduleAll();
+
+      sinon.assert.calledTwice(deps.adapter.unschedule);
+      sinon.assert.calledTwice(deps.adapter.schedule);
     });
   });
 });
