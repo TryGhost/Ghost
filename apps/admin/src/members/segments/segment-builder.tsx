@@ -333,7 +333,7 @@ function SegmentBuilderActions({ builder, withPin, size, onCancel }: SegmentBuil
           variant={hasError ? 'destructive' : 'default'}
           onClick={() => void save()}
         >
-          {draft.isPending ? 'Saving…' : hasError ? 'Retry' : size ? 'Save' : 'Save segment'}
+          {draft.isPending ? 'Saving…' : hasError ? 'Retry' : 'Save'}
         </Button>
       </Inline>
     </Inline>
