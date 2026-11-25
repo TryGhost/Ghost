@@ -3,6 +3,7 @@ const models = require('../../models');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const contentImportService = require('../../services/content-import');
+const errors = require('@tryghost/errors');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const allowedIncludes = [
   'tags',
@@ -127,12 +128,29 @@ const controller = {
     async query(frame) {
       // The content-import service stages and validates the upload before this response;
       // Multer deletes the request temp file as soon as the 202 is sent.
+      const requestUserEmail = frame.user ? frame.user.get('email') : null;
+      const owner = csvUploadOwner(frame);
+      const uploadId = frame.data.upload_id;
+      if (uploadId !== undefined) {
+        if (frame.file?.path) {
+          throw new errors.ValidationError({
+            message: 'Submit either a file or a staged CSV upload, not both.',
+          });
+        }
+        const { importId, total } = await contentImportService.confirmCSV({
+          uploadId,
+          owner,
+          requestUserEmail,
+          mapping: frame.data.mapping,
+        });
+        return { meta: { import_id: importId, total } };
+      }
       const { importId, total } = await contentImportService.importCSV({
         filePath: frame.file.path,
         fileName: frame.file.name,
         mapping: frame.data.mapping,
-        requestUserEmail: frame.user ? frame.user.get('email') : null,
-        owner: csvUploadOwner(frame),
+        requestUserEmail,
+        owner,
       });
       return { meta: { import_id: importId, total } };
     },

@@ -43,12 +43,14 @@ module.exports = function apiRoutes() {
   router.post('/posts', mw.authAdminApi, http(api.posts.add));
   router.delete('/posts', mw.authAdminApi, http(api.posts.bulkDestroy));
   router.put('/posts/bulk', mw.authAdminApi, http(api.posts.bulkEdit));
+  const validatePostsFile = apiMw.upload.validation({ type: 'posts' });
   router.post(
     '/posts/upload',
     mw.authAdminApi,
     labs.enabledMiddleware('csvContentImporter'),
     apiMw.upload.csvImport('postsfile'),
-    apiMw.upload.validation({ type: 'posts' }),
+    (req, res, next) =>
+      req.body?.upload_id !== undefined && !req.file ? next() : validatePostsFile(req, res, next),
     http(api.posts.importCSV),
   );
   router.post(
@@ -56,7 +58,7 @@ module.exports = function apiRoutes() {
     mw.authAdminApi,
     labs.enabledMiddleware('csvContentImporter'),
     apiMw.upload.csvImport('postsfile'),
-    apiMw.upload.validation({ type: 'posts' }),
+    validatePostsFile,
     http(api.posts.inspectCSV),
   );
   router.delete(

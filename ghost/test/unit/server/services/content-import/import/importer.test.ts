@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import { importFiles } from '../../../../../utils/csv-import-files';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
@@ -123,6 +124,8 @@ function harness(
       start: async () => {},
       cleanupExpired: async () => {},
       cancel: async () => {},
+      lookup: async () => ({ status: 'accepted' as const, total: 2 }),
+      claim: async () => undefined,
       remove: async (_id: string, file: { key: string; name: string }) => {
         removedFiles.push(file);
       },
@@ -277,6 +280,43 @@ describe('ContentCSVImporter', function () {
 
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-csv-import queued');
     assert.deepEqual(h.removedFiles, [{ key: 'staged-1', name: 'posts.csv' }]);
+  });
+
+  it('returns the accepted receipt if another confirmation wins the upload lock', async function () {
+    const h = harness();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      files: { ...importFiles, readSource: () => Readable.from('title\nExample\n') },
+      fileStager: {
+        ...h.deps.fileStager,
+        lookup: async () => ({ status: 'ready', file: { key: 'staged', name: 'posts.csv' } }),
+        claim: async () => 0,
+      },
+    });
+    assert.deepEqual(await importer.confirmCSV('run_test', { type: 'user', id: 'staff' }), {
+      importId: 'run_test',
+      total: 0,
+    });
+    assert.equal(h.jobs.length, 0);
+  });
+
+  it('retains an uncertain staged confirmation and does not try a second dispatch', async function () {
+    const h = harness();
+    const dispatchJob = sinon.stub().rejects(new Error('lost queue response'));
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      files: { ...importFiles, readSource: () => Readable.from('title\nExample\n') },
+      dispatchJob,
+      fileStager: {
+        ...h.deps.fileStager,
+        lookup: async () => ({ status: 'ready', file: { key: 'staged', name: 'posts.csv' } }),
+      },
+    });
+    await assert.rejects(importer.confirmCSV('run_test', { type: 'user', id: 'staff' }), {
+      code: 'CSV_IMPORT_SUBMISSION_UNCERTAIN',
+    });
+    sinon.assert.calledOnce(dispatchJob);
+    assert.deepEqual(h.removedFiles, []);
   });
 
   it('carries original source columns and cells into the completed run', async function () {

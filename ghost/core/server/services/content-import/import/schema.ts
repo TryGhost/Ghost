@@ -22,14 +22,25 @@ export const mappingSchema = z.record(z.string(), z.string()).superRefine((mappi
   }
 });
 
+const ownerSchema = z.object({
+  id: z.string().min(1).max(24),
+  type: z.enum(['user', 'integration']),
+});
+const requestUserEmailSchema = z.string().email().nullable().optional();
+
 export const importRequestSchema = z.object({
   filePath: z.string().min(1),
   fileName: z.string().min(1),
   mapping: mappingSchema.optional(),
-  requestUserEmail: z.string().email().nullable().optional(),
-  owner: z
-    .object({ id: z.string().min(1).max(24), type: z.enum(['user', 'integration']) })
-    .optional(),
+  requestUserEmail: requestUserEmailSchema,
+  owner: ownerSchema.optional(),
+});
+
+export const confirmImportSchema = z.object({
+  uploadId: z.string().regex(/^[a-f0-9]{24}$/, 'Invalid CSV upload ID.'),
+  owner: ownerSchema,
+  mapping: mappingSchema.optional(),
+  requestUserEmail: requestUserEmailSchema,
 });
 
 export type ImportRequest = z.infer<typeof importRequestSchema>;

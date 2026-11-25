@@ -132,6 +132,91 @@ describe('content import staged file', function () {
     assert.equal(await uploads.get('interrupted'), undefined);
   });
 
+  it('looks up and cancels an upload using the stored filename', async function () {
+    const save = storage.save.bind(storage);
+    sinon
+      .stub(storage, 'save')
+      .callsFake((file, target) => save({ ...file, name: 'renamed' }, target));
+    const adapter = stager();
+    const file = await adapter.stage(
+      { filePath: sourcePath, fileName: 'posts.csv', owner },
+      'mapped',
+      now,
+    );
+    assert.deepEqual(await adapter.lookup('mapped', owner, now), { status: 'ready', file });
+    await adapter.cancel('mapped', owner);
+    assert.equal(await fs.pathExists(path.join(directory, file.key)), false);
+  });
+
+  it('rejects a manifest referencing a different import during confirmation and cancellation', async function () {
+    const adapter = stager();
+    const request = { filePath: sourcePath, fileName: 'posts.csv', owner };
+    const otherFile = await adapter.stage(request, 'other', now);
+    await adapter.stage(request, 'mapped', now);
+    await uploads.change('mapped', () => ({ value: undefined, change: { file: otherFile } }));
+
+    await assert.rejects(adapter.lookup('mapped', owner, now), /Invalid CSV upload source/);
+    await assert.rejects(adapter.cancel('mapped', owner), /Invalid CSV upload source/);
+    assert.equal(await fs.pathExists(path.join(directory, otherFile.key)), true);
+  });
+
+  it('claims an owner-bound upload only once and returns the first receipt', async function () {
+    const adapter = stager();
+    const file = await adapter.stage(
+      { filePath: sourcePath, fileName: 'posts.csv', owner },
+      'claim',
+      now,
+    );
+    assert.deepEqual(await adapter.lookup('claim', owner, now), { status: 'ready', file });
+    await assert.rejects(adapter.lookup('claim', { ...owner, id: 'different-owner' }, now), {
+      errorType: 'NotFoundError',
+    });
+    assert.equal(await adapter.claim('claim', owner, now, 1), undefined);
+    await assert.rejects(adapter.lookup('claim', owner, now), {
+      code: 'CSV_IMPORT_SUBMISSION_UNCERTAIN',
+    });
+    await assert.rejects(adapter.claim('claim', owner, now, 1), {
+      code: 'CSV_IMPORT_SUBMISSION_UNCERTAIN',
+    });
+    await assert.rejects(adapter.cancel('claim', owner), { errorType: 'ConflictError' });
+    await adapter.acknowledge('claim');
+    assert.equal(await adapter.claim('claim', owner, now, 1), 1);
+    assert.deepEqual(await adapter.lookup('claim', owner, now), { status: 'accepted', total: 1 });
+    await assert.rejects(adapter.lookup('claim', owner, new Date('2026-01-03')), {
+      errorType: 'NotFoundError',
+    });
+  });
+
+  it('does not dispatch a confirmation that raced with cancellation', async function () {
+    const adapter = stager();
+    const other = stager(() => new LocalStorageBase({ storagePath: directory }));
+    const file = await adapter.stage(
+      { filePath: sourcePath, fileName: 'posts.csv', owner },
+      'cancel',
+      now,
+    );
+    const attempted = Promise.withResolvers<void>();
+    const resume = Promise.withResolvers<void>();
+    const conditionalWrite = storage.writeVersionedMetadata.bind(storage);
+    sinon.stub(storage, 'writeVersionedMetadata').callsFake(async (key, bytes, version) => {
+      attempted.resolve();
+      await resume.promise;
+      return conditionalWrite(key, bytes, version);
+    });
+    const claim = assert.rejects(adapter.claim('cancel', owner, now, 1), {
+      errorType: 'NotFoundError',
+    });
+    try {
+      await attempted.promise;
+      await other.cancel('cancel', owner);
+    } finally {
+      resume.resolve();
+      await claim;
+    }
+    await assert.rejects(adapter.download(file), { errorType: 'NotFoundError' });
+    assert.equal(await uploads.get('cancel'), undefined);
+  });
+
   it('does not resurrect a source that expired during staging', async function () {
     const adapter = stager();
     const copying = Promise.withResolvers<void>();

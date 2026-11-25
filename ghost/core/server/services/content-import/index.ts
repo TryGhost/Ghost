@@ -15,7 +15,7 @@ import ContentCSVImporter, {
 import buildCompletionEmail from './import/completion-email';
 import { BookshelfPostsRepository } from './import/post-repository';
 import readPostRows from './import/reader';
-import { importRequestSchema, type ImportRequest } from './import/schema';
+import { confirmImportSchema, importRequestSchema, type ImportRequest } from './import/schema';
 import { ImportRunStore } from './import/store';
 import { prepareImportSource } from './import/source';
 import type { ImportFiles } from './import/files';
@@ -182,6 +182,18 @@ export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
 
 export function inspectCSV(request: ImportRequest) {
   return getImporter().inspectCSV(validateRequest(request));
+}
+
+export function confirmCSV(input: z.input<typeof confirmImportSchema>): Promise<ImportAccepted> {
+  const parsed = confirmImportSchema.safeParse(input);
+  if (!parsed.success) {
+    throw new errors.ValidationError({
+      message: parsed.error.issues[0]?.message ?? 'Invalid CSV confirmation.',
+      err: parsed.error,
+    });
+  }
+  const { uploadId, owner, mapping, requestUserEmail } = parsed.data;
+  return getImporter().confirmCSV(uploadId, owner, mapping, requestUserEmail);
 }
 
 export function cancelUpload(id: string, owner: ImportOwner): Promise<void> {

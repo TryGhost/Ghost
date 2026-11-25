@@ -11,9 +11,14 @@ import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
-import type { PreparedPostRow, PreparedPostRows } from './reader';
+import { countPostRows, type PreparedPostRow, type PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
-import type { ImportFileStager, DownloadedImportFile, StagedImportFile } from './staged-file';
+import {
+  uncertainSubmission,
+  type ImportFileStager,
+  type DownloadedImportFile,
+  type StagedImportFile,
+} from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
 import { readCSVPreview } from './preview';
 import { assertCSVUploadSize } from './limits';
@@ -165,30 +170,90 @@ class ContentCSVImporter {
     let handedOff = false;
 
     try {
-      const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
       await this._fileStager.begin(runId, preparedRows.rows.length);
-      const job = new ContentCSVImportJob({
-        importId: runId,
-        file: stagedFile,
-        mapping: request.mapping,
-        importTagNames,
-        emailRecipient,
-        total: preparedRows.rows.length,
-      });
-
-      logLifecycle('queued');
       // Enqueue can fail after acceptance (for example on a Redis timeout).
       // Keep the source until expiry or an actual delivery resolves uncertainty.
       handedOff = true;
-      await this._dispatchJob(job);
-      await this._fileStager.acknowledge(runId);
-
-      return { importId: runId, total: preparedRows.rows.length };
+      return await this.queueImport(runId, stagedFile, {
+        total: preparedRows.rows.length,
+        mapping: request.mapping,
+        emailRecipient,
+      });
     } finally {
       if (!handedOff) {
         await this.cleanupStagedFile(runId, stagedFile);
       }
     }
+  }
+
+  async confirmCSV(
+    id: string,
+    owner: ImportOwner,
+    mapping?: Record<string, string>,
+    requestUserEmail?: string | null,
+  ): Promise<ImportAccepted> {
+    const selection = await this._fileStager.lookup(id, owner, this._now());
+    if (selection.status === 'accepted') {
+      return { importId: id, total: selection.total };
+    }
+
+    const local = await this._fileStager.download(selection.file);
+    let count: { total: number; columns: string[] };
+    try {
+      const source = await this._prepareSource(
+        {
+          filePath: local.path,
+          fileName: selection.file.name,
+        },
+        { includeAssets: false },
+      );
+      try {
+        count = await countPostRows(this._files.readSource(source.filePath), mapping);
+      } finally {
+        await this.cleanupSource(source.cleanup);
+      }
+    } finally {
+      await this.cleanupSource(local.cleanup);
+    }
+
+    const emailRecipient = requestUserEmail ?? (await this._email.getDefaultRecipient());
+    const existing = await this._fileStager.claim(id, owner, this._now(), count.total);
+    if (existing !== undefined) {
+      return { importId: id, total: existing };
+    }
+    try {
+      return await this.queueImport(id, selection.file, { ...count, mapping, emailRecipient });
+    } catch (error) {
+      throw uncertainSubmission(error);
+    }
+  }
+
+  private async queueImport(
+    id: string,
+    file: StagedImportFile,
+    {
+      total,
+      mapping,
+      emailRecipient,
+    }: {
+      total: number;
+      mapping?: Record<string, string>;
+      emailRecipient: string;
+    },
+  ): Promise<ImportAccepted> {
+    const importTagNames = buildImportTagNames(id, this._getTimezone(), this._now());
+    const job = new ContentCSVImportJob({
+      importId: id,
+      file,
+      mapping,
+      importTagNames,
+      emailRecipient,
+      total,
+    });
+    logLifecycle('queued');
+    await this._dispatchJob(job);
+    await this._fileStager.acknowledge(id);
+    return { importId: id, total };
   }
 
   async inspectCSV(request: ImportRequest) {

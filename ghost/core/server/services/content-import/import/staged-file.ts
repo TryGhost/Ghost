@@ -1,8 +1,9 @@
 import type { Readable } from 'node:stream';
 import type { StorageBase } from 'ghost-storage-base';
 import errors from '@tryghost/errors';
+import { z } from 'zod';
 import type { VersionedImportStorage } from '../../../adapters/storage/import-storage';
-import { ImportUploadRepository, type ImportOwner } from './upload-repository';
+import { ImportUploadRepository, type ImportOwner, type ImportUpload } from './upload-repository';
 
 export interface StagedImportFile {
   key: string;
@@ -12,6 +13,43 @@ export interface StagedImportFile {
 export interface DownloadedImportFile {
   path: string;
   cleanup(): Promise<void>;
+}
+
+type Submission =
+  | { status: 'ready'; file: StagedImportFile }
+  | { status: 'accepted'; total: number };
+
+const receiptSchema = z.object({ total: z.number().int().nonnegative() });
+
+function assertOwnedUpload(
+  row: ImportUpload | undefined,
+  owner: ImportOwner,
+  now: Date,
+): asserts row is ImportUpload {
+  if (!row || row.owner_id !== owner.id || row.owner_type !== owner.type || row.expires_at <= now) {
+    throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
+  }
+}
+
+export function uncertainSubmission(error?: unknown) {
+  return new errors.ConflictError({
+    message: 'CSV import submission uncertain; upload again.',
+    code: 'CSV_IMPORT_SUBMISSION_UNCERTAIN',
+    err: error instanceof Error ? error : undefined,
+  });
+}
+
+function receipt(row: ImportUpload): number | undefined {
+  if (row.state === 'accepted' || row.state === 'finished') {
+    return receiptSchema.parse(JSON.parse(row.receipt ?? '{}')).total;
+  }
+  if (row.state === 'submitting') {
+    throw uncertainSubmission();
+  }
+  if (row.state !== 'ready') {
+    throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
+  }
+  return undefined;
 }
 
 export interface ImportFileStager {
@@ -26,6 +64,8 @@ export interface ImportFileStager {
   start(id: string, now: Date): Promise<void>;
   remove(id: string, file: StagedImportFile): Promise<void>;
   cancel(id: string, owner: ImportOwner): Promise<void>;
+  lookup(id: string, owner: ImportOwner, now: Date): Promise<Submission>;
+  claim(id: string, owner: ImportOwner, now: Date, total: number): Promise<number | undefined>;
   cleanupExpired(now: Date, report: (error: unknown) => void): Promise<void>;
 }
 
@@ -156,6 +196,32 @@ export function createImportFileStager({
           throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
         }
         return { value: undefined, change: { state: 'accepted' } };
+      });
+    },
+
+    async lookup(id, owner, now) {
+      const row = await uploads.get(id);
+      assertOwnedUpload(row, owner, now);
+      const total = receipt(row);
+      if (total !== undefined) {
+        return { status: 'accepted', total };
+      }
+      const { file } = row;
+      assertSourceKey(id, file.key);
+      return { status: 'ready', file };
+    },
+
+    async claim(id, owner, now, total) {
+      return uploads.change(id, (row) => {
+        assertOwnedUpload(row, owner, now);
+        const existing = receipt(row);
+        if (existing !== undefined) {
+          return { value: existing };
+        }
+        return {
+          value: undefined,
+          change: { state: 'submitting', receipt: JSON.stringify({ total }) },
+        };
       });
     },
 
