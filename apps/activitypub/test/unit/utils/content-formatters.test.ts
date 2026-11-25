@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   enforceVideoCardInlinePlayback,
   formatArticle,
+  linkHashtagsInText,
   openLinksInNewTab,
   sanitizeArticleContent,
   sanitizeHtml,
@@ -157,6 +158,29 @@ describe('Content Formatters', function () {
           '<script src="https://platform.twitter.com/widgets.js"></script><p>Hi</p>',
         ),
       ).toBe('<script src="https://platform.twitter.com/widgets.js"></script><p>Hi</p>');
+    });
+  });
+
+  describe('linkHashtagsInText', function () {
+    const getHashtagHref = (name: string) => `#/hashtags/${name.toLowerCase()}`;
+
+    it('links hashtags written as plain text', function () {
+      expect(linkHashtagsInText("<p>It's #Coffee time, #tea</p>", getHashtagHref)).toBe(
+        '<p>It\'s <a href="#/hashtags/coffee" class="hashtag" rel="tag">#Coffee</a> time, <a href="#/hashtags/tea" class="hashtag" rel="tag">#tea</a></p>',
+      );
+    });
+
+    it('leaves hashtags in links and code alone', function () {
+      const content =
+        '<p><a href="https://example.com/tag/ghost/" rel="tag">#Ghost</a> <code>#include</code></p><pre>#define</pre>';
+
+      expect(linkHashtagsInText(content, getHashtagHref)).toBe(content);
+    });
+
+    it('does not link text that is not a hashtag', function () {
+      const content = '<p>Number #1, C#sharp, page/#anchor, Q&amp;A#tag and ##double</p>';
+
+      expect(linkHashtagsInText(content, getHashtagHref)).toBe(content);
     });
   });
 

@@ -242,6 +242,54 @@ export const openLinksInNewTab = (
   return template.innerHTML;
 };
 
+// Matches a hashtag in text the way the ActivityPub service does: the "#" is at
+// the start or follows a character that can't be part of a word, URL path or
+// HTML entity, and the name has at least one letter
+const HASHTAG_IN_TEXT_PATTERN = /(^|[^\p{L}\p{M}\p{N}_&/#])#([\p{L}\p{M}\p{N}_]*\p{L}[\p{L}\p{M}\p{N}_]*)/gu;
+
+// Links hashtags written as plain text, e.g. in notes from a site without a
+// tag page for them, so they open the hashtag feed like linked ones. Text in
+// links and code is left alone
+export const linkHashtagsInText = (content: string, getHashtagHref: (name: string) => string) => {
+  const template = parseHtml(content);
+  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT);
+  const textNodes: Text[] = [];
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+
+    if (!node.parentElement?.closest('a, code, pre')) {
+      textNodes.push(node);
+    }
+  }
+
+  for (const node of textNodes) {
+    const text = node.data;
+    const parts: (string | HTMLAnchorElement)[] = [];
+    let lastIndex = 0;
+
+    for (const match of text.matchAll(HASHTAG_IN_TEXT_PATTERN)) {
+      const [, prefix, name] = match;
+      const start = match.index + prefix.length;
+      const link = document.createElement('a');
+
+      link.setAttribute('href', getHashtagHref(name));
+      link.setAttribute('class', 'hashtag');
+      link.setAttribute('rel', 'tag');
+      link.textContent = `#${name}`;
+
+      parts.push(text.slice(lastIndex, start), link);
+      lastIndex = start + 1 + name.length;
+    }
+
+    if (parts.length > 0) {
+      node.replaceWith(...parts, text.slice(lastIndex));
+    }
+  }
+
+  return template.innerHTML;
+};
+
 export const enforceVideoCardInlinePlayback = (content: string) => {
   const template = parseHtml(content);
 

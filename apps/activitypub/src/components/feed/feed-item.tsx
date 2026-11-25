@@ -20,7 +20,7 @@ import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
 import { handleHashtagLinkClick } from '../../utils/hashtags';
 import { handleProfileClick } from '../../utils/handle-profile-click';
-import { openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
+import { linkHashtagsInText, openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
 import { renderTimestamp } from '../../utils/render-timestamp';
 import {
   useDeleteMutationForUser,
@@ -28,6 +28,7 @@ import {
   useHashtagSupportForUser,
   useUnfollowMutationForUser,
 } from '../../hooks/use-activity-pub-queries';
+import { useHashtagHref } from '@src/hooks/use-hashtag-href';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 import { useSensitiveMediaDisclosure } from '@src/hooks/use-sensitive-media-disclosure';
 
@@ -547,6 +548,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
   const deleteMutation = useDeleteMutationForUser('index');
   const navigate = useNavigateWithBasePath();
   const hashtagsSupported = useHashtagSupportForUser();
+  const getHashtagHref = useHashtagHref();
+
+  // Notes from a site without a tag page for a hashtag carry it as plain text
+  const formatContent = (content: string) =>
+    openLinksInNewTab(
+      hashtagsSupported && object?.type === 'Note' ? linkHashtagsInText(content, getHashtagHref) : content,
+      { keepHashtagLinks: hashtagsSupported },
+    );
 
   const {
     contentWarning,
@@ -739,7 +748,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
             <div
               dangerouslySetInnerHTML={{
                 __html: sanitizeHtml(
-                  openLinksInNewTab(object.content || '', { keepHashtagLinks: hashtagsSupported }) ?? '',
+                  formatContent(object.content || '') ?? '',
                 ),
               }}
               ref={contentRef}
@@ -1146,8 +1155,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         <div
                           dangerouslySetInnerHTML={{
                             __html: sanitizeHtml(
-                              openLinksInNewTab(object.content || '', { keepHashtagLinks: hashtagsSupported }) ??
-                                '',
+                              formatContent(object.content || '') ?? '',
                             ),
                           }}
                           ref={contentRef}

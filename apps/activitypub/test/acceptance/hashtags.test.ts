@@ -115,6 +115,47 @@ test.describe('Hashtags', async () => {
     expect(lastApiRequests.getHashtagFeed).toBeTruthy();
   });
 
+  test('I can open a hashtag written as plain text in a note', async ({ page }) => {
+    const { lastApiRequests } = await mockApi({
+      page,
+      requests: {
+        ...appShellRequests,
+        getFeed: {
+          method: 'GET',
+          path: '/v1/feed/notes',
+          response: {
+            ...singlePageFeed,
+            posts: feedFixture.posts.map((post, index) =>
+              index === 0 ? { ...post, content: '<p>Morning #Coffee</p>' } : post,
+            ),
+          },
+        },
+        getHashtagFeed: {
+          method: 'GET',
+          path: '/v1/feed/hashtag/Coffee',
+          response: singlePageFeed,
+        },
+      },
+      options: { useActivityPub: true },
+    });
+
+    const hashtagSupport = page.waitForResponse(/\/v1\/feed\/hashtag\/_$/);
+    await page.goto('#/notes');
+
+    const feedItems = page.getByTestId('feed-item');
+    await expect(feedItems).toHaveCount(10);
+    await hashtagSupport;
+
+    const hashtagLink = feedItems.first().getByRole('link', { name: '#Coffee' });
+    await expect(hashtagLink).toHaveAttribute('href', /#\/hashtags\/Coffee$/);
+    await hashtagLink.click();
+
+    await expect(page).toHaveURL(/#\/hashtags\/Coffee$/);
+    await expect(page.getByRole('heading', { name: /#coffee/i })).toBeVisible();
+    await expect(page.getByTestId('profile-post-item')).toHaveCount(feedFixture.posts.length);
+    expect(lastApiRequests.getHashtagFeed).toBeTruthy();
+  });
+
   test('I can open a hashtag from search by typing it', async ({ page }) => {
     await mockApi({
       page,
