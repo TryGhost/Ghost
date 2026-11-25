@@ -1,10 +1,6 @@
-import type { ImportRun, RowStatus } from './store';
-import buildImportReport from './report';
-import buildErrorsFile from './errors-file';
+import type { ImportSummary, OutcomeCounts } from './summary';
 
 const { slugify } = require('@tryghost/string');
-
-const IMPORTED_POST_PREVIEW_LIMIT = 10;
 
 export interface CompletionEmailPayload {
   to: string;
@@ -19,8 +15,6 @@ export interface CompletionEmailPayload {
   }>;
 }
 
-type OutcomeCounts = Record<RowStatus, number> & { warningRows: number };
-
 function escapeHTML(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -30,26 +24,7 @@ function escapeHTML(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function countsFor(run: ImportRun): OutcomeCounts {
-  const counts: OutcomeCounts = {
-    created: 0,
-    updated: 0,
-    skipped: 0,
-    failed: 0,
-    warningRows: 0,
-  };
-
-  for (const row of run.rows) {
-    counts[row.status] += 1;
-    if (row.warnings?.length) {
-      counts.warningRows += 1;
-    }
-  }
-
-  return counts;
-}
-
-function headingFor(run: ImportRun, counts: OutcomeCounts): string {
+function headingFor(run: ImportSummary, counts: OutcomeCounts): string {
   if (run.status === 'failed') {
     return 'Your content import could not be completed';
   }
@@ -85,18 +60,12 @@ function importTagSlug(runId: string): string {
   return slugify(`#Import Run ${runId}`.replace(/^#/, 'hash-'));
 }
 
-function importedPostLinks(run: ImportRun, adminUrl: string): string {
-  const importedRows = run.rows.filter(
-    (row) => row.status === 'created' || row.status === 'updated',
-  );
-  if (!importedRows.length) {
+function importedPostLinks(run: ImportSummary, adminUrl: string): string {
+  const { counts, previewRows, hasPages, hasPosts } = run;
+  const imported = counts.created + counts.updated;
+  if (!imported) {
     return '';
   }
-
-  const rows = importedRows.filter((row) => row.url);
-  const previewRows = rows.slice(0, IMPORTED_POST_PREVIEW_LIMIT);
-  const hasPages = importedRows.some((row) => row.postType === 'page');
-  const hasPosts = importedRows.some((row) => row.postType !== 'page');
 
   const links = previewRows
     .map((row) => {
@@ -104,7 +73,7 @@ function importedPostLinks(run: ImportRun, adminUrl: string): string {
       return `<li style="margin-bottom: 6px;"><a href="${escapeHTML(row.url as string)}" style="color: #3A464C;">${title}</a></li>`;
     })
     .join('');
-  const remaining = importedRows.length - previewRows.length;
+  const remaining = imported - previewRows.length;
   const remainingCopy = remaining
     ? `<p style="font-size: 16px; line-height: 25px; color: #3A464C;">Including ${formatNumber(remaining)} more.</p>`
     : '';
@@ -132,12 +101,12 @@ function importedPostLinks(run: ImportRun, adminUrl: string): string {
 }
 
 function renderCompletionEmail(
-  run: ImportRun,
+  run: ImportSummary,
   recipient: string,
   adminUrl: string,
   hasErrorsFile: boolean,
 ): string {
-  const counts = countsFor(run);
+  const { counts } = run;
   const heading = headingFor(run, counts);
   const warningCopy = counts.warningRows
     ? `<p style="font-size: 16px; line-height: 25px; color: #3A464C;"><strong>${formatNumber(counts.warningRows)}</strong> ${counts.warningRows === 1 ? 'post has' : 'posts have'} warnings.</p>`
@@ -171,13 +140,12 @@ function renderCompletionEmail(
 }
 
 export default function buildCompletionEmail(
-  run: ImportRun,
+  run: ImportSummary,
   recipient: string,
   adminUrl: string,
+  { report, errorsFile }: { report?: string; errorsFile?: string },
 ): CompletionEmailPayload {
-  const counts = countsFor(run);
-  const report = buildImportReport(run);
-  const errorsFile = buildErrorsFile(run);
+  const { counts } = run;
   const attachments: CompletionEmailPayload['attachments'] = [];
   if (report) {
     attachments.push({

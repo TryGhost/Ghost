@@ -6,9 +6,12 @@ import buildPostData, {
   type MarkdownToHtml,
   type PostData,
 } from './post-data';
-import type { PostsRepository, WrittenPost } from './post-repository';
+import type { PostsRepository, PostWriteResult, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
-import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
+import type { Clock, RowOutcome } from './store';
+import { ImportJournal, type JournalStorage } from './journal';
+import { readImportReports, type ImportReportContents } from './journal-report';
+import { createSummary, type ImportSummary } from './summary';
 import type { PreparedImportSource } from './source';
 import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
@@ -43,7 +46,7 @@ export interface ImportAccepted {
 export type FailureReporter = (error: unknown) => void;
 
 export interface EmailNotifications {
-  send(run: ImportRun, recipient: string): Promise<unknown>;
+  send(run: ImportSummary, recipient: string, reports: ImportReportContents): Promise<unknown>;
   getDefaultRecipient(): Promise<string>;
 }
 
@@ -81,11 +84,11 @@ interface ImporterDeps {
   dispatchJob: (job: ContentCSVImportJob) => Promise<void>;
   fileStager: ImportFileStager;
   report: FailureReporter;
-  store: ImportRunStore;
   urlForPost: (post: WrittenPost) => string;
   newRunId: () => string;
   getTimezone: () => string;
   now?: Clock;
+  trackLocalJobs?: boolean;
 }
 
 // Two batch tags for every imported post: a date stamp matching the JSON
@@ -108,7 +111,7 @@ class ContentCSVImporter {
   private _dispatchJob: ImporterDeps['dispatchJob'];
   private _fileStager: ImportFileStager;
   private _report: FailureReporter;
-  private _store: ImportRunStore;
+  private _pending?: Map<string, ReturnType<typeof Promise.withResolvers<void>>>;
   private _urlForPost: (post: WrittenPost) => string;
   private _newRunId: () => string;
   private _getTimezone: () => string;
@@ -127,11 +130,11 @@ class ContentCSVImporter {
     dispatchJob,
     fileStager,
     report,
-    store,
     urlForPost,
     newRunId,
     getTimezone,
     now = () => new Date(),
+    trackLocalJobs = false,
   }: ImporterDeps) {
     this._files = files;
     this._readRows = readRows;
@@ -145,11 +148,13 @@ class ContentCSVImporter {
     this._dispatchJob = dispatchJob;
     this._fileStager = fileStager;
     this._report = report;
-    this._store = store;
     this._urlForPost = urlForPost;
     this._newRunId = newRunId;
     this._getTimezone = getTimezone;
     this._now = now;
+    if (trackLocalJobs) {
+      this._pending = new Map();
+    }
   }
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
@@ -216,6 +221,7 @@ class ContentCSVImporter {
     },
   ): Promise<ImportAccepted> {
     const importTagNames = buildImportTagNames(id, this._getTimezone(), this._now());
+    this.track(id);
     const job = new ContentCSVImportJob({
       importId: id,
       file,
@@ -224,8 +230,13 @@ class ContentCSVImporter {
       emailRecipient,
     });
     logLifecycle('queued');
-    await this._dispatchJob(job);
-    await this._fileStager.acknowledge(id);
+    try {
+      await this._dispatchJob(job);
+      await this._fileStager.acknowledge(id);
+    } catch (error) {
+      this.release(id);
+      throw error;
+    }
     return { importId: id };
   }
 
@@ -251,11 +262,15 @@ class ContentCSVImporter {
     let preparedRows: PreparedPostRows | undefined;
     let materialized: DownloadedImportFile | undefined;
     let started = false;
+    let storage: JournalStorage | undefined;
+    let journal: ImportJournal | undefined;
+    let failureReason: string | undefined;
+    this.track(job.importId);
 
     try {
       await this._fileStager.start(job.importId, this._now());
       started = true;
-      const run = this._store.create(job.importId, 0);
+      storage = this._fileStager.artifacts(job.importId);
       materialized = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
         filePath: materialized.path,
@@ -264,13 +279,11 @@ class ContentCSVImporter {
       });
       source = prepared.source;
       preparedRows = prepared.preparedRows;
-      run.sourceColumns = preparedRows.columns;
-      await this.processRows(job.importId, job.importTagNames, preparedRows.rows, prepared.source);
+      journal = new ImportJournal(storage, preparedRows.columns, { record: 0, part: 0 });
+      await this.processRows(journal, job.importTagNames, preparedRows.rows, prepared.source);
+      await journal.flush();
     } catch (error) {
-      if (started && !this._store.get(job.importId)) {
-        this._store.create(job.importId, 0);
-      }
-      this._store.fail(job.importId, messageOf(error));
+      failureReason = messageOf(error);
       throw error;
     } finally {
       if (preparedRows) {
@@ -282,15 +295,41 @@ class ContentCSVImporter {
       if (materialized) {
         await this.cleanupSource(materialized.cleanup);
       }
-      const run = this._store.get(job.importId);
-      if (run) {
-        await this.settle(() => this._email.send(run, job.emailRecipient));
-      }
       if (started) {
+        await this.settle(async () => {
+          await journal?.flush().catch(this._report);
+          const summary = createSummary(
+            job.importId,
+            failureReason ? 'failed' : 'complete',
+            failureReason,
+          );
+          const reports = storage
+            ? await readImportReports(storage, preparedRows?.columns ?? [], summary)
+            : {};
+          await this._email.send(summary, job.emailRecipient, reports);
+        });
+        await this.settle(() => this._fileStager.clearArtifacts(job.importId));
         await this.cleanupStagedFile(job.importId, job.file);
       }
-      this._store.release(job.importId);
+      this.release(job.importId);
     }
+  }
+
+  async allSettled(): Promise<void> {
+    while (this._pending?.size) {
+      await Promise.all([...this._pending.values()].map(({ promise }) => promise));
+    }
+  }
+
+  private track(id: string): void {
+    if (this._pending && !this._pending.has(id)) {
+      this._pending.set(id, Promise.withResolvers<void>());
+    }
+  }
+
+  private release(id: string): void {
+    this._pending?.get(id)?.resolve();
+    this._pending?.delete(id);
   }
 
   cleanupUploads(): Promise<void> {
@@ -298,7 +337,7 @@ class ContentCSVImporter {
   }
 
   private async processRows(
-    runId: string,
+    journal: ImportJournal,
     importTagNames: string[],
     rows: AsyncIterable<PreparedPostRow>,
     source: PreparedImportSource,
@@ -328,7 +367,7 @@ class ContentCSVImporter {
           data = buildPostData(row, htmlToLexical, importTagNames, markdownToHtml, cleanHTML);
         } catch (error) {
           if (error instanceof RowSkipped) {
-            this.recordOutcome(runId, sourceCells, {
+            await this.recordOutcome(journal, sourceCells, {
               line,
               title: row.title || null,
               status: 'failed',
@@ -350,7 +389,7 @@ class ContentCSVImporter {
               firstRowFailure = error;
             }
             failedRows += 1;
-            this.recordOutcome(runId, sourceCells, {
+            await this.recordOutcome(journal, sourceCells, {
               line,
               title: row.title,
               status: 'failed',
@@ -363,9 +402,7 @@ class ContentCSVImporter {
           throw error;
         }
 
-        let post: WrittenPost;
-        let writeStatus: 'created' | 'updated';
-        let warnings: string[];
+        let result: PostWriteResult;
         try {
           // options.importing preserves the supplied timestamps and keeps the import silent:
           // the webhook, Slack, IndexNow and mention consumers all stand down on it, and a
@@ -373,7 +410,7 @@ class ContentCSVImporter {
           // it, one reason status is never 'scheduled'). Pinned by
           // test/e2e-webhooks/posts-importer.test.js. A fresh options object per row: the
           // model layer mutates it.
-          const result = await this._posts.write(
+          result = await this._posts.write(
             data,
             {
               importing: true,
@@ -387,28 +424,12 @@ class ContentCSVImporter {
               tagNames: row.tags,
             },
           );
-
-          if (result.status === 'skipped') {
-            this.recordOutcome(runId, sourceCells, {
-              line,
-              title: row.title,
-              status: 'skipped',
-              reason: result.reason,
-              duplicate: result.duplicate,
-            });
-            continue;
-          }
-
-          post = result.post;
-          writeStatus = result.status;
-          warnings = result.warnings;
-          successfulWrites += 1;
         } catch (error) {
           if (failedRows === 0) {
             firstRowFailure = error;
           }
           failedRows += 1;
-          this.recordOutcome(runId, sourceCells, {
+          await this.recordOutcome(journal, sourceCells, {
             line,
             title: row.title,
             status: 'failed',
@@ -417,6 +438,19 @@ class ContentCSVImporter {
           continue;
         }
 
+        if (result.status === 'skipped') {
+          await this.recordOutcome(journal, sourceCells, {
+            line,
+            title: row.title,
+            status: 'skipped',
+            reason: result.reason,
+            duplicate: result.duplicate,
+          });
+          continue;
+        }
+
+        const { post, status: writeStatus, warnings } = result;
+        successfulWrites += 1;
         const outcome: RowOutcome = {
           line,
           title: row.title,
@@ -433,7 +467,7 @@ class ContentCSVImporter {
           }
           urlFailureCount += 1;
         }
-        this.recordOutcome(runId, sourceCells, outcome);
+        await this.recordOutcome(journal, sourceCells, outcome);
       }
 
       if (failedRows > 0 && successfulWrites === 0) {
@@ -449,7 +483,6 @@ class ContentCSVImporter {
       }
 
       this.reportUrlFailures(urlFailureCount, firstUrlFailure);
-      this._store.finish(runId);
     } catch (error) {
       this.reportUrlFailures(urlFailureCount, firstUrlFailure);
       throw error;
@@ -476,11 +509,11 @@ class ContentCSVImporter {
   }
 
   private recordOutcome(
-    runId: string,
+    journal: ImportJournal,
     source: Record<string, string> | undefined,
     outcome: RowOutcome,
-  ): void {
-    this._store.record(runId, source ? { ...outcome, source } : outcome);
+  ): Promise<void> {
+    return journal.append(source ? { ...outcome, source } : outcome);
   }
 
   private reportUrlFailures(count: number, firstFailure: unknown): void {

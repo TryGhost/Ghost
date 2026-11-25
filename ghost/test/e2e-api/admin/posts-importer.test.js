@@ -1695,7 +1695,6 @@ describe('Posts Importer API', function () {
     const { body } = await agent.post('posts/upload/').attach('postsfile', file).expectStatus(202);
     assert.match(body.meta.import_id, /^[a-f0-9]{24}$/);
     assert.deepEqual(Object.keys(body.meta), ['import_id']);
-
     await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
 
     const { data: posts } = await models.Post.findPage({

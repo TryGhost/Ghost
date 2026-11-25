@@ -16,7 +16,6 @@ import buildCompletionEmail from './import/completion-email';
 import { BookshelfPostsRepository } from './import/post-repository';
 import readPostRows from './import/reader';
 import { confirmImportSchema, importRequestSchema, type ImportRequest } from './import/schema';
-import { ImportRunStore } from './import/store';
 import { prepareImportSource, isLegacyImportZip as inspectLegacyImportZip } from './import/source';
 import type { ImportFiles } from './import/files';
 import { PostMediaInliner } from './import/media';
@@ -101,8 +100,10 @@ function makeImporter(): ContentCSVImporter {
   };
 
   const email: EmailNotifications = {
-    send: (run, recipient) =>
-      ghostMailer.send(buildCompletionEmail(run, recipient, urlUtils.urlFor('admin', true))),
+    send: (run, recipient, reports) =>
+      ghostMailer.send(
+        buildCompletionEmail(run, recipient, urlUtils.urlFor('admin', true), reports),
+      ),
     getDefaultRecipient: async () => (await models.User.getOwnerUser()).get('email'),
   };
 
@@ -141,7 +142,6 @@ function makeImporter(): ContentCSVImporter {
       getDefaultOwner: async () => ({ type: 'user', id: (await models.User.getOwnerUser()).id }),
     }),
     report,
-    store: new ImportRunStore(),
     urlForPost: (post) =>
       urlForImportedPost(post, {
         adminUrl: urlUtils.urlFor('admin', true),
@@ -153,6 +153,7 @@ function makeImporter(): ContentCSVImporter {
       }),
     newRunId: () => randomBytes(12).toString('hex'),
     getTimezone: () => timezoneSchema.parse(settingsCache.get('timezone')),
+    trackLocalJobs: config.isTestEnv(),
   });
 }
 

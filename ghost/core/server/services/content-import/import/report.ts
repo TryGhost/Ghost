@@ -19,23 +19,31 @@ function formatMediaFailures(row: RowOutcome): string {
   );
 }
 
+export const reportHeader = REPORT_COLUMNS.join(',');
+
+export function reportRow(row: RowOutcome): string {
+  return serialize(
+    [
+      {
+        line: row.line,
+        title: row.title ?? '',
+        outcome: row.duplicate ? 'duplicate' : row.status,
+        reason: row.reason ?? '',
+        duplicate_origin: row.duplicate?.origin ?? '',
+        matched_by: row.duplicate?.matchedBy ?? '',
+        warnings: row.warnings?.join('\n') ?? '',
+        media_failures: formatMediaFailures(row),
+        post_url: row.url ?? '',
+      },
+    ],
+    { columns: REPORT_COLUMNS, header: false },
+  );
+}
+
 export default function buildImportReport(run: ImportRun): string | undefined {
   if (!run.rows.length) {
     return undefined;
   }
 
-  return serialize(
-    run.rows.map((row) => ({
-      line: row.line,
-      title: row.title ?? '',
-      outcome: row.duplicate ? 'duplicate' : row.status,
-      reason: row.reason ?? '',
-      duplicate_origin: row.duplicate?.origin ?? '',
-      matched_by: row.duplicate?.matchedBy ?? '',
-      warnings: row.warnings?.join('\n') ?? '',
-      media_failures: formatMediaFailures(row),
-      post_url: row.url ?? '',
-    })),
-    { columns: REPORT_COLUMNS },
-  );
+  return [reportHeader, ...run.rows.map(reportRow)].join('\r\n');
 }

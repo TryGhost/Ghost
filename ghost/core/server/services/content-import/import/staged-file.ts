@@ -3,6 +3,7 @@ import type { StorageBase } from 'ghost-storage-base';
 import errors from '@tryghost/errors';
 import type { VersionedImportStorage } from '../../../adapters/storage/import-storage';
 import { ImportUploadRepository, type ImportOwner, type ImportUpload } from './upload-repository';
+import type { JournalStorage } from './journal';
 
 export interface StagedImportFile {
   key: string;
@@ -54,6 +55,8 @@ export interface ImportFileStager {
     now: Date,
   ): Promise<StagedImportFile>;
   download(file: StagedImportFile): Promise<DownloadedImportFile>;
+  artifacts(id: string): JournalStorage;
+  clearArtifacts(id: string): Promise<void>;
   begin(id: string): Promise<void>;
   acknowledge(id: string): Promise<void>;
   start(id: string, now: Date): Promise<void>;
@@ -114,6 +117,21 @@ export function createImportFileStager({
     }
   }
 
+  async function clearPrefix(directory: string): Promise<void> {
+    const storage = importsStorage(getStorage());
+    let cursor: string | undefined;
+    do {
+      const page = await storage.listPrefix(directory, { cursor });
+      for (const key of page.keys) {
+        if (key.startsWith(`${directory}/`)) {
+          await storage.delete(key);
+        }
+      }
+      cursor = page.cursor;
+    } while (cursor);
+    await storage.delete(directory);
+  }
+
   async function remove(id: string, file: StagedImportFile): Promise<void> {
     const discard = await uploads.change(id, (row) => {
       if (row?.state === 'accepted') {
@@ -134,6 +152,18 @@ export function createImportFileStager({
   }
 
   return {
+    artifacts(id) {
+      const storage = importsStorage(getStorage());
+      const key = (name: string) => `${prefix(id)}/journal/${name}`;
+      return {
+        readStream: ({ path: name }) => storage.readStream({ path: key(name) }),
+        writeStream: (name, source) => storage.writeStream(key(name), source),
+        replaceMetadata: (name, bytes) => storage.replaceMetadata(key(name), bytes),
+      };
+    },
+    clearArtifacts(id) {
+      return clearPrefix(`${prefix(id)}/journal`);
+    },
     async stage({ filePath, fileName, owner }, id, now) {
       const storage = importsStorage(getStorage());
       const uploadOwner = owner ?? (await getDefaultOwner());
@@ -231,19 +261,7 @@ export function createImportFileStager({
             return { value: false };
           });
           if (eligible) {
-            const storage = importsStorage(getStorage());
-            const directory = prefix(id);
-            let cursor: string | undefined;
-            do {
-              const page = await storage.listPrefix(directory, { cursor });
-              for (const key of page.keys) {
-                if (key.startsWith(`${directory}/`)) {
-                  await storage.delete(key);
-                }
-              }
-              cursor = page.cursor;
-            } while (cursor);
-            await storage.delete(directory);
+            await clearPrefix(prefix(id));
             await uploads.remove(id);
           }
         } catch (error) {

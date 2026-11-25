@@ -1,6 +1,28 @@
 import assert from 'node:assert/strict';
-import buildCompletionEmail from '../../../../../../core/server/services/content-import/import/completion-email';
+import renderEmail from '../../../../../../core/server/services/content-import/import/completion-email';
 import type { ImportRun } from '../../../../../../core/server/services/content-import/import/store';
+
+import buildImportReport from '../../../../../../core/server/services/content-import/import/report';
+import buildErrorsFile from '../../../../../../core/server/services/content-import/import/errors-file';
+import {
+  addOutcome,
+  createSummary,
+} from '../../../../../../core/server/services/content-import/import/summary';
+
+function buildCompletionEmail(fixture: ImportRun, recipient: string, adminUrl: string) {
+  const summary = createSummary(
+    fixture.id,
+    fixture.status === 'failed' ? 'failed' : 'complete',
+    fixture.failureReason,
+  );
+  for (const row of fixture.rows) {
+    addOutcome(summary, row);
+  }
+  return renderEmail(summary, recipient, adminUrl, {
+    report: buildImportReport(fixture),
+    errorsFile: buildErrorsFile(fixture),
+  });
+}
 
 const ADMIN_URL = 'https://example.com/ghost/';
 
