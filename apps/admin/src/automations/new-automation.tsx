@@ -83,9 +83,6 @@ const TriggerPicker: React.FC<{
     options.push(LABEL_ADDED_OPTION);
   }
   const cardRef = React.useRef<HTMLDivElement>(null);
-  // POC (poc/segments-ui): a trigger picked here starts unmarked. Only the segment option
-  // below marks the automation as having the mock segment trigger.
-  React.useEffect(() => markNewAutomationSegmentTrigger(false), []);
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
       <AutomationHeader
@@ -209,6 +206,10 @@ const NewAutomationSession: React.FC<
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
   const [triggerType, setTriggerType] = React.useState<PickedTrigger>('free_signup');
+  // POC (poc/segments-ui): every new automation starts unmarked, whether or not it shows the
+  // trigger chooser. Only the chooser's segment option marks it as having the mock segment
+  // trigger.
+  React.useEffect(() => markNewAutomationSegmentTrigger(false), []);
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({

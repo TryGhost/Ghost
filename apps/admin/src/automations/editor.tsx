@@ -39,6 +39,7 @@ import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
 import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { adoptNewAutomationSegmentTrigger } from './poc-segment-trigger';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
@@ -359,6 +360,9 @@ const AutomationEditorContent: React.FC<{
           setValidationErrors({});
           setEditState({ phase: 'idle' });
           if (isNew) {
+            // POC (poc/segments-ui): a new automation made with the mock segment trigger keeps
+            // showing as one under the id it now has.
+            adoptNewAutomationSegmentTrigger(savedDraft.id);
             creation?.onCreated(savedDraft.id);
             bypassNextNavigation();
             navigate(`/automations/${savedDraft.id}`, { replace: true });

@@ -4,7 +4,7 @@ import {
   getTriggerTierIds,
   subscriptionChangedSelectionFromRules,
 } from '@/automations/utils/trigger-rules';
-import React, { useEffect, useId } from 'react';
+import React, { useId } from 'react';
 import type {
   AutomationTrigger,
   AutomationTriggerRule,
@@ -335,12 +335,9 @@ export const TriggerCard: React.FC<
   }>
 > = ({ trigger, errorMessage, onInteract, children }) => {
   // POC (poc/segments-ui): an automation marked as having the mock segment trigger shows as
-  // one, whatever it is saved as. A new automation carries the mark under its temporary id,
-  // and takes it over once it is saved under an id of its own.
+  // one, whatever it is saved as. Only an automation made with that trigger is marked.
   const { id: automationId = '' } = useParams<{ id: string }>();
   const segmentTrigger = useSegmentTrigger(automationId);
-  const { adopt } = segmentTrigger;
-  useEffect(() => adopt(), [adopt]);
 
   const { title, Icon, content } = segmentTrigger.isSegmentTrigger
     ? {

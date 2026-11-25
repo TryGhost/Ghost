@@ -10,7 +10,9 @@ import { useCallback, useSyncExternalStore } from 'react';
  * the automation would run it for free signups.
  */
 
-const KEY = 'ghost-poc:segment-triggers';
+// v2: the first version handed the mark to whichever automation was opened next, so it marked
+// automations that were never made with the segment trigger. A new key leaves those behind.
+const KEY = 'ghost-poc:segment-triggers:v2';
 
 /** The id a new automation has in its URL until it is first saved. */
 export const NEW_AUTOMATION = 'new';
@@ -68,9 +70,25 @@ export function markNewAutomationSegmentTrigger(on: boolean) {
 }
 
 /**
+ * Gives the new automation's mark to the id it has just been saved under. Called by the editor
+ * at the moment a new automation is first saved, and nowhere else: only an automation made with
+ * the segment trigger may take the mark.
+ *
+ * The mark stays under the temporary id too, so the card keeps showing the segment trigger
+ * until the URL has moved to the new id. Starting another new automation clears it.
+ */
+export function adoptNewAutomationSegmentTrigger(createdId: string) {
+  const triggers = read();
+  const pending = triggers[NEW_AUTOMATION];
+  if (pending !== undefined) {
+    write({ ...triggers, [createdId]: pending });
+  }
+}
+
+/**
  * The mock segment trigger of the automation with `automationId`: whether it has one, the
  * segment chosen, and a way to choose one. A new automation keeps the mark under its temporary
- * id, and `adopt` hands it to the id the automation is saved under.
+ * id until it is first saved.
  */
 export function useSegmentTrigger(automationId: string) {
   const triggers = useSyncExternalStore(subscribe, read);
@@ -80,17 +98,10 @@ export function useSegmentTrigger(automationId: string) {
     (next: string) => write({ ...read(), [automationId]: next }),
     [automationId],
   );
-  const adopt = useCallback(() => {
-    const { [NEW_AUTOMATION]: pending, ...others } = read();
-    if (pending !== undefined && automationId !== NEW_AUTOMATION) {
-      write({ ...others, [automationId]: pending });
-    }
-  }, [automationId]);
 
   return {
     isSegmentTrigger: segmentId !== undefined,
     segmentId: segmentId || undefined,
     setSegmentId,
-    adopt,
   };
 }
