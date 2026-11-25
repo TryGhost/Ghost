@@ -6,6 +6,7 @@ import type { Knex } from 'knex';
 import { resolvePreparationMembers } from '../../../../core/server/services/email-service/recipient-preparation';
 
 const models = require('../../../../core/server/models');
+const { ResolvedFilter } = require('../../../../core/server/models/base/plugins/resolved-filter');
 const db: { knex: Knex } = require('../../../../core/server/data/db');
 const dbUtils = require('../../../utils/db-utils');
 const logging = require('@tryghost/logging');
@@ -118,7 +119,7 @@ describe('Upfront recipient preparation through MySQL', () => {
   }
 
   it('sweeps once and resolves pages without the audience filter or lookahead', async () => {
-    const audience = sinon.spy(models.Member, 'getFilteredCollectionQuery');
+    const audience = sinon.spy(ResolvedFilter.prototype, 'query');
     await prepare();
     sinon.assert.calledOnce(audience);
     const sweep = queries.find((query) => query.sql.startsWith('select `members`.`id`'))!;
@@ -340,7 +341,7 @@ describe('Upfront recipient preparation through MySQL', () => {
 
   it('does not retry malformed audience filters', async () => {
     filter = 'status:(';
-    const audience = sinon.spy(models.Member, 'getFilteredCollectionQuery');
+    const audience = sinon.spy(ResolvedFilter.prototype, 'query');
     await assert.rejects(prepare());
     sinon.assert.calledOnce(audience);
     assert.deepEqual(await service.getBatches(email), []);
@@ -532,17 +533,15 @@ describe('Upfront recipient preparation through MySQL', () => {
     });
   });
 
-  it('uses relation subqueries without DISTINCT for overlapping labels and tiers', () => {
+  it('uses relation subqueries without DISTINCT for overlapping labels and tiers', async () => {
     const segmenter = new EmailSegmenter({});
     const memberFilter = segmenter.getMemberFilterForSegment(
       { id: id(99), get: () => 'members' },
       '(label:[one,two],products:[gold,silver])',
       null,
     );
-    const sql = models.Member.getFilteredCollectionQuery({ filter: memberFilter })
-      .orderByRaw('members.id DESC')
-      .select('members.id')
-      .toSQL().sql;
+    const resolved = await models.Member.resolveFilter({ filter: memberFilter });
+    const sql = resolved.query().orderByRaw('members.id DESC').select('members.id').toSQL().sql;
     assert.match(sql, /in \(select/i);
     assert.doesNotMatch(sql, /select distinct/i);
   });
@@ -577,9 +576,8 @@ describe('Upfront recipient preparation through MySQL', () => {
         'label:[sweep-label-0,sweep-label-1]',
         null,
       );
-      const rows = await models.Member.getFilteredCollectionQuery({ filter: memberFilter })
-        .orderByRaw('members.id DESC')
-        .select('members.id');
+      const resolved = await models.Member.resolveFilter({ filter: memberFilter });
+      const rows = await resolved.query().orderByRaw('members.id DESC').select('members.id');
       assert.deepEqual(rows, [{ id: id(4) }]);
     } finally {
       await db.knex('members_labels').whereIn('label_id', labelIds).del();

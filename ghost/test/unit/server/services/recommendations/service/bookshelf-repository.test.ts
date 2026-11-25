@@ -6,6 +6,11 @@ import {
   ModelClass,
   ModelInstance,
 } from '../../../../../../core/server/services/recommendations/service/bookshelf-repository';
+import {
+  type FilterOptions,
+  type FilterTransformer,
+  ResolvedFilter,
+} from '../../../../../../core/server/models/base/plugins/resolved-filter';
 
 type SimpleEntity = {
   id: string;
@@ -46,6 +51,8 @@ class SimpleBookshelfRepository extends BookshelfRepository<string, SimpleEntity
   }
 }
 
+// A fake model that resolves its filter without any work of its own and filters the items it
+// holds in memory with NQL
 class Model implements ModelClass<string> {
   items: ModelInstance<string>[] = [];
 
@@ -117,13 +124,19 @@ class Model implements ModelClass<string> {
     return Promise.resolve(item);
   }
 
-  getFilteredCollection({
-    filter,
-    mongoTransformer,
-  }: {
-    filter?: string;
-    mongoTransformer?: unknown;
-  }) {
+  async resolveFilter(options: { filter?: string; mongoTransformer?: FilterTransformer }) {
+    return new ResolvedFilter(
+      { ...options },
+      {
+        collection: (resolved) => this.filtered(resolved),
+        apply: () => {
+          throw new Error('The repository only builds new queries');
+        },
+      },
+    );
+  }
+
+  filtered({ filter, mongoTransformer }: Readonly<FilterOptions>) {
     // Filter all items by filter and mongoTransformer
     if (!filter) {
       return this;

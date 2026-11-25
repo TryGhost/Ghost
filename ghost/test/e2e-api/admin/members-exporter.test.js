@@ -192,7 +192,7 @@ describe('Members API — exportCSV', function () {
 
       const exportUrl = `/members/upload/?filter=${encodeURIComponent(filter)}`;
       const { export: exportMembers } = require('../../../core/server/services/members');
-      const buildQuery = models.Member.getFilteredCollectionQuery;
+      const resolveFilter = models.Member.resolveFilter;
       let snapshotClosed;
       let secondBatchStarted;
       const started = new Promise((resolve) => {
@@ -203,23 +203,32 @@ describe('Members API — exportCSV', function () {
         rejectSecondBatch = reject;
       });
       failed.catch(() => {});
-      models.Member.getFilteredCollectionQuery = function (...args) {
-        snapshotClosed = args[0].transacting.executionPromise;
-        const query = buildQuery.apply(this, args);
-        const clone = query.clone.bind(query);
-        let batches = 0;
-        query.clone = () => {
-          const batchQuery = clone();
-          batches += 1;
-          if (batches === 2) {
-            batchQuery.limit = () => {
-              secondBatchStarted();
-              return failed;
-            };
-          }
-          return batchQuery;
+      models.Member.resolveFilter = async function (options) {
+        const resolved = await resolveFilter.call(this, options);
+        // Only the batch reader resolves its filter in the export's snapshot
+        if (!options.transacting) {
+          return resolved;
+        }
+        snapshotClosed = options.transacting.executionPromise;
+        const buildQuery = resolved.query.bind(resolved);
+        resolved.query = () => {
+          const query = buildQuery();
+          const clone = query.clone.bind(query);
+          let batches = 0;
+          query.clone = () => {
+            const batchQuery = clone();
+            batches += 1;
+            if (batches === 2) {
+              batchQuery.limit = () => {
+                secondBatchStarted();
+                return failed;
+              };
+            }
+            return batchQuery;
+          };
+          return query;
         };
-        return query;
+        return resolved;
       };
       try {
         const stream = await exportMembers({
@@ -253,7 +262,7 @@ describe('Members API — exportCSV', function () {
         await snapshotClosed;
       } finally {
         rejectSecondBatch(new Error('Second batch failed'));
-        models.Member.getFilteredCollectionQuery = buildQuery;
+        models.Member.resolveFilter = resolveFilter;
       }
       await agent.get(exportUrl).expectStatus(200);
     } finally {
@@ -279,15 +288,14 @@ describe('Members API — exportCSV', function () {
     };
 
     const knex = db.knex;
-    const applyFilters = models.Member.prototype.applyDefaultAndCustomFilters;
+    const customQuery = models.Member.prototype.customQuery;
     try {
       const expected = await exportedIds();
       assert.ok(expected.includes(member.id));
 
-      models.Member.prototype.applyDefaultAndCustomFilters = function (options) {
-        const result = applyFilters.call(this, options);
-        this.query((qb) => qb.whereRaw('1 = 1'));
-        return result;
+      models.Member.prototype.customQuery = function (qb, options) {
+        customQuery.call(this, qb, options);
+        qb.whereRaw('1 = 1');
       };
       const memberReads = [];
       const capture = (query) => {
@@ -308,7 +316,7 @@ describe('Members API — exportCSV', function () {
       assert.ok(memberReads.every((query) => !query.sql.includes('exists (select 1')));
       assert.ok(memberReads.every((query) => !query.sql.endsWith('limit ?')));
     } finally {
-      models.Member.prototype.applyDefaultAndCustomFilters = applyFilters;
+      models.Member.prototype.customQuery = customQuery;
       await knex('members').where('id', member.id).del();
     }
   });

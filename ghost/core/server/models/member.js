@@ -211,20 +211,6 @@ const Member = ghostBookshelf.Model.extend(
       ];
     },
 
-    // Every members query routes its filter through this one method: list, CSV export, bulk
-    // edit and delete, counts and email sends all reach it via findPage or
-    // getFilteredCollectionQuery. Chaining the metafield filter transformer here covers them
-    // all without any call site wiring it.
-    applyDefaultAndCustomFilters(options) {
-      if (options.filter && options.filter.includes(`${METAFIELDS_RELATION.tableNameAs}.`)) {
-        const transformer = createMetafieldsFilterTransformer();
-        options.mongoTransformer = options.mongoTransformer
-          ? chainTransformers(options.mongoTransformer, transformer)
-          : transformer;
-      }
-      return ghostBookshelf.Model.prototype.applyDefaultAndCustomFilters.call(this, options);
-    },
-
     filterRelations() {
       return {
         metafields: METAFIELDS_RELATION,
@@ -686,6 +672,22 @@ const Member = ghostBookshelf.Model.extend(
       return options;
     },
 
+    /**
+     * Every members query resolves its filter here before building SQL: list, CSV export, bulk
+     * edit and delete, counts and email sends all do. The custom fields rewrite runs after the
+     * caller's own `mongoTransformer` on every members filter, so a filter has the same meaning in
+     * all of them without any call site wiring it.
+     */
+    resolveFilter(options) {
+      const rewrite = createMetafieldsFilterTransformer();
+      return ghostBookshelf.Model.resolveFilter.call(this, {
+        ...options,
+        mongoTransformer: options.mongoTransformer
+          ? chainTransformers(options.mongoTransformer, rewrite)
+          : rewrite,
+      });
+    },
+
     findPage(options = {}) {
       if (options.skipPagination || options.limit === 'all') {
         return ghostBookshelf.Model.findPage.call(this, options);
@@ -696,7 +698,7 @@ const Member = ghostBookshelf.Model.extend(
       );
     },
 
-    canOptimizeFreeSubscriberFilter(options) {
+    async canOptimizeFreeSubscriberFilter(options) {
       if (
         options.filter !== FREE_SUBSCRIBER_FILTER ||
         options.search ||
@@ -705,21 +707,21 @@ const Member = ghostBookshelf.Model.extend(
         return false;
       }
 
-      // The rewrite only applies to the exact query this filter compiles to today.
-      const collection = ghostBookshelf.Model.getFilteredCollection.call(
-        this,
-        this.filterOptions(options, 'findPage'),
+      // The rewrite only applies to the exact query this filter compiles to today, so the query
+      // is built without the active newsletters' ids, which make the model rewrite it.
+      const filter = await this.resolveFilter(
+        this.filterOptions(_.omit(options, 'activeNewsletterIds'), 'findPage'),
       );
-      return isFreeSubscriberQuery(collection.query());
+      return isFreeSubscriberQuery(filter.query());
     },
 
     async activeNewsletterIds(transacting) {
       return transacting('newsletters').where({ status: 'active' }).pluck('id');
     },
 
-    withActiveNewsletterIds(options, read) {
+    async withActiveNewsletterIds(options, read) {
       const knex = ghostBookshelf.knex;
-      if (options.transacting || !this.canOptimizeFreeSubscriberFilter(options)) {
+      if (options.transacting || !(await this.canOptimizeFreeSubscriberFilter(options))) {
         return read(options);
       }
 
@@ -733,29 +735,24 @@ const Member = ghostBookshelf.Model.extend(
       );
     },
 
-    getFilteredCollection(options) {
-      const collection = ghostBookshelf.Model.getFilteredCollection.call(this, options);
-      if (!options.activeNewsletterIds) {
-        return collection;
+    // Given the active newsletters' ids, read in the same snapshot as the members, the free
+    // subscriber filter's query tests membership of those newsletters directly instead of joining
+    // the newsletters table. Preserve the original filter if the compiler or an additional
+    // constraint produces any other query. The rewrite applies to the count and page.
+    rewriteFilteredQuery(query, options) {
+      if (!options.activeNewsletterIds || !isFreeSubscriberQuery(query)) {
+        return;
       }
-
-      const query = collection.query();
-      // Preserve the original filter if the compiler or an additional constraint
-      // produces any other query. The rewrite applies to the count and page.
-      if (isFreeSubscriberQuery(query)) {
-        const membership = ghostBookshelf
-          .knex('members_newsletters')
-          .select(ghostBookshelf.knex.raw('1'))
-          .whereColumn('members_newsletters.member_id', 'members.id')
-          .whereIn('members_newsletters.newsletter_id', options.activeNewsletterIds);
-        query
-          .clear('where')
-          .where('members.email_disabled', false)
-          .where('members.status', 'free')
-          .whereExists(membership);
-      }
-
-      return collection;
+      const membership = ghostBookshelf
+        .knex('members_newsletters')
+        .select(ghostBookshelf.knex.raw('1'))
+        .whereColumn('members_newsletters.member_id', 'members.id')
+        .whereIn('members_newsletters.newsletter_id', options.activeNewsletterIds);
+      query
+        .clear('where')
+        .where('members.email_disabled', false)
+        .where('members.status', 'free')
+        .whereExists(membership);
     },
 
     add(data, unfilteredOptions = {}) {

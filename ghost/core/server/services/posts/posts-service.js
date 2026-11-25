@@ -65,13 +65,18 @@ class PostsService {
     this.postEmailHandler = new PostEmailHandler({ models, emailService });
   }
 
-  #getFilteredBulkPostQuery(options) {
-    return this.models.Post.getFilteredCollectionQuery({
+  /**
+   * The ids of the posts a bulk action's filter selects, as rows.
+   * @returns {Promise<{id: string}[]>}
+   */
+  async #findBulkPostRows(options) {
+    const filter = await this.models.Post.resolveFilter({
       filter: options.filter,
       status: 'all',
       transacting: options.transacting,
       mongoTransformer: validateAdminApiBulkFilterTransformer,
     });
+    return await filter.query().select('posts.id');
   }
 
   /**
@@ -310,7 +315,7 @@ class PostsService {
     // The posts are found before the transaction and locked as its first statement, so the
     // reads of their links that follow are current without being locking reads, whose gap
     // locks would deadlock two bulk tag requests for different posts
-    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+    const postRows = await this.#findBulkPostRows(options);
     const run = (transacting) =>
       this.#addTagsToPosts(
         data,
@@ -441,7 +446,7 @@ class PostsService {
       });
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+    const postRows = await this.#findBulkPostRows(options);
     const deleteIds = postRows.map((row) => row.id);
 
     // The posts' relations are deleted before the posts, so lock them first.
@@ -514,7 +519,7 @@ class PostsService {
       });
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+    const postRows = await this.#findBulkPostRows(options);
 
     const editIds = postRows.map((row) => row.id);
 

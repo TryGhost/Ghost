@@ -28,13 +28,9 @@ module.exports = class PostLinkRepository {
    * @returns {Promise<InstanceType<FullPostLink>[]>}
    */
   async getAll(options) {
-    // Create a collection with applied filters
-    const itemCollection = this.#LinkRedirect.forge();
-
-    // Apply default and custom filters from the options
-    if (options.filter) {
-      itemCollection.applyDefaultAndCustomFilters({ filter: options.filter });
-    }
+    // Create a collection with the filter from the options applied, or every link without one
+    const filter = await this.#LinkRedirect.resolveFilter({ filter: options.filter });
+    const itemCollection = filter.collection();
 
     // Apply ordering
     itemCollection.query((qb) => {

@@ -1304,10 +1304,8 @@ module.exports = class MemberRepository {
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
 
-    const memberRows = await this._Member
-      .getFilteredCollectionQuery(filterOptions)
-      .select('members.id')
-      .distinct();
+    const selected = await this._Member.resolveFilter(filterOptions);
+    const memberRows = await selected.query().select('members.id').distinct();
 
     const memberIds = memberRows.map((row) => row.id);
 
@@ -1341,10 +1339,8 @@ module.exports = class MemberRepository {
       // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
-    const memberRows = await this._Member
-      .getFilteredCollectionQuery(filterOptions)
-      .select('members.id')
-      .distinct();
+    const selected = await this._Member.resolveFilter(filterOptions);
+    const memberRows = await selected.query().select('members.id').distinct();
 
     const memberIds = memberRows.map((row) => row.id);
 
@@ -1389,10 +1385,11 @@ module.exports = class MemberRepository {
       const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
         const membersArr = memberIds.map((i) => `'${i}'`).join(',');
-        const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
+        const subscriptions = await this._MemberNewsletter.resolveFilter({
           filter: `newsletter_id:'${data.newsletter}'+member_id:[${membersArr}]`,
           transacting,
         });
+        const unsubscribeRows = await subscriptions.query();
         const toUnsubscribe = unsubscribeRows.map((row) => row.id);
 
         return await this._MemberNewsletter.bulkDestroy(toUnsubscribe, undefined, { transacting });

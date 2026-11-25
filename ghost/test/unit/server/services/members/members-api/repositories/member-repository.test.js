@@ -106,7 +106,7 @@ describe('MemberRepository', function () {
 
     MemberNewsletter = {
       bulkDestroy: sinon.stub().resolves(),
-      getFilteredCollectionQuery: sinon.stub().resolves([]),
+      resolveFilter: sinon.stub().resolves({ query: sinon.stub().resolves([]) }),
     };
 
     MemberCancelEvent = {
@@ -454,8 +454,10 @@ describe('MemberRepository', function () {
 
     it('dispatches label additions successful inserts', async function () {
       const dispatch = sinon.spy(DomainEvents, 'dispatch');
-      Member.getFilteredCollectionQuery = sinon.stub().returns({
-        select: () => ({ distinct: async () => ['added', 'failed'].map((id) => ({ id })) }),
+      Member.resolveFilter = sinon.stub().resolves({
+        query: () => ({
+          select: () => ({ distinct: async () => ['added', 'failed'].map((id) => ({ id })) }),
+        }),
       });
       Member.lockForUpdate = sinon.stub().resolves();
       Member.bulkAdd = sinon.stub().callsFake(async (relations) => ({
@@ -487,8 +489,10 @@ describe('MemberRepository', function () {
         (_, i) => `member-${String(i).padStart(4, '0')}`,
       );
       const lockError = new Error('Lock wait timeout exceeded');
-      Member.getFilteredCollectionQuery = sinon.stub().returns({
-        select: () => ({ distinct: async () => memberIds.map((id) => ({ id })) }),
+      Member.resolveFilter = sinon.stub().resolves({
+        query: () => ({
+          select: () => ({ distinct: async () => memberIds.map((id) => ({ id })) }),
+        }),
       });
       Member.lockForUpdate = sinon
         .stub()
