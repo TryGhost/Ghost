@@ -39,7 +39,27 @@ export function SuggestionChips({
     // Called once as it starts observing, and whenever the builder widens or narrows.
     const observer = new ResizeObserver(measure);
     observer.observe(row);
-    return () => observer.disconnect();
+    // A mouse wheel only turns up and down, and the row only scrolls sideways: over the row, the
+    // wheel scrolls it along, so a mouse without a sideways wheel reaches every suggestion. At
+    // either end the wheel is left to scroll the page. A trackpad's sideways swipe is the
+    // browser's own. Listened to directly, as React's wheel events can't be cancelled.
+    const scrollAlong = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+        return;
+      }
+      const atStart = row.scrollLeft <= 0;
+      const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 1;
+      if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) {
+        return;
+      }
+      event.preventDefault();
+      row.scrollLeft += event.deltaY;
+    };
+    row.addEventListener('wheel', scrollAlong, { passive: false });
+    return () => {
+      observer.disconnect();
+      row.removeEventListener('wheel', scrollAlong);
+    };
   }, [measure]);
 
   const fade = 'transparent, black 32px';
