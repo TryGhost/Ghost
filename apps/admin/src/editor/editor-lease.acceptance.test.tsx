@@ -469,9 +469,17 @@ describe('Post editor lease', () => {
       expect(asked(polls.requests)).not.toContain('hold');
     });
 
-    it('keeps the reader’s place in the document as it reads the latest copy', async () => {
+    it('keeps the reader’s place in the document as it reads the latest copy and its caption', async () => {
       const lexical = buildLexical(...Array.from({ length: 12 }, () => 'header'));
-      let current = { title: 'Published example', updated_at: LOADED_AT, lexical };
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600"><rect width="100%" height="100%" fill="purple"/></svg>`;
+      const image = { feature_image: `data:image/svg+xml,${encodeURIComponent(svg)}` };
+      let current = {
+        title: 'Published example',
+        updated_at: LOADED_AT,
+        lexical,
+        ...image,
+        feature_image_caption: 'The caption as loaded',
+      };
       fakePublishedPost(() => current);
       alex();
       const { state } = fakeLease();
@@ -483,12 +491,19 @@ describe('Post editor lease', () => {
       pane.scrollTo({ top: 1200 });
       await expect.poll(() => pane.scrollTop).toBe(1200);
 
-      current = { title: 'Saved by Alex', updated_at: SAVED_LATER_AT, lexical };
+      current = {
+        title: 'Saved by Alex',
+        updated_at: SAVED_LATER_AT,
+        lexical,
+        ...image,
+        feature_image_caption: 'Alex’s caption',
+      };
       state.other = null;
       pollNow();
 
       await expect.element(editorScreen.titleInput()).toHaveValue('Saved by Alex');
       await expect.poll(canvasLocked).toBe(false);
+      await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Alex’s caption');
       expect(editorScreen.scrollPane().scrollTop).toBe(1200);
     });
 
