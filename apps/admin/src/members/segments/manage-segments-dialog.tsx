@@ -22,6 +22,7 @@ import {
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, formatDisplayDate, formatNumber } from '@tryghost/shade/utils';
+import { useEffect, useRef } from 'react';
 import { SegmentMenu } from './segment-menu';
 import { type SegmentFacts, useSegmentFacts } from './use-segment-facts';
 
@@ -131,6 +132,20 @@ export function ManageSegmentsDialog({
   const { data: settingsData } = useBrowseSettings({});
   const timezone = getSiteTimezone(settingsData?.settings ?? []);
 
+  // A press while a row's menu is open only closes the menu, as everywhere else in Admin: it
+  // never closes the dialog too. Noted as the press starts, before the menu has closed.
+  const menuOpenAtPress = useRef(false);
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const note = () => {
+      menuOpenAtPress.current = document.querySelector('[role="menu"]') !== null;
+    };
+    window.addEventListener('pointerdown', note, true);
+    return () => window.removeEventListener('pointerdown', note, true);
+  }, [open]);
+
   const leaveTo = (action: () => void) => () => {
     onOpenChange(false);
     action();
@@ -138,9 +153,28 @@ export function ManageSegmentsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl" data-testid="manage-segments-dialog">
+      <DialogContent
+        className="max-w-3xl"
+        data-testid="manage-segments-dialog"
+        onInteractOutside={(event) => {
+          if (menuOpenAtPress.current) {
+            event.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
-          <DialogTitle>Segments</DialogTitle>
+          {/* A way to add to the list, at its top right, styled as the History modal's Filter: the
+              one other list in a dialog with a control there. With no segments yet, the empty
+              state offers it instead. */}
+          <Inline align="center" justify="between">
+            <DialogTitle>Segments</DialogTitle>
+            {onNewSegment && segments.length > 0 && (
+              <Button type="button" variant="outline" onClick={leaveTo(onNewSegment)}>
+                <LucideIcon.Plus />
+                New segment
+              </Button>
+            )}
+          </Inline>
         </DialogHeader>
         {segments.length === 0 ? (
           <Inline className="py-10" justify="center">
@@ -150,7 +184,7 @@ export function ManageSegmentsDialog({
                   <Button onClick={leaveTo(onNewSegment)}>Create a new segment</Button>
                 )
               }
-              description="Filter your members and save the result as a segment."
+              description="Save a filter as a segment to keep an eye on the members who matter most to you."
               title="Start segmenting your audience"
             >
               <LucideIcon.ChartPie />
