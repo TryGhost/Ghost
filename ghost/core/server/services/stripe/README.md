@@ -24,7 +24,7 @@ See Stripe's [Webhooks Guide](https://docs.stripe.com/webhooks) for more informa
 
 This class is responsible for registering the webhook endpoints with Stripe, so Stripe knows where to send the webhooks.
 
-More than one Ghost can serve a site, each with its own memory. Creating or replacing the endpoint runs under a lock on the two settings that store its id and secret, so only one Ghost creates it and the others use the one it saved.
+More than one Ghost can serve a site, each with its own memory. Creating or replacing the endpoint runs under a lock on the two settings that store its id and secret, so only one Ghost creates it and the others use the one it saved. A Ghost whose secret fails to verify an event reads the stored secret again, in case another Ghost has replaced the endpoint since.
 
 ### Webhook Controller
 

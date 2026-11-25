@@ -17,8 +17,7 @@ export interface WebhookControllerDeps {
   /** The Stripe API version of Ghost's webhook endpoint, which Stripe formats events for. */
   apiVersion: string;
   webhookManager: {
-    webhookSecret: string | null;
-    parseWebhook(body: unknown, signature: string): unknown;
+    parseWebhook(body: unknown, signature: string): Promise<unknown>;
   };
   checkoutSessionEventService: {
     completeSubscriptionCheckout(session: StripeObject): Promise<unknown>;
@@ -144,7 +143,7 @@ export class WebhookController {
     }
     try {
       await this.#deps.tracking.webhook(async (attempt) => {
-        const verified = this.#verify(req.body, signature);
+        const verified = await this.#verify(req.body, signature);
         const envelope = readEnvelope(verified);
         attempt.receiving(envelope.type);
         // Before the event is parsed into its kind, so a mismatch is still logged when it's the
@@ -177,17 +176,13 @@ export class WebhookController {
   }
 
   /** Returns the event in `body` after verifying its signature with the site's webhook secret. */
-  #verify(body: unknown, signature: string): unknown {
-    if (!this.#deps.webhookManager.webhookSecret) {
-      throw new errors.UnauthorizedError({
-        code: FAILURE_CODES.webhookSecretMissing,
-        message:
-          "The site has no Stripe webhook secret, so it can't verify the webhook's signature.",
-      });
-    }
+  async #verify(body: unknown, signature: string): Promise<unknown> {
     try {
-      return this.#deps.webhookManager.parseWebhook(body, signature);
+      return await this.#deps.webhookManager.parseWebhook(body, signature);
     } catch (err) {
+      if (classifyFailure(err).reason === 'webhook_secret_missing') {
+        throw err;
+      }
       // Only a signature that doesn't verify is the site's setup. Anything else that stops the
       // check, such as Ghost clearing its Stripe client while disconnecting, stays Ghost's.
       const mismatched = SignatureVerificationError.safeParse(err).success;

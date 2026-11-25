@@ -17,6 +17,7 @@ export interface StoredWebhook {
 }
 
 interface SettingsModel {
+  findOne(data: { key: string }): Promise<{ get(key: 'value'): unknown } | null>;
   edit(
     data: { key: string; value: string | null }[],
     options?: { transacting?: Knex.Transaction },
@@ -56,6 +57,15 @@ export class WebhookStore {
       ],
       options,
     );
+  }
+
+  /**
+   * The stored secret from the database, which holds what another Ghost saved after this Ghost's
+   * settings cache loaded.
+   */
+  async readSecret(): Promise<string | null> {
+    const setting = await this.#deps.Settings.findOne({ key: WEBHOOK_SECRET_SETTING });
+    return asString(setting?.get('value'));
   }
 
   transaction<T>(fn: (transacting: Knex.Transaction) => Promise<T>): Promise<T> {

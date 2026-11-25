@@ -1,3 +1,12 @@
+const errors = require('@tryghost/errors');
+const { FAILURE_CODES } = require('./webhook/failures');
+
+/**
+ * How often, at most, a failed signature check reads the stored secret from the database, so
+ * requests with a bad signature can't each cost a read.
+ */
+const SECRET_READ_INTERVAL_MS = 1000;
+
 /**
  * @typedef {import('stripe').Stripe.WebhookEndpointCreateParams.EnabledEvent} WebhookEvent
  * @typedef {import('./stripe-api')} StripeAPI
@@ -22,6 +31,11 @@ module.exports = class WebhookManager {
     this.config = null;
     /** @private */
     this.webhookSecret = null;
+    /**
+     * @private
+     * @type {{at: number, secret: Promise<string|null>}|null}
+     */
+    this.secretRead = null;
     /**
      * @private
      * @type {'network'|'local'}
@@ -76,6 +90,8 @@ module.exports = class WebhookManager {
       return;
     }
     const existingWebhook = await this.StripeWebhook.get();
+    // Set before calling Stripe, so events are still accepted when the call fails.
+    this.webhookSecret = existingWebhook.secret;
 
     const webhook = await this.setupWebhook(existingWebhook.webhook_id, existingWebhook.secret);
 
@@ -171,11 +187,61 @@ module.exports = class WebhookManager {
   /**
    * Parse a Stripe Webhook event.
    *
+   * When the signature doesn't verify with the secret in memory, another Ghost may have replaced
+   * the webhook, so the event is checked once more with the stored secret.
+   *
    * @param {string} body
    * @param {string} signature
+   * @returns {Promise<import('stripe').Stripe.Event>}
+   */
+  async parseWebhook(body, signature) {
+    const secret = this.webhookSecret;
+    try {
+      return this.parseWithSecret(body, signature, secret);
+    } catch (err) {
+      const storedSecret = await this.readStoredSecret();
+      if (!storedSecret || storedSecret === secret) {
+        throw err;
+      }
+      const event = this.parseWithSecret(body, signature, storedSecret);
+      this.webhookSecret = storedSecret;
+      return event;
+    }
+  }
+
+  /**
+   * @private
+   * @param {string} body
+   * @param {string} signature
+   * @param {string|null} secret
    * @returns {import('stripe').Stripe.Event}
    */
-  parseWebhook(body, signature) {
-    return this.api.parseWebhook(body, signature, this.webhookSecret);
+  parseWithSecret(body, signature, secret) {
+    if (!secret) {
+      throw new errors.UnauthorizedError({
+        code: FAILURE_CODES.webhookSecretMissing,
+        message:
+          "The site has no Stripe webhook secret, so it can't verify the webhook's signature.",
+      });
+    }
+    return this.api.parseWebhook(body, signature, secret);
+  }
+
+  /**
+   * Checks that fail within the interval share one read. A secret from config is never replaced,
+   * so nothing is read.
+   *
+   * @private
+   * @returns {Promise<string|null>}
+   */
+  async readStoredSecret() {
+    if (this.mode !== 'network') {
+      return null;
+    }
+    const now = Date.now();
+    if (!this.secretRead || now - this.secretRead.at >= SECRET_READ_INTERVAL_MS) {
+      this.secretRead = { at: now, secret: this.StripeWebhook.readSecret() };
+    }
+    return this.secretRead.secret;
   }
 };

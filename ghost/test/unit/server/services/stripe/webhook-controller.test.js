@@ -35,7 +35,7 @@ describe('WebhookController', function () {
       invoiceEventService: { handleInvoiceEvent: sinon.stub() },
       checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },
       chargeRefundedEventService: { handleEvent: sinon.stub() },
-      webhookManager: { webhookSecret: 'whsec_test', parseWebhook: sinon.stub() },
+      webhookManager: { parseWebhook: sinon.stub() },
       tracking,
       sentry: { captureException: sinon.stub() },
     };
@@ -59,9 +59,21 @@ describe('WebhookController', function () {
     sinon.restore();
   });
 
+  it.each([
+    ['body', () => delete req.body],
+    ['signature header', () => delete req.headers['stripe-signature']],
+  ])('responds with 400 without checking a request that has no %s', async function (_name, remove) {
+    remove();
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledOnceWithExactly(res.writeHead, 400);
+    sinon.assert.notCalled(deps.webhookManager.parseWebhook);
+  });
+
   it('logs an error for an event rendered at a different API version and still handles it', async function () {
     sinon.stub(logging, 'error');
-    deps.webhookManager.parseWebhook.returns({
+    deps.webhookManager.parseWebhook.resolves({
       type: 'charge.refunded',
       api_version: '2025-08-27.basil',
       data: { object: { id: 'ch_1' } },
@@ -80,7 +92,7 @@ describe('WebhookController', function () {
 
   it('does not log a version error for an event at the pinned API version', async function () {
     sinon.stub(logging, 'error');
-    deps.webhookManager.parseWebhook.returns({
+    deps.webhookManager.parseWebhook.resolves({
       type: 'charge.refunded',
       api_version: '2020-08-27',
       data: { object: { id: 'ch_1' } },
@@ -93,7 +105,7 @@ describe('WebhookController', function () {
 
   /** A subscription event whose handler fails with `failure`, which it returns. */
   function failingWith(failure) {
-    deps.webhookManager.parseWebhook.returns({
+    deps.webhookManager.parseWebhook.resolves({
       type: 'customer.subscription.created',
       data: { object: { customer: 'cust_123' } },
     });
@@ -207,7 +219,7 @@ describe('WebhookController', function () {
       status: 401,
       reported: true,
       fail: () => {
-        deps.webhookManager.parseWebhook.throws(
+        deps.webhookManager.parseWebhook.rejects(
           new Stripe.errors.StripeSignatureVerificationError({
             message: 'No signatures found matching the expected signature for payload.',
           }),
@@ -220,7 +232,7 @@ describe('WebhookController', function () {
       status: 401,
       reported: true,
       fail: () => {
-        deps.webhookManager.parseWebhook.throws(new TypeError('Cannot read properties of null'));
+        deps.webhookManager.parseWebhook.rejects(new TypeError('Cannot read properties of null'));
       },
     },
     {
@@ -229,7 +241,9 @@ describe('WebhookController', function () {
       status: 401,
       reported: true,
       fail: () => {
-        deps.webhookManager.webhookSecret = null;
+        deps.webhookManager.parseWebhook.rejects(
+          new errors.UnauthorizedError({ code: FAILURE_CODES.webhookSecretMissing, message: 'x' }),
+        );
       },
     },
   ];

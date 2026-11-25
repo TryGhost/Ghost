@@ -37,6 +37,10 @@ describe('WebhookStore', function () {
       settingsCache,
       transaction: (fn) => knex.transaction(fn),
       Settings: {
+        async findOne({ key }) {
+          const row = await knex('settings').where('key', key).first('value');
+          return row ? { get: () => row.value } : null;
+        },
         async edit(data, options = {}) {
           for (const { key, value } of data) {
             await (options.transacting ?? knex)('settings').where('key', key).update({ value });
@@ -70,6 +74,13 @@ describe('WebhookStore', function () {
     const webhook = await store.transaction((transacting) => store.getForUpdate(transacting));
 
     assert.deepEqual(webhook, { webhook_id: 'we_saved', secret: 'whsec_saved' });
+  });
+
+  it('reads the secret from the database, not the settings cache', async function () {
+    settingsCache.get.returns('whsec_cached');
+    await store.save({ webhook_id: 'we_saved', secret: 'whsec_saved' });
+
+    assert.equal(await store.readSecret(), 'whsec_saved');
   });
 
   it('creates and saves a webhook on SQLite without lock SQL', async function () {

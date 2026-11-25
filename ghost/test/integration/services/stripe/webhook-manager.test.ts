@@ -13,12 +13,14 @@ const models = require('../../../../core/server/models');
 const WebhookManager = require('../../../../core/server/services/stripe/webhook-manager');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const StripeAPI = require('../../../../core/server/services/stripe/stripe-api');
+const { Stripe } = require('stripe');
 
 const ID_SETTING = 'members_stripe_webhook_id';
 const SECRET_SETTING = 'members_stripe_webhook_secret';
 const HANDLER_URL = 'https://site.example/members/webhooks/stripe/';
 const OLD: StoredWebhook = { webhook_id: 'we_old', secret: 'whsec_old' };
 const NOTHING: StoredWebhook = { webhook_id: null, secret: null };
+const EVENT = JSON.stringify({ id: 'evt_1', object: 'event', type: 'charge.refunded' });
 
 const CREATE_MS = 50;
 const STRIPE_IS_DOWN = [500, { error: { type: 'api_error', message: 'Stripe is down' } }];
@@ -33,7 +35,10 @@ const operationOf = ({ method, id }: { method: string; id?: string }): Operation
   return id ? 'update' : 'create';
 };
 
-describe('Stripe webhook: Ghosts starting for one site', function () {
+const signedWith = (secret: string): string =>
+  new Stripe('sk_live_fake').webhooks.generateTestHeaderString({ payload: EVENT, secret });
+
+describe('Stripe webhook: Ghosts serving one site', function () {
   const stripe = mockManager.stripeMocker;
   let beforeUpdate: (() => Promise<void>) | null;
   let runningCreates: number;
@@ -132,6 +137,7 @@ describe('Stripe webhook: Ghosts starting for one site', function () {
       manager,
       transaction: sinon.spy(webhookStore, 'transaction'),
       save: sinon.spy(webhookStore, 'save'),
+      readSecret: sinon.spy(webhookStore, 'readSecret'),
     };
   }
 
@@ -322,5 +328,47 @@ describe('Stripe webhook: Ghosts starting for one site', function () {
 
     assert.deepEqual(calls(), []);
     assert.deepEqual(await stored(), NOTHING);
+  });
+
+  it('accepts an event signed with the secret another Ghost stored', async function () {
+    seedOld();
+    await store(OLD);
+    const ghost = createGhost(OLD);
+    await ghost.manager.start();
+    await store({ webhook_id: 'we_new', secret: 'whsec_new' });
+
+    const first = await ghost.manager.parseWebhook(EVENT, signedWith('whsec_new'));
+    const second = await ghost.manager.parseWebhook(EVENT, signedWith('whsec_new'));
+
+    assert.equal(first.id, 'evt_1');
+    assert.equal(second.id, 'evt_1');
+    sinon.assert.calledOnce(ghost.readSecret);
+    assert.equal(ghost.manager.webhookSecret, 'whsec_new');
+  });
+
+  it('accepts an event signed with the stored secret when Stripe fails at start', async function () {
+    seedOld();
+    fail('update');
+    fail('create');
+    await store(OLD);
+    const ghost = createGhost(OLD);
+    await assert.rejects(ghost.manager.start());
+
+    const event = await ghost.manager.parseWebhook(EVENT, signedWith(OLD.secret as string));
+
+    assert.equal(event.id, 'evt_1');
+    sinon.assert.notCalled(ghost.readSecret);
+  });
+
+  it('checks events with the secret from config and never reads the stored one', async function () {
+    await store(OLD);
+    const ghost = createGhost(OLD, { webhookSecret: 'whsec_config' });
+    await ghost.manager.start();
+
+    const event = await ghost.manager.parseWebhook(EVENT, signedWith('whsec_config'));
+    await assert.rejects(ghost.manager.parseWebhook(EVENT, signedWith(OLD.secret as string)));
+
+    assert.equal(event.id, 'evt_1');
+    sinon.assert.notCalled(ghost.readSecret);
   });
 });
