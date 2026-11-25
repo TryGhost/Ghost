@@ -145,7 +145,8 @@ export const StripeSubscription = z
     cancel_at_period_end: z.boolean(),
     current_period_end: z.number(),
     start_date: z.number(),
-    canceled_at: z.number().nullish(),
+    // Null until the subscription is canceled, or set to end with its current period.
+    canceled_at: z.number().nullable(),
     trial_start: z.number().nullish(),
     trial_end: z.number().nullish(),
     default_payment_method: ExpandableId.nullish(),

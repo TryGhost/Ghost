@@ -405,6 +405,9 @@ export class FakeStripeServer extends FakeServer {
 
       if (cancelAtPeriodEnd !== undefined) {
         updatedSubscription.cancel_at_period_end = cancelAtPeriodEnd;
+        // As Stripe does, setting a subscription to end with its current period sets
+        // `canceled_at` to the time of this update, and setting it to continue clears it.
+        updatedSubscription.canceled_at = cancelAtPeriodEnd ? Math.floor(Date.now() / 1000) : null;
       }
 
       if (defaultPaymentMethod !== undefined) {
