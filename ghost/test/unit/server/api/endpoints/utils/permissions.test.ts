@@ -7,10 +7,10 @@ const permissions = require('../../../../../../core/server/api/endpoints/utils/p
 const api = require('../../../../../../core/server/api/endpoints');
 
 /**
- * Admin API methods whose permission check is their own or none, which refuse apps, by the
- * names the routes mount them under. A new one fails the test below until it is added here
+ * Admin API methods whose permission check is their own or none, which refuse apps, by their
+ * controller's `docName`. A new one fails the test below until it is added here
  * or, only if it is safe for any app whatever its scopes, to the allowlist in
- * `api/endpoints/utils/permissions.js`, which names a method by its controller's `docName`.
+ * `api/endpoints/utils/permissions.js`.
  */
 const REFUSED_FOR_APPS = [
   'authentication.acceptInvitation',
@@ -22,19 +22,19 @@ const REFUSED_FOR_APPS = [
   'config.read',
   'featurebase.token',
   'files.upload',
-  'giftLinks.browse',
-  'giftLinks.create',
-  'giftLinks.ensure',
-  'giftLinks.removeAll',
+  'gift_links.browse',
+  'gift_links.create',
+  'gift_links.ensure',
+  'gift_links.removeAll',
   'images.upload',
   'media.upload',
   'media.uploadThumbnail',
-  'membersMetafields.add',
-  'membersMetafields.browse',
-  'membersMetafields.destroy',
-  'membersMetafields.edit',
-  'membersMetafields.read',
-  'membersMetafields.reorder',
+  'members_metafields.add',
+  'members_metafields.browse',
+  'members_metafields.destroy',
+  'members_metafields.edit',
+  'members_metafields.read',
+  'members_metafields.reorder',
   'oembed.read',
   'presence.leave',
   'presence.poll',
@@ -56,7 +56,30 @@ const OUTSIDE_PIPELINE = [
   'session.verify',
 ];
 
-/** Every `docName.method` the Admin API routes mount, read from its routes file */
+/**
+ * Every method the Admin API routes mount, read from its routes file, by its controller's
+ * `docName`, as the permission stage and the allowlist name it
+ */
+const ENDPOINTS_DIR = path.join(__dirname, '../../../../../../core/server/api/endpoints');
+
+/**
+ * The `docName` of the controller behind an export of the API, read from the controller its
+ * getter requires, since the pipeline doesn't pass `docName` on
+ */
+function docNameOf(controller: string): string {
+  const getter = Object.getOwnPropertyDescriptor(api, controller)?.get?.toString() ?? '';
+  // Outside the pipeline, which is all that reads a docName, the export's name will do
+  if (!getter.includes('pipeline(')) {
+    return controller;
+  }
+  const [, file, member] = getter.match(/require\('(\.\/[^']+)'\)(?:\.(\w+))?/) ?? [];
+  assert.ok(file, `api.${controller} requires its controller`);
+  const exported = require(path.join(ENDPOINTS_DIR, file));
+  const { docName } = member ? exported[member] : exported;
+  assert.ok(docName, `api.${controller} has a docName`);
+  return docName;
+}
+
 function adminApiMethods() {
   const routes = fs.readFileSync(
     path.join(__dirname, '../../../../../../core/server/web/api/endpoints/admin/routes.js'),
@@ -67,7 +90,7 @@ function adminApiMethods() {
     const impl = api[controller][method];
     // A route mounting a method that doesn't exist runs nothing
     if (impl) {
-      methods.set(`${controller}.${method}`, impl);
+      methods.set(`${docNameOf(controller)}.${method}`, impl);
     }
   }
   return methods;
