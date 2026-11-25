@@ -19,7 +19,8 @@ export default defineService('Tiers', async () => {
   // themselves stay cached.
   const requirements = new TierRequirements({
     knex,
-    boundPorts: (ports, executor) => bindings.boundPorts(ports, executor),
+    // Tiers list a requirement's fields to anyone, so a port names its field as a member reads it.
+    boundPorts: (ports, executor) => bindings.boundPorts(ports, 'members', executor),
     logging,
   });
 

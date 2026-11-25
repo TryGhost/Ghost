@@ -6,7 +6,7 @@ import { MetafieldDefinitionsService } from './metafields/definitions-service';
 import { MemberMetafieldValues } from './member-values';
 import { MEMBERS_RESOURCE } from './members-resource';
 export { changedForMembers } from './members-resource';
-import { MetafieldBindingsService } from './bindings-service';
+import { MetafieldBindingsService } from './metafields/bindings-service';
 import { resolveMaxDefinitions } from './config';
 import { definitionLimit } from './definition-limit';
 import { customFields, memberAccessPolicy } from './custom-fields/namespace';
@@ -26,11 +26,12 @@ export {
   type PlannedWrite,
   type Refusal,
 } from './metafields/values-service';
-export type { MetafieldBindingsService } from './bindings-service';
+/** Which member field each port another domain declares writes into. */
+export type MemberBindings = MetafieldBindingsService<Caller>;
 /** The members' definitions, read and changed for every namespace. */
 export type MemberDefinitions = MetafieldDefinitionsService<Caller>;
 export { adminWriteOrigin } from './write-origin';
-export type { BoundField } from './bindings-service';
+export type { BoundField } from './metafields/bindings-service';
 export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
 export type { MetafieldChangeEvent } from './members-resource';
 
@@ -53,7 +54,7 @@ export let namespaces: Namespaces<Caller> | undefined;
 export let fields: FieldSource | undefined;
 export let definitions: MemberDefinitions | undefined;
 export let values: MemberMetafieldValues | undefined;
-export let bindings: MetafieldBindingsService | undefined;
+export let bindings: MemberBindings | undefined;
 
 /**
  * Boot builds these before any request is served, so a call before then is a wiring fault and
@@ -63,7 +64,7 @@ export function booted(): {
   namespaces: Namespaces<Caller>;
   definitions: MemberDefinitions;
   values: MemberMetafieldValues;
-  bindings: MetafieldBindingsService;
+  bindings: MemberBindings;
 } {
   if (!namespaces || !definitions || !values || !bindings) {
     throw new errors.IncorrectUsageError({
@@ -129,5 +130,11 @@ export function init(): void {
   // Built after the values, which is what a binding routes into. It has no handle on the
   // definitions: making a field is not part of binding to one, so a caller that needs both
   // asks for both.
-  bindings = new MetafieldBindingsService({ knex, fields, values });
+  bindings = new MetafieldBindingsService({
+    knex,
+    resource: MEMBERS_RESOURCE,
+    fields,
+    values,
+    internal: 'internal',
+  });
 }

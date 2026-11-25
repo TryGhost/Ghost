@@ -12,6 +12,8 @@ export interface MetafieldResource {
     values: string;
     /** An entry for each write of values, naming the fields it wrote. */
     changeEvents: string;
+    /** Which field each port another domain declares writes into. */
+    bindings: string;
   };
   /** The column of the values and change events that holds the id of the member or post. */
   idColumn: string;
