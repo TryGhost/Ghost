@@ -5,8 +5,11 @@ import { ObjectIdSchema } from '../../lib/db-types/object-id';
 import { type Segment, SegmentId } from './models';
 
 // A members filter names a segment with the `segment` key, whose value is the segment's id, as
-// in `segment:'<id>'` or `segment:['<id>','<id>']`. Before a members query runs, each `segment`
-// statement of the parsed filter is replaced by the segment's own parsed filter.
+// in `segment:'<id>'` or `segment:['<id>','<id>']`, and leaves one out with `segment:-'<id>'` or
+// `segment:-['<id>','<id>']`. Before a members query runs, each `segment` statement of the parsed
+// filter is replaced by the segment's own parsed filter, and a left-out segment by a `$nor` of it,
+// which matches every member the segment doesn't, including a member with no value in a field
+// the segment tests.
 
 /** The members filter key that names a segment. */
 const SEGMENT_KEY = 'segment';
@@ -67,20 +70,29 @@ export function filterNamesSegment(filter: string): boolean {
 
 const SegmentIds = z.array(z.string()).min(1);
 
-/** The ids a `segment` statement names, and whether a member has to be in any or every one. */
+/**
+ * The ids a `segment` statement names, and whether a member has to be in any of them, in every
+ * one, or in none.
+ */
 const SegmentStatement = z.union([
   z.string().transform((id) => ({ ids: [id], match: 'any' as const })),
   z.strictObject({ $in: SegmentIds }).transform(({ $in }) => ({ ids: $in, match: 'any' as const })),
   z
     .strictObject({ $all: SegmentIds })
     .transform(({ $all }) => ({ ids: $all, match: 'every' as const })),
+  z
+    .strictObject({ $ne: z.string() })
+    .transform(({ $ne }) => ({ ids: [$ne], match: 'none' as const })),
+  z
+    .strictObject({ $nin: SegmentIds })
+    .transform(({ $nin }) => ({ ids: $nin, match: 'none' as const })),
 ]);
 
 const statementError = () =>
   new errors.BadRequestError({
     message: 'Invalid segment filter.',
     context:
-      "A filter names a segment by its id, as in segment:'<id>', segment:['<id>','<id>'] for any of several, or segment:['<id>'+'<id>'] for all of them.",
+      "A filter names a segment by its id, as in segment:'<id>', segment:['<id>','<id>'] for any of several, or segment:['<id>'+'<id>'] for all of them, and leaves segments out as in segment:-'<id>' or segment:-['<id>','<id>'].",
     property: 'filter',
   });
 
@@ -157,7 +169,7 @@ function expandNode(node: unknown, definitions: ReadonlyMap<string, ParsedFilter
   return expandObject(node, definitions);
 }
 
-/** The filter that selects the members a `segment` statement names. */
+/** The filter that selects the members a `segment` statement names, or leaves out. */
 function expandStatement(
   value: unknown,
   definitions: ReadonlyMap<string, ParsedFilter>,
@@ -173,6 +185,9 @@ function expandStatement(
     // A copy for each place that names a segment, so changing one copy can't change another
     return structuredClone(definition);
   });
+  if (match === 'none') {
+    return { $nor: filters };
+  }
   if (filters.length === 1) {
     return filters[0];
   }
