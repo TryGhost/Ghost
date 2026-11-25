@@ -1,14 +1,81 @@
-import { defineService } from '#support/define-service';
-import { Integrations } from '../services/integrations';
-import type { EditIntegrationOptions } from '../services/integrations/integrations.service';
+import { InternalServerError, NotFoundError } from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import { defineAction } from '#support/define-action';
+import { Models } from '../../../shared/transition/legacy';
+
+const messages = {
+  notFound: '{resource} not found.',
+};
+
+type Model = { toJSON(): Record<string, unknown> };
+
+type IntegrationModels = {
+  Integration: {
+    findOne(data: { id?: string }, options?: Record<string, unknown>): Promise<Model | null>;
+    edit(data: unknown, options: Record<string, unknown>): Promise<Model>;
+  };
+  ApiKey: {
+    findOne(data: { id: string }): Promise<Model | null>;
+    refreshSecret(
+      data: Record<string, unknown>,
+      options: Record<string, unknown>,
+    ): Promise<unknown>;
+  };
+};
+
+export type EditIntegrationOptions = Record<string, unknown> & { id?: string; keyid?: string };
 
 /** Edits an integration, or refreshes the secret of one of its API keys when `options.keyid` is set. */
-export const EditIntegration = defineService({
+export const EditIntegration = defineAction({
   name: 'apps/edit-integration',
-  lifetime: 'site',
-  needs: { integrations: Integrations },
-  create:
-    ({ integrations }) =>
-    (data: unknown, options: EditIntegrationOptions) =>
-      integrations.edit(data, options),
+  needs: { models: Models },
+  handle: async (
+    { models }: { models: IntegrationModels },
+    data: unknown,
+    options: EditIntegrationOptions,
+  ): Promise<Model | null> => {
+    if (options.keyid) {
+      const model = await models.ApiKey.findOne({ id: options.keyid });
+
+      if (!model) {
+        throw new NotFoundError({
+          message: tpl(messages.notFound, {
+            resource: 'ApiKey',
+          }),
+        });
+      }
+      try {
+        await models.ApiKey.refreshSecret(
+          model.toJSON(),
+          Object.assign({}, options, { id: options.keyid }),
+        );
+
+        return await models.Integration.findOne(
+          { id: options.id },
+          {
+            withRelated: ['api_keys', 'webhooks'],
+          },
+        );
+      } catch (err) {
+        throw new InternalServerError({
+          err: err as Error,
+        });
+      }
+    }
+
+    try {
+      return await models.Integration.edit(data, Object.assign(options, { require: true }));
+    } catch (error) {
+      const message = (error as { message?: unknown }).message;
+      if (message === 'NotFound' || message === 'EmptyResponse') {
+        throw new NotFoundError({
+          message: tpl(messages.notFound, {
+            resource: 'Integration',
+          }),
+        });
+      }
+
+      throw error;
+    }
+  },
 });

@@ -1,22 +1,25 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const _ = require('lodash');
-const nock = require('nock');
-const testUtils = require('../../../../../../test/utils');
-const { createLoggingFake } = require('../../../../../../test/utils/logging-utils');
+import assert from 'node:assert/strict';
+import nock from 'nock';
+import sinon from 'sinon';
+import { SlackPingService } from '../../../services/slack-ping.service';
+
+const testUtils = require('../../../../../test/utils');
+const { createLoggingFake } = require('../../../../../test/utils/logging-utils');
 const request = require('@tryghost/request');
-const { SlackPingService } = require('../../../../services/slack-ping/slack-ping.service');
 
 // Test data
 const slackURL = 'https://hooks.slack.com/services/a-b-c-d';
 const slackURLPath = '/services/a-b-c-d';
+const testMessage = {
+  message: 'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!',
+};
 
-const wait = (ms) =>
+const wait = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 
-async function waitFor(assertion, timeout = 1000) {
+async function waitFor(assertion: () => boolean, timeout = 1000) {
   const deadline = Date.now() + timeout;
 
   while (!assertion() && Date.now() < deadline) {
@@ -25,8 +28,8 @@ async function waitFor(assertion, timeout = 1000) {
 }
 
 // Build a SlackPingService with fully injected fakes. The real @tryghost/request
-// is injected so nock intercepts at the HTTP layer, exactly as before - only the
-// stateful/config singletons become injected fakes.
+// is injected so nock intercepts at the HTTP layer - only the stateful/config
+// singletons become injected fakes.
 function createService() {
   const settingsCache = { get: sinon.stub() };
 
@@ -46,31 +49,10 @@ function createService() {
   return { service, deps };
 }
 
-function createPostModel(post, authors = [], tags = []) {
-  return {
-    toJSON: function () {
-      return post;
-    },
-    related: function (relation) {
-      return {
-        toJSON: function () {
-          if (relation === 'authors') {
-            return authors;
-          }
-
-          if (relation === 'tags') {
-            return tags;
-          }
-
-          return [];
-        },
-      };
-    },
-  };
-}
+type SlackRequest = Record<string, any>;
 
 function mockSlackWebhook() {
-  const requests = [];
+  const requests: SlackRequest[] = [];
   const scope = nock('https://hooks.slack.com')
     .post(slackURLPath, (body) => {
       requests.push(typeof body === 'string' ? JSON.parse(body) : body);
@@ -84,58 +66,10 @@ function mockSlackWebhook() {
   };
 }
 
-describe('Slack Ping', function () {
+describe('Slack ping service', function () {
   afterEach(function () {
     sinon.restore();
     nock.cleanAll();
-  });
-
-  describe('handlePostEvent()', function () {
-    it('sends a ping with toJSONified model and related authors and tags', async function () {
-      const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-      const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
-      const testTag = _.clone(testUtils.DataGenerator.Content.tags[0]);
-      const { service, deps } = createService();
-      const { requests, scope } = mockSlackWebhook();
-
-      deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
-      deps.urlService.getUrlForResource
-        .withArgs(sinon.match({ id: testPost.id, type: 'posts' }), { absolute: true })
-        .returns('http://myblog.com/' + testPost.slug + '/');
-      deps.urlService.getUrlForResource
-        .withArgs(sinon.match({ id: testAuthor.id, type: 'authors' }), { absolute: true })
-        .returns('http://myblog.com/author/' + testAuthor.slug + '/');
-
-      service.handlePostEvent(createPostModel(testPost, [testAuthor], [testTag]));
-
-      await waitFor(() => scope.isDone());
-
-      assert.equal(scope.isDone(), true);
-      assert.equal(
-        requests[0].attachments[1].fields[0].value,
-        `<http://myblog.com/author/${testAuthor.slug}/ | ${testAuthor.name}>`,
-      );
-      // tags must reach the URL service so it can evaluate
-      // collection filters like `tag:foo` when resolving the post URL
-      sinon.assert.calledWith(
-        deps.urlService.getUrlForResource,
-        sinon.match({ id: testPost.id, type: 'posts', tags: [testTag] }),
-        { absolute: true },
-      );
-    });
-
-    it('does not call ping() when importing', function () {
-      const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-      const { service, deps } = createService();
-      const { scope } = mockSlackWebhook();
-
-      deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
-
-      service.handlePostEvent(createPostModel(testPost), { importing: true });
-
-      assert.equal(scope.isDone(), false);
-      sinon.assert.notCalled(deps.urlService.getUrlForResource);
-    });
   });
 
   describe('ping()', function () {
@@ -155,7 +89,7 @@ describe('Slack Ping', function () {
 
       clock.setSystemTime(1700000300999);
       try {
-        service.handlePostEvent(createPostModel(post));
+        service.ping(post);
       } finally {
         // Restore Date before waitFor uses it to enforce its timeout.
         clock.restore();
@@ -167,7 +101,7 @@ describe('Slack Ping', function () {
       sinon.assert.calledOnce(deps.urlService.getUrlForResource);
       sinon.assert.calledWith(deps.settingsCache.get, 'slack_url');
 
-      const requestData = requests[0];
+      const requestData = requests[0]!;
 
       assert.equal(requestData.attachments[0].title, post.title);
       assert.equal(requestData.attachments[0].title_link, 'http://myblog.com/webhook-test/');
@@ -186,7 +120,7 @@ describe('Slack Ping', function () {
 
       deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
 
-      service.handleTestEvent();
+      service.ping(testMessage);
 
       await waitFor(() => scope.isDone());
 
@@ -213,7 +147,7 @@ describe('Slack Ping', function () {
 
       deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
 
-      service.handleTestEvent();
+      service.ping(testMessage);
 
       // Bound the poll so a regression fails with a clear assertion
       // below rather than stalling until the suite-wide test timeout.
@@ -229,7 +163,7 @@ describe('Slack Ping', function () {
 
       deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
 
-      service.handlePostEvent(createPostModel(post));
+      service.ping(post);
 
       assert.equal(scope.isDone(), false);
       sinon.assert.calledOnce(deps.urlService.getUrlForResource);
@@ -243,7 +177,7 @@ describe('Slack Ping', function () {
 
       deps.settingsCache.get.withArgs('slack_url').returns(slackURL);
 
-      service.handlePostEvent(createPostModel(post));
+      service.ping(post);
 
       assert.equal(scope.isDone(), false);
       sinon.assert.calledOnce(deps.urlService.getUrlForResource);
@@ -254,9 +188,9 @@ describe('Slack Ping', function () {
       const post = testUtils.DataGenerator.forKnex.createPost({ slug: 'any' });
       const { service, deps } = createService();
 
-      deps.settingsCache.get.withArgs('slack_url').returns();
+      deps.settingsCache.get.withArgs('slack_url').returns(undefined);
 
-      service.handlePostEvent(createPostModel(post));
+      service.ping(post);
 
       sinon.assert.called(deps.urlService.getUrlForResource);
       sinon.assert.calledWith(deps.settingsCache.get, 'slack_url');

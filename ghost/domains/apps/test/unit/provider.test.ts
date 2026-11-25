@@ -7,8 +7,7 @@ import { defineProvider } from '#support/define-provider';
 import { defineService } from '#support/define-service';
 import appsProvider from '../../provider';
 import { EditIntegration } from '../../actions/edit-integration.action';
-import { Integrations } from '../../services/integrations';
-import { SlackPing } from '../../services/slack-ping';
+import { SlackPing, SlackPingService } from '../../services/slack-ping.service';
 import {
   BlogIcon,
   ExternalRequest,
@@ -20,9 +19,6 @@ import {
   UrlUtils,
 } from '../../../../shared/transition/legacy';
 
-const {
-  SlackPingService,
-}: typeof import('../../services/slack-ping/slack-ping.service') = require('../../services/slack-ping/slack-ping.service');
 const events: EventEmitter = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
@@ -69,13 +65,13 @@ describe('Apps provider', function () {
     // That nothing is built before the first event is covered by the foundation's own tests.
     it('listens from the moment the site scope opens, and one instance handles every event', function () {
       assert.deepEqual(listenerCounts(events), [1, 1]);
-      const handle = sandbox.stub(SlackPingService.prototype, 'handleTestEvent');
+      const ping = sandbox.stub(SlackPingService.prototype, 'ping');
 
       events.emit('slack.test');
       events.emit('slack.test');
 
-      sinon.assert.calledTwice(handle);
-      sinon.assert.alwaysCalledOn(handle, site.get(SlackPing));
+      sinon.assert.calledTwice(ping);
+      sinon.assert.alwaysCalledOn(ping, site.get(SlackPing));
     });
 
     it('builds one instance per scope from the shared legacy modules', function () {
@@ -279,7 +275,6 @@ describe('Apps provider', function () {
         { name: 'Zapier' },
         { id: 'integration-id', require: true },
       );
-      assert.equal(site.get(Integrations).IntegrationModel, models.Integration);
       site.dispose();
     });
   });
@@ -288,7 +283,7 @@ describe('Apps provider', function () {
     it('rejects Slack ping declared for the whole process, because it needs per-site services', function () {
       const ProcessWideSlackPing = defineService({ ...SlackPing, lifetime: 'process' });
       const application = createApplication({
-        providers: [defineProvider({ name: 'slack-ping', services: [ProcessWideSlackPing] })],
+        providers: [defineProvider({ name: 'apps', services: [ProcessWideSlackPing] })],
       });
 
       assert.throws(

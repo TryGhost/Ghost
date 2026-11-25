@@ -1,7 +1,16 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { GhostLogger } from '@tryghost/logging';
-import { getUnixTime } from '../../../../core/kernel/clock';
+import { defineService } from '#support/define-service';
+import { getUnixTime } from '../../../core/kernel/clock';
+import {
+  BlogIcon,
+  ExternalRequest,
+  Logging,
+  SettingsCache,
+  UrlService,
+  UrlUtils,
+} from '../../../shared/transition/legacy';
 
 const messages = {
   requestFailedError:
@@ -40,18 +49,14 @@ type BlogIcon = {
 
 type RequestFn = (url: string, options: Record<string, unknown>) => Promise<unknown>;
 
-type PostModel = {
-  related(relation: string): { toJSON(): unknown[] };
-  toJSON(): Record<string, unknown>;
-};
-
-type SlackAuthor = {
+export type SlackAuthor = {
   name?: string;
   profile_image?: string;
   [key: string]: unknown;
 };
 
-type SlackPingPayload = {
+/** A post to announce, or a plain `message` to send as it is. */
+export type SlackPingPayload = {
   id?: string;
   slug?: string;
   type?: string;
@@ -80,6 +85,7 @@ function hasPostProperties(data: Record<string, unknown>): boolean {
   return Object.hasOwn(data, 'html') && Object.hasOwn(data, 'title') && Object.hasOwn(data, 'slug');
 }
 
+/** Posts to the Slack webhook the publisher has set. Shared by this domain's listeners. */
 export class SlackPingService {
   blogIcon: BlogIcon;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
@@ -114,6 +120,7 @@ export class SlackPingService {
     };
   }
 
+  /** Sends the ping, unless Slack is not set up or the post is one that is never announced. */
   ping(post: SlackPingPayload): Promise<unknown> | undefined {
     let message: string | null | undefined;
     let title: string | null = null;
@@ -251,35 +258,18 @@ export class SlackPingService {
       });
     }
   }
-
-  /**
-   * Handles post.published, as declared in listeners/
-   */
-  handlePostEvent(model: PostModel, options?: { importing?: boolean }): void {
-    // CASE: do not ping slack if we import a database
-    // TODO: refactor post.published events to never fire on importing
-    if (options && options.importing) {
-      return;
-    }
-
-    this.ping({
-      ...model.toJSON(),
-      authors: model.related('authors').toJSON() as SlackAuthor[],
-      // tags are needed so the lazy URL service can evaluate collection
-      // filters (e.g. `tag:foo`) when resolving the post URL; without them
-      // a tag-filtered post resolves to /404/
-      tags: model.related('tags').toJSON(),
-    });
-  }
-
-  /**
-   * Handles slack.test, as declared in listeners/. The Admin API emits it
-   * to verify the webhook configuration.
-   */
-  handleTestEvent(): void {
-    this.ping({
-      message:
-        'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!',
-    });
-  }
 }
+
+export const SlackPing = defineService({
+  name: 'apps/slack-ping',
+  lifetime: 'site',
+  needs: {
+    blogIcon: BlogIcon,
+    logging: Logging,
+    request: ExternalRequest,
+    settingsCache: SettingsCache,
+    urlService: UrlService,
+    urlUtils: UrlUtils,
+  },
+  create: (needs) => new SlackPingService(needs),
+});

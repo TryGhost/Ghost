@@ -1,52 +1,22 @@
-import type { AnyServiceDefinition, ServiceDefinition } from '#support/define-service';
-
-/** The part of an event emitter a declared listener is subscribed through. */
-export interface ListenerBus {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on(event: string, listener: (...args: any[]) => void): unknown;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  removeListener(event: string, listener: (...args: any[]) => void): unknown;
-}
-
-/**
- * Declares that a service reacts to an event. The service is built when the
- * first event arrives, not when the listener is declared.
- */
-export interface ListenerDeclaration {
-  readonly bus: ServiceDefinition<ListenerBus>;
-  readonly event: string;
-  readonly service: AnyServiceDefinition;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly handle: (service: any, ...args: any[]) => unknown;
-}
-
-/** Helper that types `handle` from the service definition it names. */
-export function listen<Service>(declaration: {
-  readonly bus: ServiceDefinition<ListenerBus>;
-  readonly event: string;
-  readonly service: ServiceDefinition<Service, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly handle: (service: Service, ...args: any[]) => unknown;
-}): ListenerDeclaration {
-  return Object.freeze({ ...declaration });
-}
+import type { ListenerDefinition } from '#support/define-listener';
+import type { AnyServiceDefinition } from '#support/define-service';
 
 /** The one place a module plugs itself into the application. It only declares. */
 export interface Provider {
   readonly name: string;
-  /** The module's own services. */
+  /** Logic the module keeps to itself and shares between its own actions and listeners. */
   readonly services: readonly AnyServiceDefinition[];
   /** What other modules may ask this one to do. */
   readonly actions: readonly AnyServiceDefinition[];
   /** What this module does when something happens. */
-  readonly listeners: readonly ListenerDeclaration[];
+  readonly listeners: readonly ListenerDefinition[];
 }
 
 export function defineProvider(provider: {
   readonly name: string;
   readonly services?: readonly AnyServiceDefinition[];
   readonly actions?: readonly AnyServiceDefinition[];
-  readonly listeners?: readonly ListenerDeclaration[];
+  readonly listeners?: readonly ListenerDefinition[];
 }): Provider {
   return Object.freeze({
     name: provider.name,

@@ -8828,7 +8828,7 @@ services:
           - core/server/services/member-attribution/index.ts
           - core/server/services/members/api.js
           - core/server/services/mentions/index.ts
-          - domains/apps/services/slack-ping/index.ts
+          - domains/apps/services/slack-ping.service.ts
           - core/server/services/stats/index.ts
           - core/server/services/webhooks/index.js
         tests:

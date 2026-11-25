@@ -5,6 +5,7 @@
     "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
+  "exclude": [],
   "include": [
     "**/*.ts",
     "../domains/*/test/**/*.ts",

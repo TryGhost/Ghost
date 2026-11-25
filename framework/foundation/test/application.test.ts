@@ -1,6 +1,8 @@
 import { EventEmitter } from 'node:events';
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { defineProvider, listen } from '#support/define-provider';
+import { defineAction } from '#support/define-action';
+import { defineListener } from '#support/define-listener';
+import { defineProvider } from '#support/define-provider';
 import { defineService } from '#support/define-service';
 import type { AnyServiceDefinition } from '#support/define-service';
 import { ApplicationError, createApplication, instance } from '#foundation/application';
@@ -42,11 +44,11 @@ function fixture() {
     name: 'pinger',
     services: [Pinger],
     listeners: [
-      listen({
+      defineListener({
         bus: Events,
         event: 'published',
-        service: Pinger,
-        handle: (pinger, what: string) => pinger.ping(what),
+        needs: { pinger: Pinger },
+        handle: ({ pinger }, what: string) => pinger.ping(what),
       }),
     ],
   });
@@ -96,6 +98,43 @@ describe('createApplication', () => {
     const site = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
     expect(site.get(Reporter).report()).toBe(1);
     expectTypeOf(site.get(Reporter).report).toEqualTypeOf<() => number>();
+  });
+
+  it("hands an action what it needs, then the caller's arguments", () => {
+    const { Logger, Pinger, provider, Settings } = fixture();
+    const PingTwice = defineAction({
+      name: 'ping-twice',
+      needs: { pinger: Pinger },
+      handle: ({ pinger }, what: string) => [pinger.ping(what), pinger.ping(what)],
+    });
+    const Caller = defineService({
+      name: 'caller',
+      lifetime: 'site',
+      needs: { pingTwice: PingTwice },
+      create: ({ pingTwice }) => ({ call: () => pingTwice('post-1') }),
+    });
+    const app = createApplication({
+      providers: [provider, defineProvider({ name: 'caller', actions: [PingTwice] })],
+    });
+    app.boot();
+    const site = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
+
+    expectTypeOf(site.get(PingTwice)).toEqualTypeOf<(what: string) => number[]>();
+    expect(site.get(PingTwice)('post-0')).toEqual([1, 2]);
+    expect(site.get(Caller).call()).toEqual([3, 4]);
+    expect(app.get(Logger).lines).toHaveLength(4);
+  });
+
+  it('gives an action the lifetime of the shortest-lived thing it needs', () => {
+    const { Logger, Pinger } = fixture();
+    const noop = () => {};
+    expect(defineAction({ name: 'a', handle: noop }).lifetime).toBe('process');
+    expect(defineAction({ name: 'b', needs: { logger: Logger }, handle: noop }).lifetime).toBe(
+      'process',
+    );
+    expect(
+      defineAction({ name: 'c', needs: { logger: Logger, pinger: Pinger }, handle: noop }).lifetime,
+    ).toBe('site');
   });
 
   it('gives two sites their own site services and one shared process service', () => {
@@ -153,7 +192,7 @@ describe('createApplication', () => {
     const provider = defineProvider({
       name: 'example',
       listeners: ['first', 'second'].map((event) =>
-        listen({ bus: Bus, event, service: Service, handle: () => {} }),
+        defineListener({ bus: Bus, event, needs: { service: Service }, handle: () => {} }),
       ),
     });
     const app = createApplication({ providers: [provider] });
@@ -188,7 +227,14 @@ describe('createApplication', () => {
       });
       const provider = defineProvider({
         name: 'pinger',
-        listeners: [listen({ bus: Bus, event: 'published', service: Pinger, handle: () => {} })],
+        listeners: [
+          defineListener({
+            bus: Bus,
+            event: 'published',
+            needs: { pinger: Pinger },
+            handle: () => {},
+          }),
+        ],
       });
       expect(() => createApplication({ providers: [provider] }).boot()).toThrow(
         /Every site would react to the same event/,

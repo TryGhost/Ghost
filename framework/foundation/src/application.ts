@@ -1,5 +1,12 @@
-import type { ListenerDeclaration, Provider } from '#support/define-provider';
-import type { AnyServiceDefinition, Lifetime, ServiceDefinition } from '#support/define-service';
+import type { ListenerDefinition } from '#support/define-listener';
+import type { Provider } from '#support/define-provider';
+import { outlives } from '#support/define-service';
+import type {
+  AnyServiceDefinition,
+  Lifetime,
+  Needs,
+  ServiceDefinition,
+} from '#support/define-service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Definition<Service> = ServiceDefinition<Service, any>;
@@ -28,13 +35,6 @@ export interface Application extends Scope {
 
 export class ApplicationError extends Error {
   override name = 'ApplicationError';
-}
-
-// A service may need only services that live at least as long as it does.
-const RANK: Record<Lifetime, number> = { process: 0, site: 1 };
-
-function outlives(a: Lifetime, b: Lifetime): boolean {
-  return RANK[a] <= RANK[b];
 }
 
 /** Rejects declarations that could not work, before anything is built. */
@@ -79,13 +79,16 @@ function validate(providers: readonly Provider[]): void {
     }
     for (const listener of provider.listeners) {
       visit(listener.bus);
-      visit(listener.service);
-      if (!outlives(listener.service.lifetime, listener.bus.lifetime)) {
-        throw new ApplicationError(
-          `"${provider.name}" listens for "${listener.event}" on "${listener.bus.name}", which is shared by the whole ` +
-            `${listener.bus.lifetime}, with "${listener.service.name}", which exists once per ${listener.service.lifetime}. ` +
-            `Every ${listener.service.lifetime} would react to the same event.`,
-        );
+      for (const [key, need] of Object.entries<AnyServiceDefinition>(listener.needs)) {
+        visit(need);
+        // The listener is subscribed once per scope of its bus, and is handed what that scope holds.
+        if (!outlives(need.lifetime, listener.bus.lifetime)) {
+          throw new ApplicationError(
+            `"${provider.name}" listens for "${listener.event}" on "${listener.bus.name}", which is shared by the whole ` +
+              `${listener.bus.lifetime}, and needs "${need.name}" (as ${key}), which exists once per ${need.lifetime}. ` +
+              `Every ${need.lifetime} would react to the same event.`,
+          );
+        }
       }
     }
   }
@@ -130,17 +133,21 @@ class ServiceScope implements Scope {
     if (this.#instances.has(definition)) {
       return this.#instances.get(definition) as Service;
     }
-    const needs: Record<string, unknown> = {};
-    for (const [key, need] of Object.entries<AnyServiceDefinition>(definition.needs)) {
-      needs[key] = this.get(need);
-    }
-    const built = definition.create(needs) as Service;
+    const built = definition.create(this.#resolve(definition.needs)) as Service;
     this.#instances.set(definition, built);
     return built;
   }
 
-  /** Subscribes the listeners whose bus lives in this scope. The listening service is built by its first event. */
-  listen(listeners: readonly ListenerDeclaration[]): void {
+  #resolve(needs: Needs): Record<string, unknown> {
+    const resolved: Record<string, unknown> = {};
+    for (const [key, need] of Object.entries<AnyServiceDefinition>(needs)) {
+      resolved[key] = this.get(need);
+    }
+    return resolved;
+  }
+
+  /** Subscribes the listeners whose bus lives in this scope. What a listener needs is built by its first event. */
+  listen(listeners: readonly ListenerDefinition[]): void {
     try {
       for (const listener of listeners) {
         if (listener.bus.lifetime !== this.lifetime) {
@@ -148,7 +155,7 @@ class ServiceScope implements Scope {
         }
         const bus = this.get(listener.bus);
         const handler = (...args: unknown[]) =>
-          listener.handle(this.get(listener.service), ...args);
+          listener.handle(this.#resolve(listener.needs), ...args);
         // Recorded first, so a subscription that throws part-way is still removed.
         this.#unsubscribe.push(() => bus.removeListener(listener.event, handler));
         bus.on(listener.event, handler);

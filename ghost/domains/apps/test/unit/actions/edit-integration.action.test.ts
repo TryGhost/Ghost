@@ -3,31 +3,28 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { NotFoundError, InternalServerError } from '@tryghost/errors';
 
-import { IntegrationsService } from '../../../../services/integrations/integrations.service';
+import { EditIntegration } from '../../../actions/edit-integration.action';
 
-describe('Integrations service', function () {
+describe('Edit integration action', function () {
   const sandbox = sinon.createSandbox();
   let IntegrationModel: { edit: sinon.SinonStub; findOne: sinon.SinonStub };
   let ApiKeyModel: { findOne: sinon.SinonStub; refreshSecret: sinon.SinonStub };
-  let service: IntegrationsService;
+  let edit: ReturnType<typeof EditIntegration.create>;
 
   beforeEach(function () {
     IntegrationModel = { edit: sandbox.stub(), findOne: sandbox.stub() };
     ApiKeyModel = { findOne: sandbox.stub(), refreshSecret: sandbox.stub().resolves() };
-    service = new IntegrationsService({ IntegrationModel, ApiKeyModel });
+    edit = EditIntegration.create({
+      models: { Integration: IntegrationModel, ApiKey: ApiKeyModel },
+    });
   });
 
   afterEach(function () {
     sandbox.restore();
   });
 
-  it('constructs independent instances that borrow models without querying them', function () {
-    const other = new IntegrationsService({ IntegrationModel, ApiKeyModel });
-    assert.notEqual(service, other);
-    assert.equal(service.IntegrationModel, IntegrationModel);
-    assert.equal(service.ApiKeyModel, ApiKeyModel);
-    assert.equal(other.IntegrationModel, IntegrationModel);
-    assert.equal(other.ApiKeyModel, ApiKeyModel);
+  it('is built without querying the models, and lives as long as they do', function () {
+    assert.equal(EditIntegration.lifetime, 'site');
     sinon.assert.notCalled(IntegrationModel.edit);
     sinon.assert.notCalled(IntegrationModel.findOne);
     sinon.assert.notCalled(ApiKeyModel.findOne);
@@ -40,7 +37,7 @@ describe('Integrations service', function () {
     const result = { id: options.id, name: data.name };
     IntegrationModel.edit.resolves(result);
 
-    assert.equal(await service.edit(data, options), result);
+    assert.equal(await edit(data, options), result);
     assert.equal(options.require, true);
     sinon.assert.calledOnceWithExactly(IntegrationModel.edit, data, options);
     sinon.assert.calledOn(IntegrationModel.edit, IntegrationModel);
@@ -52,7 +49,7 @@ describe('Integrations service', function () {
     'translates ordinary %s failures',
     async function (message) {
       IntegrationModel.edit.rejects(new Error(message));
-      await assert.rejects(service.edit({}, { id: 'missing-integration' }), (error) => {
+      await assert.rejects(edit({}, { id: 'missing-integration' }), (error) => {
         assert.ok(error instanceof NotFoundError);
         assert.equal(error.message, 'Integration not found.');
         return true;
@@ -63,7 +60,7 @@ describe('Integrations service', function () {
   it('preserves other ordinary edit failures', async function () {
     const failure = new Error('Database unavailable');
     IntegrationModel.edit.rejects(failure);
-    await assert.rejects(service.edit({}, {}), (error) => error === failure);
+    await assert.rejects(edit({}, {}), (error) => error === failure);
   });
 
   it.each(['admin', 'content'])(
@@ -88,7 +85,7 @@ describe('Integrations service', function () {
       ApiKeyModel.findOne.resolves(key);
       IntegrationModel.findOne.resolves(result);
 
-      assert.equal(await service.edit({ name: 'Ignored during rotation' }, options), result);
+      assert.equal(await edit({ name: 'Ignored during rotation' }, options), result);
       sinon.assert.calledOnceWithExactly(ApiKeyModel.findOne, { id: keyData.id });
       sinon.assert.calledOn(ApiKeyModel.findOne, ApiKeyModel);
       sinon.assert.calledOnce(key.toJSON);
@@ -118,14 +115,11 @@ describe('Integrations service', function () {
 
   it('rejects a missing key without refreshing it or rereading the integration', async function () {
     ApiKeyModel.findOne.resolves(null);
-    await assert.rejects(
-      service.edit({}, { id: 'integration-id', keyid: 'missing-key' }),
-      (error) => {
-        assert.ok(error instanceof NotFoundError);
-        assert.equal(error.message, 'ApiKey not found.');
-        return true;
-      },
-    );
+    await assert.rejects(edit({}, { id: 'integration-id', keyid: 'missing-key' }), (error) => {
+      assert.ok(error instanceof NotFoundError);
+      assert.equal(error.message, 'ApiKey not found.');
+      return true;
+    });
     sinon.assert.notCalled(ApiKeyModel.refreshSecret);
     sinon.assert.notCalled(IntegrationModel.findOne);
   });
@@ -133,7 +127,7 @@ describe('Integrations service', function () {
   it('preserves key lookup failures before entering the rotation catch', async function () {
     const failure = new Error('Key lookup failed');
     ApiKeyModel.findOne.rejects(failure);
-    await assert.rejects(service.edit({}, { keyid: 'key-id' }), (error) => error === failure);
+    await assert.rejects(edit({}, { keyid: 'key-id' }), (error) => error === failure);
     sinon.assert.notCalled(ApiKeyModel.refreshSecret);
     sinon.assert.notCalled(IntegrationModel.findOne);
   });
@@ -152,7 +146,7 @@ describe('Integrations service', function () {
         IntegrationModel.findOne.rejects(failure);
       }
 
-      await assert.rejects(service.edit({}, { id: 'integration-id', keyid: 'key-id' }), (error) => {
+      await assert.rejects(edit({}, { id: 'integration-id', keyid: 'key-id' }), (error) => {
         assert.ok(error instanceof InternalServerError);
         assert.equal(error.message, 'The server has encountered an error.');
         assert.equal(error.statusCode, 500);
@@ -167,7 +161,7 @@ describe('Integrations service', function () {
   it('returns a null integration reread after a successful key refresh', async function () {
     ApiKeyModel.findOne.resolves({ toJSON: () => ({ id: 'key-id' }) });
     IntegrationModel.findOne.resolves(null);
-    assert.equal(await service.edit({}, { id: 'missing-integration', keyid: 'key-id' }), null);
+    assert.equal(await edit({}, { id: 'missing-integration', keyid: 'key-id' }), null);
     sinon.assert.calledOnce(ApiKeyModel.refreshSecret);
   });
 
@@ -179,7 +173,7 @@ describe('Integrations service', function () {
     ApiKeyModel.refreshSecret.returns(refresh.promise);
     IntegrationModel.findOne.returns(reread.promise);
     let settled = false;
-    const editing = service.edit({}, { id: result.id, keyid: 'key-id' }).finally(() => {
+    const editing = edit({}, { id: result.id, keyid: 'key-id' }).finally(() => {
       settled = true;
     });
 
