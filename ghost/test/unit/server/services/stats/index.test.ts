@@ -217,7 +217,9 @@ describe('Stats service root', function () {
     const statsCache = endpoint.subscriptions.cache;
     assert.ok(statsCache);
     for (const name of names) {
-      if (name !== 'newsletterBasicStats' && !name.startsWith('comments')) {
+      if (name.startsWith('comments')) {
+        assert.ok(endpoint[name].cache, `${name} uses a stats cache`);
+      } else if (name !== 'newsletterBasicStats') {
         assert.equal(endpoint[name].cache, statsCache, `${name} uses the shared stats cache`);
       }
     }
@@ -279,32 +281,13 @@ describe('Stats service root', function () {
     sinon.assert.calledOnce(query);
   });
 
-  it('forwards comments filters through the API pipeline without using the host cache', async function () {
-    getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
-    const root = loadRoot();
-    const api = buildAdminMethods();
-    await root.init();
-    const overview = { totals: { comments: 1, commenters: 1, reported: 0 } };
-    const query = sandbox.stub(root.service.api, 'getCommentsOverview').resolves(overview);
-    const adapter = root.service.cache as { get: sinon.SinonStub; set: sinon.SinonStub };
-    adapter.get.resolves(undefined);
-    const options = { date_from: '2026-11-01', date_to: '2026-11-03', timezone: 'UTC' };
+  const commentsStatsMethods = [
+    ['commentsOverview', 'getCommentsOverview'],
+    ['commentsTopPosts', 'getCommentsTopPosts'],
+    ['commentsTopCommenters', 'getCommentsTopCommenters'],
+  ] as const;
 
-    for (const filter of ['post_id:post_a', 'post_id:post_b']) {
-      assert.deepEqual(await api.commentsOverview({ ...options, filter }), {
-        data: [overview],
-        meta: { filters: true },
-      });
-    }
-
-    sinon.assert.calledTwice(query);
-    assert.equal(query.firstCall.args[0].filter, 'post_id:post_a');
-    assert.equal(query.secondCall.args[0].filter, 'post_id:post_b');
-    sinon.assert.notCalled(adapter.get);
-    sinon.assert.notCalled(adapter.set);
-  });
-
-  it('returns fresh comment stats after moderation with or without filters when host caching is enabled', async function () {
+  async function cachedCommentsStatsApi() {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
     const api = buildAdminMethods();
@@ -313,37 +296,54 @@ describe('Stats service root', function () {
     const entries = new Map<string, unknown>();
     adapter.get.callsFake(async (key: string) => entries.get(key));
     adapter.set.callsFake(async (key: string, response: unknown) => entries.set(key, response));
-    const options = { date_from: '2026-11-01', date_to: '2026-11-03', timezone: 'UTC' };
+    return { root, api, entries };
+  }
 
-    for (const [name, method] of [
-      ['commentsOverview', 'getCommentsOverview'],
-      ['commentsTopPosts', 'getCommentsTopPosts'],
-      ['commentsTopCommenters', 'getCommentsTopCommenters'],
-    ]) {
+  const commentsStatsRange = { date_from: '2026-11-01', date_to: '2026-11-03', timezone: 'UTC' };
+
+  it('caches comment stats per filter when host caching is enabled', async function () {
+    const { root, api, entries } = await cachedCommentsStatsApi();
+
+    for (const [name, method] of commentsStatsMethods) {
+      const query = sandbox.stub(root.service.api, method).callsFake(async (options: unknown) => ({
+        data: [{ filter: (options as { filter?: string }).filter }],
+      }));
+      const expected = (filter?: string) => ({ data: [{ filter }], meta: { filters: true } });
+
+      for (const filter of [undefined, 'post_id:post_a', 'post_id:post_b', 'count.reports:0']) {
+        const options = filter ? { ...commentsStatsRange, filter } : commentsStatsRange;
+        assert.deepEqual(await api[name](options), expected(filter));
+        assert.deepEqual(await api[name](options), expected(filter));
+      }
+
+      assert.equal(query.callCount, 4, `${name} runs each filter once`);
+    }
+
+    assert.equal(entries.size, 12);
+  });
+
+  it('bypasses the host cache for comment stats filtered on status', async function () {
+    const { root, api, entries } = await cachedCommentsStatsApi();
+
+    for (const [name, method] of commentsStatsMethods) {
       let published = 1;
       const query = sandbox.stub(root.service.api, method).callsFake(async () => ({
         data: [{ comments: published }],
       }));
       const expected = (comments: number) => ({ data: [{ comments }], meta: { filters: true } });
 
-      assert.deepEqual(await api[name](options), expected(1));
-      published = 0;
-      assert.deepEqual(await api[name](options), expected(0));
-      sinon.assert.calledTwice(query);
+      for (const filter of ['status:published', `post_id:post_a+(status:hidden,member_id:m)`]) {
+        const filtered = { ...commentsStatsRange, filter };
+        published = 1;
+        assert.deepEqual(await api[name](filtered), expected(1));
+        published = 0; // Hide
+        assert.deepEqual(await api[name](filtered), expected(0));
+      }
 
-      published = 1;
-      const filtered = { ...options, filter: 'status:published' };
-      assert.deepEqual(await api[name](filtered), expected(1));
-      published = 0; // Hide
-      assert.deepEqual(await api[name](filtered), expected(0));
-      published = 1; // Show
-      assert.deepEqual(await api[name](filtered), expected(1));
-      assert.equal(query.callCount, 5);
+      assert.equal(query.callCount, 4);
     }
 
-    assert.equal(entries.size, 0, 'moderation-sensitive responses never reach the host cache');
-    sinon.assert.notCalled(adapter.get);
-    sinon.assert.notCalled(adapter.set);
+    assert.equal(entries.size, 0, 'status-filtered responses never reach the host cache');
   });
 
   it('runs a stats request built by the API pipeline once per call without a stats cache', async function () {

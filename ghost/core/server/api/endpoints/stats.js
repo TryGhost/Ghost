@@ -1,4 +1,6 @@
 const omit = require('lodash/omit');
+const nql = require('@tryghost/nql');
+const { getUsedKeys } = require('@tryghost/mongo-utils');
 const statsService = require('../../services/stats').default;
 
 // Every staff user sees the same stats, and permissions run before the cache
@@ -33,9 +35,30 @@ const newsletterBasicCache = {
   },
 };
 
+// Hiding or showing a comment changes only its status, and every status but deleted
+// is counted, so only a status filter changes. An invalid filter is left to the query.
+const filtersOnCommentStatus = (filter) => {
+  try {
+    return getUsedKeys(nql(filter).parse()).includes('status');
+  } catch {
+    return true;
+  }
+};
+
+const commentsStatsCache = {
+  get(key, getResponse) {
+    const { filter } = JSON.parse(key).options;
+    return filter && filtersOnCommentStatus(filter) ? undefined : statsCache.get(key, getResponse);
+  },
+  set(key, response) {
+    const { filter } = JSON.parse(key).options;
+    if (!filter || !filtersOnCommentStatus(filter)) {
+      return statsCache.set(key, response);
+    }
+  },
+};
+
 /**
- * Comment stats bypass the host cache so refetches after moderation return fresh
- * totals and rankings, including in the unfiltered view.
  * @param {'getCommentsOverview' | 'getCommentsTopPosts' | 'getCommentsTopCommenters'} serviceMethod
  * @param {string[]} [extraOptions]
  */
@@ -49,6 +72,13 @@ function commentsStatsEndpoint(serviceMethod, extraOptions = []) {
     permissions: {
       docName: 'comments',
       method: 'browse',
+    },
+    cache: commentsStatsCache,
+    generateCacheKeyData(frame) {
+      return {
+        method: serviceMethod,
+        options: Object.fromEntries(options.map((option) => [option, frame.options[option]])),
+      };
     },
     async query(frame) {
       const result = await statsService.service.api[serviceMethod](frame.options);
