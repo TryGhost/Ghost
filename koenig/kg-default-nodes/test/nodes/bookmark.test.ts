@@ -1,3 +1,4 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -108,7 +109,8 @@ describe('BookmarkNode', function () {
             const bookmarkNodeDataset = bookmarkNode.getDataset();
 
             expect(bookmarkNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -209,6 +211,7 @@ describe('BookmarkNode', function () {
             const metadata = dataset.metadata as Record<string, unknown>;
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'bookmark',
                 version: 1,
                 url: dataset.url,
@@ -262,6 +265,34 @@ describe('BookmarkNode', function () {
                     } catch (e) {
                         reject(e);
                     }
+                });
+            });
+        });
+
+        it('migrates legacy visibility to the current format', function () {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'bookmark',
+                        ...dataset,
+                        visibility: {showOnWeb: true, showOnEmail: false, segment: ''}
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            editor.setEditorState(editor.parseEditorState(serializedState));
+
+            editor.getEditorState().read(() => {
+                const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
+
+                expect(bookmarkNode.visibility).toMatchObject({
+                    web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                    email: {memberSegment: ''}
                 });
             });
         });

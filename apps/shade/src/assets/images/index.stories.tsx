@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { FacebookLogo, XLogo } from '@/assets/images';
+import { FacebookLogo, GoogleLogo, XLogo } from '@/assets/images';
 import { Inline, Stack, Text } from '@/components/primitives';
 import { formatNumber } from '@/utils';
 
@@ -10,7 +10,8 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: 'Brand logos exported by Shade, sized with standard SVG dimensions.',
+        component:
+          "Brand logos exported by Shade, sized with standard SVG dimensions. Logos are hidden from screen readers by default, so a logo beside a label adds nothing to its name. When a logo stands on its own, name it with `title`, `aria-label` or `aria-labelledby`. `title` sets `aria-label`; it doesn't show a tooltip.",
       },
     },
   },
@@ -39,7 +40,7 @@ export const Sizes: Story = {
           <Inline align="end" gap="2xl" wrap>
             {[16, 24, 48, 96].map((size) => (
               <Stack key={size} align="center" gap="sm">
-                <Logo aria-label={name} height={size} role="img" width={size} />
+                <Logo height={size} width={size} />
                 <Text size="sm" tone="secondary">
                   {formatNumber(size)}px
                 </Text>
@@ -50,4 +51,16 @@ export const Sizes: Story = {
       ))}
     </Stack>
   ),
+};
+
+export const Named: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A logo that stands on its own needs a name. Here `title="Google"` makes the mark an image named "Google". Beside a visible label, as in the Sizes story, leave it unnamed.',
+      },
+    },
+  },
+  render: () => <GoogleLogo height={32} title="Google" />,
 };

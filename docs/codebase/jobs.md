@@ -116,7 +116,9 @@ that doesn't report what it holds has to ignore an id it already has instead.
 Only a job type that sets
 `static replayAfterRestart = true` runs again; the rows of every other type are
 dropped instead, and the job is lost unless something else recovers it.
-Newsletter sends don't set it, because the newsletter boot scan recovers them.
+Newsletter sends set it: the send job checks the email's post and age itself,
+and the newsletter boot scan doesn't run while the outbox keeps rows until
+their jobs settle.
 A lease only shows that a process went quiet, not that it stopped: one that
 stalls or loses the database for longer than the lease can still be running a
 job when another process starts it again. A type that sets

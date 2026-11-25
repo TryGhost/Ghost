@@ -1,6 +1,7 @@
 /**
- * The scope registry: every scope an app can ask for, defined once. Admin's access list and the
- * bridge's allowlist both read it, so no other copy of the list exists.
+ * The scope registry: every scope an app can ask for, defined once. Manifest validation,
+ * Admin's review screen and the bridge's allowlist all read it, so no other copy of the list
+ * exists.
  *
  * A scope's permission key is the permission Platform uses in Core, `<resource>:<action>`, and
  * its resource is Platform's object type, exactly. The keys are provisional until Platform agrees
@@ -9,10 +10,11 @@
  * names them.
  *
  * The wording is Ghost's own, never the developer's, so an app can't describe a scope as less
- * than it is. The review screen shows one line per resource, with each scope's wording under it
- * in the order they're listed here.
+ * than it is. The review screen shows one line per resource, with each declared scope's
+ * wording under it in the order they're listed here.
  *
- * This module is data only. Describing scopes lives in `manifest/access.ts`.
+ * This module is data only. Comparing and describing scopes live in `manifest/scopes.ts`, and
+ * the manifest's `scopes` field in `manifest/scopes-schema.ts`.
  */
 
 export interface AppResource {

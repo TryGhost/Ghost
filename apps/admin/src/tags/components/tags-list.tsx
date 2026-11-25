@@ -5,6 +5,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   LoadMoreButton,
@@ -63,7 +64,7 @@ function TagsList({
   });
 
   return (
-    <div ref={parentRef} className="overflow-hidden">
+    <div ref={parentRef}>
       <Table className="flex table-fixed flex-col lg:table" data-testid="tags-list">
         <TableHeader className="hidden lg:visible! lg:table-header-group!">
           <TableRow>
@@ -86,20 +87,19 @@ function TagsList({
                 key={key}
                 {...props}
                 className={cn(
-                  'group grid w-full items-center gap-x-4 p-2 in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:px-0 in-data-[admin7-mobile=true]:max-lg:py-4 in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent] lg:table-row lg:p-0',
+                  'group grid w-full items-center gap-x-4 py-2 in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:px-0 in-data-[admin7-mobile=true]:max-lg:py-4 in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent] lg:table-row lg:p-0',
                   'grid-cols-1 md:grid-cols-[1fr_auto]',
                 )}
                 data-testid="tag-list-row"
               >
-                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
-                  <AdminLink
-                    className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]"
-                    to={`/tags/${item.slug}`}
-                  >
-                    <span className="block truncate text-base text-md font-semibold">
-                      {item.name}
-                    </span>
-                  </AdminLink>
+                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
+                  <RowPrimaryAction asChild>
+                    <AdminLink to={`/tags/${item.slug}`}>
+                      <span className="block truncate text-base text-md font-semibold">
+                        {item.name}
+                      </span>
+                    </AdminLink>
+                  </RowPrimaryAction>
                   <span className="block truncate text-muted-foreground">{item.description}</span>
                 </TableCell>
                 <TableCell className="col-start-1 col-end-1 row-start-2 row-end-2 flex p-0 lg:table-cell lg:p-4">
@@ -108,7 +108,7 @@ function TagsList({
                 <TableCell className="col-start-1 col-end-1 row-start-3 row-end-3 flex p-0 md:col-start-2 md:col-end-2 md:row-start-1 md:row-end-3 lg:table-cell lg:p-4">
                   {item.count?.posts ? (
                     <a
-                      className="relative z-10 -m-4 inline-block p-4 hover:underline"
+                      className="relative z-10 -my-4 inline-block py-4 hover:underline"
                       href={`#/posts?tag=${item.slug}`}
                     >
                       {`${formatNumber(item.count?.posts)}  ${item.count?.posts === 1 ? 'post' : 'posts'}`}

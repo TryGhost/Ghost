@@ -31,7 +31,18 @@ Expect the handoff to include:
 - a green, unstacked PR titled `[Don't merge] ...`;
 - a successful read-only preflight;
 - the source-history and reviewed-head SHAs;
-- a complete administrator command with no placeholders.
+- a complete administrator command with no placeholders;
+- any checks that could not run locally and were left to CI.
+
+The preflight rejects draft PRs. If the skill opens the PR as a draft, mark it
+ready for review, keeping the `[Don't merge]` title, and ask the skill to run
+the preflight. Until it passes there is no administrator command to send.
+
+The skill may not be able to run everything where it works. Database-backed
+tests need MySQL from Docker, and a restricted sandbox can block the Node
+runtime download that a lockfile update needs, in which case the skill edits
+the lockfile by hand and validates it with a frozen install. The PR body names
+each such gap. Confirm CI covered them before asking for the merge.
 
 Do not merge this PR with GitHub's squash, rebase, merge queue, or stacked-PR
 controls. Those paths either discard the imported history or require a

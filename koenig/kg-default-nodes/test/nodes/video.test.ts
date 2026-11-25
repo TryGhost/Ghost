@@ -1,4 +1,5 @@
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {$getRoot, LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {VideoNode, $createVideoNode, $isVideoNode, type ExportDOMOptions} from '../../src/index.js';
@@ -86,7 +87,8 @@ describe('VideoNode', function () {
                 thumbnailWidth: null,
                 thumbnailHeight: null,
                 cardWidth: 'regular',
-                loop: false
+                loop: false,
+                visibility: buildDefaultVisibility()
             });
         }));
 
@@ -153,7 +155,8 @@ describe('VideoNode', function () {
             expect(videoNodeDataset).toEqual({
                 ...dataset,
                 cardWidth: 'regular',
-                loop: false
+                loop: false,
+                visibility: buildDefaultVisibility()
             });
         }));
 
@@ -196,7 +199,8 @@ describe('VideoNode', function () {
                 thumbnailWidth: dataset.thumbnailWidth,
                 thumbnailHeight: dataset.thumbnailHeight,
                 cardWidth: dataset.cardWidth,
-                loop: false
+                loop: false,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -340,6 +344,24 @@ describe('VideoNode', function () {
             expect(output).toContain('<a class="kg-video-preview" href="https://example.com/my-post"');
             expect(output).toContain('background="/content/images/2022/11/koenig-lexical.jpg"');
         }));
+
+        it('links email to the video file when the card is restricted on web', editorTest(function () {
+            const videoNode = $createVideoNode({
+                src: '/content/images/2022/11/koenig-lexical.mp4',
+                width: 200,
+                height: 100,
+                thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg'
+            });
+            videoNode.visibility = {
+                web: {nonMember: true, memberSegment: ''},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+            const {element} = videoNode.exportDOM(editor, {...exportOptions, target: 'email', postUrl: 'https://example.com/my-post'});
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).not.toContain('https://example.com/my-post');
+            expect(output).toContain('<a class="kg-video-preview" href="/content/images/2022/11/koenig-lexical.mp4"');
+        }));
     });
 
     describe('hasEditMode', function () {
@@ -453,6 +475,65 @@ describe('VideoNode', function () {
 
             node.caption = 'Test caption';
             expect(node.getTextContent()).toBe('Test caption\n\n');
+        }));
+    });
+    describe('visibility', function () {
+        it('renders nothing when hidden from email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createVideoNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: ''}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a segment when limited to a member segment in email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createVideoNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:-free'}
+            };
+
+            const {element} = node.exportDOM(editor, exportOptions);
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).toContain('data-gh-segment="status:-free"');
+            expect(output).toContain('kg-visibility-wrapper');
+        }));
+
+        it('renders nothing when hidden from web', editorTest(function () {
+            const node = $createVideoNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a gated block when limited to a member segment on web', editorTest(function () {
+            const node = $createVideoNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('value');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:end-->');
         }));
     });
 });

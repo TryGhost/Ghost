@@ -453,6 +453,9 @@ export const editorScreen = {
   /** The caption's Koenig content editable. */
   featureImageCaption: () => page.getByTestId(editorFeatureImageCaption).getByRole('textbox'),
   featureImageTkIndicator: () => page.getByTestId(featureImageTkIndicator),
+  /** An image card's caption in the body, by Koenig's own test id. */
+  imageCardCaption: () =>
+    page.getByTestId(editorBody).getByTestId('image-caption-editor').getByRole('textbox'),
   backLink: (postType: 'post' | 'page') =>
     page.getByRole('link', {
       name: postType === 'page' ? pagesBackLink : postsBackLink,

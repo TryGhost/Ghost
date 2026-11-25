@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const { FAILURE_CODES } = require('../../webhook/failures');
 // const _ = require('lodash');
 
 /**
@@ -63,6 +64,7 @@ module.exports = class InvoiceEventService {
       }
       // Could not find the member, which we need in order to insert an payment event.
       throw new errors.NotFoundError({
+        code: FAILURE_CODES.noMemberForCustomer,
         message: `No member found for customer ${subscription.customer}`,
       });
     }

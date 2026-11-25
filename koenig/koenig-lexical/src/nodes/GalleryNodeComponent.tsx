@@ -5,17 +5,19 @@ import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import useGalleryReorder from '../hooks/useGalleryReorder';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {GalleryCard} from '../components/ui/cards/GalleryCard';
 import {MAX_IMAGES, recalculateImageRows} from './GalleryNode';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {getImageDimensions} from '../utils/getImageDimensions';
+import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
-    const {isSelected} = React.useContext(CardContext);
+    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const [errorMessage, setErrorMessage] = React.useState(null);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -27,7 +29,10 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         return existingImages;
     });
 
-    const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected});
+    const getVisibility = React.useCallback(() => {
+        return editor.getEditorState().read(() => $getNodeByKey(nodeKey)?.visibility);
+    }, [editor, nodeKey]);
+    const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected, getVisibility});
     const imageUploader = fileUploader.useFileUpload('image');
     const imageFilesDropper = useFileDragAndDrop({handleDrop: handleImageFilesDrop});
 
@@ -124,6 +129,14 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         await handleImageUploads(files);
     }
 
+    const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
+
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+    };
+
     function handleToolbarAdd(event) {
         event.preventDefault();
         fileInputRef.current.click();
@@ -135,6 +148,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
 
     const hideToolbar =
         !isSelected ||
+        isEditing ||
         imageFilesDropper.isDraggedOver ||
         galleryReorder.isDraggedOver ||
         images.length <= 0;
@@ -170,6 +184,15 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="add-gallery-image" icon="add" isActive={false} label="Add images" onClick={handleToolbarAdd} />
+                    <ToolbarMenuSeparator hide={!isVisibilityEnabled} />
+                    <ToolbarMenuItem
+                        dataTestId="edit-gallery-card"
+                        hide={!isVisibilityEnabled}
+                        icon="edit"
+                        isActive={false}
+                        label="Edit"
+                        onClick={handleToolbarEdit}
+                    />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -181,6 +204,8 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
                     />
                 </ToolbarMenu>
             </ActionToolbar>
+
+            <CardSettingsPanel />
         </>
     );
 }

@@ -188,6 +188,7 @@ const exportedBodyLatest = () => {
                 products_benefits: [],
                 roles: [],
                 roles_users: [],
+                segments: [],
                 settings: [],
                 snippets: [],
                 stripe_prices: [],

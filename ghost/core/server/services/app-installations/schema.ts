@@ -28,8 +28,8 @@ export const StoredManifest = DbJson(AppManifestSchema, {
 });
 
 /**
- * What differs from the manifest approved when a row was added: fields by path, in the shape App
- * Contracts defines.
+ * What differs from the manifest approved when a row was added: fields by path, then access in
+ * the registry's order, in the shape App Contracts defines.
  */
 export const StoredChanges = DbJson(z.array(ManifestChangeSchema), {
   message: 'The stored changes are not JSON.',

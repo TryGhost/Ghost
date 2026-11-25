@@ -81,6 +81,23 @@ function applyDeferredJoinForDeepOffset(qb) {
     .innerJoin(idSubquery.as('deep_page'), 'members.id', 'deep_page.deep_page_id');
 }
 
+const FREE_SUBSCRIBER_FILTER = '(subscribed:true+email_disabled:0)+status:free';
+const FREE_SUBSCRIBER_SQL =
+  'select * from `members` where ((`members`.`email_disabled` = ? and `members`.`id` in (' +
+  'select `members_newsletters`.`member_id` from `members_newsletters` ' +
+  'inner join `newsletters` on `newsletters`.`id` = `members_newsletters`.`newsletter_id` ' +
+  'where `newsletters`.`status` = ?)) and `members`.`status` = ?)';
+
+function isFreeSubscriberQuery(query) {
+  const { sql, bindings } = query.toSQL();
+  return (
+    sql === FREE_SUBSCRIBER_SQL &&
+    bindings[0] === 0 &&
+    bindings[1] === 'active' &&
+    bindings[2] === 'free'
+  );
+}
+
 const Member = ghostBookshelf.Model.extend(
   {
     tableName: 'members',
@@ -662,7 +679,83 @@ const Member = ghostBookshelf.Model.extend(
         options = options.concat(['search']);
       }
 
+      if (methodName === 'findPage') {
+        options.push('activeNewsletterIds');
+      }
+
       return options;
+    },
+
+    findPage(options = {}) {
+      if (options.skipPagination || options.limit === 'all') {
+        return ghostBookshelf.Model.findPage.call(this, options);
+      }
+
+      return this.withActiveNewsletterIds(options, (queryOptions) =>
+        ghostBookshelf.Model.findPage.call(this, queryOptions),
+      );
+    },
+
+    canOptimizeFreeSubscriberFilter(options) {
+      if (
+        options.filter !== FREE_SUBSCRIBER_FILTER ||
+        options.search ||
+        !['mysql', 'mysql2'].includes(ghostBookshelf.knex.client.config.client)
+      ) {
+        return false;
+      }
+
+      // The rewrite only applies to the exact query this filter compiles to today.
+      const collection = ghostBookshelf.Model.getFilteredCollection.call(
+        this,
+        this.filterOptions(options, 'findPage'),
+      );
+      return isFreeSubscriberQuery(collection.query());
+    },
+
+    async activeNewsletterIds(transacting) {
+      return transacting('newsletters').where({ status: 'active' }).pluck('id');
+    },
+
+    withActiveNewsletterIds(options, read) {
+      const knex = ghostBookshelf.knex;
+      if (options.transacting || !this.canOptimizeFreeSubscriberFilter(options)) {
+        return read(options);
+      }
+
+      // Newsletter status and membership must come from the same snapshot.
+      return knex.transaction(
+        async (transacting) => {
+          const activeNewsletterIds = await this.activeNewsletterIds(transacting);
+          return read({ ...options, transacting, activeNewsletterIds });
+        },
+        { isolationLevel: 'repeatable read' },
+      );
+    },
+
+    getFilteredCollection(options) {
+      const collection = ghostBookshelf.Model.getFilteredCollection.call(this, options);
+      if (!options.activeNewsletterIds) {
+        return collection;
+      }
+
+      const query = collection.query();
+      // Preserve the original filter if the compiler or an additional constraint
+      // produces any other query. The rewrite applies to the count and page.
+      if (isFreeSubscriberQuery(query)) {
+        const membership = ghostBookshelf
+          .knex('members_newsletters')
+          .select(ghostBookshelf.knex.raw('1'))
+          .whereColumn('members_newsletters.member_id', 'members.id')
+          .whereIn('members_newsletters.newsletter_id', options.activeNewsletterIds);
+        query
+          .clear('where')
+          .where('members.email_disabled', false)
+          .where('members.status', 'free')
+          .whereExists(membership);
+      }
+
+      return collection;
     },
 
     add(data, unfilteredOptions = {}) {

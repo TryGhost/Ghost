@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
-const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 
 const rootPath = require.resolve('../../../../../core/server/auth/better-auth');
@@ -18,16 +17,14 @@ describe('Better Auth service root', function () {
 
   beforeEach(function () {
     cachedRoot = require.cache[rootPath];
-    configUtils.set('database:client', 'mysql2');
   });
 
-  afterEach(async function () {
+  afterEach(function () {
     delete require.cache[rootPath];
     if (cachedRoot) {
       require.cache[rootPath] = cachedRoot;
     }
     sinon.restore();
-    await configUtils.restore();
   });
 
   it('fails init when Better Auth setup fails, and can retry', async function () {

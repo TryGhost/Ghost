@@ -146,9 +146,16 @@ describe('EmbedNode', function () {
     });
 
     describe('hasEditMode', function () {
-        it('returns true', editorTest(function () {
+        it('returns false', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
-            expect(embedNode.hasEditMode()).toBe(true);
+            expect(embedNode.hasEditMode()).toBe(false);
+        }));
+    });
+
+    describe('hasVisibility', function () {
+        it('returns false', editorTest(function () {
+            const embedNode = $createEmbedNode(dataset);
+            expect(embedNode.hasVisibility()).toBe(false);
         }));
     });
 

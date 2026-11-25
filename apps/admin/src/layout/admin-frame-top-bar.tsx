@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from '@tryghost/admin-x-framework';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useOpenGlobalSearch } from '@/global-search/global-search-context';
 import { searchShortcutLabel } from '@/global-search/search-shortcut';
@@ -207,12 +206,6 @@ function CustomizeToggle() {
  * script that provides in-app support, as the other Help links are.
  */
 function HelpLink() {
-  const inAppSupport = useFeatureFlag('inAppSupport');
-
-  if (!inAppSupport) {
-    return null;
-  }
-
   return (
     <a
       aria-label="Help"

@@ -3,7 +3,7 @@ import { LoadingIndicator } from '@tryghost/shade/components';
 import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { LoadMoreButton, useScrollRestoration } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
-import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
+import { FilterBar, PageHeader, useMobileFilters } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
 import { usePresence, usePresenceEnabled } from '@/shared/presence/use-presence';
 import { usePresenceByResource } from '@/shared/presence/use-presence-by-resource';
@@ -302,6 +302,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
 
   runPostActionRef.current = runPostAction;
 
+  const mobileFilters = useMobileFilters();
+  const [filterBarContainer, setFilterBarContainer] = useState<HTMLDivElement | null>(null);
   const { visitorCounts, memberCounts } = usePostAnalyticsCounts({
     items,
     webAnalyticsEnabled: metricsSettings.webAnalyticsEnabled,
@@ -325,13 +327,23 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                                 crowd the title. */}
               <PageHeader.Actions>
                 <PageHeader.ActionGroup>
-                  {!showFilterBar && (
+                  {(!showFilterBar || mobileFilters) && (
                     <PostsFilters
+                      barContainer={filterBarContainer}
                       currentUser={currentUser}
                       filters={filters}
                       iconOnly={true}
                       params={params}
                       resource={resource}
+                      viewActions={
+                        mobileFilters && canManageView ? (
+                          <ManagePostViewPopover
+                            activeView={activeView}
+                            params={params}
+                            resource={resource}
+                          />
+                        ) : undefined
+                      }
                       onFiltersChange={setFilters}
                     />
                   )}
@@ -355,7 +367,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 </PageHeader.ActionGroup>
               </PageHeader.Actions>
             </PageHeader>
-            {showFilterBar && (
+            {mobileFilters && showFilterBar && <div ref={setFilterBarContainer} />}
+            {showFilterBar && !mobileFilters && (
               <FilterBar>
                 <PostsFilters
                   currentUser={currentUser}

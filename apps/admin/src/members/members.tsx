@@ -1,3 +1,4 @@
+import { useMobileFilters } from '@tryghost/shade/patterns';
 import MembersActions from './components/members-actions';
 import MembersEmptyState from './components/members-empty-state';
 import MembersFilters from './components/members-filters';
@@ -52,6 +53,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
 }) => {
   // Under a large title (admin7Design), a roomier row of column labels
   const { largeTitles } = usePageChrome();
+  const mobileFilters = useMobileFilters();
+  const [mobileFilterBar, setMobileFilterBar] = useState<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -170,10 +173,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
     </>
   );
 
-  const headerFilters = shouldShowMemberControls && !hasFilters && (
+  const headerFilters = shouldShowMemberControls && (!hasFilters || mobileFilters) && (
     <MembersFilters
       activeView={activeView}
       filters={filters}
+      mobileBarContainer={mobileFilterBar}
       multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
       nql={nql}
       savedViews={savedViews}
@@ -217,6 +221,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
                     {headerSearch}
+                    {mobileFilters && headerFilters}
                     <MembersActions
                       canBulkDelete={canBulkDelete}
                       hasFilterOrSearch={hasFilterOrSearch}
@@ -229,14 +234,17 @@ const MembersPage: React.FC<MembersPageProps> = ({
                         void refetch();
                       }}
                     >
-                      {headerFilters}
+                      {!mobileFilters && headerFilters}
                     </MembersActions>
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               </PageHeader>
 
               {mobileSearchRow}
-              {shouldShowMemberControls && shouldShowFiltersRow && (
+              {shouldShowMemberControls && mobileFilters && hasFilters && (
+                <div ref={setMobileFilterBar} />
+              )}
+              {shouldShowMemberControls && shouldShowFiltersRow && !mobileFilters && (
                 <FilterBar className={filtersClassName}>
                   <MembersFilters
                     activeView={activeView}

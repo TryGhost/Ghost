@@ -38,6 +38,7 @@ const { registerHelpers } = require('./helpers/register-helpers');
 const crypto = require('crypto');
 const { checkSegmentPostAccess, getPostAccessFilter } = require('../members/content-gating');
 const { mobiledocToLexical } = require('@tryghost/kg-converters');
+const { hasRestrictedCards } = require('@tryghost/kg-default-nodes').utils.visibility;
 /** @import {TemplateDelegate} from 'handlebars' */
 
 const DEFAULT_LOCALE = 'en-gb';
@@ -1238,10 +1239,14 @@ class EmailRenderer {
       return customExcerpt;
     } else {
       if (plaintext) {
-        // The plaintext field on the model may contain gated content
-        // the audience can't read, so regenerate from the provided
-        // HTML (already gated) whenever this audience lacks access
-        if (audience.status === 'status:free' || !audience.hasPostAccess) {
+        // The plaintext field on the model may contain gated content or
+        // restricted cards the audience can't read, so regenerate from the
+        // provided HTML (already filtered) in those cases
+        if (
+          audience.status === 'status:free' ||
+          !audience.hasPostAccess ||
+          hasRestrictedCards(postModel.get('lexical'))
+        ) {
           plaintext = htmlToPlaintext.email(html);
         }
         return plaintext.substring(0, 500);

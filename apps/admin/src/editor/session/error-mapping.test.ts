@@ -19,6 +19,7 @@ import {
   EDITOR_CRASHED,
   EMAIL_REFUSED_MESSAGE,
   POST_DELETED,
+  bannerSaveError,
   isSessionInvalid,
   requestFailureMessage,
   stateSaveError,
@@ -328,6 +329,25 @@ describe('isSessionInvalid', () => {
     ['an unreachable server', new ServerUnreachableError(), false],
   ])('reads %s', (_label, error, expected) => {
     expect(isSessionInvalid(error)).toBe(expected);
+  });
+});
+
+describe('bannerSaveError', () => {
+  it('reports a collision, a halt, a crash and a save held back by a collision, and nothing otherwise', () => {
+    const collision: SaveError = { kind: 'conflict', message: 'Saving failed!' };
+    const failure: SaveError = { kind: 'transport', message: 'offline' };
+    const missing: SaveError = { kind: 'not-found', message: 'Post not found.' };
+
+    expect(bannerSaveError({ kind: 'conflict', intent: 'field', error: collision })).toBe(
+      collision,
+    );
+    expect(bannerSaveError({ kind: 'halted', error: missing })).toBe(POST_DELETED);
+    expect(bannerSaveError({ kind: 'crashed' })).toBe(EDITOR_CRASHED);
+    expect(bannerSaveError({ kind: 'idle' }, { blockedBy: collision })).toBe(collision);
+    // A failed save is the status line's to report.
+    expect(bannerSaveError({ kind: 'error', intent: 'field', error: failure })).toBeNull();
+    expect(bannerSaveError({ kind: 'idle' }, { blockedBy: failure })).toBeNull();
+    expect(bannerSaveError({ kind: 'idle' }, null)).toBeNull();
   });
 });
 

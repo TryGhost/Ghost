@@ -18,8 +18,24 @@ export interface ActivePresence {
   ts: number;
 }
 
+/**
+ * `hold` holds the edited document for this tab if nobody holds it, or keeps
+ * holding it, and `take` holds it whoever does. `watch` asks who holds the
+ * document and gives up this tab's own hold.
+ */
+export type PresenceLeaseRequest = 'hold' | 'take' | 'watch';
+
+export interface PresenceLease {
+  /** The user whose tab may edit the document now. */
+  userId: string;
+  /** Whether that tab is this one. False for the same user's other tabs. */
+  mine: boolean;
+}
+
 export interface PresencePollResult {
   active: ActivePresence[];
+  /** Present when the poll asked about the lease and the server keeps one; null while nobody holds it. */
+  lease?: PresenceLease | null;
   serverTime: number;
 }
 
@@ -45,9 +61,18 @@ export function presenceTabId(): string {
   return tabId;
 }
 
-export function presenceRequestBody(resources: PresenceResource[], editing?: PresenceResource) {
+export function presenceRequestBody(
+  resources: PresenceResource[],
+  editing?: PresenceResource,
+  lease?: PresenceLeaseRequest,
+) {
   return {
-    presence: [{ resources, ...(editing ? { editing, tab: presenceTabId() } : {}) }],
+    presence: [
+      {
+        resources,
+        ...(editing ? { editing, tab: presenceTabId(), ...(lease ? { lease } : {}) } : {}),
+      },
+    ],
   };
 }
 
@@ -65,14 +90,18 @@ export const usePresenceApi = () => {
   const { ghostVersion } = useFramework();
 
   const poll = useCallback(
-    (resources: PresenceResource[], editing?: PresenceResource): Promise<unknown> =>
+    (
+      resources: PresenceResource[],
+      editing?: PresenceResource,
+      lease?: PresenceLeaseRequest,
+    ): Promise<unknown> =>
       fetchApi<unknown>(apiUrl(PRESENCE_PATH), {
         method: 'POST',
         retry: false,
         timeout: 5000,
         sessionExpiryRedirect: false,
         reportUpgradeStatus: false,
-        body: JSON.stringify(presenceRequestBody(resources, editing)),
+        body: JSON.stringify(presenceRequestBody(resources, editing, lease)),
       }),
     [fetchApi],
   );

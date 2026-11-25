@@ -275,6 +275,12 @@ export class JobsService {
     );
   }
 
+  // True when the outbox keeps each job's row until the job settles, so a job
+  // a restart or crash cut short is handed over again
+  keepsJobsUntilSettled(): boolean {
+    return this.#outboxMode() === 'retain';
+  }
+
   // Only the store that keeps rows until settlement gets a tracker
   #outboxMode(): 'off' | 'on' | 'retain' {
     if (!this.#outbox) {

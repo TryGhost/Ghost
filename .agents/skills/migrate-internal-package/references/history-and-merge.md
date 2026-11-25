@@ -178,7 +178,9 @@ The merge must retain both the subtree topology and the import branch as the
 second parent of GitHub's merge commit. Do not manually reproduce the
 repository-setting sequence from prose.
 
-The agent runs the read-only preflight while preparing the import:
+The agent runs the read-only preflight while preparing the import. It fails
+with `PR is still a draft` until the PR is marked ready for review, so run it
+after that point and treat it as a remaining step before then:
 
 ```bash
 .agents/skills/migrate-internal-package/scripts/merge-history-pr \
@@ -210,7 +212,8 @@ manually remove the `[Don't merge]` prefix.
 The script:
 
 1. verifies authentication and rejects PRs that belong to a GitHub stack;
-2. verifies PR state, checks and imported-history reachability;
+2. verifies the PR is open, not a draft and mergeable, then verifies checks and
+   imported-history reachability;
 3. records the current `allow_merge_commit` setting;
 4. enables merge commits only when necessary;
 5. rejects any head other than the SHA validated by the dry run and merges with

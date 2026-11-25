@@ -15,7 +15,7 @@ const models = require('../../../../core/server/models');
 let request;
 let eventsTriggered;
 
-const TABLE_ALLOWLIST_LENGTH = 20;
+const TABLE_ALLOWLIST_LENGTH = 21;
 const LEGACY_HARDCODED_USER_ID = '1';
 
 describe('DB API', function () {

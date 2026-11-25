@@ -24,6 +24,8 @@ export const HEADER_TEXT_COLORS = {
 
 // Header Card version 1
 export function HeaderCard({isEditing,
+    visibilitySettings = null,
+    showVisibilitySettings = false,
     size,
     subheader,
     button,
@@ -168,7 +170,11 @@ export function HeaderCard({isEditing,
             </div>
 
             {isEditing && (
-                <SettingsPanel className="mt-0">
+                <SettingsPanel
+                    className="mt-0"
+                    showVisibilitySettings={showVisibilitySettings}
+                    visibilitySettings={visibilitySettings}
+                >
                     <ButtonGroupSetting
                         buttons={buttonGroupChildren}
                         label='Size'
@@ -248,5 +254,7 @@ HeaderCard.propTypes = {
     headerTextEditor: PropTypes.object,
     headerTextEditorInitialState: PropTypes.object,
     subheaderTextEditor: PropTypes.object,
-    subheaderTextEditorInitialState: PropTypes.object
+    subheaderTextEditorInitialState: PropTypes.object,
+    visibilitySettings: PropTypes.node,
+    showVisibilitySettings: PropTypes.bool
 };

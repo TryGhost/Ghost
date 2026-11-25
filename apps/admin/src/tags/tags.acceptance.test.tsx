@@ -1,7 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { currentRoute, fakeTags, renderAdminApp, tag } from '@test-utils/acceptance';
+import {
+  currentRoute,
+  fakeAdminEndpoint,
+  fakePosts,
+  fakePostsListScreen,
+  fakeTags,
+  fakeAdminStats,
+  renderAdminApp,
+  tag,
+} from '@test-utils/acceptance';
 import { tagsScreen } from './tags.screen';
+
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
 
 describe('Tags list', () => {
   it('lists public tags with description and posts count', async () => {
@@ -40,6 +54,41 @@ describe('Tags list', () => {
     await tagsScreen.publicTab().click();
     await expect.element(tagsScreen.link('Public Tag Name')).toBeVisible();
     await expect(tagsScreen.tagRows()).toHaveCount(2);
+  });
+
+  it.each([false, true])(
+    'aligns tags and preserves navigation with admin7Design %s',
+    async (admin7Design) => {
+      const news = tag({ name: 'News', slug: 'news', count: { posts: 1 } });
+      fakeTags([news]);
+      fakeAdminEndpoint('GET', /^\/tags\/slug\/news\//, { tags: [news] });
+      await renderAdminApp('/tags', { labs: { admin7Design } });
+
+      const row = tagsScreen.tagRows();
+      await expect.element(row).toBeVisible();
+      const firstCell = row.getByRole('cell').elements()[0];
+      expect(getComputedStyle(firstCell).paddingLeft).toBe('0px');
+      const slugCell = row.getByRole('cell').elements()[1].getBoundingClientRect();
+      expect(
+        document
+          .elementFromPoint(slugCell.x + slugCell.width / 2, slugCell.y + slugCell.height / 2)
+          ?.closest('a'),
+      ).toBe(tagsScreen.link('News').element());
+      await row.click({ position: { x: -8, y: 12 } });
+
+      await expect.poll(currentRoute).toBe('/tags/news');
+    },
+  );
+
+  it('keeps the posts count link independent from the tag action', async () => {
+    fakePostsListScreen();
+    fakePosts([]);
+    fakeTags([tag({ name: 'News', slug: 'news', count: { posts: 1 } })]);
+    await renderAdminApp('/tags', { labs: { admin7Design: true } });
+
+    await tagsScreen.link('1 post').click();
+
+    await expect.poll(currentRoute).toBe('/posts?tag=news');
   });
 
   it('shows the empty state with a call to action when there are no tags', async () => {

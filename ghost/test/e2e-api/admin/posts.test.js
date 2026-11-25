@@ -167,6 +167,36 @@ describe('Posts API', function () {
       });
   });
 
+  const browseIds = async (filter) => {
+    const query = filter ? `&filter=${encodeURIComponent(filter)}` : '';
+    const { body } = await agent.get(`posts/?fields=id&limit=all${query}`).expectStatus(200);
+    return body.posts.map((post) => post.id);
+  };
+
+  // The API puts brackets around a filter before it adds its own clauses, so a filter that
+  // arrives in brackets ends up inside two pairs of them
+  it('Can browse with a filter in brackets', async function () {
+    const featured = await browseIds('featured:true');
+
+    assert.ok(featured.length > 0 && featured.length < (await browseIds()).length);
+    assert.deepEqual(await browseIds('(featured:true)'), featured);
+  });
+
+  it('Can browse with a filter value of one character', async function () {
+    const { body } = await agent
+      .post('posts/')
+      .body({ posts: [{ title: 'Tagged with one character', tags: [{ name: 'a' }] }] })
+      .expectStatus(201);
+    const [{ id }] = body.posts;
+
+    try {
+      assert.deepEqual(await browseIds('tag:a'), [id]);
+    } finally {
+      // The export tests that follow snapshot every post
+      await agent.delete(`posts/${id}/`).expectStatus(204);
+    }
+  });
+
   describe('Export', function () {
     it('Can export', async function () {
       const { text } = await agent

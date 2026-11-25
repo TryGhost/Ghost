@@ -2,11 +2,35 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const auth = require('../../auth');
 const membersService = require('../../services/members');
+const urlUtils = require('../../../shared/url-utils').default;
+
+/** Whether a request came from Ghost Admin's own pages. */
+function isFromAdmin(req) {
+  const fetchSite = req.get('sec-fetch-site');
+  if (fetchSite) {
+    // The Connect button is a link. A script or image on the site's public
+    // pages is often same-origin too, but its request isn't a navigation.
+    return (
+      (fetchSite === 'same-origin' || fetchSite === 'none') &&
+      req.get('sec-fetch-mode') === 'navigate'
+    );
+  }
+  // Browsers without Fetch Metadata still say where a link was clicked.
+  const adminOrigin = new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;
+  return [req.get('origin'), req.get('referer')].some((value) => {
+    try {
+      return new URL(value).origin === adminOrigin;
+    } catch {
+      return false;
+    }
+  });
+}
 
 // Chosen once at load, as in auth/authenticate.ts
 const isBetterAuth = auth.isBetterAuth;
 
 const messages = {
+  notFromAdmin: 'Start connecting Stripe from Ghost Admin.',
   sessionRequired: 'Connecting Stripe requires a signed-in staff session, not an API token.',
 };
 
@@ -15,6 +39,11 @@ const messages = {
  * session, which a keyed request skips.
  */
 function stateSetter(frame, req) {
+  // Only Ghost Admin's own link may start a connection: another site
+  // could otherwise reset the admin's connection in progress.
+  if (!isFromAdmin(req)) {
+    throw new errors.NoPermissionError({ message: tpl(messages.notFromAdmin) });
+  }
   if (isBetterAuth) {
     return (_prop, val) => auth.stripeConnectState.set(frame.options.context.user, val);
   }

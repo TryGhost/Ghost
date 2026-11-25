@@ -146,6 +146,7 @@ export function PostMetricsCells({
                       className="min-w-16"
                       title={column.label}
                       data-ignore-select
+                      data-row-secondary
                     >
                       {content}
                     </span>

@@ -9,6 +9,7 @@ const messages = {
 };
 
 const { TABLES_ALLOWLIST, SETTING_KEYS_BLOCKLIST } = require('./table-lists');
+const { withSegmentsAsSavedViews } = require('./saved-member-views');
 
 const exportTable = function exportTable(tableName, options) {
   if (
@@ -59,6 +60,15 @@ const doExport = async function doExport(options) {
         exportData.data[name] = tableData[i];
       }
     });
+
+    // Older versions import segments from the saved views setting, so the export holds them
+    // there as well as in their own table.
+    if (exportData.data.settings && exportData.data.segments) {
+      exportData.data.settings = withSegmentsAsSavedViews(
+        exportData.data.settings,
+        exportData.data.segments,
+      );
+    }
 
     return exportData;
   } catch (err) {

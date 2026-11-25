@@ -1116,7 +1116,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.equal(deletes.length, 1);
     });
 
-    it('leaves a retained newsletter send to the newsletter boot scan', async function () {
+    it('hands over again a newsletter send a stopped process left', async function () {
       await knex(TABLE).insert({
         id: newId(),
         envelope: JSON.stringify(envelopeFor(SendEmailJob.type, { emailId: 'e1' })),
@@ -1131,10 +1131,9 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       });
 
       await service.start();
-      await delay(TIMINGS.pollIntervalMs * 5);
 
-      assert.equal(await countRows(), 0, 'the row is dropped at boot');
-      assert.equal(sent.length, 0, 'and the send is not handed over again');
+      assert.ok(await waitFor(() => sent.length === 1), 'the send runs again');
+      assert.equal(sent[0].emailId, 'e1');
     });
 
     it('leaves a row whose job type has no handler in this process for another one', async function () {

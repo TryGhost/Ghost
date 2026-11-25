@@ -6,6 +6,7 @@ import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {EmailCard} from '../components/ui/cards/EmailCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}) {
@@ -24,6 +25,7 @@ export function EmailNodeComponent({nodeKey, htmlEditor, htmlEditorInitialState}
     React.useEffect(() => {
         htmlEditor.setEditable(isEditing);
     }, [isEditing, htmlEditor]);
+    useEditModeAfterReadOnly(isEditing, htmlEditor);
 
     return (
         <>

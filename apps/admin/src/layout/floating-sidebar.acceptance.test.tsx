@@ -354,7 +354,7 @@ describe('Floating sidebar (admin7Design)', () => {
     await expect.poll(sidebarScreen.floatingState).toBe('closed');
   });
 
-  it('lists Ghost(Pro) with Settings and moves Help to the user menu', async () => {
+  it('lists Ghost(Pro) with Settings and leaves Help to the top bar', async () => {
     fakeTags([]);
     const config = configResponse({ labs: { admin7Design: true } });
     config.config.hostSettings = { billing: { enabled: true, url: 'https://billing.example.com' } };
@@ -369,7 +369,8 @@ describe('Floating sidebar (admin7Design)', () => {
     await expect.element(sidebarScreen.navLink('Help')).not.toBeInTheDocument();
 
     await sidebarScreen.userMenuTrigger().click();
-    await expect.element(sidebarScreen.helpMenuItem()).toBeVisible();
+    await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+    await expect.element(sidebarScreen.helpMenuItem()).not.toBeInTheDocument();
   });
 
   it('shows Settings navigation in the same sidebar, pinned without saving the mode', async () => {

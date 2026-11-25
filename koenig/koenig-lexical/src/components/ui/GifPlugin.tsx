@@ -4,6 +4,7 @@ import React from 'react';
 import {DELETE_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
 import {INSERT_FROM_GIF_COMMAND} from '../../plugins/KoenigSelectorPlugin.jsx';
 import {getGifProviderConfig, useGif} from '../../utils/services/gif.js';
+import {useIsDocumentEditable} from '../../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const GifPlugin = ({nodeKey}) => {
@@ -11,6 +12,7 @@ const GifPlugin = ({nodeKey}) => {
     const providerConfig = getGifProviderConfig(cardConfig);
     const gifHook = useGif({config: providerConfig});
     const [editor] = useLexicalComposerContext();
+    const isEditable = useIsDocumentEditable();
 
     React.useEffect(() => {
         const handleKeyDown = (e) => {
@@ -36,6 +38,11 @@ const GifPlugin = ({nodeKey}) => {
     const insertImageToNode = async (image) => {
         editor.dispatchCommand(INSERT_FROM_GIF_COMMAND, image);
     };
+
+    // closing the selector removes its card and picking a gif fills it
+    if (!isEditable) {
+        return null;
+    }
 
     return (
         <GifSelector

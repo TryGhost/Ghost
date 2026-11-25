@@ -8,10 +8,13 @@ import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {sanitizeHtml} from '../utils/sanitize-html';
+import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
+import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, backgroundColor, calloutEmoji}) {
     const [editor] = useLexicalComposerContext();
+    const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
 
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
@@ -70,6 +73,7 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
     React.useEffect(() => {
         textEditor.setEditable(isEditing);
     }, [isEditing, textEditor]);
+    useEditModeAfterReadOnly(isEditing, textEditor);
 
     return (
         <>
@@ -84,10 +88,12 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
                 sanitizeHtml={sanitizeHtml}
                 setShowEmojiPicker={setShowEmojiPicker}
                 showEmojiPicker={showEmojiPicker}
+                showVisibilitySettings={showVisibilitySettings}
                 textEditor={textEditor}
                 textEditorInitialState={textEditorInitialState}
                 toggleEmoji={toggleEmoji}
                 toggleEmojiPicker={toggleEmojiPicker}
+                visibilitySettings={visibilitySettings}
             />
             <ActionToolbar
                 data-kg-card-toolbar="callout"

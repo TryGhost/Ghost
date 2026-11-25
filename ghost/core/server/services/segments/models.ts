@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { maxBytes } from '../../lib/db-types/text';
 
 /** What identifies a segment in the API. Callers treat it as opaque. */
 export const SegmentId = z.string().brand('SegmentId');
@@ -18,6 +19,9 @@ export const SegmentName = z
   .brand('SegmentName');
 export type SegmentName = z.infer<typeof SegmentName>;
 
+/** The most bytes a segment's filter can have, which is what the table's text column holds. */
+export const MAX_FILTER_BYTES = 65535;
+
 /**
  * The NQL filter that selects a segment's members. It isn't checked against the members'
  * fields, so any filter Admin can save is accepted.
@@ -25,6 +29,9 @@ export type SegmentName = z.infer<typeof SegmentName>;
 export const SegmentFilter = z
   .string({ error: 'Filter must be a string' })
   .min(1, { error: 'Filter cannot be empty' })
+  .refine(maxBytes(MAX_FILTER_BYTES), {
+    error: `Filter cannot be longer than ${MAX_FILTER_BYTES} bytes`,
+  })
   .brand('SegmentFilter');
 export type SegmentFilter = z.infer<typeof SegmentFilter>;
 

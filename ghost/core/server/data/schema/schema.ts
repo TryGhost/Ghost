@@ -8,6 +8,7 @@
  * Text = length 65535 (64 KiB)
  * Long text = length 1,000,000,000
  */
+import { sortableBy } from './lib/sortable';
 import type { TableDefinition } from './types';
 
 const schema = {
@@ -765,7 +766,7 @@ const schema = {
     commenting: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    '@@INDEXES@@': [['email_disabled'], ['created_at', 'id']],
+    '@@INDEXES@@': [['email_disabled'], ['created_at', 'id'], ['status', 'email_disabled']],
   },
   // NOTE: this is the tiers table
   products: {
@@ -1181,6 +1182,19 @@ const schema = {
       cascadeDelete: true,
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+  },
+  // Named filters over members, which Admin shows as saved member views.
+  segments: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    // Unique as the database's collation compares names, so the database decides which
+    // names clash.
+    name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // An NQL filter. Not validated against the members' fields.
+    filter: { type: 'text', maxlength: 65535, nullable: false },
+    // Segments are listed in the order they were added.
+    ...sortableBy({ tieBreak: ['created_at'] }),
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
   },
   members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -1879,7 +1893,10 @@ const schema = {
       references: 'newsletters.id',
       cascadeDelete: true,
     },
-    '@@INDEXES@@': [['newsletter_id', 'member_id']],
+    '@@INDEXES@@': [
+      ['newsletter_id', 'member_id'],
+      ['member_id', 'newsletter_id'],
+    ],
   },
   comments: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2846,8 +2863,9 @@ const schema = {
     },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
-    // What differs from the manifest approved when the row was added, as JSON, which the history
-    // shows. Defined by services/app-installations/schema.ts.
+    // What differs from the manifest approved when the row was added, as JSON: field changes
+    // by path and scope changes by scope, which the history shows. An install lists what it
+    // grants. Defined by services/app-installations/schema.ts.
     changes: { type: 'text', maxlength: 65535, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
   },

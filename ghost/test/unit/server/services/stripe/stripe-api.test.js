@@ -674,6 +674,49 @@ describe('StripeAPI', function () {
     });
   });
 
+  describe('updateSubscriptionItemPrice', function () {
+    beforeEach(function () {
+      mockStripe = {
+        subscriptions: {
+          update: sinon.stub().resolves({ id: 'sub_123' }),
+        },
+      };
+      sinon.stub(stripe, 'Stripe').returns(mockStripe);
+      api.configure({
+        secretKey: '',
+      });
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('reactivates a subscription that is set to cancel at period end', async function () {
+      await api.updateSubscriptionItemPrice('sub_123', 'si_123', 'price_new', {
+        cancellationReason: 'Changed plan',
+      });
+
+      sinon.assert.calledOnceWithExactly(mockStripe.subscriptions.update, 'sub_123', {
+        proration_behavior: 'always_invoice',
+        items: [{ id: 'si_123', price: 'price_new' }],
+        cancel_at_period_end: false,
+        metadata: { cancellation_reason: 'Changed plan' },
+      });
+    });
+
+    it('leaves a scheduled cancellation and its reason unchanged when preserveCancellation is set', async function () {
+      await api.updateSubscriptionItemPrice('sub_123', 'si_123', 'price_new', {
+        prorationBehavior: 'none',
+        preserveCancellation: true,
+      });
+
+      sinon.assert.calledOnceWithExactly(mockStripe.subscriptions.update, 'sub_123', {
+        proration_behavior: 'none',
+        items: [{ id: 'si_123', price: 'price_new' }],
+      });
+    });
+  });
+
   describe('createCheckoutSession automatic tax flag', function () {
     beforeEach(function () {
       mockStripe = {

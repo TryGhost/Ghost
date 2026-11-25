@@ -36,6 +36,7 @@ function manifest(overrides: Record<string, unknown> = {}): Record<string, unkno
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    scopes: [],
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
     development: false,
@@ -741,6 +742,36 @@ describe('App installations Admin API', function () {
       const row = await installationRow(installed.id);
       assert.equal(row.pending_manifest_id, null);
       assert.equal(row.revision, 2);
+    });
+
+    it('reviews and records scope changes by meaning, in the preview and the history', async function () {
+      const installed = await install({ scopes: ['post:read'] });
+      const widened = manifest({ scopes: ['post:edit', 'post:read'] });
+      serve(widened);
+
+      const reviewed = await preview();
+
+      const added = [{ kind: 'scope', scope: 'post:edit', change: 'added' }];
+      assert.deepEqual(reviewed.installation.changes, added);
+
+      serve(widened);
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes]),
+        [
+          ['changes_approved', added],
+          ['installed', [{ kind: 'scope', scope: 'post:read', change: 'added' }]],
+        ],
+      );
     });
 
     it('records what each manifest version changed in the history', async function () {
