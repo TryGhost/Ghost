@@ -322,13 +322,14 @@ describe('BookshelfPostRelationsResolver', function () {
       User: userModels(),
       Tag: tagModels(findTag, addTag),
     });
+    const options = { importing: true, transacting: {} };
 
     const resolved = await resolver.resolve(
       data,
       {
         tagNames: 'Exact Name,explicit-slug,Needs Normalizing,Missing Tag,Exact Name',
       },
-      { importing: true },
+      options,
     );
 
     assert.deepEqual(resolved.data.tags, [
@@ -353,7 +354,10 @@ describe('BookshelfPostRelationsResolver', function () {
         { name: 'Exact Name' },
       ],
     );
-    sinon.assert.calledOnceWithExactly(addTag, { name: 'Missing Tag' }, { importing: true });
+    for (const call of findTag.getCalls()) {
+      assert.deepEqual(call.args[1], { ...options, columns: ['id'] });
+    }
+    sinon.assert.calledOnceWithExactly(addTag, { name: 'Missing Tag' }, options);
   });
 
   it('reuses a tag created for duplicate inputs while preserving source order', async function () {
@@ -400,6 +404,7 @@ describe('BookshelfPostRelationsResolver', function () {
         {
           ...options,
           forUpdate: true,
+          columns: ['id'],
         },
       );
     });

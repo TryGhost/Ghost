@@ -173,6 +173,7 @@ export class BookshelfPostRelationsResolver implements PostRelationsResolver {
           const tag = await this._models.Tag.findOne(lookup, {
             ...options,
             ...lookupOptions,
+            columns: ['id'],
           });
           if (tag) {
             return tag;

@@ -15,6 +15,7 @@ const path = require('path');
 const nock = require('nock');
 const papaparse = require('papaparse');
 const models = require('../../../core/server/models');
+const knex = require('../../../core/server/data/db').knex;
 const mediaInlinerService = require('../../../core/server/services/media-inliner').default;
 const {
   PostMediaInliner,
@@ -1434,8 +1435,36 @@ describe('Posts Importer API', function () {
       contentType: 'text/csv',
     });
 
-    await agent.post('posts/upload/').body(form).expectStatus(202);
-    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+    const tagLookups = [];
+    const references = new Set([
+      'CSV exact relation',
+      'csv-explicit-relation',
+      'CSV normalized relation',
+      'csv-normalized-relation',
+    ]);
+    const captureTagLookup = (response, query) => {
+      if (
+        /^select .* from `tags`/i.test(query.sql) &&
+        query.bindings.some((value) => references.has(value))
+      ) {
+        tagLookups.push({ sql: query.sql, response });
+      }
+    };
+    knex.on('query-response', captureTagLookup);
+    try {
+      await agent.post('posts/upload/').body(form).expectStatus(202);
+      await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+    } finally {
+      knex.removeListener('query-response', captureTagLookup);
+    }
+
+    assert.ok(tagLookups.length > 0);
+    for (const { sql, response } of tagLookups) {
+      assert.match(sql, /^select (?:`tags`\.)?`id` from `tags`/);
+      for (const row of response) {
+        assert.deepEqual(Object.keys(row), ['id'], 'CSV tag lookups fetch only IDs');
+      }
+    }
 
     const post = await models.Post.findOne(
       { title: 'CSV existing relations', status: 'all' },

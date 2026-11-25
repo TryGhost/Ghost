@@ -207,7 +207,7 @@ describe('BookshelfPostsRepository', function () {
     sinon.assert.calledWithExactly(
       h.findTag,
       { name: 'Existing Tag' },
-      { ...options, transacting: h.transacting },
+      { ...options, transacting: h.transacting, columns: ['id'] },
     );
   });
 
