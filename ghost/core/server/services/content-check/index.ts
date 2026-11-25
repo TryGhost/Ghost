@@ -1,10 +1,10 @@
 import { defineService } from '../../../kernel/define-service';
-import { ContentVerificationService } from './content-verification-service';
+import { ContentCheckService } from './content-check-service';
 
 // Boot must initialize this root after config and the shared event bus are ready.
-export default defineService('Content Verification', {
+export default defineService('Content Check', {
   create: () =>
-    new ContentVerificationService({
+    new ContentCheckService({
       config: require('../../../shared/config'),
       logging: require('@tryghost/logging'),
       request: require('@tryghost/request'),

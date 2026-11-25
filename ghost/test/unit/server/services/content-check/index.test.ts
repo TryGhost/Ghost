@@ -2,20 +2,20 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import type { EventEmitter } from 'node:events';
 import sinon from 'sinon';
-import type contentVerificationRoot from '../../../../../core/server/services/content-verification';
-import type { ContentVerificationServiceDeps } from '../../../../../core/server/services/content-verification/content-verification-service';
+import type contentCheckRoot from '../../../../../core/server/services/content-check';
+import type { ContentCheckServiceDeps } from '../../../../../core/server/services/content-check/content-check-service';
 
 const events: EventEmitter = require('../../../../../core/server/lib/common/events');
-const config: ContentVerificationServiceDeps['config'] = require('../../../../../core/shared/config');
-const logging: ContentVerificationServiceDeps['logging'] = require('@tryghost/logging');
-const urlUtils: ContentVerificationServiceDeps['urlUtils'] =
+const config: ContentCheckServiceDeps['config'] = require('../../../../../core/shared/config');
+const logging: ContentCheckServiceDeps['logging'] = require('@tryghost/logging');
+const urlUtils: ContentCheckServiceDeps['urlUtils'] =
   require('../../../../../core/shared/url-utils').default;
 
-const { ContentVerificationService } =
-  require('../../../../../core/server/services/content-verification/content-verification-service') as typeof import('../../../../../core/server/services/content-verification/content-verification-service');
+const { ContentCheckService } =
+  require('../../../../../core/server/services/content-check/content-check-service') as typeof import('../../../../../core/server/services/content-check/content-check-service');
 const { IncorrectUsageError } = require('@tryghost/errors');
 
-const ROOT_PATH = require.resolve('../../../../../core/server/services/content-verification');
+const ROOT_PATH = require.resolve('../../../../../core/server/services/content-check');
 const EVENT_NAME = 'settings.title.edited';
 const WEBHOOK_ORIGIN = 'https://jev-classifier.example';
 const WEBHOOK_URL = `${WEBHOOK_ORIGIN}/v1/ghost/events`;
@@ -23,6 +23,7 @@ const WEBHOOK_SECRET = 'not-a-live-secret';
 const SITE_ID = '123456';
 const SITE_URL = 'https://example.ghost.io/';
 const SITE_CREATED_AT = '2026-09-01T10:00:00.000Z';
+const FROZEN_NOW = '2026-11-01T12:00:00.000Z';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function titleModel(value: unknown = 'Your bank paid 587 USD') {
@@ -38,10 +39,11 @@ function titleModelWith(value: unknown) {
   };
 }
 
-describe('Content Verification service root', function () {
+describe('Content Check service root', function () {
   let originalModule: NodeJS.Module | undefined;
-  let root: typeof contentVerificationRoot | undefined;
+  let root: typeof contentCheckRoot | undefined;
   let sandbox: sinon.SinonSandbox;
+  let clock: sinon.SinonFakeTimers;
   let getConfig: sinon.SinonStub<[string], unknown>;
   let getSiteUrl: sinon.SinonStub<[], string>;
   let loggedInfo: sinon.SinonStub<unknown[], void>;
@@ -54,12 +56,17 @@ describe('Content Verification service root', function () {
     originalListeners = events.listeners(EVENT_NAME);
     delete require.cache[ROOT_PATH];
     sandbox = sinon.createSandbox();
+    // Freeze Date so SITE_CREATED_AT stays under the default 365-day gate.
+    clock = sandbox.useFakeTimers({
+      now: new Date(FROZEN_NOW).getTime(),
+      toFake: ['Date'],
+    });
 
     getConfig = sandbox.stub(config, 'get').callThrough();
-    getConfig.withArgs('hostSettings:contentVerification:webhookUrl').returns(WEBHOOK_URL);
-    getConfig.withArgs('hostSettings:contentVerification:webhookSecret').returns(WEBHOOK_SECRET);
-    getConfig.withArgs('hostSettings:contentVerification:siteCreatedAt').returns(SITE_CREATED_AT);
-    getConfig.withArgs('hostSettings:contentVerification:maxSiteAgeDays').returns(365);
+    getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns(WEBHOOK_URL);
+    getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns(WEBHOOK_SECRET);
+    getConfig.withArgs('hostSettings:contentCheck:siteCreatedAt').returns(SITE_CREATED_AT);
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(365);
     getConfig.withArgs('hostSettings:siteId').returns(SITE_ID);
 
     getSiteUrl = sandbox.stub(urlUtils, 'getSiteUrl').returns(SITE_URL);
@@ -87,14 +94,14 @@ describe('Content Verification service root', function () {
   });
 
   async function initRoot() {
-    root = require(ROOT_PATH).default as typeof contentVerificationRoot;
+    root = require(ROOT_PATH).default as typeof contentCheckRoot;
     await root.init();
     return root.service!;
   }
 
   it('subscribes only at init and delivers once after repeated init', async function () {
     const subscribe = sandbox.spy(events, 'on');
-    root = require(ROOT_PATH).default as typeof contentVerificationRoot;
+    root = require(ROOT_PATH).default as typeof contentCheckRoot;
     assert.throws(() => root!.service, IncorrectUsageError);
     sinon.assert.notCalled(subscribe);
 
@@ -129,7 +136,7 @@ describe('Content Verification service root', function () {
       }
       return events;
     });
-    root = require(ROOT_PATH).default as typeof contentVerificationRoot;
+    root = require(ROOT_PATH).default as typeof contentCheckRoot;
 
     await assert.rejects(root.init(), (error) => error === failure);
     assert.throws(() => root!.service, IncorrectUsageError);
@@ -205,13 +212,13 @@ describe('Content Verification service root', function () {
     assert.deepEqual(requestOptions.retry, { limit: 2, methods: ['POST'] });
     sinon.assert.calledOnceWithExactly(
       loggedInfo,
-      `Triggering content verification webhook to "${WEBHOOK_ORIGIN}"`,
+      `Triggering content check webhook to "${WEBHOOK_ORIGIN}"`,
     );
     sinon.assert.calledOnce(getSiteUrl);
   });
 
   it('does not request when config is incomplete', async function () {
-    getConfig.withArgs('hostSettings:contentVerification:webhookUrl').returns('');
+    getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns('');
     const service = await initRoot();
     const request = sandbox.stub(service, 'request').resolves(null);
     const send = sandbox.spy(service, 'sendTitleChanged');
@@ -221,8 +228,8 @@ describe('Content Verification service root', function () {
     sinon.assert.notCalled(request);
     sinon.assert.notCalled(loggedWarning);
 
-    getConfig.withArgs('hostSettings:contentVerification:webhookUrl').returns(WEBHOOK_URL);
-    getConfig.withArgs('hostSettings:contentVerification:webhookSecret').returns('');
+    getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns(WEBHOOK_URL);
+    getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns('');
     events.emit(EVENT_NAME, titleModel());
     await send.lastCall.returnValue;
     sinon.assert.notCalled(request);
@@ -232,14 +239,14 @@ describe('Content Verification service root', function () {
   it('skips empty, null, and whitespace-only titles', async function () {
     const request = sinon.stub().resolves(null);
     const info = sinon.stub();
-    const service = new ContentVerificationService({
+    const service = new ContentCheckService({
       config: {
         get: (key: string) => {
           const values: Record<string, unknown> = {
-            'hostSettings:contentVerification:webhookUrl': WEBHOOK_URL,
-            'hostSettings:contentVerification:webhookSecret': WEBHOOK_SECRET,
-            'hostSettings:contentVerification:siteCreatedAt': SITE_CREATED_AT,
-            'hostSettings:contentVerification:maxSiteAgeDays': 365,
+            'hostSettings:contentCheck:webhookUrl': WEBHOOK_URL,
+            'hostSettings:contentCheck:webhookSecret': WEBHOOK_SECRET,
+            'hostSettings:contentCheck:siteCreatedAt': SITE_CREATED_AT,
+            'hostSettings:contentCheck:maxSiteAgeDays': 365,
             'hostSettings:siteId': SITE_ID,
           };
           return values[key];
@@ -271,13 +278,9 @@ describe('Content Verification service root', function () {
   });
 
   it('sends below the age cutoff and skips at or above it without restart', async function () {
-    const clock = sandbox.useFakeTimers({
-      now: new Date('2026-11-01T12:00:00.000Z').getTime(),
-      toFake: ['Date'],
-    });
-    getConfig.withArgs('hostSettings:contentVerification:maxSiteAgeDays').returns(10);
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(10);
     getConfig
-      .withArgs('hostSettings:contentVerification:siteCreatedAt')
+      .withArgs('hostSettings:contentCheck:siteCreatedAt')
       .returns(new Date(Date.now() - 9 * DAY_MS).toISOString());
     const service = await initRoot();
     const request = sandbox.stub(service, 'request').resolves(null);
@@ -299,13 +302,9 @@ describe('Content Verification service root', function () {
   });
 
   it('uses a default max age of 365 days when the config key is missing', async function () {
-    const clock = sandbox.useFakeTimers({
-      now: new Date('2026-11-01T12:00:00.000Z').getTime(),
-      toFake: ['Date'],
-    });
-    getConfig.withArgs('hostSettings:contentVerification:maxSiteAgeDays').returns(undefined);
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(undefined);
     getConfig
-      .withArgs('hostSettings:contentVerification:siteCreatedAt')
+      .withArgs('hostSettings:contentCheck:siteCreatedAt')
       .returns(new Date(Date.now() - 364 * DAY_MS).toISOString());
     const service = await initRoot();
     const request = sandbox.stub(service, 'request').resolves(null);
@@ -355,7 +354,7 @@ describe('Content Verification service root', function () {
     await send.lastCall.returnValue;
     sinon.assert.calledOnceWithExactly(
       loggedError,
-      `Failed to send content verification webhook to "${WEBHOOK_ORIGIN}": HTTP 503`,
+      `Failed to send content check webhook to "${WEBHOOK_ORIGIN}": HTTP 503`,
     );
   });
 
