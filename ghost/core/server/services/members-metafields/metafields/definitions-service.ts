@@ -445,7 +445,11 @@ export class MetafieldDefinitionsService<Caller> {
 
         // An order covers the whole list, archived definitions included.
         const ordered = await this.everyDefinition(trx, namespace);
-        await this.onDefinitionUpdated(trx, context, new DefinitionsReordered(previous, ordered));
+        await this.onDefinitionUpdated(
+          trx,
+          context,
+          new DefinitionsReordered(namespace, previous, ordered),
+        );
         return ordered;
       });
     });
