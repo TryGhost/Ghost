@@ -20,3 +20,7 @@ export { default as SettingsRoute } from './settings-route';
 // Shared email helpers used by Automations and membership email settings.
 export { WELCOME_EMAIL_SLUGS } from './membership/member-emails/default-welcome-email-values';
 export { resolveWelcomeEmailSenderDetails } from './utils/welcome-email-sender-details';
+
+// Takes a Stripe Connect secure key out of the address before the router and
+// Sentry start.
+export { captureDeliveredSecureKey } from './membership/stripe/delivered-secure-key';

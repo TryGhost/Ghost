@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
 const querystring = require('querystring');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const {
   agentProvider,
   mockManager,
@@ -1067,12 +1069,14 @@ describe('Create Stripe Checkout Session', function () {
 
   describe('A checkout that can’t start', function () {
     let paidTierId;
+    let freeTierId;
 
     beforeAll(async function () {
       const {
         body: { tiers },
       } = await adminAgent.get('/tiers/');
       paidTierId = tiers.find((tier) => tier.type === 'paid').id;
+      freeTierId = tiers.find((tier) => tier.type === 'free').id;
     });
 
     beforeEach(function () {
@@ -1092,11 +1096,59 @@ describe('Create Stripe Checkout Session', function () {
       assert.equal(error.message, 'This tier does not exist.');
     });
 
-    it('answers a malformed tier id with a server error, as the tiers read throws on one', async function () {
-      await membersAgent
+    it('refuses the free tier, leaving Stripe and the site’s Stripe products untouched', async function () {
+      const stripeBefore = structuredClone({
+        products: stripeMocker.products,
+        prices: stripeMocker.prices,
+        checkoutSessions: stripeMocker.checkoutSessions,
+      });
+
+      const error = await failedCheckout({ tierId: freeTierId });
+
+      assert.equal(error.message, "This tier is free, so it can't be bought.");
+      assert.deepEqual(
+        {
+          products: stripeMocker.products,
+          prices: stripeMocker.prices,
+          checkoutSessions: stripeMocker.checkoutSessions,
+        },
+        stripeBefore,
+      );
+      assert.equal(await models.StripeProduct.findOne({ product_id: freeTierId }), null);
+    });
+
+    it.each([
+      ['a word', 'free'],
+      ['an id too short', '0123456789abcdef'],
+      ['a 12-character id', '0123456789ab'],
+      ['an id that isn’t hex', 'zzzzzzzzzzzzzzzzzzzzzzzz'],
+      ['a number', 123],
+    ])(
+      'answers that a tier named by %s doesn’t exist, logging the id it was sent',
+      async function (_name, tierId) {
+        sinon.stub(logging, 'error');
+
+        const error = await failedCheckout({ tierId });
+
+        assert.equal(error.message, 'This tier does not exist.');
+        sinon.assert.calledWithMatch(logging.error, {
+          event: { name: 'stripe_checkout.session.tier_not_found' },
+          tier_id: tierId,
+        });
+      },
+    );
+
+    it('refuses on a site that hasn’t connected Stripe, as gift and donation checkouts do', async function () {
+      mockManager.mockSetting('stripe_connect_publishable_key', null);
+      mockManager.mockSetting('stripe_connect_secret_key', null);
+
+      const { body } = await membersAgent
         .post('/api/create-stripe-checkout-session/')
-        .body({ tierId: 'not-an-id', cadence: 'month' })
-        .expectStatus(500);
+        .body({ tierId: paidTierId, cadence: 'month' })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].message, 'This site is not accepting payments at the moment.');
+      assert.deepEqual(stripeMocker.checkoutSessions, []);
     });
 
     it('answers that it couldn’t start a checkout Stripe failed', async function () {

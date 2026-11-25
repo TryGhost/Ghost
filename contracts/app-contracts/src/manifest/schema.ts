@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { AppScopesSchema, OPTIONAL_SCOPES_REFUSED } from './scopes-schema.ts';
 import { iconField } from './icon.ts';
 import { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 import { publicKeyField } from './keys.ts';
@@ -51,35 +52,51 @@ const parsedFields =
 function manifestShape(url: UrlField, text: typeof plainText, contact: UrlField) {
   return (
     z
-      .strictObject({
-        id: z.custom<string>(isValidAppId, {
-          error: `Expected a lowercase reverse-domain ID such as com.example.app, at most ${APP_ID_MAX_LENGTH} characters`,
-        }),
-        name: text(NAME_MAX_LENGTH),
-        description: text(DESCRIPTION_MAX_LENGTH),
-        author: z.strictObject(
-          {
-            name: text(AUTHOR_NAME_MAX_LENGTH),
-            // Where publishers reach the developer: a web page, which may be on the publisher's
-            // own site, or a mailto: link. Only ever linked to.
-            url: contact(),
+      .strictObject(
+        {
+          id: z.custom<string>(isValidAppId, {
+            error: `Expected a lowercase reverse-domain ID such as com.example.app, at most ${APP_ID_MAX_LENGTH} characters`,
+          }),
+          name: text(NAME_MAX_LENGTH),
+          description: text(DESCRIPTION_MAX_LENGTH),
+          author: z.strictObject(
+            {
+              name: text(AUTHOR_NAME_MAX_LENGTH),
+              // Where publishers reach the developer: a web page, which may be on the publisher's
+              // own site, or a mailto: link. Only ever linked to.
+              url: contact(),
+            },
+            'Expected an author with a name and a url',
+          ),
+          accent_color: z
+            .string('Expected a hex colour such as #ff5500')
+            .regex(HEX_COLOR, 'Expected a hex colour such as #ff5500')
+            .toLowerCase(),
+          icon: iconField(url),
+          surfaces: surfacesField(url),
+          // The scopes the app needs, all of which the publisher approves at install.
+          scopes: AppScopesSchema,
+          // Where the signed manifest is served from: the app's one origin, which every path
+          // in it resolves against. Ghost fetches it server-side and never loads it as a page.
+          manifest_url: url(true).refine((address) => !hasFragment(address), FRAGMENT_PROBLEM),
+          identity_key: publicKeyField,
+          backend_key: publicKeyField,
+          // Lets Admin label a development build. Production sites may run one to test it.
+          development: z.boolean('Expected true or false'),
+        },
+        {
+          // `optional_scopes` is refused like any field Ghost doesn't know, with its own reason.
+          error: (issue) => {
+            if (issue.code !== 'unrecognized_keys' || !issue.keys.includes('optional_scopes')) {
+              return undefined;
+            }
+            const others = issue.keys.filter((key) => key !== 'optional_scopes');
+            return others.length === 0
+              ? OPTIONAL_SCOPES_REFUSED
+              : `${OPTIONAL_SCOPES_REFUSED}. Unrecognized key${others.length > 1 ? 's' : ''}: ${others.map((key) => JSON.stringify(key)).join(', ')}`;
           },
-          'Expected an author with a name and a url',
-        ),
-        accent_color: z
-          .string('Expected a hex colour such as #ff5500')
-          .regex(HEX_COLOR, 'Expected a hex colour such as #ff5500')
-          .toLowerCase(),
-        icon: iconField(url),
-        surfaces: surfacesField(url),
-        // Where the signed manifest is served from: the app's one origin, which every path
-        // in it resolves against. Ghost fetches it server-side and never loads it as a page.
-        manifest_url: url(true).refine((address) => !hasFragment(address), FRAGMENT_PROBLEM),
-        identity_key: publicKeyField,
-        backend_key: publicKeyField,
-        // Lets Admin label a development build. Production sites may run one to test it.
-        development: z.boolean('Expected true or false'),
-      })
+        },
+      )
       // A backend holds its key online. If it also signed manifests, whoever took over the
       // backend could publish any manifest as the app.
       .refine((manifest) => manifest.identity_key.x !== manifest.backend_key.x, {

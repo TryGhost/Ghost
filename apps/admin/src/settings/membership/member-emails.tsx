@@ -7,10 +7,10 @@ import WelcomeEmailModal, {
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Switch,
 } from '@tryghost/shade/components';
 import { Button } from '@tryghost/shade/components';
@@ -59,8 +59,8 @@ const EmailPreviewRow: React.FC<{
   onToggle,
 }) => {
   return (
-    <ActionListItem data-testid={`${emailType}-welcome-email-row`}>
-      <ActionListItemContent asChild>
+    <ListItem data-testid={`${emailType}-welcome-email-row`}>
+      <ListItemContent asChild>
         <button
           className="flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           data-testid={`${emailType}-welcome-email-preview`}
@@ -83,8 +83,8 @@ const EmailPreviewRow: React.FC<{
             </span>
           </span>
         </button>
-      </ActionListItemContent>
-      <ActionListItemActions>
+      </ListItemContent>
+      <ListItemActions>
         <div
           className={`flex items-center gap-7 ${isBusy && !isInitialLoading ? 'pointer-events-none' : ''}`}
         >
@@ -108,8 +108,8 @@ const EmailPreviewRow: React.FC<{
             Edit
           </Button>
         </div>
-      </ActionListItemActions>
-    </ActionListItem>
+      </ListItemActions>
+    </ListItem>
   );
 };
 
@@ -141,7 +141,7 @@ const MemberEmailsTable: React.FC<{
   onPaidToggle,
 }) => {
   return (
-    <ActionList className="border-t border-border">
+    <List className="border-t border-border">
       <EmailPreviewRow
         automatedEmail={freeEmailForDisplay}
         emailType="free"
@@ -166,7 +166,7 @@ const MemberEmailsTable: React.FC<{
           onToggle={onPaidToggle}
         />
       )}
-    </ActionList>
+    </List>
   );
 };
 

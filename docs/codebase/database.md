@@ -120,6 +120,88 @@ schema definition, migration, exporter table lists, and integrity tests in sync.
 For initial data and settings defaults, see the
 [schema and default data guide](../../ghost/core/server/data/schema/README.md).
 
+## Sortable collections
+
+A sortable collection is a table's rows kept in an order, such as a list a
+publisher arranges. A table becomes one in `schema.ts` by spreading
+`sortableBy` among its columns:
+
+```ts
+segments: {
+  id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+  name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+  ...sortableBy({ tieBreak: ['created_at'] }),
+  created_at: { type: 'dateTime', nullable: false },
+},
+```
+
+`sortableBy` gives the table its position column, `sort_order`, defined as
+every ordered table in Ghost defines it, and the `@@SORTABLE@@` declaration
+the primitive reads. A table has one collection.
+
+- `within` names the column that scopes the order to a parent, such as
+  `post_id` for a post's tags. Leave it out when the whole table is one
+  collection.
+- `tieBreak` lists the columns that order rows with the same position. The id
+  always comes last, so the order is the same on every read.
+
+`sortable(table)` in `server/lib/sortable.ts` gives the collection's three
+operations. Each takes a connection or transaction, and the collection's
+parent as `{[within]: id}`, or `{}` without one. The compiler checks the table
+and the scope of every call:
+
+```ts
+const collection = sortable('<table>');
+
+await collection.inOrder(db, scope); // the rows in order
+await collection.insert(db, scope, row); // add a row at the end
+await collection.reorder(db, scope, orderedIds); // replace the whole order
+```
+
+A position only says where a row comes in the order. Code outside the
+primitive doesn't read or write the position column: rows are inserted
+through `insert`, which sets the position, and for a scoped collection the
+parent column. The column has no unique constraint: two rows can hold the
+same position, and the tie-break orders them. `reorder` takes the id of every
+row exactly once and rejects anything else, so an order made from an
+out-of-date list isn't half applied.
+
+The compiler enforces this for a table whose rows a domain declares in Knex's
+`Tables`. Declare the insert type as `SortableInsert<Row>`, and leave the
+position column out of the row, insert and update types:
+
+```ts
+declare module 'knex/types/tables' {
+  interface Tables {
+    segments: Knex.CompositeTableType<SegmentRow, SortableInsert<NewSegmentRow>, SegmentUpdate>;
+  }
+}
+```
+
+`knex('segments').insert()` then doesn't compile, the collection's `insert`
+checks the row against `NewSegmentRow`, and an update can't name `sort_order`.
+
+The three operations take no lock that keeps other writers out of the
+collection. Where the order under writes at the same time matters, take a lock
+that every writer of the collection takes before calling them, and before the
+transaction reads anything else. For a collection scoped to a parent, that is
+the parent's row lock, as [row locking](#row-locking) requires. Without one,
+rows inserted at the same time can share a position, or get positions out of
+the order they were added, and a reorder can deadlock with another write to
+the parent's rows, such as a delete.
+
+Don't index the position column. A reorder locks rows in id order so that two
+reorders can't deadlock, and MySQL would read through an index that contains
+the position and lock them in position order. The schema's unit test rejects
+one.
+
+`sortableBy` changes no SQL in an existing database. A new table gets the
+column when its migration creates the table from the schema; an existing
+table needs a migration that adds it. The collections Ghost already orders
+(newsletters, a post's tags and authors, a tier's benefits, custom fields)
+have their own code and don't use the primitive yet. Each already has a
+`sort_order` column with this definition.
+
 ## Row locking
 
 Inside a transaction (`options.transacting`), `Model.edit` and

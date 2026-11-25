@@ -99,8 +99,7 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
     const save = sandbox.spy(root.service, 'save');
 
-    const result =
-      await stripe.webhookController.checkoutSessionEventService.handleEvent(donationSession());
+    const result = await stripe.checkoutSessionEventService.recordDonation(donationSession());
 
     assert.equal(result, undefined);
     sinon.assert.calledOnce(save);
@@ -139,8 +138,8 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
 
     let completed = false;
-    const handling: Promise<void> = stripe.webhookController.checkoutSessionEventService
-      .handleEvent(donationSession())
+    const handling: Promise<void> = stripe.checkoutSessionEventService
+      .recordDonation(donationSession())
       .then(() => {
         completed = true;
       });
@@ -169,7 +168,7 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
 
     await assert.rejects(
-      stripe.webhookController.checkoutSessionEventService.handleEvent(donationSession()),
+      stripe.checkoutSessionEventService.recordDonation(donationSession()),
       (error: unknown) => error === failure,
     );
 

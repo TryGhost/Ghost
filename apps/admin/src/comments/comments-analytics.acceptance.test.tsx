@@ -85,6 +85,48 @@ afterEach(async () => {
 });
 
 describe('Comments analytics', () => {
+  it.each([false, true])(
+    'keeps mobile filters editable with comment analytics enabled: %s',
+    async (commentsAnalytics) => {
+      await page.viewport(390, 844);
+      fakeComments([comment({ status: 'hidden', html: '<p>Mobile filtered comment</p>' })]);
+      fakeCommentsStats();
+      await renderAdminApp('/comments?range=7&filter=status:hidden', {
+        labs: { commentsAnalytics, admin7Mobile: true },
+      });
+
+      const trigger = page.getByRole('button', { name: 'Filters, 1 active', exact: true });
+      const chips = page.getByRole('button', { name: 'Edit active filters', exact: true });
+      await expect.element(trigger).toBeVisible();
+      await expect.element(chips).toBeVisible();
+      expect(chips.element().closest('[data-list-page="header"]')).not.toBeNull();
+      if (commentsAnalytics) {
+        await expect.element(commentsScreen.analyticsDateRange()).toBeVisible();
+      }
+
+      await trigger.click();
+      const sheet = page.getByRole('dialog', { name: 'Filters', exact: true });
+      await expect.element(sheet).toBeVisible();
+      await sheet.getByRole('button', { name: 'Add filter', exact: true }).click();
+      const date = page.getByRole('option', { name: 'Date', exact: true });
+      if (commentsAnalytics) {
+        await expect(date).toHaveCount(0);
+      } else {
+        await expect.element(date).toBeVisible();
+      }
+      await sheet.getByRole('button', { name: 'Close', exact: true }).click();
+      await expect(sheet).toHaveCount(0);
+      await page.getByRole('button', { name: 'Clear', exact: true }).click();
+      await expect(chips).toHaveCount(0);
+      await expect
+        .element(page.getByRole('button', { name: 'Filters', exact: true }))
+        .toBeVisible();
+      if (commentsAnalytics) {
+        await expect.element(commentsScreen.analyticsDateRange()).toHaveTextContent('Last 7 days');
+      }
+    },
+  );
+
   it('defaults to All time and shows totals and rankings beside the list', async () => {
     fakeComments([comment({ html: '<p>A comment</p>' })]);
     const { overviewApi } = fakeCommentsStats();

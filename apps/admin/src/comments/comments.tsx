@@ -13,7 +13,7 @@ import {
   SheetContent,
   SheetTitle,
 } from '@tryghost/shade/components';
-import { FilterBar, PageHeader, createFilter } from '@tryghost/shade/patterns';
+import { FilterBar, PageHeader, createFilter, useMobileFilters } from '@tryghost/shade/patterns';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { adminCommentIncludes, useBrowseComments } from '@tryghost/admin-x-framework/api/comments';
@@ -147,6 +147,8 @@ const CommentsPage: React.FC<{
     (analyticsEnabled && !timezoneReady) || (isFetching && !isFetchingNextPage && !isRefetching);
   const resetKey = effectiveFilter ?? '';
   const hasFilters = filters.length > 0;
+  const mobileFilters = useMobileFilters();
+  const [filterBarContainer, setFilterBarContainer] = useState<HTMLDivElement | null>(null);
   const hasSharedFilters =
     analyticsEnabled && (hasFilters || analytics.range !== STATS_RANGES.allTime.value);
 
@@ -218,7 +220,7 @@ const CommentsPage: React.FC<{
             <PageHeader.Left>
               <PageHeader.Title>Comments</PageHeader.Title>
             </PageHeader.Left>
-            {((!singleCommentId && !hasFilters) || analyticsEnabled) && (
+            {((!singleCommentId && (!hasFilters || mobileFilters)) || analyticsEnabled) && (
               <PageHeader.Actions>
                 <PageHeader.ActionGroup>
                   {showAnalytics && !wideLayout && (
@@ -234,8 +236,9 @@ const CommentsPage: React.FC<{
                       <span className="hidden sm:inline">Analytics</span>
                     </PageHeader.Action>
                   )}
-                  {!singleCommentId && !hasFilters && (
+                  {!singleCommentId && (!hasFilters || mobileFilters) && (
                     <CommentsFilters
+                      barContainer={filterBarContainer}
                       filters={filters}
                       includeDateFilter={!analyticsEnabled}
                       siteTimezone={timezone}
@@ -255,7 +258,8 @@ const CommentsPage: React.FC<{
               </PageHeader.Actions>
             )}
           </PageHeader>
-          {!singleCommentId && hasFilters && (
+          {!singleCommentId && hasFilters && mobileFilters && <div ref={setFilterBarContainer} />}
+          {!singleCommentId && hasFilters && !mobileFilters && (
             <FilterBar>
               <CommentsFilters
                 filters={filters}

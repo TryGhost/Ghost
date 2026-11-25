@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { approvedScopes } from '@tryghost/app-contracts';
 import type { StartContext, Theme } from '@tryghost/app-contracts/bridge';
 import {
   Link,
@@ -289,7 +290,13 @@ const AppFrame: React.FC<{
     createAppFrameSession({
       surfaceOrigin,
       context: () => contextRef.current,
-      fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
+      // The session is pinned to this installation's revision, so its approved scopes hold for
+      // as long as the session does.
+      fetchAdminApi: createAdminApiFetch({
+        apiRoot: new URL(apiUrl('/')),
+        approvedScopes: approvedScopes(manifest.scopes),
+        ghostVersion,
+      }),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
       // Wherever the app opens, Admin records the way back to it. The app can't set this.

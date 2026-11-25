@@ -25,6 +25,8 @@ instead. Fetch web pages with `curl -s`.
 4. Build the header's controls with
    [`shade-page-header`](../shade-page-header/SKILL.md), and lay out the body
    with [`shade-use-primitives`](../shade-use-primitives/SKILL.md).
+5. For content lists, tables, or custom rows in the body, follow
+   [Lists and tables](https://shade.ghost.org/docs/list-rows.md).
 
 ## Self-check
 

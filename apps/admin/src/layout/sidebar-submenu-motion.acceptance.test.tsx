@@ -62,6 +62,8 @@ async function renderSidebar(route: string) {
   });
   await expect.poll(sidebarScreen.floatingState).toBe('pinned');
   await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+  // Member views load after boot, and the members submenu only mounts once they arrive.
+  await expect.poll(() => document.getElementById('members-submenu')).not.toBeNull();
   return preferences;
 }
 

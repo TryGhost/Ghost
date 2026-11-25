@@ -7408,7 +7408,7 @@ services:
           - core/server/services/stripe/service.js
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/stripe-api.js
-          - core/server/services/stripe/webhook-controller.js
+          - core/server/services/stripe/webhook-controller.ts
         tests:
           - test/unit/server/services/stripe/stripe-api.test.js
           - test/unit/server/services/stripe/webhook-controller.test.js
@@ -7448,10 +7448,10 @@ services:
           are source-checked. Signed webhook HTTP tests exercise the real
           parser/controller/model graph and assert invalid-signature refusal, unknown-event
           success and selected subscription/member persistence with provider calls intercepted.
-          Donation/gift checkout HTTP suites then use StripeMocker.sendWebhook, which directly
-          invokes the real controller's handleEvent, bypassing HTTP signature parsing. They
-          prove selected persistence/mail outcomes, not all retained bindings, replacement
-          behavior or remote provider delivery.
+          Donation/gift checkout HTTP suites then use StripeMocker.sendWebhook, which signs the
+          event and calls the real controller's handle, so they cover signature verification and
+          event parsing but not the Express route. They prove selected persistence/mail outcomes,
+          not all retained bindings, replacement behavior or remote provider delivery.
         sources:
           - core/server/web/members/app.js
           - core/server/services/members/api.js
@@ -7600,7 +7600,7 @@ services:
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/webhook-manager.js
           - core/server/services/stripe/billing-portal-manager.js
-          - core/server/services/stripe/webhook-controller.js
+          - core/server/services/stripe/webhook-controller.ts
           - core/server/services/members/service.js
           - core/server/services/stripe/services/webhook/subscription-event-service.js
           - core/server/services/stripe/stripe-api.js

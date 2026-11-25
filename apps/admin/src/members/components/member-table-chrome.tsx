@@ -103,6 +103,7 @@ export const PinnedMemberHeader = ({
   return (
     <div
       className="pointer-events-none absolute inset-y-0 left-0 z-[70] overflow-visible bg-transparent [--members-sticky-fade-base:var(--background)]"
+      data-testid="members-pinned-header"
       style={columnStyle}
     >
       <Table className="w-full table-fixed border-collapse">

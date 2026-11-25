@@ -1,5 +1,6 @@
 import React from 'react';
 import type {Doc} from 'yjs';
+import type {VisibilitySetting} from '../utils/visibility';
 
 export interface FileTypeConfig {
     mimeTypes: string[];
@@ -92,6 +93,11 @@ export interface CardConfig {
     feature?: CardConfigFeature;
     post?: CardConfigPost;
     snippets?: Snippet[];
+    stripeEnabled?: boolean;
+    // 'none' hides card visibility settings
+    visibilitySettings?: VisibilitySetting;
+    // card types whose visibility the backend can honour; every card when unset
+    visibilityCardTypes?: string[];
     [key: string]: unknown;
 }
 

@@ -73,6 +73,7 @@ describe('Exporter', function () {
         'offers',
         'offer_redemptions',
         'snippets',
+        'segments',
       ]);
       const actualTables = new Set(knexMock.getCalls().map((call) => call.args[0]));
       assert.deepEqual(actualTables, expectedTables);
@@ -117,6 +118,7 @@ describe('Exporter', function () {
         'offers',
         'offer_redemptions',
         'snippets',
+        'segments',
         ...include,
       ]);
       const actualTables = new Set(knexMock.getCalls().map((call) => call.args[0]));

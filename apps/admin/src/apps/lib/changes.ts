@@ -13,7 +13,6 @@ export interface ChangeRow {
   label: string;
   before: string | null;
   after: string | null;
-  requiresApproval: boolean;
 }
 
 /** A field as the publisher reads it, with the paths Ghost reports changes under. */
@@ -31,6 +30,8 @@ const FIELDS: Field[] = [
   { field: 'accent_color', label: 'Accent color', value: (m) => m.accent_color },
   // A publisher reads the icon as one thing, named or served by the app.
   { field: 'icon', label: 'Icon', value: (m) => ('url' in m.icon ? m.icon.url : m.icon.name) },
+  // A publisher can't judge a key, only see that it's another one: the start of it says so.
+  { field: 'backend_key', label: 'Backend key', value: (m) => `${m.backend_key.x.slice(0, 8)}…` },
   // Where every later version of the app's details comes from, so a move is a change like any other.
   { field: 'manifest_url', label: 'Install link', value: (m) => m.manifest_url },
   {
@@ -41,10 +42,10 @@ const FIELDS: Field[] = [
 ];
 
 /**
- * Keys say nothing a publisher can judge. A new identity key never reaches a review, and a new
- * backend key applies without one.
+ * Left out of the list. An installation's identity key is pinned: a manifest signed with another
+ * key is refused before it reaches a review.
  */
-const UNLISTED = ['identity_key', 'backend_key'];
+const UNLISTED = ['identity_key'];
 
 const SURFACE_LABELS: Record<string, string> = {
   admin_page: 'Page in Admin',
@@ -71,9 +72,9 @@ const within = (change: FieldChange, field: string) =>
   change.path === field || change.path.startsWith(`${field}.`);
 
 /**
- * What changed between the approved manifest and the one being reviewed, one row per field
- * as the publisher reads it, with the changes that need approval first. Ghost says which
- * fields changed; the values come from the two manifests.
+ * What changed between the approved manifest and the one being reviewed, one row per field as a
+ * publisher reads it. Ghost says which fields changed; the values come from the two manifests.
+ * Every changed field is shown because approving an update applies the whole reviewed manifest.
  */
 export function describeChanges(
   approved: ManifestVersion,
@@ -83,14 +84,12 @@ export function describeChanges(
   const fields = [...FIELDS, ...surfaceFields(approved.manifest, reviewed.manifest)];
   const rows: ChangeRow[] = [];
   for (const { field, label, value } of fields) {
-    const own = changes.filter((change) => within(change, field));
-    if (own.length) {
+    if (changes.some((change) => within(change, field))) {
       rows.push({
         field,
         label,
         before: value(approved.manifest),
         after: value(reviewed.manifest),
-        requiresApproval: own.some((change) => change.requires_approval),
       });
     }
   }
@@ -112,10 +111,8 @@ export function describeChanges(
       label: top,
       before: raw(approved.manifest),
       after: raw(reviewed.manifest),
-      requiresApproval: changes.some((c) => topOf(c.path) === top && c.requires_approval),
     });
   }
 
-  // Stable: within each group, rows keep the order above.
-  return rows.sort((a, b) => Number(b.requiresApproval) - Number(a.requiresApproval));
+  return rows;
 }

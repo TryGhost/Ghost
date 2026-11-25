@@ -1,7 +1,8 @@
 import {$isRangeSelection} from 'lexical';
 import {createDOMRange, createRectsFromDOMRange} from '@lexical/selection';
+import type {BaseSelection, LexicalEditor} from 'lexical';
 
-export function $getSelectionRangeRect({selection, editor}) {
+export function $getSelectionRangeRect({selection, editor}: {selection: BaseSelection | null; editor: LexicalEditor}): DOMRect | null {
     if (!selection || !$isRangeSelection(selection)) {
         return null;
     }
@@ -16,6 +17,10 @@ export function $getSelectionRangeRect({selection, editor}) {
 
     const selectionRects = createRectsFromDOMRange(editor, selectionRange);
     const returnRect = selectionRects[0];
+
+    if (!returnRect) {
+        return null;
+    }
 
     // we can get multiple rects if the selection spans multiple lines or has inline nodes like links
     if (selectionRects.length > 1) {

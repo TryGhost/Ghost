@@ -43,6 +43,7 @@ const AutomationListActions = ({ automation }: { automation: AutomationBrowseIte
             className="border border-control-border shadow-none enabled:active:shadow-none enabled:aria-expanded:shadow-none"
             disabled={mutation.isPending}
             variant="outline"
+            data-row-secondary
           >
             <LucideIcon.MoreHorizontal />
           </Button>

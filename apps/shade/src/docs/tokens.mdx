@@ -145,6 +145,8 @@ Outline `Button`s use `--control-border`, not `--border-default`. In dark mode i
 
 Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border`, `--field-shadow` and `--radius-field`. Their surfaces follow `--control-surface` and have no resting shadow; `--field-shadow` retains its neutral value for compatibility. With `admin7Design` on, their outline uses `--color-gray-400` in light mode and `--color-gray-900` in dark mode. They also have 4px corners and 14px text (`--text-field`). With it off, they use `--control-border` and `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
 
+Invalid input groups keep their destructive border and focus-ring color while the control is focused, so correcting a value does not hide its error state. Pair that color with a text description of the error.
+
 ## Section headings and stats
 
 With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page or card, one step below the page title, at `--text-section-heading`. A page whose headings sit outside cards, like member and tag details, sets it to `--text-section-heading-lg` (21px) on the common parent of both columns so main and sidebar headings match. Section headings use Inter at medium weight, `--tracking-section-heading` (-0.01em) letter spacing, a 1.35 line height, and optical size 28. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number.

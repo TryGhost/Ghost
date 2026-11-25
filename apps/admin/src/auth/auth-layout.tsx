@@ -3,6 +3,7 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
+import './auth-layout.css';
 
 const GHOST_ORB = 'https://static.ghost.org/v4.0.0/images/ghost-orb-2.png';
 
@@ -39,7 +40,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   useSiteAccentColor();
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center overflow-y-auto bg-sidebar px-6 [--control-height:var(--control-height-lg)] [&_input]:text-control-lg">
+    <div className="auth-layout flex min-h-screen w-full flex-col items-center overflow-y-auto bg-sidebar px-6 [--control-height:var(--control-height-lg)] [&_input]:text-control-lg">
       <Stack className="my-auto w-full max-w-[400px] py-12" gap="xl">
         {children}
       </Stack>

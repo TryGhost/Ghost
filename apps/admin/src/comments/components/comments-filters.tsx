@@ -1,10 +1,11 @@
 import React from 'react';
-import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
+import { type Filter, FilterBar, Filters, useMobileFilters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
 import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filter-sources';
 
 interface CommentsFiltersProps {
+  barContainer?: HTMLElement | null;
   filters: Filter[];
   siteTimezone: string;
   includeDateFilter?: boolean;
@@ -13,6 +14,7 @@ interface CommentsFiltersProps {
 
 const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   filters,
+  barContainer,
   siteTimezone,
   includeDateFilter = true,
   onFiltersChange,
@@ -26,6 +28,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     includeDateFilter,
   });
 
+  const mobile = useMobileFilters();
   const hasFilters = filters.length > 0;
 
   const filterBarActions = (
@@ -40,7 +43,8 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     <Filters
       addButton={<Filters.Trigger />}
       allowMultiple={false}
-      className={cn('[&>button]:order-last', !hasFilters && 'w-auto')}
+      barContainer={barContainer}
+      className={mobile ? undefined : cn('[&>button]:order-last', !hasFilters && 'w-auto')}
       clearButton={filterBarActions}
       clearButtonClassName="font-normal text-muted-foreground"
       clearButtonIcon={<LucideIcon.X />}

@@ -13,6 +13,7 @@ import {
   readSigningKeys,
   signAppManifest,
   signProject,
+  type ManifestSource,
 } from '../src/tooling/index.ts';
 import { SOURCE, git, makeProject, readAsGhost } from './helpers.ts';
 
@@ -386,6 +387,7 @@ describe('signing', () => {
       ...SOURCE,
       author: { ...SOURCE.author, url: 'https://example.com/' },
       surfaces: [{ type: 'admin_page', url: 'https://hello.example.com/' }],
+      scopes: [],
       manifest_url: MANIFEST_URL,
       identity_key: publicKeyOf(keys.identityKey),
       backend_key: keys.backendKey,
@@ -523,5 +525,15 @@ describe('signing', () => {
       ...keys,
     });
     expect(result.success && result.manifest.manifest_url).toBe(MANIFEST_URL);
+  });
+});
+
+describe('the ghost-app.json type', () => {
+  // The SDK types scopes from the contracts' scope registry, so only its permission keys fit.
+  it('takes scopes as the scope registry names them', () => {
+    const scopes: ManifestSource['scopes'] = ['post:edit', 'post:browse', 'slug:generate'];
+    // @ts-expect-error Ghost has no such scope.
+    const unknown: ManifestSource['scopes'] = ['post:publish'];
+    expect([scopes, unknown]).toHaveLength(2);
   });
 });

@@ -115,6 +115,204 @@ describe('Members API — exportCSV', function () {
     mockManager.restore();
   });
 
+  it('exports filtered members in bounded batches without duplicating subscriptions', async function () {
+    const filter = '(subscribed:true+email_disabled:0)+status:free';
+    const active = newsletters.filter((newsletter) => newsletter.get('status') === 'active');
+    const batch = Array.from({ length: 1001 }, (_, i) => ({
+      id: models.Base.Model.generateId(),
+      email: `filtered-export-${i}@example.com`,
+      uuid: crypto.randomUUID(),
+      transient_id: crypto.randomUUID(),
+      created_at: '2025-01-01 00:00:00',
+    }));
+    const knex = db.knex;
+    await knex.batchInsert('members', batch, 100);
+    try {
+      await knex.batchInsert(
+        'members_newsletters',
+        batch.map(({ id }) => ({
+          id: models.Base.Model.generateId(),
+          member_id: id,
+          newsletter_id: active[0].id,
+        })),
+        100,
+      );
+      await knex('members_newsletters').insert({
+        id: models.Base.Model.generateId(),
+        member_id: batch[0].id,
+        newsletter_id: active[1].id,
+      });
+
+      const memberReads = [];
+      const capture = (query) => {
+        if (query.sql.startsWith('select') && query.sql.includes(' from `members`')) {
+          memberReads.push(query);
+        }
+      };
+      const openSnapshot = models.Member.activeNewsletterIds;
+      models.Member.activeNewsletterIds = async function (transaction) {
+        const ids = await openSnapshot.call(this, transaction);
+        await knex('newsletters').where('id', active[0].id).update({ status: 'archived' });
+        await knex('members_newsletters').where('member_id', batch.at(-1).id).del();
+        return ids;
+      };
+      knex.on('query', capture);
+      let res;
+      try {
+        res = await agent
+          .get(`/members/upload/?filter=${encodeURIComponent(filter)}`)
+          .expectStatus(200);
+      } finally {
+        models.Member.activeNewsletterIds = openSnapshot;
+        knex.off('query', capture);
+        await knex('newsletters').where('id', active[0].id).update({ status: 'active' });
+      }
+
+      const csv = Papa.parse(res.text, { header: true, skipEmptyLines: true });
+      assert.deepEqual(csv.errors, []);
+      assert.deepEqual(
+        csv.data.map((row) => row.id),
+        batch.map((row) => row.id).sort(),
+      );
+      assert.equal(memberReads.length, 2);
+      assert.ok(memberReads[0].sql.includes('exists (select 1 from `members_newsletters`'));
+      assert.ok(memberReads[1].sql.includes('`members`.`id` > ?'));
+      assert.ok(
+        memberReads.every(
+          (query) => query.sql.endsWith('limit ?') && query.bindings.at(-1) === 1000,
+        ),
+      );
+      const search = await agent.get('/members/upload/?search=filtered-export-').expectStatus(200);
+      const searchRows = Papa.parse(search.text, { header: true, skipEmptyLines: true });
+      assert.deepEqual(searchRows.errors, []);
+      assert.deepEqual(
+        searchRows.data.map((row) => row.id).sort(),
+        batch.map((row) => row.id).sort(),
+      );
+
+      const exportUrl = `/members/upload/?filter=${encodeURIComponent(filter)}`;
+      const { export: exportMembers } = require('../../../core/server/services/members');
+      const buildQuery = models.Member.getFilteredCollectionQuery;
+      let snapshotClosed;
+      let secondBatchStarted;
+      const started = new Promise((resolve) => {
+        secondBatchStarted = resolve;
+      });
+      let rejectSecondBatch;
+      const failed = new Promise((_, reject) => {
+        rejectSecondBatch = reject;
+      });
+      failed.catch(() => {});
+      models.Member.getFilteredCollectionQuery = function (...args) {
+        snapshotClosed = args[0].transacting.executionPromise;
+        const query = buildQuery.apply(this, args);
+        const clone = query.clone.bind(query);
+        let batches = 0;
+        query.clone = () => {
+          const batchQuery = clone();
+          batches += 1;
+          if (batches === 2) {
+            batchQuery.limit = () => {
+              secondBatchStarted();
+              return failed;
+            };
+          }
+          return batchQuery;
+        };
+        return query;
+      };
+      try {
+        const stream = await exportMembers({
+          filter,
+          mongoTransformer: require('@tryghost/nql').utils.mapKeyValues({
+            key: { from: 'subscribed', to: 'newsletters.status' },
+            values: [{ from: true, to: 'active' }],
+          }),
+        });
+        const streamFailed = assert.rejects(async () => {
+          for await (const row of stream) {
+            assert.ok(row.id);
+          }
+        }, /Second batch failed/);
+        await Promise.race([started, streamFailed]);
+        const referenceQueries = [];
+        const captureReferenceReads = ({ sql }) => {
+          if (sql.includes('from `products`') || sql.includes('from `labels`')) {
+            referenceQueries.push(sql);
+          }
+        };
+        knex.on('query', captureReferenceReads);
+        try {
+          await agent.get(exportUrl).expectStatus(429);
+          assert.deepEqual(referenceQueries, []);
+        } finally {
+          knex.off('query', captureReferenceReads);
+        }
+        rejectSecondBatch(new Error('Second batch failed'));
+        await streamFailed;
+        await snapshotClosed;
+      } finally {
+        rejectSecondBatch(new Error('Second batch failed'));
+        models.Member.getFilteredCollectionQuery = buildQuery;
+      }
+      await agent.get(exportUrl).expectStatus(200);
+    } finally {
+      await knex('members')
+        .whereIn(
+          'id',
+          batch.map((row) => row.id),
+        )
+        .del();
+    }
+  });
+
+  it('exports free subscribers without batching when the filter compiles to a different query', async function () {
+    const filter = '(subscribed:true+email_disabled:0)+status:free';
+    const exportUrl = `/members/upload/?filter=${encodeURIComponent(filter)}`;
+    const active = newsletters.find((newsletter) => newsletter.get('status') === 'active');
+    const member = await createMember({ newsletters: [{ id: active.id }] });
+    const exportedIds = async () => {
+      const res = await agent.get(exportUrl).expectStatus(200);
+      const csv = Papa.parse(res.text, { header: true, skipEmptyLines: true });
+      assert.deepEqual(csv.errors, []);
+      return csv.data.map((row) => row.id).sort();
+    };
+
+    const knex = db.knex;
+    const applyFilters = models.Member.prototype.applyDefaultAndCustomFilters;
+    try {
+      const expected = await exportedIds();
+      assert.ok(expected.includes(member.id));
+
+      models.Member.prototype.applyDefaultAndCustomFilters = function (options) {
+        const result = applyFilters.call(this, options);
+        this.query((qb) => qb.whereRaw('1 = 1'));
+        return result;
+      };
+      const memberReads = [];
+      const capture = (query) => {
+        if (query.sql.startsWith('select') && query.sql.includes(' from `members`')) {
+          memberReads.push(query);
+        }
+      };
+      knex.on('query', capture);
+      let actual;
+      try {
+        actual = await exportedIds();
+      } finally {
+        knex.off('query', capture);
+      }
+
+      assert.deepEqual(actual, expected);
+      assert.ok(memberReads.length > 0);
+      assert.ok(memberReads.every((query) => !query.sql.includes('exists (select 1')));
+      assert.ok(memberReads.every((query) => !query.sql.endsWith('limit ?')));
+    } finally {
+      models.Member.prototype.applyDefaultAndCustomFilters = applyFilters;
+      await knex('members').where('id', member.id).del();
+    }
+  });
+
   it('Can export tiers', async function () {
     // Create a new member with a product (to be renamed to "tiers" once the changes is done on model layer)
     const member = await createMember({

@@ -116,7 +116,8 @@ export const postsListScreen = {
   emptyFiltered: () => page.getByTestId(postsEmptyFiltered),
   showAllButton: (plural: string) => page.getByRole('button', { name: `Show all ${plural}` }),
   filterBar: () => page.getByTestId(postsFilters),
-  addFilterButton: () => page.getByTestId(postsFilters).getByRole('button', { name: 'Filter' }),
+  addFilterButton: () =>
+    page.getByTestId(postsFilters).getByRole('button', { name: /^(Add filter|Filter)$/i }),
   /** An applied chip's value, which opens its picker. */
   filterValueButton: (label: string) =>
     page.getByTestId(postsFilters).getByRole('button', { name: label, exact: true }),
