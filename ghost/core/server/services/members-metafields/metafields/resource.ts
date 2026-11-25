@@ -10,8 +10,6 @@ export interface MetafieldResource {
     fields: string;
     /** What each member or post holds for each field: a row per part of a value. */
     values: string;
-    /** An entry for each write of values, naming the fields it wrote. */
-    changeEvents: string;
     /** Which field each port another domain declares writes into. */
     bindings: string;
   };

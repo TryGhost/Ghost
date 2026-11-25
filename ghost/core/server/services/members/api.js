@@ -288,6 +288,8 @@ function createApiInstance(config) {
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     metafieldValues: metafieldsService.values,
+    // And the feed those values' writes leave, read as part of each member's activity.
+    metafieldActivity: metafieldsService.activity,
     // And the bindings, through which a member's own answers to what a tier asks are saved, as
     // a checkout saves them.
     metafieldBindings: metafieldsService.bindings,

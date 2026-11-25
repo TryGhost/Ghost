@@ -1,6 +1,9 @@
 import { Added, Batch, Deleted, Edited, type OnUpdated } from '../../../lib/changes';
 import type { Namespace } from '@tryghost/metafield-types/identity';
+import type { Knex } from 'knex';
+import type { MetafieldChangeEventField } from '@tryghost/metafield-types';
 import type { Definition } from './models';
+import type { WriteOrigin } from './schema';
 
 /** A definition was added, as one of the definitions a request added together. */
 export class DefinitionAdded extends Added('DefinitionAdded')<Definition> {}
@@ -47,3 +50,39 @@ export type DefinitionChange =
 
 /** The function the definitions service calls with each change it makes. */
 export type OnDefinitionUpdated = OnUpdated<DefinitionChange>;
+
+/**
+ * One write of a member's or post's values, naming the fields it wrote and who wrote them, from
+ * where. It is the change to the member or post, so the resource decides how it is recorded.
+ */
+export class ValuesWritten {
+  readonly type = 'ValuesWritten';
+  readonly resourceId: string;
+  readonly origin: WriteOrigin;
+  readonly fields: MetafieldChangeEventField[];
+  readonly at: Date;
+
+  constructor({
+    resourceId,
+    origin,
+    fields,
+    at,
+  }: {
+    resourceId: string;
+    origin: WriteOrigin;
+    fields: MetafieldChangeEventField[];
+    at: Date;
+  }) {
+    this.resourceId = resourceId;
+    this.origin = origin;
+    this.fields = fields;
+    this.at = at;
+  }
+}
+
+/**
+ * The function the values service calls with each write, inside the write's transaction. The
+ * write names who made it in its origin, which says more than a request context can: a value can
+ * be written by a binding or an import as well as by someone acting.
+ */
+export type OnValuesWritten = (trx: Knex.Transaction, change: ValuesWritten) => Promise<void>;
