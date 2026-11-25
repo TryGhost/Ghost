@@ -21,9 +21,9 @@ export function signupParser(SignupNode: new (data: Record<string, unknown>) => 
                 return {
                     conversion(domNode: HTMLElement) {
                         const layout = getLayout(domNode);
-                        const header = domNode.querySelector('h2')?.textContent || '';
-                        const subheader = domNode.querySelector('h3')?.textContent || '';
-                        const disclaimer = domNode.querySelector('p')?.textContent || '';
+                        const header = domNode.querySelector('.kg-signup-card-heading')?.textContent || '';
+                        const subheader = domNode.querySelector('.kg-signup-card-subheading')?.textContent || '';
+                        const disclaimer = domNode.querySelector('.kg-signup-card-disclaimer')?.textContent || '';
                         const backgroundImageSrc = domNode.querySelector('.kg-signup-card-image')?.getAttribute('src');
                         const backgroundColor = domNode.style.backgroundColor || '';
                         const buttonColor = (domNode.querySelector('.kg-signup-card-button') as HTMLElement | null)?.style.backgroundColor || '';
