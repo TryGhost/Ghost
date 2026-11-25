@@ -69,6 +69,13 @@ const MemoTagsSection = memo(TagsSection);
 const MemoTemplateSection = memo(TemplateSection);
 const MemoUrlSection = memo(UrlSection);
 
+const AVAILABLE_WHILE_LOCKED: ReadonlySet<SettingsSectionId> = new Set([
+  'post-history',
+  'editor-font',
+  'keyboard-shortcuts',
+  'editor-help',
+]);
+
 const ExcerptSection = memo(function ExcerptSection({ session }: { session: EditorSettingsPort }) {
   const inputId = useId();
   const errorId = useId();
@@ -149,8 +156,10 @@ export interface PostSettingsSidebarProps {
   opensInPlace?: boolean;
   /** The writer's editor font, chosen in the panel. */
   editorFont?: EditorFontControl;
-  /** Another tab holds the document. The screen makes the frame inert; dialogs opened from it are outside it. */
+  /** Disable fields and make custom controls inert; dialogs opened from them are outside the panel. */
   locked?: boolean;
+  /** Explains the lock above the disabled fields, with any recovery actions. */
+  lockNotice?: ReactNode;
 }
 
 /**
@@ -170,6 +179,7 @@ export function PostSettingsSidebar({
   opensInPlace = false,
   editorFont,
   locked = false,
+  lockNotice,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -194,6 +204,12 @@ export function PostSettingsSidebar({
   const subviews = useSubviewController();
   const [focusing, setFocusing] = useState<SettingsFieldReveal | null>(null);
 
+  useEffect(() => {
+    if (locked && subviews.open && !AVAILABLE_WHILE_LOCKED.has(subviews.open.id)) {
+      subviews.close();
+    }
+  }, [locked, subviews]);
+
   // Only a new request reveals: closing the pane afterwards must not reopen it.
   useEffect(() => {
     if (reveal) {
@@ -214,12 +230,14 @@ export function PostSettingsSidebar({
   const sections: Record<SettingsSectionId, ReactNode> = {
     url: <MemoUrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     'publish-date': <MemoPublishDateSection session={session} />,
-    tags: canTag ? <MemoTagsSection session={session} /> : null,
+    tags: canTag ? <MemoTagsSection disabled={locked} session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
-    access: canManagePost ? <MemoAccessSection postType={postType} session={session} /> : null,
+    access: canManagePost ? (
+      <MemoAccessSection disabled={locked} postType={postType} session={session} />
+    ) : null,
     authors: canCreditOthers ? (
-      <MemoAuthorsSection currentUser={currentUser} session={session} />
+      <MemoAuthorsSection currentUser={currentUser} disabled={locked} session={session} />
     ) : null,
     'show-title-and-feature-image':
       postType === 'page' ? (
@@ -272,12 +290,30 @@ export function PostSettingsSidebar({
     }
   }, [open, subviews]);
   const panelLabel = `${postType === 'page' ? 'Page' : 'Post'} settings`;
-  const content = SETTINGS_SECTION_ORDER.map((id) => (
-    <Fragment key={id}>
-      {!open && id === 'post-history' ? <Separator className="my-3" /> : null}
-      {open && open.id !== id ? null : sections[id]}
-    </Fragment>
-  ));
+  const content = SETTINGS_SECTION_ORDER.map((id) => {
+    const section = open && open.id !== id ? null : sections[id];
+    const disabled = locked && !AVAILABLE_WHILE_LOCKED.has(id);
+    return (
+      <Fragment key={id}>
+        {!open && id === 'post-history' ? <Separator className="my-3" /> : null}
+        {section && !AVAILABLE_WHILE_LOCKED.has(id) ? (
+          <fieldset
+            ref={(element) => {
+              if (element) {
+                element.inert = disabled;
+              }
+            }}
+            className={cn('min-w-0 shrink-0', open && 'contents', id === 'delete' && 'mt-auto')}
+            disabled={disabled}
+          >
+            {section}
+          </fieldset>
+        ) : (
+          section
+        )}
+      </Fragment>
+    );
+  });
 
   return (
     <SubviewContext.Provider value={subviews}>
@@ -314,6 +350,7 @@ export function PostSettingsSidebar({
                 </Inline>
               </Box>
             )}
+            {locked ? lockNotice : null}
             <Stack
               className={cn(
                 'min-h-0 flex-1',

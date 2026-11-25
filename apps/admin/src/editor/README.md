@@ -291,30 +291,44 @@ into whether this tab is locked.
   flag off, a server that does not know the lease, a new post that has not
   been created yet, or presence failing.
 
-A locked tab shows the document read-only at full contrast: it can be read,
-scrolled, selected and copied from, and nothing in it can be changed. The
-editor is also read-only for the moment before the server's first answer.
+A locked tab shows the document read-only at 75% opacity, with the title and
+body headings further dimmed to 60% opacity. It can be read, scrolled, selected
+and copied from, and nothing in it can be changed. The editor is also read-only
+for the moment before the server's first answer.
 
-| Part              | While locked                                                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| Body              | Lexical's `setEditable(false)` on the Koenig instance, set again on each instance a reload mounts |
-| Cards             | No pointer input                                                                                  |
-| Title and excerpt | `readOnly` fields; their keys that move into the body, and the title's paste handling, are off    |
-| Feature image     | `inert`, since its controls have no read-only state                                               |
-| Writing area      | Dropped files are not inserted, and a click below the body does not add a paragraph               |
-| Header actions    | Disabled, and their shortcuts do nothing                                                          |
-| Settings panel    | `inert`, since it saves each edit as it is made                                                   |
-| Open flows        | The publish and update flows, the preview, the delete confirmation and the post history close     |
+| Part              | While locked                                                                                                                                                          |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Body              | Lexical's `setEditable(false)` on the Koenig instance, set again on each instance a reload mounts                                                                     |
+| Cards             | No pointer input                                                                                                                                                      |
+| Title and excerpt | `readOnly` fields; their keys that move into the body, and the title's paste handling, are off                                                                        |
+| Feature image     | `inert`, since its controls have no read-only state                                                                                                                   |
+| Writing area      | Dropped files are not inserted, and a click below the body does not add a paragraph                                                                                   |
+| Header actions    | Disabled, and their shortcuts do nothing                                                                                                                              |
+| Settings panel    | Document fields are disabled and custom controls are inert; a notice explains the lock and offers takeover. History, editor font, shortcuts and help remain available |
+| Open flows        | The publish and update flows, the preview and the delete confirmation close; history stays readable, with Restore disabled                                            |
 
-The one sign of it is a pill holding a lock and an avatar, first in the
-header's avatar row: whoever is editing, or the writer's own avatar when
-another of their tabs is. The rest of the row is everyone else with the
-document open, and leaves that person out. Hovering or clicking the pill
-opens a card that says who is editing and offers Take over, or Edit here for
-the writer's own tab. That card is the only place a takeover starts. The card opens by itself when the writer needs
+The editing avatar leads the header's avatar row: whoever is editing, including
+the writer when this tab holds the lease, or their own avatar when another of
+their tabs does. As soon as another person has the document open, the current
+user appears too, as a viewer until they start editing. The rest of the row is everyone else with the document open,
+and leaves that person out. Avatars always overlap, with the editing
+avatar in front. While a lease is held, viewers are shown at half opacity over
+individual opaque white backings, so their images cannot blend at overlaps.
+While another person is present, writing keeps the editor UI visible. Their
+arrival reveals any hidden controls; once they leave, typing hides the UI again.
+The row keeps extra space before the header's actions. The avatar for this tab
+shows a standard tooltip saying the writer is editing. Hovering or clicking
+another tab's editing avatar opens a card that says who is editing and offers
+Take over, or Edit here for the writer's own tab. The same explanation and actions appear above the locked
+settings fields. The card opens by itself when the writer needs
 to know without asking: the lease was just taken from them, what they typed
 was put back, or they typed into the read-only document. While a takeover
-waits, the lock is a spinner.
+waits, the avatar carries a spinner.
+
+Take over and Edit here open a confirmation dialog before changing editing
+access. The warning about stopping the previous editor and possibly losing
+their unsaved content appears only in that dialog. Cancel leaves the lease
+unchanged; if the previous holder leaves first, the confirmation closes.
 
 The lease is advisory. The server refuses no save because of it, and the
 collision check still decides a save built on an older version.

@@ -472,7 +472,8 @@ export function PostEditor({
             'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] [--kg-indicator-sticky-top:calc(var(--editor-overlap,0px)-4px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
             // Not every Koenig build closes its cards to input with Lexical's flag.
-            readOnly && '[&_[data-kg-card]]:pointer-events-none',
+            readOnly &&
+              'opacity-75 [&_:is(h1,h2,h3,h4,h5,h6)]:opacity-80 [&_[data-kg-card]]:pointer-events-none',
           )}
           gap="none"
           onDragOver={(event) => event.preventDefault()}
@@ -536,6 +537,7 @@ export function PostEditor({
                   // The --editor-display-* variables come from the writer's font (index.css).
                   'heading-font-features mb-4 pb-1 font-(family-name:--editor-display-font) text-[length:calc(4.8rem*var(--editor-title-scale,1))] leading-[1.18] font-bold tracking-[calc(-0.017em*var(--editor-display-tracking-scale,1))] text-foreground placeholder:font-bold placeholder:text-editor-placeholder max-[769px]:text-[length:calc(3.6rem*var(--editor-title-scale,1))] max-[501px]:text-[length:calc(2.8rem*var(--editor-title-scale,1))]',
                   titleAndFeatureImageHidden && 'opacity-50 focus:opacity-100',
+                  readOnly && !titleAndFeatureImageHidden && 'opacity-80',
                 )}
                 data-testid={editorTitleInput}
                 placeholder={`${capitalize(postType)} title`}

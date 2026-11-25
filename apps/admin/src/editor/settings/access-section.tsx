@@ -1,4 +1,4 @@
-import { useEffect, useId } from 'react';
+import { useEffect, useId, useState } from 'react';
 import {
   FieldError,
   Label,
@@ -46,6 +46,7 @@ import {
 export interface AccessSectionProps {
   session: EditorSettingsPort;
   postType: PostType;
+  disabled?: boolean;
 }
 
 /**
@@ -53,8 +54,12 @@ export interface AccessSectionProps {
  * `Specific tier(s)` grants. Both are settings fields, so the sidebar's save
  * policy decides when they are persisted.
  */
-export function AccessSection({ session, postType }: AccessSectionProps) {
+export function AccessSection({ session, postType, disabled = false }: AccessSectionProps) {
   const selectId = useId();
+  const [open, setOpen] = useState(false);
+  if (disabled && open) {
+    setOpen(false);
+  }
   const tiersErrorId = useId();
   const { data: settingsData } = useEditorSettings();
   const defaultContentVisibility = getSettingValue<string>(
@@ -107,6 +112,9 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
   // An incomplete pair is left out of every write. On a post the server has not
   // created yet it is staged without a save of its own: that write would carry nothing.
   const editAccess = (patch: Pick<EditorSettingsFields, 'visibility' | 'tiers'>) => {
+    if (disabled) {
+      return;
+    }
     if (tiersIncomplete(patch) && isNewPost(session)) {
       session.stageSettings(patch);
       return;
@@ -122,6 +130,9 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
     });
 
   const toggleTier = (id: string) => {
+    if (disabled) {
+      return;
+    }
     const next = new Set(selected);
     if (!next.delete(id)) {
       next.add(id);
@@ -139,7 +150,13 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
   return (
     <SettingsSection>
       <Label htmlFor={selectId}>{postType === 'page' ? 'Page' : 'Post'} access</Label>
-      <Select value={visibility} onValueChange={changeVisibility}>
+      <Select
+        disabled={disabled}
+        open={open && !disabled}
+        value={visibility}
+        onOpenChange={setOpen}
+        onValueChange={changeVisibility}
+      >
         <SelectTrigger data-testid={settingsVisibilitySelect} id={selectId}>
           <SelectValue />
         </SelectTrigger>
@@ -161,6 +178,7 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
           ) : (
             <ChipPicker<TierOption, TierOption>
               describedBy={tiersMissing ? tiersErrorId : undefined}
+              disabled={disabled}
               emptyMessage={tiersFetching || hasNextPage ? 'Loading tiers...' : 'No tiers found'}
               getGroup={(option) => (option.archived ? 'Archived tiers' : 'Active tiers')}
               getKey={(option) => option.id}

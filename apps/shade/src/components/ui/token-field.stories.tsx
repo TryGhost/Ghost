@@ -76,6 +76,31 @@ export const Wrapping: Story = {
     </div>
   ),
 };
+
+export const Disabled: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Disabled token fields use the same surface as disabled text inputs, with muted chips and no available removal controls.',
+      },
+    },
+  },
+  render: () => (
+    <fieldset className="w-72" disabled>
+      <div className={cn(tokenFieldClasses.field, 'pr-8')}>
+        <Badge className={tokenFieldClasses.chip} variant="secondary" asChild>
+          <button aria-label="Remove News" type="button">
+            News
+            <X className="size-3" />
+          </button>
+        </Badge>
+        <input aria-label="Disabled token field" className={tokenFieldClasses.input} />
+        <ChevronDown className={tokenFieldClasses.chevron} />
+      </div>
+    </fieldset>
+  ),
+};
 export const ChevronAlignment: Story = {
   parameters: {
     docs: {

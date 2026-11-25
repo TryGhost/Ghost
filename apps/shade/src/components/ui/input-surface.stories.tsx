@@ -86,7 +86,7 @@ export const WithinStates: Story = {
     docs: {
       description: {
         story:
-          "Default and invalid states for `'within'` mode. Disabled state is left to the wrapper consumer (the recipe doesn't handle disabled in `within` mode since wrappers aren't themselves disableable).",
+          "Default, invalid and disabled states for 'within' mode. Wrappers detect a disabled input or textarea, including inherited fieldset disabling, and use the shared disabled field surface.",
       },
     },
   },
@@ -103,6 +103,13 @@ export const WithinStates: Story = {
           className="h-9 grow bg-transparent outline-hidden placeholder:text-muted-foreground"
           placeholder="Invalid"
           aria-invalid
+        />
+      </div>
+      <div className={cn(inputSurface('within'), 'flex w-[280px] items-center px-3')}>
+        <input
+          className="h-9 grow bg-transparent outline-hidden placeholder:text-muted-foreground"
+          defaultValue="Disabled"
+          disabled
         />
       </div>
     </div>

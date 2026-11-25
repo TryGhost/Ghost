@@ -16,6 +16,14 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 Canonical example: `inputSurface`. The border, background, radius, and focus ring shared by `Input`, `Textarea`, `InputGroup`, and the `Select` trigger.
 
+Wrappers using `inputSurface('within')` detect disabled inputs and textareas,
+including those disabled by a containing fieldset, and use
+`bg-field-disabled-surface` with muted text. A disabled accessory button alone
+does not disable the field's surface. Components with a custom focus scope,
+such as `InputGroup`, compose `inputSurfaceClasses.disabledFieldWithin` with
+their other atoms. Composite pickers must also receive `disabled` so their
+lists close and their selection and reorder handlers stop accepting changes.
+
 ## Don't
 
 - Pre-extract a recipe for a class string used by only one component.

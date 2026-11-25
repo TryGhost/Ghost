@@ -26,7 +26,7 @@ function isChrome(target: EventTarget | null) {
 }
 
 interface UseWritingFocusOptions {
-  /** Keeps the chrome shown: the settings panel is open or moving, or the status needs attention. */
+  /** Keeps the chrome shown: another person is present, settings are open or moving, or status needs attention. */
   blocked: boolean;
   /** The title, excerpt and body, with the chrome that sits among them. */
   writingAreaRef: RefObject<HTMLElement | null>;

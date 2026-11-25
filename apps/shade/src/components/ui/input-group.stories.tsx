@@ -369,14 +369,14 @@ export const ErrorState: Story = {
 export const Disabled: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
-      <InputGroup data-disabled="true">
+      <InputGroup>
         <InputGroupAddon>
           <SearchIcon />
         </InputGroupAddon>
         <InputGroupInput placeholder="Disabled input" disabled />
       </InputGroup>
 
-      <InputGroup data-disabled="true">
+      <InputGroup>
         <InputGroupInput defaultValue="Disabled with value" disabled />
         <InputGroupAddon align="inline-end">
           <InputGroupButton size="icon-xs" disabled>
@@ -384,13 +384,21 @@ export const Disabled: Story = {
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
+      <fieldset disabled>
+        <InputGroup>
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput defaultValue="Disabled by the fieldset" />
+        </InputGroup>
+      </fieldset>
     </div>
   ),
   parameters: {
     docs: {
       description: {
         story:
-          'Disabled groups use the shared disabled field surface while keeping their value readable. Add data-disabled="true" to the InputGroup for consistent wrapper styling.',
+          'Groups detect disabled inputs and textareas, including controls inside a disabled fieldset, and use the shared disabled field surface without a separate wrapper flag.',
       },
     },
   },

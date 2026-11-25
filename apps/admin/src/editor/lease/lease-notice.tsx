@@ -15,6 +15,9 @@ import {
   Popover,
   PopoverAnchor,
   PopoverContent,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -70,6 +73,8 @@ export interface LeaseAvatarProps {
   resourceType: PresenceResourceType;
   /** The writer, whose own avatar stands for their other tab. */
   currentUser?: { name: string; profile_image?: string | null };
+  /** This tab holds the lease, so the writer's own avatar leads the viewers. */
+  editingHere?: boolean;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
   onTakeOver: () => void;
@@ -107,34 +112,87 @@ function LeaseCard({
       detail = held.ownTab
         ? 'It started just before this one, so what you typed here was not kept.'
         : `${holder ? them : 'They'} started just before you, so what you typed was not kept.`;
-    } else {
-      detail = held.ownTab
-        ? 'Editing here makes the other tab read-only.'
-        : `Taking over will stop ${them} from editing.`;
     }
   }
 
+  const actions = held ? (
+    <Inline className="mt-1" gap="xs">
+      {unsaved ? <CopyContentButton className="flex-1" contentText={contentText} /> : null}
+      <Button className="flex-1" size="sm" variant="secondary" onClick={onTakeOver}>
+        {held.ownTab ? 'Edit here' : 'Take over'}
+      </Button>
+    </Inline>
+  ) : null;
+
   return (
-    <Stack data-testid={editorLeaseCard} gap="sm">
+    <Stack gap="sm">
       <Stack gap="xs">
-        <Text size="sm" weight="semibold">
-          {title}
-        </Text>
+        <Inline align="start" gap="sm">
+          <LucideIcon.Lock aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+          <Text size="sm" weight="semibold">
+            {title}
+          </Text>
+        </Inline>
         {detail ? (
           <Text size="sm" tone="secondary">
             {detail}
           </Text>
         ) : null}
       </Stack>
-      {held ? (
-        <Inline className="mt-1" gap="xs">
-          {unsaved ? <CopyContentButton className="flex-1" contentText={contentText} /> : null}
-          <Button className="flex-1" size="sm" variant="secondary" onClick={onTakeOver}>
-            {held.ownTab ? 'Edit here' : 'Take over'}
-          </Button>
-        </Inline>
-      ) : null}
+      {actions}
     </Stack>
+  );
+}
+
+/** The warning belongs to the deliberate takeover, rather than every lock notice. */
+export function LeaseTakeoverConfirm({
+  lease,
+  resourceId,
+  resourceType,
+  open,
+  onOpenChange,
+  onTakeOver,
+}: Pick<LeaseAvatarProps, 'lease' | 'resourceId' | 'resourceType' | 'onTakeOver'> & {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const held = heldBy(lease);
+  const other = held && !held.ownTab ? held.userId : null;
+  const [holder] = usePresentUsers(
+    other && resourceId ? [{ userId: other, resourceId, resourceType, ts: 0 }] : NOBODY,
+  );
+
+  if (!held) {
+    return null;
+  }
+
+  const them = holder ? holder.name.split(' ')[0] : 'them';
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent
+        className={EDITOR_CONFIRM_DIALOG_LAYER}
+        overlayClassName={EDITOR_CONFIRM_DIALOG_LAYER}
+      >
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {held.ownTab ? 'Edit in this tab?' : 'Take over editing?'}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {held.ownTab
+              ? 'Editing here will make your other tab read-only, and you may lose unsaved content in that tab.'
+              : `Taking over will stop ${them} from editing, and they may lose unsaved content.`}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel asChild>
+            <Button variant="outline">Cancel</Button>
+          </AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button onClick={onTakeOver}>{held.ownTab ? 'Edit here' : 'Take over'}</Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -154,15 +212,14 @@ function isRefusedTyping(event: KeyboardEvent): boolean {
 }
 
 /**
- * The one mark that the editor is read-only: a pill holding a lock and the
- * avatar of whoever is editing, first in the header's avatar row. The writer's
+ * The avatar of whoever is editing, first in the header's avatar row. The writer's
  * own avatar stands for their other tab. Its card says why and offers the way
  * to edit, and opens on hover, on a click, and by itself when the writer needs
  * to know without asking: the lease was just taken from them, what they typed
  * was put back, or they tried to type.
  */
 export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
-  const { lease, resourceId, resourceType, currentUser } = props;
+  const { lease, resourceId, resourceType, currentUser, editingHere = false } = props;
   const held = heldBy(lease);
   const other = held && !held.ownTab ? held.userId : null;
   const [holder] = usePresentUsers(
@@ -173,7 +230,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   const hovered = useRef(false);
 
   const taking = lease.locked && lease.reason === 'taking';
-  const shown = held !== null || taking;
+  const shown = held !== null || taking || editingHere;
   const urgent = (held?.lost ?? false) || (held?.raced ?? false);
   const [wasUrgent, setWasUrgent] = useState(false);
   if (urgent !== wasUrgent) {
@@ -182,9 +239,16 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
       setOpen(true);
     }
   }
+  const [wasEditingHere, setWasEditingHere] = useState(editingHere);
+  if (editingHere !== wasEditingHere) {
+    setWasEditingHere(editingHere);
+    if (editingHere) {
+      setOpen(false);
+    }
+  }
 
   useEffect(() => {
-    if (!shown) {
+    if (!shown || !lease.locked) {
       return;
     }
     const onKeyDown = (event: KeyboardEvent) => {
@@ -194,7 +258,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [shown]);
+  }, [shown, lease.locked]);
 
   useEffect(() => () => clearTimeout(closing.current), []);
 
@@ -229,19 +293,20 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     : currentUser && { name: currentUser.name, image: currentUser.profile_image };
   const label = taking
     ? `Taking over this ${resourceType}`
-    : held?.ownTab
-      ? `This ${resourceType} is being edited in another of your tabs`
-      : `${holder?.name ?? 'Someone else'} is editing this ${resourceType}`;
-  const Mark = taking ? LucideIcon.LoaderCircle : LucideIcon.Lock;
+    : editingHere
+      ? `You are editing this ${resourceType}`
+      : held?.ownTab
+        ? `This ${resourceType} is being edited in another of your tabs`
+        : `${holder?.name ?? 'Someone else'} is editing this ${resourceType}`;
   let face: ReactNode = (
-    <Inline align="center" className="size-6 rounded-full bg-background" justify="center">
+    <Inline align="center" className="size-full rounded-full bg-background" justify="center">
       <LucideIcon.User className="size-3.5" />
     </Inline>
   );
   if (person) {
     face = (
       <Avatar
-        className="size-6"
+        className="size-full"
         colorSeed={person.name}
         initials={userInitials(person.name)}
         src={person.image ?? undefined}
@@ -249,34 +314,46 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     );
   }
 
+  const trigger = (
+    <button
+      aria-label={label}
+      className={cn(
+        'pointer-events-auto relative z-20 size-7 shrink-0 rounded-full border-2 border-background bg-white text-muted-foreground outline-offset-2 focus-visible:outline-2 focus-visible:outline-focus-ring',
+        className,
+      )}
+      data-testid={editingHere ? undefined : editorLeaseAvatar}
+      type="button"
+      onClick={editingHere ? undefined : pin}
+      onPointerEnter={editingHere ? undefined : enter}
+      onPointerLeave={editingHere ? undefined : leave}
+    >
+      {face}
+      {taking ? (
+        <LucideIcon.LoaderCircle
+          aria-hidden="true"
+          className="absolute -right-1 -bottom-1 size-3.5 animate-spin rounded-full bg-background"
+          strokeWidth={2.5}
+        />
+      ) : null}
+    </button>
+  );
+
+  if (editingHere) {
+    return (
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+        <TooltipContent>You are editing this {resourceType}.</TooltipContent>
+      </Tooltip>
+    );
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverAnchor asChild>
-        <button
-          aria-label={label}
-          className={cn(
-            'pointer-events-auto relative z-10 shrink-0 rounded-full bg-muted py-0.5 pr-0.5 pl-2 text-muted-foreground hover:text-foreground',
-            className,
-          )}
-          data-testid={editorLeaseAvatar}
-          type="button"
-          onClick={pin}
-          onPointerEnter={enter}
-          onPointerLeave={leave}
-        >
-          <Inline align="center" gap="xs">
-            <Mark
-              aria-hidden="true"
-              className={cn('size-3.5', taking && 'animate-spin')}
-              strokeWidth={2.5}
-            />
-            {face}
-          </Inline>
-        </button>
-      </PopoverAnchor>
+      <PopoverAnchor asChild>{trigger}</PopoverAnchor>
       <PopoverContent
-        align="end"
-        className="w-72 p-4"
+        align="center"
+        className="w-max max-w-72 p-4"
+        data-testid={editorLeaseCard}
         sideOffset={8}
         // The card explains; it must not pull focus out of whatever the writer was reading.
         onOpenAutoFocus={(event) => event.preventDefault()}
@@ -286,6 +363,43 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
         <LeaseCard {...props} holder={holder} />
       </PopoverContent>
     </Popover>
+  );
+}
+
+/** Keeps the reason and takeover controls reachable above disabled settings. */
+export function LeaseSettingsNotice(
+  props: Pick<
+    LeaseAvatarProps,
+    'lease' | 'resourceId' | 'resourceType' | 'hasUnsavedContent' | 'contentText' | 'onTakeOver'
+  >,
+) {
+  const { lease, resourceId, resourceType } = props;
+  const held = heldBy(lease);
+  const other = held && !held.ownTab ? held.userId : null;
+  const [holder] = usePresentUsers(
+    other && resourceId ? [{ userId: other, resourceId, resourceType, ts: 0 }] : NOBODY,
+  );
+
+  if (!lease.locked) {
+    return null;
+  }
+
+  return (
+    <Stack
+      className="mx-5 mb-4 rounded-lg border border-border-default bg-surface-elevated p-3"
+      gap="sm"
+      role="status"
+    >
+      {held || lease.reason === 'taking' ? (
+        <LeaseCard {...props} holder={holder} />
+      ) : (
+        <Text size="sm" tone="secondary">
+          {lease.reason === 'outdated'
+            ? 'A newer version was saved elsewhere. Reload the latest version to edit settings.'
+            : 'Settings will be available once editing access has been checked.'}
+        </Text>
+      )}
+    </Stack>
   );
 }
 
