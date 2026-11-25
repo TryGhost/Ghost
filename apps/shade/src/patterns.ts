@@ -39,3 +39,4 @@ export type {
 export { SettingsModal } from './components/patterns/settings-modal';
 export { settingsModalVariants } from './components/patterns/settings-modal-variants';
 export type { SettingsModalProps, SettingsModalSize } from './components/patterns/settings-modal';
+export { useMobileFilters } from './components/patterns/use-mobile-filters';

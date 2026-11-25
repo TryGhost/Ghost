@@ -1,3 +1,4 @@
+import { useMobileFilters } from '@tryghost/shade/patterns';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
@@ -33,6 +34,7 @@ import {
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 
 interface MembersFiltersProps {
+  mobileBarContainer?: HTMLElement | null;
   filters: Filter[];
   multipleActiveSubscriptionsCount: number;
   nql?: string;
@@ -84,6 +86,7 @@ function mapOfferRedemptionFilters(filters: Filter[], mapValues: (values: string
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
   filters,
+  mobileBarContainer,
   multipleActiveSubscriptionsCount,
   nql,
   onFiltersChange,
@@ -180,6 +183,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     archivedCustomFields,
   });
 
+  const mobile = useMobileFilters();
   const hasFilters = filters.length > 0;
 
   const clearAndSaveButtons = hasFilters ? (
@@ -203,24 +207,36 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     </FilterBar.Actions>
   ) : undefined;
 
-  const filterControls = (
+  return (
     <Filters
       addButton={<Filters.Trigger />}
-      allowMultiple={true}
-      className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
+      barContainer={mobileBarContainer}
+      className={
+        mobile ? undefined : cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')
+      }
+
       clearButton={clearAndSaveButtons}
       fields={filterFields}
       filters={displayFilters}
+      inlineActions={
+        nql ? (
+          <ManageViewPopover
+            activeView={activeView}
+            existingViews={savedViews}
+            filter={nql}
+            onDeleted={() => onFiltersChange([])}
+          />
+        ) : undefined
+      }
       keyboardShortcut="f"
-      popoverAlign={'start'}
+      popoverAlign="start"
       popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
       showClearButton={hasFilters}
-      showSearchInput={true}
+      allowMultiple
+      showSearchInput
       onChange={handleFiltersChange}
     />
   );
-
-  return filterControls;
 };
 
 export default MembersFilters;
