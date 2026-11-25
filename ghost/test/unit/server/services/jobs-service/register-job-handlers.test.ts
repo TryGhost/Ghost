@@ -210,6 +210,10 @@ describe('register-job-handlers', function () {
       importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
     });
+    assert.deepEqual(registrationFor('content-csv-import').args[2], {
+      queue: 'content-csv-import',
+      concurrency: 1,
+    });
 
     await handlerFor('content-csv-import')(job);
 

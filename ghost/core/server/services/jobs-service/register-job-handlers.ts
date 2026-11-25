@@ -130,9 +130,13 @@ export default function registerJobHandlers({
     await mediaInliner.inline(job.domains);
   });
 
-  jobsService.handle(ContentCSVImportJob, async (job) => {
-    await contentImport.handleJob(job);
-  });
+  jobsService.handle(
+    ContentCSVImportJob,
+    async (job) => {
+      await contentImport.handleJob(job);
+    },
+    { queue: ContentCSVImportJob.type, concurrency: 1 },
+  );
 
   jobsService.handle(cleanCSVUploadsJob, async () => {
     await contentImport.cleanupUploads();
