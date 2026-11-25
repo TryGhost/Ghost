@@ -807,7 +807,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.cleanerResolutions(), 1);
   });
 
-  it('rejects a file over the cap without scheduling any work', async function () {
+  it('imports all rows from a ZIP above the former cap', async function () {
     const h = harness(Array.from({ length: 101 }, (_, i) => row(`Post ${i + 1}`)));
     const cleanup = sinon.stub().resolves();
     const storeAssets = sinon.stub().resolves();
@@ -824,43 +824,23 @@ describe('ContentCSVImporter', function () {
       }),
     });
 
-    await assert.rejects(
-      importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' }),
-      (error: { errorType?: string; message?: string }) => {
-        assert.equal(error.errorType, 'ValidationError');
-        assert.match(error.message ?? '', /more than 100 posts/);
-        return true;
-      },
-    );
-
-    assert.equal(h.jobs.length, 0, 'no job was scheduled');
-    assert.equal(h.created.length, 0, 'nothing was written');
-    assert.equal(h.store.get('run_test'), undefined, 'no run was registered');
+    const accepted = await importer.importCSV({
+      filePath: '/tmp/posts.zip',
+      fileName: 'posts.zip',
+    });
+    assert.deepEqual(accepted, { importId: 'run_test', total: 101 });
+    assert.equal(h.jobs.length, 1);
     sinon.assert.notCalled(storeAssets);
     sinon.assert.calledOnce(cleanup);
-    assert.deepEqual(h.stagedFiles, []);
-  });
 
-  it('rechecks the temporary cap inside the job before writing', async function () {
-    const h = harness();
-    let readCount = 0;
-    const importer = new ContentCSVImporter({
-      ...h.deps,
-      readRows: async () => {
-        readCount += 1;
-        return readCount === 1
-          ? [row('Preflight')]
-          : Array.from({ length: 101 }, (_, i) => row(`Post ${i + 1}`));
-      },
-    });
+    await importer.handle(h.jobs[0]);
 
-    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
-    await assert.rejects(importer.handle(h.jobs[0]), /more than 100 posts/);
-
-    assert.equal(h.created.length, 0);
-    assert.equal(h.store.get('run_test')?.status, 'failed');
-    assert.match(h.store.get('run_test')?.failureReason ?? '', /more than 100 posts/);
-    assert.deepEqual(h.removedFiles, [{ key: 'staged-1', name: 'posts.csv' }]);
+    assert.equal(h.created.length, 101);
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.equal(h.store.get('run_test')?.rows.length, 101);
+    sinon.assert.calledOnce(storeAssets);
+    sinon.assert.calledTwice(cleanup);
+    assert.deepEqual(h.removedFiles, [{ key: 'staged-1', name: 'posts.zip' }]);
   });
 
   it('fails and emails the run if the staged file cannot be reparsed by the job', async function () {
@@ -986,16 +966,22 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.reported, [cleanupError]);
   });
 
-  it('accepts a file exactly at the cap', async function () {
-    const h = harness(Array.from({ length: 100 }, (_, i) => row(`Post ${i + 1}`)));
+  it.each([99, 100, 101])('imports all %i rows from a raw CSV', async function (total) {
+    const h = harness(Array.from({ length: total }, (_, i) => row(`Post ${i + 1}`)));
 
     const accepted = await h.importer.importCSV({
       filePath: '/tmp/posts.csv',
       fileName: 'posts.csv',
     });
 
-    assert.deepEqual(accepted, { importId: 'run_test', total: 100 });
+    assert.deepEqual(accepted, { importId: 'run_test', total });
     assert.equal(h.jobs.length, 1);
+
+    await h.importer.handle(h.jobs[0]);
+
+    assert.equal(h.created.length, total);
+    assert.equal(h.store.get('run_test')?.status, 'complete');
+    assert.equal(h.store.get('run_test')?.rows.length, total);
   });
 
   it('records a failed write against its row and imports the rest', async function () {

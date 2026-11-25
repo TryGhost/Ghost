@@ -48,8 +48,6 @@ type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
 
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
-  tooManyPosts:
-    'This file contains more than {max} posts. Imports are temporarily limited to {max} posts at a time — please split the file into smaller files and try again.',
   allWritesFailed: 'Content import failed to write all {count} attempted {postNoun}.',
   urlResolutionFailed: 'Content import could not resolve a URL for {count} imported {postNoun}.',
 };
@@ -61,8 +59,6 @@ function logLifecycle(message: string): void {
     // Observability must not change whether an import is queued or resolves.
   }
 }
-
-const MAX_POSTS = 100;
 
 interface ImporterDeps {
   readRows: ReadRows;
@@ -150,7 +146,6 @@ class ContentCSVImporter {
     const { source, preparedRows } = await this.readPreparedRows(request);
     await this.cleanupSource(source.cleanup);
 
-    this.assertWithinPostLimit(preparedRows.rows);
 
     const stagedFile = await this._fileStager.stage(request);
     let handedOff = false;
@@ -193,7 +188,6 @@ class ContentCSVImporter {
       });
       source = prepared.source;
       run.sourceColumns = prepared.preparedRows.columns;
-      this.assertWithinPostLimit(prepared.preparedRows.rows);
       await this.processRows(
         job.importId,
         job.importTagNames,
@@ -393,15 +387,6 @@ class ContentCSVImporter {
       throw new errors.ValidationError({
         message: tpl(messages.unreadableFile),
         err: error,
-      });
-    }
-  }
-
-  private assertWithinPostLimit(rows: PreparedPostRow[]): void {
-    // Temporary while import state is held in memory: M8 removes the cap.
-    if (rows.length > MAX_POSTS) {
-      throw new errors.ValidationError({
-        message: tpl(messages.tooManyPosts, { max: MAX_POSTS }),
       });
     }
   }

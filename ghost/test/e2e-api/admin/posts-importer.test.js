@@ -1682,32 +1682,44 @@ describe('Posts Importer API', function () {
     assert.equal(after, before, 'no posts were created from garbage rows');
   });
 
-  it('Rejects an upload of more posts than the temporary cap, importing nothing', async function () {
+  it.each(['CSV', 'ZIP'])('Imports and reports 101 posts from a %s upload', async function (kind) {
     await agent.loginAsOwner();
 
-    const overCapRows = Array.from(
+    const titlePrefix = `Over cap ${kind} post`;
+    const rows = Array.from(
       { length: 101 },
-      (_, i) => `Over cap post ${i + 1},<p>${i + 1}</p>,2025-02-01T00:00:00.000Z`,
+      (_, i) => `${titlePrefix} ${i + 1},<p>${i + 1}</p>,2025-02-01T00:00:00.000Z`,
     );
-    const overCapZipPath = await zipFile('posts-import-over-cap.zip', {
-      'posts.csv': 'title,html,published_at\n' + overCapRows.join('\n') + '\n',
-      'content/files/over-cap-guide.pdf': 'must not be stored',
-    });
+    const csv = 'title,html,published_at\n' + rows.join('\n') + '\n';
+    const file =
+      kind === 'CSV'
+        ? await csvFile('posts-import-over-cap.csv', csv)
+        : await zipFile('posts-import-over-cap.zip', {
+            'posts.csv': csv,
+            'content/files/over-cap-guide.pdf': 'archive attachment',
+          });
 
-    const { body } = await agent
-      .post('posts/upload/')
-      .attach('postsfile', overCapZipPath)
-      .expectStatus(422);
+    const { body } = await agent.post('posts/upload/').attach('postsfile', file).expectStatus(202);
+    assert.match(body.meta.import_id, /^[a-f0-9]{24}$/);
+    assert.equal(body.meta.total, 101);
 
-    assert.match(body.errors[0].message, /more than 100 posts/);
+    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
 
     const { data: posts } = await models.Post.findPage({
-      filter: `title:~'Over cap post'`,
+      filter: `title:~'${titlePrefix}'`,
       status: 'all',
       limit: 'all',
     });
-    assert.equal(posts.length, 0, 'no posts were written from the rejected file');
-    await assert.rejects(fs.stat(getImportedAssetPaths()[13]), { code: 'ENOENT' });
+    assert.equal(posts.length, 101);
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    assert.match(email.html, /Created:<\/strong> 101/);
+    const report = email.attachments.find(({ filename }) => filename === 'report.csv');
+    const parsed = papaparse.parse(report.content, { header: true, skipEmptyLines: true });
+    assert.equal(parsed.data.length, 101);
+
+    if (kind === 'ZIP') {
+      assert.equal(await fs.readFile(getImportedAssetPaths()[13], 'utf8'), 'archive attachment');
+    }
   });
 
   it('Cannot upload a posts CSV when the csvContentImporter flag is disabled', async function () {
