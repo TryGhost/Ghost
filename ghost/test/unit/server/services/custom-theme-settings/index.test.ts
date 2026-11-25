@@ -62,7 +62,9 @@ describe('Custom theme settings root and retained consumers', function () {
     const transacting = () => ({ where: () => ({ forUpdate: () => ({ first: async () => {} }) }) });
     sandbox
       .stub(models.CustomThemeSetting, 'transaction')
-      .callsFake((fn: (trx: typeof transacting) => unknown) => fn(transacting));
+      .callsFake((...args: unknown[]) =>
+        (args[0] as (trx: typeof transacting) => unknown)(transacting),
+      );
     populate = sandbox.spy(cache, 'populate');
     activateFrontend = sandbox.stub(frontendBridge, 'activateTheme').resolves();
     sandbox.stub(validate, 'init');
