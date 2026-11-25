@@ -827,9 +827,9 @@ services:
           The TypeScript root exports synchronous init and Promise-returning importCSV and
           handleJob functions. importCSV and handleJob throw synchronously
           before initialization; request-schema errors also throw synchronously, whereas
-          accepted import preparation and handler failures reject promises.
+          upload preparation failures reject and terminal handler failures finalize partial results.
           The deep ContentCSVImportJob class carries serializable upload,
-          mapping, recipient, row count and run metadata; it is a job definition, not another root.
+          mapping, recipient and run metadata; it is a job definition, not another root.
           Units assert the pre-init handler path and injected job serialization. A
           separately imported root in HTTP tests checks pre-init import, two successful init
           calls, schema errors and asynchronous unreadable-file rejection. Root units also
@@ -845,7 +845,7 @@ services:
           - test/e2e-api/admin/posts-importer.test.js
       construction:
         summary: >-
-          First init constructs one private ContentCSVImporter, ImportRunStore,
+          First init constructs one private ContentCSVImporter,
           BookshelfPostsRepository with its relation resolver, and GhostMailer; successful
           later calls retain that graph. The repository retains models. Converter factories
           and the current media-inliner implementation are resolved per job, with a new
@@ -855,7 +855,7 @@ services:
           filesystem tests exercise the stager with LocalStorageBase. Root units now pin one
           importer across repeated init, no publication after failed mailer construction and
           successful retry. Late jobs/media/storage lookups use controlled adapters with a
-          real CSV and importer. Partial resource-acquisition cleanup remains source-only.
+          real CSV and importer.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/importer.ts
@@ -871,8 +871,8 @@ services:
       consumers:
         summary: >-
           Boot owns init. The Admin posts upload endpoint retains the root, forwards upload
-          metadata/mapping and the current user's email, and returns HTTP 202 with import_id
-          and total after staging, preflight and dispatch. Authentication, feature flag,
+          metadata/mapping and the current user's identity, and returns HTTP 202 with import_id
+          after staging or single-use confirmation and dispatch. Authentication, feature flag,
           upload validation and content-import permission belong to HTTP/API layers. Jobs
           registration, given the root by boot, awaits handleJob for content-csv-import; the separate
           site-content-import job is outside this root. Real booted HTTP tests assert role/flag gates, report
@@ -897,7 +897,7 @@ services:
           media-inliner.init, before handler registration, jobs start and HTTP readiness.
           Construction alone does not resolve the jobs instance or media implementation;
           dispatch and processing require them later. The request needs owner lookup when
-          no caller email exists, readable local staging and settings for batch tags; jobs
+          no caller email exists, compatible shared imports storage and settings for batch tags; jobs
           additionally need converters, models/storage and optional URL lookup. Real HTTP
           tests establish selected normal boot-to-job outcomes, while root units
           establish early errors. Root units additionally assert late dependency acquisition
@@ -913,36 +913,34 @@ services:
           - test/e2e-api/admin/posts-importer.test.js
       lifetime:
         summary: >-
-          There is no reset, stop, abort or public implementation accessor. The module retains
-          its graph across init calls; run records are mutable, in memory, created when the
-          job starts and released after its completion email.
-          Media promises, including failed results, are cached by exact URL within one
-          job, not across jobs. Store units assert finished runs stay regardless of age or count;
-          media units hold an import to prove sharing, and assert separate-instance
-          isolation. Root units retain the same request/job receiver and call handleJob
-          directly after repeated init. Dispatch is stubbed; the jobs backend queue is not
-          exercised. Duplicate/concurrent job handling and late admissions during shutdown
-          remain source-only.
+          The module retains its importer across init calls. Accepted uploads have durable
+          submission state and bounded journal batches, and test-only drain tracking waits
+          through completion mail and cleanup. Each worker processes one CSV import at a time.
+          The media URL index uses private per-attempt scratch storage. Retained-outbox tests kill
+          a worker after a post commit and verify checkpoint recovery, post deduplication and
+          ZIP asset reuse. Recovery relies on retained-outbox replay or backend redelivery
+          and durable imports storage accessible to the worker.
         sources:
           - core/server/services/content-import/index.ts
-          - core/server/services/content-import/import/store.ts
+          - core/server/services/content-import/import/journal.ts
           - core/server/services/content-import/import/media.ts
           - core/server/services/content-import/import/importer.ts
         tests:
-          - test/unit/server/services/content-import/import/store.test.ts
+          - test/unit/server/services/content-import/import/journal.test.ts
+          - test/e2e-server/csv-import-recovery.isolated.test.ts
           - test/unit/server/services/content-import/import/media.test.ts
           - test/unit/server/services/content-import/import/importer.test.ts
           - test/unit/server/services/content-import/index.test.ts
       configuration:
         summary: >-
           Each request captures recipient, timezone-derived batch tags and mapping into its
-          job; each execution reparses the staged source and rechecks the fixed 100-row cap.
+          job. Execution streams the staged source, skipping committed records on redelivery.
           Timezone fallback validates nonempty string shape, not a valid timezone name.
           Local-media classification reads current config accessors for site/subdir/CDN URLs;
           this does not imply production hot reload of the immutable config tree. Admin URLs
           come through the shared frozen URL helper; published URLs query the retained URL
-          service per result. Tests assert injected timezone tags, mapping forwarding, cap
-          boundaries, local URL classification and real HTTP newer-timestamp/duplicate
+          service per result. Tests assert injected timezone tags, mapping forwarding, record
+          and archive limits, local URL classification and real HTTP newer-timestamp/duplicate
           handling. They do not pin retained-root config capture/replacement. CSV defaults
           are published/public posts; explicit supported fields and supplied HTML/Markdown
           are validated/converted before writes, rather than inheriting site visibility.
@@ -960,26 +958,20 @@ services:
           - test/e2e-api/admin/posts-importer.test.js
       resources:
         summary: >-
-          The root retains a mailer and run store, borrows jobs/models/storage and owns staged
-          uploads, extracted directories and per-job media caches. It registers no timer or
-          event listener itself. Parsing buffers the complete CSV before applying the row
-          cap; archive extraction uses the shared zip helper without explicit size limits.
-          Asset groups store in parallel with rollback on storage failure; successfully
-          stored assets/media are not compensated for later row or mail failures. Posts use
-          individual DB transactions, not one import transaction. Handler finally awaits
-          extracted-source cleanup and best-effort mail, releases the run, then awaits staged
-          deletion: a test that waits for the mail can finish first. Units and filesystem
-          integration assert selected cleanup, asset rollback and cache behavior; real HTTP
-          tests assert file removal under injected storage failures and contributor/tag DB
-          rollback under a rejected post write. They do not prove root/job shutdown drains
-          mail, staged cleanup, providers or outstanding DB work.
+          The root owns private staged uploads, checkpoints, report parts and per-attempt
+          scratch files. Raw and compressed uploads are limited to 1 GiB, expanded ZIPs to
+          1 GiB and 50,000 entries, and each CSV record to 8 MiB. ZIP assets are stored before
+          row processing. Each post uses its own database transaction. The recurring cleanup
+          expires abandoned uploads and linked reports. Handler finalization removes source
+          and journal data and retains large reports for seven-day downloads.
+          Unit and HTTP tests cover cleanup, rollback, bounded reading and report ownership.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/importer.ts
           - core/server/services/content-import/import/assets.ts
           - core/server/services/content-import/import/source.ts
           - core/server/services/content-import/import/post-repository.ts
-          - core/server/services/content-import/csv/parse.ts
+          - core/server/services/content-import/csv/read-records.ts
           - core/server/data/importer/import-archive.ts
           - core/server/data/importer/content-files.ts
           - core/server/lib/mail/ghost-mailer.js
@@ -991,11 +983,12 @@ services:
           - test/e2e-api/admin/posts-importer.test.js
       failures:
         summary: >-
-          Owner lookup fails before staging; invalid/staging/parser/cap failures reject before
-          dispatch, and dispatch failure removes the staged file best-effort.
+          Owner lookup fails before staging. Invalid or unreadable uploads can reject before
+          dispatch, and uncertain submissions retain their source through expiry.
           Expected row validation, media and DB write failures are recorded and later rows
           continue. All attempted writes failing reports an aggregate but still marks the
-          run complete; unexpected preparation/converter/media failures reject the handler.
+          run complete. Unexpected preparation, conversion or media failures finalize committed
+          partial results and resolve the job.
           URL failures retain successful writes without links. Completion mail and returned
           source/staged cleanup errors are reported without rejecting successful work; the
           root reporter catches logging/reporting failures. Source preparation's own cleanup
@@ -1023,13 +1016,8 @@ services:
         contracts when changing composition. Retention across actual same-process boot and
         partially acquired resource cleanup still need separate characterization.
       - >-
-        Characterize the release-before-staged-deletion drain boundary with a held cleanup,
-        then define root/job ownership for admission, cancellation, mail and filesystem drain.
-        Waiting for the completion mail does not prove complete handler settlement or restart.
-      - >-
-        Preserve staged-file ownership when storage changes between stage/remove; cover
-        cleanup failure masking, orphan recovery and bounded CSV/archive resources. The row
-        cap is applied after full reads/extraction and does not itself bound bytes or memory.
+        Recovery follows the jobs service's replay policy. Graceful shutdown behavior beyond the existing
+        worker lifecycle and a backend's exhausted delivery budget remain outside CSV ownership.
       - >-
         Pin duplicate/concurrent jobs and concurrent source-ID/slug writes, partial import
         persistence and second timestamp-write rollback if these paths change. Existing real
