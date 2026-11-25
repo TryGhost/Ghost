@@ -540,9 +540,9 @@ test.describe('Content Visibility', async () => {
             await card.dblclick();
             await expectPanelOnTab(card, 'visibility');
 
-            const cardBox = await card.boundingBox();
-            const panelBox = await card.getByTestId('settings-panel').boundingBox();
-            const visibleBottom = Math.min(cardBox.y + cardBox.height, page.viewportSize().height);
+            const cardBox = (await card.boundingBox())!;
+            const panelBox = (await card.getByTestId('settings-panel').boundingBox())!;
+            const visibleBottom = Math.min(cardBox.y + cardBox.height, page.viewportSize()!.height);
 
             expect(cardBox.y).toBeGreaterThan(100);
             expect(panelBox.y + panelBox.height / 2).toBeCloseTo((cardBox.y + visibleBottom) / 2, -1);

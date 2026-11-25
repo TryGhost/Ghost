@@ -28,6 +28,7 @@ import {VISIBILITY_SETTINGS} from '../utils/visibility';
 import type {CardConfig, FileUploader} from '../context/KoenigComposerContext';
 import type {ReactNode} from 'react';
 import type {Transformer} from '@lexical/markdown';
+import type {VisibilitySetting} from '../utils/visibility';
 
 export interface EmailEditorCardConfig extends CardConfig {
     editorType?: string;
@@ -35,7 +36,6 @@ export interface EmailEditorCardConfig extends CardConfig {
         allowedWidths?: string[];
         [key: string]: unknown;
     };
-    visibilitySettings?: string;
     [key: string]: unknown;
 }
 
@@ -47,7 +47,7 @@ export const EMAIL_EDITOR_CARD_CONFIG = {
     visibilitySettings: VISIBILITY_SETTINGS.EMAIL_ONLY
 };
 
-const ALLOWED_EMAIL_EDITOR_VISIBILITY: string[] = [
+const ALLOWED_EMAIL_EDITOR_VISIBILITY: VisibilitySetting[] = [
     VISIBILITY_SETTINGS.EMAIL_ONLY,
     VISIBILITY_SETTINGS.NONE
 ];

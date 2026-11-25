@@ -25,7 +25,7 @@ vi.mock(import('lexical'), async (importOriginal) => {
 });
 
 vi.mock(import('@tryghost/kg-default-nodes'), () => ({
-    $isKoenigCard: koenigMocks.$isKoenigCard
+    $isKoenigCard: koenigMocks.$isKoenigCard as unknown as (node: unknown) => node is KoenigCard
 }));
 
 describe('useVisibilityToggle', () => {

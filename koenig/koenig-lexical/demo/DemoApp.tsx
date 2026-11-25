@@ -19,6 +19,7 @@ import {
     KoenigComposableEditor, KoenigComposer, KoenigEditor, MINIMAL_NODES,
     MINIMAL_TRANSFORMERS, RestrictContentPlugin, SelectionWordCountPlugin, TKCountPlugin, WordCountPlugin
 } from '../src';
+import {VISIBILITY_SETTINGS, type VisibilitySetting} from '../src/utils/visibility';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
@@ -30,6 +31,10 @@ const url = new URL(window.location.href);
 const params = new URLSearchParams(url.search);
 const WEBSOCKET_ENDPOINT = params.get('multiplayerEndpoint') || 'ws://localhost:1234';
 const WEBSOCKET_ID = params.get('multiplayerId') || '0';
+
+function getVisibilitySetting(value: string | null): VisibilitySetting | undefined {
+    return Object.values(VISIBILITY_SETTINGS).find(setting => setting === value);
+}
 
 // show deprecated cards by default so they can be tested, unless explicitly hidden
 // so we can test they are removed from the menu when deprecated/behind a feature flag
@@ -355,7 +360,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setSelectionWord
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
         // `/#/?visibility=none` simulates a site with members turned off
-        visibilitySettings: searchParams.get('visibility') || undefined,
+        visibilitySettings: getVisibilitySetting(searchParams.get('visibility')),
         deprecated: {
             headerV1: hideDeprecatedCardInMenu(searchParams),
             emailCta: hideDeprecatedCardInMenu(searchParams)

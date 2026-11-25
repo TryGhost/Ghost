@@ -271,7 +271,7 @@ function useDragDropReorder(editor: LexicalEditor) {
     }, [isEditingCard, isEditable, koenig]);
 
     // a drag under way when the document goes read-only is abandoned, not dropped
-    useResetWhenReadOnly(() => koenig.dragDropHandler?.cancelDrag());
+    useResetWhenReadOnly(() => (koenig.dragDropHandler as DragDropHandler | undefined)?.cancelDrag());
 }
 
 export default function DragDropReorderPlugin() {

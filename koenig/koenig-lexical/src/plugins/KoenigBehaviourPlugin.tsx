@@ -242,7 +242,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             return;
         }
 
-        const refuseInput = (event) => {
+        const refuseInput = (event: InputEvent) => {
             if (!editor.isEditable() && event.target instanceof Node && editor.getRootElement()?.contains(event.target)) {
                 event.preventDefault();
             }
