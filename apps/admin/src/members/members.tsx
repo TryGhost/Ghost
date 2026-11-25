@@ -6,7 +6,7 @@ import MembersHeaderSearch from './components/members-header-search';
 import MembersHelpCards from './components/members-help-cards';
 import MembersList from './components/members-list';
 import MultipleActiveSubscriptionsBanner from './components/multiple-active-subscriptions-banner';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Container } from '@tryghost/shade/primitives';
@@ -248,6 +248,46 @@ const MembersPage: React.FC<MembersPageProps> = ({
   ]
     .filter(Boolean)
     .join(' · ');
+
+  // Under a large title (Admin 7), the header is pulled up beside the title, which is drawn
+  // above it, and its own title is a small stand-in. The header lets its actions drop to a row of
+  // their own when they don't fit beside its title, but it only knows the stand-in's width. The
+  // stand-in takes the large title's width here, name, count and the line under them, so the
+  // actions drop below a long segment name as they do below "Members", instead of lying over it.
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    const left = header?.querySelector<HTMLElement>('[data-page-header="left"]');
+    const row = left?.parentElement;
+    const largeTitle = header
+      ?.closest('[data-list-page="list-page"]')
+      ?.querySelector<HTMLElement>('[data-page-header="large-title"]');
+    if (!largeTitles || !left || !row || !largeTitle) {
+      return;
+    }
+    const parts = () =>
+      largeTitle.querySelectorAll<HTMLElement>(
+        '[data-testid="segment-switcher"], [data-page-header="count"], [data-page-header="meta"]',
+      );
+    const measure = () => {
+      const start = largeTitle.getBoundingClientRect().left;
+      let end = start;
+      for (const part of parts()) {
+        // The text's own extent, not its box: the line under the title fills the row.
+        const range = document.createRange();
+        range.selectNodeContents(part);
+        end = Math.max(end, range.getBoundingClientRect().right);
+      }
+      left.style.minWidth = `${Math.ceil(Math.min(end - start, row.clientWidth))}px`;
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(largeTitle);
+    parts().forEach((part) => observer.observe(part));
+    return () => {
+      observer.disconnect();
+      left.style.minWidth = '';
+    };
+  }, [largeTitles, viewedSegment?.name, segmentMeta, totalMembers, shouldShowLoading]);
 
   const headerSearch = shouldShowMemberControls && (
     <>
