@@ -4,6 +4,7 @@
 // and its relations config can use it on its own.
 
 export { Filter } from './filter';
+export { type ParsedFilter, parseFilter } from './parse';
 export { type FilterRelations } from './sql';
 export {
   type FilterStep,

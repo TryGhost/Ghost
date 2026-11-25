@@ -8,6 +8,7 @@ import { toDatabaseDate } from '../../lib/db-types/date';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 import { sortable } from '../../lib/sortable';
 import { SegmentAdded, SegmentDeleted, SegmentRenamed, type OnSegmentUpdated } from './changes';
+import { filterNamesSegment } from './expansion';
 import { Segment, SegmentId, type SegmentFilter, type SegmentName } from './models';
 import { nameTakenError, normalizeName } from './rejections';
 import type { SegmentChangeAttempt, SegmentsTracking } from './tracking';
@@ -106,13 +107,33 @@ export class SegmentsService {
     return segment;
   }
 
+  /** The segments with any of `ids`, in no particular order. */
+  async readMany(ids: readonly SegmentId[], executor: Knex = this.knex): Promise<Segment[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return StoredSegments.parse(
+      await executor(TABLE).whereIn('id', ids).select('id', 'name', 'filter'),
+    );
+  }
+
   /**
    * Adds a segment after the others, and returns it. Fails with a ValidationError when another
-   * segment has the name. Another segment can have the same filter.
+   * segment has the name, or when its filter names a segment. Another segment can have the same
+   * filter.
    */
   add(context: RequestContext, input: NewSegment, executor: Knex = this.knex): Promise<Segment> {
     return this.tracking.change('add', (attempt) =>
       ensureTransaction(executor, async (trx) => {
+        // Expansion replaces a segment with its filter once, without recursing, so a segment's
+        // filter can't name another segment
+        if (filterNamesSegment(input.filter)) {
+          attempt.rejecting('filter_names_segment');
+          throw new errors.ValidationError({
+            message: "A segment's filter cannot name another segment.",
+            property: 'filter',
+          });
+        }
         const stored = await this.browse(trx);
         if (stored.some(hasName(input.name))) {
           nameTaken(attempt);

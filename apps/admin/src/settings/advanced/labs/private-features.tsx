@@ -124,6 +124,12 @@ const features: Feature[] = [
       'Connect Stripe through account.ghost.org, which sends the connection back to Admin, instead of pasting a secure key.',
     flag: 'oauthBridge',
   },
+  {
+    title: 'Email posts to segments',
+    description:
+      'Work in progress. So far, member filters in the Admin API can name saved segments.',
+    flag: 'segmentEmails',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

@@ -10,10 +10,15 @@ import type { Tracer } from '../../lib/tracing/tracer';
  * - `name_taken`: another segment already has the name, or a name the database counts as the
  *   same.
  * - `filter_changed`: the request has a filter that isn't the segment's own.
+ * - `filter_names_segment`: the new segment's filter names a segment.
  *
  * Any other error is a failure.
  */
-export type SegmentRejection = 'not_found' | 'name_taken' | 'filter_changed';
+export type SegmentRejection =
+  | 'not_found'
+  | 'name_taken'
+  | 'filter_changed'
+  | 'filter_names_segment';
 
 /** What a command that changes a segment reports. */
 export interface SegmentChangeAttempt {
