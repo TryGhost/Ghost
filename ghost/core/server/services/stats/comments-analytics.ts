@@ -8,6 +8,7 @@ import {
   resolveTimeZone,
   startOfLocalDay,
 } from '../../../kernel/clock';
+const nql = require('@tryghost/nql');
 
 export type CommentsInterval = 'day' | 'week' | 'month';
 
@@ -35,7 +36,12 @@ export type CommentsOverview = {
 };
 
 export type TopCommentedPost = { post_id: string; title: string; comments: number };
-export type TopCommenter = { member_id: string; name: string | null; comments: number };
+export type TopCommenter = {
+  member_id: string;
+  name: string | null;
+  avatar_image: string | null;
+  comments: number;
+};
 
 // Calendar dates are YYYY-MM-DD; database datetimes are UTC "YYYY-MM-DD HH:mm:ss"
 const toDatetime = (ms: number) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
@@ -103,6 +109,55 @@ export type CommentsStatsRange = z.output<typeof rangeSchema>;
 const topSchema = z.object({
   limit: z.coerce.number().int().min(1).default(DEFAULT_TOP_LIMIT),
 });
+
+const filterSchema = z.object({ filter: z.string().optional() });
+const FILTER_FIELDS = new Set([
+  'post_id',
+  'member_id',
+  'html',
+  'status',
+  'created_at',
+  'count.reports',
+]);
+
+type Matching = (query: Knex.QueryBuilder) => Knex.QueryBuilder;
+
+// Same NQL parser and SQL compiler as the comments list. The compiler qualifies
+// columns with the query's table name, so the queries it filters keep `comments` unaliased.
+function matchingComments(knex: Knex, options: unknown): Matching | undefined {
+  const { filter } = parse(filterSchema, options);
+  if (!filter) {
+    return undefined;
+  }
+  const query = nql(filter, {
+    transformer: (input: object) =>
+      nql.utils.mapQuery(input, (value: unknown, key: string) => {
+        if (!FILTER_FIELDS.has(key)) {
+          throw new errors.ValidationError({
+            message: `Unsupported comments stats filter field: ${key}`,
+          });
+        }
+        return { [key === 'count.reports' ? 'report_count' : key]: value };
+      }),
+    relations: {
+      report_count: {
+        type: 'aggregate',
+        tableName: 'comment_reports',
+        joinFrom: 'comment_id',
+        aggregate: { fn: 'count', column: 'comment_reports.id' },
+      },
+    },
+  });
+  try {
+    query.querySQL(knex('comments'));
+  } catch (error) {
+    throw new errors.ValidationError({
+      message: 'Invalid comments stats filter.',
+      context: error instanceof Error ? error.message : undefined,
+    });
+  }
+  return (builder) => query.querySQL(builder);
+}
 
 function parse<T extends z.ZodType>(schema: T, options: unknown): z.output<T> {
   const parsed = schema.safeParse(options ?? {});
@@ -180,17 +235,26 @@ const datetimeMs = (value: Date | string) =>
 
 export class CommentsAnalyticsService {
   private readonly knex: Knex;
+  private readonly memberAvatarImage: (email: string | null | undefined) => string | null;
 
-  constructor({ knex }: { knex: Knex }) {
+  constructor({
+    knex,
+    memberAvatarImage,
+  }: {
+    knex: Knex;
+    memberAvatarImage: (email: string | null | undefined) => string | null;
+  }) {
     this.knex = knex;
+    this.memberAvatarImage = memberAvatarImage;
   }
 
   async getOverview(options: unknown): Promise<CommentsOverview> {
-    const window = await this.getWindow(parseCommentsStatsRange(options));
+    const matching = matchingComments(this.knex, options);
+    const window = await this.getWindow(parseCommentsStatsRange(options), matching);
     const [periods, series, reported] = await Promise.all([
-      this.countPeriods(window),
-      this.countSeries(window),
-      this.countReported(window),
+      this.countPeriods(window, matching),
+      this.countSeries(window, matching),
+      this.countReported(window, matching),
     ]);
 
     const current = periods.find((row) => Number(row.is_current) === 1);
@@ -242,15 +306,16 @@ export class CommentsAnalyticsService {
   }
 
   async getTopCommenters(options: unknown): Promise<{ data: TopCommenter[] }> {
-    // Name only: the panel needs no contact data
+    // Email is used only to derive the same avatar as the members list.
     const rows = await this.ranked('member_id', options)
       .join('members as m', 'm.id', 't.member_id')
-      .select('t.member_id', 'm.name', 't.comment_count');
+      .select('t.member_id', 'm.name', 'm.email', 't.comment_count');
 
     return {
       data: rows.map((row) => ({
         member_id: row.member_id,
         name: row.name,
+        avatar_image: this.memberAvatarImage(row.email),
         comments: Number(row.comment_count),
       })),
     };
@@ -258,13 +323,15 @@ export class CommentsAnalyticsService {
 
   // An unbounded range starts on the first comment's local day, so the interval
   // fits the comments that exist. It has nothing to compare against.
-  private async getWindow(range: CommentsStatsRange) {
+  private async getWindow(range: CommentsStatsRange, matching?: Matching) {
     if (range.dateFrom !== null) {
       return getCommentsStatsWindow({ ...range, dateFrom: range.dateFrom });
     }
     const earliest = earliestDateFrom(range.dateTo);
     const { from, to } = localDateBounds(earliest, range.dateTo, range.timezone);
-    const first = await this.inRange(from, to).min({ first: 'c.created_at' }).first();
+    const first = await this.inRange(from, to, matching)
+      .min({ first: 'comments.created_at' })
+      .first();
     const dateFrom = first?.first
       ? localDateOf(datetimeMs(first.first), range.timezone)
       : range.dateTo;
@@ -284,14 +351,14 @@ export class CommentsAnalyticsService {
       range.dateTo,
       range.timezone,
     );
-    const ranking = this.inRange(from, to)
-      .whereNotNull(`c.${column}`)
-      .select(`c.${column}`)
+    const ranking = this.inRange(from, to, matchingComments(this.knex, options))
+      .whereNotNull(`comments.${column}`)
+      .select(`comments.${column}`)
       .count({ comment_count: '*' })
-      .groupBy(`c.${column}`)
+      .groupBy(`comments.${column}`)
       .orderBy([
         { column: 'comment_count', order: 'desc' },
-        { column: `c.${column}`, order: 'asc' },
+        { column: `comments.${column}`, order: 'asc' },
       ])
       .limit(limit)
       .as('t');
@@ -302,13 +369,18 @@ export class CommentsAnalyticsService {
     ]);
   }
 
-  // Covered by comments(created_at, status, member_id, post_id). Like the Admin
-  // comments list, hides only deleted comments.
-  private inRange(from: string, to: string) {
-    return this.knex('comments as c')
-      .where('c.created_at', '>=', from)
-      .andWhere('c.created_at', '<', to)
-      .andWhere('c.status', '<>', 'deleted');
+  // Covered by comments(created_at, status, member_id, post_id); MySQL otherwise reads every
+  // row through the status index under a status filter. Like Admin, hides only deleted.
+  private inRange(from: string, to: string, matching?: Matching) {
+    const query = this.knex('comments')
+      .hintComment('NO_INDEX(comments comments_status_index)')
+      .where('comments.created_at', '>=', from)
+      .andWhere('comments.created_at', '<', to)
+      .andWhere('comments.status', '<>', 'deleted');
+    if (matching) {
+      matching(query);
+    }
+    return query;
   }
 
   // Byte comparison makes MySQL's DISTINCT ~4x faster than its collation; SQLite
@@ -316,17 +388,17 @@ export class CommentsAnalyticsService {
   private distinctCommenters() {
     const client = String(this.knex.client.config.client);
     return client.startsWith('mysql')
-      ? this.knex.raw('COUNT(DISTINCT CAST(c.member_id AS BINARY)) AS commenters')
-      : this.knex.raw('COUNT(DISTINCT c.member_id) AS commenters');
+      ? this.knex.raw('COUNT(DISTINCT CAST(comments.member_id AS BINARY)) AS commenters')
+      : this.knex.raw('COUNT(DISTINCT comments.member_id) AS commenters');
   }
 
-  // Bucket index for c.created_at: -1 for the previous period, then 0..n-1.
+  // Bucket index for created_at: -1 for the previous period, then 0..n-1.
   // Newest first, since most rows in a range are recent.
   private bucketExpression(window: CommentsStatsWindow) {
     const cases = window.buckets
       .map((_, index) => index)
       .reverse()
-      .map(() => 'WHEN c.created_at >= ? THEN ?');
+      .map(() => 'WHEN comments.created_at >= ? THEN ?');
     const bindings = window.buckets
       .map(({ start }, index) => [start, index])
       .reverse()
@@ -336,23 +408,31 @@ export class CommentsAnalyticsService {
 
   private skipPreviousRemainder(query: Knex.QueryBuilder, window: CommentsStatsWindow) {
     return query
-      .where('c.created_at', '<', window.previousTo)
-      .orWhere('c.created_at', '>=', window.from);
+      .where('comments.created_at', '<', window.previousTo)
+      .orWhere('comments.created_at', '>=', window.from);
   }
 
-  private async countPeriods(window: CommentsStatsWindow): Promise<AggregateRow[]> {
-    return await this.inRange(window.previousFrom, window.to)
-      .where((query) => this.skipPreviousRemainder(query, window))
+  private async countPeriods(
+    window: CommentsStatsWindow,
+    matching?: Matching,
+  ): Promise<AggregateRow[]> {
+    return await this.inRange(window.previousFrom, window.to, matching)
+      .where((builder) => this.skipPreviousRemainder(builder, window))
       .select(
-        this.knex.raw('CASE WHEN c.created_at >= ? THEN 1 ELSE 0 END AS is_current', [window.from]),
+        this.knex.raw('CASE WHEN comments.created_at >= ? THEN 1 ELSE 0 END AS is_current', [
+          window.from,
+        ]),
       )
       .count({ comments: '*' })
       .select(this.distinctCommenters())
       .groupBy('is_current');
   }
 
-  private async countSeries(window: CommentsStatsWindow): Promise<AggregateRow[]> {
-    return await this.inRange(window.from, window.to)
+  private async countSeries(
+    window: CommentsStatsWindow,
+    matching?: Matching,
+  ): Promise<AggregateRow[]> {
+    return await this.inRange(window.from, window.to, matching)
       .select(this.bucketExpression(window))
       .count({ comments: '*' })
       .select(this.distinctCommenters())
@@ -361,15 +441,22 @@ export class CommentsAnalyticsService {
 
   // Driven from comment_reports, which is far smaller than comments. Each
   // comment lands in one bucket, so per-bucket counts sum to the totals.
-  private async countReported(window: CommentsStatsWindow): Promise<AggregateRow[]> {
-    return await this.knex('comment_reports as r')
-      .join('comments as c', 'c.id', 'r.comment_id')
-      .where('c.created_at', '>=', window.previousFrom)
-      .andWhere('c.created_at', '<', window.to)
-      .andWhere('c.status', '<>', 'deleted')
-      .where((query) => this.skipPreviousRemainder(query, window))
+  private async countReported(
+    window: CommentsStatsWindow,
+    matching?: Matching,
+  ): Promise<AggregateRow[]> {
+    const query = this.knex('comments')
+      .join('comment_reports as r', 'r.comment_id', 'comments.id')
+      .where('comments.created_at', '>=', window.previousFrom)
+      .andWhere('comments.created_at', '<', window.to)
+      .andWhere('comments.status', '<>', 'deleted')
+      .where((builder) => this.skipPreviousRemainder(builder, window))
       .select(this.bucketExpression(window))
       .countDistinct({ reported: 'r.comment_id' })
       .groupBy('bucket');
+    if (matching) {
+      matching(query);
+    }
+    return await query;
   }
 }

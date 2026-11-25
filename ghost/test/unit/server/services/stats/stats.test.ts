@@ -21,6 +21,7 @@ describe('StatsService', function () {
       urlUtils,
       logging,
       tinybirdClient,
+      memberAvatarImage: () => null,
     });
 
     assert(service instanceof StatsService);

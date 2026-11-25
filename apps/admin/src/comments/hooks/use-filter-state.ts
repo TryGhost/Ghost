@@ -58,9 +58,10 @@ export function shouldDelayCommentDateFilterHydration(
 
 export function useFilterState(timezone: string): UseFilterStateReturn {
   const [searchParams, setSearchParams] = useSearchParams();
-  const lastWrittenQueryRef = useRef<string | null>(null);
   const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
   const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
+  const lastReadQueryRef = useRef(currentQuery);
+  const lastWrittenQueryRef = useRef(currentQuery);
 
   const parsedFilters = useMemo(() => {
     if (filterParam !== undefined) {
@@ -76,14 +77,17 @@ export function useFilterState(timezone: string): UseFilterStateReturn {
   }, [filters, timezone]);
 
   useEffect(() => {
-    if (currentQuery !== lastWrittenQueryRef.current) {
-      setDraftFilters(parsedFilters);
-      lastWrittenQueryRef.current = currentQuery;
+    // Router navigation can commit after the local filter update. An unchanged
+    // URL is still the previous render, not an external request to undo the draft.
+    if (currentQuery !== lastReadQueryRef.current) {
+      lastReadQueryRef.current = currentQuery;
+      if (currentQuery !== lastWrittenQueryRef.current) {
+        setDraftFilters(parsedFilters);
+        lastWrittenQueryRef.current = currentQuery;
+        return;
+      }
     }
-  }, [currentQuery, parsedFilters]);
-
-  useEffect(() => {
-    if (lastWrittenQueryRef.current !== null && currentQuery !== lastWrittenQueryRef.current) {
+    if (currentQuery !== lastWrittenQueryRef.current) {
       return;
     }
 
@@ -94,7 +98,7 @@ export function useFilterState(timezone: string): UseFilterStateReturn {
       lastWrittenQueryRef.current = nextQuery;
       setSearchParams(nextParams, { replace: true });
     }
-  }, [currentQuery, filters, searchParams, setSearchParams, timezone]);
+  }, [currentQuery, filters, parsedFilters, searchParams, setSearchParams, timezone]);
 
   const setFilters = useCallback(
     (action: SetFiltersAction, options: SetFiltersOptions = {}) => {

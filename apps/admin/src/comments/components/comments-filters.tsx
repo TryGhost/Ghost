@@ -8,6 +8,7 @@ interface CommentsFiltersProps {
   barContainer?: HTMLElement | null;
   filters: Filter[];
   siteTimezone: string;
+  includeDateFilter?: boolean;
   onFiltersChange: (filters: Filter[]) => void;
 }
 
@@ -15,6 +16,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   filters,
   barContainer,
   siteTimezone,
+  includeDateFilter = true,
   onFiltersChange,
 }) => {
   const postValueSource = usePostResourceValueSource();
@@ -23,6 +25,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     memberValueSource,
     postValueSource,
     siteTimezone,
+    includeDateFilter,
   });
 
   const mobile = useMobileFilters();

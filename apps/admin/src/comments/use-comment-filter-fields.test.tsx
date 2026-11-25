@@ -44,4 +44,23 @@ describe('useCommentFilterFields', () => {
       customRenderer: expect.any(Function) as unknown,
     });
   });
+
+  it('keeps old date filters readable without offering another date filter', () => {
+    const { result } = renderHook(() =>
+      useCommentFilterFields({
+        memberValueSource: emptyValueSource,
+        postValueSource: emptyValueSource,
+        includeDateFilter: false,
+      }),
+    );
+
+    expect(result.current.find((field) => field.key === 'created_at')).toMatchObject({
+      readOnly: true,
+    });
+    expect(
+      result.current
+        .filter((field) => field.key !== 'created_at')
+        .every((field) => !field.readOnly),
+    ).toBe(true);
+  });
 });
