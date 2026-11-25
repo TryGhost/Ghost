@@ -3,23 +3,25 @@ import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { Definition } from '../metafields/models';
+import { Definition } from './models';
 import {
   FieldTypeSchema,
+  MEMBER_ACCESS,
+  MemberAccessSchema,
   TypedSettingsInputSchema,
   WRITTEN_SETTINGS,
   isCreatableType,
   refusedProperty,
   withTypedSettings,
   type FieldType,
+  type MemberAccess,
   type TypedSettings,
 } from '@tryghost/metafield-types';
-import { metafieldCodec, metafieldCodecWithDefaults } from '../metafields/codec';
-import { readStoredField } from '../metafields/stored-fields';
+import { metafieldCodec, metafieldCodecWithDefaults } from './codec';
+import { readStoredField } from './stored-fields';
 import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
-import type { Namespaces } from '../metafields/namespaces';
-import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from '../metafields/schema';
-import { MEMBER_ACCESS, MemberAccessSchema, type Caller, type MemberAccess } from '../callers';
+import type { Namespaces } from './namespaces';
+import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from './schema';
 import {
   ACTIVE_ONLY,
   ANY_STATUS,
@@ -28,7 +30,7 @@ import {
   type DefinitionQuery,
   type FieldIdentity,
   type FieldSource,
-} from '../metafields/queries';
+} from './queries';
 import { mintableKey } from './key';
 import type { RequestContext } from '../../../lib/actor';
 import {
@@ -38,8 +40,8 @@ import {
   DefinitionsAdded,
   DefinitionsReordered,
   type OnDefinitionUpdated,
-} from '../metafields/changes';
-import type { MetafieldsTracking } from '../metafields/tracking';
+} from './changes';
+import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
 
 const MAX_KEY_ITERATIONS = 1000;
@@ -83,7 +85,7 @@ const ReorderInput = z
  * The add and edit inputs, validated against the fields table's column lengths so an over-long
  * name is a validation error rather than a database error.
  */
-function definitionInputs(maxLength: FieldSource<Caller>['maxLength']) {
+function definitionInputs(maxLength: { name: number; key: number }) {
   const name = z
     .string()
     .trim()
@@ -118,17 +120,19 @@ function definitionInputs(maxLength: FieldSource<Caller>['maxLength']) {
   };
 }
 
-/** A field as an edit left it. */
-export interface EditedField {
-  field: Definition;
-  /**
-   * Whether the edit started or stopped members reading the field: archiving or restoring it, or
-   * keeping it from members or opening it to them.
-   */
-  changedForMembers: boolean;
+/** A definition as it was before an edit, and as the edit left it. */
+export interface EditedDefinition {
+  previous: Definition;
+  next: Definition;
 }
 
-export class MetafieldDefinitionsService {
+/**
+ * The definitions of one resource's metafields: reading them, and the commands that add, edit,
+ * reorder and delete them in a namespace. Every command asks the namespace's registration what
+ * its limits allow, and reports the change it made, inside its transaction, to the function it
+ * is given. Who may run a command is the owner's to decide, before calling it.
+ */
+export class MetafieldDefinitionsService<Caller> {
   private knex: Knex;
   private fields: FieldSource<Caller>;
   private onDefinitionUpdated: OnDefinitionUpdated;
@@ -402,8 +406,7 @@ export class MetafieldDefinitionsService {
 
       return ensureTransaction(executor, async (trx) => {
         await this.assertNamesEveryField(trx, namespace, keys);
-        const everyField = { caller: 'admin', status: ANY_STATUS, namespace } as const;
-        const previous = await this.list(this.fields.definitions(trx, everyField));
+        const previous = await this.everyDefinition(trx, namespace);
 
         // Ranks come from the request's order; the statements go out in key order, so
         // two concurrent reorders take their row locks in the same sequence and
@@ -417,7 +420,7 @@ export class MetafieldDefinitionsService {
         }
 
         // An order covers the whole list, archived definitions included.
-        const ordered = await this.list(this.fields.definitions(trx, everyField));
+        const ordered = await this.everyDefinition(trx, namespace);
         await this.onDefinitionUpdated(trx, context, new DefinitionsReordered(previous, ordered));
         return ordered;
       });
@@ -446,6 +449,19 @@ export class MetafieldDefinitionsService {
         property: 'key',
       });
     }
+  }
+
+  /**
+   * Every definition in `namespace` as stored, archived ones included, in the publisher's order.
+   * Read from the table rather than as a caller reads them, since a change is only made to a
+   * namespace that is available, where every definition reads as it is stored.
+   */
+  private async everyDefinition(db: Knex, namespace: Namespace): Promise<Definition[]> {
+    const rows = await inFieldOrder(
+      this.fields.table(db).where('namespace', namespace),
+      this.fields.name,
+    ).select('*');
+    return rows.flatMap((row) => this.readField(row) ?? []);
   }
 
   /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
@@ -556,7 +572,7 @@ export class MetafieldDefinitionsService {
     key: Key,
     input: unknown,
     executor: Knex = this.knex,
-  ): Promise<EditedField> {
+  ): Promise<EditedDefinition> {
     return this.tracking.definition('edit', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const parsed = this.inputs.edit.safeParse(input);
@@ -574,7 +590,6 @@ export class MetafieldDefinitionsService {
           throw new errors.NotFoundError({ message: 'Custom field not found.' });
         }
         attempt.fields([existing]);
-        const readByMembers = await this.isReadByMembers(trx, { namespace, key });
 
         // Key and type are immutable after creation: values are addressed by namespace and key
         // and interpreted by type, so changing either would silently orphan or
@@ -663,11 +678,7 @@ export class MetafieldDefinitionsService {
         if (!isDeepStrictEqual(existing, field)) {
           await this.onDefinitionUpdated(trx, context, new DefinitionEdited(existing, field));
         }
-        return {
-          field,
-          changedForMembers:
-            (await this.isReadByMembers(trx, { namespace, key })) !== readByMembers,
-        };
+        return { previous: existing, next: field };
       });
     });
   }
@@ -687,16 +698,6 @@ export class MetafieldDefinitionsService {
       .forUpdate()
       .first();
     return row ? this.readField(row) : null;
-  }
-
-  /** Whether members can read this field, asked the way their own reads ask. */
-  private async isReadByMembers(db: Knex, field: FieldIdentity): Promise<boolean> {
-    const read = this.fields.definitions(db, {
-      caller: 'members',
-      status: ACTIVE_ONLY,
-      field,
-    }).read;
-    return (await read.first('key')) !== undefined;
   }
 
   /**

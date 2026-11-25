@@ -3,7 +3,7 @@ import type { CsvField } from '@tryghost/metafield-csv';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import {
   type MemberMetafieldValues,
-  type MetafieldDefinitionsService,
+  type MemberDefinitions,
   type PlannedWrite,
 } from '../../members-metafields';
 import MembersCSVImporter, {
@@ -51,14 +51,14 @@ interface ImporterServices {
   productRepository: unknown;
   // The metafields services the members service hands the import composition root.
   metafields: {
-    definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+    definitions: Pick<MemberDefinitions, 'browse'>;
     values: Pick<MemberMetafieldValues, 'planWrite' | 'applyImportedWrite'>;
   };
 }
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
-  definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+  definitions: Pick<MemberDefinitions, 'browse'>;
   values: Pick<MemberMetafieldValues, 'getValuesForMany'>;
 }
 

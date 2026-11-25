@@ -4487,7 +4487,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/members-metafields/index.ts
-        - core/server/services/members-metafields/custom-fields/definitions-service.ts
+        - core/server/services/members-metafields/metafields/definitions-service.ts
         - core/server/services/members-metafields/bindings-service.ts
         - core/server/services/members/service.js
         - core/boot.js
@@ -4519,10 +4519,10 @@ services:
           - core/server/services/members-metafields/callers.ts
           - core/server/services/members-metafields/metafields/schema.ts
           - core/server/services/members-metafields/custom-fields/config.ts
-          - core/server/services/members-metafields/custom-fields/definitions-service.ts
+          - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/metafields/queries.ts
-          - core/server/services/members-metafields/custom-fields/key.ts
+          - core/server/services/members-metafields/metafields/key.ts
           - core/server/models/member.js
           - core/server/services/stripe-checkout-config/service.ts
     entryPoints:
@@ -4551,7 +4551,7 @@ services:
           - core/server/services/members-metafields/callers.ts
           - core/server/services/members-metafields/write-origin.ts
           - core/server/services/members-metafields/metafields/namespaces.ts
-          - core/server/services/members-metafields/custom-fields/definitions-service.ts
+          - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
         tests:
@@ -4573,7 +4573,7 @@ services:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/metafields/namespaces.ts
           - core/server/services/members-metafields/custom-fields/namespace.ts
-          - core/server/services/members-metafields/custom-fields/definitions-service.ts
+          - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
           - core/server/data/db/index.js
@@ -4672,7 +4672,7 @@ services:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/custom-fields/config.ts
           - core/server/services/members-metafields/custom-fields/namespace.ts
-          - core/server/services/members-metafields/custom-fields/definitions-service.ts
+          - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/metafields/schema.ts
           - core/shared/config/defaults.json
@@ -4690,7 +4690,7 @@ services:
           successful value/history writes and cascades; validation refusals do not prove rollback
           after a value/history write fails. Import failure units use fake commit/rollback.
         sources:
-          - core/server/services/members-metafields/custom-fields/definitions-service.ts
+          - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
           - core/server/services/members-metafields/metafields/changes.ts
@@ -4716,7 +4716,7 @@ services:
           successful actions; webhook HTTP and fake import tests assert continuation/reporting.
           Action failure, stale plans and concurrency guarantees remain untested.
         sources:
-          - core/server/services/members-metafields/custom-fields/definitions-service.ts
+          - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
           - core/server/services/members-metafields/metafields/changes.ts

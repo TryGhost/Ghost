@@ -108,6 +108,8 @@ export interface Namespaces<Caller> {
   assertRoom(namespace: Namespace, held: number, adding: number): Promise<void>;
   /** What `caller` may read in each namespace. */
   readable(caller: Caller): Grants;
+  /** Whether `caller` may read `field`, by its namespace's grant, whatever the field's status. */
+  canRead(caller: Caller, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
   /** Whether `caller` may write the values of `field`, by its namespace's grant. */
   canWrite(caller: Caller, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
 }
@@ -160,6 +162,10 @@ export function createNamespaces<Caller>(
         })),
         unowned: unowned.read(caller),
       };
+    },
+
+    canRead(caller, field) {
+      return reaches(accessPolicyOf(field.namespace).read(caller), field);
     },
 
     canWrite(caller, field) {
