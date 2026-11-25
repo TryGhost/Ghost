@@ -2289,6 +2289,32 @@ describe(`Admin Comments API`, function () {
       assert.equal(res.body.comments.length, 1);
       assert.equal(res.body.comments[0].html, '<p>Reported published</p>');
     });
+
+    // The report count is applied as one comparison, so a filter that needs more than one is
+    // rejected rather than run without its report count condition
+    it.each([
+      ['two report counts', 'count.reports:>0+count.reports:<2'],
+      ['either of two report counts', 'count.reports:0,count.reports:>1'],
+      ['a report count or another condition', 'count.reports:>0,status:hidden'],
+    ])('Rejects a filter on %s', async function (_case, filter) {
+      const reportedComment = await dbFns.addComment({
+        member_id: fixtureManager.get('members', 0).id,
+        html: '<p>Reported comment</p>',
+      });
+      await dbFns.addComment({
+        member_id: fixtureManager.get('members', 0).id,
+        html: '<p>Non-reported comment</p>',
+      });
+      await models.CommentReport.add({
+        comment_id: reportedComment.id,
+        member_id: fixtureManager.get('members', 1).id,
+      });
+
+      const res = await adminApi
+        .get('/comments/?filter=' + encodeURIComponent(filter))
+        .expectStatus(400);
+      assert.equal(res.body.errors[0].type, 'BadRequestError');
+    });
   });
 
   describe('Comment Reports', function () {
