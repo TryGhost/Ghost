@@ -7,7 +7,7 @@ import { isUniqueViolation } from '../../lib/db-errors';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 import { sortable } from '../../lib/sortable';
-import type { OnSegmentUpdated } from './changes';
+import { SegmentAdded, SegmentDeleted, SegmentRenamed, type OnSegmentUpdated } from './changes';
 import { Segment, SegmentId, type SegmentFilter, type SegmentName } from './models';
 import { nameTakenError, normalizeName } from './rejections';
 import type { SegmentChangeAttempt, SegmentsTracking } from './tracking';
@@ -135,11 +135,7 @@ export class SegmentsService {
           throw err;
         }
 
-        await this.onSegmentUpdated(trx, context, {
-          type: 'SegmentAdded',
-          verb: 'added',
-          next: segment,
-        });
+        await this.onSegmentUpdated(trx, context, new SegmentAdded(segment));
         return segment;
       }),
     );
@@ -191,12 +187,7 @@ export class SegmentsService {
         }
 
         const segment = { ...previous, name: input.name };
-        await this.onSegmentUpdated(trx, context, {
-          type: 'SegmentRenamed',
-          verb: 'edited',
-          previous,
-          next: segment,
-        });
+        await this.onSegmentUpdated(trx, context, new SegmentRenamed(previous, segment));
         return segment;
       }),
     );
@@ -211,11 +202,7 @@ export class SegmentsService {
       ensureTransaction(executor, async (trx) => {
         const segment = (await this.lock(id, trx)) ?? notFound(attempt);
         await trx(TABLE).where('id', segment.id).del();
-        await this.onSegmentUpdated(trx, context, {
-          type: 'SegmentDeleted',
-          verb: 'deleted',
-          previous: segment,
-        });
+        await this.onSegmentUpdated(trx, context, new SegmentDeleted(segment));
         return segment;
       }),
     );
