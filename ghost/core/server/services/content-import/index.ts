@@ -3,9 +3,10 @@ import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
 import { createHash, randomBytes } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdtemp, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { extract } from '@tryghost/zip';
 import ContentCSVImporter, {
   type ImportAccepted,
   type FailureReporter,
@@ -33,6 +34,10 @@ const files: ImportFiles = {
   getSize: async (filePath) => (await stat(filePath)).size,
   createTempDirectory: (prefix) => mkdtemp(path.join(os.tmpdir(), prefix)),
   removeDirectory: (directory) => rm(directory, { recursive: true, force: true }),
+  makeArchiveDirectory: async (directory) => {
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+  },
+  extractArchive: extract,
 };
 
 // The request is built from HTTP upload metadata, so it is validated at the
@@ -94,8 +99,9 @@ function makeImporter(): ContentCSVImporter {
   };
 
   return new ContentCSVImporter({
+    files,
     readRows: readPostRows,
-    prepareSource: prepareImportSource,
+    prepareSource: (request) => prepareImportSource(files, request),
     posts: new BookshelfPostsRepository(models),
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,

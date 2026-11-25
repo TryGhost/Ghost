@@ -6,6 +6,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const { MAX_CSV_UPLOAD_BYTES } = require('../../../services/content-import/import/limits');
 const {
   IMAGE_UPLOAD_TYPES,
   isAllowedImageContent,
@@ -70,6 +71,10 @@ const messages = {
 
 const enabledClear = config.get('uploadClear') || true;
 const upload = multer({ dest: os.tmpdir() });
+const csvImportUpload = multer({
+  dest: os.tmpdir(),
+  limits: { fileSize: MAX_CSV_UPLOAD_BYTES + 1 },
+});
 const themeUpload = multer({
   dest: os.tmpdir(),
   limits: {
@@ -118,6 +123,18 @@ const single = (name, uploader = upload, options = {}) =>
 
     singleUpload(req, res, (err) => {
       if (err) {
+        if (
+          options.isCSVImport &&
+          err instanceof multer.MulterError &&
+          err.code === 'LIMIT_FILE_SIZE'
+        ) {
+          return next(
+            new errors.UnsupportedMediaTypeError({
+              message: 'CSV and ZIP uploads cannot exceed 1 GiB.',
+              code: 'CSV_UPLOAD_TOO_LARGE',
+            }),
+          );
+        }
         if (
           options.isThemeUpload &&
           err instanceof multer.MulterError &&
@@ -171,6 +188,7 @@ const single = (name, uploader = upload, options = {}) =>
   };
 
 const themeZip = (name) => single(name, themeUpload, { isThemeUpload: true });
+const csvImport = (name) => single(name, csvImportUpload, { isCSVImport: true });
 
 const media = (fileName, thumbName) =>
   function mediaUploadFunction(req, res, next) {
@@ -464,6 +482,7 @@ const fileValidation = function ({ type }) {
 module.exports = {
   single,
   themeZip,
+  csvImport,
   media,
   validation,
   mediaValidation,

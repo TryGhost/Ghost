@@ -47,7 +47,7 @@ module.exports = function apiRoutes() {
     '/posts/upload',
     mw.authAdminApi,
     labs.enabledMiddleware('csvContentImporter'),
-    apiMw.upload.single('postsfile'),
+    apiMw.upload.csvImport('postsfile'),
     apiMw.upload.validation({ type: 'posts' }),
     http(api.posts.importCSV),
   );

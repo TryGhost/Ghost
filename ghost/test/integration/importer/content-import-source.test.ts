@@ -1,3 +1,4 @@
+import { importFiles } from '../../utils/csv-import-files';
 import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
@@ -46,7 +47,7 @@ describe('content import source', function () {
     const filePath = path.join(directory, 'posts.csv');
     await fs.writeFile(filePath, 'title\nRaw');
 
-    const source = await prepareImportSource({ filePath, fileName: 'posts.csv' });
+    const source = await prepareImportSource(importFiles, { filePath, fileName: 'posts.csv' });
 
     assert.equal(source.filePath, filePath);
     await source.cleanup();
@@ -97,7 +98,10 @@ describe('content import source', function () {
   it('extracts one case-insensitive root CSV and cleans up its directory', async function () {
     const zipPath = await archive({ 'posts.CSV': 'title\nRoot' });
 
-    const source = await prepareImportSource({ filePath: zipPath, fileName: 'posts.ZIP' });
+    const source = await prepareImportSource(importFiles, {
+      filePath: zipPath,
+      fileName: 'posts.ZIP',
+    });
 
     assert.equal(await fs.readFile(source.filePath, 'utf8'), 'title\nRoot');
     const extractedDirectory = path.dirname(source.filePath);
@@ -117,7 +121,10 @@ describe('content import source', function () {
       '.DS_Store': 'metadata',
     });
 
-    const source = await prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' });
+    const source = await prepareImportSource(importFiles, {
+      filePath: zipPath,
+      fileName: 'posts.zip',
+    });
 
     assert.equal(await fs.readFile(source.filePath, 'utf8'), 'title\nWrapped');
     assert.deepEqual(source.assets?.files.map((file) => file.originalPath).sort(), [
@@ -145,7 +152,10 @@ describe('content import source', function () {
       'files/guide.pdf': 'file',
     });
 
-    const source = await prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' });
+    const source = await prepareImportSource(importFiles, {
+      filePath: zipPath,
+      fileName: 'posts.zip',
+    });
 
     assert.deepEqual(source.assets?.files.map((file) => file.originalPath).sort(), [
       'files/guide.pdf',
@@ -163,7 +173,10 @@ describe('content import source', function () {
   it('allows an import-data directory name as the wrapper directory', async function () {
     const zipPath = await archive({ 'content/posts.csv': 'title\nWrapped' });
 
-    const source = await prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' });
+    const source = await prepareImportSource(importFiles, {
+      filePath: zipPath,
+      fileName: 'posts.zip',
+    });
 
     assert.equal(await fs.readFile(source.filePath, 'utf8'), 'title\nWrapped');
     await source.cleanup();
@@ -175,7 +188,10 @@ describe('content import source', function () {
       '__MACOSX/._posts.csv': 'metadata',
     });
 
-    const source = await prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' });
+    const source = await prepareImportSource(importFiles, {
+      filePath: zipPath,
+      fileName: 'posts.zip',
+    });
 
     assert.equal(await fs.readFile(source.filePath, 'utf8'), 'title\nPost');
     await source.cleanup();
@@ -188,7 +204,7 @@ describe('content import source', function () {
     });
 
     await assert.rejects(
-      prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' }),
+      prepareImportSource(importFiles, { filePath: zipPath, fileName: 'posts.zip' }),
       /must contain one CSV file/,
     );
   });
@@ -200,7 +216,7 @@ describe('content import source', function () {
     });
 
     await assert.rejects(
-      prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' }),
+      prepareImportSource(importFiles, { filePath: zipPath, fileName: 'posts.zip' }),
       /only one CSV file/,
     );
   });
@@ -209,7 +225,7 @@ describe('content import source', function () {
     const zipPath = await archive({ 'export/data/posts.csv': 'title\nNested' });
 
     await assert.rejects(
-      prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' }),
+      prepareImportSource(importFiles, { filePath: zipPath, fileName: 'posts.zip' }),
       /Invalid zip file structure/i,
     );
   });
@@ -221,7 +237,7 @@ describe('content import source', function () {
     });
 
     await assert.rejects(
-      prepareImportSource({ filePath: zipPath, fileName: 'posts.zip' }),
+      prepareImportSource(importFiles, { filePath: zipPath, fileName: 'posts.zip' }),
       /Invalid ZIP file structure/,
     );
   });
@@ -244,7 +260,7 @@ describe('content import source', function () {
       );
 
       await assert.rejects(
-        prepareImportSource({ filePath: zipPath, fileName: archiveName }),
+        prepareImportSource(importFiles, { filePath: zipPath, fileName: archiveName }),
         /cannot contain CSV, JSON, or Markdown import files together/,
       );
       await fs.remove(path.join(directory, 'contents'));
@@ -253,7 +269,7 @@ describe('content import source', function () {
 
   it('rejects unsupported source extensions', async function () {
     await assert.rejects(
-      prepareImportSource({ filePath: '/tmp/posts.json', fileName: 'posts.json' }),
+      prepareImportSource(importFiles, { filePath: '/tmp/posts.json', fileName: 'posts.json' }),
       /valid CSV or ZIP file/,
     );
   });

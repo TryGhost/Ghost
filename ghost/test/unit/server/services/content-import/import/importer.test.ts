@@ -62,6 +62,7 @@ function harness(
   };
 
   const deps = {
+    files: { getSize: async () => 0 },
     readRows: async () =>
       source
         ? {
@@ -763,6 +764,25 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.jobs.length, 0, 'no job was scheduled');
     sinon.assert.calledOnce(cleanup);
     assert.equal(h.reported.at(-1), cleanupError);
+    assert.deepEqual(h.stagedFiles, []);
+  });
+
+  it('rejects an oversized upload before opening or staging it', async function () {
+    const h = harness();
+    const readRows = sinon.stub();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      files: { ...h.deps.files, getSize: async () => 1024 ** 3 + 1 },
+      readRows,
+    });
+
+    await assert.rejects(
+      importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' }),
+      {
+        errorType: 'UnsupportedMediaTypeError',
+      },
+    );
+    sinon.assert.notCalled(readRows);
     assert.deepEqual(h.stagedFiles, []);
   });
 

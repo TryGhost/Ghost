@@ -3,6 +3,8 @@ import path from 'path';
 import { globSync } from 'glob';
 import ImportArchive from '../../../data/importer/import-archive';
 import { prepareAssetBatch, type ImportAssetBatch } from './assets';
+import { readBoundedArchive } from './bounded-archive';
+import type { ArchiveFiles } from './files';
 
 const errors = require('@tryghost/errors');
 
@@ -22,6 +24,7 @@ export interface PreparedImportSource {
 const noCleanup = async (): Promise<void> => {};
 
 export async function prepareImportSource(
+  files: ArchiveFiles,
   request: ImportSourceRequest,
 ): Promise<PreparedImportSource> {
   const extension = path.extname(request.fileName).toLowerCase();
@@ -33,10 +36,14 @@ export async function prepareImportSource(
     throw new errors.ValidationError({ message: 'Please select a valid CSV or ZIP file.' });
   }
 
-  const archive = new ImportArchive({
-    extensions: [...DATA_EXTENSIONS],
-    directories: [],
-  });
+  const archive = new ImportArchive(
+    { extensions: [...DATA_EXTENSIONS], directories: [] },
+    {
+      extract: async (filePath, directory) => {
+        await readBoundedArchive(files, filePath, { directory });
+      },
+    },
+  );
   const directory = await archive.extract(request.filePath);
   let cleaned = false;
   const cleanup = async () => {

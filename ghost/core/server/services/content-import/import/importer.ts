@@ -15,6 +15,8 @@ import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
 import type { ImportFileStager, DownloadedImportFile, StagedImportFile } from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
+import { assertCSVUploadSize } from './limits';
+import type { ImportFiles } from './files';
 
 export type { ImportRequest } from './schema';
 
@@ -61,6 +63,7 @@ function logLifecycle(message: string): void {
 }
 
 interface ImporterDeps {
+  files: Pick<ImportFiles, 'getSize'>;
   readRows: ReadRows;
   prepareSource?: PrepareSource;
   posts: PostsRepository;
@@ -88,6 +91,7 @@ function buildImportTagNames(runId: string, timezone: string, now: Date): string
 }
 
 class ContentCSVImporter {
+  private _files: ImporterDeps['files'];
   private _readRows: ReadRows;
   private _prepareSource: PrepareSource;
   private _posts: PostsRepository;
@@ -106,6 +110,7 @@ class ContentCSVImporter {
   private _now: Clock;
 
   constructor({
+    files,
     readRows,
     prepareSource = async ({ filePath }) => ({ filePath, cleanup: async () => {} }),
     posts,
@@ -123,6 +128,7 @@ class ContentCSVImporter {
     getTimezone,
     now = () => new Date(),
   }: ImporterDeps) {
+    this._files = files;
     this._readRows = readRows;
     this._prepareSource = prepareSource;
     this._posts = posts;
@@ -142,6 +148,10 @@ class ContentCSVImporter {
   }
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
+    const bytes = await this._files.getSize(request.filePath).catch((error) => {
+      throw new errors.ValidationError({ message: tpl(messages.unreadableFile), err: error });
+    });
+    assertCSVUploadSize(bytes);
     const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
     const runId = this._newRunId();
     const { source, preparedRows } = await this.readPreparedRows(request);
