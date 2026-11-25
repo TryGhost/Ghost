@@ -99,7 +99,7 @@ function metafieldsTable(db: Knex, resource: MetafieldResource) {
 }
 
 /**
- * A read of the fields built by `definitions()`, scoped to the audience and statuses it was asked
+ * A read of the fields built by `definitions()`, scoped to the caller and statuses it was asked
  * for. The class isn't exported and its query is private, so only `definitions()` can make one, and
  * a query that skipped that scoping can't be passed where this is expected.
  */
@@ -118,8 +118,8 @@ class ScopedDefinitions {
 export type DefinitionQuery = ScopedDefinitions;
 
 /** Which fields a definitions read is for, and who for. */
-export interface DefinitionScope<Audience> {
-  audience: Audience;
+export interface DefinitionScope<Caller> {
+  caller: Caller;
   status: StatusScope;
   /** One namespace's fields. Without it, every namespace's. */
   namespace?: Namespace;
@@ -138,17 +138,17 @@ export interface DefinitionScope<Audience> {
  * holds for every one of them. That includes the check before writing a value. Writes, and
  * the reads a change to the field list is compared with, name the table itself.
  */
-export interface FieldSource<Audience> {
+export interface FieldSource<Caller> {
   /**
    * The name the fields are read under: their table's, so a column is qualified the same way
    * whether a read names the table or the fields as this reads them.
    */
   name: string;
   /**
-   * Narrows a read that joins the fields to the ones `audience` may read, as each namespace's
+   * Narrows a read that joins the fields to the ones `caller` may read, as each namespace's
    * owner grants them.
    */
-  readable<T extends Knex.QueryBuilder>(query: T, audience: Audience): T;
+  readable<T extends Knex.QueryBuilder>(query: T, caller: Caller): T;
   /** The longest name and key the fields table can store. */
   maxLength: { name: number; key: number };
   /**
@@ -162,7 +162,7 @@ export interface FieldSource<Audience> {
    */
   asRead(db: Knex, alias?: string): Knex.TableDescriptor;
   /** The fields `scope` names, in no particular order. */
-  definitions(db: Knex, scope: DefinitionScope<Audience>): DefinitionQuery;
+  definitions(db: Knex, scope: DefinitionScope<Caller>): DefinitionQuery;
   /**
    * The fields `keys` name in `namespace`, held against change until `trx` ends. The lock is
    * taken in the same statement as the read, on the rows as stored.
@@ -175,10 +175,10 @@ export interface FieldSource<Audience> {
  * available reads as archived. Which namespaces aren't is asked on every read, as it can change
  * while Ghost runs.
  */
-export function fieldSource<Audience>(
+export function fieldSource<Caller>(
   resource: MetafieldResource,
-  namespaces: Pick<Namespaces<Audience>, 'unavailable' | 'readable'>,
-): FieldSource<Audience> {
+  namespaces: Pick<Namespaces<Caller>, 'unavailable' | 'readable'>,
+): FieldSource<Caller> {
   const tableName = resource.tables.fields;
   // The canonical schema, which the migrations and models also read, so these can't drift from
   // the database.
@@ -201,13 +201,13 @@ export function fieldSource<Audience>(
     );
   };
 
-  const source: FieldSource<Audience> = {
+  const source: FieldSource<Caller> = {
     name: tableName,
 
     maxLength: { name: columns.name.maxlength, key: columns.key.maxlength },
 
-    readable(query, audience) {
-      return readableBy(query, tableName, namespaces.readable(audience));
+    readable(query, caller) {
+      return readableBy(query, tableName, namespaces.readable(caller));
     },
 
     table(db) {
@@ -243,7 +243,7 @@ export function fieldSource<Audience>(
         query = query.limit(scope.limit);
       }
 
-      return new ScopedDefinitions(source.readable(query, scope.audience));
+      return new ScopedDefinitions(source.readable(query, scope.caller));
     },
 
     locked(trx, namespace, keys) {

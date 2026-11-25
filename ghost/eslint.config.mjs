@@ -203,7 +203,7 @@ export default tseslint.config(
         {
           patterns: [
             {
-              // A sibling of the core folder, such as `../audiences` or `../custom-fields/namespace`,
+              // A sibling of the core folder, such as `../callers` or `../custom-fields/namespace`,
               // rather than a shared library further up.
               regex: '^\\.\\./(?!\\.\\./)',
               message:

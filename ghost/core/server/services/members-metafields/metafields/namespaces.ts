@@ -62,11 +62,11 @@ export type Grant =
  * Who may read and write a namespace's fields. The namespace's owner decides it, as reaching
  * another's fields is a grant of the owner's, not a property of the field or of the caller.
  */
-export interface AccessPolicy<Audience> {
-  /** The fields `audience` may read. A field it can't read is one it can't tell exists. */
-  read(audience: Audience): Grant;
-  /** The fields `audience` may write the values of, of the ones it can read. */
-  write(audience: Audience): Grant;
+export interface AccessPolicy<Caller> {
+  /** The fields `caller` may read. A field it can't read is one it can't tell exists. */
+  read(caller: Caller): Grant;
+  /** The fields `caller` may write the values of, of the ones it can read. */
+  write(caller: Caller): Grant;
 }
 
 /**
@@ -74,21 +74,21 @@ export interface AccessPolicy<Audience> {
  * fields in a namespace registers it, and this domain applies the rules, so it never has to know
  * whose namespace it is or why its limits are what they are.
  */
-export interface NamespaceRegistration<Audience> {
+export interface NamespaceRegistration<Caller> {
   namespace: Namespace;
   owner: Owner;
   /** Every limit on the namespace. They stack: each one applies. */
   limits: readonly NamespaceLimit[];
-  accessPolicy: AccessPolicy<Audience>;
+  accessPolicy: AccessPolicy<Caller>;
 }
 
-/** A namespace and what one audience is granted of its fields. */
+/** A namespace and what one caller is granted of its fields. */
 export interface NamespaceGrant {
   namespace: Namespace;
   grant: Grant;
 }
 
-/** What one audience is granted of the fields in each namespace. */
+/** What one caller is granted of the fields in each namespace. */
 export interface Grants {
   /** Each namespace someone owns, with its owner's grant. */
   owned: NamespaceGrant[];
@@ -96,22 +96,19 @@ export interface Grants {
   unowned: Grant;
 }
 
-export interface Namespaces<Audience> {
+export interface Namespaces<Caller> {
   /** The registration of a namespace someone owns. Nobody owns any other, so no field can be defined there. */
-  owned(namespace: Namespace): NamespaceRegistration<Audience>;
+  owned(namespace: Namespace): NamespaceRegistration<Caller>;
   /** The namespaces unavailable right now, whose fields read as archived. */
   unavailable(): Namespace[];
   /** Refuses any change to the namespace's fields its limits don't allow. */
   assertChangeable(namespace: Namespace): Promise<void>;
   /** Refuses adding `adding` fields to the `held` the namespace already has. */
   assertRoom(namespace: Namespace, held: number, adding: number): Promise<void>;
-  /** What `audience` may read in each namespace. */
-  readable(audience: Audience): Grants;
-  /** Whether `audience` may write the values of `field`, by its namespace's grant. */
-  canWrite(
-    audience: Audience,
-    field: { namespace: Namespace; memberAccess: MemberAccess },
-  ): boolean;
+  /** What `caller` may read in each namespace. */
+  readable(caller: Caller): Grants;
+  /** Whether `caller` may write the values of `field`, by its namespace's grant. */
+  canWrite(caller: Caller, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
 }
 
 /**
@@ -122,8 +119,8 @@ export interface Namespaces<Audience> {
  * would be refused for want of a permission, telling the caller to go and get one, when no
  * permission would have helped.
  */
-export function createNamespaces<Audience>(
-  registrations: readonly NamespaceRegistration<Audience>[],
+export function createNamespaces<Caller>(
+  registrations: readonly NamespaceRegistration<Caller>[],
   {
     unowned,
   }: {
@@ -131,16 +128,16 @@ export function createNamespaces<Audience>(
      * Who reaches the fields of a namespace nobody owns. Nobody can define a field in one, but a
      * field can still be stored there, as an app's is.
      */
-    unowned: AccessPolicy<Audience>;
+    unowned: AccessPolicy<Caller>;
   },
-): Namespaces<Audience> {
+): Namespaces<Caller> {
   const byNamespace = new Map(
     registrations.map((registration) => [registration.namespace, registration]),
   );
   const accessPolicyOf = (namespace: Namespace) =>
     byNamespace.get(namespace)?.accessPolicy ?? unowned;
 
-  const owned = (namespace: Namespace): NamespaceRegistration<Audience> => {
+  const owned = (namespace: Namespace): NamespaceRegistration<Caller> => {
     const registration = byNamespace.get(namespace);
     if (!registration) {
       throw new errors.ValidationError({
@@ -154,18 +151,18 @@ export function createNamespaces<Audience>(
   return {
     owned,
 
-    readable(audience) {
+    readable(caller) {
       return {
         owned: registrations.map(({ namespace, accessPolicy }) => ({
           namespace,
-          grant: accessPolicy.read(audience),
+          grant: accessPolicy.read(caller),
         })),
-        unowned: unowned.read(audience),
+        unowned: unowned.read(caller),
       };
     },
 
-    canWrite(audience, field) {
-      return reaches(accessPolicyOf(field.namespace).write(audience), field);
+    canWrite(caller, field) {
+      return reaches(accessPolicyOf(field.namespace).write(caller), field);
     },
 
     unavailable() {

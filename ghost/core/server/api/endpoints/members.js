@@ -8,7 +8,6 @@ const membersService = require('../../services/members');
 const tpl = require('@tryghost/tpl');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
-const { ADMIN } = require('../../services/members-metafields');
 
 // Shape the import service's outcome into the API response envelope: an inline import
 // reports its stats and label, a deferred one only how much it accepted.
@@ -93,7 +92,7 @@ const controller = {
     async query(frame) {
       const member = await membersService.api.memberBREADService.read(frame.data, {
         ...frame.options,
-        metafieldsFor: ADMIN,
+        metafieldsFor: 'admin',
       });
 
       if (!member) {
@@ -231,7 +230,7 @@ const controller = {
       }
       const model = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
-        { metafieldsFor: ADMIN },
+        { metafieldsFor: 'admin' },
       );
       if (!model) {
         throw new errors.NotFoundError({
@@ -274,7 +273,7 @@ const controller = {
       });
       const model = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
-        { metafieldsFor: ADMIN },
+        { metafieldsFor: 'admin' },
       );
       if (!model) {
         throw new errors.NotFoundError({
@@ -514,7 +513,7 @@ const controller = {
       // Get the member first to retrieve their email
       const member = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
-        { metafieldsFor: ADMIN },
+        { metafieldsFor: 'admin' },
       );
 
       if (!member) {

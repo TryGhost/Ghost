@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
-import type { Audience } from './audiences';
+import type { Caller } from './callers';
 import { DbMetafieldChangeEventWithMember, type MetafieldChangeEvent } from './members-resource';
 import { knexify } from './metafields/queries';
 import { StoredFieldList } from './metafields/schema';
@@ -12,7 +12,7 @@ const MEMBERS_TABLE = 'members';
  * What each member holds for each field, and the activity feed their writes leave. The feed is
  * read with each entry's member, which is what makes it the members' own.
  */
-export class MemberMetafieldValues extends MetafieldValuesService<Audience> {
+export class MemberMetafieldValues extends MetafieldValuesService<Caller> {
   /**
    * Entries from members' activity feeds, newest first, each with its member, as one page
    * of the members events endpoint reads them.

@@ -12,7 +12,6 @@ const models = require('../../../../../core/server/models');
 const { limitService } = require('../../../../../core/server/services/limits');
 const urlService = require('../../../../../core/server/services/url');
 const membersService = require('../../../../../core/server/services/members');
-const { ADMIN } = require('../../../../../core/server/services/members-metafields');
 const tiersService = require('../../../../../core/server/services/tiers').default;
 const { Post } = require('../../../../../core/server/models/post');
 const { Member } = require('../../../../../core/server/models/member');
@@ -353,7 +352,7 @@ describe('Webhooks service root', function () {
       events.emit('member.added', memberModel(), {});
 
       const body = JSON.parse((await received).body);
-      sinon.assert.calledOnceWithExactly(readMetafieldsForMember, 'member-id', ADMIN);
+      sinon.assert.calledOnceWithExactly(readMetafieldsForMember, 'member-id', 'admin');
       assert.equal(body.member.current.email, 'member@example.com');
       assert.deepEqual(body.member.current.metafields, { custom: { favourite_colour: 'teal' } });
       await edited;

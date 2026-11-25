@@ -1,5 +1,5 @@
 import type { ActionRow } from '../../../lib/action-log/action-log';
-import type { MemberAccess } from '../audiences';
+import type { MemberAccess } from '../callers';
 import type { DefinitionChange } from '../metafields/tracking';
 
 export type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;

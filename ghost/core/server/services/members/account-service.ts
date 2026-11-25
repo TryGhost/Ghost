@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { isRecordValue } from '@tryghost/metafield-types/structure';
 import { CHECKOUT_PORTS, matchRequirement } from '@tryghost/checkout';
 import {
-  MEMBERS,
   refusalError,
   type MemberMetafieldValues,
   type MetafieldBindingsService,
@@ -129,7 +128,7 @@ export class MemberAccountService {
   async read(memberId: string): Promise<Record<string, unknown> | null> {
     // As the member rather than as staff: how much of the extra fields a publisher
     // defines is answered depends on which side of Ghost is asking.
-    return this.#memberBREADService.read({ id: memberId }, { metafieldsFor: MEMBERS });
+    return this.#memberBREADService.read({ id: memberId }, { metafieldsFor: 'members' });
   }
 
   /** Apply what a member asked to change about themselves, and say what they now hold. */
@@ -143,7 +142,7 @@ export class MemberAccountService {
         ? []
         : await this.#metafieldValues.planWrite(
             this.#metafieldValues.unwrapWire(data.metafields),
-            MEMBERS,
+            'members',
           );
 
     // Saved through the members service, like a staff edit, so the change reaches webhooks.
