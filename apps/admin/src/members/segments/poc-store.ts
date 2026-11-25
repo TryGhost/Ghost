@@ -90,6 +90,19 @@ export function useSidebarShowsAllPins() {
   return { showsAllPins: has('on'), setShowsAllPins };
 }
 
+const BUILDER_FILTER_FIRST_KEY = 'ghost-poc:builder-filter-first';
+
+/**
+ * Whether the segment builder asks for the filters first, and the name only once they match
+ * someone, instead of the name first. Off by default, for the two to be compared.
+ */
+export function useBuilderFilterFirst() {
+  const { has, set } = useIdSet(BUILDER_FILTER_FIRST_KEY);
+  const setFilterFirst = useCallback((on: boolean) => set('on', on), [set]);
+
+  return { filterFirst: has('on'), setFilterFirst };
+}
+
 const SIMULATE_NO_SEGMENTS_KEY = 'ghost-poc:simulate-no-segments';
 
 /**

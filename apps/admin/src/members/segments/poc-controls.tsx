@@ -5,13 +5,16 @@ import { Inline } from '@tryghost/shade/primitives';
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMemberViews } from '@/members/hooks/use-member-views';
-import { useSegmentPins, useSimulateNoSegments } from './poc-store';
+import { useBuilderFilterFirst, useSegmentPins, useSimulateNoSegments } from './poc-store';
 import { SegmentBuilderDialog, SegmentBuilderPopover } from './segment-builder';
+import { useSegmentSuggestions } from './segment-suggestions';
 
 /**
  * POC (poc/segments-ui) only: controls at the bottom of the window while the members screen is
  * open. They are fixed to the window, since the members screen scrolls as a whole.
  *
+ * - A switch that has the segment builder ask for its filters first, and the name once they
+ *   match someone, so the two orders can be compared.
  * - A switch that makes the site look as if it had no segments, so the empty states can be seen
  *   without deleting any. Nothing is deleted. The segments come back when it is switched off.
  * - A button that pins every segment to the sidebar, or unpins them all once they are, so a
@@ -26,6 +29,9 @@ export function PocControls({
   onSegmentCreated?: (segment: Segment) => void;
 }) {
   const id = useId();
+  const filterFirstId = useId();
+  const { filterFirst, setFilterFirst } = useBuilderFilterFirst();
+  const suggestions = useSegmentSuggestions();
   const { simulateNoSegments, setSimulateNoSegments } = useSimulateNoSegments();
   const segments = useMemberViews();
   const { isPinned, setPinned } = useSegmentPins();
@@ -61,6 +67,12 @@ export function PocControls({
                 No segments
               </Label>
             </Inline>
+            <Inline as="span" gap="sm">
+              <Switch checked={filterFirst} id={filterFirstId} onCheckedChange={setFilterFirst} />
+              <Label className="text-xs font-normal text-muted-foreground" htmlFor={filterFirstId}>
+                Filter first
+              </Label>
+            </Inline>
             <Button
               disabled={segments.length === 0}
               size="sm"
@@ -86,6 +98,7 @@ export function PocControls({
       )}
       {builder === 'dialog' && (
         <SegmentBuilderDialog
+          suggestions={suggestions}
           open
           withPin
           onCreated={onSegmentCreated}
@@ -95,6 +108,7 @@ export function PocControls({
       <SegmentBuilderPopover
         anchorRef={popoverButton}
         open={builder === 'popover'}
+        suggestions={suggestions}
         withPin
         onCreated={onSegmentCreated}
         onOpenChange={closeBuilder}

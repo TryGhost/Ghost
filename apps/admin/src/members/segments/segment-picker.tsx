@@ -7,6 +7,7 @@ import {
 } from '@tryghost/shade/components';
 import { useRef, useState } from 'react';
 import { SegmentBuilderDialog, SegmentBuilderPopover } from './segment-builder';
+import type { SegmentSuggestion } from './segment-suggestions';
 import { SegmentList } from './segment-list';
 
 interface SegmentPickerProps {
@@ -22,6 +23,8 @@ interface SegmentPickerProps {
   create?: 'popover' | 'dialog' | false;
   /** Whether the builder asks if the new segment is pinned to the sidebar. */
   withPin?: boolean;
+  /** Segments the builder offers to start from. Left out, none are offered. */
+  suggestions?: SegmentSuggestion[];
   /** Names the control for assistive technology, when no visible label is tied to it. */
   ariaLabel?: string;
   placeholder?: string;
@@ -41,6 +44,7 @@ export function SegmentPicker({
   showCounts = true,
   create = 'popover',
   withPin = false,
+  suggestions,
   ariaLabel = 'Segment',
   placeholder = 'Select a segment...',
   contentClassName,
@@ -84,6 +88,7 @@ export function SegmentPicker({
         <SegmentBuilderPopover
           anchorRef={pickerRef}
           open={creating}
+          suggestions={suggestions}
           withPin={withPin}
           onCreated={(segment) => onChange(segment.id)}
           onOpenChange={setCreating}
@@ -91,6 +96,7 @@ export function SegmentPicker({
       )}
       {create === 'dialog' && creating && (
         <SegmentBuilderDialog
+          suggestions={suggestions}
           withPin={withPin}
           open
           onCreated={(segment) => onChange(segment.id)}

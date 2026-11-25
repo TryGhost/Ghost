@@ -24,7 +24,7 @@ import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { LabelTriggerPicker, type SelectedTriggerLabel } from './label-trigger-picker';
-import { SegmentPicker } from '@/members/api';
+import { SegmentPicker, useSegmentSuggestions } from '@/members/api';
 import { useParams } from '@tryghost/admin-x-framework';
 import { useSegmentTrigger } from '@/automations/poc-segment-trigger';
 import { TierScopePicker } from './tier-scope-picker';
@@ -312,6 +312,7 @@ function SegmentTriggerPicker({
   segmentId: string | undefined;
   onChange: (segmentId: string) => void;
 }) {
+  const suggestions = useSegmentSuggestions();
   return (
     <Stack className="nowheel" gap="sm">
       <Text as="p" leading="normal">
@@ -320,6 +321,7 @@ function SegmentTriggerPicker({
       <SegmentPicker
         ariaLabel="Segment that starts the automation"
         contentClassName="nodrag nopan nowheel"
+        suggestions={suggestions}
         value={segmentId}
         onChange={onChange}
       />

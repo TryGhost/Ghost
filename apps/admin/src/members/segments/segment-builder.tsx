@@ -40,6 +40,9 @@ import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { type RefObject, useId, useMemo, useState } from 'react';
 import { formatMemberName, memberAvatarProps } from '@/members/member-format';
 import { SEGMENT_NAME_MAX_LENGTH } from './segment-fields';
+import { type SegmentSuggestion, useNewSuggestions } from './segment-suggestions';
+import { SuggestionChips } from './suggestion-chips';
+import { useBuilderFilterFirst } from './poc-store';
 import { useSaveSegment } from './use-save-segment';
 
 /**
@@ -56,11 +59,11 @@ function useDraftConditions(initialFilter: string | undefined) {
     () => buildMemberFields({ newsletters, customFields }),
     [newsletters, customFields],
   );
-  const [filters, setFilters] = useState<Filter[]>(() =>
-    parseMemberFilter(initialFilter, timezone, fields).filter((predicate) =>
+  const parse = (nql: string | undefined) =>
+    parseMemberFilter(nql, timezone, fields).filter((predicate) =>
       isPredicateEnabled(predicate, fields),
-    ),
-  );
+    );
+  const [filters, setFilters] = useState<Filter[]>(() => parse(initialFilter));
   const filter = useMemo(
     () =>
       serializeMemberFilters(
@@ -71,7 +74,13 @@ function useDraftConditions(initialFilter: string | undefined) {
     [filters, timezone, fields],
   );
 
-  return { filters, setFilters, filter };
+  return {
+    filters,
+    setFilters,
+    filter,
+    /** Replaces the conditions with those of a filter, such as a suggestion's. */
+    startFrom: (nql: string) => setFilters(parse(nql)),
+  };
 }
 
 // How many matching members the builder lists. The rest are counted.
@@ -202,6 +211,11 @@ function useSegmentBuilder({ startFrom, onCreated, onDone }: SegmentBuilderOptio
   const conditions = useDraftConditions(startFrom);
   const draft = useSaveSegment(onCreated);
   const filterError = draft.filterError(conditions.filter);
+  // The name the last suggestion filled in. It is the suggestion's until it is edited: picking
+  // another suggestion replaces it, and clearing the filters clears it. A name typed or edited
+  // is never touched.
+  const [suggestedName, setSuggestedName] = useState<string | null>(null);
+  const nameIsSuggested = suggestedName !== null && draft.name === suggestedName;
 
   const save = async () => {
     if (await draft.save(conditions.filter)) {
@@ -218,6 +232,22 @@ function useSegmentBuilder({ startFrom, onCreated, onDone }: SegmentBuilderOptio
     /** Whether anything has been entered, which a stray click shouldn't throw away. */
     isDirty: Boolean(draft.name) || conditions.filters.length > 0,
     save,
+    /** Starts from a suggestion: its filters, and its name unless one is typed already. */
+    pick: (suggestion: SegmentSuggestion) => {
+      conditions.startFrom(suggestion.filter);
+      if (!draft.name.trim() || nameIsSuggested) {
+        draft.setName(suggestion.name);
+        setSuggestedName(suggestion.name);
+      }
+    },
+    /** Changes the filters. Cleared, they take a suggestion's name with them. */
+    setFilters: (filters: Filter[]) => {
+      conditions.setFilters(filters);
+      if (filters.length === 0 && nameIsSuggested) {
+        draft.setName('');
+        setSuggestedName(null);
+      }
+    },
   };
 }
 
@@ -231,36 +261,60 @@ interface SegmentBuilderFormProps {
   builder: SegmentBuilder;
   /** A shorter list of members, for the popover. */
   compact?: boolean;
+  suggestions?: SegmentSuggestion[];
 }
 
-function SegmentBuilderForm({ builder, compact }: SegmentBuilderFormProps) {
+const NO_SUGGESTIONS: SegmentSuggestion[] = [];
+
+function SegmentBuilderForm({
+  builder,
+  compact,
+  suggestions: offered = NO_SUGGESTIONS,
+}: SegmentBuilderFormProps) {
+  const suggestions = useNewSuggestions(offered);
   const nameId = useId();
   const { conditions, draft, filterError, hasFilters, save } = builder;
+  // POC: the order is being tried both ways, from a switch among the prototype controls.
+  const { filterFirst } = useBuilderFilterFirst();
+  // Filters first, the name is asked for once they match someone, or once a save finds it missing.
+  const showName = !filterFirst || Boolean(conditions.filter) || Boolean(draft.error);
+
+  const nameField = (
+    /* A label, as the custom field form has: once a name is typed, a placeholder no longer says
+       what the field is. */
+    <Field data-invalid={Boolean(draft.error) || undefined}>
+      <FieldLabel htmlFor={nameId}>Name</FieldLabel>
+      <Input
+        aria-invalid={Boolean(draft.error) || undefined}
+        autoComplete="off"
+        // Focused as the builder opens when it comes first. Asked for after the filters, it
+        // waits to be chosen: taking focus as it appears would pull it from the filters.
+        autoFocus={!filterFirst}
+        id={nameId}
+        maxLength={SEGMENT_NAME_MAX_LENGTH}
+        placeholder="Enter segment name"
+        value={draft.name}
+        onChange={(event) => draft.setName(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            void save();
+          }
+        }}
+      />
+      {draft.error && <FieldError>{draft.error}</FieldError>}
+    </Field>
+  );
 
   return (
     <FieldGroup className="gap-5">
-      {/* A label, as the custom field form has: once a name is typed, a placeholder no longer
-          says what the field is. */}
-      <Field data-invalid={Boolean(draft.error) || undefined}>
-        <FieldLabel htmlFor={nameId}>Name</FieldLabel>
-        <Input
-          aria-invalid={Boolean(draft.error) || undefined}
-          autoComplete="off"
-          id={nameId}
-          maxLength={SEGMENT_NAME_MAX_LENGTH}
-          placeholder="Enter segment name"
-          value={draft.name}
-          autoFocus
-          onChange={(event) => draft.setName(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-              event.preventDefault();
-              void save();
-            }
-          }}
-        />
-        {draft.error && <FieldError>{draft.error}</FieldError>}
-      </Field>
+      {!filterFirst && nameField}
+      {/* Places to start, while the filters are empty, above them: picking one fills them in,
+          and the name if none is typed. They go once there is a filter. A row of the form, so
+          it sits as far from the name as from the filters. */}
+      {suggestions.length > 0 && !hasFilters && (
+        <SuggestionChips suggestions={suggestions} onPick={builder.pick} />
+      )}
       <Field data-invalid={Boolean(filterError) || undefined}>
         {/* The bar is there before any filter, unlike on the members screen. Alone under the
             name, a bare Filter button was too faint to find, and the bar marks where the filters
@@ -273,7 +327,7 @@ function SegmentBuilderForm({ builder, compact }: SegmentBuilderFormProps) {
             filters={conditions.filters}
             multipleActiveSubscriptionsCount={0}
             embedded
-            onFiltersChange={conditions.setFilters}
+            onFiltersChange={builder.setFilters}
           />
         </FilterBar>
         {filterError && <FieldError>{filterError}</FieldError>}
@@ -293,6 +347,19 @@ function SegmentBuilderForm({ builder, compact }: SegmentBuilderFormProps) {
           )}
         </div>
       </div>
+      {/* Filters first, the name comes last, once there is someone to name: it opens downwards
+          under the members, as they do under the filters. Room around it for its focus ring,
+          which the closing row would clip. */}
+      {filterFirst && (
+        <div
+          className={cn(
+            'grid transition-[grid-template-rows,margin] duration-200 ease-out',
+            showName ? 'grid-rows-[1fr]' : '-mt-5 grid-rows-[0fr]',
+          )}
+        >
+          <div className="-m-1 overflow-hidden p-1">{showName && nameField}</div>
+        </div>
+      )}
     </FieldGroup>
   );
 }
@@ -348,6 +415,11 @@ interface SegmentBuilderProps {
   startFrom?: string;
   /** Whether the builder asks if the segment is pinned to the sidebar. It is made unpinned either way. */
   withPin?: boolean;
+  /**
+   * Segments to start from, offered while there is no filter yet. Left out, none are offered.
+   * `useSegmentSuggestions` gives the ones a site can use.
+   */
+  suggestions?: SegmentSuggestion[];
   onCreated?: (segment: Segment) => void;
 }
 
@@ -368,6 +440,7 @@ export function SegmentBuilderDialog({
   onOpenChange,
   startFrom,
   withPin = false,
+  suggestions,
   onCreated,
 }: SegmentBuilderProps) {
   const builder = useSegmentBuilder({ startFrom, onCreated, onDone: () => onOpenChange(false) });
@@ -401,7 +474,7 @@ export function SegmentBuilderDialog({
         <DialogHeader>
           <DialogTitle>New segment</DialogTitle>
         </DialogHeader>
-        <SegmentBuilderForm builder={builder} />
+        <SegmentBuilderForm builder={builder} suggestions={suggestions} />
         <DialogFooter>
           <SegmentBuilderActions
             builder={builder}
@@ -430,6 +503,7 @@ function SegmentBuilderPopoverContent({
   startFrom,
   withPin = false,
   align = 'center',
+  suggestions,
   onCreated,
 }: Omit<SegmentBuilderPopoverProps, 'open' | 'anchorRef'>) {
   const builder = useSegmentBuilder({ startFrom, onCreated, onDone: () => onOpenChange(false) });
@@ -465,7 +539,7 @@ function SegmentBuilderPopoverContent({
       }}
     >
       <Stack gap="lg">
-        <SegmentBuilderForm builder={builder} compact />
+        <SegmentBuilderForm builder={builder} suggestions={suggestions} compact />
         <SegmentBuilderActions
           builder={builder}
           size="sm"
