@@ -39,6 +39,15 @@ function mapSubscribedFlagToNewsletterRelation(frame) {
     : transformer;
 }
 
+function mapSkipTotal(frame) {
+  if (frame.options.skip_total === undefined) {
+    return;
+  }
+
+  frame.options.skipTotal = String(frame.options.skip_total).toLowerCase() === 'true';
+  delete frame.options.skip_total;
+}
+
 function validateBulkFilter(frame) {
   frame.options.mongoTransformer = frame.options.mongoTransformer
     ? chainTransformers(validateAdminApiBulkFilterTransformer, frame.options.mongoTransformer)
@@ -76,6 +85,7 @@ module.exports = {
     debug('browse');
     defaultRelations(frame);
     mapSubscribedFlagToNewsletterRelation(frame);
+    mapSkipTotal(frame);
 
     if (!frame.options.order) {
       frame.options.autoOrder = 'created_at DESC, id DESC';

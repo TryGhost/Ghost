@@ -57,12 +57,25 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['limit', 'fields', 'filter', 'order', 'debug', 'page', 'search', 'include'],
+    options: [
+      'limit',
+      'fields',
+      'filter',
+      'order',
+      'debug',
+      'page',
+      'search',
+      'include',
+      'skip_total',
+    ],
     permissions: true,
     validation: {
       options: {
         include: {
           values: allowedIncludes,
+        },
+        skip_total: {
+          values: ['true', 'false'],
         },
       },
     },

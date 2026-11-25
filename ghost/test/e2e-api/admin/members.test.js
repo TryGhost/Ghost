@@ -781,6 +781,58 @@ describe('Members API', function () {
       });
   });
 
+  it('Can browse every page with skip_total=true', async function () {
+    const { body: firstPage } = await agent.get('/members/?limit=3').expectStatus(200);
+    const { pages } = firstPage.meta.pagination;
+    assert.ok(pages > 1);
+
+    for (let page = 1; page <= pages; page++) {
+      const { body: counted } = await agent.get(`/members/?limit=3&page=${page}`).expectStatus(200);
+      const { body } = await agent
+        .get(`/members/?limit=3&page=${page}&skip_total=true`)
+        .expectStatus(200);
+
+      assert.deepEqual(
+        body.members.map((member) => member.id),
+        counted.members.map((member) => member.id),
+      );
+      assert.deepEqual(body.meta.pagination, {
+        ...counted.meta.pagination,
+        pages: null,
+        total: null,
+      });
+    }
+  });
+
+  it('Can browse with skip_total=true and limit=all', async function () {
+    const { body: counted } = await agent.get('/members/?limit=all').expectStatus(200);
+    const { body } = await agent.get('/members/?limit=all&skip_total=true').expectStatus(200);
+
+    assert.equal(body.members.length, counted.members.length);
+    assert.deepEqual(body.meta.pagination, {
+      page: 1,
+      limit: 100,
+      pages: null,
+      total: null,
+      next: null,
+      prev: null,
+    });
+  });
+
+  it('Can browse with skip_total=false', async function () {
+    const { body: counted } = await agent.get('/members/?limit=3').expectStatus(200);
+    const { body } = await agent.get('/members/?limit=3&skip_total=false').expectStatus(200);
+
+    assert.equal(typeof body.meta.pagination.total, 'number');
+    assert.deepEqual(body.meta, counted.meta);
+  });
+
+  it('Cannot browse with an invalid skip_total value', async function () {
+    const { body } = await agent.get('/members/?skip_total=maybe').expectStatus(422);
+
+    assert.equal(body.errors[0].type, 'ValidationError');
+  });
+
   it('Can browse with filter', async function () {
     await agent
       .get('/members/?filter=label:label-1')

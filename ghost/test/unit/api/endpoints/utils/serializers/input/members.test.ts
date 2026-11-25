@@ -18,6 +18,49 @@ describe('Unit: endpoints/utils/serializers/input/members', function () {
     });
   });
 
+  describe('browse', function () {
+    type BrowseFrame = {
+      options: {
+        skip_total?: string;
+        skipTotal?: boolean;
+      };
+    };
+
+    it('maps skip_total=true to skipTotal', function () {
+      const frame: BrowseFrame = { options: { skip_total: 'true' } };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal(frame.options.skipTotal, true);
+      assert.equal('skip_total' in frame.options, false);
+    });
+
+    it('maps skip_total=false to skipTotal', function () {
+      const frame: BrowseFrame = { options: { skip_total: 'false' } };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal(frame.options.skipTotal, false);
+      assert.equal('skip_total' in frame.options, false);
+    });
+
+    it('maps skip_total regardless of case', function () {
+      const frame: BrowseFrame = { options: { skip_total: 'TRUE' } };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal(frame.options.skipTotal, true);
+    });
+
+    it('leaves skipTotal unset without skip_total', function () {
+      const frame: BrowseFrame = { options: {} };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal('skipTotal' in frame.options, false);
+    });
+  });
+
   describe('bulkDestroy', function () {
     it('rejects restricted filters while preserving subscribed mapping', function () {
       const transformerCalls: unknown[] = [];

@@ -61,6 +61,7 @@ module.exports = function (Bookshelf) {
               'columns',
               'mongoTransformer',
               'skipPagination',
+              'skipTotal',
             ];
           default:
             return [...baseOptions, ...extraOptions];

@@ -22,34 +22,34 @@ const requiredForExcerpt = (requestedColumns) => {
   }
 };
 
+// Same fallback as fetchPage, so 0 and unparseable values get the default
 const parsePositiveInteger = (value, defaultValue) => {
-  const parsedValue = Number.parseInt(value, 10);
-
-  if (Number.isNaN(parsedValue)) {
-    return defaultValue;
-  }
-
-  return Math.max(parsedValue, 1);
+  return Math.max(Number.parseInt(value, 10) || defaultValue, 1);
 };
 
 // Pre-applies limit/offset so callers can use fetchPage's limit='all'
 // short-circuit (which skips the count query) while still fetching only
-// the requested window.
-const applyManualPaginationWindow = (itemCollection, options) => {
-  if (options.limit === 'all') {
-    return;
-  }
-
+// the requested window, plus `extraRows` past it.
+const applyManualPaginationWindow = (itemCollection, options, extraRows = 0) => {
   const limit = parsePositiveInteger(options.limit, 15);
   const page = parsePositiveInteger(options.page, 1);
 
-  itemCollection.query('limit', limit).query('offset', limit * (page - 1));
+  itemCollection.query('limit', limit + extraRows).query('offset', limit * (page - 1));
 
   options.limit = 'all';
+
+  return { limit, page };
 };
 
-const buildPaginationMeta = (skipPagination, pagination) => {
-  return skipPagination ? {} : { pagination };
+const buildPaginationWithoutTotal = ({ limit, page }, hasNext) => {
+  return {
+    page,
+    limit,
+    pages: null,
+    total: null,
+    next: hasNext ? page + 1 : null,
+    prev: page > 1 ? page - 1 : null,
+  };
 };
 
 /**
@@ -118,7 +118,9 @@ module.exports = function (Bookshelf) {
       findPage: async function findPage(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findPage');
         const skipPagination = options.skipPagination === true;
+        const skipTotal = options.skipTotal === true;
         delete options.skipPagination;
+        delete options.skipTotal;
 
         const itemCollection = this.getFilteredCollection(options);
         const requestedColumns = options.columns;
@@ -189,15 +191,31 @@ module.exports = function (Bookshelf) {
           options.useBasicCount = unfilteredOptions.useBasicCount;
         }
 
-        if (skipPagination) {
-          applyManualPaginationWindow(itemCollection, options);
+        let pageWindow = null;
+
+        if (options.limit !== 'all') {
+          if (skipPagination) {
+            applyManualPaginationWindow(itemCollection, options);
+          } else if (skipTotal) {
+            pageWindow = applyManualPaginationWindow(itemCollection, options, 1);
+          }
         }
 
         const response = await itemCollection.fetchPage(options);
+        let models = response.collection.models;
+        let meta = skipPagination ? {} : { pagination: response.pagination };
+
+        if (pageWindow) {
+          meta = {
+            pagination: buildPaginationWithoutTotal(pageWindow, models.length > pageWindow.limit),
+          };
+          models = models.slice(0, pageWindow.limit);
+        }
+
         // Attributes are being filtered here, so they are not leaked into calling layer
         // where models are serialized to json and do not do more filtering.
         // Re-add and pick any computed properties that were stripped before fetchPage call.
-        const data = response.collection.models.map((model) => {
+        const data = models.map((model) => {
           if (requestedColumns) {
             model.attributes = _.pick(model.attributes, requestedColumns);
             model._previousAttributes = _.pick(model._previousAttributes, requestedColumns);
@@ -208,7 +226,7 @@ module.exports = function (Bookshelf) {
 
         return {
           data: data,
-          meta: buildPaginationMeta(skipPagination, response.pagination),
+          meta,
         };
       },
 
