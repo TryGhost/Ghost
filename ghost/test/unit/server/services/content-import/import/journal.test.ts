@@ -114,6 +114,7 @@ describe('CSV import journal', function () {
       outcome(26, { status: 'failed', reason: 'Invalid', source: { Headline: '=formula' } }),
     );
     assert.deepEqual(writes, [
+      'errors-header.csv',
       'outcomes/1.csv',
       'errors/1.csv',
       'commits/25.txt',

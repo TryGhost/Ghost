@@ -11,7 +11,11 @@ import type { ImportRequest } from './schema';
 import type { Clock, RowOutcome } from './store';
 import { ImportJournal, readJournalPosition, readMetadata, type JournalStorage } from './journal';
 import { openAssetJournal } from './asset-journal';
-import { readImportReports, type ImportReportContents } from './journal-report';
+import {
+  readReportContents,
+  writeImportReports,
+  type ImportReportContents,
+} from './journal-report';
 import { createSummary, type ImportSummary } from './summary';
 import type { PreparedImportSource } from './source';
 import { rowsAfterCheckpoint, type PreparedPostRow, type PreparedPostRows } from './reader';
@@ -327,7 +331,7 @@ class ContentCSVImporter {
             failureReason,
           );
           const reports = storage
-            ? await readImportReports(storage, preparedRows?.columns ?? [], summary)
+            ? await readReportContents(storage, await writeImportReports(storage, summary))
             : {};
           await this._email.send(summary, job.emailRecipient, reports);
         });

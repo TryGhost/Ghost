@@ -10,6 +10,7 @@ const BATCH_ROWS = 25;
 const BATCH_MS = 1000;
 const BATCH_BYTES = 8 * 1024 * 1024;
 const CHECKPOINT = 'checkpoint.txt';
+export const ERROR_HEADER = 'errors-header.csv';
 
 export interface JournalPosition {
   record: number;
@@ -170,16 +171,27 @@ export function journalRecord(value: unknown): string {
 export class ImportJournal {
   private batch: JournalBatch;
   private formatError: ReturnType<typeof createErrorsFileFormatter>;
+  private storage: JournalStorage;
+  private errorHeader?: Promise<void>;
 
   constructor(storage: JournalStorage, columns: string[], position: JournalPosition) {
+    this.storage = storage;
     this.batch = new JournalBatch(storage, position, true);
     this.formatError = createErrorsFileFormatter(columns);
   }
 
-  append(row: RowOutcome): Promise<void> {
+  async append(row: RowOutcome): Promise<void> {
+    const error = this.formatError.row(row);
+    if (error) {
+      this.errorHeader ??= this.storage.writeStream(
+        ERROR_HEADER,
+        Readable.from([this.formatError.header]),
+      );
+      await this.errorHeader;
+    }
     return this.batch.append({
       outcome: journalRecord({ ...row, source: undefined }),
-      error: this.formatError.row(row),
+      error,
     });
   }
 

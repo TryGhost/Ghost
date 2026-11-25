@@ -1478,6 +1478,39 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.files.size, 0);
   });
 
+  it('keeps committed error headings when the staged source becomes unavailable', async function () {
+    const h = harness();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      fileStager: {
+        ...h.deps.fileStager,
+        download: async () => {
+          throw new errors.NotFoundError();
+        },
+      },
+    });
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    const journal = new ImportJournal(h.deps.fileStager.artifacts(), ['Headline', 'Body'], {
+      record: 0,
+      part: 0,
+    });
+    await journal.append({
+      line: 2,
+      title: null,
+      status: 'failed',
+      source: { Headline: '', Body: 'Original' },
+    });
+    await journal.flush();
+
+    await importer.handle(h.jobs[0]);
+
+    assert.equal(h.sentRuns[0].status, 'failed');
+    assert.equal(
+      h.sentRuns[0].reports.errorsFile,
+      'import_status,import_reason,import_media_failures,Headline,Body\r\nfailed,,,,Original',
+    );
+  });
+
   it('uses a safe reason when a run-level failure has no message', async function () {
     const h = harness();
     h.setHtmlToLexicalFactory(() => {
