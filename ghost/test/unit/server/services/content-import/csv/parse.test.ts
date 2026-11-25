@@ -2,9 +2,33 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import papaparse from 'papaparse';
-import sinon from 'sinon';
-import { parse, parseWithSource } from '../../../../../../core/server/services/content-import/csv';
+import { createReadStream } from 'node:fs';
+import {
+  mapCSVRecord,
+  readCSVRecords,
+  type ParsedRow,
+} from '../../../../../../core/server/services/content-import/csv/read-records';
+
+async function parseWithSource(file: string, mapping?: Record<string, string>) {
+  let columns: string[] = [];
+  const rows: ParsedRow[] = [];
+  for await (const record of readCSVRecords(createReadStream(file))) {
+    if ('columns' in record) {
+      columns = record.columns;
+    } else {
+      const row = mapCSVRecord(columns, record, mapping);
+      if (row) {
+        rows.push(row);
+      }
+    }
+  }
+  return { columns, rows };
+}
+
+async function parse(file: string, mapping?: Record<string, string>) {
+  const { rows } = await parseWithSource(file, mapping);
+  return rows.map(({ data }) => data);
+}
 
 // The CSVs live inline: each case writes its content to a temp file, so the
 // fixture sits next to the assertions that read it.
@@ -150,7 +174,7 @@ describe('content import csv parse', function () {
         ),
         HEADER_MAPPING,
       ),
-      /MissingQuotes/,
+      /Quoted field unterminated \(row 2\)/,
     );
   });
 
@@ -203,19 +227,6 @@ describe('content import csv parse', function () {
 
     assert.deepEqual(result.columns, ['Ignore me']);
     assert.deepEqual(result.rows, []);
-  });
-
-  it('uses an empty source-column list when the parser has no header metadata', async function () {
-    const parseStub = sinon
-      .stub(papaparse, 'parse')
-      .returns({ data: [], errors: [], meta: {} } as never);
-
-    try {
-      const result = await parseWithSource(await csvFile(''));
-      assert.deepEqual(result, { columns: [], rows: [] });
-    } finally {
-      parseStub.restore();
-    }
   });
 
   it('strips a report formula guard from imported data but preserves the source cell', async function () {

@@ -6,12 +6,11 @@ import buildPostData, {
   type MarkdownToHtml,
   type PostData,
 } from './post-data';
-import type { PostImportRow } from './row';
 import type { PostsRepository, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
-import { countPostRows, type PreparedPostRow, type PreparedPostRows } from './reader';
+import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
 import {
   uncertainSubmission,
@@ -32,13 +31,12 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 // The upload is staged because the request temp file is deleted with the response.
-// Request-time parsing preserves synchronous validation and the current row count;
-// the class-based job reparses the staged file so its payload stays serializable.
+// The request checks the source and header. The job parses the data rows so
+// its payload stays serializable and acceptance does not depend on counting.
 
 // The id is what a completion report will be looked up by.
 export interface ImportAccepted {
   importId: string;
-  total: number;
 }
 
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
@@ -49,10 +47,7 @@ export interface EmailNotifications {
   getDefaultRecipient(): Promise<string>;
 }
 
-type ReadRows = (
-  path: string,
-  mapping?: Record<string, string>,
-) => Promise<PreparedPostRows | PostImportRow[]>;
+type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<PreparedPostRows>;
 type PrepareSource = (
   request: ImportRequest,
   options?: { includeAssets?: boolean },
@@ -164,18 +159,18 @@ class ContentCSVImporter {
     assertCSVUploadSize(bytes);
     const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
     const runId = this._newRunId();
-    const { source, preparedRows } = await this.readPreparedRows(request);
+    const { source, preparedRows } = await this.readPreparedRows(request, false);
+    await this.cleanupSource(preparedRows.close);
     await this.cleanupSource(source.cleanup);
     const stagedFile = await this._fileStager.stage(request, runId, this._now());
     let handedOff = false;
 
     try {
-      await this._fileStager.begin(runId, preparedRows.rows.length);
+      await this._fileStager.begin(runId);
       // Enqueue can fail after acceptance (for example on a Redis timeout).
       // Keep the source until expiry or an actual delivery resolves uncertainty.
       handedOff = true;
       return await this.queueImport(runId, stagedFile, {
-        total: preparedRows.rows.length,
         mapping: request.mapping,
         emailRecipient,
       });
@@ -194,35 +189,16 @@ class ContentCSVImporter {
   ): Promise<ImportAccepted> {
     const selection = await this._fileStager.lookup(id, owner, this._now());
     if (selection.status === 'accepted') {
-      return { importId: id, total: selection.total };
-    }
-
-    const local = await this._fileStager.download(selection.file);
-    let count: { total: number; columns: string[] };
-    try {
-      const source = await this._prepareSource(
-        {
-          filePath: local.path,
-          fileName: selection.file.name,
-        },
-        { includeAssets: false },
-      );
-      try {
-        count = await countPostRows(this._files.readSource(source.filePath), mapping);
-      } finally {
-        await this.cleanupSource(source.cleanup);
-      }
-    } finally {
-      await this.cleanupSource(local.cleanup);
+      return { importId: id };
     }
 
     const emailRecipient = requestUserEmail ?? (await this._email.getDefaultRecipient());
-    const existing = await this._fileStager.claim(id, owner, this._now(), count.total);
-    if (existing !== undefined) {
-      return { importId: id, total: existing };
+    const claimed = await this._fileStager.claim(id, owner, this._now());
+    if (!claimed) {
+      return { importId: id };
     }
     try {
-      return await this.queueImport(id, selection.file, { ...count, mapping, emailRecipient });
+      return await this.queueImport(id, selection.file, { mapping, emailRecipient });
     } catch (error) {
       throw uncertainSubmission(error);
     }
@@ -232,11 +208,9 @@ class ContentCSVImporter {
     id: string,
     file: StagedImportFile,
     {
-      total,
       mapping,
       emailRecipient,
     }: {
-      total: number;
       mapping?: Record<string, string>;
       emailRecipient: string;
     },
@@ -248,12 +222,11 @@ class ContentCSVImporter {
       mapping,
       importTagNames,
       emailRecipient,
-      total,
     });
     logLifecycle('queued');
     await this._dispatchJob(job);
     await this._fileStager.acknowledge(id);
-    return { importId: id, total };
+    return { importId: id };
   }
 
   async inspectCSV(request: ImportRequest) {
@@ -275,13 +248,14 @@ class ContentCSVImporter {
 
   async handle(job: ContentCSVImportJob): Promise<void> {
     let source: PreparedImportSource | undefined;
+    let preparedRows: PreparedPostRows | undefined;
     let materialized: DownloadedImportFile | undefined;
     let started = false;
 
     try {
       await this._fileStager.start(job.importId, this._now());
       started = true;
-      const run = this._store.create(job.importId, job.total);
+      const run = this._store.create(job.importId, 0);
       materialized = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
         filePath: materialized.path,
@@ -289,13 +263,9 @@ class ContentCSVImporter {
         mapping: job.mapping,
       });
       source = prepared.source;
-      run.sourceColumns = prepared.preparedRows.columns;
-      await this.processRows(
-        job.importId,
-        job.importTagNames,
-        prepared.preparedRows.rows,
-        prepared.source,
-      );
+      preparedRows = prepared.preparedRows;
+      run.sourceColumns = preparedRows.columns;
+      await this.processRows(job.importId, job.importTagNames, preparedRows.rows, prepared.source);
     } catch (error) {
       if (started && !this._store.get(job.importId)) {
         this._store.create(job.importId, 0);
@@ -303,6 +273,9 @@ class ContentCSVImporter {
       this._store.fail(job.importId, messageOf(error));
       throw error;
     } finally {
+      if (preparedRows) {
+        await this.cleanupSource(preparedRows.close);
+      }
       if (source) {
         await this.cleanupSource(source.cleanup);
       }
@@ -327,7 +300,7 @@ class ContentCSVImporter {
   private async processRows(
     runId: string,
     importTagNames: string[],
-    rows: PreparedPostRow[],
+    rows: AsyncIterable<PreparedPostRow>,
     source: PreparedImportSource,
   ): Promise<void> {
     let urlFailureCount = 0;
@@ -337,7 +310,6 @@ class ContentCSVImporter {
     try {
       if (source.assets) {
         await source.assets.store();
-        source.assets.rewriteRows(rows.map(({ data }) => data));
       }
 
       const htmlToLexical = this._getHtmlToLexical();
@@ -348,8 +320,8 @@ class ContentCSVImporter {
       let failedRows = 0;
       let firstRowFailure: unknown;
 
-      for (const preparedRow of rows) {
-        const { data: row, source: sourceCells, line } = preparedRow;
+      for await (const { data: row, source: sourceCells, line } of rows) {
+        source.assets?.rewriteRows([row]);
         let data: PostData;
 
         try {
@@ -488,13 +460,11 @@ class ContentCSVImporter {
 
   private async readPreparedRows(
     request: ImportRequest,
+    includeAssets = true,
   ): Promise<{ source: PreparedImportSource; preparedRows: PreparedPostRows }> {
-    const source = await this._prepareSource(request);
+    const source = await this._prepareSource(request, { includeAssets });
     try {
-      const result = await this._readRows(source.filePath, request.mapping);
-      const preparedRows = Array.isArray(result)
-        ? { columns: [], rows: result.map((data, index) => ({ data, line: index + 2 })) }
-        : result;
+      const preparedRows = await this._readRows(source.filePath, request.mapping);
       return { source, preparedRows };
     } catch (error) {
       await this.cleanupSource(source.cleanup);

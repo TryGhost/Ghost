@@ -4,7 +4,13 @@ import errors from '@tryghost/errors';
 import papaparse from 'papaparse';
 import { stripFormulaGuard } from './formula';
 import { parseCSVStream } from './parse-stream';
-import type { ParsedRow, Row } from './parse';
+export type Row = Record<string, string>;
+
+export interface ParsedRow {
+  data: Row;
+  source: Row;
+  line: number;
+}
 
 export const MAX_CSV_RECORD_BYTES = 8 * 1024 * 1024;
 const DELIMITER_SAMPLE_BYTES = 64 * 1024;

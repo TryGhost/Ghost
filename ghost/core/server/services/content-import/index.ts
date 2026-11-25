@@ -108,7 +108,7 @@ function makeImporter(): ContentCSVImporter {
 
   return new ContentCSVImporter({
     files,
-    readRows: readPostRows,
+    readRows: (filePath, mapping) => readPostRows(files.readSource(filePath), mapping),
     prepareSource: (request, options) => prepareImportSource(files, request, options),
     posts: new BookshelfPostsRepository(models),
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,

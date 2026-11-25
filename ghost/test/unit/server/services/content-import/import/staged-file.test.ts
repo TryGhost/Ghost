@@ -71,12 +71,11 @@ describe('content import staged file', function () {
     }
     assert.equal(await fs.pathExists(local.path), false);
 
-    await adapter.begin('first', 1);
+    await adapter.begin('first');
     await adapter.start('first', now);
     await adapter.remove('first', file);
     await adapter.acknowledge('first'); // dispatch can return after the handler finished
     assert.equal((await uploads.get('first'))?.state, 'finished');
-    assert.equal((await uploads.get('first'))?.receipt, '{"total":1}');
     assert.deepEqual(await storage.listPrefix('content-csv-import/test-site'), { keys: [] });
     await assert.rejects(adapter.download(file), { errorType: 'NotFoundError' });
   });
@@ -106,14 +105,14 @@ describe('content import staged file', function () {
     const adapter = stager();
     const request = { filePath: sourcePath, fileName: 'posts.csv', owner };
     await adapter.stage(request, 'accepted', now);
-    await adapter.begin('accepted', 1);
+    await adapter.begin('accepted');
     await adapter.acknowledge('accepted');
     const later = new Date('2026-01-03');
     await adapter.start('accepted', later);
     await adapter.stage(request, 'uncertain', now);
-    await adapter.begin('uncertain', 1);
+    await adapter.begin('uncertain');
     await assert.rejects(adapter.start('uncertain', later), /no longer available/);
-    await assert.rejects(adapter.begin('uncertain', 1), /no longer available/);
+    await assert.rejects(adapter.begin('uncertain'), /no longer available/);
   });
 
   it('expires a source saved before its adapter-assigned key reached the manifest', async function () {
@@ -171,17 +170,17 @@ describe('content import staged file', function () {
     await assert.rejects(adapter.lookup('claim', { ...owner, id: 'different-owner' }, now), {
       errorType: 'NotFoundError',
     });
-    assert.equal(await adapter.claim('claim', owner, now, 1), undefined);
+    assert.equal(await adapter.claim('claim', owner, now), true);
     await assert.rejects(adapter.lookup('claim', owner, now), {
       code: 'CSV_IMPORT_SUBMISSION_UNCERTAIN',
     });
-    await assert.rejects(adapter.claim('claim', owner, now, 1), {
+    await assert.rejects(adapter.claim('claim', owner, now), {
       code: 'CSV_IMPORT_SUBMISSION_UNCERTAIN',
     });
     await assert.rejects(adapter.cancel('claim', owner), { errorType: 'ConflictError' });
     await adapter.acknowledge('claim');
-    assert.equal(await adapter.claim('claim', owner, now, 1), 1);
-    assert.deepEqual(await adapter.lookup('claim', owner, now), { status: 'accepted', total: 1 });
+    assert.equal(await adapter.claim('claim', owner, now), false);
+    assert.deepEqual(await adapter.lookup('claim', owner, now), { status: 'accepted' });
     await assert.rejects(adapter.lookup('claim', owner, new Date('2026-01-03')), {
       errorType: 'NotFoundError',
     });
@@ -203,7 +202,7 @@ describe('content import staged file', function () {
       await resume.promise;
       return conditionalWrite(key, bytes, version);
     });
-    const claim = assert.rejects(adapter.claim('cancel', owner, now, 1), {
+    const claim = assert.rejects(adapter.claim('cancel', owner, now), {
       errorType: 'NotFoundError',
     });
     try {
@@ -273,8 +272,8 @@ describe('content import staged file', function () {
     await adapter.stage(request, 'ready', now);
     await adapter.stage(request, 'uncertain', now);
     await adapter.stage(request, 'racing', now);
-    await adapter.begin('uncertain', 1);
-    await adapter.begin('racing', 1);
+    await adapter.begin('uncertain');
+    await adapter.begin('racing');
     const report = sinon.stub();
     await adapter.cleanupExpired(now, report);
     assert.equal((await storage.listPrefix('content-csv-uploads/test-site')).keys.length, 3);

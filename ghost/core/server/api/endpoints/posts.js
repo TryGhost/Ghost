@@ -138,22 +138,22 @@ const controller = {
             message: 'Submit either a file or a staged CSV upload, not both.',
           });
         }
-        const { importId, total } = await contentImportService.confirmCSV({
+        const { importId } = await contentImportService.confirmCSV({
           uploadId,
           owner,
           requestUserEmail,
           mapping: frame.data.mapping,
         });
-        return { meta: { import_id: importId, total } };
+        return { meta: { import_id: importId } };
       }
-      const { importId, total } = await contentImportService.importCSV({
+      const { importId } = await contentImportService.importCSV({
         filePath: frame.file.path,
         fileName: frame.file.name,
         mapping: frame.data.mapping,
         requestUserEmail,
         owner,
       });
-      return { meta: { import_id: importId, total } };
+      return { meta: { import_id: importId } };
     },
   },
 

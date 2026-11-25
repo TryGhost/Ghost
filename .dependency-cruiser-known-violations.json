@@ -71,11 +71,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/content-import/csv/parse.ts",
-    "to": "fs-extra"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/content-import/import/assets.ts",
     "to": "ghost/core/server/data/importer/content-files.ts"
   },

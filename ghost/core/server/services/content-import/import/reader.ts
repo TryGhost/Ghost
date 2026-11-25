@@ -1,4 +1,4 @@
-import { parseWithSource, type Row } from '../csv';
+import type { Row } from '../csv';
 import type { Readable } from 'node:stream';
 import { mapCSVRecord, readCSVRecords } from '../csv/read-records';
 import { EDITORIAL_POST_FIELDS, postImportRowSchema, type PostImportRow } from './row';
@@ -15,7 +15,8 @@ export interface PreparedPostRow {
 
 export interface PreparedPostRows {
   columns: string[];
-  rows: PreparedPostRow[];
+  rows: AsyncIterable<PreparedPostRow>;
+  close(): Promise<void>;
 }
 
 export async function* streamPostRows(
@@ -36,30 +37,25 @@ export async function* streamPostRows(
   }
 }
 
-export async function countPostRows(input: Readable, mapping?: Record<string, string>) {
-  let columns: string[] = [];
-  let total = 0;
-  for await (const entry of streamPostRows(input, mapping)) {
-    if ('columns' in entry) {
-      columns = entry.columns;
-    } else {
-      total += 1;
-    }
-  }
-  return { columns, total };
-}
-
 export default async function readPostRows(
-  path: string,
+  input: Readable,
   mapping?: Record<string, string>,
 ): Promise<PreparedPostRows> {
-  const parsed = await parseWithSource(path, mapping ?? FIELD_BY_HEADER);
+  const records = streamPostRows(input, mapping);
+  const header = await records.next();
+  const columns = !header.done && 'columns' in header.value ? header.value.columns : [];
+
   return {
-    columns: parsed.columns,
-    rows: parsed.rows.map(({ data, source, line }) => ({
-      data: postImportRowSchema.parse(data),
-      source,
-      line,
-    })),
+    columns,
+    rows: (async function* () {
+      for await (const record of records) {
+        if ('row' in record) {
+          yield record.row;
+        }
+      }
+    })(),
+    close: async () => {
+      await records.return(undefined);
+    },
   };
 }

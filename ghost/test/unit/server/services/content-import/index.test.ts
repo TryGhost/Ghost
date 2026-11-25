@@ -207,7 +207,7 @@ describe('Content import composition root', function () {
       await Promise.allSettled([acceptance]);
     }
     const accepted = await acceptance;
-    assert.equal(accepted.total, 1);
+    assert.match(accepted.importId, /^[a-f0-9]{24}$/);
     sinon.assert.calledOnce(dispatch);
     sinon.assert.notCalled(getMedia);
     const delivered = dispatch.firstCall.args[0];

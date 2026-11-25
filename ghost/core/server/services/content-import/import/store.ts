@@ -62,7 +62,11 @@ export class ImportRunStore {
   }
 
   record(id: string, outcome: RowOutcome): void {
-    this._runs.get(id)?.rows.push(outcome);
+    const run = this._runs.get(id);
+    if (run) {
+      run.rows.push(outcome);
+      run.total = run.rows.length;
+    }
   }
 
   finish(id: string): void {

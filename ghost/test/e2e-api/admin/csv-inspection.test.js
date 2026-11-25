@@ -154,8 +154,8 @@ describe('CSV import inspection', function () {
     const rejected = await agent.post('posts/upload/').body(invalid).expectStatus(422);
     assert.match(rejected.body.errors[0].message, /either a file or a staged CSV upload/);
     const first = await confirm('Heading');
-    assert.deepEqual(first.body.meta, { import_id: meta.upload_id, total: 22 });
-    await mockManager.assert.sentEmailEventually({ subject: 'Your content import is complete' });
+    assert.deepEqual(first.body.meta, { import_id: meta.upload_id });
+    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
     const replay = await confirm('Other');
     assert.deepEqual(replay.body, first.body);
     const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });

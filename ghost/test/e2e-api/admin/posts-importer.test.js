@@ -645,7 +645,7 @@ describe('Posts Importer API', function () {
     });
 
     const { body } = await agent.post('posts/upload/').body(form).expectStatus(202);
-    assert.equal(body.meta.total, 1);
+    assert.deepEqual(Object.keys(body.meta), ['import_id']);
 
     await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
     const post = await models.Post.findOne({ title: 'ZIP mapping post', status: 'all' });
@@ -673,7 +673,7 @@ describe('Posts Importer API', function () {
       .post('posts/upload/')
       .attach('postsfile', zipPath)
       .expectStatus(202);
-    assert.equal(body.meta.total, 3);
+    assert.deepEqual(Object.keys(body.meta), ['import_id']);
     await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
 
     sinon.assert.notCalled(importUrl);
@@ -734,7 +734,7 @@ describe('Posts Importer API', function () {
       .post('posts/upload/')
       .attach('postsfile', zipPath)
       .expectStatus(202);
-    assert.equal(body.meta.total, 1);
+    assert.deepEqual(Object.keys(body.meta), ['import_id']);
     await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
 
     for (const filePath of getImportedAssetPaths().slice(4, 7)) {
@@ -921,13 +921,6 @@ describe('Posts Importer API', function () {
         reason: /Invalid ZIP file structure/,
       },
       {
-        name: 'malformed-csv.zip',
-        files: {
-          'posts.csv': 'title,html\nBroken quote,"<p>never closed\n',
-        },
-        reason: /could not be parsed as a CSV file/,
-      },
-      {
         name: 'deeply-nested-json.zip',
         files: {
           'posts.csv': 'title\nCSV post\n',
@@ -1096,7 +1089,7 @@ describe('Posts Importer API', function () {
       .expectStatus(202);
 
     assert.match(body.meta.import_id, /^[0-9a-f]{24}$/);
-    assert.equal(body.meta.total, 2);
+    assert.deepEqual(Object.keys(body.meta), ['import_id']);
 
     await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
 
@@ -1701,7 +1694,7 @@ describe('Posts Importer API', function () {
 
     const { body } = await agent.post('posts/upload/').attach('postsfile', file).expectStatus(202);
     assert.match(body.meta.import_id, /^[a-f0-9]{24}$/);
-    assert.equal(body.meta.total, 101);
+    assert.deepEqual(Object.keys(body.meta), ['import_id']);
 
     await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
 

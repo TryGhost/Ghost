@@ -1,8 +1,20 @@
+import { importFiles } from '../../../../../utils/csv-import-files';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import readPostRows from '../../../../../../core/server/services/content-import/import/reader';
+import openPostRows, {
+  type PreparedPostRow,
+} from '../../../../../../core/server/services/content-import/import/reader';
+
+async function readPostRows(file: string, mapping?: Record<string, string>) {
+  const { columns, rows: records } = await openPostRows(importFiles.readSource(file), mapping);
+  const rows: PreparedPostRow[] = [];
+  for await (const row of records) {
+    rows.push(row);
+  }
+  return { columns, rows };
+}
 
 describe('content import reader', function () {
   let directory: string;

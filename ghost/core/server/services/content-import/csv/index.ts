@@ -1,9 +1,3 @@
-export {
-  default as parse,
-  parseWithSource,
-  type ParsedCSV,
-  type ParsedRow,
-  type Row,
-} from './parse';
+export type { ParsedRow, Row } from './read-records';
 export { default as serialize } from './serialize';
 export { stripFormulaGuard } from './formula';

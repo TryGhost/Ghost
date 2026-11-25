@@ -1,7 +1,6 @@
 import type { Readable } from 'node:stream';
 import type { StorageBase } from 'ghost-storage-base';
 import errors from '@tryghost/errors';
-import { z } from 'zod';
 import type { VersionedImportStorage } from '../../../adapters/storage/import-storage';
 import { ImportUploadRepository, type ImportOwner, type ImportUpload } from './upload-repository';
 
@@ -15,11 +14,7 @@ export interface DownloadedImportFile {
   cleanup(): Promise<void>;
 }
 
-type Submission =
-  | { status: 'ready'; file: StagedImportFile }
-  | { status: 'accepted'; total: number };
-
-const receiptSchema = z.object({ total: z.number().int().nonnegative() });
+type Submission = { status: 'ready'; file: StagedImportFile } | { status: 'accepted' };
 
 function assertOwnedUpload(
   row: ImportUpload | undefined,
@@ -39,9 +34,9 @@ export function uncertainSubmission(error?: unknown) {
   });
 }
 
-function receipt(row: ImportUpload): number | undefined {
+function isAccepted(row: ImportUpload): boolean {
   if (row.state === 'accepted' || row.state === 'finished') {
-    return receiptSchema.parse(JSON.parse(row.receipt ?? '{}')).total;
+    return true;
   }
   if (row.state === 'submitting') {
     throw uncertainSubmission();
@@ -49,7 +44,7 @@ function receipt(row: ImportUpload): number | undefined {
   if (row.state !== 'ready') {
     throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
   }
-  return undefined;
+  return false;
 }
 
 export interface ImportFileStager {
@@ -59,13 +54,13 @@ export interface ImportFileStager {
     now: Date,
   ): Promise<StagedImportFile>;
   download(file: StagedImportFile): Promise<DownloadedImportFile>;
-  begin(id: string, total: number): Promise<void>;
+  begin(id: string): Promise<void>;
   acknowledge(id: string): Promise<void>;
   start(id: string, now: Date): Promise<void>;
   remove(id: string, file: StagedImportFile): Promise<void>;
   cancel(id: string, owner: ImportOwner): Promise<void>;
   lookup(id: string, owner: ImportOwner, now: Date): Promise<Submission>;
-  claim(id: string, owner: ImportOwner, now: Date, total: number): Promise<number | undefined>;
+  claim(id: string, owner: ImportOwner, now: Date): Promise<boolean>;
   cleanupExpired(now: Date, report: (error: unknown) => void): Promise<void>;
 }
 
@@ -168,14 +163,14 @@ export function createImportFileStager({
       return downloadToTempFile(() => privateStorage().readStream({ path: file.key }));
     },
 
-    async begin(id, total) {
+    async begin(id) {
       await uploads.change(id, (row) => {
         if (row?.state !== 'ready') {
           throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
         }
         return {
           value: undefined,
-          change: { state: 'submitting', receipt: JSON.stringify({ total }) },
+          change: { state: 'submitting' },
         };
       });
     },
@@ -202,25 +197,23 @@ export function createImportFileStager({
     async lookup(id, owner, now) {
       const row = await uploads.get(id);
       assertOwnedUpload(row, owner, now);
-      const total = receipt(row);
-      if (total !== undefined) {
-        return { status: 'accepted', total };
+      if (isAccepted(row)) {
+        return { status: 'accepted' };
       }
       const { file } = row;
       assertSourceKey(id, file.key);
       return { status: 'ready', file };
     },
 
-    async claim(id, owner, now, total) {
+    async claim(id, owner, now) {
       return uploads.change(id, (row) => {
         assertOwnedUpload(row, owner, now);
-        const existing = receipt(row);
-        if (existing !== undefined) {
-          return { value: existing };
+        if (isAccepted(row)) {
+          return { value: false };
         }
         return {
-          value: undefined,
-          change: { state: 'submitting', receipt: JSON.stringify({ total }) },
+          value: true,
+          change: { state: 'submitting' },
         };
       });
     },
