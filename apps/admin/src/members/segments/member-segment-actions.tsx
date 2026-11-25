@@ -75,7 +75,7 @@ export function MemberSegmentActions({
     return (
       <SaveSegmentPopover
         filter={filter}
-        label="Save as segment"
+        label="Save segment"
         open={saving}
         onCreated={onOpenSegment}
         onOpenChange={setSaving}

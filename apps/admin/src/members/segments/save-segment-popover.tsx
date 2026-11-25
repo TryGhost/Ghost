@@ -25,7 +25,7 @@ export function SaveSegmentForm({ filter, onClose, onCreated }: SaveSegmentFormP
     <PopoverContent align="end" className="w-72" data-testid="save-segment-popover">
       <Stack gap="md">
         <Text as="h3" size="sm" weight="semibold">
-          Save as segment
+          Save segment
         </Text>
         <SegmentFields
           error={draft.error}
