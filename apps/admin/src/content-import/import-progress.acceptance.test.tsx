@@ -29,7 +29,125 @@ afterEach(() => {
 });
 
 describe('CSV import progress', () => {
-  it.each(['complete', 'failed'])(
+  it.each(['light', 'dark'] as const)(
+    'confirms stopping an import and hides both indicators in %s mode',
+    async (theme) => {
+      fakeSettingsScreens();
+      fakeTags([]);
+      const config = configResponse();
+      config.config.contentImport = { cancellation: true };
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({ nightShift: theme });
+      localStorage.setItem(storageKey(), JSON.stringify([id]));
+      let status = 'running';
+      fakeAdminEndpoint('GET', progressPath, () => ({
+        meta: { import_id: id, status, processed: 62, total: 100 },
+      }));
+      const cancellation = fakeAdminEndpoint('POST', `/posts/upload/${id}/cancel/`, () => {
+        status = 'cancelling';
+        return Response.json({ meta: { import_id: id, status } }, { status: 202 });
+      });
+      await renderAdminApp('/tags', {
+        labs: { csvContentImporter: true },
+        boot: { browseConfig: { response: config }, browseMe: { response: me } },
+      });
+      await sidebarProgress().click();
+      const section = settingsScreen.section('migrationtools');
+      await expect.element(section.getByRole('button', { name: 'Stop import' })).toBeVisible();
+      await section.getByRole('button', { name: 'Stop import' }).click();
+      const modal = settingsScreen.confirmationModal();
+      await expect.element(modal.getByRole('heading', { name: 'Stop this import?' })).toBeVisible();
+      await expect
+        .element(modal.getByText(/Already imported posts and pages will be kept/))
+        .toBeVisible();
+      await modal.getByRole('button', { name: 'Keep importing' }).click();
+      await expect(modal).toHaveCount(0);
+      expect(cancellation.requests).toHaveLength(0);
+      await section.getByRole('button', { name: 'Stop import' }).click();
+      await settingsScreen.confirmationModal().getByRole('button', { name: 'Stop import' }).click();
+      await expect.element(section.getByText('Stopping…', { exact: true })).toBeVisible();
+      await expect(section.getByRole('button', { name: 'Stop import' })).toHaveCount(0);
+      expect(cancellation.requests).toHaveLength(1);
+      await expect.element(section.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '62');
+      window.history.back();
+      await expect.element(sidebarProgress()).toHaveTextContent('Stopping…');
+      window.history.forward();
+      await expect.element(section.getByText('Stopping…', { exact: true })).toBeVisible();
+      status = 'cancelled';
+      await expect.poll(() => localStorage.getItem(storageKey()), { timeout: 10000 }).toBeNull();
+      await expect(section.getByRole('progressbar')).toHaveCount(0);
+      window.history.back();
+      await expect.element(sidebarScreen.shellNav()).toBeVisible();
+      await expect(sidebarProgress()).toHaveCount(0);
+    },
+    30000,
+  );
+
+  it('keeps cancellation hidden on older Core and shows independent import cards', async () => {
+    fakeSettingsScreens();
+    const otherId = '123456789012345678901234';
+    localStorage.setItem(storageKey(), JSON.stringify([id, otherId]));
+    const config = configResponse();
+    config.config.contentImport = { stagedInspection: true };
+    for (const importId of [id, otherId]) {
+      fakeAdminEndpoint('GET', `/posts/upload/${importId}/progress/`, {
+        meta: { import_id: importId, status: 'running', processed: 1, total: 5 },
+      });
+    }
+    await renderAdminApp('/settings/migration', {
+      labs: { csvContentImporter: true },
+      boot: { browseConfig: { response: config } },
+    });
+    const section = settingsScreen.section('migrationtools');
+    await expect(section.getByRole('progressbar')).toHaveCount(2);
+    await expect(section.getByRole('button', { name: 'Stop import' })).toHaveCount(0);
+  });
+
+  it.each([409, 500])(
+    'handles a %s cancellation response and refreshes progress',
+    async (responseStatus) => {
+      fakeSettingsScreens();
+      const config = configResponse();
+      config.config.contentImport = { cancellation: true };
+      localStorage.setItem(storageKey(), JSON.stringify([id]));
+      let status = 'running';
+      const progress = fakeAdminEndpoint('GET', progressPath, () => ({
+        meta: { import_id: id, status, processed: 62, total: 100 },
+      }));
+      fakeAdminEndpoint('POST', `/posts/upload/${id}/cancel/`, () => {
+        if (responseStatus === 409) {
+          status = 'finalizing';
+        }
+        return Response.json(
+          { errors: [{ message: 'Cannot stop this import', type: 'InternalServerError' }] },
+          { status: responseStatus },
+        );
+      });
+      await renderAdminApp('/settings/migration', {
+        labs: { csvContentImporter: true },
+        boot: { browseConfig: { response: config } },
+      });
+      const section = settingsScreen.section('migrationtools');
+      await section.getByRole('button', { name: 'Stop import' }).click();
+      const polls = progress.requests.length;
+      await settingsScreen.confirmationModal().getByRole('button', { name: 'Stop import' }).click();
+      await expect.poll(() => progress.requests.length).toBeGreaterThan(polls);
+      await expect(section.getByText('Stopping…', { exact: true })).toHaveCount(0);
+      if (responseStatus === 409) {
+        await expect
+          .element(page.getByText('This import has already finished processing.'))
+          .toBeVisible();
+        await expect.element(section.getByText('Finishing…')).toBeVisible();
+      } else {
+        await expect.element(page.getByText('Cannot stop this import')).toBeVisible();
+        await expect
+          .element(settingsScreen.confirmationModal().getByRole('button', { name: 'Stop import' }))
+          .toBeEnabled();
+      }
+    },
+  );
+
+  it.each(['complete', 'failed', 'cancelled'])(
     'restores progress and hides both indicators when %s',
     async (outcome) => {
       fakeTags([]);

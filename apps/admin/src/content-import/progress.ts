@@ -4,7 +4,7 @@ import type { ContentCSVProgress } from '@tryghost/admin-x-framework/api/posts';
 export type TrackedImport = ContentCSVProgress & { stale: boolean };
 
 export function isImportFinished(status: ContentCSVProgress['status']) {
-  return status === 'complete' || status === 'failed';
+  return status === 'complete' || status === 'failed' || status === 'cancelled';
 }
 
 export function importPercentage({ processed, total }: ContentCSVProgress): number | null {
@@ -16,6 +16,9 @@ export function importPercentage({ processed, total }: ContentCSVProgress): numb
 export function importProgressLabel(progress: TrackedImport) {
   if (progress.stale) {
     return 'Reconnecting…';
+  }
+  if (progress.status === 'cancelling') {
+    return 'Stopping…';
   }
   if (progress.status === 'queued') {
     return 'Queued';

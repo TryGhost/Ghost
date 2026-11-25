@@ -54,7 +54,7 @@ it('tracks accepted imports once and restores progress after remount', async () 
   expect(options.retry).toBe(false);
   expect(options.refetchInterval({ state: {} })).toBe(5000);
   expect(options.refetchInterval({ state: { data } })).toBe(5000);
-  for (const status of ['complete', 'failed']) {
+  for (const status of ['complete', 'failed', 'cancelled']) {
     expect(options.refetchInterval({ state: { data: { meta: { status } } } })).toBe(false);
   }
   unmount();
@@ -62,7 +62,7 @@ it('tracks accepted imports once and restores progress after remount', async () 
   await waitFor(() => expect(remounted.result.current.imports).toHaveLength(1));
 });
 
-it.each(['complete', 'failed'])(
+it.each(['complete', 'failed', 'cancelled'])(
   'forgets a %s import and keeps other active imports',
   async (status) => {
     localStorage.setItem(key, JSON.stringify([id, otherId]));
@@ -83,13 +83,16 @@ it.each(['complete', 'failed'])(
   },
 );
 
-it.each(['complete', 'failed'])('forgets a previously %s import on reload', async (status) => {
-  localStorage.setItem(key, JSON.stringify([id]));
-  useProgress.mockReturnValue({ data: { meta: { ...data.meta, status } }, error: null });
-  const { result } = renderHook(useImportProgress, { wrapper });
-  await waitFor(() => expect(localStorage.getItem(key)).toBeNull());
-  expect(result.current.imports).toEqual([]);
-});
+it.each(['complete', 'failed', 'cancelled'])(
+  'forgets a previously %s import on reload',
+  async (status) => {
+    localStorage.setItem(key, JSON.stringify([id]));
+    useProgress.mockReturnValue({ data: { meta: { ...data.meta, status } }, error: null });
+    const { result } = renderHook(useImportProgress, { wrapper });
+    await waitFor(() => expect(localStorage.getItem(key)).toBeNull());
+    expect(result.current.imports).toEqual([]);
+  },
+);
 
 it.each([403, 404])('forgets unavailable imports without a toast (%s)', async (status) => {
   localStorage.setItem(key, JSON.stringify([id]));
