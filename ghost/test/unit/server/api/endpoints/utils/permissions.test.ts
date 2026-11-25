@@ -56,10 +56,6 @@ const OUTSIDE_PIPELINE = [
   'session.verify',
 ];
 
-/**
- * Every method the Admin API routes mount, read from its routes file, by its controller's
- * `docName`, as the permission stage and the allowlist name it
- */
 const ENDPOINTS_DIR = path.join(__dirname, '../../../../../../core/server/api/endpoints');
 
 /**
@@ -80,34 +76,47 @@ function docNameOf(controller: string): string {
   return docName;
 }
 
-function adminApiMethods() {
+type AdminApiMethod = {
+  /** By its controller's `docName`, as the permission stage and the allowlist name it */
+  name: string;
+  impl: { permissions?: unknown };
+};
+
+/**
+ * Every method the Admin API routes mount, read from its routes file. Kept apart by export, as
+ * two controllers can share a `docName`.
+ */
+function adminApiMethods(): AdminApiMethod[] {
   const routes = fs.readFileSync(
     path.join(__dirname, '../../../../../../core/server/web/api/endpoints/admin/routes.js'),
     'utf8',
   );
-  const methods = new Map<string, { permissions?: unknown }>();
+  const methods = new Map<string, AdminApiMethod>();
   for (const [, controller, method] of routes.matchAll(/http\(api\.(\w+)\.(\w+)\)/g)) {
     const impl = api[controller][method];
     // A route mounting a method that doesn't exist runs nothing
     if (impl) {
-      methods.set(`${docNameOf(controller)}.${method}`, impl);
+      methods.set(`${controller}.${method}`, { name: `${docNameOf(controller)}.${method}`, impl });
     }
   }
-  return methods;
+  return [...methods.values()];
 }
+
+const isUnchecked = ({ impl }: AdminApiMethod) =>
+  impl.permissions === false || typeof impl.permissions === 'function';
 
 describe('API permissions for apps', function () {
   const app = { kind: 'app' };
   const unchecked = () => {
     const found: string[] = [];
     const outside: string[] = [];
-    for (const [name, impl] of adminApiMethods()) {
-      if (!Object.prototype.hasOwnProperty.call(impl, 'permissions')) {
-        outside.push(name);
+    for (const method of adminApiMethods()) {
+      if (!Object.prototype.hasOwnProperty.call(method.impl, 'permissions')) {
+        outside.push(method.name);
         continue;
       }
-      if (impl.permissions === false || typeof impl.permissions === 'function') {
-        found.push(name);
+      if (isUnchecked(method)) {
+        found.push(method.name);
       }
     }
     return { found: [...new Set(found)].sort(), outside: outside.sort() };
@@ -119,6 +128,16 @@ describe('API permissions for apps', function () {
 
     assert.deepEqual(found, [...REFUSED_FOR_APPS, ...allowlisted].sort());
     assert.deepEqual(outside, OUTSIDE_PIPELINE);
+  });
+
+  it('finds no unchecked method sharing its name with another', function () {
+    const byName = Map.groupBy(adminApiMethods(), ({ name }) => name);
+    const shared = [...byName]
+      .filter(([, methods]) => methods.length > 1 && methods.some(isUnchecked))
+      .map(([name]) => name);
+
+    // An allowlist entry or refusal for the name would apply to every method with it
+    assert.deepEqual(shared, []);
   });
 
   it('refuses an app on each', async function () {
