@@ -107,11 +107,24 @@ export class AppSessionTokens {
    * Its client follows the installation, so a suspension or uninstall that lands while issuing
    * either refuses the token or deletes it before it's stored. The installation is read again
    * after issuing so neither is answered with a token, or with an error of Ghost's.
+   *
+   * A client refused for an installation that is still active is out of step with it, which a
+   * reconcile written from a stale read can leave behind. It's brought in step from the fresh
+   * read and issued once more.
    */
-  async issue(
+  issue(
     installation: Installation,
     staff: StaffSession,
     { atRevision }: { atRevision?: number } = {},
+  ): Promise<AppSessionToken | null> {
+    return this.issueOnce(installation, staff, atRevision, { retry: true });
+  }
+
+  private async issueOnce(
+    installation: Installation,
+    staff: StaffSession,
+    atRevision: number | undefined,
+    { retry }: { retry: boolean },
   ): Promise<AppSessionToken | null> {
     // The provider checks no scopes, so they come from the approved manifest
     const issued = await this.appTokens.issue({
@@ -121,8 +134,15 @@ export class AppSessionTokens {
       scopes: installation.manifest.scopes,
     });
     if ('refused' in issued) {
-      if (issued.refused === 'client_unavailable' && !(await this.stillActive(installation))) {
-        return null;
+      if (issued.refused === 'client_unavailable') {
+        const current = await this.stillActive(installation);
+        if (!current || (atRevision !== undefined && current.revision !== atRevision)) {
+          return null;
+        }
+        if (retry) {
+          await this.keepClientInStep(current);
+          return this.issueOnce(installation, staff, atRevision, { retry: false });
+        }
       }
       throw notIssued(issued.refused);
     }

@@ -178,7 +178,9 @@ The provider's record of an installation, which its user tokens are issued
 to. Install, approval, uninstall and session start bring it in step with the
 installation, outside the installation's transaction: the installation is the
 authority on every call, so a client out of step grants nothing. A client of
-an installation that isn't active is disabled and its tokens deleted.
+an installation that isn't active is disabled and its tokens deleted. A token
+refused for an active installation's client brings the client in step and is
+issued once more, so renewal can't stall on a client left out of step.
 _Avoid_: app, integration
 
 **Re-check**:

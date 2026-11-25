@@ -31,23 +31,31 @@ type Read =
   | { status: Installation['status']; revision: number }
   | undefined;
 
+type Issued = Awaited<ReturnType<AppTokens['issue']>>;
+
 /**
- * Session tokens whose provider answers `issued`, reading the installation as each of `reads`
- * in turn, and active once they run out; `undefined` is an uninstalled one.
+ * Session tokens whose provider answers `issued`, or each of a list of answers in turn and the
+ * last from then on, reading the installation as each of `reads` in turn, and active once they
+ * run out; `undefined` is an uninstalled one.
  */
 function tokensIssuing(
-  issued: Awaited<ReturnType<AppTokens['issue']>>,
+  issued: Issued | Issued[],
   availability: ReturnType<AppTokens['availability']> = 'ready',
   reads: Read[] = [],
 ) {
   const reconciled: Array<{ id: string; active: boolean }> = [];
+  const answers = Array.isArray(issued) ? [...issued] : [issued];
+  let issues = 0;
   const tokens = new AppSessionTokens({
     appTokens: {
       availability: () => availability,
       reconcileClient: async ({ id, active }) => {
         reconciled.push({ id, active });
       },
-      issue: async () => issued,
+      issue: async () => {
+        issues += 1;
+        return answers.length > 1 ? answers.shift()! : answers[0]!;
+      },
       validate: async () => null,
     },
     findInstallation: async (id) => {
@@ -61,7 +69,7 @@ function tokensIssuing(
     },
     logging: { error() {} },
   });
-  return Object.assign(tokens, { reconciled });
+  return Object.assign(tokens, { reconciled, issues: () => issues });
 }
 
 describe('App session tokens', function () {
@@ -96,6 +104,39 @@ describe('App session tokens', function () {
       tokensIssuing({ refused: 'user_not_found' }).renew('installation-id', 2, principal),
       { statusCode: 500, message: /staff user was not found/ },
     );
+  });
+
+  it('brings the client of an active installation back in step and issues again', async function () {
+    const tokens = tokensIssuing([
+      { refused: 'client_unavailable' },
+      { accessToken: 'ghost_app_x', expiresIn: 3600 },
+    ]);
+
+    assert.deepEqual(await tokens.renew('installation-id', 2, principal), {
+      access_token: 'ghost_app_x',
+      expires_in: 3600,
+    });
+    assert.deepEqual(tokens.reconciled, [{ id: 'installation-id', active: true }]);
+  });
+
+  it('issues again only once for a client still out of step', async function () {
+    const tokens = tokensIssuing({ refused: 'client_unavailable' });
+
+    await assert.rejects(tokens.renew('installation-id', 2, principal), { statusCode: 500 });
+    assert.equal(tokens.issues(), 2);
+  });
+
+  it('ends the session when the client is out of step and the installation moved to another revision', async function () {
+    const tokens = tokensIssuing({ refused: 'client_unavailable' }, 'ready', [
+      'active',
+      { status: 'active', revision: 3 },
+    ]);
+
+    await assert.rejects(tokens.renew('installation-id', 2, principal), {
+      statusCode: 409,
+      code: 'APP_SESSION_ENDED',
+    });
+    assert.equal(tokens.issues(), 1);
   });
 
   it('ends the session once the installation is suspended or at another revision', async function () {
