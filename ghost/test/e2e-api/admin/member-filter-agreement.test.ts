@@ -188,7 +188,8 @@ const FILTERS: ReadonlyArray<{ field: string; filter: (site: Site) => string; ex
  * A filter on any field the members screen offers selects the same members on the members list,
  * through a segment saved with it, and in an email send. The email goes to the members the filter
  * selects who are subscribed to the newsletter and can be emailed, and the count the publish flow
- * takes for the segment is the number the send reaches.
+ * takes for the segment is the number the send reaches. Leaving the segment out selects exactly
+ * the members the filter doesn't.
  */
 describe('A members filter selects the same members everywhere', function () {
   let agent: Agent;
@@ -482,37 +483,110 @@ describe('A members filter selects the same members everywhere', function () {
     assert.deepEqual(await membersList(), [...NAMES].sort());
   });
 
+  /**
+   * Checks that `filter`, which names segments, selects the members `plain` does, with the
+   * segments written out as their filters: on the members list, in the counts, and in an email
+   * sent to `plain`. An email can't be sent to a filter that names a segment yet.
+   */
+  async function assertAgrees(title: string, filter: string, plain: string) {
+    const selected = await membersList(plain);
+    assert.ok(
+      selected.length > 0 && selected.length < NAMES.length,
+      `${plain} has to select some members and leave others out`,
+    );
+    assert.deepEqual(await membersList(filter), selected, `members list, ${filter}`);
+
+    const reached = selected.filter((name) => REACHABLE.includes(name));
+    assert.equal(await membersCount(filter), selected.length, `members count, ${filter}`);
+    assert.equal(await publishCount(filter), reached.length, `publish count, ${filter}`);
+    const post = await send(title, site.newsletterSlug, plain);
+    assert.equal(post.email.email_count, reached.length, `email count, ${plain}`);
+    assert.deepEqual(await recipientsOf(post.email.id), reached, `email recipients, ${plain}`);
+  }
+
   for (const { field, filter, expect } of FILTERS) {
+    const selected = [...expect].sort();
+    const others = NAMES.filter((name) => !selected.includes(name)).sort();
+
     it(field, async function () {
       const nql = filter(site);
-      const selected = [...expect].sort();
       assert.ok(
-        selected.length > 0 && selected.length < NAMES.length,
+        selected.length > 0 && others.length > 0,
         'The filter has to select some members and leave others out',
       );
-
       assert.deepEqual(await membersList(nql), selected, `members list, ${nql}`);
-      const segmentId = await saveSegment(field, nql);
-      assert.deepEqual(
-        await membersList(`segment:${segmentId}`),
-        selected,
-        `members list by segment, ${nql}`,
-      );
-      const reached = selected.filter((name) => REACHABLE.includes(name));
-      assert.equal(
-        await membersCount(`segment:${segmentId}`),
-        selected.length,
-        `members count by segment, ${nql}`,
-      );
-      assert.equal(
-        await publishCount(`segment:${segmentId}`),
-        reached.length,
-        `publish count by segment, ${nql}`,
-      );
 
-      const post = await send(`Emailed to ${field}`, site.newsletterSlug, nql);
-      assert.equal(post.email.email_count, reached.length, `email count, ${nql}`);
-      assert.deepEqual(await recipientsOf(post.email.id), reached, `email recipients, ${nql}`);
+      const segmentId = await saveSegment(field, nql);
+      await assertAgrees(`Emailed to ${field}`, `segment:${segmentId}`, nql);
+    });
+
+    it(`${field}, left out`, async function () {
+      const nql = filter(site);
+      assert.deepEqual(await membersList(`-(${nql})`), others, `members list, -(${nql})`);
+
+      const segmentId = await saveSegment(`${field}, left out`, nql);
+      await assertAgrees(`Emailed to all but ${field}`, `segment:-${segmentId}`, `-(${nql})`);
     });
   }
+
+  describe('a segment combined with other conditions', function () {
+    const VIP = 'label:[vip]';
+    const RECENT = "created_at:>'2025-01-01T00:00:00.000Z'";
+    const SUBSCRIBED_AT_GHOST =
+      "(subscribed:true+email_disabled:0)+(metafields.identity:'custom.company'+metafields.value:'Ghost')";
+
+    it('or another condition', async function () {
+      const vip = await saveSegment('Combined: VIP, or', VIP);
+      await assertAgrees(
+        'Combined: VIP or complimentary',
+        `segment:${vip},status:comped`,
+        `(${VIP}),status:comped`,
+      );
+    });
+
+    it('and another condition', async function () {
+      const vip = await saveSegment('Combined: VIP, and', VIP);
+      await assertAgrees(
+        'Combined: VIP and paid',
+        `segment:${vip}+status:-free`,
+        `(${VIP})+status:-free`,
+      );
+    });
+
+    it('with another segment', async function () {
+      const vip = await saveSegment('Combined: VIP, with', VIP);
+      const recent = await saveSegment('Combined: recent, with', RECENT);
+      await assertAgrees(
+        'Combined: VIP and recent',
+        `segment:${vip}+segment:${recent}`,
+        `(${VIP})+(${RECENT})`,
+      );
+      await assertAgrees(
+        'Combined: VIP or recent',
+        `segment:[${vip},${recent}]`,
+        `(${VIP}),(${RECENT})`,
+      );
+    });
+
+    it('inside a negated group', async function () {
+      const vip = await saveSegment('Combined: VIP, negated', VIP);
+      await assertAgrees(
+        'Combined: all but paid VIPs',
+        `-(segment:${vip}+status:-free)`,
+        `-((${VIP})+status:-free)`,
+      );
+    });
+
+    it('left out, with a filter on newsletter subscription and a custom field', async function () {
+      const subscribedAtGhost = await saveSegment(
+        'Combined: subscribed at Ghost',
+        SUBSCRIBED_AT_GHOST,
+      );
+      await assertAgrees(
+        'Combined: all but subscribers at Ghost',
+        `segment:-${subscribedAtGhost}`,
+        `-(${SUBSCRIBED_AT_GHOST})`,
+      );
+    });
+  });
 });

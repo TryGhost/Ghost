@@ -252,9 +252,56 @@ describe('Members filtered by segment', function () {
       assert.equal(error.type, 'BadRequestError');
     });
 
-    it('rejects leaving a segment out, which filters cannot do yet', async function () {
-      const error = await listError(`segment:-${segments.vip}`, 400);
-      assert.equal(error.type, 'BadRequestError');
+    it('leaves out the members of a segment', async function () {
+      assert.deepEqual(await membersList(`segment:-${segments.vip}`), [
+        'alan',
+        'katherine',
+        'linus',
+      ]);
+    });
+
+    it('leaves out the members of any of the segments in a list', async function () {
+      assert.deepEqual(await membersList(`segment:-[${segments.vip},${segments.lapsed}]`), [
+        'alan',
+        'linus',
+      ]);
+    });
+
+    it('lists the members of one segment who are not in another', async function () {
+      assert.deepEqual(await membersList(`segment:${segments.vip}+segment:-${segments.founders}`), [
+        'ada',
+      ]);
+    });
+
+    it('accepts a segment inside a negated group', async function () {
+      // Everyone but the paid VIPs
+      assert.deepEqual(await membersList(`-(segment:${segments.vip}+status:paid)`), [
+        'ada',
+        'alan',
+        'katherine',
+        'linus',
+      ]);
+    });
+
+    it('keeps members with no value in a field the left-out segment filters on', async function () {
+      // Only Ada has been seen, so leaving out the members seen this year keeps the others
+      const seen = await addSegment('Seen this year', "last_seen_at:>'2025-01-01T00:00:00.000Z'");
+      await models.Base.knex('members')
+        .where({ email: emailOf('ada') })
+        .update({ last_seen_at: '2025-06-01 00:00:00' });
+
+      try {
+        assert.deepEqual(await membersList(`segment:-${seen}`), [
+          'alan',
+          'grace',
+          'katherine',
+          'linus',
+        ]);
+      } finally {
+        await models.Base.knex('members')
+          .where({ email: emailOf('ada') })
+          .update({ last_seen_at: null });
+      }
     });
 
     it('rejects a stored segment whose filter names another segment', async function () {
@@ -281,6 +328,15 @@ describe('Members filtered by segment', function () {
       // use a column members don't have and fail with a 500.
       const probe = await addSegment('Probe', "password:~'a'");
       assert.deepEqual(await membersList(`segment:${probe}`), await membersList("password:~'a'"));
+    });
+
+    it('applies the restricted-field check to the filter of a left-out segment', async function () {
+      // A left-out segment's filter sits inside a negated group, which the check also reads
+      const probe = await addSegment('Probe, left out', "password:~'a'");
+      assert.deepEqual(
+        await membersList(`segment:-${probe}`),
+        await membersList("-(password:~'a')"),
+      );
     });
 
     it('rejects a segment while the segmentEmails flag is off', async function () {
@@ -324,6 +380,62 @@ describe('Members filtered by segment', function () {
       assert.deepEqual(await membersList('label:[bulk]'), doomed);
 
       await agent.delete(`members/?filter=${filter}`).expectStatus(200);
+      const { body } = await agent.get('members/?limit=all').expectStatus(200);
+      assert.deepEqual(
+        body.members.map((member: { email: string }) => nameOf(member.email)).sort(),
+        NAMES,
+      );
+    });
+
+    it('labels every member but those of a segment', async function () {
+      const { body } = await agent
+        .post('labels/')
+        .body({ labels: [{ name: 'Not VIP' }] })
+        .expectStatus(201);
+      const label = body.labels[0];
+
+      try {
+        await agent
+          .put(`members/bulk/?filter=${encodeURIComponent(`segment:-${segments.vip}`)}`)
+          .body({ bulk: { action: 'addLabel', meta: { label: { id: label.id } } } })
+          .expectStatus(200);
+        assert.deepEqual(await membersList(`label:[${label.slug}]`), [
+          'alan',
+          'katherine',
+          'linus',
+        ]);
+      } finally {
+        await agent.delete(`labels/${label.id}/`).expectStatus(204);
+      }
+    });
+
+    it('deletes every member but those of a segment', async function () {
+      const doomed = ['marie', 'rosalind'];
+      for (const name of doomed) {
+        await agent
+          .post('members/')
+          .body({ members: [{ email: emailOf(name), name, labels: ['doomed'] }] })
+          .expectStatus(201);
+      }
+      // Every member this suite keeps is in it, so leaving it out selects only the doomed ones
+      const kept = await addSegment('Kept', `email:~'segment-filter.example'+label:-[doomed]`);
+
+      await agent
+        .delete(`members/?filter=${encodeURIComponent(`segment:-${kept}`)}`)
+        .expectStatus(200);
+      const { body } = await agent.get('members/?limit=all').expectStatus(200);
+      assert.deepEqual(
+        body.members.map((member: { email: string }) => nameOf(member.email)).sort(),
+        NAMES,
+      );
+    });
+
+    it('deletes nobody for a left-out segment that filters on a restricted field', async function () {
+      const probe = await addSegment('Probe, deleted', "password:~'a'");
+
+      await agent
+        .delete(`members/?filter=${encodeURIComponent(`segment:-${probe}`)}`)
+        .expectStatus(400);
       const { body } = await agent.get('members/?limit=all').expectStatus(200);
       assert.deepEqual(
         body.members.map((member: { email: string }) => nameOf(member.email)).sort(),
