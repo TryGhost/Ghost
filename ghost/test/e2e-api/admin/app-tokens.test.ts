@@ -690,4 +690,29 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
       assert.equal(await knex()('user_sessions').where({ id: signedIn.id }).first(), undefined);
     });
   });
+
+  // A token for a staff user comes only from a staff session, never from an app's own token
+  describe('on the app session routes', function () {
+    const routes = [
+      { name: 'renewing a token', path: (id: string) => `apps/installations/${id}/tokens/` },
+      { name: 'starting a session', path: (id: string) => `apps/installations/${id}/sessions/` },
+    ];
+
+    for (const { name, path } of routes) {
+      it(`refuses an app ${name} for itself`, async function () {
+        const id = await installation(['post:browse']);
+        const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+        const { revision } = await knex()('app_installations').where({ id }).first();
+
+        const { body } = await agent
+          .post(path(id))
+          .header('Authorization', bearer(token))
+          .body({ app_tokens: [{ revision }] })
+          .expectStatus(403);
+
+        assert.equal(body.errors[0].type, 'NoPermissionError');
+        assert.equal((await knex()('oauth_access_tokens')).length, 1);
+      });
+    }
+  });
 });
