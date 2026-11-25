@@ -9,7 +9,7 @@ import buildPostData, {
 import type { PostsRepository, PostWriteResult, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, RowOutcome } from './store';
-import { ImportJournal, readJournalPosition, type JournalStorage } from './journal';
+import { ImportJournal, readJournalPosition, readMetadata, type JournalStorage } from './journal';
 import { openAssetJournal } from './asset-journal';
 import { readImportReports, type ImportReportContents } from './journal-report';
 import { createSummary, type ImportSummary } from './summary';
@@ -280,6 +280,10 @@ class ContentCSVImporter {
       });
       source = prepared.source;
       preparedRows = prepared.preparedRows;
+      failureReason = await readMetadata(storage, 'failure.txt');
+      if (failureReason) {
+        return;
+      }
       const position = await readJournalPosition(storage);
       journal = new ImportJournal(storage, preparedRows.columns, position);
       if (source.assets) {
@@ -294,7 +298,13 @@ class ContentCSVImporter {
       await journal.flush();
     } catch (error) {
       failureReason = messageOf(error);
-      throw error;
+      this._report(error);
+      if (storage) {
+        const artifacts = storage;
+        await this.settle(() =>
+          artifacts.replaceMetadata('failure.txt', Buffer.from(messageOf(error).slice(0, 1000))),
+        );
+      }
     } finally {
       if (preparedRows) {
         await this.cleanupSource(preparedRows.close);
@@ -307,7 +317,10 @@ class ContentCSVImporter {
       }
       if (started) {
         await this.settle(async () => {
-          await journal?.flush().catch(this._report);
+          if (failureReason) {
+            // Rows that completed before an ordinary failure still belong in the report.
+            await journal?.flush().catch(this._report);
+          }
           const summary = createSummary(
             job.importId,
             failureReason ? 'failed' : 'complete',

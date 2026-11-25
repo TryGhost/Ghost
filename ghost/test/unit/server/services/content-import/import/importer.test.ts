@@ -459,7 +459,7 @@ describe('ContentCSVImporter', function () {
       throw failure;
     });
 
-    await assert.rejects(h.run(), (thrown) => thrown === failure);
+    await h.run();
 
     sinon.assert.calledOnce(h.sendEmail);
     assert.equal(h.sentRuns[0].status, 'failed');
@@ -677,13 +677,13 @@ describe('ContentCSVImporter', function () {
     });
 
     await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
-    await assert.rejects(importer.handle(h.jobs[0]), (thrown) => thrown === failure);
+    await importer.handle(h.jobs[0]);
 
     assert.equal(h.converterResolutions(), 0);
     assert.equal(h.created.length, 0);
     assert.equal(h.sentRuns.at(-1)?.status, 'failed');
     assert.equal(h.sentRuns.at(-1)?.failureReason, 'storage unavailable');
-    assert.deepEqual(h.reported, []);
+    assert.deepEqual(h.reported, [failure]);
     sinon.assert.notCalled(rewriteRows);
     sinon.assert.calledTwice(cleanup);
   });
@@ -815,12 +815,12 @@ describe('ContentCSVImporter', function () {
     const failure = new Error('media importer defect');
     h.inlineMedia.rejects(failure);
 
-    await assert.rejects(h.run(), (thrown) => thrown === failure);
+    await h.run();
 
     assert.equal(h.created.length, 0);
     assert.equal(h.inlineMedia.callCount, 1);
     sinon.assert.calledOnce(h.createMediaInliner.firstCall.returnValue.close);
-    assert.deepEqual(h.reported, []);
+    assert.deepEqual(h.reported, [failure]);
     assert.equal(h.sentRuns.at(-1)?.status, 'failed');
     assert.equal(h.sentRuns.at(-1)?.failureReason, failure.message);
   });
@@ -1015,7 +1015,7 @@ describe('ContentCSVImporter', function () {
     });
 
     await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
-    await assert.rejects(importer.handle(h.jobs[0]), /could not be parsed as a CSV/);
+    await importer.handle(h.jobs[0]);
 
     assert.equal(h.sentRuns.at(-1)?.status, 'failed');
     assert.match(h.sentRuns.at(-1)?.failureReason ?? '', /could not be parsed as a CSV/);
@@ -1038,9 +1038,10 @@ describe('ContentCSVImporter', function () {
     });
 
     await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
-    await assert.rejects(importer.handle(h.jobs[0]), (thrown) => thrown === failure);
+    await importer.handle(h.jobs[0]);
 
-    sinon.assert.calledOnceWithExactly(
+    assert.deepEqual(h.reported, [failure]);
+    sinon.assert.calledWith(
       h.sendEmail,
       sinon.match({ status: 'failed', failureReason: 'storage unavailable' }),
       'owner@example.com',
@@ -1427,16 +1428,16 @@ describe('ContentCSVImporter', function () {
     );
   });
 
-  it("rejects a run-level failure that is nobody's row for the jobs service to report", async function () {
+  it('reports a terminal failure and resolves the job without retry', async function () {
     const h = harness();
     const failure = new Error('converter unavailable');
     h.setHtmlToLexicalFactory(() => {
       throw failure;
     });
 
-    await assert.rejects(h.run(), (thrown) => thrown === failure);
+    await h.run();
 
-    assert.deepEqual(h.reported, []);
+    assert.deepEqual(h.reported, [failure]);
     assert.equal(h.sentRuns.at(-1)?.status, 'failed');
     assert.equal(h.sentRuns.at(-1)?.failureReason, 'converter unavailable');
   });
@@ -1451,12 +1452,30 @@ describe('ContentCSVImporter', function () {
     });
     const h = harness([badRow, row('Never reached')]);
 
-    await assert.rejects(h.run(), (thrown) => thrown === failure);
+    await h.run();
 
-    assert.deepEqual(h.reported, []);
+    assert.deepEqual(h.reported, [failure]);
     assert.equal(h.created.length, 0);
     assert.equal(h.sentRuns.at(-1)?.status, 'failed');
     assert.equal(h.sentRuns.at(-1)?.failureReason, 'unexpected row failure');
+  });
+
+  it('finalizes a previously marked partial run without processing more posts', async function () {
+    const h = harness([row('Committed'), row('Never processed')]);
+    await h.importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    const storage = h.deps.fileStager.artifacts();
+    const journal = new ImportJournal(storage, [], { record: 0, part: 0 });
+    await journal.append({ line: 2, title: 'Committed', status: 'created' });
+    await journal.flush();
+    await storage.replaceMetadata('failure.txt', Buffer.from('Processing failed'));
+
+    await h.importer.handle(h.jobs[0]);
+
+    assert.equal(h.created.length, 0);
+    assert.equal(h.sentRuns[0].status, 'failed');
+    assert.equal(h.sentRuns[0].total, 1);
+    assert.equal(h.sentRuns[0].failureReason, 'Processing failed');
+    assert.equal(h.files.size, 0);
   });
 
   it('uses a safe reason when a run-level failure has no message', async function () {
@@ -1465,9 +1484,9 @@ describe('ContentCSVImporter', function () {
       throw {};
     });
 
-    await assert.rejects(h.run(), () => true);
+    await h.run();
 
-    assert.deepEqual(h.reported, []);
+    assert.equal(h.reported.length, 1);
     assert.equal(h.sentRuns.at(-1)?.status, 'failed');
     assert.equal(h.sentRuns.at(-1)?.failureReason, 'Unknown error');
   });

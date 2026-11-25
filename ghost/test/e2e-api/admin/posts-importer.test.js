@@ -948,6 +948,25 @@ describe('Posts Importer API', function () {
     }
   });
 
+  it('reports data-record syntax failures discovered in an accepted ZIP job', async function () {
+    await agent.loginAsOwner();
+    const zip = await zipFile('malformed-csv.zip', {
+      'posts.csv': 'title,html\nBefore broken quote,<p>Valid</p>\nBroken quote,"<p>never closed\n',
+    });
+    await agent.post('posts/upload/').attach('postsfile', zip).expectStatus(202);
+    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+
+    const email = mockManager.assert.sentEmail({
+      subject: 'Your content import could not be completed',
+    });
+    assert.match(email.html, /Created:<\/strong> 1/);
+    assert.match(
+      email.attachments.find(({ filename }) => filename === 'report.csv').content,
+      /Before broken quote/,
+    );
+    assert.equal(await models.Post.findOne({ title: 'Broken quote', status: 'all' }), null);
+  });
+
   it('Rejects a corrupt ZIP before scheduling an import', async function () {
     await agent.loginAsOwner();
 

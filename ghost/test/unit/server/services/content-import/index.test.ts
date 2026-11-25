@@ -249,12 +249,17 @@ describe('Content import composition root', function () {
       requestUserEmail: 'staff@example.com',
       owner: { type: 'user', id: 'staff' },
     });
-    sandbox.stub(storage, 'readStream').rejects(failure);
-    const mkdtemp = sandbox.spy(fs, 'mkdtemp');
-    await assert.rejects(
-      root.handleJob(dispatch.firstCall.args[0]),
-      (thrown) => thrown === failure,
-    );
-    assert.equal(existsSync(await mkdtemp.firstCall.returnValue), false);
+    const delivered = dispatch.firstCall.args[0];
+    const read = sandbox.stub(storage, 'readStream').callThrough();
+    read.withArgs({ path: delivered.file.key }).rejects(failure);
+    const downloads = sandbox
+      .spy(fs, 'mkdtemp')
+      .withArgs(path.join(os.tmpdir(), 'content-csv-download-'));
+
+    await root.handleJob(delivered);
+
+    sinon.assert.calledOnce(downloads);
+    assert.equal(existsSync(await downloads.firstCall.returnValue), false);
+    sinon.assert.calledWith(sentry.captureException, failure);
   });
 });

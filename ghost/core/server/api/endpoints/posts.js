@@ -129,7 +129,7 @@ const controller = {
     async query(frame) {
       // The content-import service stages and validates the upload before this response;
       // Multer deletes the request temp file as soon as the 202 is sent.
-      const requestUserEmail = frame.user ? frame.user.get('email') : null;
+      const requestUserEmail = frame.user?.get('email');
       const owner = csvUploadOwner(frame);
       const uploadId = frame.data.upload_id;
       if (uploadId !== undefined) {

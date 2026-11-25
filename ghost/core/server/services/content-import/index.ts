@@ -85,8 +85,7 @@ function makeImporter(): ContentCSVImporter {
   const { GhostMailer } = require('../../lib/mail');
   const ghostMailer = new GhostMailer();
 
-  // Row aggregates and best-effort cleanup are intentionally reported without
-  // failing a run. Fatal handler errors are reported by the class-based jobs service.
+  // The importer handles terminal failures and finalizes any partial results.
   const report: FailureReporter = (error) => {
     try {
       logging.error(
