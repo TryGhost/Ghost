@@ -18,6 +18,7 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
+import { markNewAutomationSegmentTrigger } from './poc-segment-trigger';
 
 type PickedTrigger = AutomationTriggerRule['trigger_type'];
 
@@ -82,6 +83,9 @@ const TriggerPicker: React.FC<{
     options.push(LABEL_ADDED_OPTION);
   }
   const cardRef = React.useRef<HTMLDivElement>(null);
+  // POC (poc/segments-ui): a trigger picked here starts unmarked. Only the segment option
+  // below marks the automation as having the mock segment trigger.
+  React.useEffect(() => markNewAutomationSegmentTrigger(false), []);
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
       <AutomationHeader
@@ -142,6 +146,29 @@ const TriggerPicker: React.FC<{
                 </Inline>
               </Button>
             ))}
+            {/* POC (poc/segments-ui): the mock segment trigger. The server has no such trigger,
+                so the automation is made as a free signup one and marked as a segment one. */}
+            <Button
+              className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
+              shape="rounded"
+              variant="ghost"
+              onClick={() => {
+                markNewAutomationSegmentTrigger(true);
+                onPick('free_signup', cardRef.current?.offsetTop ?? 0);
+              }}
+            >
+              <Inline gap="md">
+                <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
+                  <LucideIcon.ChartPie className="size-4" />
+                </Inline>
+                <Stack gap="none">
+                  <Text weight="medium">Member entered segment</Text>
+                  <Text size="sm" tone="secondary">
+                    When a member starts matching a segment
+                  </Text>
+                </Stack>
+              </Inline>
+            </Button>
           </Stack>
           <Box className="min-h-12 flex-[3]" />
         </Stack>

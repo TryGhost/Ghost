@@ -4,7 +4,7 @@ import {
   getTriggerTierIds,
   subscriptionChangedSelectionFromRules,
 } from '@/automations/utils/trigger-rules';
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId } from 'react';
 import type {
   AutomationTrigger,
   AutomationTriggerRule,
@@ -25,6 +25,8 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { LabelTriggerPicker, type SelectedTriggerLabel } from './label-trigger-picker';
 import { SegmentPicker } from '@/members/api';
+import { useParams } from '@tryghost/admin-x-framework';
+import { useSegmentTrigger } from '@/automations/poc-segment-trigger';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import type { TierSelection } from '@/automations/types';
@@ -299,18 +301,19 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
 }
 
 /**
- * POC (poc/segments-ui) only: how choosing a segment for a trigger could look, with a new one
- * made in place. It is a mock under the automation's real trigger: nothing is saved, and no
- * automation is started by it.
+ * POC (poc/segments-ui) only: what the mock "Member entered segment" trigger asks for. The
+ * segment is chosen from the segment picker, which can make a new one in place. The choice is
+ * kept in the browser, not on the automation.
  */
-function PocSegmentTrigger() {
-  const [segmentId, setSegmentId] = useState<string>();
-
+function SegmentTriggerPicker({
+  segmentId,
+  onChange,
+}: {
+  segmentId: string | undefined;
+  onChange: (segmentId: string) => void;
+}) {
   return (
-    <Stack className="nowheel border-t border-border pt-4" gap="sm">
-      <Text as="p" size="xs" tone="secondary" weight="medium">
-        Prototype, not saved
-      </Text>
+    <Stack className="nowheel" gap="sm">
       <Text as="p" leading="normal">
         Triggered when a member enters this segment:
       </Text>
@@ -318,7 +321,7 @@ function PocSegmentTrigger() {
         ariaLabel="Segment that starts the automation"
         contentClassName="nodrag nopan nowheel"
         value={segmentId}
-        onChange={setSegmentId}
+        onChange={onChange}
       />
     </Stack>
   );
@@ -331,7 +334,26 @@ export const TriggerCard: React.FC<
     onInteract?: () => void;
   }>
 > = ({ trigger, errorMessage, onInteract, children }) => {
-  const { title, Icon, content } = getTriggerPresentation(trigger, errorMessage);
+  // POC (poc/segments-ui): an automation marked as having the mock segment trigger shows as
+  // one, whatever it is saved as. A new automation carries the mark under its temporary id,
+  // and takes it over once it is saved under an id of its own.
+  const { id: automationId = '' } = useParams<{ id: string }>();
+  const segmentTrigger = useSegmentTrigger(automationId);
+  const { adopt } = segmentTrigger;
+  useEffect(() => adopt(), [adopt]);
+
+  const { title, Icon, content } = segmentTrigger.isSegmentTrigger
+    ? {
+        title: 'Member entered segment',
+        Icon: LucideIcon.ChartPie,
+        content: (
+          <SegmentTriggerPicker
+            segmentId={segmentTrigger.segmentId}
+            onChange={segmentTrigger.setSegmentId}
+          />
+        ),
+      }
+    : getTriggerPresentation(trigger, errorMessage);
   return (
     <AutomationCard
       aria-label={title}
@@ -347,7 +369,6 @@ export const TriggerCard: React.FC<
         title={title}
       />
       {content}
-      <PocSegmentTrigger />
       {children}
     </AutomationCard>
   );
