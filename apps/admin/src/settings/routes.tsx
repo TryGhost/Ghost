@@ -78,6 +78,10 @@ export const settingsRouteChildren: RouteObject[] = [
   },
   { path: 'history/view/:userId?', lazy: lazyComponent(() => import('./advanced/history-modal')) },
   {
+    path: 'content-import-reports/:importId/:filename',
+    lazy: lazyComponent(() => import('./advanced/migration-tools/import-report-modal')),
+  },
+  {
     path: 'integrations/new',
     lazy: lazyComponent(() => import('./advanced/integrations/add-integration-modal')),
   },
