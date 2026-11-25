@@ -17,6 +17,7 @@ import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { welcomeEmailAutomationPoll } from './welcome-email-automation-poll';
 import memberWelcomeEmails from '../member-welcome-emails';
+import { MAX_CACHED_SCHEDULER_POLL_TIMES } from './constants';
 
 type AutomationsServiceOptions = {
   apiUrl: string;
@@ -29,8 +30,31 @@ type AutomationsServiceOptions = {
 const scheduleAutomationEmailAnalyticsJob = () =>
   emailAnalyticsJobs.scheduleRecurringAutomationsJob(true);
 
+const recordSuccessfulPoll = (cache: Set<number>, time: number): void => {
+  // Move the time to the end.
+  cache.delete(time);
+  cache.add(time);
+
+  // Remove times in the past.
+  const now = Date.now();
+  for (const existingTime of cache) {
+    if (existingTime < now) {
+      cache.delete(existingTime);
+    }
+  }
+
+  // Remove old times so the cache doesn't get too big.
+  if (cache.size > MAX_CACHED_SCHEDULER_POLL_TIMES) {
+    const oldest = cache.values().next();
+    if (!oldest.done) {
+      cache.delete(oldest.value);
+    }
+  }
+};
+
 export class AutomationsService {
   #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
+  #pollsScheduledAtCache = new Set<number>();
 
   init({
     domainEvents,
@@ -74,6 +98,11 @@ export class AutomationsService {
 
       const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
 
+      const pollsScheduledAtCache = this.#pollsScheduledAtCache;
+      if (pollsScheduledAtCache.has(schedulerPollTime.getTime())) {
+        return;
+      }
+
       try {
         const key = await internalKeys.get('ghost-scheduler');
         await schedulerAdapter.schedule(
@@ -90,6 +119,12 @@ export class AutomationsService {
               }),
           }),
         );
+
+        // If a request is pending while we rotate keys, don't record that as a
+        // successful poll.
+        if (pollsScheduledAtCache === this.#pollsScheduledAtCache) {
+          recordSuccessfulPoll(pollsScheduledAtCache, schedulerPollTime.getTime());
+        }
       } catch (err) {
         logging.error(
           { event: { name: 'automations.enqueue-poll.error' }, err, at: date.toISOString() },
@@ -137,6 +172,7 @@ export class AutomationsService {
    * poll that re-schedules the next callback under the current key.
    */
   async rescheduleAll(): Promise<void> {
+    this.#pollsScheduledAtCache = new Set();
     await this.#enqueuePollAt?.(new Date());
   }
 
