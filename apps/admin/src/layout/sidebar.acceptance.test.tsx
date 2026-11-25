@@ -35,7 +35,9 @@ function socialWebEnabled(): RenderAdminAppOptions {
 }
 
 function fakeUnreadNotifications(count: number): void {
-  fakeAdminEndpoint('GET', '/identities/', { identities: [{ token: 'test-token' }] });
+  fakeAdminEndpoint('GET', '/identities/?audience=activitypub', {
+    identities: [{ token: 'test-token' }],
+  });
   fakeEndpoint('GET', UNREAD_COUNT_URL, { count });
 }
 
@@ -437,7 +439,7 @@ describe('Network notification badge', () => {
     'does not request the count for a %s',
     async (role) => {
       fakeSidebarLists();
-      const identities = fakeAdminEndpoint('GET', '/identities/', {
+      const identities = fakeAdminEndpoint('GET', /^\/identities\//, {
         identities: [{ token: 'test-token' }],
       });
       const unreadCount = fakeEndpoint('GET', UNREAD_COUNT_URL, { count: 5 });

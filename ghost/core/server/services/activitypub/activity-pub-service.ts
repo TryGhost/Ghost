@@ -229,6 +229,6 @@ export class ActivityPubService {
       .where('roles.name', 'Owner')
       .first();
 
-    return await this.identityTokenService.getTokenForUser(ownerUser.email, 'Owner');
+    return await this.identityTokenService.getTokenForUser(ownerUser.email, 'Owner', 'activitypub');
   }
 }

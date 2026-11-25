@@ -185,7 +185,9 @@ describe('Ghost(Pro) billing', () => {
   });
 
   it('hands the owner an identity token and force upgrade details', async () => {
-    fakeAdminEndpoint('GET', '/identities/', { identities: [{ token: 'identity-token' }] });
+    fakeAdminEndpoint('GET', '/identities/?audience=billing', {
+      identities: [{ token: 'identity-token' }],
+    });
     await fakeFrameOrigin(
       BILLING_ORIGIN,
       billingStandIn(`parent.postMessage({ request: 'token' }, '*');`),

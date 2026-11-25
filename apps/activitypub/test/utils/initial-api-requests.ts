@@ -18,7 +18,7 @@ const initialAdminApiRequests = {
   },
   getIdentities: {
     method: 'GET',
-    path: '/identities/',
+    path: '/identities/?audience=activitypub',
     response: identities,
   },
 };

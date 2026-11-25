@@ -54,7 +54,7 @@ async function getSiteUrl() {
 function createActivityPubAPI(handle: string, siteUrl: string) {
   return new ActivityPubAPI(
     new URL(siteUrl),
-    new URL('/ghost/api/admin/identities/', window.location.origin),
+    new URL('/ghost/api/admin/identities/?audience=activitypub', window.location.origin),
     handle,
   );
 }
