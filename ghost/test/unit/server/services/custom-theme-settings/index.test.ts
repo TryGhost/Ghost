@@ -59,6 +59,10 @@ describe('Custom theme settings root and retained consumers', function () {
     previousCache = cache.getAll();
     cache.populate([{ key: 'previous', value: 'still cached' }]);
     findAll = sandbox.stub(models.CustomThemeSetting, 'findAll').resolves(settingsCollection());
+    const transacting = () => ({ where: () => ({ forUpdate: () => ({ first: async () => {} }) }) });
+    sandbox
+      .stub(models.CustomThemeSetting, 'transaction')
+      .callsFake((fn: (trx: typeof transacting) => unknown) => fn(transacting));
     populate = sandbox.spy(cache, 'populate');
     activateFrontend = sandbox.stub(frontendBridge, 'activateTheme').resolves();
     sandbox.stub(validate, 'init');

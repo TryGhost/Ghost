@@ -184,27 +184,27 @@ module.exports = class CustomThemeSettingsService {
    * @param {string} toThemeName
    */
   async copySettingsBetweenThemes(fromThemeName, toThemeName) {
-    const sourceCollection = await this._repository.browse({ filter: `theme:'${fromThemeName}'` });
+    const sourceSettings = await this._repository.browse({ filter: `theme:'${fromThemeName}'` });
 
     // single transaction so a failure part-way leaves no partial copy
     // behind that would make later attempts skip the copy. The
     // destination check locks inside the same transaction so concurrent
     // copies can't both see an empty destination and insert duplicates
     await this._repository.transaction(async (transacting) => {
-      const destinationCollection = await this._repository.browse({
+      const destinationSettings = await this._repository.browse({
         filter: `theme:'${toThemeName}'`,
         transacting,
         forUpdate: true,
       });
 
-      if (destinationCollection.toJSON().length > 0) {
+      if (destinationSettings.length > 0) {
         debug(
           `Skipping copy of custom theme settings from '${fromThemeName}' to '${toThemeName}' - destination already has settings`,
         );
         return;
       }
 
-      for (const setting of sourceCollection.toJSON()) {
+      for (const setting of sourceSettings) {
         debug(`Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`);
         await this._repository.add(
           {
@@ -229,42 +229,33 @@ module.exports = class CustomThemeSettingsService {
    */
   async _syncRepositoryWithTheme(name, theme) {
     const themeSettings = theme.customSettings || {};
-    const browse = async (options) => {
-      const collection = await this._repository.browse({ filter: `theme:'${name}'`, ...options });
-      return collection.toJSON();
-    };
+    const filter = `theme:'${name}'`;
 
-    const knownSettings = await browse();
-
-    // exit early if there's nothing to sync for this theme
-    if (!this._getChanges(name, themeSettings, knownSettings)) {
-      return knownSettings;
-    }
-
-    // take the lock and compare again, a concurrent sync may have written while we waited
     return this._repository.transaction(async (transacting) => {
+      // the lock comes first, a read before it could miss what a concurrent sync wrote
       await this._repository.lockActiveTheme(transacting);
 
-      const changes = this._getChanges(name, themeSettings, await browse({ transacting }));
+      const knownSettings = await this._repository.browse({ filter, transacting });
+      const changes = this._getChanges(name, themeSettings, knownSettings);
 
-      if (changes) {
-        for (const id of changes.remove) {
-          // locking read, a sync that doesn't take the lock may have removed the record since the compare
-          if (await this._repository.read({ id }, { transacting, forUpdate: true })) {
-            await this._repository.destroy({ id, transacting });
-          }
-        }
-
-        for (const { id, value } of changes.reset) {
-          await this._repository.edit({ value }, { id, transacting });
-        }
-
-        for (const newSettingValues of changes.add) {
-          await this._repository.add(newSettingValues, { transacting });
-        }
+      // exit early if there's nothing to sync for this theme
+      if (!changes) {
+        return knownSettings;
       }
 
-      return browse({ transacting });
+      if (changes.remove.length) {
+        await this._repository.destroyMany(changes.remove, { transacting });
+      }
+
+      for (const { id, value } of changes.reset) {
+        await this._repository.edit({ value }, { id, transacting });
+      }
+
+      for (const newSettingValues of changes.add) {
+        await this._repository.add(newSettingValues, { transacting });
+      }
+
+      return this._repository.browse({ filter, transacting });
     });
   }
 

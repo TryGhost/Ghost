@@ -60,19 +60,15 @@ class ModelStub {
     return knownSetting;
   }
 
-  async destroy(options) {
-    const destroyedSetting = this.knownSettings.find((setting) => setting.id === options.id);
-    if (!destroyedSetting) {
-      throw new TypeError('record not found');
-    }
-    this.knownSettings = this.knownSettings.filter((setting) => setting !== destroyedSetting);
-    return destroyedSetting;
+  async destroyMany(ids) {
+    this.knownSettings = this.knownSettings.filter((setting) => !ids.includes(setting.id));
   }
 
   async transaction(fn) {
     const snapshot = this.knownSettings.slice();
     this.lastTransacting = sinon.stub().returns({
       where: () => ({ forUpdate: () => ({ first: async () => this.lockHeld }) }),
+      whereIn: (column, ids) => ({ del: () => this.destroyMany(ids) }),
     });
 
     try {
@@ -136,14 +132,12 @@ describe('Service', function () {
         },
       });
 
-      sinon.assert.calledThrice(model.findAll);
+      sinon.assert.calledTwice(model.findAll);
       assert.equal(model.findAll.getCall(0).firstArg.filter, `theme:'test'`);
       assert.equal(model.findAll.getCall(1).firstArg.filter, `theme:'test'`);
-      assert.equal(model.findAll.getCall(2).firstArg.filter, `theme:'test'`);
 
       // destroys records that no longer exist in theme
-      sinon.assert.calledOnce(model.destroy);
-      assert.equal(model.destroy.getCall(0).firstArg.id, 1);
+      sinon.assert.calledOnceWithExactly(model.destroyMany, [1]);
 
       // internal cache is correct
       assert.deepEqual(service.listSettings(), [
@@ -182,8 +176,7 @@ describe('Service', function () {
       });
 
       // destroys and recreates record
-      sinon.assert.calledOnce(model.destroy);
-      assert.equal(model.destroy.getCall(0).firstArg.id, 2);
+      sinon.assert.calledOnceWithExactly(model.destroyMany, [2]);
 
       sinon.assert.calledOnce(model.add);
       assert.deepEqual(model.add.getCall(0).firstArg, {
@@ -353,12 +346,11 @@ describe('Service', function () {
         },
       });
 
-      // looks for existing settings once when they match, three times when they need syncing
-      sinon.assert.callCount(model.findAll, 4);
+      // looks for existing settings once when they match, twice when they need syncing
+      sinon.assert.calledThrice(model.findAll);
       assert.equal(model.findAll.getCall(0).firstArg.filter, `theme:'test'`);
       assert.equal(model.findAll.getCall(1).firstArg.filter, `theme:'new'`);
       assert.equal(model.findAll.getCall(2).firstArg.filter, `theme:'new'`);
-      assert.equal(model.findAll.getCall(3).firstArg.filter, `theme:'new'`);
 
       // adds new settings
       sinon.assert.calledTwice(model.add);
@@ -424,7 +416,7 @@ describe('Service', function () {
         },
       });
 
-      sinon.assert.calledThrice(model.findAll);
+      sinon.assert.calledTwice(model.findAll);
 
       assert(model.findAll.getCall(0).firstArg.filter);
       assert.doesNotThrow(() => nql.parse(model.findAll.getCall(0).firstArg.filter));
@@ -459,15 +451,15 @@ describe('Service', function () {
       await setImmediate();
       const transacting = model.lastTransacting;
       sinon.assert.calledOnceWithExactly(transacting, 'settings');
-      sinon.assert.calledOnce(model.findAll);
-      assert.equal(model.findAll.getCall(0).firstArg.transacting, undefined);
+      sinon.assert.notCalled(model.findAll);
 
       lock.resolve();
       await activation;
 
+      assert.equal(model.findAll.getCall(0).firstArg.transacting, transacting);
       assert.equal(model.findAll.getCall(1).firstArg.transacting, transacting);
-      assert.equal(model.findAll.getCall(2).firstArg.transacting, transacting);
-      assert.equal(model.destroy.getCall(0).firstArg.transacting, transacting);
+      sinon.assert.calledWithExactly(transacting, 'custom_theme_settings');
+      sinon.assert.calledOnceWithExactly(model.destroyMany, [1]);
       assert.equal(model.edit.getCall(0).lastArg.transacting, transacting);
       assert.equal(model.add.getCall(0).lastArg.transacting, transacting);
     });
@@ -490,12 +482,12 @@ describe('Service', function () {
       });
 
       await setImmediate();
-      await model.destroy({ id: 1 });
-      model.destroy.resetHistory();
+      await model.destroyMany([1]);
+      model.destroyMany.resetHistory();
       lock.resolve();
       await activation;
 
-      sinon.assert.notCalled(model.destroy);
+      sinon.assert.notCalled(model.destroyMany);
       sinon.assert.notCalled(model.edit);
       sinon.assert.notCalled(model.add);
       assert.deepEqual(
@@ -534,7 +526,7 @@ describe('Service', function () {
       );
     });
 
-    it('takes no lock and opens no transaction when the stored settings already match', async function () {
+    it('writes nothing when the stored settings already match', async function () {
       await service.activateTheme('test', {
         name: 'test',
         customSettings: {
@@ -551,8 +543,10 @@ describe('Service', function () {
         },
       });
 
-      sinon.assert.notCalled(model.transaction);
       sinon.assert.calledOnce(model.findAll);
+      sinon.assert.notCalled(model.destroyMany);
+      sinon.assert.notCalled(model.edit);
+      sinon.assert.notCalled(model.add);
       assert.deepEqual(
         service.listSettings().map((setting) => setting.key),
         ['one', 'two'],
@@ -639,7 +633,7 @@ describe('Service', function () {
       });
 
       // model methods are only called enough times for one .activate call despite being called twice
-      sinon.assert.calledThrice(model.findAll);
+      sinon.assert.calledTwice(model.findAll);
       sinon.assert.calledOnce(model.add);
 
       // internal cache is correct
@@ -761,7 +755,7 @@ describe('Service', function () {
         return originalAdd.call(model, data, options);
       };
       // atomicity must not depend on individual deletes succeeding
-      model.destroy = async () => {
+      model.destroyMany = async () => {
         throw new Error('destroy failed');
       };
 
