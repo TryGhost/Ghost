@@ -249,6 +249,14 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     <>
       {showMenu && (
         <>
+          {/* POC (poc/segments-ui): the segments overview a click away, on its own: the menu
+              beside it imports, exports or acts on the members listed. Icon-only actions come
+              before the overflow menu, which is last among them (Shade's page header). */}
+          {onManageSegments && (
+            <PageHeader.Action label="Manage segments" iconOnly onClick={onManageSegments}>
+              <LucideIcon.ChartPie className="size-4" />
+            </PageHeader.Action>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <PageHeader.Action data-testid="members-actions" label="Member actions" iconOnly>
@@ -256,18 +264,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
               </PageHeader.Action>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {/* Segments first, in a group of their own: the rest of the menu imports, exports
-                  or acts on the members listed. */}
-              {onManageSegments && (
-                <>
-                  <DropdownMenuItem onClick={onManageSegments}>
-                    <LucideIcon.ChartPie className="mr-2 size-4" />
-                    Manage segments
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-
               {/* Import */}
               <DropdownMenuItem onClick={handleImportAction}>
                 <LucideIcon.Upload className="mr-2 size-4" />
