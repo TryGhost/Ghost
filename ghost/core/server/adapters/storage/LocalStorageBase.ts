@@ -2,7 +2,9 @@
 // The (default) module for storing files using the local file system
 import fs from 'fs-extra';
 import { open } from 'node:fs/promises';
-import type { Readable } from 'node:stream';
+import { randomUUID } from 'node:crypto';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import os from 'os';
 import path from 'path';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
@@ -11,6 +13,12 @@ import errors from '@tryghost/errors';
 import { StorageBase, type ReadOptions, type StorageFile } from 'ghost-storage-base';
 import urlUtils from '../../../shared/url-utils';
 import { errify } from '../../../shared/errify';
+import {
+  readImportMetadata,
+  type ImportStorageListOptions,
+  type ImportStoragePage,
+  type VersionedMetadata,
+} from './import-storage';
 // @ts-expect-error This module lacks type definitions.
 import { serveStatic } from '../../../shared/express';
 
@@ -21,6 +29,22 @@ const messages = {
   invalidUrlParameter: `The URL "{url}" is not a valid URL for this site.`,
   invalidPathParameter: 'The path "{path}" is not valid for this storage.',
 };
+
+const VERSION_DIRECTORY = '.ghost-import-versions';
+const DELETED_DIRECTORY = '.ghost-import-deleted';
+
+function hasCode(error: unknown, ...codes: string[]): boolean {
+  return error instanceof Error && codes.includes((error as NodeJS.ErrnoException).code ?? '');
+}
+
+async function syncDirectory(directory: string): Promise<void> {
+  const parent = await open(directory, 'r');
+  try {
+    await parent.sync();
+  } finally {
+    await parent.close();
+  }
+}
 
 export interface LocalStorageBaseErrorMessages {
   notFound: string;
@@ -322,6 +346,191 @@ class LocalStorageBase extends StorageBase {
   async delete(fileName: string, targetDir?: string): Promise<void> {
     const filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
     return await fs.remove(filePath);
+  }
+
+  async writeStream(key: string, source: Readable): Promise<void> {
+    const normalized = this._normalizeStorageRelativePath(key);
+    const target = this._resolveAndValidateStoragePath(undefined, normalized);
+    await this.writeImportFile(target, source, fs.rename, true);
+  }
+
+  private async writeImportFile(
+    target: string,
+    source: Readable,
+    publish: (temporary: string, target: string) => Promise<void>,
+    createDirectory = false,
+  ): Promise<void> {
+    const directory = path.dirname(target);
+    const temporary = path.join(directory, `.write-${randomUUID()}`);
+
+    // A file stream may fail while mkdir is pending, before pipeline attaches.
+    const awaitDestination = () => {};
+    source.on('error', awaitDestination);
+    try {
+      if (createDirectory) {
+        await fs.mkdir(directory, { recursive: true, mode: 0o700 });
+      }
+      await pipeline(source, fs.createWriteStream(temporary, { flags: 'wx', mode: 0o600 }));
+
+      const file = await open(temporary, 'r+');
+      try {
+        await file.sync();
+      } finally {
+        await file.close();
+      }
+      await publish(temporary, target);
+      await syncDirectory(directory);
+    } catch (error) {
+      source.destroy();
+      throw error;
+    } finally {
+      source.off('error', awaitDestination);
+      await fs.rm(temporary, { force: true }).catch(() => {});
+    }
+  }
+
+  replaceMetadata(key: string, bytes: Buffer): Promise<void> {
+    return this.writeStream(key, Readable.from([bytes]));
+  }
+
+  private versionDirectory(key: string): string {
+    const normalized = this._normalizeStorageRelativePath(key);
+    return this._resolveAndValidateStoragePath(undefined, normalized + VERSION_DIRECTORY);
+  }
+
+  private async latestVersion(directory: string): Promise<number> {
+    const names = await fs.readdir(directory);
+    return names.reduce(
+      (latest, name) => (/^[1-9]\d*$/.test(name) ? Math.max(latest, +name) : latest),
+      0,
+    );
+  }
+
+  async readVersionedMetadata(key: string): Promise<VersionedMetadata | undefined> {
+    const directory = this.versionDirectory(key);
+    try {
+      const version = String(await this.latestVersion(directory));
+      const bytes = await readImportMetadata(fs.createReadStream(path.join(directory, version)));
+      return { bytes, version };
+    } catch (error) {
+      if (!hasCode(error, 'ENOENT')) {
+        throw error;
+      }
+    }
+  }
+
+  async writeVersionedMetadata(
+    key: string,
+    bytes: Buffer,
+    version: string | null,
+  ): Promise<boolean> {
+    const directory = this.versionDirectory(key);
+    try {
+      if (version === null) {
+        // Publish the first revision and its directory together so readers
+        // never see an empty directory. An existing directory is non-empty.
+        const parent = path.dirname(directory);
+        await fs.mkdir(parent, { recursive: true, mode: 0o700 });
+        const pending = await fs.mkdtemp(path.join(parent, '.metadata-'));
+        try {
+          await this.writeImportFile(path.join(pending, '1'), Readable.from([bytes]), fs.rename);
+          await fs.rename(pending, directory);
+          await syncDirectory(parent);
+        } finally {
+          await fs.rm(pending, { recursive: true, force: true });
+        }
+      } else {
+        const latest = await this.latestVersion(directory);
+        if (version !== String(latest)) {
+          return false;
+        }
+        // A hard link publishes a complete revision only if its name is free.
+        // A crashed writer holds no lock and leaves the current revision readable.
+        await this.writeImportFile(
+          path.join(directory, String(latest + 1)),
+          Readable.from([bytes]),
+          fs.link,
+        );
+      }
+      return true;
+    } catch (error) {
+      if (hasCode(error, 'EEXIST', 'ENOTEMPTY', 'ENOENT')) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  async deleteVersionedMetadata(key: string): Promise<void> {
+    const directory = this.versionDirectory(key);
+    const deleted = directory.slice(0, -VERSION_DIRECTORY.length) + DELETED_DIRECTORY;
+    try {
+      // Detach all revisions together. A stale writer cannot recreate a
+      // revision after deletion, and cleanup can retry a detached directory.
+      await fs.rename(directory, deleted);
+      await syncDirectory(path.dirname(directory));
+    } catch (error) {
+      if (!hasCode(error, 'ENOENT')) {
+        throw error;
+      }
+    }
+    await fs.rm(deleted, { recursive: true, force: true });
+  }
+
+  async listPrefix(
+    prefix: string,
+    { cursor, limit = 1000 }: ImportStorageListOptions = {},
+  ): Promise<ImportStoragePage> {
+    const normalized = this._normalizeStorageRelativePath(prefix);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 1000) {
+      throw new errors.IncorrectUsageError({ message: 'Invalid import storage page size.' });
+    }
+    const directory = this._resolveAndValidateStoragePath(undefined, normalized);
+    const keys: string[] = [];
+    for await (const key of this.listDirectory(directory, `${normalized}/`, cursor)) {
+      if (keys.length === limit) {
+        return { keys, cursor: keys[keys.length - 1] };
+      }
+      keys.push(key);
+    }
+    return { keys };
+  }
+
+  private async *listDirectory(
+    directory: string,
+    prefix: string,
+    cursor?: string,
+  ): AsyncGenerator<string> {
+    const entries = await fs.readdir(directory, { withFileTypes: true }).catch((error) => {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+        return [];
+      }
+      throw error;
+    });
+    const ordered = entries
+      .filter((entry) => !entry.isDirectory() || !entry.name.startsWith('.metadata-'))
+      .map((entry) => {
+        const versionDirectory =
+          entry.isDirectory() &&
+          [VERSION_DIRECTORY, DELETED_DIRECTORY].find((suffix) => entry.name.endsWith(suffix));
+        const name = versionDirectory ? entry.name.slice(0, -versionDirectory.length) : entry.name;
+        return {
+          entry,
+          key: prefix + name + (entry.isDirectory() && !versionDirectory ? '/' : ''),
+          versionDirectory,
+        };
+      })
+      .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+
+    for (const { entry, key, versionDirectory } of ordered) {
+      if (entry.isDirectory() && !versionDirectory) {
+        if (!cursor || key > cursor || cursor.startsWith(key)) {
+          yield* this.listDirectory(path.join(directory, entry.name), key, cursor);
+        }
+      } else if ((entry.isFile() || versionDirectory) && (!cursor || key > cursor)) {
+        yield key;
+      }
+    }
   }
 
   async readStream(options: Partial<ReadOptions> = {}): Promise<Readable> {

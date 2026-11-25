@@ -1,5 +1,6 @@
 import assert from 'assert/strict';
 import { pipeline } from 'node:stream/promises';
+import { Readable } from 'node:stream';
 import { createHash } from 'node:crypto';
 import path from 'path';
 import os from 'os';
@@ -11,6 +12,146 @@ import request from 'supertest';
 import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
 
 describe('Local Storage Base', function () {
+  describe('private import storage', function () {
+    let root: string;
+    let storage: LocalStorageBase;
+
+    beforeEach(async function () {
+      root = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-private-imports-'));
+      storage = new LocalStorageBase({ storagePath: root });
+    });
+
+    afterEach(async function () {
+      await fs.remove(root);
+    });
+
+    it('streams private files and atomically replaces metadata', async function () {
+      await storage.writeStream('site/run/source', Readable.from(['one', ' two']));
+      assert.equal(await fs.readFile(path.join(root, 'site/run/source'), 'utf8'), 'one two');
+      assert.equal((await fs.stat(path.join(root, 'site/run/source'))).mode & 0o777, 0o600);
+
+      await storage.replaceMetadata('site/run/checkpoint.txt', Buffer.from('12'));
+      await storage.replaceMetadata('site/run/checkpoint.txt', Buffer.from('3'));
+      assert.equal(await fs.readFile(path.join(root, 'site/run/checkpoint.txt'), 'utf8'), '3');
+    });
+
+    it('conditionally creates and updates metadata across adapters sharing a directory', async function () {
+      const other = new LocalStorageBase({ storagePath: root });
+      const key = 'site/run/manifest.json';
+      const initial = Buffer.from('ready');
+      assert.equal(await storage.readVersionedMetadata(key), undefined);
+      const creates = await Promise.all([
+        storage.writeVersionedMetadata(key, initial, null),
+        other.writeVersionedMetadata(key, initial, null),
+      ]);
+      assert.deepEqual(creates.sort(), [false, true]);
+      const snapshot = await other.readVersionedMetadata(key);
+      assert.ok(snapshot);
+      assert.deepEqual(snapshot.bytes, initial);
+
+      const updates = await Promise.all([
+        storage.writeVersionedMetadata(key, Buffer.from('submitting'), snapshot.version),
+        other.writeVersionedMetadata(key, Buffer.from('deleting'), snapshot.version),
+      ]);
+      assert.deepEqual(updates.sort(), [false, true]);
+      assert.deepEqual(await storage.listPrefix('site'), { keys: [key] });
+      assert.notEqual((await other.readVersionedMetadata(key))?.version, snapshot.version);
+      assert.equal(await storage.writeVersionedMetadata(key, initial, snapshot.version), false);
+    });
+
+    it('rejects a writer that was in flight when metadata was removed', async function () {
+      const key = 'site/manifest.json';
+      const initial = Buffer.from('ready');
+      await storage.writeVersionedMetadata(key, initial, null);
+      const snapshot = await storage.readVersionedMetadata(key);
+      assert.ok(snapshot);
+      const started = Promise.withResolvers<void>();
+      const resume = Promise.withResolvers<void>();
+      const link = fs.link;
+      const publish = sinon.stub(fs, 'link').callsFake(async (source, target) => {
+        started.resolve();
+        await resume.promise;
+        return link(source, target);
+      });
+      try {
+        const write = storage.writeVersionedMetadata(
+          key,
+          Buffer.from('accepted'),
+          snapshot.version,
+        );
+        await started.promise;
+        await storage.deleteVersionedMetadata(key);
+        resume.resolve();
+        assert.equal(await write, false);
+      } finally {
+        resume.resolve();
+        publish.restore();
+      }
+      await storage.deleteVersionedMetadata(key);
+      assert.equal(await storage.readVersionedMetadata(key), undefined);
+      assert.deepEqual(await storage.listPrefix('site'), { keys: [] });
+    });
+
+    it('can discover and retry metadata removal interrupted after detaching its revisions', async function () {
+      const key = 'site/manifest.json';
+      await storage.writeVersionedMetadata(key, Buffer.from('deleting'), null);
+      const manifest = path.join(root, key);
+      await fs.rename(manifest + '.ghost-import-versions', manifest + '.ghost-import-deleted');
+      assert.equal(await storage.readVersionedMetadata(key), undefined);
+      assert.deepEqual(await storage.listPrefix('site'), { keys: [key] });
+      await storage.deleteVersionedMetadata(key);
+      assert.deepEqual(await storage.listPrefix('site'), { keys: [] });
+    });
+
+    it('removes incomplete writes without replacing existing contents', async function () {
+      await storage.replaceMetadata('site/run/checkpoint.txt', Buffer.from('12'));
+      const failure = new Error('stream failed');
+      const source = Readable.from(
+        (async function* () {
+          yield 'partial';
+          throw failure;
+        })(),
+      );
+      await assert.rejects(
+        storage.writeStream('site/run/checkpoint.txt', source),
+        (thrown) => thrown === failure,
+      );
+      assert.equal(await fs.readFile(path.join(root, 'site/run/checkpoint.txt'), 'utf8'), '12');
+      assert.deepEqual(await fs.readdir(path.join(root, 'site/run')), ['checkpoint.txt']);
+    });
+
+    it('pages through one prefix without returning neighbouring tenants or symlinks', async function () {
+      for (const key of ['site/a.csv', 'site/a/report.csv', 'site/z/source', 'site-2/source']) {
+        await storage.replaceMetadata(key, Buffer.from(''));
+      }
+      await fs.symlink(path.join(root, 'site-2'), path.join(root, 'site/symlink'));
+      const first = await storage.listPrefix('site', { limit: 2 });
+      assert.deepEqual(first, {
+        keys: ['site/a.csv', 'site/a/report.csv'],
+        cursor: 'site/a/report.csv',
+      });
+      assert.deepEqual(await storage.listPrefix('site', { limit: 2, cursor: first.cursor }), {
+        keys: ['site/z/source'],
+      });
+      assert.deepEqual(await storage.listPrefix('missing'), { keys: [] });
+      await assert.rejects(storage.listPrefix('site/a.csv'), { code: 'ENOTDIR' });
+    });
+
+    it('rejects invalid paths and page sizes', async function () {
+      await assert.rejects(storage.replaceMetadata('../outside', Buffer.alloc(0)), /not valid/);
+      await assert.rejects(storage.listPrefix('../outside'), /not valid/);
+      await assert.rejects(storage.listPrefix('site', { limit: 0 }), /page size/);
+    });
+
+    it('handles a file stream that fails before its destination exists', async function () {
+      await assert.rejects(
+        storage.writeStream('site/run/source', fs.createReadStream(path.join(root, 'missing'))),
+        { code: 'ENOENT' },
+      );
+      assert.deepEqual(await storage.listPrefix('site'), { keys: [] });
+    });
+  });
+
   describe('serve', function () {
     it('sets nosniff and keeps the extension-based Content-Type', async function () {
       const localStorageBase = new LocalStorageBase({
