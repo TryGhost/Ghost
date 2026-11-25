@@ -49,7 +49,7 @@ function SegmentRow({ segment, facts, timezone, canChange, onOpen }: SegmentRowP
   return (
     <TableRow data-testid="segment-list-row">
       <TableHead
-        className="static h-auto max-w-0 py-3 text-left text-base font-normal tracking-normal text-foreground"
+        className="static h-auto max-w-0 p-4 text-left text-base font-normal tracking-normal text-foreground"
         scope="row"
       >
         <RowPrimaryAction asChild>
@@ -62,10 +62,10 @@ function SegmentRow({ segment, facts, timezone, canChange, onOpen }: SegmentRowP
           </button>
         </RowPrimaryAction>
       </TableHead>
-      <TableCell className="w-24 tabular-nums">
+      <TableCell className="w-24 p-4 tabular-nums">
         <MemberCount filter={segment.filter} />
       </TableCell>
-      <TableCell className="w-44">
+      <TableCell className="w-44 p-4">
         {facts.createdAt ? (
           <>
             <span className="block">{formatDisplayDate(facts.createdAt, timezone)}</span>
@@ -80,7 +80,7 @@ function SegmentRow({ segment, facts, timezone, canChange, onOpen }: SegmentRowP
         )}
       </TableCell>
       {canChange && (
-        <TableCell className="w-14 text-right">
+        <TableCell className="w-14 p-4 text-right">
           <SegmentMenu
             leadingItems={
               <DropdownMenuItem onSelect={onOpen}>
@@ -164,15 +164,17 @@ export function ManageSegmentsDialog({
             <Table aria-label="Segments" className="table-fixed" data-testid="segments-list">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead scope="col">Segment</TableHead>
-                  <TableHead className="w-24" scope="col">
+                  <TableHead className="px-4" scope="col">
+                    Segment
+                  </TableHead>
+                  <TableHead className="w-24 px-4" scope="col">
                     Members
                   </TableHead>
-                  <TableHead className="w-44" scope="col">
+                  <TableHead className="w-44 px-4" scope="col">
                     Created
                   </TableHead>
                   {canChange && (
-                    <TableHead className="w-14" scope="col">
+                    <TableHead className="w-14 px-4" scope="col">
                       <span className="sr-only">Actions</span>
                     </TableHead>
                   )}
