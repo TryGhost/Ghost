@@ -10,7 +10,7 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useId, useMemo, useState } from 'react';
-import { LabelPicker } from '@/members/api';
+import { LabelPicker, useMemberViews } from '@/members/api';
 import { type HybridValueSource, filterOptionsByQuery } from '@/shared/filter-sources';
 import type { ComboboxOptionSource } from '@tryghost/shade/components';
 import {
@@ -24,6 +24,12 @@ import { parseRecipientLabelOptions } from './email-recipients-boundary';
 const LABEL_SEGMENT_PREFIX = 'label:';
 const TIER_SEGMENT_PREFIX = 'tier:';
 const LABELS_GROUP = 'Labels';
+// POC (poc/segments-ui): saved segments, listed beside tiers and labels to see how they look
+// here. A segment is named in the recipient filter by its id, the way the Admin API will take it.
+// This branch's server doesn't read that yet, so with a segment chosen the recipient count is
+// unknown and the post can't be sent.
+const SEGMENTS_GROUP = 'Segments';
+const savedSegmentToken = (id: string) => `segment:'${id}'`;
 
 export interface SegmentOption {
   /** The NQL segment, e.g. `tier:gold` or `label:vip`. */
@@ -116,6 +122,14 @@ function SegmentPicker({
   );
   const labelState = labelSource.useOptions({ query: search, selectedValues: selectedLabelSlugs });
 
+  const savedSegments = useMemberViews();
+  const savedSegmentRows = savedSegments.map((segment) =>
+    toRow(savedSegmentToken(segment.id), segment.name, SEGMENTS_GROUP),
+  );
+  const visibleSavedSegmentRows = filterOptionsByQuery(
+    savedSegmentRows.map((row) => ({ value: row, label: row.name })),
+    search,
+  ).map((option) => option.value);
   const tierRows = tierOptions.map((option) => toRow(option.segment, option.name, option.group));
   // The source searches labels itself, so only the tiers need narrowing here.
   const visibleTierRows = filterOptionsByQuery(
@@ -128,7 +142,7 @@ function SegmentPicker({
 
   // Pills are named from every known row, not only those matching the search.
   // A tier segment waits for the tiers rather than showing its raw id first.
-  const knownRows = [...tierRows, ...labelRows];
+  const knownRows = [...savedSegmentRows, ...tierRows, ...labelRows];
   const selectedRows = selected.flatMap((segment) => {
     const row = knownRows.find((known) => known.slug === segment);
     if (row) {
@@ -149,9 +163,9 @@ function SegmentPicker({
 
   return (
     <LabelPicker
-      labels={[...visibleTierRows, ...labelRows]}
+      labels={[...visibleTierRows, ...visibleSavedSegmentRows, ...labelRows]}
       optionSource={optionSource}
-      placeholder="Search labels and tiers..."
+      placeholder="Search tiers, segments and labels..."
       resolvedSelectedLabels={selectedRows}
       selectedSlugs={selected}
       onToggle={onToggle}
@@ -189,7 +203,9 @@ export function RecipientSelect({
   const [previousSpecific, setPreviousSpecific] = useState<string[] | null>(null);
 
   const hasLabels = (labelSource.probe.total ?? 0) > 0;
-  const hasSpecificOptions = !tiersLoading && (tierOptions.length > 0 || hasLabels);
+  const hasSavedSegments = useMemberViews().length > 0;
+  const hasSpecificOptions =
+    !tiersLoading && (tierOptions.length > 0 || hasLabels || hasSavedSegments);
 
   const specificChecked = forceSpecific || segments.specific.length > 0;
 

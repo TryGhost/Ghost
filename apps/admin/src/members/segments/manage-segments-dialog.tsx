@@ -150,7 +150,7 @@ export function ManageSegmentsDialog({
                   <Button onClick={leaveTo(onNewSegment)}>Create a new segment</Button>
                 )
               }
-              description="Group members to email them a post or start an automation."
+              description="Filter your members and save the result as a segment."
               title="Start segmenting your audience"
             >
               <LucideIcon.ChartPie />

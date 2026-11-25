@@ -208,7 +208,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
     setShowMobileSearch(true);
   };
 
-  const filtersClassName = 'flex-col gap-4 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6';
+  // The filters and their actions are the bar's two items, side by side at every width, with
+  // the actions at the top right as they have always been. The bar was set to stack below `lg`,
+  // which did nothing while it had one item and would now drop the actions under the filters.
+  const filtersClassName = 'flex-row items-start gap-4';
   const handleShowAllMembers = () => {
     commitSearch.cancel();
     setSearchInput('');
@@ -234,14 +237,14 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
   // What the header says about the segment being shown: who made it, and when. What uses it is
   // said where it matters, when the segment is about to be changed or deleted.
+  // Both read the same way, "Created 25 Nov by Ada", and the second is the latest change, so it
+  // says so.
   const segmentFacts = viewedSegment ? factsOf(viewedSegment.id) : null;
+  const dated = (what: string, at: string | undefined, by: string | undefined) =>
+    at && `${what} ${formatDisplayDate(at, timezone)}${by ? ` by ${by}` : ''}`;
   const segmentMeta = [
-    segmentFacts?.createdBy && `Created by ${segmentFacts.createdBy}`,
-    segmentFacts?.createdAt && formatDisplayDate(segmentFacts.createdAt, timezone),
-    segmentFacts?.editedAt &&
-      `Edited ${formatDisplayDate(segmentFacts.editedAt, timezone)}${
-        segmentFacts.editedBy ? ` by ${segmentFacts.editedBy}` : ''
-      }`,
+    dated('Created', segmentFacts?.createdAt, segmentFacts?.createdBy),
+    dated('Last edited', segmentFacts?.editedAt, segmentFacts?.editedBy),
   ]
     .filter(Boolean)
     .join(' · ');
@@ -300,17 +303,24 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 {/* A segment's facts can be a long line. The title block takes the room left by
                     the actions and cuts the line short, rather than pushing them to a row below. */}
                 <PageHeader.Left className={viewedSegment ? 'min-w-48 flex-1 basis-0' : undefined}>
-                  <PageHeader.Title>
-                    <SegmentSwitcher
-                      current={viewedSegment}
-                      segments={savedViews}
-                      onNewSegment={canChangeSegments ? startNewSegment : undefined}
-                    />{' '}
-                    {!shouldShowLoading && totalMembers > 0 && (
-                      <PageHeader.Count className="hidden sm:inline">
-                        {formatNumber(totalMembers)}
-                      </PageHeader.Count>
-                    )}
+                  {/* The title is a row of its own, as tall as the header's buttons, with the
+                      title centred in it. It is then in the same place whether or not a segment's
+                      facts follow: they are added under the row and only make the header taller. */}
+                  <PageHeader.Title className="flex h-(--control-height) items-center">
+                    {/* One item of that row, so the title and its count still read as a line
+                        of text, on one baseline, as they did before. */}
+                    <span className="min-w-0">
+                      <SegmentSwitcher
+                        current={viewedSegment}
+                        segments={savedViews}
+                        onNewSegment={canChangeSegments ? startNewSegment : undefined}
+                      />{' '}
+                      {!shouldShowLoading && totalMembers > 0 && (
+                        <PageHeader.Count className="hidden sm:inline">
+                          {formatNumber(totalMembers)}
+                        </PageHeader.Count>
+                      )}
+                    </span>
                     {viewedSegment && segmentMeta && (
                       <PageHeader.Meta className="truncate">{segmentMeta}</PageHeader.Meta>
                     )}

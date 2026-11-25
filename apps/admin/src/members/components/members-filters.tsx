@@ -210,32 +210,38 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     </FilterBar.Actions>
   ) : undefined;
 
-  return (
-    <Filters
-      addButton={<Filters.Trigger />}
-      barContainer={mobileBarContainer}
-      className={
-        mobile || embedded
-          ? undefined
-          : // The actions sit over the bar's right edge, so the filters keep clear of them:
-            // enough for the clear button and one segment action.
-            cn('[&>button]:order-last', hasFilters ? 'sm:!pr-60' : 'w-auto')
-      }
+  // On the members screen's bar the actions sit beside the filters, as a second item of the bar,
+  // and the filters take the room that is left. They used to lie over the bar's right edge with
+  // a fixed space kept clear under them on every line, which sent "add" to a line of its own
+  // whenever a filter reached that space, however much of the bar was empty.
+  const besideFilters = !mobile && !embedded;
 
-      clearButton={clearAndSaveButtons}
-      fields={filterFields}
-      filters={displayFilters}
-      inlineActions={hasFilters ? segmentActions : undefined}
-      keyboardShortcut={embedded ? undefined : 'f'}
-      popoverAlign="start"
-      popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
-      // Embedded, each filter's own remove button is enough. A clear button would also keep
-      // room for itself at the end of the row, which pushes "add" onto a line of its own.
-      showClearButton={hasFilters && !embedded}
-      allowMultiple
-      showSearchInput
-      onChange={handleFiltersChange}
-    />
+  return (
+    <>
+      <Filters
+        addButton={<Filters.Trigger />}
+        barContainer={mobileBarContainer}
+        className={
+          besideFilters
+            ? cn('[&>button]:order-last', hasFilters ? 'min-w-0 flex-1' : 'w-auto')
+            : undefined
+        }
+        clearButton={clearAndSaveButtons}
+        fields={filterFields}
+        filters={displayFilters}
+        inlineActions={hasFilters ? segmentActions : undefined}
+        keyboardShortcut={embedded ? undefined : 'f'}
+        popoverAlign="start"
+        popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
+        // Only where the filter control places the actions itself: on a phone. Embedded, each
+        // filter's own remove button is enough.
+        showClearButton={hasFilters && mobile}
+        allowMultiple
+        showSearchInput
+        onChange={handleFiltersChange}
+      />
+      {besideFilters && clearAndSaveButtons}
+    </>
   );
 };
 

@@ -2,7 +2,6 @@ import { useNavigate } from '@tryghost/admin-x-framework';
 import { useMemberCount, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 import {
-  Button,
   Command,
   CommandCheck,
   CommandGroup,
@@ -64,15 +63,19 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        {/* Shade's ghost button, set in the title's own type instead of a button's. */}
-        <Button
-          className="-ml-1.5 h-auto max-w-full gap-1 px-1.5 py-0.5 align-baseline font-[inherit] text-[length:inherit] tracking-[inherit] data-[state=open]:bg-accent"
+        {/* A plain button, not Shade's: it is part of the page title, and has to take the
+            title's own type in both designs. Shade's button sets its own size and weight, which
+            under the Admin 7 design shrank the large title to button text. The chevron carries
+            empty space of its own on each side, so the right padding is the smaller for the two
+            sides to look alike, and it is sized from the title so it grows with a large one. */}
+        <button
+          className="-ml-2.5 inline-flex max-w-full cursor-pointer items-center gap-1 rounded-full py-0.5 pr-1.5 pl-2.5 align-baseline outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring data-[state=open]:bg-accent"
           data-testid="segment-switcher"
-          variant="ghost"
+          type="button"
         >
           <span className="truncate">{current ? current.name : 'Members'}</span>
-          <LucideIcon.ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-        </Button>
+          <LucideIcon.ChevronDown className="size-[0.8em] min-h-4 min-w-4 shrink-0 text-muted-foreground" />
+        </button>
       </PopoverTrigger>
       <PopoverContent
         align="start"

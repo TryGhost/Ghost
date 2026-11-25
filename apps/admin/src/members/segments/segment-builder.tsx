@@ -435,7 +435,7 @@ function SegmentBuilderPopoverContent({
       // for a filter's three parts on one line.
       className={cn(
         'max-h-(--radix-popover-content-available-height) max-w-[calc(100vw-32px)] overflow-y-auto transition-[width] duration-200 ease-out',
-        builder.hasFilters ? 'w-[540px]' : 'w-[360px]',
+        builder.hasFilters ? 'w-[600px]' : 'w-[360px]',
       )}
       collisionPadding={16}
       data-testid="segment-builder-popover"
@@ -445,6 +445,9 @@ function SegmentBuilderPopoverContent({
           event.preventDefault();
         }
       }}
+      // Opened as a picker closes, which hands focus back to its own button. That is not the
+      // publisher leaving the form.
+      onFocusOutside={(event) => event.preventDefault()}
       onPointerDownOutside={(event) => {
         if (keepOpen) {
           event.preventDefault();
