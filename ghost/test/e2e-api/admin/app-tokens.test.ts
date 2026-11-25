@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import { createServer, request as httpRequest, type RequestListener, type Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { join } from 'node:path';
+import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import { generateTestAppKeys, type TestAppKeys } from '../../utils/app-identity';
 import { insertTestInstallation } from '../../utils/app-installations';
@@ -28,6 +31,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     get(path: string): any;
     post(path: string): any;
     delete(path: string): any;
+    put(path: string): any;
   };
   let keys: TestAppKeys;
   const knex = () => models.Base.knex;
@@ -38,12 +42,12 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     insertTestInstallation(knex(), { scopes, status, keys });
 
   /**
-   * A new verified staff session for the Owner, and the cookies that sign a browser into it.
-   * Made directly, as signing in over HTTP is rate limited.
+   * A new verified staff session for the user (the Owner unless named), and the cookies that sign
+   * a browser into it. Made directly, as signing in over HTTP is rate limited.
    */
-  async function ownerSession() {
+  async function staffSession(userId: string = owner().id) {
     const setCookies: string[] =
-      await require('../../../core/server/auth').staffSessions.createVerifiedSession(owner().id);
+      await require('../../../core/server/auth').staffSessions.createVerifiedSession(userId);
     const cookies = setCookies.map((c) => c.split(';')[0]);
     const sessionCookie = cookies.find((c) => c.startsWith(`${SESSION_COOKIE}=`));
     assert.ok(sessionCookie);
@@ -55,21 +59,28 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
 
   /** Signs the agent into a new staff session of the Owner's, as a browser would be. */
   async function signInOwner() {
-    const session = await ownerSession();
+    const session = await staffSession();
     agent.jar.setCookies(session.setCookies);
     return session;
   }
 
-  /** A user token for the installation, bound to a new staff session of the Owner's. */
+  /**
+   * A user token for the installation, bound to a new staff session of the user's (the Owner
+   * unless named).
+   */
   async function tokenFor(
     installationId: string,
-    { clientScopes, tokenScopes }: { clientScopes: string[]; tokenScopes?: string[] },
+    {
+      clientScopes,
+      tokenScopes,
+      userId = owner().id,
+    }: { clientScopes: string[]; tokenScopes?: string[]; userId?: string },
   ) {
-    const session = await ownerSession();
+    const session = await staffSession(userId);
     await appTokens().reconcileClient({ id: installationId, active: true, scopes: clientScopes });
     const issued = await appTokens().issue({
       installationId,
-      userId: owner().id,
+      userId,
       sessionId: session.id,
       scopes: tokenScopes ?? clientScopes,
     });
@@ -246,6 +257,219 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
       .header('Authorization', bearer(token))
       .expectStatus(401);
     assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
+  });
+
+  describe('when the installation’s approved scopes change', function () {
+    /** Approves a manifest with `scopes` for the installation, as approving an update does */
+    async function approveScopes(installationId: string, scopes: string[]) {
+      const current = await knex()('app_installation_manifests')
+        .where({ installation_id: installationId })
+        .orderBy('created_at', 'desc')
+        .first();
+      const id = new ObjectId().toHexString();
+      await knex()('app_installation_manifests').insert({
+        ...current,
+        id,
+        manifest: JSON.stringify({ ...JSON.parse(current.manifest), scopes }),
+        source: 'update',
+        created_at: new Date(),
+      });
+      await knex()('app_installations').where({ id: installationId }).update({ manifest_id: id });
+    }
+
+    it('refuses a scope from the next request once it is removed', async function () {
+      const scopes = ['post:browse', 'tag:browse'];
+      const id = await installation(scopes);
+      const { token } = await tokenFor(id, { clientScopes: scopes });
+      await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(200);
+
+      await approveScopes(id, ['post:browse']);
+
+      await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(403);
+      await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
+    });
+
+    it('allows a scope from the next request once it is added', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+      await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(403);
+
+      await approveScopes(id, ['post:browse', 'tag:browse']);
+
+      await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(200);
+    });
+  });
+
+  describe('when the staff user the app acts for changes', function () {
+    const administrator = () => fixtureManager.get('users', 1);
+    const roleId = async (name: string) => (await knex()('roles').where({ name }).first()).id;
+    let rolesBefore: Array<Record<string, unknown>>;
+
+    beforeEach(async function () {
+      rolesBefore = await knex()('roles_users').where({ user_id: administrator().id });
+    });
+
+    afterEach(async function () {
+      await knex()('roles_users').where({ user_id: administrator().id }).del();
+      await knex()('roles_users').insert(rolesBefore);
+      await knex()('users').where({ id: administrator().id }).update({ status: 'active' });
+    });
+
+    /** The Owner's change to the Administrator, through the Admin API with their own session */
+    async function ownerEdits(changes: Record<string, unknown>) {
+      await signInOwner();
+      await agent
+        .put(`users/${administrator().id}/`)
+        .body({ users: [changes] })
+        .expectStatus(200);
+      agent.clearCookies();
+    }
+
+    it('holds the app to the user’s role from the next request once the user is demoted', async function () {
+      const scopes = ['post:browse', 'member:browse'];
+      const id = await installation(scopes);
+      const { token } = await tokenFor(id, { clientScopes: scopes, userId: administrator().id });
+      await agent.get('members/').header('Authorization', bearer(token)).expectStatus(200);
+
+      await ownerEdits({ roles: [{ id: await roleId('Contributor') }] });
+
+      // A Contributor may browse posts but not members, whatever the app's scopes
+      await agent.get('members/').header('Authorization', bearer(token)).expectStatus(403);
+      await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
+    });
+
+    it('holds the app to the user’s role when the role changes with the session intact', async function () {
+      const scopes = ['post:browse', 'member:browse'];
+      const id = await installation(scopes);
+      const { token } = await tokenFor(id, { clientScopes: scopes, userId: administrator().id });
+      await agent.get('members/').header('Authorization', bearer(token)).expectStatus(200);
+
+      // Directly, so nothing else the API does on a role change refuses the token first
+      await knex()('roles_users')
+        .where({ user_id: administrator().id })
+        .update({ role_id: await roleId('Contributor') });
+
+      await agent.get('members/').header('Authorization', bearer(token)).expectStatus(403);
+      await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
+    });
+
+    it('refuses the app from the next request once the user is suspended', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, {
+        clientScopes: ['post:browse'],
+        userId: administrator().id,
+      });
+      await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
+
+      await ownerEdits({ status: 'inactive' });
+
+      const { body } = await agent
+        .get('posts/')
+        .header('Authorization', bearer(token))
+        .expectStatus(401);
+      assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
+    });
+  });
+
+  describe('with more than one credential', function () {
+    let server: Server;
+
+    // Over a real connection, as the test agent hands headers to Express as given rather than as
+    // Node parses them
+    beforeAll(async function () {
+      server = createServer((agent as unknown as { app: RequestListener }).app);
+      await new Promise<void>((resolve) => {
+        server.listen(0, '127.0.0.1', resolve);
+      });
+    });
+
+    afterAll(async function () {
+      await new Promise((resolve) => {
+        server.close(resolve);
+      });
+    });
+
+    /** GETs an Admin API path with the headers as sent, a list sending the header once per item */
+    function send(
+      path: string,
+      headers: Record<string, string | string[]>,
+    ): Promise<{ status: number; body: any }> {
+      const site = new URL(configUtils.config.get('url'));
+      return new Promise((resolve, reject) => {
+        const request = httpRequest(
+          {
+            host: '127.0.0.1',
+            port: (server.address() as AddressInfo).port,
+            path: `/ghost/api/admin/${path}`,
+            headers: { host: site.host, origin: site.origin, ...headers },
+          },
+          (response) => {
+            let data = '';
+            response.on('data', (chunk) => (data += chunk));
+            response.on('end', () =>
+              resolve({ status: response.statusCode!, body: JSON.parse(data) }),
+            );
+          },
+        );
+        request.on('error', reject);
+        request.end();
+      });
+    }
+
+    /** The Owner's session cookie, sent alongside, which no refused credential may fall back to */
+    async function ownerCookie() {
+      const { setCookies } = await staffSession();
+      return setCookies.map((c) => c.split(';')[0]).join('; ');
+    }
+
+    it('reads only the first of two Authorization headers', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+      const cookie = await ownerCookie();
+      // On its own, the cookie signs the Owner in
+      assert.equal((await send('tags/', { cookie })).status, 200);
+
+      // The app token first: the app, held to its scopes, not the Owner's cookie
+      const asApp = { authorization: [bearer(token), 'Bearer not-an-app-token'], cookie };
+      assert.equal((await send('posts/', asApp)).status, 200);
+      assert.equal((await send('tags/', asApp)).status, 403);
+
+      // Another credential first: the app token is never read, and the cookie isn't used
+      const other = await send('posts/', {
+        authorization: ['Bearer not-an-app-token', bearer(token)],
+        cookie,
+      });
+      assert.equal(other.status, 401);
+      assert.equal(refusedAs(other.body), 'INVALID_AUTH_HEADER');
+    });
+
+    it('never falls back to a second header or the cookie for a refused app token', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+
+      const { status, body } = await send('posts/', {
+        authorization: [bearer('ghost_app_not-a-token'), bearer(token)],
+        cookie: await ownerCookie(),
+      });
+      assert.equal(status, 401);
+      assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
+    });
+
+    it('refuses an Authorization header joined from two, either way round', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+      const cookie = await ownerCookie();
+
+      for (const [joined, code] of [
+        [`${bearer(token)}, Bearer not-an-app-token`, 'APP_TOKEN_INVALID'],
+        [`${bearer(token)},Bearer not-an-app-token`, 'APP_TOKEN_INVALID'],
+        [`Bearer not-an-app-token, ${bearer(token)}`, 'INVALID_AUTH_HEADER'],
+      ]) {
+        const { status, body } = await send('posts/', { authorization: joined, cookie });
+        assert.equal(status, 401, joined);
+        assert.equal(refusedAs(body), code, joined);
+      }
+    });
   });
 
   describe('on the routes staff tokens are refused on', function () {
