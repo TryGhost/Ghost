@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import { setTimeout as sleep } from 'node:timers/promises';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
@@ -56,6 +55,7 @@ type PollOptions = {
 
 describe('welcome email automations poll', function () {
   let options: PollOptions;
+  let clock: sinon.SinonFakeTimers;
 
   beforeAll(async function () {
     // Files share a database within a worker; start from the default fixtures.
@@ -66,7 +66,7 @@ describe('welcome email automations poll', function () {
   beforeEach(async function () {
     await cleanupTables();
 
-    mockSystemTime(new Date('2026-04-12T12:00:00.000Z'));
+    clock = mockSystemTime(new Date('2026-04-12T12:00:00.000Z'));
 
     options = {
       memberWelcomeEmailService: {
@@ -684,6 +684,33 @@ describe('welcome email automations poll', function () {
     assert.equal((await readRun(run.id)).exit_reason, 'finished');
   });
 
+  const waitForDueRunReads = async (count: number, startPolls: () => void): Promise<void> => {
+    const allReadsFinished = Promise.withResolvers<void>();
+    const timeout = setTimeout(
+      () => allReadsFinished.reject(new Error('Polls did not read the due runs')),
+      10_000,
+    );
+    let readCount = 0;
+    const onKnexQueryResponse = (_response: unknown, query: { sql: string }) => {
+      if (!query.sql.includes('from `welcome_email_automation_runs` as `r`')) {
+        return;
+      }
+      readCount += 1;
+      if (readCount === count) {
+        allReadsFinished.resolve();
+      }
+    };
+    testUtils.knex.on('query-response', onKnexQueryResponse);
+
+    try {
+      startPolls();
+      await allReadsFinished.promise;
+    } finally {
+      clearTimeout(timeout);
+      testUtils.knex.removeListener('query-response', onKnexQueryResponse);
+    }
+  };
+
   it('sends each due email once when two polls run at the same moment', async function () {
     const automation = await createAutomation();
     const automatedEmail = await createAutomatedEmail({
@@ -705,12 +732,17 @@ describe('welcome email automations poll', function () {
     // Holding the runs until both polls have read them makes the overlap certain.
     const holder = await testUtils.knex.transaction();
     await holder('welcome_email_automation_runs').select('id').forUpdate();
-    const polls = Promise.all([
-      welcomeEmailAutomationPoll(options),
-      welcomeEmailAutomationPoll(options),
-    ]);
-    await sleep(250);
-    await holder.commit();
+    let polls: Promise<unknown> = Promise.resolve();
+    try {
+      await waitForDueRunReads(2, () => {
+        polls = Promise.all([
+          welcomeEmailAutomationPoll(options),
+          welcomeEmailAutomationPoll(options),
+        ]);
+      });
+    } finally {
+      await holder.commit();
+    }
     await polls;
 
     sinon.assert.callCount(options.memberWelcomeEmailService.send, runs.length);
@@ -718,5 +750,47 @@ describe('welcome email automations poll', function () {
     for (const run of runs) {
       assert.equal((await readRun(run.id)).exit_reason, 'finished');
     }
+  });
+
+  it('polls again when a full batch is partly taken by another poll', async function () {
+    const automation = await createAutomation();
+    const automatedEmail = await createAutomatedEmail({
+      welcome_email_automation_id: automation.id,
+    });
+    const member = await createMember();
+    const createRunReadyAt = async (readyAt: Date) =>
+      await createRun({
+        welcome_email_automation_id: automation.id,
+        member_id: member.id,
+        next_welcome_email_automated_email_id: automatedEmail.id,
+        ready_at: readyAt,
+      });
+    for (let i = 0; i < MAX_RUNS_PER_BATCH - 1; i += 1) {
+      await createRunReadyAt(new Date(Date.now() - 1000));
+    }
+    await createRunReadyAt(new Date(Date.now() + 60 * 1000));
+    await createRunReadyAt(new Date(Date.now() + 60 * 1000));
+
+    const holder = await testUtils.knex.transaction();
+    await holder('welcome_email_automation_runs').select('id').forUpdate();
+    const polls: Promise<void>[] = [];
+    try {
+      await waitForDueRunReads(1, () => {
+        polls.push(welcomeEmailAutomationPoll(options));
+      });
+      clock.tick(2 * 60 * 1000);
+      await waitForDueRunReads(1, () => {
+        polls.push(welcomeEmailAutomationPoll(options));
+      });
+    } finally {
+      await holder.commit();
+    }
+    await Promise.all(polls);
+
+    sinon.assert.calledOnce(options.enqueueAnotherPollAt);
+
+    await welcomeEmailAutomationPoll(options);
+
+    sinon.assert.callCount(options.memberWelcomeEmailService.send, MAX_RUNS_PER_BATCH + 1);
   });
 });

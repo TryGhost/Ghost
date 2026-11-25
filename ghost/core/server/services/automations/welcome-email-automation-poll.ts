@@ -105,6 +105,7 @@ async function lockRuns(
 async function fetchAndLockRuns(): Promise<{
   runs: Run[];
   nextFutureReadyAt: null | Date;
+  isBatchFull: boolean;
 }> {
   const now = new Date();
   const lockCutoff = new Date(now.getTime() - LOCK_TIMEOUT);
@@ -133,6 +134,8 @@ async function fetchAndLockRuns(): Promise<{
       )
       .limit(MAX_RUNS_PER_BATCH);
 
+    // Counted before locking, as another poll may take some of these runs.
+    const isBatchFull = dueRuns.length >= MAX_RUNS_PER_BATCH;
     const runs = await lockRuns(trx, dueRuns, now, lockCutoff);
 
     if (runs.length === 0) {
@@ -142,7 +145,7 @@ async function fetchAndLockRuns(): Promise<{
         .select(db.knex.raw('MIN(ready_at) as next_ready_at'))
         .first<{ next_ready_at: Date | null | string }>();
       const nextFutureReadyAt = result?.next_ready_at ? new Date(result.next_ready_at) : null;
-      return { runs, nextFutureReadyAt };
+      return { runs, nextFutureReadyAt, isBatchFull };
     }
 
     const ids: string[] = [];
@@ -160,7 +163,7 @@ async function fetchAndLockRuns(): Promise<{
         updated_at: now,
       });
 
-    return { runs, nextFutureReadyAt: null };
+    return { runs, nextFutureReadyAt: null, isBatchFull };
   });
 }
 
@@ -326,10 +329,12 @@ async function processRun({
  */
 export async function welcomeEmailAutomationPoll(options: PollOptions): Promise<void> {
   const { memberWelcomeEmailService, enqueueAnotherPollAt } = options;
-  const { runs, nextFutureReadyAt } = await fetchAndLockRuns();
+  const { runs, nextFutureReadyAt, isBatchFull } = await fetchAndLockRuns();
 
   if (runs.length === 0) {
-    if (nextFutureReadyAt) {
+    if (isBatchFull) {
+      enqueueAnotherPollAt(new Date());
+    } else if (nextFutureReadyAt) {
       enqueueAnotherPollAt(nextFutureReadyAt);
     }
     return;
@@ -341,7 +346,7 @@ export async function welcomeEmailAutomationPoll(options: PollOptions): Promise<
 
   // If the batch is full, we might have another batch to execute. (There's
   // no way to know without trying.)
-  if (runs.length >= MAX_RUNS_PER_BATCH) {
+  if (isBatchFull) {
     enqueueAnotherPollAt(new Date());
   }
 }
