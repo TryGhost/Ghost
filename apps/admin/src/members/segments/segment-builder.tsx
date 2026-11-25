@@ -20,8 +20,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
   Input,
-  Label,
+  List,
+  ListItem,
+  ListItemContent,
   Popover,
   PopoverAnchor,
   PopoverContent,
@@ -135,36 +141,43 @@ function MatchingMembersPreview({ filter, compact }: { filter: string; compact?:
             No members match these filters.
           </PreviewMessage>
         ) : (
-          <ul className="flex flex-col">
+          // Shade's list rows, as History lists its entries. Nothing here is clickable, so the
+          // rows have no hover.
+          <List className="px-3">
             {members.map((member) => (
-              <li
-                key={member.id}
-                className="flex items-center justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0"
-              >
-                <span className="flex min-w-0 items-center gap-3">
+              <ListItem key={member.id} hover={false}>
+                <ListItemContent className="flex items-center gap-3 py-2">
                   <Avatar
                     className="size-8 min-w-8"
                     {...memberAvatarProps(member)}
                     src={member.avatar_image}
                   />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-medium">{formatMemberName(member)}</span>
+                  <Stack className="min-w-0 grow" gap="none">
+                    <Text as="span" className="truncate" size="sm" weight="medium">
+                      {formatMemberName(member)}
+                    </Text>
                     {member.name && member.email && (
-                      <span className="truncate text-sm text-muted-foreground">{member.email}</span>
+                      <Text as="span" className="truncate" size="sm" tone="secondary">
+                        {member.email}
+                      </Text>
                     )}
-                  </span>
-                </span>
-                <span className="shrink-0 text-sm text-muted-foreground">
-                  {STATUS_LABELS[member.status]}
-                </span>
-              </li>
+                  </Stack>
+                  <Text as="span" className="shrink-0" size="sm" tone="secondary">
+                    {STATUS_LABELS[member.status]}
+                  </Text>
+                </ListItemContent>
+              </ListItem>
             ))}
             {total > members.length && (
-              <li className="px-3 py-2 text-sm text-muted-foreground">
-                and {formatNumber(total - members.length)} more
-              </li>
+              <ListItem hover={false}>
+                <ListItemContent className="py-2">
+                  <Text as="span" size="sm" tone="secondary">
+                    and {formatNumber(total - members.length)} more
+                  </Text>
+                </ListItemContent>
+              </ListItem>
             )}
-          </ul>
+          </List>
         )}
       </div>
     </Stack>
@@ -210,16 +223,21 @@ type SegmentBuilder = ReturnType<typeof useSegmentBuilder>;
  * match, listed once there is a filter.
  */
 function SegmentBuilderForm({ builder, compact }: { builder: SegmentBuilder; compact?: boolean }) {
-  const { conditions, draft, filterError, save } = builder;
+  const nameId = useId();
+  const { conditions, draft, filterError, hasFilters, save } = builder;
 
   return (
-    <Stack gap={compact ? 'md' : 'lg'}>
-      <Stack gap="xs">
+    <FieldGroup className="gap-5">
+      {/* A label, as the custom field form has: once a name is typed, a placeholder no longer
+          says what the field is. */}
+      <Field data-invalid={Boolean(draft.error) || undefined}>
+        <FieldLabel htmlFor={nameId}>Name</FieldLabel>
         <Input
-          aria-invalid={Boolean(draft.error)}
-          aria-label="Segment name"
+          aria-invalid={Boolean(draft.error) || undefined}
+          autoComplete="off"
+          id={nameId}
           maxLength={SEGMENT_NAME_MAX_LENGTH}
-          placeholder="Segment name"
+          placeholder="Enter segment name"
           value={draft.name}
           autoFocus
           onChange={(event) => draft.setName(event.target.value)}
@@ -230,14 +248,15 @@ function SegmentBuilderForm({ builder, compact }: { builder: SegmentBuilder; com
             }
           }}
         />
-        {draft.error && (
-          <Text className="text-destructive" role="alert" size="xs">
-            {draft.error}
-          </Text>
-        )}
-      </Stack>
-      <Stack gap="xs">
-        <FilterBar className="mt-0">
+        {draft.error && <FieldError>{draft.error}</FieldError>}
+      </Field>
+      <Field data-invalid={Boolean(filterError) || undefined}>
+        {/* The bar is there before any filter, unlike on the members screen. Alone under the
+            name, a bare Filter button was too faint to find, and the bar marks where the filters
+            will go. Until it holds one it has no padding, so it is as tall as the name field. */}
+        <FilterBar
+          className={cn('mt-0 transition-[padding] duration-200 ease-out', !hasFilters && 'p-0!')}
+        >
           <MembersFilters
             filters={conditions.filters}
             multipleActiveSubscriptionsCount={0}
@@ -245,20 +264,15 @@ function SegmentBuilderForm({ builder, compact }: { builder: SegmentBuilder; com
             onFiltersChange={conditions.setFilters}
           />
         </FilterBar>
-        {filterError && (
-          <Text className="text-destructive" role="alert" size="xs">
-            {filterError}
-          </Text>
-        )}
-      </Stack>
+        {filterError && <FieldError>{filterError}</FieldError>}
+      </Field>
       {/* Nothing is listed until there is a filter: an empty list would be the largest thing
           in the builder, and draw the eye away from the one step there is to take. The list
-          opens downwards. Closed, it gives back the gap the stack put above it. */}
+          opens downwards. Closed, it gives back the gap the group put above it. */}
       <div
         className={cn(
           'grid transition-[grid-template-rows,margin] duration-200 ease-out',
-          conditions.filter ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-          !conditions.filter && (compact ? '-mt-3' : '-mt-5'),
+          conditions.filter ? 'grid-rows-[1fr]' : '-mt-5 grid-rows-[0fr]',
         )}
       >
         <div className="overflow-hidden">
@@ -267,7 +281,7 @@ function SegmentBuilderForm({ builder, compact }: { builder: SegmentBuilder; com
           )}
         </div>
       </div>
-    </Stack>
+    </FieldGroup>
   );
 }
 
@@ -287,12 +301,12 @@ function SegmentBuilderActions({ builder, withPin, size, onCancel }: SegmentBuil
   return (
     <Inline className="w-full" gap="md" justify="between">
       {withPin ? (
-        <Inline gap="sm">
+        <Field className="w-auto" orientation="horizontal">
           <Switch checked={draft.pinned} id={pinId} onCheckedChange={draft.setPinned} />
-          <Label className="font-normal" htmlFor={pinId}>
+          <FieldLabel className="font-normal" htmlFor={pinId}>
             Pin in sidebar
-          </Label>
-        </Inline>
+          </FieldLabel>
+        </Field>
       ) : (
         <span />
       )}
@@ -391,7 +405,12 @@ function SegmentBuilderPopoverContent({
     <PopoverContent
       align="end"
       aria-label="New segment"
-      className="max-h-(--radix-popover-content-available-height) w-[540px] max-w-[calc(100vw-32px)] overflow-y-auto"
+      // As wide as the custom field form's popover until there is a filter, then wide enough
+      // for a filter's three parts on one line.
+      className={cn(
+        'max-h-(--radix-popover-content-available-height) max-w-[calc(100vw-32px)] overflow-y-auto transition-[width] duration-200 ease-out',
+        builder.hasFilters ? 'w-[540px]' : 'w-[360px]',
+      )}
       collisionPadding={16}
       data-testid="segment-builder-popover"
       sideOffset={8}

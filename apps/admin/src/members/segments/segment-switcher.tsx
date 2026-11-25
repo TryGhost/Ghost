@@ -2,6 +2,7 @@ import { useNavigate } from '@tryghost/admin-x-framework';
 import { useMemberCount, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 import {
+  Button,
   Command,
   CommandCheck,
   CommandGroup,
@@ -62,14 +63,15 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          className="-ml-1.5 inline-flex max-w-full items-center gap-1 rounded-md px-1.5 py-0.5 align-baseline outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring data-[state=open]:bg-accent"
+        {/* Shade's ghost button, set in the title's own type instead of a button's. */}
+        <Button
+          className="-ml-1.5 h-auto max-w-full gap-1 px-1.5 py-0.5 align-baseline font-[inherit] text-[length:inherit] tracking-[inherit] data-[state=open]:bg-accent"
           data-testid="segment-switcher"
-          type="button"
+          variant="ghost"
         >
           <span className="truncate">{current ? current.name : 'Members'}</span>
           <LucideIcon.ChevronDown className="size-4 shrink-0 text-muted-foreground" />
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent
         align="start"

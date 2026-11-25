@@ -1,7 +1,7 @@
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 import { Button, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
-import { Stack } from '@tryghost/shade/primitives';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { SegmentFields } from './segment-fields';
 import { useSaveSegment } from './use-save-segment';
 
@@ -24,7 +24,9 @@ export function SaveSegmentForm({ filter, onClose, onCreated }: SaveSegmentFormP
   return (
     <PopoverContent align="end" className="w-72" data-testid="save-segment-popover">
       <Stack gap="md">
-        <h3 className="text-sm font-semibold">Save as segment</h3>
+        <Text as="h3" size="sm" weight="semibold">
+          Save as segment
+        </Text>
         <SegmentFields
           error={draft.error}
           name={draft.name}

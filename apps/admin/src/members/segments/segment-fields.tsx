@@ -1,5 +1,11 @@
-import { Input, Label, Switch } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  Input,
+  Switch,
+} from '@tryghost/shade/components';
 import { useId } from 'react';
 
 /** The longest segment name the API accepts, in characters. */
@@ -20,19 +26,20 @@ interface SegmentFieldsProps {
 }
 
 /**
- * The fields every place that makes a segment shares: its name and, where the place asks, whether
- * it is pinned to the sidebar. The conditions belong to the place: the members screen already has
- * them, and the new segment dialog edits them above these fields.
+ * A segment's name and, where the place asks, whether it is pinned to the sidebar: the fields of
+ * the small forms that have a title of their own, which is why the name has no label here. They
+ * are Shade's field components, as the custom field form's are.
  */
 export function SegmentFields({ name, onNameChange, error, onSubmit, pin }: SegmentFieldsProps) {
   const pinId = useId();
 
   return (
-    <Stack gap="md">
-      <Stack gap="xs">
+    <FieldGroup className="gap-3">
+      <Field data-invalid={Boolean(error) || undefined}>
         <Input
-          aria-invalid={Boolean(error)}
+          aria-invalid={Boolean(error) || undefined}
           aria-label="Segment name"
+          autoComplete="off"
           maxLength={SEGMENT_NAME_MAX_LENGTH}
           placeholder="Segment name"
           value={name}
@@ -45,20 +52,16 @@ export function SegmentFields({ name, onNameChange, error, onSubmit, pin }: Segm
             }
           }}
         />
-        {error && (
-          <Text className="text-destructive" role="alert" size="xs">
-            {error}
-          </Text>
-        )}
-      </Stack>
+        {error && <FieldError>{error}</FieldError>}
+      </Field>
       {pin && (
-        <Inline align="center" gap="md" justify="between">
-          <Label className="font-normal" htmlFor={pinId}>
+        <Field orientation="horizontal">
+          <FieldLabel className="font-normal" htmlFor={pinId}>
             Pin in sidebar
-          </Label>
+          </FieldLabel>
           <Switch checked={pin.pinned} id={pinId} onCheckedChange={pin.onChange} />
-        </Inline>
+        </Field>
       )}
-    </Stack>
+    </FieldGroup>
   );
 }

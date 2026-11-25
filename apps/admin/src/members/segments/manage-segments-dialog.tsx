@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, formatDisplayDate, formatNumber } from '@tryghost/shade/utils';
 import { SegmentMenu } from './segment-menu';
 import { type SegmentFacts, useSegmentFacts } from './use-segment-facts';
@@ -142,7 +143,7 @@ export function ManageSegmentsDialog({
           <DialogTitle>Segments</DialogTitle>
         </DialogHeader>
         {segments.length === 0 ? (
-          <div className="flex justify-center py-10">
+          <Inline className="py-10" justify="center">
             <EmptyIndicator
               actions={
                 onNewSegment && (
@@ -154,7 +155,7 @@ export function ManageSegmentsDialog({
             >
               <LucideIcon.ChartPie />
             </EmptyIndicator>
-          </div>
+          </Inline>
         ) : (
           // The rows keep their highlight inside themselves: a scrolling box has no gutter for it.
           <div className="max-h-[60vh] overflow-y-auto">

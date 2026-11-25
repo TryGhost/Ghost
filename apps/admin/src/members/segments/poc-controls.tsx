@@ -1,6 +1,7 @@
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 import { ShadeScope } from '@tryghost/shade/app';
 import { Button, Label, Switch } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useSimulateNoSegments } from './poc-store';
@@ -44,7 +45,7 @@ export function PocControls({
             data-testid="poc-controls"
           >
             <span className="text-xs font-medium text-muted-foreground">Prototype</span>
-            <span className="flex items-center gap-2">
+            <Inline as="span" gap="sm">
               <Switch
                 checked={simulateNoSegments}
                 id={id}
@@ -53,7 +54,7 @@ export function PocControls({
               <Label className="text-xs font-normal text-muted-foreground" htmlFor={id}>
                 No segments
               </Label>
-            </span>
+            </Inline>
             <Button size="sm" variant="outline" onClick={() => setBuilder('dialog')}>
               Builder dialog
             </Button>
