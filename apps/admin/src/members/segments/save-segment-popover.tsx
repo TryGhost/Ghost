@@ -40,7 +40,7 @@ export function SaveSegmentForm({ filter, onClose, onCreated }: SaveSegmentFormP
           variant={draft.error ? 'destructive' : 'default'}
           onClick={() => void save()}
         >
-          {draft.isPending ? 'Saving...' : draft.error ? 'Retry' : 'Save'}
+          {draft.isPending ? 'Saving…' : draft.error ? 'Retry' : 'Save'}
         </Button>
       </Stack>
     </PopoverContent>
