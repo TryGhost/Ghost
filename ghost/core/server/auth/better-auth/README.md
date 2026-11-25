@@ -329,8 +329,8 @@ sooner. Its scopes are the requested ones the client lists.
   policy core, on top of the user's role. A method whose permission check is
   its own or none would see the staff user the app acts for, so the API
   pipeline refuses apps on every such method (403) unless it's on the
-  allowlist in `api/endpoints/utils/permissions.js`, which holds only methods
-  safe for any app whatever its scopes (`site.read`). The session routes run
+  allowlist in `api/endpoints/utils/permissions.js`, which is for methods safe
+  for any app whatever its scopes and holds none yet. The session routes run
   outside the pipeline, and `DELETE /session` refuses apps itself. A unit test
   lists every such method the Admin API mounts, so a new one is refused until
   someone decides otherwise.

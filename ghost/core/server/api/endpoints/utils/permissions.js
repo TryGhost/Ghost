@@ -12,12 +12,9 @@ const messages = {
 /**
  * The methods an app may call although they check no permission or check their own, so the
  * scopes an app was approved for can't limit them. A method is listed here only when it is safe
- * for any app, whatever its scopes; every other such method refuses apps.
- *
- * - `site.read`: the site's public title, description, logo, icon and accent colour, which
- *   Admin's bridge lets every app read
+ * for any app, whatever its scopes; every other such method refuses apps. None is yet.
  */
-const APP_UNCHECKED_ALLOWLIST = new Set(['site.read']);
+const APP_UNCHECKED_ALLOWLIST = new Set();
 
 /**
  * @description Handle requests, which need authentication.

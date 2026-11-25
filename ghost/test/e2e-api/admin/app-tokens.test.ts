@@ -339,12 +339,5 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
         }
       });
     }
-
-    it('allows an app on a route on the allowlist', async function () {
-      const id = await installation(['post:browse']);
-      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
-
-      await agent.get('site/').header('Authorization', bearer(token)).expectStatus(200);
-    });
   });
 });

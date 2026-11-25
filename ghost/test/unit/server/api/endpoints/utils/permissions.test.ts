@@ -39,6 +39,8 @@ const REFUSED_FOR_APPS = [
   'presence.leave',
   'presence.poll',
   'schedules.publish',
+  // Mounted without authentication, so no app reaches it
+  'site.read',
   'slack.sendTest',
   'users.readStaffToken',
   'users.regenerateStaffToken',
@@ -96,7 +98,7 @@ describe('API permissions for apps', function () {
     assert.deepEqual(outside, OUTSIDE_PIPELINE);
   });
 
-  it('refuses an app on each, unless it is on the allowlist', async function () {
+  it('refuses an app on each', async function () {
     for (const name of REFUSED_FOR_APPS) {
       const [docName, method] = name.split('.');
       await assert.rejects(
@@ -108,12 +110,21 @@ describe('API permissions for apps', function () {
         name,
       );
     }
-    for (const name of permissions.APP_UNCHECKED_ALLOWLIST) {
-      const [docName, method] = name.split('.');
-      await permissions.handleUnchecked(
-        { docName, method },
+  });
+
+  it('allows an app on a method on the allowlist', async function () {
+    const call = () =>
+      permissions.handleUnchecked(
+        { docName: 'posts', method: 'browse' },
         { options: { context: { principal: app } } },
       );
+    await assert.rejects(call(), errors.NoPermissionError);
+
+    permissions.APP_UNCHECKED_ALLOWLIST.add('posts.browse');
+    try {
+      await call();
+    } finally {
+      permissions.APP_UNCHECKED_ALLOWLIST.delete('posts.browse');
     }
   });
 
