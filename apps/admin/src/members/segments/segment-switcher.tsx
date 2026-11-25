@@ -93,7 +93,7 @@ export function SegmentSwitcher({
                 <TooltipTrigger asChild>
                   <Button
                     aria-label="Manage segments"
-                    className="size-7 text-muted-foreground"
+                    className="size-7"
                     size="icon"
                     type="button"
                     variant="ghost"
@@ -103,7 +103,7 @@ export function SegmentSwitcher({
                       onManageSegments();
                     }}
                   >
-                    <LucideIcon.Settings2 className="size-4" />
+                    <LucideIcon.Settings className="size-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Manage segments</TooltipContent>
