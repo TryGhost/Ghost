@@ -42,6 +42,7 @@ const Papa = require('papaparse');
 const models = require('../../../core/server/models');
 const { knex } = require('../../../core/server/data/db');
 const membersService = require('../../../core/server/services/members');
+const { StripeSubscription } = require('../../../core/server/services/stripe/stripe-api-responses');
 const memberAttributionService =
   require('../../../core/server/services/member-attribution').default;
 const urlServiceUtils = require('../../utils/url-service-utils');
@@ -1837,7 +1838,10 @@ describe('Members API', function () {
     });
     sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
     sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
-    sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+    // Read as the Stripe client reads what Stripe returns, with its times as dates.
+    sinon
+      .stub(stripeService.api, 'getSubscription')
+      .resolves(StripeSubscription.parse(fakeSubscription));
     sinon.stub(stripeService.api, 'getCustomer').resolves({
       id: 'cus_1',
       invoice_settings: {
@@ -1942,7 +1946,10 @@ describe('Members API', function () {
     });
     sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
     sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
-    sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+    // Read as the Stripe client reads what Stripe returns, with its times as dates.
+    sinon
+      .stub(stripeService.api, 'getSubscription')
+      .resolves(StripeSubscription.parse(fakeSubscription));
     sinon.stub(stripeService.api, 'getCustomer').resolves({
       id: 'cus_1',
       invoice_settings: {

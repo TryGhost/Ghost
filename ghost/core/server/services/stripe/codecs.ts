@@ -31,6 +31,9 @@ function fitName(name: string): string {
  */
 export const StripeName = z.string().transform(fitName);
 
+/** A time Stripe sends as a timestamp in seconds, read as a date. */
+export const StripeTimestamp = z.number().transform((seconds) => new Date(seconds * 1000));
+
 /**
  * A reference from one Stripe object to another, such as a subscription's customer: the other
  * object's id, or the object itself when the request expanded it. Ghost reads only the id.
