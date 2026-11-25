@@ -68,7 +68,7 @@ function narrowTo(where: Knex.QueryBuilder, fieldsName: string, grant: Grant): v
       // An empty `IN` matches nothing.
       where.whereIn(`${fieldsName}.namespace`, []);
       return;
-    case 'by member access':
+    case 'by stored level':
       where.whereIn(`${fieldsName}.member_access`, grant.levels);
       return;
     default:

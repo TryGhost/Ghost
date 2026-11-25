@@ -10,7 +10,7 @@ export { changedForMembers } from './members-resource';
 import type { MetafieldBindingsService } from './metafields/bindings-service';
 import { resolveMaxDefinitions } from './config';
 import { definitionLimit } from './definition-limit';
-import { customFields, memberAccessPolicy } from './custom-fields/namespace';
+import { CUSTOM_FIELDS_ACCESS, customFields } from './custom-fields/namespace';
 import { metafieldsFor } from './metafields/metafields';
 import type { Namespaces } from './metafields/namespaces';
 import type { FieldSource as ResourceFieldSource } from './metafields/queries';
@@ -109,9 +109,9 @@ export function init(): void {
     // can define fields in.
     namespaces: [customFields({ limitService })],
     // Nobody owns another namespace yet, so a field stored in one, as an app's would be, is
-    // reached by its member access, the way a custom field is. An app that owns its namespace
-    // will state its own grants.
-    unowned: memberAccessPolicy,
+    // reached the way a custom field is, by its member access. An app that owns its namespace
+    // will state its own access.
+    unowned: CUSTOM_FIELDS_ACCESS,
     definitionLimit: definitionLimit(getMaxDefinitions),
     maxDefinitions: getMaxDefinitions,
     internal: 'internal',

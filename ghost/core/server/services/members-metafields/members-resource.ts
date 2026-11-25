@@ -38,6 +38,8 @@ export const MEMBERS_RESOURCE: MetafieldResource<Members> = {
     bindings: 'members_metafield_bindings',
   },
   idColumn: 'member_id',
+  // Each field stores what its member may do with it, which a publisher sets per field.
+  storedLevelFor: 'members',
 };
 
 /**
