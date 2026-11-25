@@ -251,7 +251,7 @@ function EditorContent({
     editingHere ||
     (editLease.locked &&
       (editLease.reason === 'taking' || (editLease.reason === 'held' && editLease.ownTab)));
-  const hasOtherPeople = presence.active.length > 0 || leaseHolderId !== null;
+  const hasOtherPeople = (showPresence && presence.active.length > 0) || leaseHolderId !== null;
   // The first answer takes a round trip, so until then the lock is drawn only
   // where this tab last saw someone else, such as in the posts list.
   const [othersOnEntry, setOthersOnEntry] = useState(
