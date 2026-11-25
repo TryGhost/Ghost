@@ -6,6 +6,7 @@ import { Badge, Select, SelectContent, SelectItem, SelectValue } from '@tryghost
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage } from '@tryghost/shade/page-templates';
 import { PageHeader } from '@tryghost/shade/patterns';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { canManageAutomations } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
@@ -80,13 +81,17 @@ const Automations: React.FC = () => {
                     </Select>
                   )}
                   <PageHeader.ActionGroup.Primary>
+                    {/* With a plus, as New post and New member have, and the plus alone on a
+                        phone, as theirs does. */}
                     <PageHeader.Action
+                      className="data-[control-shape=pill]:w-(--control-height) max-sm:data-[control-shape=pill]:px-0 sm:data-[control-shape=pill]:w-auto"
                       disabled={!canCreateNewAutomations}
                       label="New automation"
                       type="button"
                       onClick={() => navigate('/automations/new')}
                     >
-                      New automation
+                      <LucideIcon.Plus className="stroke-2!" />
+                      <span className="hidden sm:inline">New automation</span>
                     </PageHeader.Action>
                   </PageHeader.ActionGroup.Primary>
                 </PageHeader.ActionGroup>
