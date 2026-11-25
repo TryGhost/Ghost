@@ -9,12 +9,12 @@ import buildPostData, {
 import type { PostsRepository, PostWriteResult, WrittenPost } from './post-repository';
 import type { ImportRequest } from './schema';
 import type { Clock, RowOutcome } from './store';
-import { ImportJournal, type JournalStorage } from './journal';
+import { ImportJournal, readJournalPosition, type JournalStorage } from './journal';
 import { openAssetJournal } from './asset-journal';
 import { readImportReports, type ImportReportContents } from './journal-report';
 import { createSummary, type ImportSummary } from './summary';
 import type { PreparedImportSource } from './source';
-import type { PreparedPostRow, PreparedPostRows } from './reader';
+import { rowsAfterCheckpoint, type PreparedPostRow, type PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
 import {
   uncertainSubmission,
@@ -280,11 +280,17 @@ class ContentCSVImporter {
       });
       source = prepared.source;
       preparedRows = prepared.preparedRows;
-      journal = new ImportJournal(storage, preparedRows.columns, { record: 0, part: 0 });
+      const position = await readJournalPosition(storage);
+      journal = new ImportJournal(storage, preparedRows.columns, position);
       if (source.assets) {
         await source.assets.store(await openAssetJournal(storage));
       }
-      await this.processRows(journal, job.importTagNames, preparedRows.rows, prepared.source);
+      await this.processRows(
+        journal,
+        job.importTagNames,
+        rowsAfterCheckpoint(preparedRows.rows, position.record),
+        source,
+      );
       await journal.flush();
     } catch (error) {
       failureReason = messageOf(error);

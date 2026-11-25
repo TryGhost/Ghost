@@ -1,5 +1,6 @@
 import type { Row } from '../csv';
 import type { Readable } from 'node:stream';
+import errors from '@tryghost/errors';
 import { mapCSVRecord, readCSVRecords } from '../csv/read-records';
 import { EDITORIAL_POST_FIELDS, postImportRowSchema, type PostImportRow } from './row';
 
@@ -17,6 +18,22 @@ export interface PreparedPostRows {
   columns: string[];
   rows: AsyncIterable<PreparedPostRow>;
   close(): Promise<void>;
+}
+
+export async function* rowsAfterCheckpoint(rows: AsyncIterable<PreparedPostRow>, record: number) {
+  let remaining = record;
+  for await (const row of rows) {
+    if (remaining > 0) {
+      remaining -= 1;
+    } else {
+      yield row;
+    }
+  }
+  if (remaining > 0) {
+    throw new errors.InternalServerError({
+      message: 'CSV import checkpoint exceeds the source record count.',
+    });
+  }
 }
 
 export async function* streamPostRows(

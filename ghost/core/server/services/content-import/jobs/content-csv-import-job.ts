@@ -13,6 +13,8 @@ export interface ContentCSVImportJobData {
 
 export default class ContentCSVImportJob extends Job {
   static type = 'content-csv-import';
+  // Replayed jobs resume from their durable checkpoint using the same import ID.
+  static replayAfterRestart = true;
   readonly importId: string;
   readonly file: ContentCSVImportJobData['file'];
   readonly mapping?: Record<string, string>;

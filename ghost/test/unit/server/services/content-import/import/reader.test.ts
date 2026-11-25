@@ -4,6 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import openPostRows, {
+  rowsAfterCheckpoint,
   type PreparedPostRow,
 } from '../../../../../../core/server/services/content-import/import/reader';
 
@@ -25,6 +26,13 @@ describe('content import reader', function () {
 
   afterEach(async function () {
     await fs.rm(directory, { recursive: true, force: true });
+  });
+
+  it('rejects a checkpoint beyond the end of the source', async function () {
+    const file = path.join(directory, 'short.csv');
+    await fs.writeFile(file, 'title\n\nOne\n');
+    const { rows } = await openPostRows(importFiles.readSource(file));
+    await assert.rejects(rowsAfterCheckpoint(rows, 2).next(), /checkpoint exceeds/);
   });
 
   it('maps arbitrary headers and drops explicitly ignored columns', async function () {

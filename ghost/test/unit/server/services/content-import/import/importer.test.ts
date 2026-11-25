@@ -7,6 +7,7 @@ import { MediaInliningFailure } from '../../../../../../core/server/services/con
 import { Readable } from 'node:stream';
 import errors from '@tryghost/errors';
 import {
+  ImportJournal,
   readJournalPosition,
   readOutcomeParts,
   type JournalStorage,
@@ -268,6 +269,7 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(accepted, { importId: 'run_test' });
     assert.equal(h.jobs.length, 1);
     assert.equal(h.jobs[0].constructor, ContentCSVImportJob);
+    assert.equal(ContentCSVImportJob.replayAfterRestart, true);
     const serialized = JSON.parse(JSON.stringify(h.jobs[0]));
     assert.deepEqual(serialized, {
       importId: 'run_test',
@@ -486,6 +488,56 @@ describe('ContentCSVImporter', function () {
 
     assert.match(h.jobs[0].importTagNames[0], /^#Import \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
   });
+
+  it.each(['posts.csv', 'posts.zip'])(
+    'resumes a deserialized %s job after committed records with the same run tags',
+    async function (fileName) {
+      const h = harness(
+        [row('Committed'), row('Failed'), row('Replay duplicate'), row('Remaining')],
+        {
+          columns: ['title'],
+          rows: [
+            { title: 'Committed' },
+            { title: 'Failed' },
+            { title: 'Replay duplicate' },
+            { title: 'Remaining' },
+          ],
+          lines: [2, 4, 5, 6],
+        },
+      );
+      const { importId } = await h.importer.importCSV({ filePath: '/tmp/upload', fileName });
+      const storage = h.deps.fileStager.artifacts();
+      const journal = new ImportJournal(storage, ['title'], { record: 0, part: 0 });
+      await journal.append({ line: 2, title: 'Committed', status: 'created' });
+      await journal.append({
+        line: 4,
+        title: 'Failed',
+        status: 'failed',
+        source: { title: 'Failed' },
+      });
+      await journal.flush();
+      h.duplicateSlugs.add('replay-duplicate');
+
+      const replayedJob = new ContentCSVImportJob(JSON.parse(JSON.stringify(h.jobs[0])));
+      await new ContentCSVImporter(h.deps).handle(replayedJob);
+
+      assert.deepEqual(
+        h.created.map(({ data }) => data.title),
+        ['Remaining'],
+      );
+      assert.equal(h.created[0].metadata?.runTagName, `#Import Run ${importId}`);
+      assert.deepEqual(
+        h.sentRuns[0].rows.map(({ line, status }) => [line, status]),
+        [
+          [2, 'created'],
+          [4, 'failed'],
+          [5, 'skipped'],
+          [6, 'created'],
+        ],
+      );
+      assert.match(h.sentRuns[0].reports.errorsFile ?? '', /failed,,,Failed/);
+    },
+  );
 
   it('keeps lifecycle logging best-effort', async function () {
     const h = harness();
