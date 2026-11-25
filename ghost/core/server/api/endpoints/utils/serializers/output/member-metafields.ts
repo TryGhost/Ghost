@@ -3,13 +3,13 @@ import {
   toHeldValuesResponse,
   toMetafieldsResponse,
 } from '../../../../../services/members-metafields/serializers';
-import type { Metafield } from '../../../../../services/members-metafields';
+import type { Definition } from '../../../../../services/members-metafields';
 
-const serializeOne = (field: Metafield, _apiConfig: unknown, frame: Frame): void => {
+const serializeOne = (field: Definition, _apiConfig: unknown, frame: Frame): void => {
   frame.response = toMetafieldsResponse.parse([field]);
 };
 
-const serializeMany = (fields: Metafield[], _apiConfig: unknown, frame: Frame): void => {
+const serializeMany = (fields: Definition[], _apiConfig: unknown, frame: Frame): void => {
   frame.response = toMetafieldsResponse.parse(fields);
 };
 

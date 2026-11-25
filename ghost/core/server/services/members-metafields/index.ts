@@ -13,7 +13,7 @@ import type { Caller } from './callers';
 import { meter, tracer } from '../../lib/tracing';
 import { metafieldsTracking } from './metafields/tracking';
 
-export type { Metafield } from './metafields/models';
+export type { Definition } from './metafields/models';
 /** The members' fields as this site reads them, for every read here and in the domains that join them. */
 export type FieldSource = ResourceFieldSource<Caller>;
 export type { MemberMetafieldValues } from './member-values';
