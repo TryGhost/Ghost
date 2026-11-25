@@ -1,4 +1,12 @@
-import { type ErrorInfo, memo, Suspense, useCallback } from 'react';
+import {
+  Component,
+  createRef,
+  type ErrorInfo,
+  memo,
+  type ReactNode,
+  Suspense,
+  useCallback,
+} from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { editorBody, editorSecondaryInstance } from '@tryghost/test-data/selectors/editor';
 import ErrorBoundary from '@/settings/components/error-boundary';
@@ -18,6 +26,8 @@ const secondaryErrors = koenigErrorReporters('secondary');
 
 export interface KoenigPostEditorProps {
   initialLexical: string | null;
+  /** Changes when another copy of the document is loaded: the editor starts over on it. */
+  contentKey?: number;
   placeholder: string;
   cardConfig: PostCardConfig;
   darkMode: boolean;
@@ -89,11 +99,69 @@ function KoenigInstanceMount({
   );
 }
 
+/** How many frames a reloaded body waits for its cards before letting go of its height. */
+const HOLD_FRAMES = 60;
+
+/**
+ * Keeps the body's height while another copy of the document replaces it.
+ * The new copy is laid out before Lexical has drawn it, and its cards later
+ * still, so a shorter body would pull the pane's scroll position in.
+ */
+class BodyFrame extends Component<{ contentKey?: number; children: ReactNode }> {
+  private readonly frame = createRef<HTMLDivElement>();
+  private request = 0;
+
+  getSnapshotBeforeUpdate(previous: Readonly<{ contentKey?: number }>) {
+    const frame = this.frame.current;
+    if (frame && previous.contentKey !== this.props.contentKey) {
+      cancelAnimationFrame(this.request);
+      frame.style.minHeight = `${frame.offsetHeight}px`;
+    }
+    return null;
+  }
+
+  componentDidUpdate(previous: Readonly<{ contentKey?: number }>) {
+    if (previous.contentKey === this.props.contentKey) {
+      return;
+    }
+    let frames = 0;
+    const release = () => {
+      const frame = this.frame.current;
+      if (!frame) {
+        return;
+      }
+      frames += 1;
+      // Lexical fills each card's container a render after it adds the container.
+      if (frame.querySelector('[data-lexical-decorator]:empty') && frames < HOLD_FRAMES) {
+        this.request = requestAnimationFrame(release);
+        return;
+      }
+      frame.style.minHeight = '';
+    };
+    this.request = requestAnimationFrame(release);
+  }
+
+  componentWillUnmount() {
+    cancelAnimationFrame(this.request);
+  }
+
+  render() {
+    return (
+      <div
+        ref={this.frame}
+        className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]"
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}
+
 // Memoized: every prop is referentially stable, so a settings edit elsewhere in
 // the editor must not re-render two composer subtrees.
 export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPostEditorProps) {
   const editor = loadKoenig();
-  const { onSecondaryError } = props;
+  const { contentKey, onSecondaryError } = props;
 
   const onSecondaryInstanceError = useCallback(
     (error: unknown) => {
@@ -112,8 +180,8 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
   );
 
   return (
-    <div className="koenig-react-editor koenig-lexical mx-auto w-full max-w-[740px]">
-      <ErrorBoundary name="the editor" onError={primaryErrors.onRenderError}>
+    <BodyFrame contentKey={contentKey}>
+      <ErrorBoundary key={contentKey} name="the editor" onError={primaryErrors.onRenderError}>
         <Suspense
           fallback={
             <div className="flex justify-center py-10">
@@ -139,6 +207,6 @@ export const KoenigPostEditor = memo(function KoenigPostEditor(props: KoenigPost
           />
         </Suspense>
       </ErrorBoundary>
-    </div>
+    </BodyFrame>
   );
 });
