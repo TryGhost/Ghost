@@ -13,7 +13,10 @@ When another tab holds the editing lease, document-changing sections use
 disabled fieldsets and are inert, so native inputs show their disabled states
 and custom controls cannot write. A notice above the fields explains who is
 editing and offers the same takeover and copy actions as the header avatar.
-It also explains a pending takeover or a newer saved version.
+It also explains a pending takeover or a newer saved version. While the
+editor waits for its first answer about the lease, the sections stay inert
+but are drawn as usual, without the notice, unless the editor expects
+someone else to hold it.
 
 Tag, author and tier pickers receive `disabled` explicitly as well: a fieldset
 alone does not turn off a custom list's selection handlers. A picker closes

@@ -294,7 +294,9 @@ into whether this tab is locked.
 A locked tab shows the document read-only at 75% opacity, with the title and
 body headings further dimmed to 60% opacity. It can be read, scrolled, selected
 and copied from, and nothing in it can be changed. The editor is also read-only
-for the moment before the server's first answer.
+for the moment before the server's first answer. That wait looks like an open
+editor, at full opacity and with usable-looking settings, unless this tab's
+last poll, usually from the posts list, saw someone else on the document.
 
 | Part              | While locked                                                                                                                                                          |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -158,6 +158,8 @@ export interface PostSettingsSidebarProps {
   editorFont?: EditorFontControl;
   /** Disable fields and make custom controls inert; dialogs opened from them are outside the panel. */
   locked?: boolean;
+  /** Draws the lock: disabled fields under its notice. While false, locked fields stay inert but look usable. */
+  lockShown?: boolean;
   /** Explains the lock above the disabled fields, with any recovery actions. */
   lockNotice?: ReactNode;
 }
@@ -179,6 +181,7 @@ export function PostSettingsSidebar({
   opensInPlace = false,
   editorFont,
   locked = false,
+  lockShown = locked,
   lockNotice,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
@@ -230,14 +233,18 @@ export function PostSettingsSidebar({
   const sections: Record<SettingsSectionId, ReactNode> = {
     url: <MemoUrlSection postType={postType} session={session} siteUrl={siteUrl} />,
     'publish-date': <MemoPublishDateSection session={session} />,
-    tags: canTag ? <MemoTagsSection disabled={locked} session={session} /> : null,
+    tags: canTag ? <MemoTagsSection disabled={locked && lockShown} session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? (
-      <MemoAccessSection disabled={locked} postType={postType} session={session} />
+      <MemoAccessSection disabled={locked && lockShown} postType={postType} session={session} />
     ) : null,
     authors: canCreditOthers ? (
-      <MemoAuthorsSection currentUser={currentUser} disabled={locked} session={session} />
+      <MemoAuthorsSection
+        currentUser={currentUser}
+        disabled={locked && lockShown}
+        session={session}
+      />
     ) : null,
     'show-title-and-feature-image':
       postType === 'page' ? (
@@ -292,7 +299,7 @@ export function PostSettingsSidebar({
   const panelLabel = `${postType === 'page' ? 'Page' : 'Post'} settings`;
   const content = SETTINGS_SECTION_ORDER.map((id) => {
     const section = open && open.id !== id ? null : sections[id];
-    const disabled = locked && !AVAILABLE_WHILE_LOCKED.has(id);
+    const inert = locked && !AVAILABLE_WHILE_LOCKED.has(id);
     return (
       <Fragment key={id}>
         {!open && id === 'post-history' ? <Separator className="my-3" /> : null}
@@ -300,11 +307,11 @@ export function PostSettingsSidebar({
           <fieldset
             ref={(element) => {
               if (element) {
-                element.inert = disabled;
+                element.inert = inert;
               }
             }}
             className={cn('min-w-0 shrink-0', open && 'contents', id === 'delete' && 'mt-auto')}
-            disabled={disabled}
+            disabled={inert && lockShown}
           >
             {section}
           </fieldset>
@@ -350,7 +357,7 @@ export function PostSettingsSidebar({
                 </Inline>
               </Box>
             )}
-            {locked ? lockNotice : null}
+            {locked && lockShown ? lockNotice : null}
             <Stack
               className={cn(
                 'min-h-0 flex-1',

@@ -15,6 +15,18 @@ import {
 
 const EMPTY: ActivePresence[] = [];
 
+/** What this tab's polls last saw, kept across screens. */
+let recent: LivePresence[] = [];
+
+/** Whether a recent poll from any screen in this tab saw someone else on `resource`. */
+export function seenOthersOn(resource: PresenceResource): boolean {
+  const now = Date.now();
+  return recent.some(
+    ({ entry, expiresAt }) =>
+      expiresAt > now && entry.resourceType === resource.type && entry.resourceId === resource.id,
+  );
+}
+
 /** No answer this long after asking opens the editor for editing rather than wait on presence. */
 export const LEASE_PENDING_MS = 5_000;
 /** An answer this old, with every poll since failing, is dropped: a broken endpoint must not hold the editor shut. */
@@ -219,6 +231,7 @@ export function usePresence(
             const response = parsePresenceResponse(raw);
             if (isCurrent()) {
               live = mergeActive(live, response, window, Date.now());
+              recent = mergeActive(recent, response, window, Date.now());
               refresh();
               if (mode && leaseSupported) {
                 disarm();

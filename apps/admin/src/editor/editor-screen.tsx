@@ -13,7 +13,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AdminLink } from '@/shared/admin-link';
-import { usePresence } from '@/shared/presence/use-presence';
+import { seenOthersOn, usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import {
   LeaseAvatar,
@@ -252,6 +252,17 @@ function EditorContent({
     (editLease.locked &&
       (editLease.reason === 'taking' || (editLease.reason === 'held' && editLease.ownTab)));
   const hasOtherPeople = presence.active.length > 0 || leaseHolderId !== null;
+  // The first answer takes a round trip, so until then the lock is drawn only
+  // where this tab last saw someone else, such as in the posts list.
+  const [othersOnEntry, setOthersOnEntry] = useState(
+    () => presenceResource !== undefined && seenOthersOn(presenceResource),
+  );
+  if (othersOnEntry && presence.lease !== 'pending') {
+    setOthersOnEntry(false);
+  }
+  const lockShown =
+    editLease.locked &&
+    (editLease.reason !== 'pending' || othersOnEntry || presence.active.length > 0);
   const currentViewer =
     currentUser && hasOtherPeople && !currentUserShownAsEditor
       ? { id: currentUser.id, name: currentUser.name, image: currentUser.profile_image ?? null }
@@ -661,6 +672,7 @@ function EditorContent({
                 actionsSlotRef={setBottomBar}
                 autofocusTitle={!record}
                 cardConfig={currentCardConfig}
+                dimmed={lockShown}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
                 font={editorFont.font}
@@ -710,6 +722,7 @@ function EditorContent({
                   onTakeOver={requestTakeover}
                 />
               }
+              lockShown={lockShown}
               opensInPlace={settingsMemory.restored}
               postType={postType}
               reveal={settingsReveal}
