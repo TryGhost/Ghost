@@ -232,6 +232,8 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   const hovered = useRef(false);
   const focusOnOpen = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const returnFocusOnClose = useRef(false);
 
   const taking = lease.locked && lease.reason === 'taking';
   const [wasTaking, setWasTaking] = useState(taking);
@@ -356,6 +358,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
 
   const trigger = (
     <button
+      ref={triggerRef}
       aria-label={label}
       className={cn(
         'pointer-events-auto relative z-20 size-7 shrink-0 rounded-full border-2 border-background bg-white text-muted-foreground outline-offset-2 focus-visible:outline-2 focus-visible:outline-focus-ring',
@@ -396,6 +399,19 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
         className="w-max max-w-64 p-4"
         data-testid={editorLeaseCard}
         sideOffset={8}
+        onCloseAutoFocus={(event) => {
+          if (returnFocusOnClose.current) {
+            event.preventDefault();
+            triggerRef.current?.focus();
+          }
+          returnFocusOnClose.current = false;
+        }}
+        onEscapeKeyDown={() => {
+          // Return keyboard users to the control that opened the card. A notice
+          // dismissed while writing must leave the writing selection alone.
+          returnFocusOnClose.current =
+            contentRef.current?.contains(document.activeElement) ?? false;
+        }}
         onFocusOutside={(event) => {
           // Koenig restores the writing selection after takeover. Keep the brief
           // success acknowledgement visible while focus returns to the document.

@@ -347,8 +347,29 @@ describe('Post editor lease', () => {
 
       const takeOver = card().getByRole('button', { name: 'Take over', exact: true });
       await expect.element(takeOver).toHaveFocus();
+      await userEvent.keyboard('{Escape}');
+      await expect.element(card()).not.toBeInTheDocument();
+      await expect.element(avatar()).toHaveFocus();
+      await userEvent.keyboard('{Enter}');
+      await expect.element(takeOver).toHaveFocus();
       await userEvent.keyboard('{Enter}');
       await expect.element(takeoverDialog()).toBeVisible();
+    });
+
+    it('keeps focus at the pointer destination when a keyboard-opened card is dismissed', async () => {
+      fakePublishedPost();
+      alex();
+      fakeLease().state.other = OTHER_USER;
+      await open();
+      await expect.element(avatar()).toBeVisible();
+      avatar().element().focus();
+      await userEvent.keyboard('{Enter}');
+      await expect.element(card().getByRole('button', { name: 'Take over' })).toHaveFocus();
+
+      await editorScreen.titleInput().click();
+
+      await expect.element(card()).not.toBeInTheDocument();
+      await expect.element(editorScreen.titleInput()).toHaveFocus();
     });
 
     it('keeps writing focus when the avatar card opens on hover', async () => {
