@@ -4,7 +4,13 @@ const { afterCommit } = require('../lib/after-commit');
 const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
-const { chainTransformers } = require('@tryghost/mongo-utils');
+const {
+  callerTransformerStep,
+  keyWithConditionStep,
+  renameStep,
+  transformerStep,
+} = require('../lib/filters');
+const { resolveFilterWithSteps } = require('./base/plugins/filtered-collection');
 const { memberAvatarImage } = require('../services/members/member-avatar');
 const { MemberCommentingCodec } = require('../services/members/commenting');
 const { LabelAddedToMembersEvent } = require('../../shared/events/label-added-to-members-event');
@@ -12,6 +18,32 @@ const { METAFIELDS_RELATION } = require('../services/members-metafields/members-
 const {
   createMetafieldsFilterTransformer,
 } = require('../services/members-metafields/metafields/filter');
+
+// `opened_emails.post_id` names the post of an email a member opened: the email's post, on a
+// recipient row that was opened. mongo-knex can't compare a joined column with null, so the
+// condition is written as `opened_at:>=0`, which selects the same rows as `opened_at:-null`.
+const openedEmailsPost = keyWithConditionStep({
+  key: 'opened_emails.post_id',
+  replacement: 'emails.post_id',
+  condition: 'email_recipients.opened_at:>=0',
+});
+
+// Members filter keys that stand for a relation's column or an aggregate, as filterRelations()
+// names them.
+const relationKeys = renameStep({
+  label: 'labels.slug',
+  labels: 'labels.slug',
+  product: 'products.slug',
+  products: 'products.slug',
+  tier: 'products.slug',
+  tiers: 'products.slug',
+  tier_id: 'products.id',
+  newsletters: 'newsletters.slug',
+  signup: 'signups.attribution_id',
+  conversion: 'conversions.attribution_id',
+  offer_redemptions: 'offer_redemptions.offer_id',
+  'count.active_stripe_customers': 'active_stripe_customers_count',
+});
 
 const DEEP_OFFSET_THRESHOLD = 1000;
 
@@ -149,66 +181,6 @@ const Member = ghostBookshelf.Model.extend(
       }
 
       return ghostBookshelf.Model.prototype.format.call(this, attrs);
-    },
-
-    filterExpansions() {
-      return [
-        {
-          key: 'label',
-          replacement: 'labels.slug',
-        },
-        {
-          key: 'labels',
-          replacement: 'labels.slug',
-        },
-        {
-          key: 'product',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'products',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'tier',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'tiers',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'tier_id',
-          replacement: 'products.id',
-        },
-        {
-          key: 'newsletters',
-          replacement: 'newsletters.slug',
-        },
-        {
-          key: 'signup',
-          replacement: 'signups.attribution_id',
-        },
-        {
-          key: 'conversion',
-          replacement: 'conversions.attribution_id',
-        },
-        {
-          key: 'opened_emails.post_id',
-          replacement: 'emails.post_id',
-          // Currently we cannot expand on values such as null or a string in mongo-knex
-          // But the line below is essentially the same as: `email_recipients.opened_at:-null`
-          expansion: 'email_recipients.opened_at:>=0',
-        },
-        {
-          key: 'offer_redemptions',
-          replacement: 'offer_redemptions.offer_id',
-        },
-        {
-          key: 'count.active_stripe_customers',
-          replacement: 'active_stripe_customers_count',
-        },
-      ];
     },
 
     filterRelations() {
@@ -674,18 +646,30 @@ const Member = ghostBookshelf.Model.extend(
 
     /**
      * Every members query resolves its filter here before building SQL: list, CSV export, bulk
-     * edit and delete, counts and email sends all do. The custom fields rewrite runs after the
-     * caller's own `mongoTransformer` on every members filter, so a filter has the same meaning in
-     * all of them without any call site wiring it.
+     * edit and delete, counts and email sends all do, so a filter means the same in all of them
+     * without any call site wiring it. The filter is parsed once and rewritten by these steps, in
+     * this order:
+     *
+     * 1. The caller's own rewrite, such as the Admin API's restricted-field check, which sees the
+     *    keys as the filter wrote them, none of them renamed yet.
+     * 2. The custom fields rewrite, which turns `metafields` statements into queries on the values
+     *    table.
+     * 3. `opened_emails.post_id`, then the keys that only rename a relation's column, mapped onto
+     *    the relation keys filterRelations() names.
+     *
+     * The resolved filter's queries compile the result with filterRelations().
      */
     resolveFilter(options) {
-      const rewrite = createMetafieldsFilterTransformer();
-      return ghostBookshelf.Model.resolveFilter.call(this, {
-        ...options,
-        mongoTransformer: options.mongoTransformer
-          ? chainTransformers(options.mongoTransformer, rewrite)
-          : rewrite,
-      });
+      return resolveFilterWithSteps(
+        this,
+        [
+          callerTransformerStep(options.mongoTransformer),
+          transformerStep(createMetafieldsFilterTransformer()),
+          openedEmailsPost,
+          relationKeys,
+        ],
+        options,
+      );
     },
 
     findPage(options = {}) {

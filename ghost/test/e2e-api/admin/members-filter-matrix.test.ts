@@ -141,6 +141,40 @@ describe('Members filtering, every operator admin can emit', function () {
     ]);
   });
 
+  // SQL's `IN` never matches NULL, so negating an empty value can't be folded into one list with
+  // the other negations of the same key. Each filter below selects what both of its conditions
+  // select on their own.
+  describe('combinations — negating an empty value beside another negation', function () {
+    const NAMELESS = 'nameless@example.com';
+
+    beforeAll(async function () {
+      await agent
+        .post('members/')
+        .body({ members: [{ email: NAMELESS }] })
+        .expectStatus(201);
+    });
+
+    afterAll(async function () {
+      await models.Base.knex('members').where({ email: NAMELESS }).del();
+    });
+
+    it('name is set and is not one name', async function () {
+      assert.deepEqual(await browse("name:-null+name:-'Bob Brown'"), [ALICE, CAROL]);
+    });
+
+    it('no label at all, with a label spelled the other way left out', async function () {
+      const both = await browse('label:-null+labels:-gold');
+      const noLabel = await browse('label:-null');
+      const notGold = await browse('labels:-gold');
+
+      assert.deepEqual(
+        both,
+        noLabel.filter((email) => notGold.includes(email)),
+      );
+      assert.deepEqual(both, [CAROL, NAMELESS]);
+    });
+  });
+
   describe('derived — subscribed, which is not a column at all', function () {
     it('is subscribed means on a newsletter and still being sent to', async function () {
       assert.deepEqual(await browse('(subscribed:true+email_disabled:0)'), [ALICE]);

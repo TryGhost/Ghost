@@ -272,6 +272,23 @@ const specialistDependencies = [
     ],
   },
 
+  // Filters. The filters library parses filter text and compiles the parsed
+  // filter onto a query; other code uses the library.
+  {
+    // Parsing NQL filter text.
+    dependency: npm('@tryghost/nql-lang'),
+    owners: [
+      core('server/lib/filters/'),
+      core('frontend/helpers/get.js'),
+      core('server/api/endpoints/utils/serializers/input/tiers.js'),
+    ],
+  },
+  {
+    // Compiling a parsed filter onto a Knex query.
+    dependency: npm('@tryghost/mongo-knex'),
+    owners: [core('server/lib/filters/'), service('members-metafields/')],
+  },
+
   // Database.
   {
     // Telling SQLite from MySQL on a connection the caller passes.
@@ -287,8 +304,8 @@ const specialistDependencies = [
 
   // One service each.
   {
-    // Custom field keys and filters.
-    dependency: `${npm('unidecode')}|${npm('@tryghost/mongo-knex')}`,
+    // Custom field keys.
+    dependency: npm('unidecode'),
     owners: [service('members-metafields/')],
   },
   {

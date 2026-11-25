@@ -7,7 +7,11 @@ declare module '@tryghost/mongo-knex' {
   function knexify<T extends Knex.QueryBuilder>(
     qb: T,
     mongoQuery: object,
-    config: { tableName: string },
+    config: {
+      tableName?: string;
+      /** How each relation a query key can name, such as `labels` in `labels.slug`, joins `qb`'s table. */
+      relations?: Readonly<Record<string, object>>;
+    },
   ): T;
   export = knexify;
 }
