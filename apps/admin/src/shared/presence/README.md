@@ -39,6 +39,15 @@ ids and a server timestamp; names and avatars come from the staff users list.
   post open", the same in the editor and the lists. Below the `sm` breakpoint
   one avatar with a count badge stands for everyone.
 
+In the editor, the lease holder leads the row, including the current user once
+this tab holds the lease. Avatars always overlap with the holder in front,
+including groups of two. The current user appears as a viewer whenever another person is present,
+unless their editing avatar already represents them, and is named "You" in its
+label and the row's tooltip. A lone viewer has no avatar.
+Viewers are dimmed while the document
+is held, with a separate opaque white backing behind each avatar so overlapping
+photos cannot blend. List rows keep their existing overlap and full opacity.
+
 ## The lease
 
 With `lease`, `usePresence` also follows the lease on the document the editor

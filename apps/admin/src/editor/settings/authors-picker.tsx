@@ -13,6 +13,7 @@ export interface AuthorsPickerProps {
   inputId: string;
   describedBy?: string;
   invalid: boolean;
+  disabled?: boolean;
   /** The post's authors, in order. */
   selected: AuthorOption[];
   /** The site's staff, whoever the browse has answered with so far. */
@@ -34,6 +35,7 @@ export function AuthorsPicker({
   inputId,
   describedBy,
   invalid,
+  disabled = false,
   selected,
   staff,
   loading,
@@ -59,6 +61,7 @@ export function AuthorsPicker({
   return (
     <ChipPicker<User, AuthorOption>
       describedBy={describedBy}
+      disabled={disabled}
       emptyMessage={loading ? 'Loading authors...' : 'No authors found'}
       // Names are not unique; the email, on hover, tells two people apart.
       getChipTitle={(author) => author.email}

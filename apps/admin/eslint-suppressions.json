@@ -623,9 +623,6 @@
   "src/shared/pickers/chip-picker.tsx": {
     "react-hooks/refs": {
       "count": 2
-    },
-    "react-hooks/set-state-in-effect": {
-      "count": 1
     }
   },
   "src/tags/detail/tag-detail.tsx": {

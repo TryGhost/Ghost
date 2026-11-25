@@ -108,12 +108,23 @@ function Chips({
 
 // A form holds its fields still while it saves, so a change can't slip in after what was sent.
 describe('ChipPicker disabled', () => {
+  it('closes an open list when the picker becomes disabled', () => {
+    const { rerender } = render(<Chips />);
+    fireEvent.click(screen.getByRole('combobox'));
+    expect(screen.getByRole('listbox')).toBeVisible();
+
+    rerender(<Chips disabled />);
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
   it('opens no list and removes no chip', () => {
     const onRemove = vi.fn();
     render(<Chips disabled onRemove={onRemove} />);
 
     fireEvent.click(screen.getByRole('combobox', { name: 'Options' }));
     fireEvent.click(screen.getByRole('button', { name: 'Remove Alpha' }));
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'Options' }), { key: 'Backspace' });
 
     expect(screen.queryByRole('listbox')).toBeNull();
     expect(onRemove).not.toHaveBeenCalled();

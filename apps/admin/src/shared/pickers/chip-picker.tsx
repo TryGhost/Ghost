@@ -177,6 +177,11 @@ export function ChipPicker<TOption, TChip>({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [highlighted, setHighlighted] = useState(0);
+  const wasDisabled = useRef(disabled);
+  if (disabled && (open || search !== '')) {
+    setOpen(false);
+    setSearch('');
+  }
   const ownInputRef = useRef<HTMLInputElement>(null);
   const input = inputRef ?? ownInputRef;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -266,6 +271,14 @@ export function ChipPicker<TOption, TChip>({
     onSearchChange?.('');
   }, [onOpenChange, onSearchChange]);
 
+  useEffect(() => {
+    if (disabled && !wasDisabled.current) {
+      onOpenChange?.(false);
+      onSearchChange?.('');
+    }
+    wasDisabled.current = disabled;
+  }, [disabled, onOpenChange, onSearchChange]);
+
   // Not a Radix Popover: portalled, it would sit outside a Dialog's subtree
   // where the scroll-lock blocks it. Closing on `pointerdown` without
   // preventing the default lets the `click` that follows reach what is under it.
@@ -311,9 +324,11 @@ export function ChipPicker<TOption, TChip>({
 
   // Back to the top whenever the list narrows, so the highlight never points
   // past the end of what is on screen.
-  useEffect(() => {
+  const [highlightedTerm, setHighlightedTerm] = useState(term);
+  if (highlightedTerm !== term) {
+    setHighlightedTerm(term);
     setHighlighted(0);
-  }, [term]);
+  }
 
   const chipFor = (option: TOption) =>
     selected.find((chip) => (isChosen ? isChosen(option, chip) : getKey(option) === getKey(chip)));
@@ -352,6 +367,9 @@ export function ChipPicker<TOption, TChip>({
   }, [highlightedIndex, open]);
 
   const choose = (row: Row<TOption>) => {
+    if (disabled) {
+      return;
+    }
     if (row.kind === 'create') {
       createRow?.onSelect(term);
     } else {
@@ -369,6 +387,9 @@ export function ChipPicker<TOption, TChip>({
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    if (disabled) {
+      return;
+    }
     // IME confirmation and candidate navigation belong to the input method.
     // Safari can end composition before its confirmation keydown, reporting 229.
     if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
@@ -429,9 +450,12 @@ export function ChipPicker<TOption, TChip>({
     >
       <div
         ref={refs.setReference}
-        className={cn(tokenFieldClasses.field, 'pr-8', disabled && 'cursor-not-allowed opacity-50')}
+        className={cn(tokenFieldClasses.field, 'pr-8')}
         data-testid={testIds?.field}
         onClick={() => {
+          if (disabled) {
+            return;
+          }
           input.current?.focus();
           reveal();
         }}
@@ -444,7 +468,11 @@ export function ChipPicker<TOption, TChip>({
               const chip = selected.find((candidate) => getKey(candidate) === key);
               return chip ? getLabel(chip) : key;
             }}
-            onMove={(from, to) => onReorder(arrayMove([...selected], from, to))}
+            onMove={(from, to) => {
+              if (!disabled) {
+                onReorder(arrayMove([...selected], from, to));
+              }
+            }}
           >
             {selected.map((chip) => (
               <SortableChip
@@ -506,7 +534,7 @@ export function ChipPicker<TOption, TChip>({
             placeholder reads as a plain text input. */}
         <LucideIcon.ChevronDown className={tokenFieldClasses.chevron} />
       </div>
-      {open && (
+      {open && !disabled && (
         // As wide as its longest row, from the field's width up to 480px, past
         // which a row wraps: a long name reads whole rather than cut short.
         <div
@@ -647,7 +675,10 @@ function Chip({
 function SortableChip({ id, ...props }: ChipProps & { id: string }) {
   // The sortable attributes are left off: they would rename the button and
   // describe a keyboard drag that Enter and Space, which remove, never start.
-  const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const { listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: props.disabled,
+  });
 
   return (
     <Chip

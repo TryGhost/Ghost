@@ -45,6 +45,8 @@ export const inputSurfaceClasses = {
   disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50',
   disabledFieldSelf:
     'disabled:bg-field-disabled-surface disabled:text-muted-foreground disabled:opacity-100 disabled:hover:bg-field-disabled-surface',
+  disabledFieldWithin:
+    'has-[:is(input,textarea):disabled]:cursor-not-allowed has-[:is(input,textarea):disabled]:bg-field-disabled-surface has-[:is(input,textarea):disabled]:text-muted-foreground has-[:is(input,textarea):disabled]:opacity-100 has-[:is(input,textarea):disabled]:hover:bg-field-disabled-surface',
 } as const;
 
 export function inputSurface(mode: 'self' | 'within' = 'self') {
@@ -60,5 +62,6 @@ export function inputSurface(mode: 'self' | 'within' = 'self') {
     inputSurfaceClasses.base,
     inputSurfaceClasses.focusWithin,
     inputSurfaceClasses.invalidWithin,
+    inputSurfaceClasses.disabledFieldWithin,
   );
 }

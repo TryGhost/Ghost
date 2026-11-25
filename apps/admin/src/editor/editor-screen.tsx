@@ -13,9 +13,14 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AdminLink } from '@/shared/admin-link';
-import { usePresence } from '@/shared/presence/use-presence';
+import { seenOthersOn, usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
-import { LeaseAvatar, LeaseOutdatedNotice } from './lease/lease-notice';
+import {
+  LeaseAvatar,
+  LeaseOutdatedNotice,
+  LeaseSettingsNotice,
+  LeaseTakeoverConfirm,
+} from './lease/lease-notice';
 import { useEditLease } from './lease/use-edit-lease';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
@@ -223,9 +228,46 @@ function EditorContent({
     revert: session.revert,
     onBehind: notifyReloadedOverTyping,
   });
+  const heldUserId = editLease.locked && editLease.reason === 'held' ? editLease.userId : null;
+  const [confirmationHolder, setConfirmationHolder] = useState<string | null>(null);
+  const confirmingTakeover = confirmationHolder !== null && confirmationHolder === heldUserId;
+  if (confirmationHolder !== null && confirmationHolder !== heldUserId) {
+    setConfirmationHolder(null);
+  }
+  const changeTakeoverConfirm = (open: boolean) => setConfirmationHolder(open ? heldUserId : null);
+  const requestTakeover = () => changeTakeoverConfirm(true);
   const leaseHolderId =
     editLease.locked && editLease.reason === 'held' && !editLease.ownTab ? editLease.userId : null;
-  // The holder is shown once, in the lease pill, which the takeover hangs on.
+  const editingHere =
+    !editLease.locked &&
+    typeof presence.lease === 'object' &&
+    presence.lease !== null &&
+    presence.lease.mine;
+  const hasEditingAvatar =
+    editingHere ||
+    (editLease.locked && (editLease.reason === 'held' || editLease.reason === 'taking'));
+  const hasEditingLease = typeof presence.lease === 'object' && presence.lease !== null;
+  const currentUserShownAsEditor =
+    editingHere ||
+    (editLease.locked &&
+      (editLease.reason === 'taking' || (editLease.reason === 'held' && editLease.ownTab)));
+  const hasOtherPeople = (showPresence && presence.active.length > 0) || leaseHolderId !== null;
+  // The first answer takes a round trip, so until then the lock is drawn only
+  // where this tab last saw someone else, such as in the posts list.
+  const [othersOnEntry, setOthersOnEntry] = useState(
+    () => presenceResource !== undefined && seenOthersOn(presenceResource),
+  );
+  if (othersOnEntry && presence.lease !== 'pending') {
+    setOthersOnEntry(false);
+  }
+  const lockShown =
+    editLease.locked &&
+    (editLease.reason !== 'pending' || othersOnEntry || presence.active.length > 0);
+  const currentViewer =
+    currentUser && hasOtherPeople && !currentUserShownAsEditor
+      ? { id: currentUser.id, name: currentUser.name, image: currentUser.profile_image ?? null }
+      : undefined;
+  // The holder leads the row and is shown once; everyone else is a viewer.
   const otherPresence = useMemo(
     () =>
       leaseHolderId
@@ -306,11 +348,6 @@ function EditorContent({
   const settingsFrameRef = useRef<HTMLDivElement>(null);
   // The settings panel saves each edit as it is made, so a tab without the lease gets none.
   const settingsLocked = editLease.locked;
-  useEffect(() => {
-    if (settingsFrameRef.current) {
-      settingsFrameRef.current.inert = settingsLocked;
-    }
-  });
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
   useLayoutEffect(() => {
@@ -449,10 +486,14 @@ function EditorContent({
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const writingAreaRef = useRef<HTMLDivElement>(null);
   const editorFont = useEditorFont();
-  // The chrome stays while the settings panel is out, or the status line reports
-  // a failed save or a failed newsletter.
+  // Keep collaborators visible while writing, along with open settings or a failed save/newsletter.
   const writingFocus = useWritingFocus({
-    blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
+    blocked:
+      hasOtherPeople ||
+      settingsOpen ||
+      settingsMoving ||
+      session.state.kind === 'error' ||
+      didEmailFail,
     writingAreaRef,
   });
   const leaveGuard = useEditorLeaveGuard(session, postType);
@@ -564,18 +605,32 @@ function EditorContent({
                 data-writing-focus={editLease.locked ? undefined : writingFocus}
               >
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                  <Inline align="center" gap="xs">
+                  <Inline
+                    align="center"
+                    className={cn(
+                      (hasEditingAvatar || (showPresence && otherPresence.length > 0)) && 'pr-2',
+                    )}
+                    gap="none"
+                  >
                     <LeaseAvatar
                       contentText={session.contentText}
                       currentUser={currentUser}
+                      editingHere={editingHere}
                       hasUnsavedContent={session.hasUnsavedContent}
                       lease={editLease}
                       resourceId={session.persistedId}
                       resourceType={postType}
-                      onTakeOver={presence.takeOver}
+                      onTakeOver={requestTakeover}
                     />
                     {showPresence ? (
-                      <PresenceAvatars active={otherPresence} resourceType={postType} />
+                      <PresenceAvatars
+                        active={otherPresence}
+                        className={cn(hasEditingAvatar && '-ml-2')}
+                        currentUser={currentViewer}
+                        dimmed={hasEditingLease}
+                        resourceType={postType}
+                        tooltipDelayDuration={0}
+                      />
                     ) : null}
                   </Inline>
                   <EditorHeaderActions
@@ -610,6 +665,7 @@ function EditorContent({
                 actionsSlotRef={setBottomBar}
                 autofocusTitle={!record}
                 cardConfig={currentCardConfig}
+                dimmed={lockShown}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}
                 font={editorFont.font}
@@ -649,6 +705,17 @@ function EditorContent({
               frameRef={settingsFrameRef}
               hasInlineExcerpt={showExcerpt}
               locked={settingsLocked}
+              lockNotice={
+                <LeaseSettingsNotice
+                  contentText={session.contentText}
+                  hasUnsavedContent={session.hasUnsavedContent}
+                  lease={editLease}
+                  resourceId={session.persistedId}
+                  resourceType={postType}
+                  onTakeOver={requestTakeover}
+                />
+              }
+              lockShown={lockShown}
               opensInPlace={settingsMemory.restored}
               postType={postType}
               reveal={settingsReveal}
@@ -658,6 +725,14 @@ function EditorContent({
           </RefusedEntryContext.Provider>
         ) : null}
         {snippetDialog}
+        <LeaseTakeoverConfirm
+          lease={editLease}
+          open={confirmingTakeover}
+          resourceId={session.persistedId}
+          resourceType={postType}
+          onOpenChange={changeTakeoverConfirm}
+          onTakeOver={presence.takeOver}
+        />
         <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
       </Inline>
     </Stack>

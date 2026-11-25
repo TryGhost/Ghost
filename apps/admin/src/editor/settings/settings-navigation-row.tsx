@@ -3,7 +3,7 @@ import { Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 
 const rowClassName =
-  'flex w-full items-center gap-2 px-5 py-3 text-left text-foreground hover:bg-interactive-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden [&>svg]:size-4 [&>svg]:shrink-0';
+  'flex w-full items-center gap-2 px-5 py-3 text-left text-foreground hover:bg-interactive-hover focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0';
 
 function RowLabel({ children }: { children: ReactNode }) {
   return (
