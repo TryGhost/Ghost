@@ -766,7 +766,7 @@ const schema = {
     commenting: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-    '@@INDEXES@@': [['email_disabled'], ['created_at', 'id']],
+    '@@INDEXES@@': [['email_disabled'], ['created_at', 'id'], ['status', 'email_disabled']],
   },
   // NOTE: this is the tiers table
   products: {
@@ -1893,7 +1893,10 @@ const schema = {
       references: 'newsletters.id',
       cascadeDelete: true,
     },
-    '@@INDEXES@@': [['newsletter_id', 'member_id']],
+    '@@INDEXES@@': [
+      ['newsletter_id', 'member_id'],
+      ['member_id', 'newsletter_id'],
+    ],
   },
   comments: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
