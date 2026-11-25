@@ -129,12 +129,12 @@ function LeaseCard({
       <Stack gap="xs">
         <Inline align="start" gap="sm">
           <LucideIcon.Lock aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
-          <Text size="sm" weight="semibold">
+          <Text className="text-pretty" size="sm" weight="semibold">
             {title}
           </Text>
         </Inline>
         {detail ? (
-          <Text size="sm" tone="secondary">
+          <Text className="text-pretty" size="sm" tone="secondary">
             {detail}
           </Text>
         ) : null}
@@ -352,7 +352,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
       <PopoverAnchor asChild>{trigger}</PopoverAnchor>
       <PopoverContent
         align="center"
-        className="w-max max-w-72 p-4"
+        className="w-max max-w-64 p-4"
         data-testid={editorLeaseCard}
         sideOffset={8}
         // The card explains; it must not pull focus out of whatever the writer was reading.
