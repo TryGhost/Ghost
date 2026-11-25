@@ -95,7 +95,7 @@ function harness(
       sentRuns.push({ ...run, rows: outcomes, reports });
       sentRecipients.push(recipient);
     });
-  const getDefaultRecipient = sinon.stub().resolves('owner@example.com');
+  const getDefaultRecipient = sinon.stub().resolves({ id: 'owner-id', email: 'owner@example.com' });
   let converterResolutions = 0;
   let markdownRendererResolutions = 0;
   let cleanerResolutions = 0;
@@ -278,6 +278,7 @@ describe('ContentCSVImporter', function () {
       file: { key: 'staged-1', name: 'posts.csv' },
       importTagNames: ['#Import 2026-01-01 11:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
+      reportOwnerId: 'owner-id',
     });
     assert.deepEqual(JSON.parse(JSON.stringify(new ContentCSVImportJob(serialized))), serialized);
     assert.equal(h.created.length, 0, 'nothing is written until the job runs');
@@ -425,12 +426,14 @@ describe('ContentCSVImporter', function () {
       filePath: '/tmp/posts.csv',
       fileName: 'posts.csv',
       requestUserEmail: 'requester@example.com',
+      owner: { id: 'requester-id', type: 'user' },
     });
     await h.importer.handle(h.jobs[0]);
 
     sinon.assert.notCalled(h.getDefaultRecipient);
     sinon.assert.calledOnce(h.sendEmail);
     assert.deepEqual(h.sentRecipients, ['requester@example.com']);
+    assert.equal(h.jobs[0].reportOwnerId, 'requester-id');
     assert.equal(h.sentRuns[0].status, 'complete');
     await h.importer.allSettled();
   });

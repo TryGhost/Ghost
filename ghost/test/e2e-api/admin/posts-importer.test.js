@@ -131,6 +131,28 @@ describe('Posts Importer API', function () {
     await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
   });
 
+  it('links large reports privately to the recipient Owner for an integration import', async function () {
+    await agent.useSelfServeMigrationAdminAPIKey();
+    const payload = 'x'.repeat(5 * 1024 * 1024 + 10);
+    const file = await csvFile('large-error-report.csv', `title,Other\n,${payload}\n,${payload}\n`);
+    const { body } = await agent.post('posts/upload/').attach('postsfile', file).expectStatus(202);
+    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+
+    const id = body.meta.import_id;
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import was unsuccessful' });
+    assert.deepEqual(email.attachments, []);
+    assert.match(email.html, new RegExp(`#/settings/content-import-reports/${id}/report\\.csv`));
+    assert.match(email.html, new RegExp(`#/settings/content-import-reports/${id}/errors\\.csv`));
+    assert.match(email.html, /Failed:<\/strong> 2 \(see linked errors\.csv\)/);
+    const reportPath = `posts/upload/reports/${id}/report.csv/`;
+    await agent.loginAsAdmin();
+    await agent.get(reportPath).expectStatus(404);
+    await agent.loginAsOwner();
+    const response = await agent.get(reportPath).expectStatus(200);
+    assert.match(response.text, /title is required/);
+    mockManager.assert.sentEmailCount(1);
+  });
+
   it('emails the requesting user when an accepted CSV import finishes', async function () {
     await agent.loginAsOwner();
     const completionCsvPath = await csvFile(

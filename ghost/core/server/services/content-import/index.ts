@@ -103,7 +103,10 @@ function makeImporter(): ContentCSVImporter {
       ghostMailer.send(
         buildCompletionEmail(run, recipient, urlUtils.urlFor('admin', true), reports),
       ),
-    getDefaultRecipient: async () => (await models.User.getOwnerUser()).get('email'),
+    getDefaultRecipient: async () => {
+      const owner = await models.User.getOwnerUser();
+      return { id: owner.id, email: owner.get('email') };
+    },
   };
 
   return new ContentCSVImporter({

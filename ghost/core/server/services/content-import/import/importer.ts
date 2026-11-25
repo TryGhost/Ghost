@@ -11,11 +11,7 @@ import type { ImportRequest } from './schema';
 import type { Clock, RowOutcome } from './store';
 import { ImportJournal, readJournalPosition, readMetadata, type JournalStorage } from './journal';
 import { openAssetJournal } from './asset-journal';
-import {
-  readReportContents,
-  writeImportReports,
-  type ImportReportContents,
-} from './journal-report';
+import { deliverReports, writeImportReports, type ImportReportContents } from './journal-report';
 import { createSummary, type ImportSummary } from './summary';
 import type { PreparedImportSource } from './source';
 import { rowsAfterCheckpoint, type PreparedPostRow, type PreparedPostRows } from './reader';
@@ -50,9 +46,14 @@ export interface ImportAccepted {
 // Must not throw: it is called from catch blocks that exist to stop an error escaping.
 export type FailureReporter = (error: unknown) => void;
 
+interface ReportRecipient {
+  id: string;
+  email: string;
+}
+
 export interface EmailNotifications {
   send(run: ImportSummary, recipient: string, reports: ImportReportContents): Promise<unknown>;
-  getDefaultRecipient(): Promise<string>;
+  getDefaultRecipient(): Promise<ReportRecipient>;
 }
 
 type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<PreparedPostRows>;
@@ -167,7 +168,7 @@ class ContentCSVImporter {
       throw new errors.ValidationError({ message: tpl(messages.unreadableFile), err: error });
     });
     assertCSVUploadSize(bytes);
-    const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
+    const recipient = await this.getRecipient(request.owner, request.requestUserEmail);
     const runId = this._newRunId();
     const { source, preparedRows } = await this.readPreparedRows(request, false);
     await this.cleanupSource(preparedRows.close);
@@ -182,7 +183,7 @@ class ContentCSVImporter {
       handedOff = true;
       return await this.queueImport(runId, stagedFile, {
         mapping: request.mapping,
-        emailRecipient,
+        recipient,
       });
     } finally {
       if (!handedOff) {
@@ -202,28 +203,29 @@ class ContentCSVImporter {
       return { importId: id };
     }
 
-    const emailRecipient = requestUserEmail ?? (await this._email.getDefaultRecipient());
+    const recipient = await this.getRecipient(owner, requestUserEmail);
     const claimed = await this._fileStager.claim(id, owner, this._now());
     if (!claimed) {
       return { importId: id };
     }
     try {
-      return await this.queueImport(id, selection.file, { mapping, emailRecipient });
+      return await this.queueImport(id, selection.file, { mapping, recipient });
     } catch (error) {
       throw uncertainSubmission(error);
     }
   }
 
+  private getRecipient(owner?: ImportOwner, email?: string | null): Promise<ReportRecipient> {
+    if (owner?.type === 'user' && email) {
+      return Promise.resolve({ id: owner.id, email });
+    }
+    return this._email.getDefaultRecipient();
+  }
+
   private async queueImport(
     id: string,
     file: StagedImportFile,
-    {
-      mapping,
-      emailRecipient,
-    }: {
-      mapping?: Record<string, string>;
-      emailRecipient: string;
-    },
+    { mapping, recipient }: { mapping?: Record<string, string>; recipient: ReportRecipient },
   ): Promise<ImportAccepted> {
     const importTagNames = buildImportTagNames(id, this._getTimezone(), this._now());
     this.track(id);
@@ -232,7 +234,8 @@ class ContentCSVImporter {
       file,
       mapping,
       importTagNames,
-      emailRecipient,
+      emailRecipient: recipient.email,
+      reportOwnerId: recipient.id,
     });
     logLifecycle('queued');
     try {
@@ -335,9 +338,24 @@ class ContentCSVImporter {
               failureReason ? 'failed' : 'complete',
               failureReason,
             );
-            const reports = storage
-              ? await readReportContents(storage, await writeImportReports(storage, summary))
-              : {};
+            let reports: ImportReportContents = {};
+            const artifacts = storage;
+            if (artifacts) {
+              try {
+                const files = await writeImportReports(artifacts, summary);
+                reports = await deliverReports(artifacts, files, (large) =>
+                  this._fileStager.reports.retain(
+                    job.importId,
+                    job.reportOwnerId,
+                    large,
+                    artifacts,
+                    this._now(),
+                  ),
+                );
+              } catch (error) {
+                this._report(error);
+              }
+            }
             if (await this._fileStager.claimEmail(job.importId)) {
               await this._email.send(summary, job.emailRecipient, reports);
             }

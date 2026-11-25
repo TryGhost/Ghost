@@ -1,16 +1,40 @@
 import assert from 'node:assert/strict';
+import { Readable } from 'node:stream';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import LocalStorageBase from '../../../../../../core/server/adapters/storage/LocalStorageBase';
 import { ImportJournal } from '../../../../../../core/server/services/content-import/import/journal';
 import {
+  deliverReports,
   readReportContents,
   writeImportReports,
 } from '../../../../../../core/server/services/content-import/import/journal-report';
 import { createSummary } from '../../../../../../core/server/services/content-import/import/summary';
 
 describe('CSV journal report composition', function () {
+  it('attaches exactly 10 MiB and retains a single byte over without reading into memory', async function () {
+    const bytes = 10 * 1024 * 1024;
+    const report = { name: 'report.csv' as const, bytes: bytes - 1 };
+    const errors = { name: 'errors.csv' as const, bytes: 1 };
+    const readStream = vi.fn(async ({ path: key }: { path: string }) =>
+      Readable.from([Buffer.from(key)]),
+    );
+    const retain = vi.fn(async () => {});
+    const storage = { readStream, writeStream: vi.fn(), replaceMetadata: vi.fn() };
+    assert.deepEqual(await deliverReports(storage, [report, errors], retain), {
+      report: 'final/report.csv',
+      errorsFile: 'final/errors.csv',
+    });
+    expect(retain).not.toHaveBeenCalled();
+    readStream.mockClear();
+    const above = [report, { ...errors, bytes: 2 }];
+    assert.deepEqual(await deliverReports(storage, above, retain), {
+      downloads: ['report.csv', 'errors.csv'],
+    });
+    expect(readStream).not.toHaveBeenCalled();
+    expect(retain).toHaveBeenCalledExactlyOnceWith(above);
+  });
   it('streams committed report and error parts in order and counts UTF-8 bytes', async function () {
     const directory = await mkdtemp(path.join(os.tmpdir(), 'csv-reports-'));
     try {

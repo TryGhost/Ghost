@@ -31,6 +31,7 @@ function job() {
     file: { key: 'staged-import', name: 'posts.csv' },
     importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
     emailRecipient: 'owner@example.com',
+    reportOwnerId: 'owner-id',
   });
 }
 

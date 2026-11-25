@@ -1,4 +1,5 @@
 import type { ImportSummary, OutcomeCounts } from './summary';
+import type { ImportReportContents, ImportReportName } from './journal-report';
 
 const { slugify } = require('@tryghost/string');
 
@@ -38,7 +39,7 @@ function formatNumber(value: number): string {
   return value.toLocaleString();
 }
 
-function summaryItems(counts: OutcomeCounts, hasErrorsFile: boolean): string {
+function summaryItems(counts: OutcomeCounts, errorDelivery?: 'attachment' | 'download'): string {
   const items: Array<[string, number]> = [
     ['Created', counts.created],
     ['Updated', counts.updated],
@@ -48,9 +49,13 @@ function summaryItems(counts: OutcomeCounts, hasErrorsFile: boolean): string {
 
   return items
     .map(([label, count]) => {
-      const attachmentCopy =
-        label === 'Failed' && hasErrorsFile ? ' (see attached errors.csv)' : '';
-      return `<li style="margin-bottom: 6px;"><strong>${label}:</strong> ${formatNumber(count)}${attachmentCopy}</li>`;
+      const guidance =
+        label === 'Failed' && errorDelivery
+          ? { attachment: ' (see attached errors.csv)', download: ' (see linked errors.csv)' }[
+              errorDelivery
+            ]
+          : '';
+      return `<li style="margin-bottom: 6px;"><strong>${label}:</strong> ${formatNumber(count)}${guidance}</li>`;
     })
     .join('');
 }
@@ -104,7 +109,7 @@ function renderCompletionEmail(
   run: ImportSummary,
   recipient: string,
   adminUrl: string,
-  hasErrorsFile: boolean,
+  reports: ImportReportContents,
 ): string {
   const { counts } = run;
   const heading = headingFor(run, counts);
@@ -116,6 +121,11 @@ function renderCompletionEmail(
       ? '<p style="font-size: 16px; line-height: 25px; color: #3A464C;">Something went wrong on our end before the import could finish. There is nothing wrong with your file, and it is safe to try again.</p>'
       : '';
   const escapedRecipient = escapeHTML(recipient);
+  const errorDelivery = reports.errorsFile
+    ? 'attachment'
+    : reports.downloads?.includes('errors.csv')
+      ? 'download'
+      : undefined;
 
   return `<!doctype html>
 <html>
@@ -130,21 +140,39 @@ function renderCompletionEmail(
       <h1 style="color: #15212A; font-size: 21px; line-height: 25px; margin: 0 0 24px;">${heading}</h1>
       ${failureCopy}
       <p style="font-size: 16px; line-height: 25px; color: #3A464C;">The import processed ${formatNumber(run.total)} ${run.total === 1 ? 'row' : 'rows'}:</p>
-      <ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${summaryItems(counts, hasErrorsFile)}</ul>
+      <ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${summaryItems(counts, errorDelivery)}</ul>
       ${warningCopy}
       ${importedPostLinks(run, adminUrl)}
+      ${reportLinks(run.id, adminUrl, reports.downloads)}
       <p style="color: #738A94; font-size: 11px; line-height: 18px; margin-top: 64px;">This email was sent to <a href="mailto:${escapedRecipient}" style="color: #738A94;">${escapedRecipient}</a>.</p>
     </div>
   </body>
 </html>`;
 }
 
+function reportLinks(id: string, adminUrl: string, files?: ImportReportName[]): string {
+  if (!files?.length) {
+    return '';
+  }
+  const links = files
+    .map((filename) => {
+      const url = new URL(
+        `#/settings/content-import-reports/${encodeURIComponent(id)}/${filename}`,
+        adminUrl,
+      );
+      return `<a href="${escapeHTML(url.href)}" style="color: #3A464C;">Download ${filename}</a>`;
+    })
+    .join(' · ');
+  return `<p style="font-size: 16px; line-height: 25px; color: #3A464C;">${links}. Available for seven days.</p>`;
+}
+
 export default function buildCompletionEmail(
   run: ImportSummary,
   recipient: string,
   adminUrl: string,
-  { report, errorsFile }: { report?: string; errorsFile?: string },
+  reports: ImportReportContents,
 ): CompletionEmailPayload {
+  const { report, errorsFile } = reports;
   const { counts } = run;
   const attachments: CompletionEmailPayload['attachments'] = [];
   if (report) {
@@ -166,7 +194,7 @@ export default function buildCompletionEmail(
   return {
     to: recipient,
     subject: headingFor(run, counts),
-    html: renderCompletionEmail(run, recipient, adminUrl, Boolean(errorsFile)),
+    html: renderCompletionEmail(run, recipient, adminUrl, reports),
     forceTextContent: true,
     attachments,
   };

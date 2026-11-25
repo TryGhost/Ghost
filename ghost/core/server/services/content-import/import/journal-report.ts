@@ -15,11 +15,25 @@ export type ImportReportName = 'report.csv' | 'errors.csv';
 export interface ImportReportContents {
   report?: string;
   errorsFile?: string;
+  downloads?: ImportReportName[];
 }
 
 export interface ImportReportFile {
   name: ImportReportName;
   bytes: number;
+}
+
+export async function deliverReports(
+  storage: JournalStorage,
+  files: ImportReportFile[],
+  retain: (files: ImportReportFile[]) => Promise<void>,
+): Promise<ImportReportContents> {
+  const total = files.reduce((bytes, file) => bytes + file.bytes, 0);
+  if (total <= 10 * 1024 * 1024) {
+    return readReportContents(storage, files);
+  }
+  await retain(files);
+  return { downloads: files.map(({ name }) => name) };
 }
 
 export const reportFileKey = (name: ImportReportName) => `final/${name}`;

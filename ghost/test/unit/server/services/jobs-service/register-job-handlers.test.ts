@@ -209,6 +209,7 @@ describe('register-job-handlers', function () {
       mapping: { Headline: 'title' },
       importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
+      reportOwnerId: 'owner-id',
     });
     assert.deepEqual(registrationFor('content-csv-import').args[2], {
       queue: 'content-csv-import',
