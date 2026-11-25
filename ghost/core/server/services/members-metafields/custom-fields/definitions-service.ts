@@ -19,14 +19,7 @@ import { readStoredField } from '../metafields/stored-fields';
 import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
 import type { Namespaces } from '../metafields/namespaces';
 import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from '../metafields/schema';
-import {
-  ADMIN,
-  MEMBERS,
-  MEMBER_ACCESS,
-  MemberAccessSchema,
-  type Audience,
-  type MemberAccess,
-} from '../audiences';
+import { MEMBER_ACCESS, MemberAccessSchema, type Caller, type MemberAccess } from '../callers';
 import {
   ACTIVE_ONLY,
   ANY_STATUS,
@@ -84,7 +77,7 @@ const ReorderInput = z
  * The add and edit inputs, validated against the fields table's column lengths so an over-long
  * name is a validation error rather than a database error.
  */
-function definitionInputs(maxLength: FieldSource<Audience>['maxLength']) {
+function definitionInputs(maxLength: FieldSource<Caller>['maxLength']) {
   const name = z
     .string()
     .trim()
@@ -131,9 +124,9 @@ export interface EditedField {
 
 export class MetafieldDefinitionsService {
   private knex: Knex;
-  private fields: FieldSource<Audience>;
+  private fields: FieldSource<Caller>;
   private actionLog: ActionLog;
-  private namespaces: Namespaces<Audience>;
+  private namespaces: Namespaces<Caller>;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
   private inputs: ReturnType<typeof definitionInputs>;
@@ -147,9 +140,9 @@ export class MetafieldDefinitionsService {
     labs,
   }: {
     knex: Knex;
-    fields: FieldSource<Audience>;
+    fields: FieldSource<Caller>;
     actionLog: ActionLog;
-    namespaces: Namespaces<Audience>;
+    namespaces: Namespaces<Caller>;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
     labs: { isSet(flag: string): boolean };
@@ -165,7 +158,7 @@ export class MetafieldDefinitionsService {
 
   async browse(
     options: { namespace: Namespace; filter?: string },
-    audience: Audience,
+    caller: Caller,
     executor: Knex = this.knex,
   ): Promise<Metafield[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
@@ -179,16 +172,14 @@ export class MetafieldDefinitionsService {
       const parsed = parseFilter(filter);
       return this.list(
         this.fields.definitions(executor, {
-          audience,
+          caller,
           status: filterReferencesStatus(parsed) ? ANY_STATUS : ACTIVE_ONLY,
           namespace,
           filter: parsed,
         }),
       );
     }
-    return this.list(
-      this.fields.definitions(executor, { audience, status: ACTIVE_ONLY, namespace }),
-    );
+    return this.list(this.fields.definitions(executor, { caller, status: ACTIVE_ONLY, namespace }));
   }
 
   private async list(query: DefinitionQuery): Promise<Metafield[]> {
@@ -208,12 +199,12 @@ export class MetafieldDefinitionsService {
   async read(
     namespace: Namespace,
     key: Key,
-    audience: Audience,
+    caller: Caller,
     executor: Knex = this.knex,
   ): Promise<Metafield> {
     const [field] = await this.list(
       this.fields.definitions(executor, {
-        audience,
+        caller,
         status: ANY_STATUS,
         field: { namespace, key },
       }),
@@ -432,7 +423,7 @@ export class MetafieldDefinitionsService {
 
         // An order covers the whole list, archived definitions included.
         const ordered = await this.list(
-          this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
+          this.fields.definitions(trx, { caller: 'admin', status: ANY_STATUS, namespace }),
         );
         await this.record(trx, context, [reorderAction(ordered.length)]);
         return ordered;
@@ -689,7 +680,7 @@ export class MetafieldDefinitionsService {
 
         await this.record(trx, context, recorded);
         return {
-          field: await this.read(namespace, key, ADMIN, trx),
+          field: await this.read(namespace, key, 'admin', trx),
           changedForMembers:
             (await this.isReadByMembers(trx, { namespace, key })) !== readByMembers,
         };
@@ -717,7 +708,7 @@ export class MetafieldDefinitionsService {
   /** Whether members can read this field, asked the way their own reads ask. */
   private async isReadByMembers(db: Knex, field: FieldIdentity): Promise<boolean> {
     const read = this.fields.definitions(db, {
-      audience: MEMBERS,
+      caller: 'members',
       status: ACTIVE_ONLY,
       field,
     }).read;

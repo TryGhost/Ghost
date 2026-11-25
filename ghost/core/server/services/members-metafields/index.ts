@@ -9,13 +9,13 @@ import { resolveMaxDefinitions } from './custom-fields/config';
 import { customFields, memberAccessPolicy } from './custom-fields/namespace';
 import { createNamespaces, type Namespaces } from './metafields/namespaces';
 import { fieldSource, type FieldSource as ResourceFieldSource } from './metafields/queries';
-import type { Audience } from './audiences';
+import type { Caller } from './callers';
 import { meter, tracer } from '../../lib/tracing';
 import { metafieldsTracking } from './metafields/tracking';
 
 export type { Metafield } from './metafields/models';
 /** The members' fields as this site reads them, for every read here and in the domains that join them. */
-export type FieldSource = ResourceFieldSource<Audience>;
+export type FieldSource = ResourceFieldSource<Caller>;
 export type { MemberMetafieldValues } from './member-values';
 export {
   refusalError,
@@ -30,17 +30,9 @@ export type { BoundField } from './bindings-service';
 export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
 export type { MetafieldChangeEvent } from './members-resource';
 
-// Which door a request came through, which is what decides how much of a member's
-// answers it may see or change. Required wherever that is asked, so a new caller
-// has to name itself rather than inherit an answer by default.
-export {
-  ADMIN,
-  INTERNAL,
-  MEMBERS,
-  MEMBER_ACCESS,
-  type Audience,
-  type MemberAccess,
-} from './audiences';
+// The API a request came through decides which custom fields it can read and write. Every read
+// and write takes one, so a new caller has to state which API it is rather than get a default.
+export { MEMBER_ACCESS, type Caller, type MemberAccess } from './callers';
 
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the
@@ -52,7 +44,7 @@ export {
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 /** The namespaces fields can be defined in, each with its owner, limits and access policy. */
-export let namespaces: Namespaces<Audience> | undefined;
+export let namespaces: Namespaces<Caller> | undefined;
 /** The fields as this site reads them, for every read here and in the domains that join them. */
 export let fields: FieldSource | undefined;
 export let definitions: MetafieldDefinitionsService | undefined;
@@ -64,7 +56,7 @@ export let bindings: MetafieldBindingsService | undefined;
  * throws.
  */
 export function booted(): {
-  namespaces: Namespaces<Audience>;
+  namespaces: Namespaces<Caller>;
   definitions: MetafieldDefinitionsService;
   values: MemberMetafieldValues;
   bindings: MetafieldBindingsService;

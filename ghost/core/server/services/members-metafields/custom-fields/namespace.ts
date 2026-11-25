@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { LimitService } from '@tryghost/limit-service';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { MEMBER_ACCESS, type Audience } from '../audiences';
+import { MEMBER_ACCESS, type Caller } from '../callers';
 import type {
   AvailabilityLimit,
   CountLimit,
@@ -23,7 +23,7 @@ export function customFields({
   limitService: Pick<LimitService, 'isDisabled' | 'errorIfWouldGoOverLimit'>;
   /** Asked on every add, as an operator can change it while Ghost runs. */
   getMaxDefinitions: () => number;
-}): NamespaceRegistration<Audience> {
+}): NamespaceRegistration<Caller> {
   return {
     namespace: CUSTOM_NAMESPACE,
     owner: { staff: 'member_custom_field' },
@@ -35,29 +35,29 @@ export function customFields({
 const EVERY_FIELD: Grant = { fields: 'all' };
 
 /**
- * What each audience can read: staff and Ghost itself can read every custom field, and a member
+ * What each caller can read: staff and Ghost itself can read every custom field, and a member
  * can read the ones whose member access is set to read or write.
  */
-const READABLE: Record<Audience['entry'], Grant> = {
+const READABLE: Record<Caller, Grant> = {
   admin: EVERY_FIELD,
   internal: EVERY_FIELD,
   members: { fields: 'by member access', levels: [MEMBER_ACCESS.read, MEMBER_ACCESS.write] },
 };
 
 /**
- * What each audience can write: a member can write only the custom fields whose member access
+ * What each caller can write: a member can write only the custom fields whose member access
  * is set to write.
  */
-const WRITABLE: Record<Audience['entry'], Grant> = {
+const WRITABLE: Record<Caller, Grant> = {
   admin: EVERY_FIELD,
   internal: EVERY_FIELD,
   members: { fields: 'by member access', levels: [MEMBER_ACCESS.write] },
 };
 
 /** The custom namespace's access policy, which depends on each field's member access setting. */
-export const memberAccessPolicy: AccessPolicy<Audience> = {
-  read: (audience) => READABLE[audience.entry],
-  write: (audience) => WRITABLE[audience.entry],
+export const memberAccessPolicy: AccessPolicy<Caller> = {
+  read: (caller) => READABLE[caller],
+  write: (caller) => WRITABLE[caller],
 };
 
 /**

@@ -99,7 +99,7 @@ describe('Commands and transactions', function () {
     const { values } = metafields.booted();
     const planned = await values.planWrite(
       values.unwrapWire({ custom: { [key]: 'Bex' } }),
-      metafields.ADMIN,
+      'admin',
     );
     return { memberId, planned };
   }
@@ -440,7 +440,7 @@ describe('Commands and transactions', function () {
         read: (executor) =>
           metafields
             .booted()
-            .definitions.browse({ namespace: CUSTOM_NAMESPACE }, metafields.ADMIN, executor),
+            .definitions.browse({ namespace: CUSTOM_NAMESPACE }, 'admin', executor),
       }),
     },
     {
@@ -451,7 +451,7 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             definitions.edit(context, CUSTOM_NAMESPACE, key, { name: 'Employer' }, trx),
-          read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, metafields.ADMIN, executor),
+          read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, 'admin', executor),
         };
       },
     },
@@ -462,7 +462,7 @@ describe('Commands and transactions', function () {
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesFor(memberId, metafields.ADMIN, executor),
+          read: (executor) => values.getValuesFor(memberId, 'admin', executor),
         };
       },
     },
@@ -473,7 +473,7 @@ describe('Commands and transactions', function () {
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesForMany([memberId], metafields.ADMIN, executor),
+          read: (executor) => values.getValuesForMany([memberId], 'admin', executor),
         };
       },
     },
@@ -505,7 +505,7 @@ describe('Commands and transactions', function () {
           read: async (executor) => {
             const { writes } = await values.planOrRefuse(
               values.unwrapWire({ custom: { nickname: 'Bex' } }),
-              metafields.ADMIN,
+              'admin',
               undefined,
               executor,
             );
@@ -528,11 +528,7 @@ describe('Commands and transactions', function () {
             ),
           read: (executor) =>
             values
-              .planWrite(
-                values.unwrapWire({ custom: { nickname: 'Bex' } }),
-                metafields.ADMIN,
-                executor,
-              )
+              .planWrite(values.unwrapWire({ custom: { nickname: 'Bex' } }), 'admin', executor)
               .then(
                 (writes) => writes.length,
                 () => 'refused',

@@ -359,7 +359,7 @@ describe('Custom field outcomes', function () {
       assert(values);
       const planned = await values.planWrite(
         values.unwrapWire({ custom: { [nickname]: 'Bex' } }),
-        metafields.ADMIN,
+        'admin',
       );
 
       await assert.rejects(

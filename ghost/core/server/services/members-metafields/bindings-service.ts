@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { INTERNAL, MEMBERS, type Audience } from './audiences';
+import type { Caller } from './callers';
 import {
   ACTIVE_ONLY,
   fieldReference,
@@ -57,8 +57,8 @@ export interface RoutedPlans {
  */
 export class MetafieldBindingsService {
   private knex: Knex;
-  private fields: FieldSource<Audience>;
-  private values: Pick<MetafieldValuesService<Audience>, 'planOrRefuse'>;
+  private fields: FieldSource<Caller>;
+  private values: Pick<MetafieldValuesService<Caller>, 'planOrRefuse'>;
 
   constructor({
     knex,
@@ -66,8 +66,8 @@ export class MetafieldBindingsService {
     values,
   }: {
     knex: Knex;
-    fields: FieldSource<Audience>;
-    values: Pick<MetafieldValuesService<Audience>, 'planOrRefuse'>;
+    fields: FieldSource<Caller>;
+    values: Pick<MetafieldValuesService<Caller>, 'planOrRefuse'>;
   }) {
     this.knex = knex;
     this.fields = fields;
@@ -133,7 +133,7 @@ export class MetafieldBindingsService {
     // Read the way a member's own reads ask for fields, so a port names exactly the fields a
     // member holds values for.
     const named = await this.fields
-      .definitions(executor, { audience: MEMBERS, status: ACTIVE_ONLY })
+      .definitions(executor, { caller: 'members', status: ACTIVE_ONLY })
       .read.join(BINDINGS_TABLE, onField(this.fields.name, BINDINGS_TABLE))
       .whereIn(`${BINDINGS_TABLE}.port`, ports)
       .select(`${BINDINGS_TABLE}.port`, `${this.fields.name}.namespace`, `${this.fields.name}.key`);
@@ -203,7 +203,7 @@ export class MetafieldBindingsService {
 
     const { writes, refusals } = await this.values.planOrRefuse(
       input,
-      INTERNAL,
+      'internal',
       // Every value planned came through a port, so each refusal names one.
       (identity) => routed.get(identity)?.port ?? identity,
       executor,

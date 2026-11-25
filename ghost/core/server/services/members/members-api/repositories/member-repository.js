@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const { ADMIN } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
@@ -1270,7 +1269,7 @@ module.exports = class MemberRepository {
     const destroy = async (transacting) => {
       const previousMetafields = await this._metafieldValues.getValuesFor(
         member.id,
-        ADMIN,
+        'admin',
         transacting,
       );
       // require: false so concurrent deletes don't throw "No Rows Deleted"

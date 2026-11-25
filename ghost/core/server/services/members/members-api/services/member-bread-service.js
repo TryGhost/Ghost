@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const { ADMIN, adminWriteOrigin } = require('../../../members-metafields');
+const { adminWriteOrigin } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -91,27 +91,27 @@ module.exports = class MemberBREADService {
   }
 
   /**
-   * The member's metafields as this audience may see them, empty if they have none.
+   * The member's metafields as this caller may see them, empty if they have none.
    *
    * @param {string} memberId
-   * @param {import('../../../members-metafields').Audience} audience
+   * @param {import('../../../members-metafields').Caller} caller
    * @param {{transacting?: import('knex').Knex.Transaction}} [options] reads inside this transaction
    * @returns {Promise<Record<string, Record<string, unknown>>>}
    */
-  async readMetafieldsForMember(memberId, audience, { transacting } = {}) {
-    return (await this.metafieldValues.getValuesFor(memberId, audience, transacting)) ?? {};
+  async readMetafieldsForMember(memberId, caller, { transacting } = {}) {
+    return (await this.metafieldValues.getValuesFor(memberId, caller, transacting)) ?? {};
   }
 
   /**
-   * Each member's metafields as this audience may see them. A member with none has an
+   * Each member's metafields as this caller may see them. A member with none has an
    * empty object.
    *
    * @param {string[]} memberIds
-   * @param {import('../../../members-metafields').Audience} audience
+   * @param {import('../../../members-metafields').Caller} caller
    * @returns {Promise<Map<string, Record<string, Record<string, unknown>>>>}
    */
-  async readMetafieldsForMembers(memberIds, audience) {
-    const byMember = await this.metafieldValues.getValuesForMany(memberIds, audience);
+  async readMetafieldsForMembers(memberIds, caller) {
+    const byMember = await this.metafieldValues.getValuesForMany(memberIds, caller);
     return new Map(memberIds.map((memberId) => [memberId, byMember.get(memberId) ?? {}]));
   }
 
@@ -389,7 +389,7 @@ module.exports = class MemberBREADService {
   /**
    * @param {object} data
    * @param {object} [options]
-   * @param {import('../../../members-metafields').Audience | null} options.metafieldsFor
+   * @param {import('../../../members-metafields').Caller | null} options.metafieldsFor
    *   Who the extra fields a publisher defined are being read for, or null to leave them
    *   off entirely. Null is not the same as "nobody may see them": it means this caller
    *   never shows them, so fetching them is two database queries whose results are thrown
@@ -485,7 +485,7 @@ module.exports = class MemberBREADService {
     }
 
     // Planned before the member is touched, so a bad value refuses the whole request.
-    const writes = await this.metafieldValues.planWrite(metafields, ADMIN);
+    const writes = await this.metafieldValues.planWrite(metafields, 'admin');
     if (writes.length === 0) {
       return null;
     }
@@ -617,7 +617,7 @@ module.exports = class MemberBREADService {
       await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
     }
 
-    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
+    return this.read({ id: model.id }, { ...options, metafieldsFor: 'admin' });
   }
 
   async edit(data, options) {
@@ -677,7 +677,7 @@ module.exports = class MemberBREADService {
       }
     }
 
-    return this.read({ id: model.id }, { ...options, metafieldsFor: ADMIN });
+    return this.read({ id: model.id }, { ...options, metafieldsFor: 'admin' });
   }
 
   /**
@@ -703,11 +703,11 @@ module.exports = class MemberBREADService {
       const model = await this.memberRepository.update(data, { ...options, transacting });
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
 
-      const before = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
+      const before = await this.readMetafieldsForMember(model.id, 'admin', { transacting });
       for (const { writes, origin } of plans) {
         await this.metafieldValues.applyWrite(model.id, writes, origin, transacting);
       }
-      const after = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
+      const after = await this.readMetafieldsForMember(model.id, 'admin', { transacting });
       if (!_.isEqual(before, after)) {
         // Metafields aren't member columns, so the model doesn't keep their old values.
         model._previousMetafields = before;
@@ -760,7 +760,7 @@ module.exports = class MemberBREADService {
       );
     }
 
-    return this.read({ id: memberId }, { metafieldsFor: ADMIN });
+    return this.read({ id: memberId }, { metafieldsFor: 'admin' });
   }
 
   /**
@@ -782,7 +782,7 @@ module.exports = class MemberBREADService {
 
     await this.memberRepository.saveCommenting(memberId, updated, 'commenting_enabled', context);
 
-    return this.read({ id: memberId }, { metafieldsFor: ADMIN });
+    return this.read({ id: memberId }, { metafieldsFor: 'admin' });
   }
 
   async logout(options) {
@@ -845,7 +845,7 @@ module.exports = class MemberBREADService {
     const metafieldsByMember = options.includeMetafields
       ? await this.readMetafieldsForMembers(
           page.data.map((model) => model.id),
-          ADMIN,
+          'admin',
         )
       : null;
 

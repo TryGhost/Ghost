@@ -1,11 +1,11 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { MEMBERS, booted } from '../../services/members-metafields';
+import { booted } from '../../services/members-metafields';
 import { namespaceRoute } from '../../services/members-metafields/serializers';
 
 /**
  * The extra fields a publisher has defined, as a member's own client reads them.
  *
- * The same definitions Admin reads, answering a different audience. A member is
+ * The same definitions Admin reads, answering a different caller. A member is
  * shown what there is to fill in; what they have filled in is on their own record,
  * not here, because the two change on different schedules and a client caches them
  * differently.
@@ -36,7 +36,7 @@ const controller = {
       // No `filter`, which Admin offers: whether a field is archived is a
       // publisher's business, and a member is only ever shown what they can still
       // fill in.
-      return booted().definitions.browse(namespaceRoute(frame.options), MEMBERS);
+      return booted().definitions.browse(namespaceRoute(frame.options), 'members');
     },
   },
 } satisfies Controller<{ browse: BrowseFrame }>;

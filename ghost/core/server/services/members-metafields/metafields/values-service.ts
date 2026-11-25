@@ -185,11 +185,11 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
  * definitions service because a value belongs to its member or post and a definition belongs to
  * the site's settings, which are different aggregates rather than different layers.
  */
-export class MetafieldValuesService<Audience> {
+export class MetafieldValuesService<Caller> {
   protected knex: Knex;
   protected resource: MetafieldResource;
-  private fields: FieldSource<Audience>;
-  private namespaces: Pick<Namespaces<Audience>, 'canWrite'>;
+  private fields: FieldSource<Caller>;
+  private namespaces: Pick<Namespaces<Caller>, 'canWrite'>;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
@@ -211,9 +211,9 @@ export class MetafieldValuesService<Audience> {
   }: {
     knex: Knex;
     resource: MetafieldResource;
-    fields: FieldSource<Audience>;
-    /** Whose grant decides what an audience may write, namespace by namespace. */
-    namespaces: Pick<Namespaces<Audience>, 'canWrite'>;
+    fields: FieldSource<Caller>;
+    /** Whose grant decides what a caller may write, namespace by namespace. */
+    namespaces: Pick<Namespaces<Caller>, 'canWrite'>;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
   }) {
@@ -232,14 +232,14 @@ export class MetafieldValuesService<Audience> {
     this.valuesInput = z.record(z.string().max(fields.maxLength.key * 2 + 1), z.unknown());
   }
 
-  // The query is scoped to the audience, so a field they may not see is absent from
+  // The query is scoped to the caller, so a field they may not see is absent from
   // the map and the caller reports it as unknown. Looking up unscoped and rejecting
   // afterwards would let a member tell a hidden field from an undefined one by the
   // reply they got.
   private async allowedFieldsByIdentity(
     executor: Knex,
     identities: string[],
-    audience: Audience,
+    caller: Caller,
   ): Promise<Map<string, AllowedField>> {
     // A write names whole fields, so an identity naming a part is one no field answers to.
     const keysByNamespace = new Map<Namespace, Key[]>();
@@ -254,7 +254,7 @@ export class MetafieldValuesService<Audience> {
       return new Map();
     }
     const rows = await this.fields
-      .definitions(executor, { audience, status: ACTIVE_ONLY })
+      .definitions(executor, { caller, status: ACTIVE_ONLY })
       .read.where((query) => {
         for (const [namespace, keys] of keysByNamespace) {
           query.orWhere((inNamespace) =>
@@ -294,23 +294,20 @@ export class MetafieldValuesService<Audience> {
    */
   async getValuesFor(
     resourceId: string,
-    audience: Audience,
+    caller: Caller,
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
-    return (await this.getValuesForMany([resourceId], audience, executor)).get(resourceId);
+    return (await this.getValuesForMany([resourceId], caller, executor)).get(resourceId);
   }
 
   /**
-   * The type and settings of each active field the audience can read, keyed by identity. A field
+   * The type and settings of each active field the caller can read, keyed by identity. A field
    * whose settings can't be read is read with its type's defaults, and one that can't be read even
    * so is left out, and its values with it.
    */
-  private async typedFields(
-    executor: Knex,
-    audience: Audience,
-  ): Promise<Map<string, TypedSettings>> {
+  private async typedFields(executor: Knex, caller: Caller): Promise<Map<string, TypedSettings>> {
     const rows = await this.fields
-      .definitions(executor, { audience, status: ACTIVE_ONLY })
+      .definitions(executor, { caller, status: ACTIVE_ONLY })
       .read.select(...TYPED_FIELD_COLUMNS);
     const typedFields = new Map<string, TypedSettings>();
     for (const row of rows) {
@@ -326,13 +323,13 @@ export class MetafieldValuesService<Audience> {
   }
 
   /**
-   * Metafields for each member or post, keyed by its id. Only active fields the audience can read are
+   * Metafields for each member or post, keyed by its id. Only active fields the caller can read are
    * included. One with no metafields has no entry. Given an executor, reads inside that
    * transaction.
    */
   async getValuesForMany(
     resourceIds: string[],
-    audience: Audience,
+    caller: Caller,
     executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (resourceIds.length === 0) {
@@ -349,7 +346,7 @@ export class MetafieldValuesService<Audience> {
           this.fields.asRead(executor),
           onField(this.fields.name, valuesTable),
         ),
-        audience,
+        caller,
       )
       .whereIn(`${valuesTable}.${this.resource.idColumn}`, resourceIds)
       .where(`${this.fields.name}.status`, FIELD_STATUS.active)
@@ -377,7 +374,7 @@ export class MetafieldValuesService<Audience> {
     // Each field's type and settings are read once, from its definition, rather than beside every
     // row: a list's settings would otherwise come back once for every answer, and one read can
     // cover a whole list or export.
-    const typedFields = stored.length > 0 ? await this.typedFields(executor, audience) : new Map();
+    const typedFields = stored.length > 0 ? await this.typedFields(executor, caller) : new Map();
     const typedField = ({ namespace, key }: (typeof stored)[number]) =>
       typedFields.get([namespace, key].join(SEPARATOR)) ?? null;
 
@@ -459,10 +456,10 @@ export class MetafieldValuesService<Audience> {
    */
   async planWrite(
     input: unknown,
-    audience: Audience,
+    caller: Caller,
     executor: Knex = this.knex,
   ): Promise<PlannedWrite[]> {
-    const { writes, refusals } = await this.planOrRefuse(input, audience, undefined, executor);
+    const { writes, refusals } = await this.planOrRefuse(input, caller, undefined, executor);
     const [first, ...rest] = refusals;
     if (first) {
       throw refusalError(first, rest);
@@ -484,7 +481,7 @@ export class MetafieldValuesService<Audience> {
    */
   async planOrRefuse(
     input: unknown,
-    audience: Audience,
+    caller: Caller,
     named?: (identity: string) => string,
     executor: Knex = this.knex,
   ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
@@ -503,7 +500,7 @@ export class MetafieldValuesService<Audience> {
       });
     }
 
-    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, audience);
+    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, caller);
     const writes: PlannedWrite[] = [];
     // Gathered rather than thrown as they are found. A write names several values, and
     // a composite is several again, so refusing at the first leaves someone correcting
@@ -520,9 +517,9 @@ export class MetafieldValuesService<Audience> {
         continue;
       }
 
-      // A different refusal from the unknown-field one above: this audience can
+      // A different refusal from the unknown-field one above: this caller can
       // already see the field, so naming it discloses nothing.
-      if (!this.namespaces.canWrite(audience, field)) {
+      if (!this.namespaces.canWrite(caller, field)) {
         refusals.push({
           message: `Cannot set custom field: ${nameOf(identity)}`,
           property: propertyOf(identity),
@@ -777,12 +774,12 @@ export class MetafieldValuesService<Audience> {
    */
   async heldValues(
     field: FieldIdentity,
-    audience: Audience,
+    caller: Caller,
     executor: Knex = this.knex,
   ): Promise<string[]> {
     const values = this.resource.tables.values;
     const [row] = await this.fields
-      .definitions(executor, { audience, status: ACTIVE_ONLY, field })
+      .definitions(executor, { caller, status: ACTIVE_ONLY, field })
       .read.select(...TYPED_FIELD_COLUMNS);
     // A field that can't be read even with its type's defaults is treated as missing, as the
     // definitions read treats it.
