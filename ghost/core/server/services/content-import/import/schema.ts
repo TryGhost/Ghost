@@ -27,6 +27,9 @@ export const importRequestSchema = z.object({
   fileName: z.string().min(1),
   mapping: mappingSchema.optional(),
   requestUserEmail: z.string().email().nullable().optional(),
+  owner: z
+    .object({ id: z.string().min(1).max(24), type: z.enum(['user', 'integration']) })
+    .optional(),
 });
 
 export type ImportRequest = z.infer<typeof importRequestSchema>;

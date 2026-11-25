@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { createReadStream, existsSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import sinon from 'sinon';
 import type { ExternalMediaImporter } from '../../../../../core/server/services/media-inliner/types';
+import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
 
 const rootPath = require.resolve('../../../../../core/server/services/content-import');
 const { default: ContentCSVImportJob } =
@@ -136,13 +137,11 @@ describe('Content import composition root', function () {
       filePath,
       'title,feature_image\nImported post,https://images.example/post.png\n',
     );
-    const storage = {
+    const storage = new LocalStorageBase({
       storagePath: directory,
-      save: sandbox.stub().resolves('/imports/posts.csv'),
-      urlToPath: () => 'posts.csv',
-      readStream: sandbox.stub().callsFake(async () => createReadStream(filePath)),
-      delete: sandbox.stub().resolves(),
-    };
+      staticFileURLPrefix: 'content/imports',
+    });
+    const owner = { id: 'user-id', type: 'user' } as const;
     getAdapter.withArgs('storage:imports').returns(storage);
     const dispatched = Promise.withResolvers<void>();
     const dispatchStarted = Promise.withResolvers<void>();
@@ -176,6 +175,7 @@ describe('Content import composition root', function () {
         filePath,
         fileName: 'posts.csv',
         requestUserEmail: 'owner@example.com',
+        owner,
       })
       .then((result) => {
         acceptedFinished = true;
@@ -208,21 +208,36 @@ describe('Content import composition root', function () {
     sinon.assert.calledOnce(write);
     assert.equal(write.firstCall.args[0].feature_image, '/content/images/local.png');
     sinon.assert.calledOnce(send);
-    sinon.assert.calledOnceWithExactly(storage.readStream, { path: 'posts.csv' });
-    sinon.assert.calledOnce(storage.delete);
+    assert.deepEqual((await storage.listPrefix(path.posix.dirname(delivered.file.key))).keys, []);
   });
 
   it('removes the local copy when the stored upload cannot be downloaded', async function () {
     const failure = new Error('storage unavailable');
-    sandbox
-      .stub(adapterManager, 'getAdapter')
-      .withArgs('storage:imports')
-      .returns({ readStream: sandbox.stub().rejects(failure), delete: sandbox.stub().resolves() });
-    const mkdtemp = sandbox.spy(fs, 'mkdtemp');
+    directory = await fs.mkdtemp(path.join(os.tmpdir(), 'content-root-'));
+    const filePath = path.join(directory, 'posts.csv');
+    await fs.writeFile(filePath, 'title\nTest post\n');
+    const storage = new LocalStorageBase({
+      storagePath: directory,
+      staticFileURLPrefix: 'content/imports',
+    });
+    sandbox.stub(adapterManager, 'getAdapter').withArgs('storage:imports').returns(storage);
+    const dispatch = sandbox.stub().resolves();
+    sandbox.replace(require.cache[jobsPath]!, 'exports', { getInstance: () => ({ dispatch }) });
+    delete require.cache[rootPath];
+    root = require(rootPath);
     root.init();
-
-    await assert.rejects(root.handleJob(job()), (thrown) => thrown === failure);
-
+    await root.importCSV({
+      filePath,
+      fileName: 'posts.csv',
+      requestUserEmail: 'staff@example.com',
+      owner: { type: 'user', id: 'staff' },
+    });
+    sandbox.stub(storage, 'readStream').rejects(failure);
+    const mkdtemp = sandbox.spy(fs, 'mkdtemp');
+    await assert.rejects(
+      root.handleJob(dispatch.firstCall.args[0]),
+      (thrown) => thrown === failure,
+    );
     assert.equal(existsSync(await mkdtemp.firstCall.returnValue), false);
   });
 });

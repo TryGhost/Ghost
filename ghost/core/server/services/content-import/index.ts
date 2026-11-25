@@ -1,9 +1,11 @@
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import type { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
+import { createHash, randomBytes } from 'node:crypto';
+import { createReadStream, createWriteStream } from 'node:fs';
+import { mkdtemp, rm, stat } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import ContentCSVImporter, {
   type ImportAccepted,
   type FailureReporter,
@@ -15,12 +17,22 @@ import readPostRows from './import/reader';
 import { importRequestSchema, type ImportRequest } from './import/schema';
 import { ImportRunStore } from './import/store';
 import { prepareImportSource } from './import/source';
+import type { ImportFiles } from './import/files';
 import { PostMediaInliner } from './import/media';
 import { isLocalMediaUrl } from './import/local-media-url';
 import { urlForImportedPost } from './import/post-link';
 import { createImportFileStager, type DownloadedImportFile } from './import/staged-file';
 import ContentCSVImportJob from './jobs/content-csv-import-job';
 import { getInstance as getJobsService } from '../jobs-service';
+
+// File access is wired here; temporary paths are resolved when an operation runs.
+const files: ImportFiles = {
+  readSource: (filePath) => createReadStream(filePath),
+  writeSource: (filePath) => createWriteStream(filePath, { mode: 0o600 }),
+  getSize: async (filePath) => (await stat(filePath)).size,
+  createTempDirectory: (prefix) => mkdtemp(path.join(os.tmpdir(), prefix)),
+  removeDirectory: (directory) => rm(directory, { recursive: true, force: true }),
+};
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.
@@ -32,12 +44,12 @@ const logging = require('@tryghost/logging');
 const sentry = require('../../../shared/sentry');
 
 async function downloadToTempFile(open: () => Promise<Readable>): Promise<DownloadedImportFile> {
-  const directory = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'content-csv-download-'));
-  const cleanup = () => fs.promises.rm(directory, { recursive: true, force: true });
+  const directory = await files.createTempDirectory('content-csv-download-');
+  const cleanup = () => files.removeDirectory(directory);
   const downloadPath = path.join(directory, 'upload');
 
   try {
-    await pipeline(await open(), fs.createWriteStream(downloadPath));
+    await pipeline(await open(), files.writeSource(downloadPath));
     return { path: downloadPath, cleanup };
   } catch (error) {
     await cleanup().catch(() => {});
@@ -57,7 +69,6 @@ function makeImporter(): ContentCSVImporter {
   const urlUtils = require('../../../shared/url-utils').default;
   const mediaInlinerService = require('../media-inliner').default;
   const config = require('../../../shared/config');
-  const ObjectID = require('bson-objectid').default;
   const { GhostMailer } = require('../../lib/mail');
   const ghostMailer = new GhostMailer();
 
@@ -104,10 +115,15 @@ function makeImporter(): ContentCSVImporter {
       }),
     email,
     dispatchJob: (job) => getJobsService().dispatch(job),
-    fileStager: createImportFileStager(
-      () => require('../adapter-manager').default.getAdapter('storage:imports'),
+    fileStager: createImportFileStager({
       downloadToTempFile,
-    ),
+      getStorage: () => require('../adapter-manager').default.getAdapter('storage:imports'),
+      namespace: () =>
+        createHash('sha256')
+          .update(String(settingsCache.get('site_uuid') || config.getSiteUrl()))
+          .digest('hex'),
+      getDefaultOwner: async () => ({ type: 'user', id: (await models.User.getOwnerUser()).id }),
+    }),
     report,
     store: new ImportRunStore(),
     urlForPost: (post) =>
@@ -119,7 +135,7 @@ function makeImporter(): ContentCSVImporter {
             { absolute: true },
           ),
       }),
-    newRunId: () => new ObjectID().toHexString(),
+    newRunId: () => randomBytes(12).toString('hex'),
     getTimezone: () => timezoneSchema.parse(settingsCache.get('timezone')),
   });
 }

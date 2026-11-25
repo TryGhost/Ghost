@@ -18,7 +18,7 @@ const uploadSchema = z.object({
 
 export type ImportUpload = z.output<typeof uploadSchema>;
 export type ImportOwner = { id: string; type: ImportUpload['owner_type'] };
-type Change = Partial<Pick<ImportUpload, 'state' | 'receipt'>>;
+type Change = Partial<Pick<ImportUpload, 'state' | 'receipt' | 'file'>>;
 type Decision<T> = { value: T; change?: Change };
 
 export class ImportUploadRepository {

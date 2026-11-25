@@ -116,7 +116,10 @@ function harness(
         path: `/tmp/downloaded-${file.key}`,
         cleanup: downloadCleanup,
       }),
-      remove: async (file: { key: string; name: string }) => {
+      begin: async () => {},
+      acknowledge: async () => {},
+      start: async () => {},
+      remove: async (_id: string, file: { key: string; name: string }) => {
         removedFiles.push(file);
       },
     },
@@ -381,14 +384,15 @@ describe('ContentCSVImporter', function () {
     sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
   });
 
-  it('finishes safely if an injected store loses the run before the job settles', async function () {
+  it('recreates reporting state when a worker did not see the upload request', async function () {
     const h = harness();
     h.releaseRun.restore();
-    h.inlineMedia.callsFake(async () => h.store.release('run_test'));
 
-    await h.run();
+    await h.importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await new ContentCSVImporter(h.deps).handle(h.jobs[0]);
 
-    sinon.assert.notCalled(h.sendEmail);
+    sinon.assert.calledOnce(h.sendEmail);
+    assert.equal(h.sentRuns[0].rows.length, 2);
     assert.equal(h.created.length, 2);
   });
 
@@ -895,7 +899,7 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.removedFiles, [{ key: 'staged-1', name: 'posts.csv' }]);
   });
 
-  it('cleans a prepared source if dispatch fails', async function () {
+  it('cleans the prepared source but retains the upload if dispatch fails', async function () {
     const h = harness();
     const cleanup = sinon.stub().resolves();
     const importer = new ContentCSVImporter({
@@ -912,7 +916,8 @@ describe('ContentCSVImporter', function () {
     );
     sinon.assert.calledOnce(cleanup);
     sinon.assert.notCalled(h.sendEmail);
-    assert.deepEqual(h.removedFiles, [{ key: 'staged-1', name: 'posts.zip' }]);
+    sinon.assert.notCalled(h.releaseRun);
+    assert.deepEqual(h.removedFiles, []);
   });
 
   it('reports cleanup failures without rejecting the completed job', async function () {

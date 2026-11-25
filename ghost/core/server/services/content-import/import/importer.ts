@@ -13,7 +13,7 @@ import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
-import type { DownloadedImportFile, ImportFileStager, StagedImportFile } from './staged-file';
+import type { ImportFileStager, DownloadedImportFile, StagedImportFile } from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
 
 export type { ImportRequest } from './schema';
@@ -143,16 +143,15 @@ class ContentCSVImporter {
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
     const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
+    const runId = this._newRunId();
     const { source, preparedRows } = await this.readPreparedRows(request);
     await this.cleanupSource(source.cleanup);
-
-
-    const stagedFile = await this._fileStager.stage(request);
+    const stagedFile = await this._fileStager.stage(request, runId, this._now());
     let handedOff = false;
 
     try {
-      const runId = this._newRunId();
       const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
+      await this._fileStager.begin(runId, preparedRows.rows.length);
       const job = new ContentCSVImportJob({
         importId: runId,
         file: stagedFile,
@@ -163,26 +162,32 @@ class ContentCSVImporter {
       });
 
       logLifecycle('queued');
-      await this._dispatchJob(job);
-
+      // Enqueue can fail after acceptance (for example on a Redis timeout).
+      // Keep the source until expiry or an actual delivery resolves uncertainty.
       handedOff = true;
+      await this._dispatchJob(job);
+      await this._fileStager.acknowledge(runId);
+
       return { importId: runId, total: preparedRows.rows.length };
     } finally {
       if (!handedOff) {
-        await this.cleanupStagedFile(stagedFile);
+        await this.cleanupStagedFile(runId, stagedFile);
       }
     }
   }
 
   async handle(job: ContentCSVImportJob): Promise<void> {
-    let download: DownloadedImportFile | undefined;
     let source: PreparedImportSource | undefined;
+    let materialized: DownloadedImportFile | undefined;
+    let started = false;
 
     try {
+      await this._fileStager.start(job.importId, this._now());
+      started = true;
       const run = this._store.create(job.importId, job.total);
-      download = await this._fileStager.download(job.file);
+      materialized = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
-        filePath: download.path,
+        filePath: materialized.path,
         fileName: job.file.name,
         mapping: job.mapping,
       });
@@ -195,21 +200,26 @@ class ContentCSVImporter {
         prepared.source,
       );
     } catch (error) {
+      if (started && !this._store.get(job.importId)) {
+        this._store.create(job.importId, 0);
+      }
       this._store.fail(job.importId, messageOf(error));
       throw error;
     } finally {
       if (source) {
         await this.cleanupSource(source.cleanup);
       }
-      if (download) {
-        await this.cleanupSource(download.cleanup);
+      if (materialized) {
+        await this.cleanupSource(materialized.cleanup);
       }
       const run = this._store.get(job.importId);
       if (run) {
         await this.settle(() => this._email.send(run, job.emailRecipient));
       }
+      if (started) {
+        await this.cleanupStagedFile(job.importId, job.file);
+      }
       this._store.release(job.importId);
-      await this.cleanupStagedFile(job.file);
     }
   }
 
@@ -421,9 +431,9 @@ class ContentCSVImporter {
     }
   }
 
-  private async cleanupStagedFile(file: StagedImportFile): Promise<void> {
+  private async cleanupStagedFile(id: string, file: StagedImportFile): Promise<void> {
     try {
-      await this._fileStager.remove(file);
+      await this._fileStager.remove(id, file);
     } catch (error) {
       this._report(error);
     }

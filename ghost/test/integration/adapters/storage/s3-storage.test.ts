@@ -6,6 +6,7 @@ import os from 'node:os';
 import { pipeline } from 'node:stream/promises';
 
 import S3Storage from '../../../../core/server/adapters/storage/S3Storage';
+import { createImportFileStager } from '../../../../core/server/services/content-import/import/staged-file';
 import {
   createTestS3Client,
   createTestBucket,
@@ -54,6 +55,55 @@ describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
 
     afterAll(async function () {
       await deleteTestBucket(adminClient, bucket);
+    });
+
+    it('reopens a renamed CSV source on a second worker using its S3 key', async function () {
+      const directory = await fs.mkdtemp(path.join(os.tmpdir(), 's3-csv-'));
+      const owner = { type: 'user', id: 'staff' } as const;
+      const makeWorker = () => {
+        const storage = createStorage({
+          tenantPrefix: 'site-a',
+          staticFileURLPrefix: 'content/imports',
+        });
+        return createImportFileStager({
+          getStorage: () => storage,
+          namespace: () => 'publication',
+          getDefaultOwner: async () => owner,
+          downloadToTempFile: async (open) => {
+            const destination = path.join(directory, 'download');
+            await pipeline(await open(), fs.createWriteStream(destination));
+            return { path: destination, cleanup: () => fs.remove(destination) };
+          },
+        });
+      };
+      try {
+        const source = path.join(directory, 'upload');
+        const csv = 'title\nA post\n';
+        await fs.writeFile(source, csv);
+        const prefix = 'content-csv-import/publication/run';
+        await putObject(
+          adminClient,
+          bucket,
+          'site-a/content/imports/' + prefix + '/source',
+          'taken',
+        );
+        const file = await makeWorker().stage(
+          { filePath: source, fileName: 'posts.csv' },
+          'run',
+          new Date(),
+        );
+        assert.deepEqual(file, { key: prefix + '/source-1', name: 'posts.csv' });
+        await fs.remove(source);
+
+        const worker = makeWorker();
+        const download = await worker.download(file);
+        assert.equal(await fs.readFile(download.path, 'utf8'), csv);
+        await download.cleanup();
+        await worker.remove('run', file);
+        await assert.rejects(worker.download(file), { errorType: 'NotFoundError' });
+      } finally {
+        await fs.remove(directory);
+      }
     });
 
     for (const bytes of [Buffer.alloc(0), Buffer.from([0, 255, 137, 1])]) {

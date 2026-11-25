@@ -173,7 +173,7 @@ class LocalStorageBase extends StorageBase {
    * Saves the file to storage (the file system)
    * - returns a promise which ultimately returns the full url to the uploaded file
    */
-  async save(file: StorageFile, targetDir?: string): Promise<string> {
+  async save(file: StorageFile & { private?: boolean }, targetDir?: string): Promise<string> {
     targetDir = targetDir
       ? this._resolveAndValidateStoragePath(targetDir, undefined, true)
       : this.getTargetDir(this.storagePath);
@@ -186,7 +186,7 @@ class LocalStorageBase extends StorageBase {
       throw new errors.BadRequestError({ message: 'Cannot save to the given filename' });
     }
 
-    await fs.mkdirs(targetDir);
+    await fs.mkdirs(targetDir, file.private ? { mode: 0o700 } : undefined);
 
     try {
       await fs.copy(file.path, targetFilename);

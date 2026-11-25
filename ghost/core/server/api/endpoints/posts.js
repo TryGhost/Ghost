@@ -128,6 +128,9 @@ const controller = {
         fileName: frame.file.name,
         mapping: frame.data.mapping,
         requestUserEmail: frame.user ? frame.user.get('email') : null,
+        owner: frame.options.context.integration
+          ? { type: 'integration', id: frame.options.context.integration.id }
+          : { type: 'user', id: frame.user.id },
       });
       return { meta: { import_id: importId, total } };
     },
