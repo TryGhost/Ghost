@@ -47,6 +47,16 @@ let membersAgent;
 let adminAgent;
 
 /**
+ * Metadata as Stripe stores it: every value is a string, and a key set to nothing isn't kept, so
+ * an attribution without an id, such as a URL, has no `attribution_id`.
+ */
+function stripeMetadata(values) {
+  return Object.fromEntries(
+    Object.entries(values).filter(([, value]) => value !== null && value !== undefined),
+  );
+}
+
+/**
  * Each span recorded under `name`, as its outcome, the type of its error when it failed, and its
  * attributes.
  */
@@ -3393,7 +3403,7 @@ describe('Members API', function () {
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
         metadata: attribution
-          ? {
+          ? stripeMetadata({
               attribution_id: attribution.id,
               attribution_url: attribution.url,
               attribution_type: attribution.type,
@@ -3405,7 +3415,7 @@ describe('Members API', function () {
               utm_campaign: attribution.utmCampaign,
               utm_term: attribution.utmTerm,
               utm_content: attribution.utmContent,
-            }
+            })
           : {},
       });
 
@@ -3779,12 +3789,12 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
-        metadata: {
+        metadata: stripeMetadata({
           // set the attribution on the subscription
           attribution_id: attribution.id,
           attribution_url: attribution.url,
           attribution_type: attribution.type,
-        },
+        }),
       });
 
       set(customer, {
@@ -3892,11 +3902,11 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
-        metadata: {
+        metadata: stripeMetadata({
           attribution_id: attribution.id,
           attribution_url: attribution.url,
           attribution_type: attribution.type,
-        },
+        }),
       });
 
       set(customer, {
@@ -4026,6 +4036,7 @@ describe('Members API', function () {
           items: {
             data: [
               {
+                id: 'si_123',
                 price: {
                   id: 'price_123',
                   product: 'product_123',

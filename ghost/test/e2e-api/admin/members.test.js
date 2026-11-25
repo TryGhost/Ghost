@@ -1822,6 +1822,7 @@ describe('Members API', function () {
       items: {
         data: [
           {
+            id: 'si_1234',
             price: fakePrice,
           },
         ],
@@ -1925,6 +1926,7 @@ describe('Members API', function () {
       items: {
         data: [
           {
+            id: 'si_1234',
             price: fakePrice,
           },
         ],
@@ -2239,6 +2241,7 @@ describe('Members API', function () {
       items: {
         data: [
           {
+            id: 'si_1234',
             price: fakePrice,
           },
         ],
@@ -3385,6 +3388,7 @@ describe('Members API', function () {
             200,
             {
               id,
+              customer: 'cus_1234',
               status: 'canceled',
             },
           ];
@@ -3425,6 +3429,7 @@ describe('Members API', function () {
             200,
             {
               id,
+              customer: 'cus_1234',
               status: 'canceled',
             },
           ];

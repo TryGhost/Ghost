@@ -1395,6 +1395,7 @@ describe('Stripe webhook outcomes', function () {
             coupon,
             customer: customer.id,
             start: now(),
+            end: null,
           };
           return { type: updated, object: addSubscription(customer, { discount }) };
         },
@@ -1535,6 +1536,24 @@ describe('Stripe webhook outcomes', function () {
         webhook: span(
           { type: paid, kind: 'invoice', ...failedBecause('stripe_access_revoked', 'site') },
           'platform_api_key_expired',
+        ),
+        checkout: null,
+      },
+      {
+        name: 'responds with 500 on every attempt when Stripe returns the invoice’s subscription without fields Ghost reads',
+        event: async () => {
+          const { subscription } = await paidMember();
+          const onStripe = stripeMocker.subscriptions.find(
+            (held: { id: string }) => held.id === subscription.id,
+          );
+          delete onStripe.items;
+          return { type: paid, object: invoiceFor(subscription) };
+        },
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: paid, kind: 'invoice', ...failedBecause('unreadable_stripe_response', 'ghost') },
+          'STRIPE_RESPONSE_UNREADABLE',
         ),
         checkout: null,
       },

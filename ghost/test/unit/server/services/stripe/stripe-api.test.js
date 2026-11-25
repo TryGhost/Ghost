@@ -609,6 +609,8 @@ describe('StripeAPI', function () {
   describe('cancelSubscriptionTrial', function () {
     const mockSubscription = {
       id: 'sub_123',
+      customer: 'cus_123',
+      status: 'active',
     };
     beforeEach(function () {
       mockStripe = {
@@ -641,6 +643,7 @@ describe('StripeAPI', function () {
   describe('addCouponToSubscription', function () {
     const mockSubscription = {
       id: 'sub_123',
+      customer: 'cus_123',
       status: 'active',
       discount: {
         coupon: {
@@ -680,7 +683,7 @@ describe('StripeAPI', function () {
     beforeEach(function () {
       mockStripe = {
         subscriptions: {
-          update: sinon.stub().resolves({ id: 'sub_123' }),
+          update: sinon.stub().resolves({ id: 'sub_123', customer: 'cus_123', status: 'active' }),
         },
       };
       sinon.stub(stripe, 'Stripe').returns(mockStripe);

@@ -2,6 +2,7 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
+import { ExpandableId } from './codecs';
 import type { StripeTracking, WebhookOutcome } from './tracking';
 import { classifyFailure, FAILURE_CODES } from './webhook/failures';
 import {
@@ -53,10 +54,7 @@ function run<K extends WebhookEventKind>(
 }
 
 /** The id of an object's Stripe customer, whether Stripe sent the id or the expanded customer. */
-const CustomerId = z
-  .object({ customer: z.union([z.string(), z.object({ id: z.string() }).loose()]) })
-  .loose()
-  .transform(({ customer }) => (typeof customer === 'string' ? customer : customer.id));
+const CustomerId = z.object({ customer: ExpandableId }).transform(({ customer }) => customer);
 
 const WithStatus = z.object({ statusCode: z.number() });
 

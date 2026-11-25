@@ -376,6 +376,7 @@ class StripeMocker {
         type: 'list',
         data: [
           {
+            id: `si_${this.#generateRandomId()}`,
             price,
           },
         ],
@@ -500,6 +501,7 @@ class StripeMocker {
           decoded.items = {
             data: [
               {
+                id: `si_${this.#generateRandomId()}`,
                 ...first,
                 price,
               },

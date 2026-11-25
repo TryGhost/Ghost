@@ -1,9 +1,11 @@
 import { z } from 'zod';
+import { UNREADABLE_RESPONSE } from '../stripe-api-responses';
 
 /**
  * Who can fix a failed webhook event:
  *
- * - `ghost`: the failure is a bug in Ghost, or hasn't been classified yet.
+ * - `ghost`: the failure is a bug in Ghost, or hasn't been classified yet. That includes Stripe
+ *   returning an object Ghost can't read, which means Ghost's expectations of Stripe are wrong.
  * - `dependency`: Stripe is unavailable, rate limits Ghost, or returns a lock timeout. Ghost chose
  *   Stripe as a dependency and retries these, so they count against Ghost's objectives.
  * - `site`: the publisher's setup caused the failure: their Stripe account, its connection to
@@ -22,6 +24,7 @@ export const FAILURES = {
   stripe_unavailable: { owner: 'dependency', sentry: true },
   no_member_for_customer: { owner: 'site', sentry: true },
   unsupported_subscription: { owner: 'site', sentry: true },
+  unreadable_stripe_response: { owner: 'ghost', sentry: true },
   unclassified: { owner: 'ghost', sentry: true },
 } as const satisfies Record<string, { owner: Owner; sentry: boolean }>;
 
@@ -41,11 +44,16 @@ export const FAILURE_CODES = {
   unsupportedSubscription: 'STRIPE_WEBHOOK_UNSUPPORTED_SUBSCRIPTION',
 } as const;
 
+/**
+ * The reason for each code Ghost sets: the webhook's own, and the Stripe client's code for a
+ * response Ghost can't read.
+ */
 const REASON_OF_CODE: ReadonlyMap<string, FailureReason> = new Map([
   [FAILURE_CODES.webhookSecretMissing, 'webhook_secret_missing'],
   [FAILURE_CODES.signatureMismatch, 'signature_mismatch'],
   [FAILURE_CODES.noMemberForCustomer, 'no_member_for_customer'],
   [FAILURE_CODES.unsupportedSubscription, 'unsupported_subscription'],
+  [UNREADABLE_RESPONSE, 'unreadable_stripe_response'],
 ]);
 
 /**
