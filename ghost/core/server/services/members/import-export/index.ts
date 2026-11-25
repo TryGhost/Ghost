@@ -159,7 +159,7 @@ export function makeImporter(deps: ImporterServices) {
 }
 
 // Build the members CSV exporter. The same composition root from the other direction:
-// knex and the members id lookup are wired here, and the metafields definitions and
+// knex and the filtered member reads are wired here, and the metafields definitions and
 // values services are injected (boot builds them before this one).
 export function makeExporter({
   definitions,
@@ -169,8 +169,7 @@ export function makeExporter({
     knex: db.knex,
 
     members: {
-      // Minimal query, only to fetch the ids of the filtered members; the stream
-      // reads their related data itself.
+      canReadFilteredBatches: (options) => models.Member.canOptimizeFreeSubscriberFilter(options),
       findFilteredIds: async (options) => {
         const page = await models.Member.findPage({
           ...options,
@@ -180,6 +179,24 @@ export function makeExporter({
         });
         return page.data.map((member: { id: string }) => member.id);
       },
+      openFilteredBatchReader: async (options, transacting) => {
+        const activeNewsletterIds = await models.Member.activeNewsletterIds(transacting);
+        const filterOptions = models.Member.filterOptions(
+          { ...options, transacting, activeNewsletterIds },
+          'findPage',
+        );
+        const query: Knex.QueryBuilder = models.Member.getFilteredCollectionQuery(filterOptions);
+        return (columns, limit, afterId) => {
+          const batch = query.clone();
+          if (afterId !== undefined) {
+            batch.where('members.id', '>', afterId);
+          }
+          return batch
+            .select(columns.map((column) => `members.${column}`))
+            .orderBy('members.id')
+            .limit(limit);
+        };
+      },
     },
 
     metafields: {
@@ -188,7 +205,8 @@ export function makeExporter({
       // The same fields the import reads back.
       activeDefinitions: async (): Promise<CsvField[]> =>
         definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
-      valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
+      valuesForMembers: (memberIds, executor) =>
+        values.getValuesForMembers(memberIds, INTERNAL, executor),
     },
 
     tracking: importExportTracking(tracer),
