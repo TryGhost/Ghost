@@ -256,6 +256,18 @@ const MembersActions: React.FC<MembersActionsProps> = ({
               </PageHeader.Action>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {/* Segments first, in a group of their own: the rest of the menu imports, exports
+                  or acts on the members listed. */}
+              {onManageSegments && (
+                <>
+                  <DropdownMenuItem onClick={onManageSegments}>
+                    <LucideIcon.ChartPie className="mr-2 size-4" />
+                    Manage segments
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+
               {/* Import */}
               <DropdownMenuItem onClick={handleImportAction}>
                 <LucideIcon.Upload className="mr-2 size-4" />
@@ -270,18 +282,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                     ? `Export ${formatNumber(memberCount)} members`
                     : 'Export all members'}
                 </DropdownMenuItem>
-              )}
-
-              {/* Segments: apart from importing and exporting, and from what is done to the
-                  members listed. */}
-              {onManageSegments && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onManageSegments}>
-                    <LucideIcon.ChartPie className="mr-2 size-4" />
-                    Manage segments
-                  </DropdownMenuItem>
-                </>
               )}
 
               {memberCount > 0 && (
