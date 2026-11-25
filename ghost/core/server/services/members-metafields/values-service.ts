@@ -41,11 +41,11 @@ import {
   fieldReference,
   knexify,
   onField,
-  readableBy,
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { ADMIN, MemberAccessSchema, canWrite, type Audience } from './access';
+import { ADMIN, MemberAccessSchema, type Audience } from './access';
+import type { Namespaces } from './namespaces';
 import { readStoredField } from './stored-fields';
 import {
   VALUE_COLUMNS,
@@ -198,6 +198,7 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
 export class MetafieldValuesService {
   private knex: Knex;
   private fields: FieldSource;
+  private namespaces: Pick<Namespaces, 'canWrite'>;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
@@ -205,16 +206,20 @@ export class MetafieldValuesService {
   constructor({
     knex,
     fields,
+    namespaces,
     getMaxDefinitions,
     tracking,
   }: {
     knex: Knex;
     fields: FieldSource;
+    /** Whose grant decides what an audience may write, namespace by namespace. */
+    namespaces: Pick<Namespaces, 'canWrite'>;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
   }) {
     this.knex = knex;
     this.fields = fields;
+    this.namespaces = namespaces;
     this.getMaxDefinitions = getMaxDefinitions;
     this.tracking = tracking;
   }
@@ -329,10 +334,14 @@ export class MetafieldValuesService {
     // Not ordered by field: these rows become an object keyed by field, and an object
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
-    const rows = await readableBy(
-      executor(VALUES_TABLE).join(this.fields.table(executor), onField(FIELDS_TABLE, VALUES_TABLE)),
-      audience,
-    )
+    const rows = await this.fields
+      .readable(
+        executor(VALUES_TABLE).join(
+          this.fields.table(executor),
+          onField(FIELDS_TABLE, VALUES_TABLE),
+        ),
+        audience,
+      )
       .whereIn(`${VALUES_TABLE}.member_id`, memberIds)
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
       .orderBy(`${VALUES_TABLE}.path`, 'asc')
@@ -506,7 +515,7 @@ export class MetafieldValuesService {
 
       // A different refusal from the unknown-field one above: this audience can
       // already see the field, so naming it discloses nothing.
-      if (!canWrite(audience, field)) {
+      if (!this.namespaces.canWrite(audience, field)) {
         refusals.push({
           message: `Cannot set custom field: ${nameOf(identity)}`,
           property: propertyOf(identity),

@@ -1,9 +1,10 @@
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
-import { readableLevels, type Audience } from './access';
-import type { Namespaces } from './namespaces';
+import type { Audience } from './access';
+import type { Grant, Grants, Namespaces } from './namespaces';
 import { FIELD_STATUS, type MetafieldRow } from './schema';
 
 /** The fields table's name, which is also the name a `FieldSource` reads it under by default. */
@@ -37,9 +38,47 @@ export { knexify };
 // constraint stops a value row referencing one. Both filters are therefore applied in
 // code, and a query that forgets either is a silent bug.
 
-export function readableBy<T extends Knex.QueryBuilder>(query: T, audience: Audience): T {
-  query.whereIn(`${FIELDS_TABLE}.member_access`, readableLevels(audience));
+/**
+ * Narrows a read of the fields to the ones `grants` reach: in each namespace someone owns, by its
+ * owner's grant, and in every other namespace by the grant for those.
+ */
+function readableBy<T extends Knex.QueryBuilder>(query: T, grants: Grants): T {
+  const namespaceColumn = `${FIELDS_TABLE}.namespace`;
+  const owned = grants.owned.map(({ namespace }) => namespace);
+  const reached: Array<(where: Knex.QueryBuilder) => void> = [
+    ...grants.owned.map(
+      ({ namespace: owner, grant }) =>
+        (where: Knex.QueryBuilder) =>
+          narrowTo(where.where(namespaceColumn, owner), grant),
+    ),
+    (where: Knex.QueryBuilder) =>
+      narrowTo(where.whereNotIn(namespaceColumn, owned), grants.unowned),
+  ];
+  query.where((anyNamespace) => {
+    for (const narrow of reached) {
+      anyNamespace.orWhere(narrow);
+    }
+  });
   return query;
+}
+
+/** Narrows a read already scoped to some namespaces to the fields `grant` reaches in them. */
+function narrowTo(where: Knex.QueryBuilder, grant: Grant): void {
+  switch (grant.fields) {
+    case 'all':
+      return;
+    case 'none':
+      // An empty `IN` matches nothing.
+      where.whereIn(`${FIELDS_TABLE}.namespace`, []);
+      return;
+    case 'by member access':
+      where.whereIn(`${FIELDS_TABLE}.member_access`, grant.levels);
+      return;
+    default: {
+      const _exhaustive: never = grant;
+      throw new errors.InternalServerError({ message: `Unhandled grant: ${_exhaustive}` });
+    }
+  }
 }
 
 /**
@@ -99,6 +138,11 @@ export interface DefinitionScope {
  * the reads a change to the field list is compared with, name the table itself.
  */
 export interface FieldSource {
+  /**
+   * Narrows a read that joins the fields to the ones `audience` may read, as each namespace's
+   * owner grants them.
+   */
+  readable<T extends Knex.QueryBuilder>(query: T, audience: Audience): T;
   /** The fields under `alias`, for a read that joins them. */
   table(db: Knex, alias?: string): Knex.TableDescriptor;
   /** The fields `scope` names, in no particular order. */
@@ -115,7 +159,7 @@ export interface FieldSource {
  * available reads as archived. Which namespaces aren't is asked on every read, as it can change
  * while Ghost runs.
  */
-export function fieldSource(namespaces: Pick<Namespaces, 'unavailable'>): FieldSource {
+export function fieldSource(namespaces: Pick<Namespaces, 'unavailable' | 'readable'>): FieldSource {
   const asRead = (db: Knex, rows: Knex.QueryBuilder) => {
     const unavailable = namespaces.unavailable();
     return rows.select(
@@ -135,6 +179,10 @@ export function fieldSource(namespaces: Pick<Namespaces, 'unavailable'>): FieldS
   };
 
   const source: FieldSource = {
+    readable(query, audience) {
+      return readableBy(query, namespaces.readable(audience));
+    },
+
     table(db, alias = FIELDS_TABLE) {
       return asRead(db, db(FIELDS_TABLE)).as(alias);
     },
@@ -164,7 +212,7 @@ export function fieldSource(namespaces: Pick<Namespaces, 'unavailable'>): FieldS
         query = query.limit(scope.limit);
       }
 
-      return new ScopedDefinitions(readableBy(query, scope.audience));
+      return new ScopedDefinitions(source.readable(query, scope.audience));
     },
 
     locked(trx, namespace, keys) {
