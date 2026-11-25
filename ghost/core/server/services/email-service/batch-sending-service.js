@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const { allOf } = require('@tryghost/nql-string');
 const SendEmailJob = require('./jobs/send-email-job').default;
 const { validateMaxConcurrency } = require('../../lib/promise-pool');
 const {
@@ -585,8 +586,9 @@ class BatchSendingService {
           email.get('recipient_filter'),
           segment,
         );
+        // Members who join after the email was created don't receive it
         return this.#models.Member.resolveFilter({
-          filter: filter + `+id:<'${email.id}'`,
+          filter: allOf(filter, `id:<'${email.id}'`),
         });
       }),
     );

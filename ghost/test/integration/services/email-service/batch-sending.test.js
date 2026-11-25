@@ -394,6 +394,22 @@ describe('Batch sending tests', function () {
     );
   });
 
+  it('Only sends to paid members through a newsletter for paid members', async function () {
+    const { id } = fixtureManager.get('newsletters', 0);
+    await models.Newsletter.edit({ visibility: 'paid' }, { id });
+    try {
+      await testEmailBatches(
+        {
+          mobiledoc: mobileDocExample, // = same content for free and paid, no need to split batches
+        },
+        null,
+        [{ segment: null, recipients: 2 }],
+      );
+    } finally {
+      await models.Newsletter.edit({ visibility: 'members' }, { id });
+    }
+  });
+
   it('Only sends to members with a specific label', async function () {
     await testEmailBatches(
       {
