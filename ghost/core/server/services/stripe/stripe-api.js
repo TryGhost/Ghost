@@ -24,6 +24,7 @@ const {
   SubscriptionReference,
   readResponse,
 } = require('./stripe-api-responses');
+const { loadSubscriptionDescription } = require('./subscription-description');
 
 /** @import { CheckoutDefinition } from '../stripe-checkout-config' */
 /** @import { CheckoutSessionParts, Refusal } from './checkout-session-params' */
@@ -1161,6 +1162,18 @@ module.exports = class StripeAPI {
       debug(`getSubscription(${id}) -> ${err.type}`);
       throw err;
     }
+  }
+
+  /**
+   * Stripe subscription `id` as Ghost links it to a member: Ghost's description of the subscription
+   * and the card it's paid with, read from Stripe (see `subscription-description.ts`).
+   *
+   * @param {string} id
+   *
+   * @returns {Promise<import('./subscription-description').SubscriptionDescription>}
+   */
+  async getSubscriptionToLink(id) {
+    return await loadSubscriptionDescription(this, id);
   }
 
   /**

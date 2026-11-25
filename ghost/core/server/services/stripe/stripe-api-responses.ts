@@ -6,7 +6,8 @@
  */
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import { ExpandableId, StripeName } from './codecs';
+import { AttributionMetadata } from './attribution-metadata';
+import { ExpandableId, StripeName, StripeTimestamp } from './codecs';
 
 /**
  * The code on the error `readResponse` throws, which the webhook classifies as Ghost's failure
@@ -91,7 +92,16 @@ export const StripeCustomer = z.discriminatedUnion('deleted', [
 
 export type StripeCustomer = z.output<typeof StripeCustomer>;
 
-/** A price, which Ghost saves on the member's subscription and on the tier it belongs to. */
+/** How often a recurring price bills. */
+const PriceInterval = z.enum(['day', 'week', 'month', 'year']);
+
+export type PriceInterval = z.output<typeof PriceInterval>;
+
+/**
+ * A subscription's price, which Ghost saves on the member's subscription and on the tier it
+ * belongs to. Stripe allows only recurring prices on a subscription, so it always recurs, and says
+ * how often.
+ */
 const StripePrice = z
   .object({
     id: z.string(),
@@ -101,61 +111,86 @@ const StripePrice = z
     currency: z.string(),
     // Stripe leaves it empty for a tiered price or one where the buyer picks the amount.
     unit_amount: z.number().nullable(),
-    type: z.string(),
-    recurring: z.object({ interval: z.string() }).loose().nullish(),
+    type: z.literal('recurring'),
+    recurring: z.object({ interval: PriceInterval }).loose(),
   })
   .loose();
 
+/** What every coupon has: its id, and how long the discount it gives lasts. */
+const CouponTerms = {
+  id: z.string(),
+  duration: z.string(),
+  duration_in_months: z.number().nullable(),
+};
+
 /**
- * A coupon, which Ghost turns into an offer. A coupon is either a percentage or an amount off, so
- * one of the two is null. Stripe always sends both, and Ghost tells them apart by which is null,
- * so neither may be left out.
+ * A coupon, which Ghost turns into an offer: a percentage off, or an amount off in a currency.
+ * Stripe always sends both `percent_off` and `amount_off`, with the one the coupon doesn't give as
+ * null, so a coupon that gives both or neither isn't one Ghost can read.
  */
-const StripeCoupon = z
-  .object({
-    id: z.string(),
-    duration: z.string(),
-    duration_in_months: z.number().nullable(),
-    percent_off: z.number().nullable(),
-    amount_off: z.number().nullable(),
-    currency: z.string().nullable(),
-  })
-  .loose();
+const StripeCoupon = z.union([
+  z
+    .object({
+      ...CouponTerms,
+      percent_off: z.number(),
+      amount_off: z.null(),
+      currency: z.string().nullable(),
+    })
+    .loose(),
+  z
+    .object({ ...CouponTerms, percent_off: z.null(), amount_off: z.number(), currency: z.string() })
+    .loose(),
+]);
+
+export type StripeCoupon = z.output<typeof StripeCoupon>;
 
 /** A subscription's discount: its coupon, and when the discount started and ends. */
 const StripeDiscount = z
   .object({
     coupon: StripeCoupon,
-    start: z.number(),
-    // Null for a coupon that lasts forever.
-    end: z.number().nullable(),
+    start: StripeTimestamp,
+    // Null when Stripe sets no end: for a coupon that lasts forever, and for a coupon applied once
+    // to an existing subscription. Whether it lasts forever comes from the coupon's `duration`.
+    end: StripeTimestamp.nullable(),
   })
   .loose();
 
 /**
- * A Stripe subscription, as `StripeAPI` returns it without expanding anything. Its `plan` is
- * present only when it has a single price. Its metadata is the attribution Ghost wrote when the
- * checkout started, and the cancellation reason a member gave.
+ * The metadata Ghost writes into a subscription: where the member came from, written when their
+ * checkout starts, the reason they gave when they canceled in Portal, and the subscription a
+ * migration replaced it with.
+ */
+const SubscriptionMetadata = AttributionMetadata.extend({
+  cancellation_reason: z.string().optional(),
+  ghost_migrated_to: z.string().optional(),
+});
+
+/**
+ * A Stripe subscription, as `StripeAPI` returns it without expanding anything, with its times as
+ * dates. Its `plan` is present only when it has a single price.
  */
 export const StripeSubscription = z
   .object({
     id: z.string(),
     customer: ExpandableId,
+    // Read as any string rather than as the statuses Stripe has now, as Stripe has added statuses
+    // over time, and a status Ghost doesn't know shouldn't make the subscription unreadable.
     status: z.string(),
     cancel_at_period_end: z.boolean(),
-    current_period_end: z.number(),
-    start_date: z.number(),
+    current_period_end: StripeTimestamp,
+    start_date: StripeTimestamp,
     // Null until the subscription is canceled, or set to end with its current period.
-    canceled_at: z.number().nullable(),
-    trial_start: z.number().nullish(),
-    trial_end: z.number().nullish(),
+    canceled_at: StripeTimestamp.nullable(),
+    trial_start: StripeTimestamp.nullish(),
+    trial_end: StripeTimestamp.nullish(),
     default_payment_method: ExpandableId.nullish(),
+    // Every subscription has at least one price.
     items: z
-      .object({ data: z.array(z.object({ id: z.string(), price: StripePrice }).loose()) })
+      .object({ data: z.array(z.object({ id: z.string(), price: StripePrice }).loose()).min(1) })
       .loose(),
-    plan: z.object({ nickname: z.string().nullish(), product: ExpandableId }).loose().nullish(),
+    plan: z.object({ product: ExpandableId }).loose().nullish(),
     discount: StripeDiscount.nullish(),
-    metadata: z.record(z.string(), z.string()).nullish(),
+    metadata: SubscriptionMetadata.nullish(),
     cancellation_details: z.object({ reason: z.string().nullish() }).loose().nullish(),
   })
   .loose();

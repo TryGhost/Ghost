@@ -2,6 +2,7 @@ import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { SIGNUP_CONTEXTS } from '../../../lib/member-signup-contexts';
 import { StripeBuyerEmail } from '../../gifts/gift-service';
+import { AttributionMetadata, attributionOf } from '../attribution-metadata';
 import { StripeName } from '../codecs';
 import { CompletedSession } from './completed-session';
 import { FAILURE_CODES } from './failures';
@@ -278,44 +279,6 @@ const GiftCheckoutPayload = z
   );
 
 export type GiftCheckout = z.output<typeof GiftCheckoutPayload>;
-
-/**
- * Where a buyer came from, as Ghost writes it into the metadata of the Checkout sessions it
- * creates: the page they bought from, the referrer that brought them there, and the UTM parameters
- * of the link they followed. Ghost leaves out each one it doesn't know.
- */
-const AttributionMetadata = z
-  .object({
-    attribution_id: z.string().optional(),
-    attribution_url: z.string().optional(),
-    attribution_type: z.string().optional(),
-    referrer_source: z.string().optional(),
-    referrer_medium: z.string().optional(),
-    referrer_url: z.string().optional(),
-    utm_source: z.string().optional(),
-    utm_medium: z.string().optional(),
-    utm_campaign: z.string().optional(),
-    utm_term: z.string().optional(),
-    utm_content: z.string().optional(),
-  })
-  .loose();
-
-/** Where a buyer came from, from a checkout's metadata, with null for each part Ghost doesn't know. */
-function attributionOf(metadata: z.output<typeof AttributionMetadata>) {
-  return {
-    attributionId: metadata.attribution_id ?? null,
-    attributionUrl: metadata.attribution_url ?? null,
-    attributionType: metadata.attribution_type ?? null,
-    referrerSource: metadata.referrer_source ?? null,
-    referrerMedium: metadata.referrer_medium ?? null,
-    referrerUrl: metadata.referrer_url ?? null,
-    utmSource: metadata.utm_source ?? null,
-    utmMedium: metadata.utm_medium ?? null,
-    utmCampaign: metadata.utm_campaign ?? null,
-    utmTerm: metadata.utm_term ?? null,
-    utmContent: metadata.utm_content ?? null,
-  };
-}
 
 /** `text`, or null when it's missing or only whitespace. */
 function nonBlank(text: string | null | undefined): string | null {
