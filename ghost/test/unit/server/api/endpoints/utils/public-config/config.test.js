@@ -281,8 +281,8 @@ describe('Public-config response builders', function () {
         contentCheck: {
           webhookUrl: 'https://example.com/abuse',
           webhookSecret: 'content-check-secret',
-          siteCreatedAt: '2026-09-01T10:00:00.000Z',
-          maxSiteAgeDays: 365,
+          siteCreatedAt: '2026-10-15T10:00:00.000Z',
+          maxSiteAgeDays: 30,
         },
       });
 
@@ -300,8 +300,8 @@ describe('Public-config response builders', function () {
         },
         contentCheck: {
           webhookUrl: 'https://example.com/abuse',
-          siteCreatedAt: '2026-09-01T10:00:00.000Z',
-          maxSiteAgeDays: 365,
+          siteCreatedAt: '2026-10-15T10:00:00.000Z',
+          maxSiteAgeDays: 30,
         },
       });
     });

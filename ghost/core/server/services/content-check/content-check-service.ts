@@ -5,7 +5,6 @@ import {
   sanitizeWebhookUrl,
 } from '../../lib/signed-webhook';
 
-const DEFAULT_MAX_SITE_AGE_DAYS = 365;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type Config = {
@@ -45,10 +44,6 @@ export type ContentCheckServiceDeps = {
   events: ModelEvents;
 };
 
-/**
- * Posts signed content-check events to the host Worker. Title changes are
- * fire-and-forget so a settings save never waits on or fails from delivery.
- */
 export class ContentCheckService {
   config: Config;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
@@ -98,9 +93,11 @@ export class ContentCheckService {
       const webhookSecretValue = typeof webhookSecret === 'string' ? webhookSecret : '';
       const siteCreatedAt = this.#normalizeSiteCreatedAt(siteCreatedAtRaw);
 
-      if (!webhookSecretValue || !siteId || !siteCreatedAt) {
+      const maxSiteAgeDays = this.#readMaxSiteAgeDays(maxSiteAgeDaysRaw);
+
+      if (!webhookSecretValue || !siteId || !siteCreatedAt || maxSiteAgeDays === null) {
         this.logging.warn(
-          'Content check webhook is misconfigured: hostSettings:contentCheck:webhookUrl is set but webhookSecret, siteId, or siteCreatedAt is missing.',
+          'Content check webhook is misconfigured: hostSettings:contentCheck:webhookUrl is set but webhookSecret, siteId, siteCreatedAt, or maxSiteAgeDays is missing.',
         );
         return;
       }
@@ -111,7 +108,6 @@ export class ContentCheckService {
         return;
       }
 
-      const maxSiteAgeDays = this.#readMaxSiteAgeDays(maxSiteAgeDaysRaw);
       const createdAtMs = Date.parse(siteCreatedAt);
       if (Number.isNaN(createdAtMs) || Date.now() - createdAtMs >= maxSiteAgeDays * DAY_MS) {
         return;
@@ -174,7 +170,7 @@ export class ContentCheckService {
     return null;
   }
 
-  #readMaxSiteAgeDays(value: unknown): number {
+  #readMaxSiteAgeDays(value: unknown): number | null {
     if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
       return value;
     }
@@ -186,6 +182,6 @@ export class ContentCheckService {
       }
     }
 
-    return DEFAULT_MAX_SITE_AGE_DAYS;
+    return null;
   }
 }

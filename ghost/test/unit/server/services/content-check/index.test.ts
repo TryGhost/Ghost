@@ -22,8 +22,9 @@ const WEBHOOK_URL = `${WEBHOOK_ORIGIN}/v1/ghost/events`;
 const WEBHOOK_SECRET = 'not-a-live-secret';
 const SITE_ID = '123456';
 const SITE_URL = 'https://example.ghost.io/';
-const SITE_CREATED_AT = '2026-09-01T10:00:00.000Z';
+const SITE_CREATED_AT = '2026-10-15T10:00:00.000Z';
 const FROZEN_NOW = '2026-11-01T12:00:00.000Z';
+const MAX_SITE_AGE_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function titleModel(value: unknown = 'Your bank paid 587 USD') {
@@ -56,7 +57,7 @@ describe('Content Check service root', function () {
     originalListeners = events.listeners(EVENT_NAME);
     delete require.cache[ROOT_PATH];
     sandbox = sinon.createSandbox();
-    // Freeze Date so SITE_CREATED_AT stays under the default 365-day gate.
+    // Freeze Date so SITE_CREATED_AT stays under the configured age gate.
     clock = sandbox.useFakeTimers({
       now: new Date(FROZEN_NOW).getTime(),
       toFake: ['Date'],
@@ -66,7 +67,7 @@ describe('Content Check service root', function () {
     getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns(WEBHOOK_URL);
     getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns(WEBHOOK_SECRET);
     getConfig.withArgs('hostSettings:contentCheck:siteCreatedAt').returns(SITE_CREATED_AT);
-    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(365);
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(MAX_SITE_AGE_DAYS);
     getConfig.withArgs('hostSettings:siteId').returns(SITE_ID);
 
     getSiteUrl = sandbox.stub(urlUtils, 'getSiteUrl').returns(SITE_URL);
@@ -246,7 +247,7 @@ describe('Content Check service root', function () {
             'hostSettings:contentCheck:webhookUrl': WEBHOOK_URL,
             'hostSettings:contentCheck:webhookSecret': WEBHOOK_SECRET,
             'hostSettings:contentCheck:siteCreatedAt': SITE_CREATED_AT,
-            'hostSettings:contentCheck:maxSiteAgeDays': 365,
+            'hostSettings:contentCheck:maxSiteAgeDays': MAX_SITE_AGE_DAYS,
             'hostSettings:siteId': SITE_ID,
           };
           return values[key];
@@ -301,23 +302,16 @@ describe('Content Check service root', function () {
     sinon.assert.calledOnce(request);
   });
 
-  it('uses a default max age of 365 days when the config key is missing', async function () {
+  it('skips when maxSiteAgeDays is missing', async function () {
     getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(undefined);
-    getConfig
-      .withArgs('hostSettings:contentCheck:siteCreatedAt')
-      .returns(new Date(Date.now() - 364 * DAY_MS).toISOString());
     const service = await initRoot();
     const request = sandbox.stub(service, 'request').resolves(null);
     const send = sandbox.spy(service, 'sendTitleChanged');
 
     events.emit(EVENT_NAME, titleModel());
     await send.lastCall.returnValue;
-    sinon.assert.calledOnce(request);
-
-    clock.tick(DAY_MS + 1);
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
-    sinon.assert.calledOnce(request);
+    sinon.assert.notCalled(request);
+    sinon.assert.calledOnce(loggedWarning);
   });
 
   it('swallows synchronous preparation failures inside the async send path', async function () {
