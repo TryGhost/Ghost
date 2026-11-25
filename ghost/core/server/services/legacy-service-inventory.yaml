@@ -2535,7 +2535,7 @@ services:
           - core/server/services/stripe/service.js
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/services/webhook/checkout-session-event-service.js
-          - core/server/services/stripe/services/webhook/charge-refunded-event-service.js
+          - core/server/services/stripe/services/webhook/refund.ts
           - core/server/api/endpoints/gifts-members.js
           - core/server/api/endpoints/gifts.js
           - core/server/web/gift-preview/controller.js
@@ -7419,7 +7419,8 @@ services:
       construction:
         summary: >-
           Import eagerly constructs the service, API, migrations, webhook and billing managers,
-          four event services and controller. Picked models and the API object are retained.
+          the checkout session event service, and the webhook controller with its table of
+          commands. Picked models and the API object are retained.
           Getter dependencies defer members repositories, donation repository, gifts service,
           staff emails until handler work; the welcome-email check reads the ready root per call.
           The API holds no checkout config: whatever opens each Checkout session passes the
@@ -7434,13 +7435,14 @@ services:
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/stripe-api.js
           - core/server/services/stripe/webhook-manager.js
+          - core/server/services/stripe/webhook/commands.ts
           - core/server/services/stripe/services/webhook/checkout-session-event-service.js
-          - core/server/services/stripe/services/webhook/invoice-event-service.js
+          - core/server/services/stripe/services/webhook/invoice.ts
           - core/server/services/stripe/checkout-session-params.ts
         tests:
           - >-
             test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
-          - test/unit/server/services/stripe/services/webhooks/invoice-event-service.test.js
+          - test/e2e-api/members/stripe-webhook-outcomes.test.ts
       consumers:
         summary: >-
           The members app retains a bound webhook-controller method when constructed before
@@ -7606,13 +7608,12 @@ services:
           - core/server/services/stripe/billing-portal-manager.js
           - core/server/services/stripe/webhook-controller.ts
           - core/server/services/members/service.js
-          - core/server/services/stripe/services/webhook/subscription-event-service.js
+          - core/server/services/stripe/services/webhook/subscription.ts
           - core/server/services/stripe/stripe-api.js
         tests:
           - test/unit/server/services/stripe/webhook-controller.test.js
           - test/unit/server/services/stripe/billing-portal-manager.test.js
-          - >-
-            test/unit/server/services/stripe/services/webhooks/subscription-event-service.test.js
+          - test/unit/server/services/stripe/services/webhooks/link-subscription.test.ts
           - test/e2e-api/members/webhooks.test.js
           - test/unit/server/services/stripe/stripe-api.test.js
     unverified: []

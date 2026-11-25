@@ -766,7 +766,7 @@ describe('Stripe webhook outcomes', function () {
             writes: 'nothing',
             webhook: span({
               type: 'customer.subscription.updated',
-              kind: 'subscription',
+              kind: 'ignored',
               result: 'ignored',
               reason: 'listed_customer',
             }),
@@ -964,6 +964,20 @@ describe('Stripe webhook outcomes', function () {
           result: 'ignored',
           reason: 'conflicting_checkout_markers',
         }),
+        checkout: null,
+      },
+      {
+        name: 'responds with 500 on every attempt to a checkout whose metadata Ghost can’t read',
+        event: () => ({
+          type: completed,
+          object: { ...paymentCheckout(), metadata: 'not an object' },
+        }),
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: completed, ...failedBecause('unreadable_stripe_event', 'ghost') },
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
+        ),
         checkout: null,
       },
       {
@@ -1557,6 +1571,21 @@ describe('Stripe webhook outcomes', function () {
         ),
         checkout: null,
       },
+      {
+        name: 'responds with 500 on every attempt to an invoice without fields Ghost reads',
+        event: async () => {
+          const { subscription } = await paidMember();
+          const { currency: _currency, ...withoutCurrency } = invoiceFor(subscription);
+          return { type: paid, object: withoutCurrency };
+        },
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: paid, ...failedBecause('unreadable_stripe_event', 'ghost') },
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
+        ),
+        checkout: null,
+      },
     ]);
   });
 
@@ -1601,6 +1630,22 @@ describe('Stripe webhook outcomes', function () {
             id: stripeId('ch'),
             object: 'charge',
             payment_intent: stripeId('pi'),
+            invoice: null,
+            refunded: true,
+          },
+        }),
+        status: 200,
+        webhook: span({ type: 'charge.refunded', kind: 'refund', result: 'handled' }),
+        checkout: null,
+      },
+      {
+        name: 'responds with 200 to a refund of a charge made without a payment intent',
+        event: () => ({
+          type: 'charge.refunded',
+          object: {
+            id: stripeId('ch'),
+            object: 'charge',
+            payment_intent: null,
             invoice: null,
             refunded: true,
           },

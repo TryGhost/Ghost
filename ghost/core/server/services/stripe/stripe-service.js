@@ -4,10 +4,8 @@ const StripeAPI = require('./stripe-api');
 const { WebhookController } = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const { StripeLiveEnabledEvent, StripeLiveDisabledEvent } = require('./events');
-const SubscriptionEventService = require('./services/webhook/subscription-event-service');
-const InvoiceEventService = require('./services/webhook/invoice-event-service');
+const { webhookCommands } = require('./webhook/commands');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
-const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
 const memberWelcomeEmails = require('../member-welcome-emails').default;
 const metafields = require('../members-metafields');
 
@@ -83,13 +81,13 @@ module.exports = class StripeService {
       settingsCache,
     });
 
-    const subscriptionEventService = new SubscriptionEventService({
+    const subscriptionDeps = {
       get memberRepository() {
         return membersService.api.members;
       },
-    });
+    };
 
-    const invoiceEventService = new InvoiceEventService({
+    const invoiceDeps = {
       api,
       get memberRepository() {
         return membersService.api.members;
@@ -100,7 +98,7 @@ module.exports = class StripeService {
       get productRepository() {
         return membersService.api.productRepository;
       },
-    });
+    };
 
     const checkoutSessionEventService = new CheckoutSessionEventService({
       api,
@@ -147,20 +145,24 @@ module.exports = class StripeService {
       },
     });
 
-    const chargeRefundedEventService = new ChargeRefundedEventService({
+    const refundDeps = {
       get giftService() {
         return giftService.service;
       },
+    };
+
+    const commands = webhookCommands({
+      checkoutSessionEventService,
+      subscription: subscriptionDeps,
+      invoice: invoiceDeps,
+      refund: refundDeps,
     });
 
     const webhookController = new WebhookController({
       apiVersion: StripeAPI.API_VERSION,
       siteUuid,
       webhookManager,
-      subscriptionEventService,
-      invoiceEventService,
-      checkoutSessionEventService,
-      chargeRefundedEventService,
+      commands,
       tracking,
       sentry,
     });
