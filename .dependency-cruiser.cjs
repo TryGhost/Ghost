@@ -157,6 +157,11 @@ const specialistDependencies = [
 
   // File and token formats.
   {
+    // Streaming CSV records and committed CSV journal parts, from supplied streams.
+    dependency: npm('csv-parse'),
+    owners: [service('content-import/csv/read-records.ts')],
+  },
+  {
     // CSV parsing and writing.
     dependency: npm('papaparse'),
     owners: [
