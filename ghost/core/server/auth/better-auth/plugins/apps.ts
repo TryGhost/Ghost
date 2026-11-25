@@ -118,8 +118,9 @@ export const ghostApps = () =>
        * A user token for an installation's user client, bound to a staff session of the
        * user's that is verified and unexpired, and lasting no longer than it. The provider
        * checks no scopes when issuing, so `scopes` must already be narrowed to the
-       * installation's approved scopes; they are also held to the client's. No refresh or ID
-       * token is issued.
+       * installation's approved scopes; any the client doesn't list are dropped. The client's
+       * scopes apply only here: each request a token makes is authorised from the
+       * installation's scopes approved at the time. No refresh or ID token is issued.
        */
       issueAppUserToken: createAuthEndpoint.serverOnly(
         { method: 'POST', body: appTokenRequestSchema },
