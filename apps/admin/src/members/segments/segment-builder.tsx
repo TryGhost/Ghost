@@ -419,8 +419,8 @@ interface SegmentBuilderPopoverProps extends SegmentBuilderProps {
   anchorRef: RefObject<HTMLElement>;
   /**
    * Which edge of that control the popover lines up with, and so which way it grows as it
-   * widens for its filters. From a control at the right of its row it lines up with the end, as
-   * the custom field form does. Under a field as wide as its card, it is centred on it.
+   * widens for its filters. Centred by default, so it grows to both sides at once. A control at
+   * the edge of its row can line it up with that edge instead.
    */
   align?: 'start' | 'center' | 'end';
 }
@@ -429,7 +429,7 @@ function SegmentBuilderPopoverContent({
   onOpenChange,
   startFrom,
   withPin = false,
-  align = 'end',
+  align = 'center',
   onCreated,
 }: Omit<SegmentBuilderPopoverProps, 'open' | 'anchorRef'>) {
   const builder = useSegmentBuilder({ startFrom, onCreated, onDone: () => onOpenChange(false) });

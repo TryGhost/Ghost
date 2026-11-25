@@ -82,7 +82,6 @@ export function SegmentPicker({
       </div>
       {create === 'popover' && (
         <SegmentBuilderPopover
-          align="center"
           anchorRef={pickerRef}
           open={creating}
           withPin={withPin}
