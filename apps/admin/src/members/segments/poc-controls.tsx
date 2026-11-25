@@ -13,8 +13,8 @@ import { useSegmentSuggestions } from './segment-suggestions';
  * POC (poc/segments-ui) only: controls at the bottom of the window while the members screen is
  * open. They are fixed to the window, since the members screen scrolls as a whole.
  *
- * - A switch that has the segment builder ask for its filters first, and the name once they
- *   match someone, so the two orders can be compared.
+ * - A switch for the segment builder's order: on, the filters first and the name once they
+ *   match someone, which is the default; off, the name first, so the two can be compared.
  * - A switch that makes the site look as if it had no segments, so the empty states can be seen
  *   without deleting any. Nothing is deleted. The segments come back when it is switched off.
  * - A button that pins every segment to the sidebar, or unpins them all once they are, so a

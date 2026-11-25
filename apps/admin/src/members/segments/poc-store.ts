@@ -90,17 +90,19 @@ export function useSidebarShowsAllPins() {
   return { showsAllPins: has('on'), setShowsAllPins };
 }
 
-const BUILDER_FILTER_FIRST_KEY = 'ghost-poc:builder-filter-first';
+// What is kept is the opt-out, name first, so filters first is what a browser starts with.
+const BUILDER_NAME_FIRST_KEY = 'ghost-poc:builder-name-first';
 
 /**
  * Whether the segment builder asks for the filters first, and the name only once they match
- * someone, instead of the name first. Off by default, for the two to be compared.
+ * someone, as the members page does: filter, see who is in, then name it. On by default. Off,
+ * it asks for the name first, for the two to be compared.
  */
 export function useBuilderFilterFirst() {
-  const { has, set } = useIdSet(BUILDER_FILTER_FIRST_KEY);
-  const setFilterFirst = useCallback((on: boolean) => set('on', on), [set]);
+  const { has, set } = useIdSet(BUILDER_NAME_FIRST_KEY);
+  const setFilterFirst = useCallback((on: boolean) => set('on', !on), [set]);
 
-  return { filterFirst: has('on'), setFilterFirst };
+  return { filterFirst: !has('on'), setFilterFirst };
 }
 
 const SIMULATE_NO_SEGMENTS_KEY = 'ghost-poc:simulate-no-segments';
