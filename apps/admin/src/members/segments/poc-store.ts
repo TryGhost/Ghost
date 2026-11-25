@@ -105,6 +105,29 @@ export function useBuilderFilterFirst() {
   return { filterFirst: !has('on'), setFilterFirst };
 }
 
+/**
+ * Puts the prototype's own state back to a fresh browser's: no pins, the sidebar folded, no
+ * segment pretending to be in use. The builder's order and the "No segments" switch are left as
+ * they are.
+ */
+export function resetPrototypeState() {
+  write(PINS_KEY, []);
+  write(SIDEBAR_SHOWS_ALL_PINS_KEY, []);
+  write(SIMULATED_USAGE_KEY, []);
+  try {
+    // The automation mock's marks, kept by the automations screen. Read afresh on its next load.
+    window.localStorage.removeItem('ghost-poc:segment-triggers:v2');
+  } catch {
+    // Nothing kept, nothing to clear.
+  }
+}
+
+/** Pins these segments, as if each had been pinned by hand. */
+export function pinSegments(ids: readonly string[]) {
+  const pinned = read(PINS_KEY);
+  write(PINS_KEY, [...pinned, ...ids.filter((id) => !pinned.includes(id))]);
+}
+
 const SIMULATE_NO_SEGMENTS_KEY = 'ghost-poc:simulate-no-segments';
 
 /**

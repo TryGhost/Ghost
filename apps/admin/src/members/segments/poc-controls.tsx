@@ -5,6 +5,7 @@ import { Inline } from '@tryghost/shade/primitives';
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useMemberViews } from '@/members/hooks/use-member-views';
+import { usePrototypeSeed } from './poc-seed';
 import { useBuilderFilterFirst, useSegmentPins, useSimulateNoSegments } from './poc-store';
 import { SegmentBuilderDialog, SegmentBuilderPopover } from './segment-builder';
 import { useSegmentSuggestions } from './segment-suggestions';
@@ -15,6 +16,9 @@ import { useSegmentSuggestions } from './segment-suggestions';
  *
  * - A switch for the segment builder's order: on, the filters first and the name once they
  *   match someone, which is the default; off, the name first, so the two can be compared.
+ * - Clear and Seed: Clear deletes every segment, for real, and resets the prototype's own state
+ *   (pins, the sidebar fold, pretend usage, the automation mock). Seed puts back the segments the
+ *   prototype is shown with, and pins them. For filming from nothing, and coming back after.
  * - A switch that makes the site look as if it had no segments, so the empty states can be seen
  *   without deleting any. Nothing is deleted. The segments come back when it is switched off.
  * - A button that pins every segment to the sidebar, or unpins them all once they are, so a
@@ -31,6 +35,7 @@ export function PocControls({
   const id = useId();
   const filterFirstId = useId();
   const { filterFirst, setFilterFirst } = useBuilderFilterFirst();
+  const prototypeSeed = usePrototypeSeed();
   const suggestions = useSegmentSuggestions();
   const { simulateNoSegments, setSimulateNoSegments } = useSimulateNoSegments();
   const segments = useMemberViews();
@@ -73,6 +78,26 @@ export function PocControls({
                 Filter first
               </Label>
             </Inline>
+            <Button
+              disabled={Boolean(prototypeSeed.working) || prototypeSeed.count === 0}
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (window.confirm(`Delete all ${prototypeSeed.count} segments?`)) {
+                  void prototypeSeed.clear();
+                }
+              }}
+            >
+              {prototypeSeed.working === 'clearing' ? 'Clearing…' : 'Clear'}
+            </Button>
+            <Button
+              disabled={Boolean(prototypeSeed.working)}
+              size="sm"
+              variant="outline"
+              onClick={() => void prototypeSeed.seed()}
+            >
+              {prototypeSeed.working === 'seeding' ? 'Seeding…' : 'Seed'}
+            </Button>
             <Button
               disabled={segments.length === 0}
               size="sm"
