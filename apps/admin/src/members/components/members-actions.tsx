@@ -74,7 +74,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     } catch (e) {
       toast.error('Export failed', {
         description:
-          'There was a problem downloading your member data. Please check your connection and try again.',
+          'Try again in a moment. If an export is already running, wait for it to finish first.',
       });
       throw e;
     }
@@ -206,7 +206,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     } catch (e) {
       toast.error('Export failed', {
         description:
-          'There was a problem downloading your backup. Please check your connection and try again.',
+          'Try again in a moment. If an export is already running, wait for it to finish first.',
       });
       throw e;
     }
