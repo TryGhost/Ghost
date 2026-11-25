@@ -154,6 +154,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
   // - otherwise it starts a new segment on every member: the filter bar shows before there is
   //   a filter, with the suggestions above it and "Save segment" beside it, and the list below
   //   is the preview. Saving opens the segment. Cancel, or Clear once there are filters, stops.
+  // - a filter that isn't finished keeps that, and the cursor goes to what it is missing
+  // Each time, it takes the publisher to the next step there is.
   const [saveRequest, setSaveRequest] = useState(0);
   const [managingSegments, setManagingSegments] = useState(false);
   const [startedSegment, setStartedSegment] = useState(false);
@@ -172,6 +174,18 @@ const MembersPage: React.FC<MembersPageProps> = ({
     }
     setSuggestedName(null);
     setStartedSegment(true);
+    // A filter that isn't finished yet, such as one with no value, filters nothing, so finishing
+    // it is the next step: the cursor goes to its empty value.
+    if (hasFilters && !viewedSegment) {
+      window.setTimeout(() => {
+        const empty = [
+          ...document.querySelectorAll<HTMLInputElement>(
+            '[data-list-page="header"] [data-slot="filter-bar"] input',
+          ),
+        ].find((input) => input.value === '');
+        empty?.focus();
+      }, 0);
+    }
   };
   const stopMakingSegment = () => {
     setStartedSegment(false);
