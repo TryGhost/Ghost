@@ -161,7 +161,12 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const [startedSegment, setStartedSegment] = useState(false);
   // The name of the suggestion the filters came from, offered when they are saved.
   const [suggestedName, setSuggestedName] = useState<string | null>(null);
-  // Showing a segment, nothing new is being made: one was just saved, or another opened.
+  // Showing a segment ends making one: it was just saved, or another was opened. Ended, not
+  // hidden, so leaving the segment afterwards doesn't bring the new-segment state back.
+  if (startedSegment && viewedSegment) {
+    setStartedSegment(false);
+    setSuggestedName(null);
+  }
   const makingSegment = startedSegment && !viewedSegment;
   const suggestions = useNewSuggestions(useSegmentSuggestions());
   const startNewSegment = () => {
