@@ -3,7 +3,7 @@ import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
 import { createHash, randomBytes } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, mkdtemp, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { extract } from '@tryghost/zip';
@@ -20,6 +20,7 @@ import { ImportRunStore } from './import/store';
 import { prepareImportSource, isLegacyImportZip as inspectLegacyImportZip } from './import/source';
 import type { ImportFiles } from './import/files';
 import { PostMediaInliner } from './import/media';
+import { DiskMediaCache } from './import/media-cache';
 import { isLocalMediaUrl } from './import/local-media-url';
 import { urlForImportedPost } from './import/post-link';
 import { createImportFileStager, type DownloadedImportFile } from './import/staged-file';
@@ -35,6 +36,8 @@ const files: ImportFiles = {
   getSize: async (filePath) => (await stat(filePath)).size,
   createTempDirectory: (prefix) => mkdtemp(path.join(os.tmpdir(), prefix)),
   removeDirectory: (directory) => rm(directory, { recursive: true, force: true }),
+  readCache: (filePath) => readFile(filePath, 'utf8'),
+  writeCache: (filePath, data) => writeFile(filePath, data, { mode: 0o600 }),
   makeArchiveDirectory: async (directory) => {
     await mkdir(directory, { recursive: true, mode: 0o700 });
   },
@@ -113,6 +116,7 @@ function makeImporter(): ContentCSVImporter {
     getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
     createMediaInliner: () =>
       new PostMediaInliner({
+        cache: new DiskMediaCache(files),
         media: mediaInlinerService.service,
         isLocalMediaUrl: (sourceUrl) =>
           isLocalMediaUrl(sourceUrl, {

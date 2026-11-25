@@ -332,6 +332,7 @@ class ContentCSVImporter {
   ): Promise<void> {
     let urlFailureCount = 0;
     let firstUrlFailure: unknown;
+    let media: PostMediaInlining | undefined;
 
     try {
       if (source.assets) {
@@ -342,7 +343,7 @@ class ContentCSVImporter {
       const htmlToLexical = this._getHtmlToLexical();
       const markdownToHtml = this._getMarkdownToHtml();
       const cleanHTML = this._getCleanHTML();
-      const media = this._createMediaInliner();
+      media = this._createMediaInliner();
       let successfulWrites = 0;
       let failedRows = 0;
       let firstRowFailure: unknown;
@@ -480,6 +481,8 @@ class ContentCSVImporter {
     } catch (error) {
       this.reportUrlFailures(urlFailureCount, firstUrlFailure);
       throw error;
+    } finally {
+      await this.settle(async () => media?.close?.());
     }
   }
 

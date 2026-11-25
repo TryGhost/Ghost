@@ -36,7 +36,9 @@ function harness(
   const warningsByTitle = new Map<string, string[]>();
   const urlFailures = new Map<string, unknown>();
   const inlineMedia = sinon.stub().resolves();
-  const createMediaInliner = sinon.stub().callsFake(() => ({ inline: inlineMedia }));
+  const createMediaInliner = sinon
+    .stub()
+    .callsFake(() => ({ inline: inlineMedia, close: sinon.stub().resolves() }));
   const store = new ImportRunStore();
   const releaseRun = sinon.stub(store, 'release');
   const sentRuns: ImportRun[] = [];
@@ -659,6 +661,7 @@ describe('ContentCSVImporter', function () {
     await h.importer.handle(h.jobs[1]);
 
     sinon.assert.calledTwice(h.createMediaInliner);
+    sinon.assert.calledOnce(h.createMediaInliner.firstCall.returnValue.close);
     assert.notEqual(
       h.createMediaInliner.firstCall.returnValue,
       h.createMediaInliner.secondCall.returnValue,
@@ -730,6 +733,7 @@ describe('ContentCSVImporter', function () {
 
     assert.equal(h.created.length, 0);
     assert.equal(h.inlineMedia.callCount, 1);
+    sinon.assert.calledOnce(h.createMediaInliner.firstCall.returnValue.close);
     assert.deepEqual(h.reported, []);
     assert.equal(h.store.get('run_test')?.status, 'failed');
     assert.equal(h.store.get('run_test')?.failureReason, failure.message);

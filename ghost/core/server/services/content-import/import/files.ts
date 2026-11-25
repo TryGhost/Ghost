@@ -9,6 +9,8 @@ export interface ImportFiles {
   getSize(path: string): Promise<number>;
   createTempDirectory(prefix: string): Promise<string>;
   removeDirectory(path: string): Promise<void>;
+  readCache(path: string): Promise<string>;
+  writeCache(path: string, data: string): Promise<void>;
   makeArchiveDirectory(path: string): Promise<void>;
   extractArchive: typeof extract;
 }

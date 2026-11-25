@@ -1,6 +1,7 @@
 import type { PostData } from './post-data';
 import { createOriginSchemes } from '../../media-inliner/origin-schemes';
 import type { ExternalMediaImporter, ExternalMediaImportResult } from '../../media-inliner/types';
+import type { MediaCache } from './media-cache';
 
 const cheerio = require('cheerio/slim');
 
@@ -113,25 +114,35 @@ async function replaceAsync(
 
 export interface PostMediaInlining {
   inline(data: PostData): Promise<void>;
+  close?(): Promise<void>;
 }
 
 export class PostMediaInliner implements PostMediaInlining {
   private _media: ExternalMediaImporter;
   private _isLocalMediaUrl: (sourceUrl: string) => boolean;
-  private _cache = new Map<string, Promise<ExternalMediaImportResult>>();
   // Which scheme each origin serves, shared by every URL this run imports
   private _originSchemes = createOriginSchemes();
+  private _pending = new Map<string, Promise<ExternalMediaImportResult>>();
+  private _cache?: MediaCache;
   private _failures = new Map<string, MediaFailure>();
 
   constructor({
     media,
     isLocalMediaUrl,
+    cache,
   }: {
     media: ExternalMediaImporter;
     isLocalMediaUrl: (sourceUrl: string) => boolean;
+    cache?: MediaCache;
   }) {
     this._media = media;
     this._isLocalMediaUrl = isLocalMediaUrl;
+    this._cache = cache;
+  }
+
+  async close(): Promise<void> {
+    await this._cache?.close();
+    this._pending.clear();
   }
 
   async inline(data: PostData): Promise<void> {
@@ -164,19 +175,33 @@ export class PostMediaInliner implements PostMediaInlining {
       return sourceUrl;
     }
 
-    let resultPromise = this._cache.get(sourceUrl);
+    let resultPromise = this._pending.get(sourceUrl);
     if (!resultPromise) {
-      resultPromise = this._media.importUrl(sourceUrl, { originSchemes: this._originSchemes });
-      this._cache.set(sourceUrl, resultPromise);
+      resultPromise = this.getOrImport(sourceUrl);
+      this._pending.set(sourceUrl, resultPromise);
     }
 
-    const result = await resultPromise;
+    const result = await resultPromise.finally(() => {
+      if (this._cache) {
+        this._pending.delete(sourceUrl);
+      }
+    });
     if (result.status === 'failed') {
       this.recordFailure(sourceUrl, result.reason);
       return sourceUrl;
     }
 
     return result.storedUrl;
+  }
+
+  private async getOrImport(sourceUrl: string): Promise<ExternalMediaImportResult> {
+    const cached = this._cache && (await this._cache.get(sourceUrl));
+    if (cached) {
+      return cached;
+    }
+    const result = await this._media.importUrl(sourceUrl, { originSchemes: this._originSchemes });
+    await this._cache?.set(sourceUrl, result);
+    return result;
   }
 
   private recordFailure(sourceUrl: string, reason: string): void {
