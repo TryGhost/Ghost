@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { FIELD_TYPE_IDS } from '@tryghost/metafield-types';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
-import { FIELD_STATUS } from '../../../../../core/server/services/members-metafields/schema';
+import { FIELD_STATUS } from '../../../../../core/server/services/members-metafields/metafields/schema';
 import schema from '../../../../../core/server/data/schema/schema';
 
 // The static schema restates the field-type and status lists, and the rule every namespace and

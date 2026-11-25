@@ -31,9 +31,9 @@ import {
   type SingleWriteOrigin,
   type WriteOrigin,
 } from './schema';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { toDatabaseDate } from '../../../lib/db-types/date';
 import type { MetafieldsTracking } from './tracking';
-import { ensureTransaction, transactionOf } from '../../lib/ensure-transaction';
+import { ensureTransaction, transactionOf } from '../../../lib/ensure-transaction';
 import {
   ACTIVE_ONLY,
   fieldReference,
@@ -41,7 +41,7 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { MemberAccessSchema } from './access';
+import { MemberAccessSchema } from '@tryghost/metafield-types';
 import type { Namespaces } from './namespaces';
 import type { MetafieldResource } from './resource';
 import { readStoredField } from './stored-fields';
@@ -224,7 +224,7 @@ export class MetafieldValuesService<Audience> {
     this.getMaxDefinitions = getMaxDefinitions;
     this.tracking = tracking;
 
-    const schema = require('../../data/schema').tables;
+    const schema = require('../../../data/schema').tables;
     this.valueKey = z
       .array(z.union([DbMetafieldValue.keyof(), z.literal(resource.idColumn)]))
       .parse(schema[resource.tables.values]['@@PRIMARY_KEY@@']);

@@ -11,8 +11,7 @@ import {
   CHECKOUT_PORTS,
   type CheckoutPort,
 } from '@tryghost/checkout';
-import type { FieldStatus } from '../members-metafields/schema';
-import type { FieldSource } from '../members-metafields';
+import type { FieldSource, FieldStatus } from '../members-metafields';
 import type {
   RequiredTiers,
   SetRequirement,

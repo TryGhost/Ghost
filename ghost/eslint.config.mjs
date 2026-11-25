@@ -193,6 +193,28 @@ export default tseslint.config(
     },
   },
   // ============================================================
+  // The metafields core knows neither custom fields nor the members resource
+  // ============================================================
+  {
+    files: ['core/server/services/members-metafields/metafields/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              // A sibling of the core folder, such as `../audiences` or `../custom-fields/namespace`,
+              // rather than a shared library further up.
+              regex: '^\\.\\./(?!\\.\\./)',
+              message:
+                'The metafields core stores and reads fields for any resource and namespace owner. Custom fields and the members resource build on it, not the reverse.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // ============================================================
   // Browser-only admin-auth bridge scripts
   // ============================================================
   {

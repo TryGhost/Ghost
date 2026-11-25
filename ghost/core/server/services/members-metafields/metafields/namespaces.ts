@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Namespace } from '@tryghost/metafield-types/identity';
-import type { ObjectType, permissions } from '../../auth/permissions/permissions-data';
-import type { MemberAccess } from './access';
+import type { ObjectType, permissions } from '../../../auth/permissions/permissions-data';
+import type { MemberAccess } from '@tryghost/metafield-types';
 
 /** The staff permissions that cover managing fields: each grants adding, editing and deleting. */
 type ManagingPermission = {
