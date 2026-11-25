@@ -228,7 +228,7 @@ session. Nothing issues one in a request yet.
   one codec maps a client row to its installation and kind. The user client
   is unowned, public, and lists only a marker grant and no redirect URIs, and
   its id is lowercase because MySQL compares client ids case-insensitively.
-  With every provider route but `/jwks` disabled it can call none of them,
+  With every provider route disabled it can call none of them,
   `/oauth2/revoke` included, which would take a public client's id alone, and
   even on the server the token endpoint serves no grant it has.
   `test/integration/auth/app-oauth-provider.test.ts` compares its row with
