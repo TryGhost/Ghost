@@ -62,6 +62,23 @@ describe('Posts Bulk API', function () {
       assert.deepEqual(featuredAfter.pluck('id'), featuredBefore.pluck('id'));
     });
 
+    it('Rejects restricted filter fields inside a negated group', async function () {
+      const featuredBefore = await models.Post.findAll({ filter: 'featured:true', status: 'all' });
+
+      // No author's password is abcd, so applying the filter would feature every post
+      await agent
+        .put('/posts/bulk/?filter=' + encodeURIComponent('-(authors.password:abcd)'))
+        .body({
+          bulk: {
+            action: 'feature',
+          },
+        })
+        .expectStatus(400);
+
+      const featuredAfter = await models.Post.findAll({ filter: 'featured:true', status: 'all' });
+      assert.deepEqual(featuredAfter.pluck('id'), featuredBefore.pluck('id'));
+    });
+
     it('Can feature multiple posts', async function () {
       const filter = 'status:[published,draft,scheduled,sent]';
 

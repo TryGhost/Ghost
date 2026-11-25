@@ -290,6 +290,18 @@ describe('Posts Content API', function () {
     }
   });
 
+  it('Ignores filters on staff data that is not exposed inside a negated group', async function () {
+    // Every author's email has an @, so each filter would match no post if it were applied
+    for (const filter of ["-(authors.email:~'@')", "-(primary_author.email:~'@')"]) {
+      await agent
+        .get(`posts/?limit=all&filter=${encodeURIComponent(filter)}`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.equal(body.posts.length, 13, `filter "${filter}" should be ignored`);
+        });
+    }
+  });
+
   it('Ignores ordering by fields that are not exposed', async function () {
     const { body: defaultBody } = await agent.get('posts/?limit=all').expectStatus(200);
     const defaultIds = defaultBody.posts.map((post) => post.id);

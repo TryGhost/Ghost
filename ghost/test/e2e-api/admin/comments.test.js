@@ -2296,6 +2296,8 @@ describe(`Admin Comments API`, function () {
       ['two report counts', 'count.reports:>0+count.reports:<2'],
       ['either of two report counts', 'count.reports:0,count.reports:>1'],
       ['a report count or another condition', 'count.reports:>0,status:hidden'],
+      ['a negated report count', '-(count.reports:>0)'],
+      ['a report count negated with another condition', '-(count.reports:>0+status:published)'],
     ])('Rejects a filter on %s', async function (_case, filter) {
       const reportedComment = await dbFns.addComment({
         member_id: fixtureManager.get('members', 0).id,
