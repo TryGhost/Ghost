@@ -538,6 +538,69 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
+  // A definition takes the key it is given, or one derived from its name when it is given none.
+  describe('Keys', function () {
+    const addKeyed = (status: number, ...definitions: Array<{ name: string; key: string }>) =>
+      agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: definitions.map((definition) => ({
+            ...definition,
+            type: 'short_text',
+          })),
+        })
+        .expectStatus(status);
+
+    it('adds a definition under the key it is given', async function () {
+      const { body } = await addKeyed(201, { name: 'Favourite topic', key: 'topic' });
+      assert.equal(body.members_metafields[0].key, 'topic');
+
+      const read = await agent.get('members/metafields/custom/topic/').expectStatus(200);
+      assert.equal(read.body.members_metafields[0].name, 'Favourite topic');
+    });
+
+    it('refuses a key an archived definition already has', async function () {
+      await addKeyed(201, { name: 'Favourite topic', key: 'topic' });
+      await agent
+        .put('members/metafields/custom/topic/')
+        .body({ members_metafields: [{ status: 'archived' }] })
+        .expectStatus(200);
+
+      const { body } = await addKeyed(422, { name: 'Topic', key: 'topic' });
+      assert.equal(body.errors[0].property, 'key');
+      assert.match(body.errors[0].context, /A custom field with this key already exists\./);
+    });
+
+    it('refuses two definitions given the same key in one batch, adding neither', async function () {
+      const { body } = await addKeyed(
+        422,
+        { name: 'Favourite topic', key: 'topic' },
+        { name: 'Topic', key: 'topic' },
+      );
+      assert.equal(body.errors[0].property, 'key');
+      assert.match(body.errors[0].context, /Custom field 2 of 2\./);
+
+      const list = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(list.body.members_metafields, []);
+    });
+
+    // A key becomes a property name on the plain objects that carry a member's values, so one
+    // naming a member of Object.prototype is never taken, given or derived.
+    it('refuses a key that names a member of Object.prototype', async function () {
+      const { body } = await addKeyed(422, { name: 'Builder', key: 'constructor' });
+      assert.equal(body.errors[0].property, 'key');
+    });
+
+    it('refuses a key that cannot be a key, or that the fields table cannot store', async function () {
+      const malformed = await addKeyed(422, { name: 'Topic', key: 'Favourite-topic' });
+      assert.equal(malformed.body.errors[0].property, 'key');
+
+      const long = await addKeyed(422, { name: 'Topic', key: 'k'.repeat(1000) });
+      assert.equal(long.body.errors[0].property, 'key');
+      assert.match(long.body.errors[0].context, /Custom field key is too long\./);
+    });
+  });
+
   // The API defines fields only in `custom`, so the other namespace's field is written
   // straight to the table, as an app's would be.
   describe('Fields in another namespace', function () {
