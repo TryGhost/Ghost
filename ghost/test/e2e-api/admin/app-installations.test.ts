@@ -1819,8 +1819,12 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         });
 
         assert.equal(disabledBeforeCommit, 0);
-        await waitFor(async () => (await clientOf(installed.id)).disabled === 1);
-        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+        // The client is disabled, then its tokens deleted, in two writes
+        await waitFor(
+          async () =>
+            (await clientOf(installed.id)).disabled === 1 &&
+            (await tokenRowsOf(installed.id)).length === 0,
+        );
       });
 
       it('needs the revision the session started with, as a whole number', async function () {
