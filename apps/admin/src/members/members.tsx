@@ -424,10 +424,13 @@ const MembersPage: React.FC<MembersPageProps> = ({
               {shouldShowMemberControls && mobileFilters && hasFilters && (
                 <div ref={setMobileFilterBar} />
               )}
-              {/* Places to start a new segment from, above the bar while it has no filter. */}
+              {/* Places to start a new segment from, above the bar while it has no filter. 12px
+                  above the bar, as they belong to it, closer than the header's own rows: the
+                  header's 20px row gap is taken back, and under a large title, whose rows have
+                  no gap, 12px is added. The row's own 4px of room for focus rings counts too. */}
               {makingSegment && !hasFilters && suggestions.length > 0 && (
                 <SuggestionChips
-                  className="mb-3"
+                  className="-mb-3 [[data-large-title-header]_&]:mb-2"
                   suggestions={suggestions}
                   onPick={pickSuggestion}
                 />
