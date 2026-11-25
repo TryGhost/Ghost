@@ -7,7 +7,8 @@ import { MemberMetafieldValues } from './member-values';
 import { MEMBERS_RESOURCE } from './members-resource';
 export { changedForMembers } from './members-resource';
 import { MetafieldBindingsService } from './bindings-service';
-import { resolveMaxDefinitions } from './custom-fields/config';
+import { resolveMaxDefinitions } from './config';
+import { definitionLimit } from './definition-limit';
 import { customFields, memberAccessPolicy } from './custom-fields/namespace';
 import { createNamespaces, type Namespaces } from './metafields/namespaces';
 import { fieldSource, type FieldSource as ResourceFieldSource } from './metafields/queries';
@@ -84,18 +85,20 @@ export function init(): void {
   // Resolved here, not in the service: reading config is this module's job, and
   // the service is handed a number. A getter rather than a value because the
   // ceiling is an operator setting that can change between requests, and a Ghost
-  // container holds no state across them.
+  // container holds no state across them. It is Members' limit on each namespace's
+  // fields, counted for each namespace alone.
   const config = require('../../../shared/config');
   const getMaxDefinitions = () =>
     resolveMaxDefinitions(config.get('members:metafields:maxDefinitions'));
 
-  // Custom fields are the one application of metafields so far, and the only namespace
-  // anyone can define fields in.
-  namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })], {
+  // Custom fields are the one namespace registered on members so far, and the only one anyone
+  // can define fields in.
+  namespaces = createNamespaces([customFields({ limitService })], {
     // Nobody owns another namespace yet, so a field stored in one, as an app's would be, is
     // reached by its member access, the way a custom field is. An app that owns its namespace
     // will state its own grants.
     unowned: memberAccessPolicy,
+    definitionLimit: definitionLimit(getMaxDefinitions),
   });
   fields = fieldSource(MEMBERS_RESOURCE, namespaces);
 
@@ -112,7 +115,7 @@ export function init(): void {
     labs,
   });
   // The values service reads the field definitions itself, so it needs knex, the fields and
-  // the ceiling, which also caps how many values one request can carry — no handle on the
+  // the limit, which also caps how many values one request can carry — no handle on the
   // definitions service.
   values = new MemberMetafieldValues({
     knex,
