@@ -6,6 +6,7 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { useCountableFilter } from '@/members/api';
 import { useRefusedEntry } from '@/editor/refused-entry';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEmailSize } from '@/editor/use-email-size';
@@ -59,7 +60,7 @@ function capitalize(value: string): string {
 }
 
 function RecipientsRowTitle({ state }: { state: PublishOptionsState }) {
-  const { count } = useMembersCount(state.fullRecipientFilter, {
+  const { count } = useMembersCount(useCountableFilter(state.fullRecipientFilter), {
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
 
