@@ -7,6 +7,7 @@ import { Readable, Writable } from 'stream';
 import { pipeline } from 'node:stream/promises';
 import {
   DeleteObjectCommand,
+  ListObjectsV2Command,
   NotFound,
   PutObjectCommand,
   CreateMultipartUploadCommand,
@@ -14,6 +15,7 @@ import {
   CompleteMultipartUploadCommand,
   AbortMultipartUploadCommand,
   S3Client,
+  S3ServiceException,
 } from '@aws-sdk/client-s3';
 import S3Storage, {
   type S3StorageOptions,
@@ -93,6 +95,175 @@ describe('S3Storage', function () {
       const failure = new Error('access denied');
       sendStub.rejects(failure);
       await assert.rejects(storage.readStream({ path: 'opaque' }), (thrown) => thrown === failure);
+    });
+  });
+
+  describe('private import storage', function () {
+    it('writes short and empty streams and replaces metadata at the exact key', async function () {
+      const { storage, sendStub } = createStorage();
+      await storage.writeStream('imports/source', Readable.from(['ab', 'c']));
+      await storage.writeStream('imports/empty', Readable.from([]));
+      await storage.replaceMetadata('imports/checkpoint.txt', Buffer.from('15'));
+
+      assert.deepEqual(
+        sendStub.args.map(([command]) => {
+          assert.ok(command instanceof PutObjectCommand);
+          assert.ok(Buffer.isBuffer(command.input.Body));
+          return [command.input.Key, command.input.Body.toString()];
+        }),
+        [
+          ['configurable/prefix/content/files/imports/source', 'abc'],
+          ['configurable/prefix/content/files/imports/empty', ''],
+          ['configurable/prefix/content/files/imports/checkpoint.txt', '15'],
+        ],
+      );
+    });
+
+    it('uses S3 conditional requests for versioned metadata', async function () {
+      const { storage, sendStub } = createStorage();
+      const key = 'imports/manifest.json';
+      const bytes = Buffer.from('ready');
+      sendStub.resolves({ ETag: '"revision"', Body: Readable.from([bytes]) });
+      assert.deepEqual(await storage.readVersionedMetadata(key), { bytes, version: '"revision"' });
+
+      assert.equal(await storage.writeVersionedMetadata(key, bytes, null), true);
+      assert.equal(sendStub.lastCall.args[0].input.IfNoneMatch, '*');
+      assert.equal(
+        sendStub.lastCall.args[0].input.Key,
+        'configurable/prefix/content/files/imports/manifest.json',
+      );
+      assert.equal(await storage.writeVersionedMetadata(key, bytes, '"revision"'), true);
+      assert.equal(sendStub.lastCall.args[0].input.IfMatch, '"revision"');
+
+      for (const httpStatusCode of [409, 412]) {
+        sendStub.rejects(
+          new S3ServiceException({
+            name: 'Conflict',
+            $fault: 'client',
+            $metadata: { httpStatusCode },
+          }),
+        );
+        assert.equal(await storage.writeVersionedMetadata(key, bytes, '"stale"'), false);
+      }
+      const failure = new S3ServiceException({
+        name: 'AccessDenied',
+        $fault: 'client',
+        $metadata: { httpStatusCode: 403 },
+      });
+      sendStub.rejects(failure);
+      await assert.rejects(
+        storage.writeVersionedMetadata(key, bytes, '"revision"'),
+        (thrown) => thrown === failure,
+      );
+      await assert.rejects(storage.readVersionedMetadata(key), (thrown) => thrown === failure);
+      const missing = createNotFoundError();
+      sendStub.rejects(missing);
+      assert.equal(await storage.writeVersionedMetadata(key, bytes, '"stale"'), false);
+      await assert.rejects(storage.writeVersionedMetadata(key, bytes, null), missing);
+      assert.equal(await storage.readVersionedMetadata(key), undefined);
+      sendStub.resolves({ Body: Readable.from([bytes]) });
+      await assert.rejects(
+        storage.readVersionedMetadata(key),
+        /did not contain versioned import metadata/,
+      );
+      await storage.deleteVersionedMetadata(key);
+      assert.ok(sendStub.lastCall.args[0] instanceof DeleteObjectCommand);
+    });
+
+    it('uses Cloud Storage generations on the S3-compatible endpoint', async function () {
+      const endpoint = 'https://storage.googleapis.com';
+      const seen: Record<string, string>[] = [];
+      const bytes = Buffer.from('ready');
+      const s3Client = new S3Client({
+        endpoint,
+        region: 'auto',
+        forcePathStyle: true,
+        credentials: { accessKeyId: 'key', secretAccessKey: 'secret' },
+        requestHandler: {
+          async handle(request: { headers: Record<string, string> }) {
+            seen.push(request.headers);
+            return {
+              response: {
+                statusCode: 200,
+                headers: { 'x-goog-generation': '1234567890' },
+                body: Readable.from([bytes]),
+              },
+            };
+          },
+          destroy() {},
+        },
+      });
+      const storage = new S3Storage({ ...baseOptions, endpoint, s3Client });
+      const key = 'imports/manifest.json';
+      const current = await storage.readVersionedMetadata(key);
+      assert.deepEqual(current, { bytes, version: '1234567890' });
+      assert.equal(await storage.writeVersionedMetadata(key, bytes, null), true);
+      assert.equal(await storage.writeVersionedMetadata(key, bytes, current.version), true);
+      assert.equal(seen[1]['x-goog-if-generation-match'], '0');
+      assert.equal(seen[2]['x-goog-if-generation-match'], current.version);
+      assert.match(seen[2].authorization, /SignedHeaders=[^,]*x-goog-if-generation-match/);
+    });
+
+    it('uploads streams in bounded multipart chunks', async function () {
+      const { storage, sendStub } = createStorage();
+      sendStub
+        .withArgs(sinon.match.instanceOf(CreateMultipartUploadCommand))
+        .resolves({ UploadId: 'upload' });
+      sendStub.withArgs(sinon.match.instanceOf(UploadPartCommand)).resolves({ ETag: 'part' });
+      const bytes = Buffer.alloc(MIN_MULTIPART_CHUNK_SIZE * 2 + 1, 42);
+      await storage.writeStream('imports/source', Readable.from([bytes]));
+
+      assert.deepEqual(
+        sendStub.args
+          .filter(([command]) => command instanceof UploadPartCommand)
+          .map(([command]) => command.input.Body.length),
+        [MIN_MULTIPART_CHUNK_SIZE, MIN_MULTIPART_CHUNK_SIZE, 1],
+      );
+      assert.ok(sendStub.lastCall.args[0] instanceof CompleteMultipartUploadCommand);
+    });
+
+    it('aborts a multipart write when the source fails', async function () {
+      const { storage, sendStub } = createStorage();
+      sendStub
+        .withArgs(sinon.match.instanceOf(CreateMultipartUploadCommand))
+        .resolves({ UploadId: 'upload' });
+      sendStub.withArgs(sinon.match.instanceOf(UploadPartCommand)).resolves({ ETag: 'part' });
+      const failure = new Error('source failed');
+      const source = Readable.from(
+        (async function* () {
+          yield Buffer.alloc(MIN_MULTIPART_CHUNK_SIZE * 2);
+          throw failure;
+        })(),
+      );
+      await assert.rejects(
+        storage.writeStream('imports/source', source),
+        (thrown) => thrown === failure,
+      );
+      assert.ok(sendStub.lastCall.args[0] instanceof AbortMultipartUploadCommand);
+    });
+
+    it('lists only the requested tenant prefix and forwards the continuation token', async function () {
+      const { storage, sendStub } = createStorage();
+      const root = 'configurable/prefix/content/files/imports/';
+      sendStub.onFirstCall().resolves({
+        Contents: [{ Key: root + 'a' }, { Key: 'other/content/files/imports/b' }, {}],
+        NextContinuationToken: 'next-page',
+      });
+      sendStub.onSecondCall().resolves({});
+      assert.deepEqual(await storage.listPrefix('imports', { limit: 3 }), {
+        keys: ['imports/a'],
+        cursor: 'next-page',
+      });
+      assert.deepEqual(await storage.listPrefix('imports/', { cursor: 'next-page' }), { keys: [] });
+      const command = sendStub.lastCall.args[0];
+      assert.ok(command instanceof ListObjectsV2Command);
+      assert.deepEqual(command.input, {
+        Bucket: 'test-bucket',
+        Prefix: root,
+        ContinuationToken: 'next-page',
+        MaxKeys: 1000,
+      });
+      await assert.rejects(storage.listPrefix('imports', { limit: 0 }), /page size/);
     });
   });
 

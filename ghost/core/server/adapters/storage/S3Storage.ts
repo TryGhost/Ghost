@@ -9,13 +9,21 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { detectStorageContentType } from '../../lib/file-types';
 import {
+  readImportMetadata,
+  type ImportStorageListOptions,
+  type ImportStoragePage,
+  type VersionedMetadata,
+} from './import-storage';
+import {
   DeleteObjectCommand,
   GetObjectCommand,
   GetObjectCommandOutput,
+  ListObjectsV2Command,
   HeadObjectCommand,
   NotFound,
   NoSuchKey,
   PutObjectCommand,
+  S3ServiceException,
   CreateMultipartUploadCommand,
   UploadPartCommand,
   CompleteMultipartUploadCommand,
@@ -130,6 +138,7 @@ export type S3StorageOptions = z.infer<typeof configSchema>;
 
 export default class S3Storage extends StorageBase {
   private readonly client: S3Client;
+  private readonly isGoogleCloudStorage: boolean;
 
   private readonly bucket: string;
 
@@ -174,6 +183,8 @@ export default class S3Storage extends StorageBase {
     const options = S3Storage.parseConfig(config);
 
     this.bucket = options.bucket;
+    this.isGoogleCloudStorage =
+      /^https?:\/\/(?:[\w.-]+\.)?storage\.googleapis\.com(?=[:/]|$)/i.test(options.endpoint ?? '');
     this.tenantPrefix = options.tenantPrefix ?? '';
     this.staticFileURLPrefix = options.staticFileURLPrefix;
     this.storagePath = options.staticFileURLPrefix;
@@ -213,7 +224,14 @@ export default class S3Storage extends StorageBase {
       logging.info(
         `Large file, using multipart upload: file=${key} size=${stats.size} threshold=${this.multipartUploadThresholdBytes}`,
       );
-      return await this.uploadMultipart(file, key);
+      // Reads the file's head, so a large upload isn't loaded to type it.
+      const contentType = (await detectStorageContentType(file.path)) ?? file.type;
+      await this.uploadMultipart(
+        this.readFileInChunks(file.path, this.multipartChunkSizeBytes),
+        key,
+        contentType,
+      );
+      return `${this.cdnUrl}/${key}`;
     }
 
     logging.info(
@@ -252,10 +270,11 @@ export default class S3Storage extends StorageBase {
     }
   }
 
-  private async uploadMultipart(file: UploadFile, key: string): Promise<string> {
-    // Reads the file's head, so a large upload isn't loaded to type it
-    const contentType = (await detectStorageContentType(file.path)) ?? file.type;
-
+  private async uploadMultipart(
+    chunks: AsyncIterable<Buffer>,
+    key: string,
+    contentType?: string,
+  ): Promise<void> {
     const createResponse = await this.client.send(
       new CreateMultipartUploadCommand({
         Bucket: this.bucket,
@@ -274,8 +293,6 @@ export default class S3Storage extends StorageBase {
     try {
       const parts: { ETag: string; PartNumber: number }[] = [];
       let partNumber = 1;
-      const chunks = this.readFileInChunks(file.path, this.multipartChunkSizeBytes);
-
       for await (const chunk of chunks) {
         const uploadPartResponse = await this.client.send(
           new UploadPartCommand({
@@ -313,7 +330,6 @@ export default class S3Storage extends StorageBase {
       );
 
       logging.info(`Multipart upload completed: file=${key} parts=${parts.length}`);
-      return `${this.cdnUrl}/${key}`;
     } catch (error) {
       logging.warn(`Aborting multipart upload: file=${key} uploadId=${uploadId}`);
       try {
@@ -332,6 +348,164 @@ export default class S3Storage extends StorageBase {
       }
       throw error;
     }
+  }
+
+  async writeStream(relativePath: string, source: Readable): Promise<void> {
+    const key = this.buildKey(relativePath);
+    const chunks = this.readImportChunks(source);
+    try {
+      const first = await chunks.next();
+      const second = await chunks.next();
+      if (second.done) {
+        await this.putImportObject(key, first.value ?? Buffer.alloc(0));
+        return;
+      }
+      await this.uploadMultipart(
+        (async function* () {
+          if (!first.done) {
+            yield first.value;
+          }
+          yield second.value;
+          yield* chunks;
+        })(),
+        key,
+      );
+    } finally {
+      await chunks.return(undefined);
+      source.destroy();
+    }
+  }
+
+  private async *readImportChunks(source: Readable): AsyncGenerator<Buffer, void> {
+    let part = Buffer.allocUnsafe(MIN_MULTIPART_CHUNK_SIZE);
+    let length = 0;
+    for await (const value of source) {
+      const chunk = Buffer.isBuffer(value) ? value : Buffer.from(value);
+      let offset = 0;
+      while (offset < chunk.length) {
+        const copied = chunk.copy(part, length, offset, offset + part.length - length);
+        offset += copied;
+        length += copied;
+        if (length === part.length) {
+          yield part;
+          part = Buffer.allocUnsafe(MIN_MULTIPART_CHUNK_SIZE);
+          length = 0;
+        }
+      }
+    }
+    if (length) {
+      yield part.subarray(0, length);
+    }
+  }
+
+  async replaceMetadata(relativePath: string, bytes: Buffer): Promise<void> {
+    await this.putImportObject(this.buildKey(relativePath), bytes);
+  }
+
+  async readVersionedMetadata(relativePath: string): Promise<VersionedMetadata | undefined> {
+    let generation: string | undefined;
+    try {
+      const response = await this.getObject(relativePath, (command) => {
+        if (this.isGoogleCloudStorage) {
+          command.middlewareStack.add(
+            (next) => async (args) => {
+              const result = await next(args);
+              generation = (result.response as { headers: Record<string, string> }).headers[
+                'x-goog-generation'
+              ];
+              return result;
+            },
+            { step: 'deserialize', name: 'readImportMetadataGeneration' },
+          );
+        }
+      });
+      const version = this.isGoogleCloudStorage ? generation : response.ETag;
+      if (!(response.Body instanceof Readable) || !version) {
+        if (response.Body instanceof Readable) {
+          response.Body.destroy();
+        }
+        throw new errors.InternalServerError({
+          message: 'S3 response did not contain versioned import metadata.',
+        });
+      }
+      return { bytes: await readImportMetadata(response.Body), version };
+    } catch (error) {
+      if (!(error instanceof errors.NotFoundError)) {
+        throw error;
+      }
+    }
+  }
+
+  async writeVersionedMetadata(
+    relativePath: string,
+    bytes: Buffer,
+    version: string | null,
+  ): Promise<boolean> {
+    const command = new PutObjectCommand({
+      Bucket: this.bucket,
+      Key: this.buildKey(relativePath),
+      Body: bytes,
+      ...(!this.isGoogleCloudStorage &&
+        (version === null ? { IfNoneMatch: '*' } : { IfMatch: version })),
+    });
+    if (this.isGoogleCloudStorage) {
+      // The Cloud Storage XML API requires a generation precondition on PUT.
+      command.middlewareStack.add(
+        (next) => async (args) => {
+          (args.request as { headers: Record<string, string> }).headers[
+            'x-goog-if-generation-match'
+          ] = version ?? '0';
+          return next(args);
+        },
+        { step: 'build', name: 'setImportMetadataGeneration' },
+      );
+    }
+    try {
+      await this.client.send(command);
+      return true;
+    } catch (error) {
+      if (error instanceof S3ServiceException) {
+        const status = error.$metadata.httpStatusCode;
+        // A conditional update can also miss because cleanup removed the object.
+        if (status === 409 || status === 412 || (status === 404 && version !== null)) {
+          return false;
+        }
+      }
+      throw error;
+    }
+  }
+
+  deleteVersionedMetadata(relativePath: string): Promise<void> {
+    return this.delete(relativePath);
+  }
+
+  private async putImportObject(key: string, body: Buffer): Promise<void> {
+    await this.client.send(new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: body }));
+  }
+
+  async listPrefix(
+    prefix: string,
+    { cursor, limit = 1000 }: ImportStorageListOptions = {},
+  ): Promise<ImportStoragePage> {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 1000) {
+      throw new errors.IncorrectUsageError({ message: 'Invalid import storage page size.' });
+    }
+    const root = stripTrailingSlash(this.buildKey(prefix));
+    const relativePrefix = stripTrailingSlash(this.toCanonicalRelativePath(prefix)) + '/';
+    const response = await this.client.send(
+      new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: root + '/',
+        ContinuationToken: cursor,
+        MaxKeys: limit,
+      }),
+    );
+    const keys = (response.Contents ?? []).flatMap(({ Key }) =>
+      Key?.startsWith(root + '/') ? [relativePrefix + Key.slice(root.length + 1)] : [],
+    );
+    return response.NextContinuationToken
+      ? { keys, cursor: response.NextContinuationToken }
+      : { keys };
   }
 
   async saveRaw(buffer: Buffer, targetPath: string): Promise<string> {
@@ -484,7 +658,10 @@ export default class S3Storage extends StorageBase {
     return response.Body;
   }
 
-  private async getObject(relativePath?: string): Promise<GetObjectCommandOutput> {
+  private async getObject(
+    relativePath?: string,
+    configure?: (command: GetObjectCommand) => void,
+  ): Promise<GetObjectCommandOutput> {
     if (!relativePath?.trim()) {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.emptyReadPath),
@@ -494,12 +671,9 @@ export default class S3Storage extends StorageBase {
     const key = this.buildKey(relativePath);
 
     try {
-      return await this.client.send(
-        new GetObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-        }),
-      );
+      const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
+      configure?.(command);
+      return await this.client.send(command);
     } catch (error) {
       if (this.isNotFound(error)) {
         throw new errors.NotFoundError({
