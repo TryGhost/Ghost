@@ -4,7 +4,8 @@ import { Button, Label, Switch } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useSimulateNoSegments } from './poc-store';
+import { useMemberViews } from '@/members/hooks/use-member-views';
+import { useSegmentPins, useSimulateNoSegments } from './poc-store';
 import { SegmentBuilderDialog, SegmentBuilderPopover } from './segment-builder';
 
 /**
@@ -13,6 +14,8 @@ import { SegmentBuilderDialog, SegmentBuilderPopover } from './segment-builder';
  *
  * - A switch that makes the site look as if it had no segments, so the empty states can be seen
  *   without deleting any. Nothing is deleted. The segments come back when it is switched off.
+ * - A button that pins every segment to the sidebar, or unpins them all once they are, so a
+ *   long list of pins can be seen without pinning each by hand.
  * - Buttons that open the segment builder, the component other screens would create a segment
  *   with, such as an automation's trigger: as a dialog, and as a popover hung from the button.
  *   The members screen itself doesn't use it.
@@ -24,6 +27,9 @@ export function PocControls({
 }) {
   const id = useId();
   const { simulateNoSegments, setSimulateNoSegments } = useSimulateNoSegments();
+  const segments = useMemberViews();
+  const { isPinned, setPinned } = useSegmentPins();
+  const allPinned = segments.length > 0 && segments.every((segment) => isPinned(segment.id));
   // The segment builder, in either of its two shells.
   const [builder, setBuilder] = useState<'dialog' | 'popover' | null>(null);
   const popoverButton = useRef<HTMLButtonElement>(null);
@@ -55,6 +61,14 @@ export function PocControls({
                 No segments
               </Label>
             </Inline>
+            <Button
+              disabled={segments.length === 0}
+              size="sm"
+              variant="outline"
+              onClick={() => segments.forEach((segment) => setPinned(segment.id, !allPinned))}
+            >
+              {allPinned ? 'Unpin all' : 'Pin all'}
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setBuilder('dialog')}>
               Builder dialog
             </Button>

@@ -252,8 +252,8 @@ function NavMenuLabel({ children, ...props }: NavMenuLabelProps) {
   );
 }
 
-type NavSubmenuItemProps = NavMenuLinkProps;
-function NavSubmenuItem({ children, className, ...props }: NavSubmenuItemProps) {
+/** A row of a submenu: indented under its parent, beside the guide line of the legacy design. */
+function NavSubmenuRow({ children }: { children: React.ReactNode }) {
   const admin7Design = useFeatureFlag('admin7Design');
 
   return (
@@ -263,19 +263,56 @@ function NavSubmenuItem({ children, className, ...props }: NavSubmenuItemProps) 
           'before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent',
       )}
     >
-      <div className="min-w-0 pl-7">
-        <NavMenuItem.Link
-          className={cn(
-            'w-full min-w-0 pl-2 focus-visible:ring-inset',
-            admin7Design && 'font-[425]',
-            className,
-          )}
-          {...props}
-        >
-          {children}
-        </NavMenuItem.Link>
-      </div>
+      <div className="min-w-0 pl-7">{children}</div>
     </NavMenuItem>
+  );
+}
+
+type NavSubmenuItemProps = NavMenuLinkProps;
+function NavSubmenuItem({ children, className, ...props }: NavSubmenuItemProps) {
+  const admin7Design = useFeatureFlag('admin7Design');
+
+  return (
+    <NavSubmenuRow>
+      <NavMenuItem.Link
+        className={cn(
+          'w-full min-w-0 pl-2 focus-visible:ring-inset',
+          admin7Design && 'font-[425]',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </NavMenuItem.Link>
+    </NavSubmenuRow>
+  );
+}
+
+/**
+ * POC (poc/segments-ui): a submenu row that does something in place rather than going
+ * somewhere, such as showing the rest of a list. It doesn't close the mobile sidebar, which a
+ * row that navigates does.
+ */
+function NavSubmenuButton({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<typeof SidebarMenuButton>) {
+  const admin7Design = useFeatureFlag('admin7Design');
+
+  return (
+    <NavSubmenuRow>
+      <SidebarMenuButton
+        className={cn(
+          'w-full min-w-0 pl-2 text-muted-foreground focus-visible:ring-inset',
+          admin7Design && 'font-[425]',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </SidebarMenuButton>
+    </NavSubmenuRow>
   );
 }
 
@@ -302,6 +339,7 @@ function NavMenuButton({ onClick, children, ...props }: NavMenuButtonProps) {
 NavMenuItem.Link = NavMenuLink;
 NavMenuItem.Label = NavMenuLabel;
 NavMenuItem.SubmenuItem = NavSubmenuItem;
+NavMenuItem.SubmenuButton = NavSubmenuButton;
 NavMenuItem.Button = NavMenuButton;
 NavMenuItem.Collapsible = NavMenuCollapsible;
 NavMenuItem.CollapsibleItem = NavMenuCollapsibleItem;

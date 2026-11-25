@@ -1,10 +1,12 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
 /**
- * POC storage (poc/segments-ui). Two things the segments API doesn't hold yet are kept in this
- * browser's localStorage, so the screens can be tried without a schema change:
+ * POC storage (poc/segments-ui). What the segments API and the staff preferences don't hold yet
+ * is kept in this browser's localStorage, so the screens can be tried without a schema change:
  *
  * - which segments are pinned to the sidebar, which would be a field on the segment
+ * - whether the sidebar shows every pinned segment or only the first few, which would be one of
+ *   the staff user's navigation preferences
  * - which segments pretend to be in use, standing in for the posts and automations that will
  *   refer to one
  * - whether the site pretends to have no segments at all, to look at the empty states
@@ -73,6 +75,19 @@ function useIdSet(key: string) {
 export function useSegmentPins() {
   const { has, set } = useIdSet(PINS_KEY);
   return { isPinned: has, setPinned: set };
+}
+
+const SIDEBAR_SHOWS_ALL_PINS_KEY = 'ghost-poc:sidebar-shows-all-pins';
+
+/**
+ * Whether the sidebar shows every pinned segment. It shows only the first few until asked for
+ * the rest, so pinning many can't push the rest of the sidebar out of view.
+ */
+export function useSidebarShowsAllPins() {
+  const { has, set } = useIdSet(SIDEBAR_SHOWS_ALL_PINS_KEY);
+  const setShowsAllPins = useCallback((on: boolean) => set('on', on), [set]);
+
+  return { showsAllPins: has('on'), setShowsAllPins };
 }
 
 const SIMULATE_NO_SEGMENTS_KEY = 'ghost-poc:simulate-no-segments';
