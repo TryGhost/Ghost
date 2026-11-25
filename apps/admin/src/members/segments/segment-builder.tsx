@@ -317,7 +317,7 @@ function SegmentBuilderActions({ builder, withPin, size, onCancel }: SegmentBuil
         <Field className="w-auto" orientation="horizontal">
           <Switch checked={draft.pinned} id={pinId} onCheckedChange={draft.setPinned} />
           <FieldLabel className="font-normal" htmlFor={pinId}>
-            Pin in sidebar
+            Pin to sidebar
           </FieldLabel>
         </Field>
       ) : (

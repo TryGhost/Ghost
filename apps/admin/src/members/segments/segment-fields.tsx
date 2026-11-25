@@ -69,7 +69,7 @@ export function SegmentFields({ name, onNameChange, error, onSubmit, pin }: Segm
           <div className="overflow-hidden">
             <Field aria-hidden={!hasName} orientation="horizontal">
               <FieldLabel className="font-normal" htmlFor={pinId}>
-                Pin in sidebar
+                Pin to sidebar
               </FieldLabel>
               <Switch
                 checked={pin.pinned}

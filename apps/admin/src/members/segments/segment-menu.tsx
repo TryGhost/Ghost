@@ -57,7 +57,7 @@ export function SegmentMenu({ segment, children, leadingItems, onDeleted }: Segm
             ) : (
               <>
                 <LucideIcon.Pin className="size-4" />
-                Pin in sidebar
+                Pin to sidebar
               </>
             )}
           </DropdownMenuItem>
