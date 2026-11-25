@@ -78,6 +78,7 @@ const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
   'ghost_donation',
   'ghost_gift',
   'ghost_gift_id',
+  'ghost_site_uuid',
   'ghostSignupContext',
   'gift_token',
   'tier_id',

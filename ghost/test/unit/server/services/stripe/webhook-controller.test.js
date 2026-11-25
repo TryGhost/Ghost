@@ -31,6 +31,7 @@ describe('WebhookController', function () {
   beforeEach(function () {
     deps = {
       apiVersion: '2020-08-27',
+      siteUuid: () => '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11',
       subscriptionEventService: { handleSubscriptionEvent: sinon.stub() },
       invoiceEventService: { handleInvoiceEvent: sinon.stub() },
       checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },

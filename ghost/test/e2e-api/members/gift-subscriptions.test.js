@@ -230,7 +230,7 @@ describe('Gift Subscriptions', function () {
       const checkoutSession = getLatestCheckoutSession();
 
       assert.ok(checkoutSession, 'Checkout session should be captured');
-      assert.deepEqual(Object.keys(checkoutSession.metadata), ['ghost_gift_id']);
+      assert.deepEqual(Object.keys(checkoutSession.metadata), ['ghost_gift_id', 'ghost_site_uuid']);
       const pendingGift = await models.Gift.findOne(
         { id: checkoutSession.metadata.ghost_gift_id },
         { require: true },

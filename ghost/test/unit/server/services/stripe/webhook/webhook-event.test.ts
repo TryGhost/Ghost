@@ -5,9 +5,12 @@ import {
   type WebhookEvent,
 } from '../../../../../../core/server/services/stripe/webhook/webhook-event';
 
+/** The uuid of the site that reads each event. */
+const thisSite = '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11';
+
 /** The webhook event for a Checkout session event of `type` carrying `session`. */
 function checkout(type: CheckoutSessionEventType, session: Record<string, unknown>): WebhookEvent {
-  return toWebhookEvent(type, { type, data: { object: session } });
+  return toWebhookEvent(type, { type, data: { object: session } }, thisSite);
 }
 
 const COMPLETED = 'checkout.session.completed';
@@ -145,9 +148,12 @@ describe('Stripe webhook events', function () {
   });
 
   it('reads an event type Ghost has no command for as ignored', function () {
-    assert.deepEqual(toWebhookEvent('product.created', { type: 'product.created', data: {} }), {
-      kind: 'ignored',
-      reason: 'unhandled_type',
-    });
+    assert.deepEqual(
+      toWebhookEvent('product.created', { type: 'product.created', data: {} }, thisSite),
+      {
+        kind: 'ignored',
+        reason: 'unhandled_type',
+      },
+    );
   });
 });
