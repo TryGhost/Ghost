@@ -9,6 +9,7 @@ import {
   PopoverAnchor,
 } from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useEffect, useRef, useState } from 'react';
 import { useSegmentUsage } from './poc-store';
 import { SaveSegmentForm, SaveSegmentPopover } from './save-segment-popover';
@@ -31,6 +32,8 @@ interface MemberSegmentActionsProps {
    * segment, such as "New segment" in the title's list. Each new count opens the name form.
    */
   saveRequest?: number;
+  /** A name the save form starts with, such as the suggestion the filters came from. */
+  suggestedName?: string;
 }
 
 /**
@@ -51,6 +54,7 @@ export function MemberSegmentActions({
   onOpenSegment,
   onLeaveSegment,
   saveRequest = 0,
+  suggestedName,
 }: MemberSegmentActionsProps) {
   const canChange = useCanChangeMemberViews();
   const { usageOf } = useSegmentUsage();
@@ -75,6 +79,7 @@ export function MemberSegmentActions({
     return (
       <SaveSegmentPopover
         filter={filter}
+        initialName={suggestedName}
         label="Save segment"
         open={saving}
         onCreated={onOpenSegment}
@@ -109,7 +114,9 @@ export function MemberSegmentActions({
               }
             }}
           >
+            {/* Icons, as the Edit segment menu that opens from the same place has. */}
             <DropdownMenuItem onSelect={() => setUpdating(true)}>
+              <LucideIcon.RefreshCw className="size-4" />
               Update “{segment.name}”
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -118,6 +125,7 @@ export function MemberSegmentActions({
                 setSaving(true);
               }}
             >
+              <LucideIcon.Plus className="size-4" />
               Save as new segment
             </DropdownMenuItem>
           </DropdownMenuContent>

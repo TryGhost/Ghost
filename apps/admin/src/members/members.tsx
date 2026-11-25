@@ -36,6 +36,8 @@ import { MemberSegmentActions } from './segments/member-segment-actions';
 import { PocControls } from './segments/poc-controls';
 import { SEGMENT_PARAM, buildSegmentUrl } from './segments/segment-route';
 import { SegmentSwitcher } from './segments/segment-switcher';
+import { useNewSuggestions, useSegmentSuggestions } from './segments/segment-suggestions';
+import { SuggestionChips } from './segments/suggestion-chips';
 import { useSegmentFacts } from './segments/use-segment-facts';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/members';
@@ -149,33 +151,41 @@ const MembersPage: React.FC<MembersPageProps> = ({
   // and it never throws away filters that haven't been saved:
   // - filters that are no segment's, or a segment's changed ones, are what the new segment is
   //   made of, so it asks for their name
-  // - a segment shown as it is saved is left for a fresh start on every member
-  // - with no filters, the filter control opens
-  // POC: the control only opens to its own shortcut, which is sent to it here.
-  const filterPickerWanted = useRef(false);
+  // - otherwise it starts a new segment on every member: the filter bar shows before there is
+  //   a filter, with the suggestions above it and "Save segment" beside it, and the list below
+  //   is the preview. Saving opens the segment. Cancel, or Clear once there are filters, stops.
   const [saveRequest, setSaveRequest] = useState(0);
   const [managingSegments, setManagingSegments] = useState(false);
-  const openFilterPicker = useCallback(() => {
-    window.setTimeout(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f' })), 50);
-  }, []);
+  const [startedSegment, setStartedSegment] = useState(false);
+  // The name of the suggestion the filters came from, offered when they are saved.
+  const [suggestedName, setSuggestedName] = useState<string | null>(null);
+  // Showing a segment, nothing new is being made: one was just saved, or another opened.
+  const makingSegment = startedSegment && !viewedSegment;
+  const suggestions = useNewSuggestions(useSegmentSuggestions());
   const startNewSegment = () => {
     if (nql && (!viewedSegment || isSegmentModified)) {
       setSaveRequest((request) => request + 1);
-    } else if (viewedSegment) {
-      filterPickerWanted.current = true;
+      return;
+    }
+    if (viewedSegment) {
       navigate('/members');
-    } else {
-      openFilterPicker();
+    }
+    setSuggestedName(null);
+    setStartedSegment(true);
+  };
+  const stopMakingSegment = () => {
+    setStartedSegment(false);
+    setSuggestedName(null);
+    if (hasFilters) {
+      setFilters([]);
     }
   };
-  useEffect(() => {
-    if (filterPickerWanted.current && !hasFilters) {
-      filterPickerWanted.current = false;
-      openFilterPicker();
-    }
-  }, [hasFilters, openFilterPicker]);
+  const pickSuggestion = (suggestion: { name: string; filter: string }) => {
+    setSuggestedName(suggestion.name);
+    navigate(`/members?${new URLSearchParams({ filter: suggestion.filter }).toString()}`);
+  };
   const shouldShowMobileSearchRow = showMobileSearch;
-  const shouldShowFiltersRow = hasFilters;
+  const shouldShowFiltersRow = hasFilters || makingSegment;
   const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
   const shouldShowMembersHelpCards =
     !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
@@ -218,22 +228,27 @@ const MembersPage: React.FC<MembersPageProps> = ({
     clearAll({ replace: false });
   };
 
-  const segmentActions = nql ? (
-    <MemberSegmentActions
-      filter={nql}
-      isModified={isSegmentModified}
-      saveRequest={saveRequest}
-      segment={viewedSegment}
-      onLeaveSegment={() => navigate('/members')}
-      onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
-    />
-  ) : undefined;
+  const segmentActions =
+    nql || makingSegment ? (
+      <MemberSegmentActions
+        filter={nql ?? ''}
+        isModified={isSegmentModified}
+        saveRequest={saveRequest}
+        segment={viewedSegment}
+        suggestedName={makingSegment ? (suggestedName ?? undefined) : undefined}
+        onLeaveSegment={() => navigate('/members')}
+        onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
+      />
+    ) : undefined;
 
-  // While a segment's filters are changed, the bar's clear button puts them back instead.
+  // While a segment's filters are changed, the bar's clear button puts them back instead. While
+  // a new segment is being made, it stops: Cancel before there are filters, Clear after.
   const clearAction =
     viewedSegment && isSegmentModified
       ? { label: 'Reset', onSelect: () => navigate(buildSegmentUrl(viewedSegment)) }
-      : undefined;
+      : makingSegment
+        ? { label: hasFilters ? 'Clear' : 'Cancel', onSelect: stopMakingSegment }
+        : undefined;
 
   // What the header says about the segment being shown: who made it, and when. What uses it is
   // said where it matters, when the segment is about to be changed or deleted.
@@ -306,16 +321,19 @@ const MembersPage: React.FC<MembersPageProps> = ({
     </>
   );
 
-  const headerFilters = shouldShowMemberControls && (!hasFilters || mobileFilters) && (
-    <MembersFilters
-      clearAction={clearAction}
-      filters={filters}
-      mobileBarContainer={mobileFilterBar}
-      multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-      segmentActions={segmentActions}
-      onFiltersChange={setFilters}
-    />
-  );
+  // The header's Filter button, while the filter bar isn't showing. A new segment shows the bar,
+  // with a Filter button of its own.
+  const headerFilters = shouldShowMemberControls &&
+    ((!hasFilters && !makingSegment) || mobileFilters) && (
+      <MembersFilters
+        clearAction={clearAction}
+        filters={filters}
+        mobileBarContainer={mobileFilterBar}
+        multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+        segmentActions={segmentActions}
+        onFiltersChange={setFilters}
+      />
+    );
 
   const mobileSearchRow = shouldShowMemberControls && shouldShowMobileSearchRow && (
     <Box className="w-full lg:hidden">
@@ -406,6 +424,14 @@ const MembersPage: React.FC<MembersPageProps> = ({
               {shouldShowMemberControls && mobileFilters && hasFilters && (
                 <div ref={setMobileFilterBar} />
               )}
+              {/* Places to start a new segment from, above the bar while it has no filter. */}
+              {makingSegment && !hasFilters && suggestions.length > 0 && (
+                <SuggestionChips
+                  className="mb-3"
+                  suggestions={suggestions}
+                  onPick={pickSuggestion}
+                />
+              )}
               {shouldShowMemberControls && shouldShowFiltersRow && !mobileFilters && (
                 <FilterBar className={filtersClassName}>
                   <MembersFilters
@@ -413,6 +439,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                     filters={filters}
                     multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
                     segmentActions={segmentActions}
+                    showActions={makingSegment}
                     onFiltersChange={setFilters}
                   />
                 </FilterBar>

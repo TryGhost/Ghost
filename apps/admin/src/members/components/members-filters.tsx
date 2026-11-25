@@ -47,6 +47,11 @@ interface MembersFiltersProps {
    */
   clearAction?: { label: string; onSelect: () => void };
   /**
+   * POC (poc/segments-ui): shows the clear and segment buttons before there is a filter, while
+   * a new segment is being made.
+   */
+  showActions?: boolean;
+  /**
    * The filters as a control inside something else, such as the new segment dialog: no keyboard
    * shortcut, which the members screen behind it owns, and no room kept for the page's actions.
    */
@@ -101,6 +106,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   onFiltersChange,
   segmentActions,
   clearAction,
+  showActions = false,
   embedded = false,
 }) => {
   const { data: offersData } = useBrowseOffers({});
@@ -196,19 +202,20 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const mobile = useMobileFilters();
   const hasFilters = filters.length > 0;
 
-  const clearAndSaveButtons = hasFilters ? (
-    <FilterBar.Actions data-testid="members-filter-actions" gap="sm">
-      <FilterBar.Action
-        className="hidden items-center lg:inline-flex"
-        type="button"
-        variant="ghost"
-        onClick={clearAction ? clearAction.onSelect : () => onFiltersChange([])}
-      >
-        {clearAction ? clearAction.label : 'Clear'}
-      </FilterBar.Action>
-      {segmentActions}
-    </FilterBar.Actions>
-  ) : undefined;
+  const clearAndSaveButtons =
+    hasFilters || showActions ? (
+      <FilterBar.Actions data-testid="members-filter-actions" gap="sm">
+        <FilterBar.Action
+          className="hidden items-center lg:inline-flex"
+          type="button"
+          variant="ghost"
+          onClick={clearAction ? clearAction.onSelect : () => onFiltersChange([])}
+        >
+          {clearAction ? clearAction.label : 'Clear'}
+        </FilterBar.Action>
+        {segmentActions}
+      </FilterBar.Actions>
+    ) : undefined;
 
   // On the members screen's bar the actions sit beside the filters, as a second item of the bar,
   // and the filters take the room that is left. They used to lie over the bar's right edge with

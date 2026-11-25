@@ -10,8 +10,8 @@ const FILTERS_MISSING = 'Add a filter to choose who is in the segment';
  * The state of a segment being made: its name, whether it will be pinned, and the save. Shared
  * by every place that makes one, so they refuse and report the same way.
  */
-export function useSaveSegment(onCreated?: (segment: Segment) => void) {
-  const [name, setName] = useState('');
+export function useSaveSegment(onCreated?: (segment: Segment) => void, initialName = '') {
+  const [name, setName] = useState(initialName);
   const [pinned, setPinned] = useState(false);
   const [error, setError] = useState('');
   // Whether the last save found no filters to save. It stands until there are some.

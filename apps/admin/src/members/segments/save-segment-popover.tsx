@@ -1,22 +1,32 @@
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
-import { Button, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import {
+  Button,
+  FieldError,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { SegmentFields } from './segment-fields';
 import { useSaveSegment } from './use-save-segment';
 
 interface SaveSegmentFormProps {
+  /** The filters being saved. Empty, saving says a filter is needed. */
   filter: string;
+  /** A name to start with, such as the suggestion the filters came from. */
+  initialName?: string;
   onClose: () => void;
   onCreated?: (segment: Segment) => void;
 }
 
 /** The popover's contents, for a place that opens it from a control of its own. */
-export function SaveSegmentForm({ filter, onClose, onCreated }: SaveSegmentFormProps) {
-  const draft = useSaveSegment(onCreated);
+export function SaveSegmentForm({ filter, initialName, onClose, onCreated }: SaveSegmentFormProps) {
+  const draft = useSaveSegment(onCreated, initialName);
+  const filterError = draft.filterError(filter || undefined);
 
   const save = async () => {
-    if (await draft.save(filter)) {
+    if (await draft.save(filter || undefined)) {
       onClose();
     }
   };
@@ -34,13 +44,14 @@ export function SaveSegmentForm({ filter, onClose, onCreated }: SaveSegmentFormP
           onNameChange={draft.setName}
           onSubmit={() => void save()}
         />
+        {filterError && <FieldError>{filterError}</FieldError>}
         <Button
           className="w-full"
           disabled={draft.isPending}
-          variant={draft.error ? 'destructive' : 'default'}
+          variant={draft.error || filterError ? 'destructive' : 'default'}
           onClick={() => void save()}
         >
-          {draft.isPending ? 'Saving…' : draft.error ? 'Retry' : 'Save'}
+          {draft.isPending ? 'Saving…' : draft.error || filterError ? 'Retry' : 'Save'}
         </Button>
       </Stack>
     </PopoverContent>
@@ -52,6 +63,8 @@ interface SaveSegmentPopoverProps {
   filter: string;
   /** What the button says: saving filters as a segment, or a changed segment as another one. */
   label: string;
+  /** A name to start with, such as the suggestion the filters came from. */
+  initialName?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: (segment: Segment) => void;
@@ -64,6 +77,7 @@ interface SaveSegmentPopoverProps {
 export function SaveSegmentPopover({
   filter,
   label,
+  initialName,
   open,
   onOpenChange,
   onCreated,
@@ -78,6 +92,7 @@ export function SaveSegmentPopover({
         <SaveSegmentForm
           key={filter}
           filter={filter}
+          initialName={initialName}
           onClose={() => onOpenChange(false)}
           onCreated={onCreated}
         />
