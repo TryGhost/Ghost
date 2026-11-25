@@ -47,6 +47,7 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
     items: {
       data: [
         {
+          id: 'si_1234',
           price: fakePrice,
         },
       ],

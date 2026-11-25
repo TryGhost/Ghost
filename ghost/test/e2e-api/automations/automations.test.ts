@@ -446,6 +446,7 @@ describe('automations', function () {
       canceled_at?: number;
       items: {
         data: {
+          id: string;
           price: {
             id: string;
             product: string;
@@ -486,6 +487,7 @@ describe('automations', function () {
         items: {
           data: [
             {
+              id: 'si_123',
               price: {
                 id: 'price_123',
                 product: 'product_123',

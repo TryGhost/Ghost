@@ -34,9 +34,7 @@ module.exports = class InvoiceEventService {
       // which is not available in the invoice object
       return;
     }
-    const subscription = await api.getSubscription(invoice.subscription, {
-      expand: ['default_payment_method'],
-    });
+    const subscription = await api.getSubscription(invoice.subscription);
 
     const member = await memberRepository.get({
       customer_id: subscription.customer,

@@ -926,6 +926,7 @@ describe('Members API: edit subscriptions', function () {
         type: 'list',
         data: [
           {
+            id: 'si_price2',
             price: price2,
           },
         ],
@@ -996,6 +997,7 @@ describe('Members API: edit subscriptions', function () {
         type: 'list',
         data: [
           {
+            id: 'si_price3',
             price: price3,
           },
         ],
