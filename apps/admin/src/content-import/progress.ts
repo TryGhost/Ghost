@@ -17,6 +17,15 @@ export function importProgressLabel(progress: TrackedImport) {
   if (progress.stale) {
     return 'Reconnecting…';
   }
+  if (progress.status === 'complete') {
+    return 'Complete';
+  }
+  if (progress.status === 'failed') {
+    return 'Failed';
+  }
+  if (progress.status === 'cancelled') {
+    return 'Cancelled';
+  }
   if (progress.status === 'cancelling') {
     return 'Stopping…';
   }

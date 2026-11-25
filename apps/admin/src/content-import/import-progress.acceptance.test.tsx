@@ -30,7 +30,7 @@ afterEach(() => {
 
 describe('CSV import progress', () => {
   it.each(['light', 'dark'] as const)(
-    'confirms stopping an import and hides both indicators in %s mode',
+    'keeps a cancelled result until dismissed in %s mode',
     async (theme) => {
       fakeSettingsScreens();
       fakeTags([]);
@@ -74,11 +74,19 @@ describe('CSV import progress', () => {
       window.history.forward();
       await expect.element(section.getByText('Stopping…', { exact: true })).toBeVisible();
       status = 'cancelled';
-      await expect.poll(() => localStorage.getItem(storageKey()), { timeout: 10000 }).toBeNull();
+      await expect
+        .element(section.getByText('Cancelled', { exact: true }), { timeout: 10000 })
+        .toBeVisible();
       await expect(section.getByRole('progressbar')).toHaveCount(0);
+      await expect(section.getByRole('button', { name: 'Substack' })).toHaveCount(0);
       window.history.back();
       await expect.element(sidebarScreen.shellNav()).toBeVisible();
       await expect(sidebarProgress()).toHaveCount(0);
+      await sidebarScreen.navLink('Settings').click();
+      await expect.element(section.getByRole('button', { name: 'Done' })).toBeVisible();
+      await section.getByRole('button', { name: 'Done' }).click();
+      await expect.element(section.getByRole('button', { name: 'Substack' })).toBeVisible();
+      expect(localStorage.getItem(storageKey())).toBeNull();
     },
     30000,
   );
@@ -91,7 +99,12 @@ describe('CSV import progress', () => {
     config.config.contentImport = { stagedInspection: true };
     for (const importId of [id, otherId]) {
       fakeAdminEndpoint('GET', `/posts/upload/${importId}/progress/`, {
-        meta: { import_id: importId, status: 'running', processed: 1, total: 5 },
+        meta: {
+          import_id: importId,
+          status: importId === id ? 'complete' : 'running',
+          processed: 1,
+          total: 5,
+        },
       });
     }
     await renderAdminApp('/settings/migration', {
@@ -101,6 +114,9 @@ describe('CSV import progress', () => {
     const section = settingsScreen.section('migrationtools');
     await expect(section.getByRole('progressbar')).toHaveCount(2);
     await expect(section.getByRole('button', { name: 'Stop import' })).toHaveCount(0);
+    await section.getByRole('button', { name: 'Done' }).click();
+    await expect(section.getByRole('progressbar')).toHaveCount(1);
+    await expect(section.getByRole('button', { name: 'Substack' })).toHaveCount(0);
   });
 
   it.each([409, 500])(
@@ -147,8 +163,8 @@ describe('CSV import progress', () => {
     },
   );
 
-  it.each(['complete', 'failed', 'cancelled'])(
-    'restores progress and hides both indicators when %s',
+  it.each(['complete', 'failed', 'cancelled'] as const)(
+    'replaces the import options and keeps a %s result until Done',
     async (outcome) => {
       fakeTags([]);
       fakeSettingsScreens();
@@ -168,20 +184,49 @@ describe('CSV import progress', () => {
         .toBeVisible();
       await expect.element(section.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '62');
       await expect.element(section.getByText(/You can leave this page/)).toBeVisible();
+      for (const name of [
+        'Substack',
+        'beehiiv',
+        'WordPress',
+        'Squarespace',
+        'Medium',
+        'Mailchimp',
+        'Universal import',
+      ]) {
+        await expect(section.getByRole('button', { name, exact: true })).toHaveCount(0);
+      }
+      await expect(section.getByRole('button', { name: 'Done' })).toHaveCount(0);
       status = 'finalizing';
       processed = 100;
       await expect.element(section.getByText('Finishing…'), { timeout: 10000 }).toBeVisible();
       status = outcome;
-      await expect.poll(() => localStorage.getItem(storageKey()), { timeout: 10000 }).toBeNull();
-      await expect(section.getByRole('progressbar')).toHaveCount(0);
-      await expect(section.getByRole('heading', { name: 'Import progress' })).toHaveCount(0);
+      const label = { complete: 'Complete', failed: 'Failed', cancelled: 'Cancelled' }[outcome];
+      await expect
+        .element(section.getByText(label, { exact: true }), { timeout: 10000 })
+        .toBeVisible();
+      await expect.element(section.getByRole('button', { name: 'Done' })).toBeVisible();
+      expect(JSON.parse(localStorage.getItem(storageKey())!)).toEqual([id]);
       window.history.back();
       await expect.poll(currentRoute).toBe('/tags');
       await expect(sidebarProgress()).toHaveCount(0);
       window.history.forward();
       await expect.poll(currentRoute).toBe('/settings/migration');
+      await expect.element(section.getByRole('button', { name: 'Done' })).toBeVisible();
+      await expect(section.getByRole('progressbar')).toHaveCount(outcome === 'cancelled' ? 0 : 1);
+      await section.getByRole('button', { name: 'Done' }).click();
       await expect(section.getByRole('progressbar')).toHaveCount(0);
-      await expect(section.getByRole('button', { name: 'Dismiss import result' })).toHaveCount(0);
+      expect(localStorage.getItem(storageKey())).toBeNull();
+      for (const name of [
+        'Substack',
+        'beehiiv',
+        'WordPress',
+        'Squarespace',
+        'Medium',
+        'Mailchimp',
+        'Universal import',
+      ]) {
+        await expect.element(section.getByRole('button', { name, exact: true })).toBeVisible();
+      }
     },
     30000,
   );

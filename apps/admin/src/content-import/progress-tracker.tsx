@@ -29,11 +29,7 @@ function ProgressPoller({
       // return 404; none should leave a permanent indicator or repeated error toasts.
       onForget(id);
     } else if (data) {
-      if (isImportFinished(data.meta.status)) {
-        onForget(id);
-      } else {
-        onProgress({ ...data.meta, stale: Boolean(error) });
-      }
+      onProgress({ ...data.meta, stale: Boolean(error) });
     }
   }, [data, error, id, onForget, onProgress]);
   return null;

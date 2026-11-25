@@ -63,7 +63,7 @@ it('tracks accepted imports once and restores progress after remount', async () 
 });
 
 it.each(['complete', 'failed', 'cancelled'])(
-  'forgets a %s import and keeps other active imports',
+  'keeps a %s result until dismissed without removing other imports',
   async (status) => {
     localStorage.setItem(key, JSON.stringify([id, otherId]));
     let firstData = data;
@@ -76,21 +76,24 @@ it.each(['complete', 'failed', 'cancelled'])(
     await waitFor(() => expect(result.current.imports).toHaveLength(2));
     firstData = { meta: { ...data.meta, status } };
     rerender();
-    await waitFor(() =>
-      expect(result.current.imports.map((item) => item.import_id)).toEqual([otherId]),
-    );
+    await waitFor(() => expect(result.current.imports[0]?.status).toBe(status));
+    expect(JSON.parse(localStorage.getItem(key)!)).toEqual([id, otherId]);
+    act(() => result.current.dismiss(id));
+    expect(result.current.imports.map((item) => item.import_id)).toEqual([otherId]);
     expect(JSON.parse(localStorage.getItem(key)!)).toEqual([otherId]);
   },
 );
 
 it.each(['complete', 'failed', 'cancelled'])(
-  'forgets a previously %s import on reload',
+  'restores a previously %s result on reload until dismissed',
   async (status) => {
     localStorage.setItem(key, JSON.stringify([id]));
     useProgress.mockReturnValue({ data: { meta: { ...data.meta, status } }, error: null });
     const { result } = renderHook(useImportProgress, { wrapper });
-    await waitFor(() => expect(localStorage.getItem(key)).toBeNull());
+    await waitFor(() => expect(result.current.imports[0]?.status).toBe(status));
+    act(() => result.current.dismiss(id));
     expect(result.current.imports).toEqual([]);
+    expect(localStorage.getItem(key)).toBeNull();
   },
 );
 

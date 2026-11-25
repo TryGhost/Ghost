@@ -1,4 +1,4 @@
-import { ImportProgressCards } from '@/content-import/api';
+import { ImportProgressCards, useImportProgress } from '@/content-import/api';
 import MigrationToolsExport from './migration-tools/migration-tools-export';
 import MigrationToolsImport from './migration-tools/migration-tools-import';
 import React, { useState } from 'react';
@@ -10,6 +10,7 @@ type MigrationTab = 'import' | 'export';
 
 const MigrationTools: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const [selectedTab, setSelectedTab] = useState<MigrationTab>('import');
+  const { imports } = useImportProgress();
 
   return (
     <TopLevelGroup
@@ -29,8 +30,7 @@ const MigrationTools: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           <TabsTrigger value="export">Export</TabsTrigger>
         </TabsList>
         <TabsContent value="import">
-          <ImportProgressCards />
-          <MigrationToolsImport />
+          {imports.length ? <ImportProgressCards /> : <MigrationToolsImport />}
         </TabsContent>
         <TabsContent value="export">
           <MigrationToolsExport />

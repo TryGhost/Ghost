@@ -58,6 +58,7 @@ it.each([
     imports: [
       { ...progress, status: 'complete' as const },
       { ...progress, status: 'failed' as const },
+      { ...progress, status: 'cancelled' as const },
     ],
   },
 ])('hides the entry when there are no unfinished imports ($name)', ({ imports }) => {

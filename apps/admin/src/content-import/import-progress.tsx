@@ -7,11 +7,18 @@ import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { toast } from 'sonner';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { importPercentage, importProgressLabel, type TrackedImport } from './progress';
+import {
+  importPercentage,
+  importProgressLabel,
+  isImportFinished,
+  type TrackedImport,
+} from './progress';
 import { useImportProgress } from './use-import-progress';
 
 function ProgressCard({ progress }: { progress: TrackedImport }) {
   const percentage = importPercentage(progress);
+  const finished = isImportFinished(progress.status);
+  const { dismiss } = useImportProgress();
   const { data: config } = useBrowseConfig();
   const { mutateAsync: stopImport, isPending } = useStopContentCSVImport();
   const { confirm } = useConfirmation();
@@ -48,28 +55,34 @@ function ProgressCard({ progress }: { progress: TrackedImport }) {
   };
   const description = progress.stale
     ? 'Progress is temporarily unavailable. Your import may still be running.'
-    : progress.status === 'cancelling'
-      ? 'Stopping your import and preparing your partial report. Already imported content will be kept.'
-      : progress.status === 'queued'
-        ? 'Your import is queued. You can leave this page while it waits to start.'
-        : progress.status === 'finalizing'
-          ? 'Finishing your import and preparing your completion email.'
-          : 'Importing your content. You can leave this page while the import runs in the background.';
+    : progress.status === 'complete'
+      ? 'Your import has finished. Check your email for the results.'
+      : progress.status === 'failed'
+        ? 'Your import stopped before it could finish. Check your email for the partial results.'
+        : progress.status === 'cancelled'
+          ? 'Already imported posts and pages have been kept. Check your email for the partial results.'
+          : progress.status === 'cancelling'
+            ? 'Stopping your import and preparing your partial report. Already imported content will be kept.'
+            : progress.status === 'queued'
+              ? 'Your import is queued. You can leave this page while it waits to start.'
+              : progress.status === 'finalizing'
+                ? 'Finishing your import and preparing your completion email.'
+                : 'Importing your content. You can leave this page while the import runs in the background.';
 
   return (
-    <Box className="border border-border-default" padding="lg" radius="xl">
-      <Stack gap="md">
-        <Inline align="center" gap="lg" justify="between">
-          <Stack gap="xs">
-            <Text as="h3" size="lg" weight="semibold">
-              Import progress
-            </Text>
-            <Text tone="secondary">{description}</Text>
-          </Stack>
-          <Text className="shrink-0 tabular-nums" size="2xl" weight="semibold">
-            {importProgressLabel(progress)}
+    <Stack gap="md">
+      <Inline align="center" gap="lg" justify="between">
+        <Stack gap="xs">
+          <Text as="h3" size="lg" weight="semibold">
+            Import progress
           </Text>
-        </Inline>
+          <Text tone="secondary">{description}</Text>
+        </Stack>
+        <Text className="shrink-0 tabular-nums" size="2xl" weight="semibold">
+          {importProgressLabel(progress)}
+        </Text>
+      </Inline>
+      {progress.status !== 'cancelled' && (
         <Box
           aria-label="Import progress"
           aria-valuemax={100}
@@ -81,20 +94,27 @@ function ProgressCard({ progress }: { progress: TrackedImport }) {
           role="progressbar"
         >
           <Box
-            className={`h-full bg-foreground motion-safe:transition-[width] ${percentage === null ? 'motion-safe:animate-pulse' : ''}`}
+            className={`h-full bg-foreground motion-safe:transition-[width] ${percentage === null && !finished ? 'motion-safe:animate-pulse' : ''}`}
             radius="full"
             style={{ width: `${percentage ?? 33}%` }}
           />
         </Box>
-        {canStop && (
-          <Inline justify="end">
-            <Button disabled={isPending} size="sm" variant="outline" onClick={requestStop}>
-              Stop import
-            </Button>
-          </Inline>
-        )}
-      </Stack>
-    </Box>
+      )}
+      {canStop && (
+        <Inline justify="end">
+          <Button disabled={isPending} size="sm" variant="outline" onClick={requestStop}>
+            Stop import
+          </Button>
+        </Inline>
+      )}
+      {finished && (
+        <Inline justify="end">
+          <Button size="sm" variant="outline" onClick={() => dismiss(progress.import_id)}>
+            Done
+          </Button>
+        </Inline>
+      )}
+    </Stack>
   );
 }
 

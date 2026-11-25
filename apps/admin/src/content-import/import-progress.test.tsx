@@ -4,18 +4,19 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { ImportProgressCards } from './import-progress';
 import { importProgressLabel, importPercentage, type TrackedImport } from './progress';
 
-const useProgress = vi.hoisted(() => vi.fn());
+const { config, stop, confirm, invalidate, handleError, info, pending, useProgress } = vi.hoisted(
+  () => ({
+    useProgress: vi.fn(),
+    config: vi.fn(),
+    stop: vi.fn(),
+    confirm: vi.fn<ConfirmationContextType['confirm']>(),
+    invalidate: vi.fn(),
+    handleError: vi.fn(),
+    info: vi.fn(),
+    pending: vi.fn<() => boolean>(),
+  }),
+);
 vi.mock('./use-import-progress', () => ({ useImportProgress: useProgress }));
-
-const { config, stop, confirm, invalidate, handleError, info, pending } = vi.hoisted(() => ({
-  config: vi.fn(),
-  stop: vi.fn(),
-  confirm: vi.fn<ConfirmationContextType['confirm']>(),
-  invalidate: vi.fn(),
-  handleError: vi.fn(),
-  info: vi.fn(),
-  pending: vi.fn<() => boolean>(),
-}));
 vi.mock('@tryghost/admin-x-framework/api/config', () => ({ useBrowseConfig: config }));
 vi.mock('@tryghost/admin-x-framework/api/posts', () => ({
   useStopContentCSVImport: () => ({ mutateAsync: stop, isPending: pending() }),
@@ -35,6 +36,8 @@ beforeEach(() => {
   invalidate.mockResolvedValue(undefined);
 });
 
+const dismiss = vi.fn();
+
 const progress: TrackedImport = {
   import_id: 'abc',
   status: 'running',
@@ -43,7 +46,7 @@ const progress: TrackedImport = {
   stale: false,
 };
 function show(items: TrackedImport[]) {
-  useProgress.mockReturnValue({ imports: items });
+  useProgress.mockReturnValue({ imports: items, dismiss });
   return render(<ImportProgressCards />);
 }
 
@@ -156,4 +159,33 @@ it('stops only the selected import when multiple cards are shown', async () => {
   fireEvent.click(screen.getAllByRole('button', { name: 'Stop import' })[1]);
   await act(() => confirm.mock.calls[0][0].onOk!({ remove: vi.fn() }));
   expect(stop).toHaveBeenCalledExactlyOnceWith('other');
+});
+
+it.each([
+  { status: 'complete' as const, label: 'Complete', description: /Your import has finished/ },
+  { status: 'failed' as const, label: 'Failed', description: /stopped before it could finish/ },
+  {
+    status: 'cancelled' as const,
+    label: 'Cancelled',
+    description: /posts and pages have been kept/,
+  },
+])('keeps a $status result until Done is clicked', ({ status, label, description }) => {
+  show([{ ...progress, status }]);
+  expect(screen.getByText(label)).toBeVisible();
+  expect(screen.getByText(description)).toBeVisible();
+  if (status === 'cancelled') {
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  } else {
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '62');
+  }
+  expect(screen.queryByRole('button', { name: 'Stop import' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+  expect(dismiss).toHaveBeenCalledExactlyOnceWith(progress.import_id);
+});
+
+it('keeps an unknown terminal total indeterminate without animating or inventing completion', () => {
+  show([{ ...progress, status: 'failed', total: null }]);
+  const bar = screen.getByRole('progressbar');
+  expect(bar).not.toHaveAttribute('aria-valuenow');
+  expect(bar.firstElementChild).not.toHaveClass('motion-safe:animate-pulse');
 });
