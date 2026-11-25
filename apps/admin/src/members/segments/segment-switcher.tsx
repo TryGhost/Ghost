@@ -9,6 +9,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -94,8 +95,11 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
                 {!current && <CommandCheck />}
               </CommandItem>
             </CommandGroup>
+            {/* A line, as the checkout's country list has under "All countries": the search and
+                the last row already say these are segments, so a heading would only repeat it. */}
+            {segments.length > 0 && <CommandSeparator className="-mx-1" />}
             {segments.length > 0 && (
-              <CommandGroup heading="Segments">
+              <CommandGroup>
                 {segments.map((segment) => (
                   <CommandItem
                     key={segment.id}

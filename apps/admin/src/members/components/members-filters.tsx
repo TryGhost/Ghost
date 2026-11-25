@@ -229,7 +229,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
       keyboardShortcut={embedded ? undefined : 'f'}
       popoverAlign="start"
       popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
-      showClearButton={hasFilters}
+      // Embedded, each filter's own remove button is enough. A clear button would also keep
+      // room for itself at the end of the row, which pushes "add" onto a line of its own.
+      showClearButton={hasFilters && !embedded}
       allowMultiple
       showSearchInput
       onChange={handleFiltersChange}

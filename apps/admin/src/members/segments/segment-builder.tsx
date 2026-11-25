@@ -86,7 +86,7 @@ const STATUS_LABELS: Record<Member['status'], string> = {
 
 function PreviewMessage({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <Stack align="center" className="h-full text-center" gap="sm" justify="center">
+    <Stack align="center" className="py-8 text-center" gap="sm" justify="center">
       {icon}
       <Text size="sm" tone="secondary">
         {children}
@@ -122,9 +122,13 @@ function MatchingMembersPreview({ filter, compact }: { filter: string; compact?:
           </>
         )}
       </Text>
-      {/* A set height, so the dialog doesn't move as the conditions change. */}
+      {/* As tall as the members it lists, up to a limit past which it scrolls: a few members
+          don't leave an empty box under them. */}
       <div
-        className={cn('overflow-y-auto rounded-md border border-border', compact ? 'h-44' : 'h-64')}
+        className={cn(
+          'overflow-y-auto rounded-md border border-border',
+          compact ? 'max-h-44' : 'max-h-64',
+        )}
         data-testid="segment-builder-preview"
       >
         {isLoading ? (
@@ -222,7 +226,13 @@ type SegmentBuilder = ReturnType<typeof useSegmentBuilder>;
  * The builder's fields, whatever it is shown in: the name, the conditions, and the members they
  * match, listed once there is a filter.
  */
-function SegmentBuilderForm({ builder, compact }: { builder: SegmentBuilder; compact?: boolean }) {
+interface SegmentBuilderFormProps {
+  builder: SegmentBuilder;
+  /** A shorter list of members, for the popover. */
+  compact?: boolean;
+}
+
+function SegmentBuilderForm({ builder, compact }: SegmentBuilderFormProps) {
   const nameId = useId();
   const { conditions, draft, filterError, hasFilters, save } = builder;
 
@@ -253,9 +263,10 @@ function SegmentBuilderForm({ builder, compact }: { builder: SegmentBuilder; com
       <Field data-invalid={Boolean(filterError) || undefined}>
         {/* The bar is there before any filter, unlike on the members screen. Alone under the
             name, a bare Filter button was too faint to find, and the bar marks where the filters
-            will go. Until it holds one it has no padding, so it is as tall as the name field. */}
+            will go. Until it holds one its padding is slight, so it is close to the name field's
+            height while the button's hover still has room around it. */}
         <FilterBar
-          className={cn('mt-0 transition-[padding] duration-200 ease-out', !hasFilters && 'p-0!')}
+          className={cn('mt-0 transition-[padding] duration-200 ease-out', !hasFilters && 'p-1!')}
         >
           <MembersFilters
             filters={conditions.filters}
@@ -296,11 +307,13 @@ interface SegmentBuilderActionsProps {
 /** The builder's pin switch, where the place asks for it, and its buttons. */
 function SegmentBuilderActions({ builder, withPin, size, onCancel }: SegmentBuilderActionsProps) {
   const pinId = useId();
-  const { draft, hasError, save } = builder;
+  const { draft, hasError, hasFilters, save } = builder;
 
   return (
     <Inline className="w-full" gap="md" justify="between">
-      {withPin ? (
+      {/* Offered once there is a filter, with the list of who matches: before that there is
+          no segment yet to pin, and the builder asks only for what it needs. */}
+      {withPin && hasFilters ? (
         <Field className="w-auto" orientation="horizontal">
           <Switch checked={draft.pinned} id={pinId} onCheckedChange={draft.setPinned} />
           <FieldLabel className="font-normal" htmlFor={pinId}>
@@ -357,6 +370,9 @@ export function SegmentBuilderDialog({
   onCreated,
 }: SegmentBuilderProps) {
   const builder = useSegmentBuilder({ startFrom, onCreated, onDone: () => onOpenChange(false) });
+  // As in the popover: kept while it holds something or is saving. A click outside or Escape
+  // would throw the segment away, and Cancel is the one way to do that.
+  const keepOpen = builder.isDirty || builder.draft.isPending;
 
   return (
     <Dialog open={open} onOpenChange={(next) => !builder.draft.isPending && onOpenChange(next)}>
@@ -368,6 +384,16 @@ export function SegmentBuilderDialog({
           builder.hasFilters ? 'max-w-2xl' : 'max-w-lg',
         )}
         data-testid="segment-builder-dialog"
+        onEscapeKeyDown={(event) => {
+          if (keepOpen) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event) => {
+          if (keepOpen) {
+            event.preventDefault();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>New segment</DialogTitle>
