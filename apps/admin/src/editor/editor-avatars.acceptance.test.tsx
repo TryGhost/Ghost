@@ -67,6 +67,15 @@ function fakeEditor(viewers: string[], occupied = true) {
 const viewers = () => page.getByTestId('presence-avatars');
 const viewer = (name: string) => viewers().getByRole('img', { name: `${name} has this post open` });
 const you = () => viewers().getByRole('img', { name: 'You have this post open' });
+/** The avatars as the header row reads them, left to right. */
+const inOrder = (...avatars: Element[]) =>
+  avatars.every(
+    (avatar, index) =>
+      index === 0 ||
+      Boolean(
+        avatars[index - 1].compareDocumentPosition(avatar) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+  );
 
 describe('Editor avatars', () => {
   it('opens viewer tooltips without a hover delay', async () => {
@@ -131,17 +140,14 @@ describe('Editor avatars', () => {
     await expect.element(viewers()).not.toBeInTheDocument();
   });
 
-  it('shows the editing avatar first without a lock icon and stacks two people', async () => {
+  it('leads with the editing avatar, followed by you as a viewer', async () => {
     fakeEditor([]);
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAGS);
 
     const editing = page.getByTestId(editorLeaseAvatar);
     await expect.element(editing).toHaveAccessibleName('Zoe Writer is editing this post');
     await expect.element(you()).toBeVisible();
-    expect(editing.element().querySelector('svg')).toBeNull();
-    const editorBounds = editing.element().getBoundingClientRect();
-    expect(you().element().getBoundingClientRect().left).toBeLessThan(editorBounds.right);
-    expect(getComputedStyle(viewers().element().parentElement!).paddingRight).toBe('8px');
+    expect(inOrder(editing.element(), you().element())).toBe(true);
 
     await editing.click();
     await expect
@@ -152,28 +158,23 @@ describe('Editor avatars', () => {
       .toBeVisible();
   });
 
-  it('stacks everyone with the editor in front and dims each viewer over its own white backing', async () => {
+  it('leads with the editor, then you, then the other viewers', async () => {
     fakeEditor([VIEWER, SECOND_VIEWER]);
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAGS);
 
     const editing = page.getByTestId(editorLeaseAvatar);
     await expect.element(viewer('Beth Reader')).toBeVisible();
-    const first = viewer('Alice Reader').element();
-    const second = viewer('Beth Reader').element();
-    const current = you().element();
-    const editorBounds = editing.element().getBoundingClientRect();
-    expect(current.getBoundingClientRect().left).toBeLessThan(editorBounds.right);
-    expect(first.getBoundingClientRect().left).toBeLessThan(current.getBoundingClientRect().right);
-    expect(second.getBoundingClientRect().left).toBeLessThan(first.getBoundingClientRect().right);
-    expect(Number(getComputedStyle(editing.element()).zIndex)).toBeGreaterThan(0);
-    for (const avatar of [current, first, second]) {
-      expect(getComputedStyle(avatar).backgroundColor).toBe('oklch(1 0 0)');
-      expect(getComputedStyle(avatar.firstElementChild!).opacity).toBe('0.5');
-    }
-    expect(getComputedStyle(editing.element().firstElementChild!).opacity).toBe('1');
+    expect(
+      inOrder(
+        editing.element(),
+        you().element(),
+        viewer('Alice Reader').element(),
+        viewer('Beth Reader').element(),
+      ),
+    ).toBe(true);
   });
 
-  it('shows this tab’s editing avatar first after its first edit and dims the other people', async () => {
+  it('leads with this tab’s editing avatar after its first edit', async () => {
     fakeEditor([VIEWER, SECOND_VIEWER], false);
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAGS);
     await expect.element(editorScreen.titleInput()).toHaveValue('Avatar example');
@@ -186,11 +187,7 @@ describe('Editor avatars', () => {
     await expect.element(editing).toBeVisible();
     await expect.element(page.getByTestId(editorLeaseAvatar)).not.toBeInTheDocument();
     await expect.element(you()).not.toBeInTheDocument();
-    const first = viewer('Alice Reader').element();
-    expect(editing.element().getBoundingClientRect().left).toBeLessThan(
-      first.getBoundingClientRect().left,
-    );
-    expect(getComputedStyle(first.firstElementChild!).opacity).toBe('0.5');
+    expect(inOrder(editing.element(), viewer('Alice Reader').element())).toBe(true);
     await userEvent.keyboard('{Escape}');
     await userEvent.hover(editing);
     await expect

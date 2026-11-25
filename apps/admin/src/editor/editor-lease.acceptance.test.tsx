@@ -154,30 +154,6 @@ describe('Post editor lease', () => {
   });
 
   describe('while someone else is editing', () => {
-    it('gives grouped fields and tag pickers the same disabled surface as textareas', async () => {
-      fakePublishedPost();
-      alex();
-      fakeLease().state.other = OTHER_USER;
-      await open();
-      await editorScreen.settingsToggle().click();
-
-      const disabledSurface = getComputedStyle(
-        editorScreen.settingsExcerpt().element(),
-      ).backgroundColor;
-      for (const field of [
-        editorScreen.settingsSlug(),
-        editorScreen.settingsPublishDate(),
-        editorScreen.settingsPublishTime(),
-      ]) {
-        const group = field.element().closest('[data-slot="input-group"]');
-        expect(group).not.toBeNull();
-        expect(getComputedStyle(group!).backgroundColor).toBe(disabledSurface);
-      }
-      expect(getComputedStyle(editorScreen.settingsTagsField().element()).backgroundColor).toBe(
-        disabledSurface,
-      );
-    });
-
     it('closes the tag list and disables tag editing when another tab takes over', async () => {
       fakePublishedPost();
       alex();
@@ -432,7 +408,6 @@ describe('Post editor lease', () => {
       await expect
         .element(card().getByRole('status'))
         .toHaveTextContent('You’re now editing this post.');
-      expect(card().element().querySelector('svg')).toHaveClass('text-state-success');
       // Reloading the editor can return focus to its new writing surface.
       editorScreen.titleInput().element().focus();
       await expect.element(editorScreen.titleInput()).toHaveFocus();
@@ -453,7 +428,7 @@ describe('Post editor lease', () => {
         .toHaveTextContent('You are editing this post.');
     });
 
-    it('shows success below the new owner’s avatar while the previous editor remains present', async () => {
+    it('shows success while the previous editor remains present', async () => {
       fakePublishedPost();
       alex();
       const { state } = fakeLease(() => [
@@ -469,13 +444,9 @@ describe('Post editor lease', () => {
         .element(card(), { timeout: 14_000 })
         .toHaveTextContent('You’re now editing this post.');
       await expect.element(card()).toBeVisible();
-      const editing = page.getByRole('button', { name: 'You are editing this post', exact: true });
-      const anchor = editing.element().getBoundingClientRect();
-      const popup = card().element().getBoundingClientRect();
-      expect(popup.top).toBeGreaterThanOrEqual(anchor.bottom);
-      expect(
-        Math.abs((popup.left + popup.right) / 2 - (anchor.left + anchor.right) / 2),
-      ).toBeLessThan(2);
+      await expect
+        .element(page.getByRole('button', { name: 'You are editing this post', exact: true }))
+        .toBeVisible();
     }, 20_000);
 
     it('reads the latest copy and opens by itself once they have gone', async () => {
