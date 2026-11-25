@@ -32,13 +32,13 @@ import {
 import { mintableKey } from './key';
 import type { RequestContext } from '../../../lib/actor';
 import {
-  CustomFieldAdded,
-  CustomFieldDeleted,
-  CustomFieldEdited,
-  CustomFieldsAdded,
-  CustomFieldsReordered,
-  type OnCustomFieldUpdated,
-} from './changes';
+  DefinitionAdded,
+  DefinitionDeleted,
+  DefinitionEdited,
+  DefinitionsAdded,
+  DefinitionsReordered,
+  type OnDefinitionUpdated,
+} from '../metafields/changes';
 import type { MetafieldsTracking } from '../metafields/tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
 
@@ -131,7 +131,7 @@ export interface EditedField {
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource<Caller>;
-  private onCustomFieldUpdated: OnCustomFieldUpdated;
+  private onDefinitionUpdated: OnDefinitionUpdated;
   private namespaces: Namespaces<Caller>;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
@@ -140,7 +140,7 @@ export class MetafieldDefinitionsService {
   constructor({
     knex,
     fields,
-    onCustomFieldUpdated,
+    onDefinitionUpdated,
     namespaces,
     tracking,
     labs,
@@ -148,7 +148,7 @@ export class MetafieldDefinitionsService {
     knex: Knex;
     fields: FieldSource<Caller>;
     /** Called with each change a command makes, inside the command's transaction. */
-    onCustomFieldUpdated: OnCustomFieldUpdated;
+    onDefinitionUpdated: OnDefinitionUpdated;
     namespaces: Namespaces<Caller>;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
@@ -156,7 +156,7 @@ export class MetafieldDefinitionsService {
   }) {
     this.knex = knex;
     this.fields = fields;
-    this.onCustomFieldUpdated = onCustomFieldUpdated;
+    this.onDefinitionUpdated = onDefinitionUpdated;
     this.namespaces = namespaces;
     this.tracking = tracking;
     this.labs = labs;
@@ -300,10 +300,10 @@ export class MetafieldDefinitionsService {
             keys.push(key);
           }
           const added = await this.readMany(trx, namespace, keys);
-          await this.onCustomFieldUpdated(
+          await this.onDefinitionUpdated(
             trx,
             context,
-            new CustomFieldsAdded(added.map((field) => new CustomFieldAdded(field))),
+            new DefinitionsAdded(added.map((field) => new DefinitionAdded(field))),
           );
           return added;
         });
@@ -418,7 +418,7 @@ export class MetafieldDefinitionsService {
 
         // An order covers the whole list, archived definitions included.
         const ordered = await this.list(this.fields.definitions(trx, everyField));
-        await this.onCustomFieldUpdated(trx, context, new CustomFieldsReordered(previous, ordered));
+        await this.onDefinitionUpdated(trx, context, new DefinitionsReordered(previous, ordered));
         return ordered;
       });
     });
@@ -661,7 +661,7 @@ export class MetafieldDefinitionsService {
           });
         }
         if (!isDeepStrictEqual(existing, field)) {
-          await this.onCustomFieldUpdated(trx, context, new CustomFieldEdited(existing, field));
+          await this.onDefinitionUpdated(trx, context, new DefinitionEdited(existing, field));
         }
         return {
           field,
@@ -728,7 +728,7 @@ export class MetafieldDefinitionsService {
           });
         }
         await this.fields.table(trx).where({ namespace, key }).del();
-        await this.onCustomFieldUpdated(trx, context, new CustomFieldDeleted(stored));
+        await this.onDefinitionUpdated(trx, context, new DefinitionDeleted(stored));
       });
     });
   }

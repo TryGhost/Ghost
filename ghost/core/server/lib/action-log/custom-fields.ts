@@ -1,19 +1,20 @@
 import { isDeepStrictEqual } from 'node:util';
 import type { MemberAccess } from '../../services/members-metafields/callers';
 import type {
-  CustomFieldChange,
-  OnCustomFieldUpdated,
-} from '../../services/members-metafields/custom-fields/changes';
+  DefinitionChange,
+  OnDefinitionUpdated,
+} from '../../services/members-metafields/metafields/changes';
 import type { Definition } from '../../services/members-metafields/metafields/models';
 import type { ActionLog, ActionRow } from './action-log';
 
 type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;
 
 /**
- * Logs the changes the custom field definitions service reports. This is the only place that
- * knows how a custom field change reads in Admin's History; the service only says what happened.
+ * Logs the changes the members' definitions service reports, as custom field actions, whichever
+ * namespace the definition is in. This is the only place that knows how a change to a member's
+ * definition reads in Admin's History; the service only says what happened.
  */
-export function recordCustomFieldChanges(actionLog: ActionLog): OnCustomFieldUpdated {
+export function recordMemberDefinitionChanges(actionLog: ActionLog): OnDefinitionUpdated {
   return async (trx, context, change) => {
     for (const action of actionsFor(change)) {
       await actionLog.record(trx, context, action);
@@ -23,17 +24,18 @@ export function recordCustomFieldChanges(actionLog: ActionLog): OnCustomFieldUpd
 
 // A field's timeline reads added -> edited -> archived -> restored, and a permanent delete (only
 // from the archived state) ends it with deleted.
-function actionsFor(change: CustomFieldChange): FieldAction[] {
+function actionsFor(change: DefinitionChange): FieldAction[] {
   switch (change.type) {
     // Each field added has a timeline of its own to start, so each gets its own action.
-    case 'CustomFieldsAdded':
+    case 'DefinitionsAdded':
       return change.changes.map(({ next }) => fieldAction('added', next));
-    case 'CustomFieldEdited':
+    case 'DefinitionEdited':
       return editActions(change.previous, change.next);
-    case 'CustomFieldDeleted':
+    case 'DefinitionDeleted':
       return [fieldAction('deleted', change.previous)];
-    // A reorder names no field: it carries the count and the word History reads it by.
-    case 'CustomFieldsReordered':
+    // A reorder names no field: it carries the count and the word History reads it by, and the
+    // namespace whose fields were put in order.
+    case 'DefinitionsReordered':
       return [
         {
           resourceType: 'member_custom_field',
@@ -41,6 +43,7 @@ function actionsFor(change: CustomFieldChange): FieldAction[] {
           resourceId: null,
           actionName: 'reordered',
           count: change.next.length,
+          context: { namespace: namespaceOf(change.next) },
         },
       ];
   }
@@ -99,16 +102,15 @@ function editActions(previous: Definition, next: Definition): FieldAction[] {
 
 /**
  * The action for a change to one field. Its name keeps the timeline legible after a hard
- * delete, when the row itself is gone, and `key` rides alongside because the key is how a field
- * is addressed publicly: its id never leaves the API. The namespace goes unrecorded, as staff
- * only ever change fields in `custom`.
+ * delete, when the row itself is gone, and its namespace and key ride alongside because together
+ * they are how a field is addressed publicly: its id never leaves the API.
  *
  * The resource is the field's id: that column holds 24 characters, and a key minted from a
  * publisher-chosen name is bounded by the far wider key column, so only the id fits every field.
  */
 function fieldAction(
   event: FieldAction['event'],
-  field: { id: string; name: string; key: string },
+  field: Pick<Definition, 'id' | 'name' | 'namespace' | 'key'>,
   change: {
     previous_name?: string;
     member_access?: MemberAccess;
@@ -120,6 +122,14 @@ function fieldAction(
     event,
     resourceId: field.id,
     primaryName: field.name,
-    context: { key: field.key, ...change },
+    context: { namespace: field.namespace, key: field.key, ...change },
   };
+}
+
+/**
+ * The namespace a reorder put in order. A reorder names every field in one namespace, and at
+ * least one, so the first says which.
+ */
+function namespaceOf(ordered: Definition[]): Definition['namespace'] | null {
+  return ordered[0]?.namespace ?? null;
 }

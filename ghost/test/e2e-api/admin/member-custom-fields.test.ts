@@ -2605,10 +2605,11 @@ describe('Member Custom Fields Admin API', function () {
       return body.actions;
     };
 
-    // A field is addressed publicly by its key, and the key rides in the action's
+    // A field is addressed publicly by its namespace and key, and both ride in the action's
     // context rather than in resource_id, which holds the row id.
     const ActionContext = z.object({
       primary_name: z.string().optional(),
+      namespace: z.string().optional(),
       key: z.string().optional(),
       previous_name: z.string().optional(),
       member_access: z.string().optional(),
@@ -2644,6 +2645,7 @@ describe('Member Custom Fields Admin API', function () {
       const actions = await customFieldActions();
       assert.equal(actions.length, 1);
       assert.equal(actions[0].event, 'added');
+      assert.equal(contextOf(actions[0]).namespace, 'custom');
       assert.equal(contextOf(actions[0]).key, field.key);
       assert.equal(actions[0].actor_type, 'user');
       assert.equal(actions[0].actor_id, actorId);
@@ -2690,6 +2692,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(edited.length, 1, 'a reorder records one action, not one per field');
       assert.equal(edited[0].resource_id, null);
       assert.equal(contextOf(edited[0]).action_name, 'reordered');
+      assert.equal(contextOf(edited[0]).namespace, 'custom');
       assert.equal(contextOf(edited[0]).count, 3);
       assert.equal(edited[0].actor_id, actorId);
     });

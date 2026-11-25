@@ -4693,7 +4693,7 @@ services:
           - core/server/services/members-metafields/custom-fields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/custom-fields/changes.ts
+          - core/server/services/members-metafields/metafields/changes.ts
           - core/server/lib/action-log/custom-fields.ts
           - core/server/lib/action-log/action-log.ts
           - core/server/services/members/members-api/services/member-bread-service.js
@@ -4719,7 +4719,7 @@ services:
           - core/server/services/members-metafields/custom-fields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/custom-fields/changes.ts
+          - core/server/services/members-metafields/metafields/changes.ts
           - core/server/lib/action-log/custom-fields.ts
           - core/server/lib/action-log/action-log.ts
           - core/server/services/members/import-export/import/importer.ts
