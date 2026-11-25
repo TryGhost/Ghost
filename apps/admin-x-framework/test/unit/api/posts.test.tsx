@@ -5,6 +5,7 @@ import {
   postsDataType,
   useAddPost,
   useCancelContentCSV,
+  useStopContentCSVImport,
   useContentCSVProgress,
   useEditPost,
   useEditorPost,
@@ -27,6 +28,63 @@ const requestParams = (mock: any) => Object.fromEntries(requestUrl(mock).searchP
 const requestBody = (mock: any) => JSON.parse(mock.calls[0][1].body as string);
 
 describe('posts api', () => {
+  it.each(['cancelling', 'cancelled'] as const)(
+    'requests a CSV stop and updates only its cached progress (%s)',
+    async (status) => {
+      const client = createTestQueryClient();
+      client.setQueryDefaults(['ContentCSVProgress'], { gcTime: Infinity });
+      const progress = {
+        meta: { import_id: 'import/id', status: 'running', processed: 20, total: 100 },
+      };
+      const other = { meta: { ...progress.meta, import_id: 'other' } };
+      client.setQueryData(['ContentCSVProgress', 'this'], progress);
+      client.setQueryData(['ContentCSVProgress', 'other'], other);
+      client.getQueryCache().build(client, { queryKey: ['ContentCSVProgress', 'empty'] });
+      await withMockFetch(
+        {
+          json: { meta: { import_id: 'import/id', status } },
+          headers: { 'content-type': 'application/json' },
+        },
+        async (mock) => {
+          const { result } = renderHookWithProviders(() => useStopContentCSVImport(), {
+            queryClient: client,
+          });
+          await act(async () => {
+            await result.current.mutateAsync('import/id');
+          });
+          expect(mock.calls[0][0]).toContain('/posts/upload/import%2Fid/cancel/');
+          expect(mock.calls[0][1].method).toBe('POST');
+          expect(mock.calls[0][1].body).toBeUndefined();
+          expect(client.getQueryData(['ContentCSVProgress', 'this'])).toEqual({
+            meta: { ...progress.meta, status },
+          });
+          expect(client.getQueryData(['ContentCSVProgress', 'other'])).toEqual(other);
+          expect(client.getQueryData(['ContentCSVProgress', 'empty'])).toBeUndefined();
+        },
+      );
+    },
+  );
+
+  it('leaves progress unchanged when cancellation fails', async () => {
+    const client = createTestQueryClient();
+    client.setQueryDefaults(['ContentCSVProgress'], { gcTime: Infinity });
+    const progress = { meta: { import_id: 'id', status: 'running', processed: 20, total: 100 } };
+    client.setQueryData(['ContentCSVProgress', 'id'], progress);
+    await withMockFetch(
+      { status: 409, ok: false, json: { errors: [{ message: 'Already finished' }] } },
+      async (mock) => {
+        const { result } = renderHookWithProviders(() => useStopContentCSVImport(), {
+          queryClient: client,
+        });
+        await act(async () => {
+          await expect(result.current.mutateAsync('id')).rejects.toThrow();
+        });
+        expect(mock.calls).toHaveLength(1);
+        expect(client.getQueryData(['ContentCSVProgress', 'id'])).toEqual(progress);
+      },
+    );
+  });
+
   it('reads CSV progress through the encoded import endpoint', async () => {
     const meta = { import_id: 'import/id', status: 'running', processed: 25, total: 100 };
     await withMockFetch(

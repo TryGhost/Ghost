@@ -242,7 +242,7 @@ export const useCancelContentCSV = createMutation<unknown, string>({
 
 export interface ContentCSVProgress {
   import_id: string;
-  status: 'queued' | 'running' | 'finalizing' | 'complete' | 'failed';
+  status: 'queued' | 'running' | 'finalizing' | 'complete' | 'failed' | 'cancelling' | 'cancelled';
   processed: number;
   total: number | null;
 }
@@ -250,6 +250,25 @@ export interface ContentCSVProgress {
 export const useContentCSVProgress = createQueryWithId<{ meta: ContentCSVProgress }>({
   dataType: 'ContentCSVProgress',
   path: (id) => `/posts/upload/${encodeURIComponent(id)}/progress/`,
+});
+
+export interface ContentCSVCancellation {
+  meta: { import_id: string; status: 'cancelling' | 'cancelled' };
+}
+
+export const useStopContentCSVImport = createMutation<ContentCSVCancellation, string>({
+  method: 'POST',
+  retry: false,
+  path: (importId) => `/posts/upload/${encodeURIComponent(importId)}/cancel/`,
+  updateQueries: {
+    dataType: 'ContentCSVProgress',
+    update: ({ meta }, currentData) => {
+      const current = currentData as { meta: ContentCSVProgress } | undefined;
+      return current?.meta.import_id === meta.import_id
+        ? { ...current, meta: { ...current.meta, status: meta.status } }
+        : current;
+    },
+  },
 });
 
 // Older Core responses may omit the receipt used for progress tracking.
