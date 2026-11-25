@@ -66,6 +66,7 @@ function fakeEditor(viewers: string[], occupied = true) {
 
 const viewers = () => page.getByTestId('presence-avatars');
 const viewer = (name: string) => viewers().getByRole('img', { name: `${name} has this post open` });
+const you = () => viewers().getByRole('img', { name: 'You have this post open' });
 
 describe('Editor avatars', () => {
   it('opens viewer tooltips without a hover delay', async () => {
@@ -111,7 +112,6 @@ describe('Editor avatars', () => {
   it('includes the current viewer as soon as another person is present and hides them when alone', async () => {
     const present: string[] = [];
     fakeEditor(present, false);
-    const me = currentUserResponse().users[0];
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAGS);
     await expect
       .poll(() => (editorScreen.titleInput().element() as HTMLTextAreaElement).readOnly)
@@ -120,7 +120,7 @@ describe('Editor avatars', () => {
 
     present.push(VIEWER);
     document.dispatchEvent(new Event('visibilitychange'));
-    await expect.element(viewer(String(me.name))).toBeVisible();
+    await expect.element(you()).toBeVisible();
     await expect.element(viewer('Alice Reader')).toBeVisible();
     await expect
       .element(page.getByRole('button', { name: 'You are editing this post', exact: true }))
@@ -133,17 +133,14 @@ describe('Editor avatars', () => {
 
   it('shows the editing avatar first without a lock icon and stacks two people', async () => {
     fakeEditor([]);
-    const me = currentUserResponse().users[0];
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAGS);
 
     const editing = page.getByTestId(editorLeaseAvatar);
     await expect.element(editing).toHaveAccessibleName('Zoe Writer is editing this post');
-    await expect.element(viewer(String(me.name))).toBeVisible();
+    await expect.element(you()).toBeVisible();
     expect(editing.element().querySelector('svg')).toBeNull();
     const editorBounds = editing.element().getBoundingClientRect();
-    expect(viewer(String(me.name)).element().getBoundingClientRect().left).toBeLessThan(
-      editorBounds.right,
-    );
+    expect(you().element().getBoundingClientRect().left).toBeLessThan(editorBounds.right);
     expect(getComputedStyle(viewers().element().parentElement!).paddingRight).toBe('8px');
 
     await editing.click();
@@ -157,14 +154,13 @@ describe('Editor avatars', () => {
 
   it('stacks everyone with the editor in front and dims each viewer over its own white backing', async () => {
     fakeEditor([VIEWER, SECOND_VIEWER]);
-    const me = currentUserResponse().users[0];
     await renderAdminApp(`/editor/post/${POST_ID}`, FLAGS);
 
     const editing = page.getByTestId(editorLeaseAvatar);
     await expect.element(viewer('Beth Reader')).toBeVisible();
     const first = viewer('Alice Reader').element();
     const second = viewer('Beth Reader').element();
-    const current = viewer(String(me.name)).element();
+    const current = you().element();
     const editorBounds = editing.element().getBoundingClientRect();
     expect(current.getBoundingClientRect().left).toBeLessThan(editorBounds.right);
     expect(first.getBoundingClientRect().left).toBeLessThan(current.getBoundingClientRect().right);
@@ -189,9 +185,7 @@ describe('Editor avatars', () => {
     const editing = page.getByRole('button', { name: 'You are editing this post', exact: true });
     await expect.element(editing).toBeVisible();
     await expect.element(page.getByTestId(editorLeaseAvatar)).not.toBeInTheDocument();
-    await expect
-      .element(viewer(String(currentUserResponse().users[0].name)))
-      .not.toBeInTheDocument();
+    await expect.element(you()).not.toBeInTheDocument();
     const first = viewer('Alice Reader').element();
     expect(editing.element().getBoundingClientRect().left).toBeLessThan(
       first.getBoundingClientRect().left,

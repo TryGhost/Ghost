@@ -68,9 +68,18 @@ export function listNames(names: string[]): string {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
-/** One sentence for everyone present: "Alex and Sam have this post open". */
-export function describePresence(names: string[], resourceType: 'post' | 'page'): string {
-  return `${listNames(names)} ${names.length === 1 ? 'has' : 'have'} this ${resourceType} open`;
+/**
+ * One sentence for everyone present: "Alex and Sam have this post open". With
+ * `withViewer`, the person reading it leads as "You".
+ */
+export function describePresence(
+  names: string[],
+  resourceType: 'post' | 'page',
+  { withViewer = false }: { withViewer?: boolean } = {},
+): string {
+  const all = withViewer ? ['You', ...names] : names;
+  const verb = all.length === 1 && !withViewer ? 'has' : 'have';
+  return `${listNames(all)} ${verb} this ${resourceType} open`;
 }
 
 export function userInitials(name: string): string {

@@ -93,9 +93,11 @@ export function PresenceAvatars({
     return null;
   }
   const [first] = users;
+  const isViewer = (user: PresentUser) => user.id === currentUser?.id;
   const everyone = describePresence(
-    users.map((user) => user.name),
+    users.filter((user) => !isViewer(user)).map((user) => user.name),
     resourceType,
+    { withViewer: currentUser !== undefined },
   );
   const shown = users.slice(0, limit);
   const rest = users.length - shown.length;
@@ -126,7 +128,9 @@ export function PresenceAvatars({
                 index > 0 && (overlap ? '-ml-2' : 'ml-1'),
               )}
               dimmed={dimmed}
-              label={describePresence([user.name], resourceType)}
+              label={describePresence(isViewer(user) ? [] : [user.name], resourceType, {
+                withViewer: isViewer(user),
+              })}
               // The first avatar overlaps the next, so the row reads left to right.
               stack={shown.length - index}
               user={user}
