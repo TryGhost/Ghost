@@ -278,6 +278,12 @@ describe('Public-config response builders', function () {
           webhookUrl: 'https://example.com/verify',
           webhookSecret: 'verification-secret',
         },
+        abuseClassifier: {
+          webhookUrl: 'https://example.com/abuse',
+          webhookSecret: 'abuse-secret',
+          siteCreatedAt: '2026-09-01T10:00:00.000Z',
+          maxSiteAgeDays: 365,
+        },
       });
 
       const configProperties = getConfigProperties();
@@ -291,6 +297,11 @@ describe('Public-config response builders', function () {
           verified: true,
           webhookType: 'email_verification',
           webhookUrl: 'https://example.com/verify',
+        },
+        abuseClassifier: {
+          webhookUrl: 'https://example.com/abuse',
+          siteCreatedAt: '2026-09-01T10:00:00.000Z',
+          maxSiteAgeDays: 365,
         },
       });
     });
