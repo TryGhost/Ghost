@@ -132,7 +132,7 @@ function MatchingMembersPreview({ filter, compact }: { filter: string; compact?:
         data-testid="segment-builder-preview"
       >
         {isLoading ? (
-          <Stack className="p-3" gap="md">
+          <Stack className="px-4 py-3" gap="md">
             {Array.from({ length: 4 }, (_, index) => (
               <Inline key={index} gap="md">
                 <Skeleton className="size-8 rounded-full" />
@@ -146,8 +146,9 @@ function MatchingMembersPreview({ filter, compact }: { filter: string; compact?:
           </PreviewMessage>
         ) : (
           // Shade's list rows, as History lists its entries. Nothing here is clickable, so the
-          // rows have no hover.
-          <List className="px-3">
+          // rows have no hover. A row's highlight layer still reaches 16px past it on each side,
+          // so the list keeps 16px inside the scrolling box, or the box scrolls sideways.
+          <List className="px-4">
             {members.map((member) => (
               <ListItem key={member.id} hover={false}>
                 <ListItemContent className="flex items-center gap-3 py-2">
