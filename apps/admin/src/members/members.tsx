@@ -158,16 +158,23 @@ const MembersPage: React.FC<MembersPageProps> = ({
   // Each time, it takes the publisher to the next step there is.
   const [saveRequest, setSaveRequest] = useState(0);
   const [managingSegments, setManagingSegments] = useState(false);
-  const [startedSegment, setStartedSegment] = useState(false);
+  // Where making a segment started: the segment on screen then, or null for every member. False
+  // while none is being made.
+  const [startedFrom, setStartedFrom] = useState<string | null | false>(false);
   // The name of the suggestion the filters came from, offered when they are saved.
   const [suggestedName, setSuggestedName] = useState<string | null>(null);
-  // Showing a segment ends making one: it was just saved, or another was opened. Ended, not
-  // hidden, so leaving the segment afterwards doesn't bring the new-segment state back.
-  if (startedSegment && viewedSegment) {
-    setStartedSegment(false);
-    setSuggestedName(null);
+  // Opening a segment ends making one: it was just saved, or another was opened. Ended, not
+  // hidden, so leaving the segment afterwards doesn't bring the new-segment state back. Started
+  // from a segment, the screen first leaves it for every member, which doesn't end it.
+  if (startedFrom !== false) {
+    if (viewedSegment && viewedSegment.id !== startedFrom) {
+      setStartedFrom(false);
+      setSuggestedName(null);
+    } else if (!viewedSegment && startedFrom !== null) {
+      setStartedFrom(null);
+    }
   }
-  const makingSegment = startedSegment && !viewedSegment;
+  const makingSegment = startedFrom !== false && !viewedSegment;
   const suggestions = useNewSuggestions(useSegmentSuggestions());
   const startNewSegment = () => {
     if (nql && (!viewedSegment || isSegmentModified)) {
@@ -178,7 +185,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
       navigate('/members');
     }
     setSuggestedName(null);
-    setStartedSegment(true);
+    setStartedFrom(viewedSegment?.id ?? null);
     // A filter that isn't finished yet, such as one with no value, filters nothing, so finishing
     // it is the next step: the cursor goes to its empty value.
     if (hasFilters && !viewedSegment) {
@@ -193,7 +200,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     }
   };
   const stopMakingSegment = () => {
-    setStartedSegment(false);
+    setStartedFrom(false);
     setSuggestedName(null);
     if (hasFilters) {
       setFilters([]);
@@ -446,10 +453,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
               {/* Places to start a new segment from, above the bar while it has no filter. 12px
                   above the bar, as they belong to it, closer than the header's own rows: the
                   header's 20px row gap is taken back, and under a large title, whose rows have
-                  no gap, 12px is added. The row's own 4px of room for focus rings counts too. */}
+                  no gap, 12px is added. Under a large title they start where the bar would,
+                  without the space the header puts above the rows after the bar. The row's own 4px of room for focus rings counts too. */}
               {makingSegment && !hasFilters && suggestions.length > 0 && (
                 <SuggestionChips
-                  className="-mb-3 [[data-large-title-header]_&]:mb-2"
+                  className="-mb-3 [[data-large-title-header]_&]:-mt-1! [[data-large-title-header]_&]:mb-2"
                   suggestions={suggestions}
                   onPick={pickSuggestion}
                 />
