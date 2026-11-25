@@ -166,7 +166,8 @@ function harness(
       },
       begin: async () => {},
       acknowledge: async () => {},
-      start: async () => {},
+      start: async () => true,
+      claimEmail: async () => true,
       cleanupExpired: async () => {},
       cancel: async () => {},
       lookup: async () => ({ status: 'accepted' as const }),
@@ -363,6 +364,20 @@ describe('ContentCSVImporter', function () {
     await importer.allSettled();
     sinon.assert.calledOnce(dispatchJob);
     assert.deepEqual(h.removedFiles, []);
+  });
+
+  it('cleans up a redelivered job whose email was already claimed', async function () {
+    const h = harness();
+    const open = sinon.stub();
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      fileStager: { ...h.deps.fileStager, start: async () => false, download: open },
+    });
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    await importer.handle(h.jobs[0]);
+    sinon.assert.notCalled(open);
+    sinon.assert.notCalled(h.sendEmail);
+    assert.deepEqual(h.removedFiles, [{ key: 'staged-1', name: 'posts.csv' }]);
   });
 
   it('keeps original source columns and cells in the actionable error report', async function () {

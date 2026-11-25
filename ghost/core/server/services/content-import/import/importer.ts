@@ -267,14 +267,18 @@ class ContentCSVImporter {
     let preparedRows: PreparedPostRows | undefined;
     let materialized: DownloadedImportFile | undefined;
     let started = false;
+    let canProcess = false;
     let storage: JournalStorage | undefined;
     let journal: ImportJournal | undefined;
     let failureReason: string | undefined;
     this.track(job.importId);
 
     try {
-      await this._fileStager.start(job.importId, this._now());
+      canProcess = await this._fileStager.start(job.importId, this._now());
       started = true;
+      if (!canProcess) {
+        return;
+      }
       storage = this._fileStager.artifacts(job.importId);
       materialized = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
@@ -320,21 +324,25 @@ class ContentCSVImporter {
         await this.cleanupSource(materialized.cleanup);
       }
       if (started) {
-        await this.settle(async () => {
-          if (failureReason) {
-            // Rows that completed before an ordinary failure still belong in the report.
-            await journal?.flush().catch(this._report);
-          }
-          const summary = createSummary(
-            job.importId,
-            failureReason ? 'failed' : 'complete',
-            failureReason,
-          );
-          const reports = storage
-            ? await readReportContents(storage, await writeImportReports(storage, summary))
-            : {};
-          await this._email.send(summary, job.emailRecipient, reports);
-        });
+        if (canProcess) {
+          await this.settle(async () => {
+            if (failureReason) {
+              // Rows that completed before an ordinary failure still belong in the report.
+              await journal?.flush().catch(this._report);
+            }
+            const summary = createSummary(
+              job.importId,
+              failureReason ? 'failed' : 'complete',
+              failureReason,
+            );
+            const reports = storage
+              ? await readReportContents(storage, await writeImportReports(storage, summary))
+              : {};
+            if (await this._fileStager.claimEmail(job.importId)) {
+              await this._email.send(summary, job.emailRecipient, reports);
+            }
+          });
+        }
         await this.settle(() => this._fileStager.clearArtifacts(job.importId));
         await this.cleanupStagedFile(job.importId, job.file);
       }

@@ -64,7 +64,8 @@ export interface ImportFileStager {
   clearArtifacts(id: string): Promise<void>;
   begin(id: string): Promise<void>;
   acknowledge(id: string): Promise<void>;
-  start(id: string, now: Date): Promise<void>;
+  start(id: string, now: Date): Promise<boolean>;
+  claimEmail(id: string): Promise<boolean>;
   remove(id: string, file: StagedImportFile): Promise<void>;
   cancel(id: string, owner: ImportOwner): Promise<void>;
   lookup(id: string, owner: ImportOwner, now: Date): Promise<Submission>;
@@ -213,14 +214,23 @@ export function createImportFileStager({
     },
 
     async start(id, now) {
-      await uploads.change(id, (row) => {
+      return uploads.change(id, (row) => {
         if (row?.state === 'accepted') {
-          return { value: undefined };
+          return { value: row.receipt !== 'email-claimed' };
         }
         if (row?.state !== 'submitting' || row.expires_at <= now) {
           throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
         }
-        return { value: undefined, change: { state: 'accepted' } };
+        return { value: true, change: { state: 'accepted' } };
+      });
+    },
+
+    async claimEmail(id) {
+      return uploads.change(id, (row) => {
+        if (row?.state !== 'accepted' || row.receipt === 'email-claimed') {
+          return { value: false };
+        }
+        return { value: true, change: { receipt: 'email-claimed' } };
       });
     },
 

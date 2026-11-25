@@ -115,6 +115,22 @@ describe('content import staged file', function () {
     await assert.rejects(adapter.begin('uncertain'), /no longer available/);
   });
 
+  it('claims the completion email once and only after acceptance', async function () {
+    const adapter = stager();
+    await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv', owner }, 'email', now);
+    assert.equal(await adapter.claimEmail('email'), false);
+    await adapter.begin('email');
+    assert.equal(await adapter.start('email', now), true);
+    assert.equal(await adapter.start('email', now), true);
+    assert.deepEqual(
+      (await Promise.all([adapter.claimEmail('email'), adapter.claimEmail('email')]))
+        .sort()
+        .reverse(),
+      [true, false],
+    );
+    assert.equal(await adapter.start('email', now), false);
+  });
+
   it('expires a source saved before its adapter-assigned key reached the manifest', async function () {
     const directoryKey = 'content-csv-import/test-site/interrupted';
     await uploads.create('interrupted', owner, now, {
