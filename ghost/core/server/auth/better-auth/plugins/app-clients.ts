@@ -112,7 +112,8 @@ const differs = (current: Record<string, unknown>, wanted: Record<string, unknow
  * Makes an installation's user client match it: unowned, shut out of every provider endpoint,
  * disabled unless the installation is active. Safe to repeat. An inactive installation's tokens
  * are deleted, and so are those of a client enabled again, so none issued while it was disabled
- * comes back.
+ * comes back. They are deleted before it is enabled, so a failed delete leaves it disabled and
+ * the next run deletes them again.
  */
 export async function reconcileAppUserClient(
   adapter: Adapter,
@@ -120,10 +121,9 @@ export async function reconcileAppUserClient(
 ): Promise<void> {
   const wanted = appUserClient(installation);
   const where = [{ field: 'clientId', value: wanted.clientId }];
-  let reenabled = false;
+  const deleteTokens = () => adapter.deleteMany({ model: 'oauthAccessToken', where });
   const write = async () => {
     const current = await adapter.findOne<AppClientRow>({ model: 'oauthClient', where });
-    reenabled = !!current?.disabled && !wanted.disabled;
     if (!current) {
       const now = new Date();
       await adapter.create({
@@ -131,6 +131,9 @@ export async function reconcileAppUserClient(
         data: { ...wanted, createdAt: now, updatedAt: now },
       });
     } else if (differs(current, wanted)) {
+      if (current.disabled && !wanted.disabled) {
+        await deleteTokens();
+      }
       await adapter.update({
         model: 'oauthClient',
         where,
@@ -146,8 +149,8 @@ export async function reconcileAppUserClient(
       throw err;
     });
   }
-  if (!installation.active || reenabled) {
-    await adapter.deleteMany({ model: 'oauthAccessToken', where });
+  if (!installation.active) {
+    await deleteTokens();
   }
 }
 
