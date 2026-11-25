@@ -2757,10 +2757,14 @@ describe('Managing apps', () => {
 
     const dialog = appsScreen.uninstallDialog();
     await expect.element(dialog).toHaveTextContent('Uninstall Podcast?');
-    // Ghost can't stop a copy that's already open elsewhere, so it doesn't say it does.
+    // A copy already open elsewhere closes at its next call to Ghost, not straight away
     await expect
       .element(dialog)
-      .toHaveTextContent('The app stops opening for everyone. Where it’s already open');
+      .toHaveTextContent(
+        'The app stops opening for everyone. Where it’s already open, in another tab or for another staff user, it closes the next time it calls Ghost.',
+      );
+    // Once it closes nothing of it runs, so the dialog doesn't say its other requests still work
+    await expect.element(dialog).not.toHaveTextContent('anywhere other than Ghost');
     await expect
       .element(appsScreen.integrationKeyNote())
       .toHaveTextContent('Settings › Integrations');

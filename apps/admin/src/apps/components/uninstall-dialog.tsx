@@ -76,8 +76,7 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
             <Stack gap="sm">
               <p>
                 The app stops opening for everyone. Where it’s already open, in another tab or for
-                another staff user, it keeps running, but Ghost refuses its requests. Its requests
-                to anywhere other than Ghost still work.
+                another staff user, it closes the next time it calls Ghost.
               </p>
               <p>Reinstalling it later is like installing it for the first time.</p>
             </Stack>
