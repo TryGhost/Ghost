@@ -92,13 +92,24 @@ function definitionInputs(maxLength: { name: number; key: number }) {
     .min(1, { message: 'Custom field name is required.' })
     .max(maxLength.name, { message: 'Custom field name is too long.' });
 
+  // A key as it is given, rather than derived from the name: one the fields table can store.
+  const key = z
+    .string()
+    .max(maxLength.key, { message: 'Custom field key is too long.' })
+    .pipe(KeySchema);
+
   return {
-    // No key: the backend mints it from the name. The type is checked with the settings it takes.
-    // Create accepts a batch. The framework guarantees a non-empty array by the time a query
+    // A key is optional: without one, it is derived from the name. The type is checked with the
+    // settings it takes. Create accepts a batch. The framework guarantees a non-empty array by the time a query
     // runs, but the service validates the whole payload up front so a bad item anywhere fails
     // the request before anything is written.
     add: z
-      .array(withTypedSettings({ name, access: FieldAccess.optional() }, WRITTEN_SETTINGS))
+      .array(
+        withTypedSettings(
+          { name, key: key.optional(), access: FieldAccess.optional() },
+          WRITTEN_SETTINGS,
+        ),
+      )
       .min(1)
       .max(MAX_FIELDS_PER_REQUEST, {
         message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`,
@@ -119,6 +130,9 @@ function definitionInputs(maxLength: { name: number; key: number }) {
     maxKeyBase: maxLength.key - (String(MAX_KEY_ITERATIONS).length + 1),
   };
 }
+
+/** The key a definition was given, or the base to mint one from when it was given none. */
+type KeyToTake = { given: Key } | { base: Key };
 
 /** A definition as it was before an edit, and as the edit left it. */
 export interface EditedDefinition {
@@ -227,14 +241,15 @@ export class MetafieldDefinitionsService<Caller> {
   }
 
   /**
-   * Create one or more field definitions. All-or-nothing: the batch runs in a
-   * single transaction, so a name clash or the operational cap on the third item
-   * leaves the first two unwritten rather than half-applying the request.
+   * Create one or more field definitions, each under the key it is given or, without one, a key
+   * derived from its name. All-or-nothing: the batch runs in a single transaction, so a name
+   * clash or the operational cap on the third item leaves the first two unwritten rather than
+   * half-applying the request.
    *
    * Running inside the transaction also makes a batch self-consistent for free —
-   * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
-   * batch, so two items sharing a name are caught and two items deriving the same
-   * key get distinct ones, exactly as if they had arrived as separate requests.
+   * `assertNameAvailable` and `takeKey` see the rows inserted earlier in the same
+   * batch, so two items sharing a name or given the same key are refused and two items deriving
+   * the same key get distinct ones, exactly as if they had arrived as separate requests.
    *
    * Given a transaction as `executor` it joins that transaction; given a plain connection it
    * opens its own.
@@ -265,9 +280,13 @@ export class MetafieldDefinitionsService<Caller> {
         this.assertCreatable(field.type, batchContext(index, requestedCount));
       });
 
-      // Mint before opening the transaction: it needs no database access, and
-      // an unusable name is a payload problem worth reporting on its own terms.
-      const bases = fields.map((field, index) => {
+      // A key given is taken as it is. Otherwise its base is minted from the name before opening
+      // the transaction: it needs no database access, and an unusable name is a payload problem
+      // worth reporting on its own terms.
+      const keyed = fields.map((field, index): KeyToTake => {
+        if (field.key !== undefined) {
+          return { given: field.key };
+        }
         const base = mintableKey(field.name);
         if (!base) {
           throw new errors.ValidationError({
@@ -276,7 +295,7 @@ export class MetafieldDefinitionsService<Caller> {
             context: batchContext(index, requestedCount),
           });
         }
-        return base;
+        return { base };
       });
 
       let created: Definition[];
@@ -292,7 +311,12 @@ export class MetafieldDefinitionsService<Caller> {
           const keys: Key[] = [];
           for (const [index, field] of fields.entries()) {
             await this.assertNameAvailable(trx, namespace, field.name);
-            const key = await this.mintKey(trx, namespace, bases[index]);
+            const key = await this.takeKey(
+              trx,
+              namespace,
+              keyed[index],
+              batchContext(index, requestedCount),
+            );
             await this.insertField(trx, {
               namespace,
               key,
@@ -312,7 +336,7 @@ export class MetafieldDefinitionsService<Caller> {
           return added;
         });
       } catch (err) {
-        // mintKey already picked a free key, so a unique violation here only
+        // takeKey already checked the key was free, so a unique violation here only
         // means a concurrent create claimed the same key in between. The index
         // is the final arbiter; surface a retryable conflict rather than a 500.
         if (isUniqueConstraintViolation(err)) {
@@ -497,6 +521,32 @@ export class MetafieldDefinitionsService<Caller> {
       }
       return field;
     });
+  }
+
+  /**
+   * The key a new definition is added under: the one it was given, if no definition in the
+   * namespace has it, archived ones included, or else a free one minted from its name's base.
+   */
+  private async takeKey(
+    db: Knex,
+    namespace: Namespace,
+    keyed: KeyToTake,
+    context?: string,
+  ): Promise<Key> {
+    if ('base' in keyed) {
+      return this.mintKey(db, namespace, keyed.base);
+    }
+    const taken =
+      RESERVED_KEYS.includes(keyed.given) ||
+      (await this.fields.table(db).where({ namespace, key: keyed.given }).first()) !== undefined;
+    if (taken) {
+      throw new errors.ValidationError({
+        message: 'A custom field with this key already exists.',
+        property: 'key',
+        context,
+      });
+    }
+    return keyed.given;
   }
 
   /**
