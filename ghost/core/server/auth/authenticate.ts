@@ -6,6 +6,7 @@ import {
   unlessKeyed,
 } from './resolve-principal';
 import session from './session';
+import { findActiveStaffUser } from './staff-users';
 import apiKeyAuth from './api-key';
 import * as members from './members';
 
@@ -40,7 +41,6 @@ function createBetterAuth(): Authenticate {
   // Better Auth loads only under its engine
   const { fromNodeHeaders } = require('better-auth/node');
   const betterAuth = require('./better-auth').default;
-  const models = require('../models');
   const urlUtils = require('../../shared/url-utils').default;
 
   const resolver = createPrincipalResolver({
@@ -50,9 +50,7 @@ function createBetterAuth(): Authenticate {
     },
     getOriginOfRequest: session.getOriginOfRequest,
     getAdminOrigin: () => urlUtils.getAdminOrigin(),
-    findActiveUser(id) {
-      return models.User.findOne({ id, status: 'active' }, { withRelated: ['roles'] });
-    },
+    findActiveUser: findActiveStaffUser,
   });
 
   return {

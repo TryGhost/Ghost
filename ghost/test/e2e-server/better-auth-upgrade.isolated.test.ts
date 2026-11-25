@@ -7,6 +7,7 @@ import net from 'node:net';
 import path from 'node:path';
 import request from 'supertest';
 import { SESSION_COOKIE_NAME as SESSION_COOKIE } from '../../core/server/auth/better-auth/create-auth';
+import { getInDevelopmentTables } from '../../core/server/data/schema/in-development';
 
 const { startGhost, fixtureManager, configUtils } = require('../utils/e2e-framework');
 const db = require('../../core/server/data/db');
@@ -148,6 +149,11 @@ async function toPreGraduationDatabase() {
     .select('user_id', 'password');
   for (const account of accounts) {
     await db.knex('users').where({ id: account.user_id }).update({ password: account.password });
+  }
+  // Newer than the auth tables and some reference them, so they go first. The
+  // Ghost these tests boot doesn't create in-development tables, so they stay gone
+  for (const table of getInDevelopmentTables().toReversed()) {
+    await db.knex.schema.dropTableIfExists(table);
   }
   for (const table of AUTH_TABLES) {
     await db.knex.schema.dropTableIfExists(table);

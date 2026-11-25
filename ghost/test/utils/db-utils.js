@@ -13,6 +13,7 @@ const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirnam
 const config = require('../../core/shared/config');
 const db = require('../../core/server/data/db');
 const schema = require('../../core/server/data/schema').tables;
+const schemaCommands = require('../../core/server/data/schema').commands;
 const schemaTables = Object.keys(schema);
 
 // Other Test Utilities
@@ -126,19 +127,22 @@ const restoreTemplateRows = async () => {
 const truncateAll = async () => {
   debug('Database teardown');
 
-  const tables = getResetTables();
-
   await db.knex.transaction(async (trx) => {
     try {
+      // A table can be missing, e.g. an in-development table dropped by a migration that
+      // replaces a table it references, so only the existing ones are emptied
+      const existingTables = await schemaCommands.getTables(trx);
+      const tables = getResetTables().filter((table) => existingTables.includes(table));
+
       await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx);
       for (const table of tables) {
         await db.knex.raw('DELETE FROM ' + table + ';').transacting(trx);
       }
       await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
     } catch (err) {
-      // CASE: table does not exist || DB does not exist
-      // If the table or DB are not present, we can safely ignore
-      if (err.errno === 1146 || err.errno === 1049) {
+      // CASE: DB does not exist
+      // If the DB is not present, we can safely ignore
+      if (err.errno === 1049) {
         return Promise.resolve();
       }
 

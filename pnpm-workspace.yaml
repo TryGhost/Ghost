@@ -48,6 +48,7 @@ allowBuilds:
 
 catalog:
   '@better-auth/core': 1.7.25
+  '@better-auth/oauth-provider': 1.7.25
   '@better-auth/test-utils': 1.7.25
   '@codemirror/autocomplete': 6.20.4
   '@codemirror/commands': 6.11.1

@@ -1,8 +1,21 @@
+import type { oauthProvider } from '@better-auth/oauth-provider';
 import ObjectId from 'bson-objectid';
+import type { jwt, twoFactor } from 'better-auth/plugins';
 import type { BetterAuthOptions } from 'better-auth/types';
 import type { VirtualColumn } from './knex-adapter';
 
 const timestamps = { createdAt: 'created_at', updatedAt: 'updated_at' };
+
+/**
+ * A plugin's `schema` option accepts any of its models' fields on every model,
+ * so mappings are checked against the schema the plugin declares instead.
+ */
+type SchemaMapping<Schema extends Record<string, { fields: object }>> = {
+  [Model in keyof Schema]?: {
+    modelName?: string;
+    fields?: { [Field in keyof Schema[Model]['fields']]?: string };
+  };
+};
 
 /** Ghost ids are ObjectIds. Pass as `advanced.database.generateId`. */
 export const generateGhostId = () => new ObjectId().toHexString();
@@ -89,7 +102,7 @@ export const ghostTwoFactorSchema = {
       lockedUntil: 'locked_until',
     },
   },
-};
+} satisfies SchemaMapping<ReturnType<typeof twoFactor>['schema']>;
 
 /**
  * `users` columns Better Auth never sets. Ghost disables Better Auth sign-up,
@@ -103,3 +116,124 @@ export const ghostCreateDefaults: Record<
 > = {
   users: (row) => ({ slug: row.id, password: '!' }),
 };
+
+/**
+ * Pass as `oauthProvider({ schema: ghostOAuthProviderSchema })`. Maps the
+ * provider's models onto Ghost's `oauth_*` tables.
+ */
+export const ghostOAuthProviderSchema = {
+  oauthClient: {
+    modelName: 'oauth_clients',
+    fields: {
+      clientId: 'client_id',
+      clientSecret: 'client_secret',
+      clientDiscoveryId: 'client_discovery_id',
+      skipConsent: 'skip_consent',
+      enableEndSession: 'enable_end_session',
+      subjectType: 'subject_type',
+      clientCredentialsScopes: 'client_credentials_scopes',
+      userId: 'user_id',
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+      softwareId: 'software_id',
+      softwareVersion: 'software_version',
+      softwareStatement: 'software_statement',
+      redirectUris: 'redirect_uris',
+      postLogoutRedirectUris: 'post_logout_redirect_uris',
+      backchannelLogoutUri: 'backchannel_logout_uri',
+      backchannelLogoutSessionRequired: 'backchannel_logout_session_required',
+      tokenEndpointAuthMethod: 'token_endpoint_auth_method',
+      applicationType: 'application_type',
+      jwksUri: 'jwks_uri',
+      grantTypes: 'grant_types',
+      responseTypes: 'response_types',
+      requirePKCE: 'require_pkce',
+      dpopBoundAccessTokens: 'dpop_bound_access_tokens',
+      referenceId: 'reference_id',
+    },
+  },
+  oauthResource: {
+    modelName: 'oauth_resources',
+    fields: {
+      accessTokenTtl: 'access_token_ttl',
+      refreshTokenTtl: 'refresh_token_ttl',
+      signingAlgorithm: 'signing_algorithm',
+      signingKeyId: 'signing_key_id',
+      allowedScopes: 'allowed_scopes',
+      customClaims: 'custom_claims',
+      dpopBoundAccessTokensRequired: 'dpop_bound_access_tokens_required',
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+      policyVersion: 'policy_version',
+    },
+  },
+  oauthClientResource: {
+    modelName: 'oauth_client_resources',
+    fields: {
+      clientId: 'client_id',
+      resourceId: 'resource_id',
+      createdAt: 'created_at',
+    },
+  },
+  oauthRefreshToken: {
+    modelName: 'oauth_refresh_tokens',
+    fields: {
+      clientId: 'client_id',
+      sessionId: 'session_id',
+      userId: 'user_id',
+      referenceId: 'reference_id',
+      authorizationCodeId: 'authorization_code_id',
+      requestedUserInfoClaims: 'requested_user_info_claims',
+      expiresAt: 'expires_at',
+      createdAt: 'created_at',
+      rotatedAt: 'rotated_at',
+      rotationReplayResponse: 'rotation_replay_response',
+      rotationReplayExpiresAt: 'rotation_replay_expires_at',
+      authTime: 'auth_time',
+    },
+  },
+  oauthAccessToken: {
+    modelName: 'oauth_access_tokens',
+    fields: {
+      clientId: 'client_id',
+      sessionId: 'session_id',
+      userId: 'user_id',
+      referenceId: 'reference_id',
+      authorizationCodeId: 'authorization_code_id',
+      requestedUserInfoClaims: 'requested_user_info_claims',
+      refreshId: 'refresh_id',
+      expiresAt: 'expires_at',
+      createdAt: 'created_at',
+    },
+  },
+  oauthConsent: {
+    modelName: 'oauth_consents',
+    fields: {
+      clientId: 'client_id',
+      userId: 'user_id',
+      referenceId: 'reference_id',
+      requestedUserInfoClaims: 'requested_user_info_claims',
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    },
+  },
+  oauthClientAssertion: {
+    modelName: 'oauth_client_assertions',
+    fields: {
+      expiresAt: 'expires_at',
+    },
+  },
+} satisfies SchemaMapping<ReturnType<typeof oauthProvider>['schema']>;
+
+/** Pass as `jwt({ schema: ghostJwtSchema })`. */
+export const ghostJwtSchema = {
+  jwks: {
+    modelName: 'oauth_jwks',
+    fields: {
+      publicKey: 'public_key',
+      privateKey: 'private_key',
+      createdAt: 'created_at',
+      expiresAt: 'expires_at',
+    },
+  },
+} satisfies SchemaMapping<ReturnType<typeof jwt>['schema']>;
