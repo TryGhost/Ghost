@@ -1,3 +1,4 @@
+import errors from '@tryghost/errors';
 import { getCurrentAdapter } from 'better-auth';
 import { isAPIError } from 'better-auth/api';
 import type { BetterAuthPlugin } from 'better-auth';
@@ -21,20 +22,7 @@ import {
   type AppClientOwner,
 } from './app-clients';
 import { APP_TOKEN_PREFIX } from '../../app-token-prefix';
-import {
-  APP_PROVIDER_ID,
-  appTokenRequestSchema,
-  type AppTokenRefusal,
-  type ValidatedAppToken,
-} from '../app-tokens';
-
-type StaffSessionRow = {
-  id: string;
-  userId: string;
-  expiresAt: Date;
-  verified?: boolean | null;
-  origin?: string | null;
-};
+import { appTokenRequestSchema, type AppTokenRefusal, type ValidatedAppToken } from '../app-tokens';
 
 /** The tables the provider and jwt plugins need; neither is registered without them. */
 export const APP_OAUTH_TABLES: readonly string[] = [
@@ -99,8 +87,11 @@ export function appOAuthDisabledPaths(plugins: readonly BetterAuthPlugin[]): str
  * Ghost's app endpoints, all server-only. With `app-clients.ts`, the one place that knows the
  * provider's table layout. Registered always, so `auth.api`'s type doesn't depend on the `apps`
  * flag; only `AppTokens` calls them, and only once the provider is registered.
+ *
+ * `providerOptions` are the registered provider plugin's own, which carry its defaults, or null
+ * when it isn't registered.
  */
-export const ghostApps = () =>
+export const ghostApps = (providerOptions: OAuthOptions<Scope[]> | null) =>
   ({
     id: 'ghost-apps',
 
@@ -126,8 +117,9 @@ export const ghostApps = () =>
         { method: 'POST', body: appTokenRequestSchema },
         async (ctx) => {
           const refuse = (refused: AppTokenRefusal) => ctx.json({ token: null, refused });
-          const options = providerOptions(ctx);
+          const options = registered(providerOptions);
           const owner: AppClientOwner = { installationId: ctx.body.installationId, kind: 'user' };
+          // The provider's own typed row; `appClientOwnerOf` parses the metadata Ghost wrote into it
           const client = await getOAuthProviderApi(ctx, options).getClient(appClientId(owner));
           const user = await ctx.context.internalAdapter.findUserById(ctx.body.userId);
           if (!client || client.disabled || !isClientOf(client, owner)) {
@@ -141,9 +133,7 @@ export const ghostApps = () =>
             return refuse('session_unavailable');
           }
           // Validation stops accepting the token when the session ends, so it lasts no longer
-          const sessionSecondsLeft = Math.floor(
-            (new Date(session.expiresAt).getTime() - Date.now()) / 1000,
-          );
+          const sessionSecondsLeft = Math.floor((session.expiresAt.getTime() - Date.now()) / 1000);
           const provider = getOAuthProviderApi(
             ctx,
             {
@@ -177,7 +167,7 @@ export const ghostApps = () =>
       validateAppToken: createAuthEndpoint.serverOnly(
         { method: 'POST', body: z.object({ token: z.string() }) },
         async (ctx) => {
-          const provider = getOAuthProviderApi(ctx, providerOptions(ctx));
+          const provider = getOAuthProviderApi(ctx, registered(providerOptions));
           let payload;
           try {
             payload = await provider.validateAccessToken(ctx.body.token);
@@ -204,7 +194,7 @@ export const ghostApps = () =>
             userId,
             session: {
               id: session.id,
-              expiresAt: new Date(session.expiresAt),
+              expiresAt: session.expiresAt,
               origin: session.origin ?? null,
             },
           };
@@ -226,6 +216,17 @@ const appUserTokenPayloadSchema = z.object({
   sid: z.string(),
 });
 
+/** What app tokens need of a staff session row; the adapter returns the other columns too. */
+const staffSessionRowSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  expiresAt: z.union([z.date(), z.string(), z.number()]).pipe(z.coerce.date()),
+  verified: z.boolean().nullish(),
+  origin: z.string().nullish(),
+});
+
+type StaffSessionRow = z.infer<typeof staffSessionRowSchema>;
+
 // The provider's default user token lifetime
 const DEFAULT_ACCESS_TOKEN_SECONDS = 3600;
 
@@ -234,10 +235,12 @@ async function findStaffSession(
   sessionId: string,
 ): Promise<StaffSessionRow | null> {
   const adapter = await getCurrentAdapter(ctx.context.adapter);
-  return adapter.findOne<StaffSessionRow>({
+  const row = await adapter.findOne<unknown>({
     model: 'session',
     where: [{ field: 'id', value: sessionId }],
   });
+  const parsed = staffSessionRowSchema.safeParse(row);
+  return parsed.success ? parsed.data : null;
 }
 
 /** A staff session an app token can be issued in or used with: the user's, verified, unexpired */
@@ -249,14 +252,17 @@ function isUsableStaffSession(
     !!session &&
     session.userId === userId &&
     session.verified === true &&
-    new Date(session.expiresAt) > new Date()
+    session.expiresAt > new Date()
   );
 }
 
-function providerOptions(ctx: {
-  context: { getPlugin(id: string): unknown };
-}): OAuthOptions<Scope[]> {
-  return (ctx.context.getPlugin(APP_PROVIDER_ID) as { options: OAuthOptions<Scope[]> }).options;
+function registered(providerOptions: OAuthOptions<Scope[]> | null): OAuthOptions<Scope[]> {
+  if (!providerOptions) {
+    throw new errors.IncorrectUsageError({
+      message: "Better Auth's OAuth provider is not registered",
+    });
+  }
+  return providerOptions;
 }
 
 function isClientOf(client: SchemaClient<Scope[]>, owner: AppClientOwner): boolean {

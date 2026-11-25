@@ -101,8 +101,6 @@ export function appUserClient({ installationId, active, scopes }: AppClientInsta
   };
 }
 
-type AppClientRow = ReturnType<typeof appUserClient> & { id: string };
-
 const differs = (current: Record<string, unknown>, wanted: Record<string, unknown>) =>
   Object.entries(wanted).some(
     ([field, value]) => JSON.stringify(current[field] ?? null) !== JSON.stringify(value ?? null),
@@ -123,7 +121,8 @@ export async function reconcileAppUserClient(
   const where = [{ field: 'clientId', value: wanted.clientId }];
   const deleteTokens = () => adapter.deleteMany({ model: 'oauthAccessToken', where });
   const write = async () => {
-    const current = await adapter.findOne<AppClientRow>({ model: 'oauthClient', where });
+    // Unparsed: any row that differs from the wanted one is overwritten
+    const current = await adapter.findOne<Record<string, unknown>>({ model: 'oauthClient', where });
     if (!current) {
       const now = new Date();
       await adapter.create({
@@ -131,7 +130,9 @@ export async function reconcileAppUserClient(
         data: { ...wanted, createdAt: now, updatedAt: now },
       });
     } else if (differs(current, wanted)) {
-      if (current.disabled && !wanted.disabled) {
+      // Anything but false counts as disabled, so the tokens are deleted before enabling
+      const wasDisabled = current.disabled !== false;
+      if (wasDisabled && !wanted.disabled) {
         await deleteTokens();
       }
       await adapter.update({

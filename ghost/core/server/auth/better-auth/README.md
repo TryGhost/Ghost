@@ -238,7 +238,8 @@ session. Nothing issues one in a request yet.
   installation's approved scopes and the client's.
 - `issueAppUserToken` issues and `validateAppToken` accepts a token only
   while the staff session it's bound to exists, is the user's, is verified and
-  hasn't expired.
+  hasn't expired. The session row is parsed, and one that doesn't parse
+  counts as missing.
 - Reconciling an installation that isn't active disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event

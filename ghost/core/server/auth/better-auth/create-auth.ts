@@ -109,6 +109,7 @@ export function createAuth(deps: CreateAuthDeps) {
   // The cookie lives on the admin origin, so its security follows the admin URL
   const ssl = urlUtils.isSSL(adminOrigin);
   const appPlugins = deps.apps ? appOAuthPlugins({ adminOrigin }) : [];
+  const [, appProvider] = appPlugins;
 
   return betterAuth({
     // Also Better Auth's only trusted origin, matching the legacy login-CSRF check
@@ -243,7 +244,7 @@ export function createAuth(deps: CreateAuthDeps) {
         emailLimiter: deps.limiters.verificationEmail,
         sendCode: deps.sendDeviceVerificationCode,
       }),
-      ghostApps(),
+      ghostApps(appProvider?.options ?? null),
       ...appPlugins,
     ],
     telemetry: { enabled: false },

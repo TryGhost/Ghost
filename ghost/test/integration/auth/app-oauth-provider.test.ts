@@ -667,6 +667,85 @@ describe("Better Auth's OAuth provider for apps", function () {
       assert.equal(await validate(auth, token.accessToken), null);
     });
 
+    describe('when the adapter returns an unexpected staff session row', function () {
+      type Row = Record<string, unknown>;
+
+      /** Changes every staff session row the adapter returns, as a different store might */
+      async function changeSessionRows(auth: ReturnType<typeof build>, change: (row: Row) => Row) {
+        const { adapter } = await auth.$context;
+        const findOne = adapter.findOne.bind(adapter);
+        sinon.stub(adapter, 'findOne').callsFake(async (query: Parameters<typeof findOne>[0]) => {
+          const row = await findOne<Row>(query);
+          return query.model === 'session' && row ? change(row) : row;
+        });
+      }
+
+      const malformed: [string, (row: Row) => Row][] = [
+        ['an expiry that is not a date', (row) => ({ ...row, expiresAt: 'not a date' })],
+        ['no user', ({ userId: _userId, ...row }) => row],
+        ['no id', ({ id: _id, ...row }) => row],
+      ];
+
+      it('issues nothing in a session whose row is malformed', async function () {
+        const auth = build({ apps: true });
+        const id = installationId();
+        await auth.api.reconcileAppClient({
+          body: { installationId: id, active: true, scopes: ['post:browse'] },
+        });
+
+        for (const [what, change] of malformed) {
+          const session = await staffSession(auth);
+          await changeSessionRows(auth, change);
+          assert.deepEqual(
+            await auth.api.issueAppUserToken({
+              body: { installationId: id, userId: owner.id, sessionId: session.id, scopes: [] },
+            }),
+            { token: null, refused: 'session_unavailable' },
+            what,
+          );
+          sinon.restore();
+        }
+        assert.equal(await tokenCount(), 0);
+      });
+
+      it('refuses a token whose session row is malformed', async function () {
+        const auth = build({ apps: true });
+        const id = installationId();
+        await auth.api.reconcileAppClient({
+          body: { installationId: id, active: true, scopes: ['post:browse'] },
+        });
+
+        for (const [what, change] of malformed) {
+          const token = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+          await changeSessionRows(auth, change);
+          assert.equal(await validate(auth, token.accessToken), null, what);
+          sinon.restore();
+        }
+      });
+
+      it('accepts a row with its expiry as a string and columns it does not read', async function () {
+        const auth = build({ apps: true });
+        const id = installationId();
+        await auth.api.reconcileAppClient({
+          body: { installationId: id, active: true, scopes: ['post:browse'] },
+        });
+        const session = await staffSession(auth);
+        await changeSessionRows(auth, (row) => ({
+          ...row,
+          expiresAt: (row.expiresAt as Date).toISOString(),
+          unread: 'column',
+        }));
+
+        const token = await issue(auth, { id, sessionId: session.id });
+
+        assert.deepEqual(await validate(auth, token.accessToken), {
+          installationId: id,
+          userId: owner.id,
+          session: { id: session.id, expiresAt: new Date(session.expiresAt), origin },
+        });
+      });
+    });
+
     it("deletes a user's tokens across every app with their staff sessions", async function () {
       const auth = build({ apps: true });
       const [first, second] = [installationId(), installationId()];
