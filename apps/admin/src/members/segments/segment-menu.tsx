@@ -7,11 +7,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Popover,
+  PopoverAnchor,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { useSegmentPins, useSegmentUsage } from './poc-store';
-import { DeleteSegmentDialog, RenameSegmentDialog } from './segment-dialogs';
+import { DeleteSegmentDialog, RenameSegmentPopoverContent } from './segment-dialogs';
 
 interface SegmentMenuProps {
   segment: Segment;
@@ -37,14 +39,34 @@ export function SegmentMenu({ segment, children, leadingItems, onDeleted }: Segm
       setDialog(null);
     }
   };
+  // The menu hands focus back to its button as it closes. Closing to rename, that would take
+  // focus from the rename popover, which closes on losing it.
+  const renaming = useRef(false);
 
   return (
-    <>
+    // Rename opens in a popover from the menu's own button.
+    <Popover open={dialog === 'rename'} onOpenChange={closeDialog}>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-56">
+        <PopoverAnchor asChild>
+          <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+        </PopoverAnchor>
+        <DropdownMenuContent
+          align="end"
+          className="min-w-56"
+          onCloseAutoFocus={(event) => {
+            if (renaming.current) {
+              renaming.current = false;
+              event.preventDefault();
+            }
+          }}
+        >
           {leadingItems}
-          <DropdownMenuItem onSelect={() => setDialog('rename')}>
+          <DropdownMenuItem
+            onSelect={() => {
+              renaming.current = true;
+              setDialog('rename');
+            }}
+          >
             <LucideIcon.Pencil className="size-4" />
             Rename
           </DropdownMenuItem>
@@ -82,7 +104,7 @@ export function SegmentMenu({ segment, children, leadingItems, onDeleted }: Segm
         </DropdownMenuContent>
       </DropdownMenu>
       {dialog === 'rename' && (
-        <RenameSegmentDialog segment={segment} open onOpenChange={closeDialog} />
+        <RenameSegmentPopoverContent segment={segment} onClose={() => setDialog(null)} />
       )}
       {dialog === 'delete' && (
         <DeleteSegmentDialog
@@ -93,6 +115,6 @@ export function SegmentMenu({ segment, children, leadingItems, onDeleted }: Segm
           onOpenChange={closeDialog}
         />
       )}
-    </>
+    </Popover>
   );
 }

@@ -13,13 +13,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  PopoverContent,
 } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { Fragment, useState } from 'react';
 import { type SegmentUsage, isInUse, usageSummary } from './poc-store';
@@ -81,10 +77,18 @@ function UsedIn({ usage }: { usage: SegmentUsage }) {
 }
 
 /**
- * Renames a segment. Nothing asks for confirmation: everything that uses a segment refers to it
- * by id, so a new name changes no audience.
+ * Renames a segment, in a popover from the button whose menu offered it, as the members screen's
+ * "Edit view" did on main: renaming is the lightest change there is, and from the list of all
+ * segments a dialog would open over that dialog. Nothing asks for confirmation: everything that
+ * uses a segment refers to it by id, so a new name changes no audience.
  */
-export function RenameSegmentDialog({ segment, open, onOpenChange }: SegmentDialogProps) {
+export function RenameSegmentPopoverContent({
+  segment,
+  onClose,
+}: {
+  segment: Segment;
+  onClose: () => void;
+}) {
   const [name, setName] = useState(segment.name);
   const [error, setError] = useState('');
   const { mutateAsync: editSegment, isPending } = useEditSegment();
@@ -100,18 +104,18 @@ export function RenameSegmentDialog({ segment, open, onOpenChange }: SegmentDial
     }
     try {
       await editSegment({ id: segment.id, name: trimmed });
-      onOpenChange(false);
+      onClose();
     } catch (err) {
       setError(segmentWriteFailure(err, 'edit'));
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" data-testid="rename-segment-dialog">
-        <DialogHeader>
-          <DialogTitle>Rename segment</DialogTitle>
-        </DialogHeader>
+    <PopoverContent align="end" className="w-80" data-testid="rename-segment-popover">
+      <Stack gap="md">
+        <Text as="h3" size="sm" weight="semibold">
+          Rename segment
+        </Text>
         <SegmentFields
           error={error}
           name={name}
@@ -121,8 +125,8 @@ export function RenameSegmentDialog({ segment, open, onOpenChange }: SegmentDial
           }}
           onSubmit={() => void save()}
         />
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <Inline gap="sm" justify="end">
+          <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button
@@ -132,9 +136,9 @@ export function RenameSegmentDialog({ segment, open, onOpenChange }: SegmentDial
           >
             {isPending ? 'Saving…' : error ? 'Retry' : 'Save'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </Inline>
+      </Stack>
+    </PopoverContent>
   );
 }
 
