@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { StripeName } from '../codecs';
 
 /** A Stripe object from an event's `data.object`, as Stripe sent it. */
 export type StripeObject = Record<string, unknown>;
@@ -44,10 +45,10 @@ export type IgnoreReason =
  * `WebhookController`). An event Ghost doesn't act on is `ignored`, with the reason.
  */
 export interface WebhookEvents {
-  subscription_checkout: { session: StripeObject };
-  card_update_checkout: { session: StripeObject };
-  gift_checkout: { session: StripeObject };
-  donation_checkout: { session: StripeObject };
+  subscription_checkout: { session: CheckoutSessionObject };
+  card_update_checkout: { session: CheckoutSessionObject };
+  gift_checkout: { session: CheckoutSessionObject };
+  donation_checkout: { session: CheckoutSessionObject };
   subscription: { type: SubscriptionEventType; subscription: StripeObject };
   invoice: { invoice: StripeObject };
   refund: { charge: StripeObject };
@@ -79,6 +80,21 @@ export type StripeEventEnvelope = z.output<typeof Envelope>;
 const WithObject = z
   .object({ data: z.object({ object: z.record(z.string(), z.unknown()) }).loose() })
   .loose();
+
+/**
+ * A Checkout session as the webhook reads it from Stripe, with the buyer's names shortened to
+ * fit: `customer_details.name`, the name they gave Stripe, and `metadata.name`, the name they gave
+ * the site's signup form, which Ghost passes to Stripe when it creates the session. Every other
+ * field passes through as Stripe sent it.
+ */
+const CheckoutSessionObject = z
+  .object({
+    customer_details: z.object({ name: StripeName.nullish() }).loose().nullish(),
+    metadata: z.object({ name: StripeName.optional() }).loose().nullish(),
+  })
+  .loose();
+
+export type CheckoutSessionObject = z.output<typeof CheckoutSessionObject>;
 
 const isTrue = (value: unknown) => value === true || value === 'true';
 
@@ -115,11 +131,13 @@ const ignored = (reason: IgnoreReason): WebhookEvent => ({ kind: 'ignored', reas
  * member's new card, and one in `subscription` mode is a paid signup or upgrade. A session in
  * `payment` mode is a gift or a donation, by its markers. A gift paid with a method that settles
  * later completes on `checkout.session.async_payment_succeeded`, so only a paid gift is completed.
+ * The event carries the session with the buyer's names shortened to fit what Ghost stores.
  */
-function checkoutEvent(type: CheckoutSessionEventType, session: StripeObject): WebhookEvent {
+function checkoutEvent(type: CheckoutSessionEventType, received: StripeObject): WebhookEvent {
   if (type === 'checkout.session.async_payment_failed') {
     return ignored('payment_failed');
   }
+  const session = CheckoutSessionObject.parse(received);
   const { mode, paid, gift, donation, conflicting } = CheckoutSession.parse(session);
   if (type === 'checkout.session.async_payment_succeeded') {
     if (mode !== 'payment' || !gift) {

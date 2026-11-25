@@ -4460,6 +4460,7 @@ describe('Members API', function () {
     ) {
       const walletMethod = wallet && {
         id: 'pm_wallet',
+        billing_details: { name: null },
         card: {
           brand: 'visa',
           last4: '4242',
