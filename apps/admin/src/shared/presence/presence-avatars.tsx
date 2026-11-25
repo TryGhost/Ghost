@@ -15,8 +15,6 @@ export interface PresenceAvatarsProps {
   limit?: number;
   /** Editor viewers are muted while another tab holds editing access. */
   dimmed?: boolean;
-  /** Adjacent avatars overlap by default, including pairs. */
-  overlap?: boolean;
   /** Override hover timing for a surface; otherwise use the app's tooltip delay. */
   tooltipDelayDuration?: number;
   className?: string;
@@ -81,7 +79,6 @@ export function PresenceAvatars({
   resourceType,
   limit = 3,
   dimmed = false,
-  overlap = true,
   tooltipDelayDuration,
   className,
 }: PresenceAvatarsProps) {
@@ -123,10 +120,7 @@ export function PresenceAvatars({
           {shown.map((user, index) => (
             <UserAvatar
               key={user.id}
-              className={cn(
-                users.length > 1 && 'max-sm:hidden',
-                index > 0 && (overlap ? '-ml-2' : 'ml-1'),
-              )}
+              className={cn(users.length > 1 && 'max-sm:hidden', index > 0 && '-ml-2')}
               dimmed={dimmed}
               label={describePresence(isViewer(user) ? [] : [user.name], resourceType, {
                 withViewer: isViewer(user),

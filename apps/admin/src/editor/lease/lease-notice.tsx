@@ -45,6 +45,19 @@ function heldBy(lease: EditLease): Held | null {
   return lease.locked && lease.reason === 'held' ? lease : null;
 }
 
+/** Whoever else holds the lease, named from the staff list; nobody for the writer's own tab. */
+function useLeaseHolder(
+  held: Held | null,
+  resourceId: string | null,
+  resourceType: PresenceResourceType,
+): PresentUser | undefined {
+  const other = held && !held.ownTab ? held.userId : null;
+  const [holder] = usePresentUsers(
+    other && resourceId ? [{ userId: other, resourceId, resourceType, ts: 0 }] : NOBODY,
+  );
+  return holder;
+}
+
 function CopyContentButton({
   contentText,
   className,
@@ -159,10 +172,7 @@ export function LeaseTakeoverConfirm({
   onOpenChange: (open: boolean) => void;
 }) {
   const held = heldBy(lease);
-  const other = held && !held.ownTab ? held.userId : null;
-  const [holder] = usePresentUsers(
-    other && resourceId ? [{ userId: other, resourceId, resourceType, ts: 0 }] : NOBODY,
-  );
+  const holder = useLeaseHolder(held, resourceId, resourceType);
 
   if (!held) {
     return null;
@@ -223,10 +233,7 @@ function isRefusedTyping(event: KeyboardEvent): boolean {
 export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   const { lease, resourceId, resourceType, currentUser, editingHere = false } = props;
   const held = heldBy(lease);
-  const other = held && !held.ownTab ? held.userId : null;
-  const [holder] = usePresentUsers(
-    other && resourceId ? [{ userId: other, resourceId, resourceType, ts: 0 }] : NOBODY,
-  );
+  const holder = useLeaseHolder(held, resourceId, resourceType);
   const [open, setOpen] = useState(false);
   const closing = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const hovered = useRef(false);
@@ -330,9 +337,10 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   };
 
   // Someone else's tab shows them; the writer's own other tab, or a takeover under way, shows the writer.
-  const person: { name: string; image?: string | null } | undefined = other
-    ? holder
-    : currentUser && { name: currentUser.name, image: currentUser.profile_image };
+  const person: { name: string; image?: string | null } | undefined =
+    held && !held.ownTab
+      ? holder
+      : currentUser && { name: currentUser.name, image: currentUser.profile_image };
   const label = taking
     ? `Taking over this ${resourceType}`
     : editingHere
@@ -457,10 +465,7 @@ export function LeaseSettingsNotice(
 ) {
   const { lease, resourceId, resourceType } = props;
   const held = heldBy(lease);
-  const other = held && !held.ownTab ? held.userId : null;
-  const [holder] = usePresentUsers(
-    other && resourceId ? [{ userId: other, resourceId, resourceType, ts: 0 }] : NOBODY,
-  );
+  const holder = useLeaseHolder(held, resourceId, resourceType);
 
   if (!lease.locked) {
     return null;

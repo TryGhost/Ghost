@@ -275,12 +275,6 @@ function EditorContent({
         : presence.active,
     [presence.active, leaseHolderId],
   );
-  const stackAvatars =
-    showPresence &&
-    new Set(otherPresence.map((entry) => entry.userId)).size +
-      Number(hasEditingAvatar) +
-      Number(!!currentViewer) >
-      1;
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -616,7 +610,7 @@ function EditorContent({
                     className={cn(
                       (hasEditingAvatar || (showPresence && otherPresence.length > 0)) && 'pr-2',
                     )}
-                    gap={stackAvatars ? 'none' : 'xs'}
+                    gap="none"
                   >
                     <LeaseAvatar
                       contentText={session.contentText}
@@ -631,10 +625,9 @@ function EditorContent({
                     {showPresence ? (
                       <PresenceAvatars
                         active={otherPresence}
-                        className={cn(stackAvatars && hasEditingAvatar && '-ml-2')}
+                        className={cn(hasEditingAvatar && '-ml-2')}
                         currentUser={currentViewer}
                         dimmed={hasEditingLease}
-                        overlap={stackAvatars}
                         resourceType={postType}
                         tooltipDelayDuration={0}
                       />
