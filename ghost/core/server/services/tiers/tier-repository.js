@@ -1,5 +1,6 @@
 const Tier = require('./tier');
 const nql = require('@tryghost/nql');
+const errors = require('@tryghost/errors');
 
 /**
  * @typedef {import('./tiers-api').ITierRepository} ITierRepository
@@ -14,6 +15,9 @@ module.exports = class TierRepository {
   /** @type {Set<string>} */
   #ids = new Set();
 
+  /** Counts the writes save() has made, so a reload can tell one landed while it read. */
+  #writes = 0;
+
   /** @type {Object} */
   #ProductModel;
 
@@ -23,16 +27,24 @@ module.exports = class TierRepository {
   /** @type {import('./requirements').TierRequirements} */
   #requirements;
 
+  /** @type {Pick<import('../invalidations/invalidations-service').InvalidationsService, 'register'>} */
+  #invalidations;
+
+  /** @type {import('../invalidations/invalidations-service').InvalidationHandle | undefined} */
+  #invalidation;
+
   /**
    * @param {object} deps
    * @param {object} deps.ProductModel Bookshelf Model
    * @param {import('@tryghost/domain-events')} deps.DomainEvents
    * @param {import('./requirements').TierRequirements} deps.requirements
+   * @param {Pick<import('../invalidations/invalidations-service').InvalidationsService, 'register'>} deps.invalidations
    */
   constructor(deps) {
     this.#ProductModel = deps.ProductModel;
     this.#DomainEvents = deps.DomainEvents;
     this.#requirements = deps.requirements;
+    this.#invalidations = deps.invalidations;
   }
 
   /**
@@ -58,13 +70,23 @@ module.exports = class TierRepository {
   }
 
   async init() {
+    const writes = this.#writes;
     const models = await this.#ProductModel.findAll({
       withRelated: ['benefits'],
     });
     const store = await Promise.all(models.map((model) => Tier.create(this.mapToTier(model))));
+    if (this.#store && writes !== this.#writes) {
+      // It may have read before a save that has since cached its tier. That
+      // save found this reload running, so a rerun that reads after it follows.
+      return;
+    }
     // Swapped together, so a save() meanwhile still finds the tiers it edits
     this.#store = store;
     this.#ids = new Set(store.map((tier) => tier.id.toHexString()));
+    // Registered once loaded, so a peer's message during the first load
+    // counts as missed and reloads after it, rather than racing it. Reloading
+    // dispatches no events: the instance that saved already has.
+    this.#invalidation ??= this.#invalidations.register('tiers', () => this.init());
   }
 
   /**
@@ -163,22 +185,46 @@ module.exports = class TierRepository {
     // Cached without requirements, which are read fresh whenever they're asked for.
     const toSave = await Tier.create({ ...tier.toJSON(), requirements: undefined });
 
-    if (this.#ids.has(tier.id.toHexString())) {
-      const existing = this.#store.findIndex((item) => {
-        return item.id.equals(tier.id);
-      });
+    const store = this.#store;
+    if (this.#ids.has(data.id)) {
       await this.#ProductModel.edit(data, {
         id: data.id,
       });
-      this.#store.splice(existing, 1, toSave);
     } else {
       await this.#ProductModel.add(data);
-      this.#store.push(toSave);
-      this.#ids.add(tier.id.toHexString());
+    }
+    this.#writes += 1;
+    // Only after the write: a reload running now then runs again and reads it
+    void this.#invalidation.notifyPeers();
+    let readBackError = null;
+    if (this.#store === store) {
+      const existing = store.findIndex((item) => item.id.equals(tier.id));
+      if (existing === -1) {
+        store.push(toSave);
+        this.#ids.add(data.id);
+      } else {
+        store.splice(existing, 1, toSave);
+      }
+    } else {
+      // A reload swapped the cache during the write. It may have read before
+      // the write, or after a peer's newer one, so only the database knows.
+      try {
+        await this.#invalidation.reload();
+      } catch (err) {
+        readBackError = err;
+      }
     }
 
+    // The write stands either way, so its events go out
     for (const event of tier.events) {
       this.#DomainEvents.dispatch(event);
+    }
+    if (readBackError) {
+      // Retrying the write or caching this tier could each undo a newer write
+      throw new errors.InternalServerError({
+        message: 'The tier was saved, but the tiers could not be read back',
+        err: readBackError,
+      });
     }
   }
 };
