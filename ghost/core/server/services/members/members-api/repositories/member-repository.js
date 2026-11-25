@@ -1300,7 +1300,8 @@ module.exports = class MemberRepository {
     const filterOptions = _.pick(options, ['transacting', 'context']);
 
     if (all !== true) {
-      // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+      // mongoTransformer carries the caller's checks on the filter, such as the Admin API's
+      // rejection of restricted fields
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
 
@@ -1336,7 +1337,8 @@ module.exports = class MemberRepository {
     const filterOptions = _.pick(options, ['transacting', 'context']);
 
     if (all !== true) {
-      // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+      // mongoTransformer carries the caller's checks on the filter, such as the Admin API's
+      // rejection of restricted fields
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
     const selected = await this._Member.resolveFilter(filterOptions);

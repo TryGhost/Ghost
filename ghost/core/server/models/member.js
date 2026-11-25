@@ -4,6 +4,7 @@ const { afterCommit } = require('../lib/after-commit');
 const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
+const { mapKeyValues } = require('@tryghost/mongo-utils');
 const {
   callerTransformerStep,
   keyWithConditionStep,
@@ -18,6 +19,25 @@ const { METAFIELDS_RELATION } = require('../services/members-metafields/members-
 const {
   createMetafieldsFilterTransformer,
 } = require('../services/members-metafields/metafields/filter');
+
+// `subscribed` isn't a column. `subscribed:true` selects members subscribed to an active
+// newsletter, and `subscribed:false` selects members subscribed to none.
+const mapSubscribedToNewsletterStatus = mapKeyValues({
+  key: {
+    from: 'subscribed',
+    to: 'newsletters.status',
+  },
+  values: [
+    {
+      from: true,
+      to: 'active',
+    },
+    {
+      from: false,
+      to: { $ne: 'active' },
+    },
+  ],
+});
 
 // `opened_emails.post_id` names the post of an email a member opened: the email's post, on a
 // recipient row that was opened. mongo-knex can't compare a joined column with null, so the
@@ -652,9 +672,10 @@ const Member = ghostBookshelf.Model.extend(
      *
      * 1. The caller's own rewrite, such as the Admin API's restricted-field check, which sees the
      *    keys as the filter wrote them, none of them renamed yet.
-     * 2. The custom fields rewrite, which turns `metafields` statements into queries on the values
+     * 2. `subscribed`, which isn't a column, rewritten as the status of the member's newsletters.
+     * 3. The custom fields rewrite, which turns `metafields` statements into queries on the values
      *    table.
-     * 3. `opened_emails.post_id`, then the keys that only rename a relation's column, mapped onto
+     * 4. `opened_emails.post_id`, then the keys that only rename a relation's column, mapped onto
      *    the relation keys filterRelations() names.
      *
      * The resolved filter's queries compile the result with filterRelations().
@@ -664,6 +685,7 @@ const Member = ghostBookshelf.Model.extend(
         this,
         [
           callerTransformerStep(options.mongoTransformer),
+          transformerStep(mapSubscribedToNewsletterStatus),
           transformerStep(createMetafieldsFilterTransformer()),
           openedEmailsPost,
           relationKeys,
