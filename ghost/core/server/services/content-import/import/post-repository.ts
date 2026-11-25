@@ -59,7 +59,7 @@ export class BookshelfPostsRepository implements PostsRepository {
       const lookupOptions = {
         ...writeOptions,
         forUpdate: true,
-        ...(metadata.runTagName ? { withRelated: ['tags'] } : {}),
+        withRelated: ['tags'],
       };
       let existingMatch:
         | {
@@ -109,10 +109,12 @@ export class BookshelfPostsRepository implements PostsRepository {
           return { status: 'skipped', reason: duplicateReason, duplicate };
         }
 
-        const incomingInstant = new Date(metadata.sourceUpdatedAt).getTime();
+        // The post model stores timestamps at second precision. CSV milliseconds
+        // must not make an unchanged row look newer every time it is imported.
+        const incomingInstant = Math.floor(new Date(metadata.sourceUpdatedAt).getTime() / 1000);
         const storedUpdatedAt = existing.toJSON().updated_at;
         const storedInstant = storedUpdatedAt
-          ? new Date(storedUpdatedAt as string | number | Date).getTime()
+          ? Math.floor(new Date(storedUpdatedAt as string | number | Date).getTime() / 1000)
           : undefined;
 
         if (
@@ -132,6 +134,17 @@ export class BookshelfPostsRepository implements PostsRepository {
         // timestamp-only importing edits are excluded from collision detection.
         const resolved = await this._relations.resolve(data, metadata, writeOptions);
         const collisionSafeData: Record<string, unknown> = { ...resolved.data };
+        // A CSV update adds tags without removing editorial tags or import history.
+        // Preserve the current order, including the primary tag, and append new tags.
+        const existingTags = (existing.toJSON().tags ?? []) as Array<{ id: string; name: string }>;
+        const existingTagIds = new Set(existingTags.map((tag) => tag.id));
+        const existingTagNames = new Set(existingTags.map((tag) => tag.name));
+        collisionSafeData.tags = [
+          ...existingTags.map((tag) => ({ id: tag.id })),
+          ...resolved.data.tags.filter((tag) =>
+            'id' in tag ? !existingTagIds.has(tag.id) : !existingTagNames.has(tag.name),
+          ),
+        ];
         if (storedUpdatedAt) {
           collisionSafeData.updated_at = storedUpdatedAt;
         } else {

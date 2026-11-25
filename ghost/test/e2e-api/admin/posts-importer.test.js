@@ -1322,6 +1322,117 @@ describe('Posts Importer API', function () {
     assert.ok(afterInvalid, 'a valid row after the invalid date is still imported');
   });
 
+  it('Skips unchanged re-imports with fractional timestamps without changing tags', async function () {
+    await agent.loginAsOwner();
+    const file = await csvFile(
+      'posts-import-fractional-timestamps.csv',
+      'title,slug,comment_id,updated_at,type,tags\n' +
+        'Fractional source ID,fractional-source-id,fractional-source,2025-01-01T00:00:00.123Z,post,First tag\n' +
+        'Fractional slug,fractional-slug,,2025-01-01T01:00:00.999+01:00,page,Second tag\n',
+    );
+    const first = await agent.post('posts/upload/').attach('postsfile', file).expectStatus(202);
+    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+
+    const before = await Promise.all(
+      ['fractional-source-id', 'fractional-slug'].map((slug) =>
+        models.Post.findOne({ slug, status: 'all' }, { withRelated: ['tags'] }),
+      ),
+    );
+    const edit = sinon.spy(models.Post, 'edit');
+    const second = await agent.post('posts/upload/').attach('postsfile', file).expectStatus(202);
+    await vi.waitFor(() => mockManager.assert.sentEmailCount(2), { timeout: 5000 });
+
+    sinon.assert.notCalled(edit);
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    assert.match(email.html, /Created:<\/strong> 0/);
+    assert.match(email.html, /Updated:<\/strong> 0/);
+    assert.match(email.html, /Skipped:<\/strong> 2/);
+    const report = email.attachments.find(({ filename }) => filename === 'report.csv');
+    const { data: rows } = papaparse.parse(report.content.trim(), { header: true });
+    assert.deepEqual(
+      rows.map((row) => row.outcome),
+      ['duplicate', 'duplicate'],
+    );
+    assert.deepEqual(
+      rows.map((row) => row.matched_by),
+      ['source_id', 'slug'],
+    );
+
+    for (const original of before) {
+      const post = await models.Post.findOne(
+        { id: original.id, status: 'all' },
+        { withRelated: ['tags'] },
+      );
+      assert.equal(post.get('updated_at').toISOString(), '2025-01-01T00:00:00.000Z');
+      assert.deepEqual(
+        post.related('tags').map((tag) => tag.id),
+        original.related('tags').map((tag) => tag.id),
+      );
+      const tagNames = post.related('tags').map((tag) => tag.get('name'));
+      assert.ok(tagNames.includes(`#Import Run ${first.body.meta.import_id}`));
+      assert.ok(!tagNames.includes(`#Import Run ${second.body.meta.import_id}`));
+    }
+  });
+
+  it('Preserves all existing tags and import history when newer CSV rows update a post', async function () {
+    await agent.loginAsOwner();
+    const original = await csvFile(
+      'posts-import-retained-tags.csv',
+      'title,slug,updated_at,tags\n' +
+        'Original tags,retained-tags,2025-01-01T00:00:00Z,"Primary CSV tag,Omitted CSV tag,#Internal CSV tag"\n',
+    );
+    const first = await agent.post('posts/upload/').attach('postsfile', original).expectStatus(202);
+    await mockManager.assert.sentEmailEventually({ subject: /^Your content import/ });
+    mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    let post = await models.Post.findOne(
+      { slug: 'retained-tags', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const originalTagIds = post.related('tags').map((tag) => tag.id);
+
+    const update = await csvFile(
+      'posts-import-retained-tags-update.csv',
+      'title,slug,updated_at,tags\n' +
+        'Updated tags,retained-tags,2025-02-01T00:00:00Z,"#Internal CSV tag,Primary CSV tag,New CSV tag"\n',
+    );
+    const second = await agent.post('posts/upload/').attach('postsfile', update).expectStatus(202);
+    await vi.waitFor(() => mockManager.assert.sentEmailCount(2), { timeout: 5000 });
+    const email = mockManager.assert.sentEmail({ subject: 'Your content import is complete' });
+    assert.match(email.html, /Updated:<\/strong> 1/);
+    post = await models.Post.findOne(
+      { slug: 'retained-tags', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    const tags = post.related('tags').models;
+    const ids = tags.map((tag) => tag.id);
+    const names = tags.map((tag) => tag.get('name'));
+    assert.equal(post.get('title'), 'Updated tags');
+    assert.deepEqual(ids.slice(0, originalTagIds.length), originalTagIds);
+    assert.equal(new Set(ids).size, ids.length, 'repeated tags are attached only once');
+    assert.ok(names.includes('New CSV tag'));
+    assert.ok(names.includes(`#Import Run ${first.body.meta.import_id}`));
+    assert.ok(names.includes(`#Import Run ${second.body.meta.import_id}`));
+
+    const withoutTags = await csvFile(
+      'posts-import-retained-tags-omitted.csv',
+      'title,slug,updated_at\nNo tags supplied,retained-tags,2025-03-01T00:00:00Z\n',
+    );
+    await agent.post('posts/upload/').attach('postsfile', withoutTags).expectStatus(202);
+    await vi.waitFor(() => mockManager.assert.sentEmailCount(3), { timeout: 5000 });
+    post = await models.Post.findOne(
+      { slug: 'retained-tags', status: 'all' },
+      { withRelated: ['tags'] },
+    );
+    assert.deepEqual(
+      post
+        .related('tags')
+        .map((tag) => tag.id)
+        .slice(0, ids.length),
+      ids,
+    );
+  });
+
   it('Imports public posts even when the site default visibility is paid', async function () {
     mockManager.mockSetting('default_content_visibility', 'paid');
     await agent.loginAsOwner();

@@ -72,7 +72,7 @@ describe('BookshelfPostsRepository', function () {
     sinon.assert.calledWithExactly(
       h.findOne,
       { slug: 'imported-post', status: 'all' },
-      { ...options, transacting: h.transacting, forUpdate: true },
+      { ...options, transacting: h.transacting, forUpdate: true, withRelated: ['tags'] },
     );
     sinon.assert.calledWithExactly(h.add, data, { ...options, transacting: h.transacting });
     assert.equal('transacting' in options, false, 'caller options are not mutated');
@@ -345,6 +345,42 @@ describe('BookshelfPostsRepository', function () {
     sinon.assert.notCalled(h.edit);
   });
 
+  it.each([
+    '2025-01-01T00:00:00.001Z',
+    '2025-01-01T00:00:00.999Z',
+    '2025-01-01T01:00:00.123+01:00',
+  ])('skips timestamps within the stored second: %s', async function (sourceUpdatedAt) {
+    const h = harness();
+    h.findOne.resolves(h.existing);
+
+    const result = await h.repository.write(
+      { ...data, updated_at: sourceUpdatedAt, tags: [{ name: '#Import Run next' }] },
+      { importing: true },
+      { sourceUpdatedAt, tagNames: 'New tag' },
+    );
+
+    assert.equal(result.status, 'skipped');
+    sinon.assert.notCalled(h.findTag);
+    sinon.assert.notCalled(h.addTag);
+    sinon.assert.notCalled(h.edit);
+  });
+
+  it('updates when the incoming timestamp reaches the next stored second', async function () {
+    const h = harness();
+    h.existing.toJSON.returns({ id: 'existing', updated_at: '2025-01-01T00:00:00.999Z' });
+    h.findOne.resolves(h.existing);
+
+    const sourceUpdatedAt = '2025-01-01T00:00:01.000Z';
+    const result = await h.repository.write(
+      { ...data, updated_at: sourceUpdatedAt },
+      { importing: true },
+      { sourceUpdatedAt },
+    );
+
+    assert.equal(result.status, 'updated');
+    sinon.assert.calledTwice(h.edit);
+  });
+
   it('treats a missing stored timestamp as older', async function () {
     const h = harness();
     h.existing.toJSON.returns({ id: 'existing', updated_at: null });
@@ -389,6 +425,72 @@ describe('BookshelfPostsRepository', function () {
 
     assert.deepEqual(result.status, 'skipped');
     sinon.assert.notCalled(h.edit);
+  });
+
+  it('keeps existing tags in order and appends only new tags on an update', async function () {
+    const h = harness();
+    const existingTags = [
+      { id: 'primary', name: 'Primary tag' },
+      { id: 'retained', name: 'Omitted from CSV' },
+      { id: 'old-run', name: '#Import Run previous' },
+      { id: 'batch', name: '#Import date' },
+    ];
+    h.existing.toJSON.returns({
+      id: 'existing',
+      updated_at: '2025-01-01T00:00:00Z',
+      tags: existingTags,
+    });
+    h.findOne.resolves(h.existing);
+    h.findTag.withArgs({ name: 'Primary tag' }).resolves({ id: 'primary' });
+    h.findTag.withArgs({ name: 'New tag' }).resolves({ id: 'new' });
+    const importedData = {
+      ...data,
+      updated_at: '2025-02-01T00:00:00Z',
+      tags: [{ name: '#Import date' }, { name: '#Import Run current' }],
+    };
+
+    await h.repository.write(
+      importedData,
+      { importing: true },
+      {
+        sourceUpdatedAt: importedData.updated_at,
+        runTagName: '#Import Run current',
+        tagNames: 'Primary tag, New tag',
+      },
+    );
+
+    assert.deepEqual(h.edit.firstCall.args[0].tags, [
+      { id: 'primary' },
+      { id: 'retained' },
+      { id: 'old-run' },
+      { id: 'batch' },
+      { id: 'new' },
+      { name: '#Import Run current' },
+    ]);
+    assert.deepEqual(importedData.tags, [
+      { name: '#Import date' },
+      { name: '#Import Run current' },
+    ]);
+    assert.equal(existingTags[0].name, 'Primary tag');
+  });
+
+  it('keeps existing tags when a newer CSV row supplies no tags', async function () {
+    const h = harness();
+    h.existing.toJSON.returns({
+      id: 'existing',
+      updated_at: '2025-01-01T00:00:00Z',
+      tags: [{ id: 'retained', name: 'Existing tag' }],
+    });
+    h.findOne.resolves(h.existing);
+
+    await h.repository.write(
+      data,
+      { importing: true },
+      { sourceUpdatedAt: '2025-02-01T00:00:00Z' },
+    );
+
+    sinon.assert.calledWithMatch(h.findOne, sinon.match.object, { withRelated: ['tags'] });
+    assert.deepEqual(h.edit.firstCall.args[0].tags, [{ id: 'retained' }]);
   });
 
   it('propagates lookup failures and never attempts the insert', async function () {
