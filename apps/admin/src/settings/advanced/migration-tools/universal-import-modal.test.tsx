@@ -120,7 +120,12 @@ describe('UniversalImportModal', () => {
       data: { config: { contentImport: { stagedInspection: true } } },
     });
     mockInspectContentCSV.mockResolvedValue({
-      meta: { upload_id: 'staged-id', columns: ['title'], rows: [{ title: 'Sample title' }] },
+      meta: {
+        upload_id: 'staged-id',
+        columns: ['title'],
+        rows: [{ title: 'Sample title' }],
+        total: 1,
+      },
     });
   };
 
@@ -132,7 +137,7 @@ describe('UniversalImportModal', () => {
     expect(await screen.findByText('Sample title')).toBeInTheDocument();
     expect(mockInspectContentCSV).toHaveBeenCalledOnce();
     expect(mockInspectContentCSV).toHaveBeenCalledWith(file);
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import 1 item' }));
     await waitFor(() =>
       expect(mockImportContentCSV).toHaveBeenCalledWith({
         uploadId: 'staged-id',
@@ -142,7 +147,47 @@ describe('UniversalImportModal', () => {
     expect(mockCancelContentCSV).not.toHaveBeenCalled();
   });
 
-  it('shows the pending label while submitting', async () => {
+  it.each(['export.csv', 'export.zip'])(
+    'shows the full inspected count for %s and keeps Cancel',
+    async (name) => {
+      enableStagedInspection();
+      mockInspectContentCSV.mockResolvedValueOnce({
+        meta: {
+          upload_id: 'staged-id',
+          columns: ['title'],
+          rows: Array.from({ length: 20 }, (_, i) => ({ title: `Sample ${i + 1}` })),
+          total: 1133,
+        },
+      });
+      showModal();
+      await dropFile(new File(['inspected on the server'], name));
+
+      expect(await screen.findByRole('button', { name: 'Import 1,133 items' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
+      fireEvent.click(screen.getByRole('button', { name: 'Show next sample row' }));
+      expect(screen.getByText('Sample 2')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Import 1,133 items' })).toBeEnabled();
+    },
+  );
+
+  it('keeps the plain Import button when older Core returns samples without a total', async () => {
+    enableStagedInspection();
+    mockInspectContentCSV.mockResolvedValueOnce({
+      meta: { upload_id: 'older-core', columns: ['title'], rows: [{ title: 'Sample title' }] },
+    });
+    showModal();
+    await dropFile(new File(['inspected on the server'], 'export.csv'));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Import' }));
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        uploadId: 'older-core',
+        mapping: { title: 'title' },
+      }),
+    );
+  });
+
+  it('replaces the count with the pending label while submitting', async () => {
     enableStagedInspection();
     let finish!: () => void;
     const submission = new Promise<void>((resolve) => {
@@ -152,7 +197,7 @@ describe('UniversalImportModal', () => {
     showModal();
     await dropFile(new File(['inspected on the server'], 'export.csv'));
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Import' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Import 1 item' }));
     expect(await screen.findByRole('button', { name: 'Uploading...' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     fireEvent.mouseDown(document.getElementById('modal-backdrop')!);
@@ -184,7 +229,7 @@ describe('UniversalImportModal', () => {
       }
       await waitFor(() => expect(mockCancelContentCSV).toHaveBeenCalledWith('staged-id'));
       expect(screen.queryByText('Uploading...')).not.toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Import 1 item' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Start over' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
       expect(screen.getByRole('combobox', { name: /Field for title/ })).toBeDisabled();
@@ -222,6 +267,7 @@ describe('UniversalImportModal', () => {
           upload_id: 'staged-id',
           columns: ['title'],
           rows: [{ title: 'Example' }],
+          total: 1,
         },
       });
       await inspection;
@@ -293,7 +339,7 @@ describe('UniversalImportModal', () => {
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(mockImportContentCSV).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import 1 item' }));
 
     await waitFor(() =>
       expect(mockImportContentCSV).toHaveBeenCalledWith({
@@ -316,6 +362,8 @@ describe('UniversalImportModal', () => {
 
     expect(await fileInput()).toBeInTheDocument();
     expect(mockImportContentCSV).not.toHaveBeenCalled();
+    await dropFile(new File(['title\nOne\nTwo'], 'replacement.csv', { type: 'text/csv' }));
+    expect(await screen.findByRole('button', { name: 'Import 2 items' })).toBeEnabled();
   });
 
   it('blocks importing while the required title field is unmapped', async () => {
@@ -325,7 +373,7 @@ describe('UniversalImportModal', () => {
     await dropFile(new File(['Headline\nHello'], 'posts.csv', { type: 'text/csv' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Required field missing: Title');
-    expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Import 1 item' })).toBeDisabled();
     expect(mockImportContentCSV).not.toHaveBeenCalled();
   });
 
@@ -346,7 +394,7 @@ describe('UniversalImportModal', () => {
       target: { value: 'Twitter description' },
     });
     fireEvent.click(screen.getByText('Twitter description'));
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import 1 item' }));
 
     await waitFor(() =>
       expect(mockImportContentCSV).toHaveBeenCalledWith({
@@ -387,7 +435,7 @@ describe('UniversalImportModal', () => {
       target: { value: 'Tags' },
     });
     fireEvent.click(screen.getByText('Tags'));
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import 1 item' }));
 
     await waitFor(() =>
       expect(mockImportContentCSV).toHaveBeenCalledWith({
@@ -436,7 +484,7 @@ describe('UniversalImportModal', () => {
 
     expect(await screen.findByText('Map CSV fields')).toBeInTheDocument();
     expect(screen.getByText('From ZIP')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import 1 item' }));
 
     await waitFor(() =>
       expect(mockImportContentCSV).toHaveBeenCalledWith({
@@ -476,7 +524,7 @@ describe('UniversalImportModal', () => {
 
     await dropFile(new File(['title\nHello'], 'posts.csv', { type: 'text/csv' }));
     await screen.findByText('Map CSV fields');
-    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import 1 item' }));
 
     await waitFor(() => expect(mockHandleError).toHaveBeenCalledWith(error));
     expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();

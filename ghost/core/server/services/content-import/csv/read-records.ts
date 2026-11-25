@@ -137,7 +137,7 @@ export async function* readCSVRecords(
         }
       }
     } finally {
-      // Inspection can stop after 20 records without reading the remaining file.
+      // A caller can stop early without reading the remaining file.
       input.destroy();
       limited.destroy();
       await pumping;

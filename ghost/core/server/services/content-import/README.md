@@ -50,7 +50,7 @@ stop a running import with partial results, rather than importing recovered cell
 Run the recovery suite from the repository root with the local MySQL
 test service available. It kills isolated workers after a post commit and
 checks that retained outbox jobs resume raw CSV and ZIP imports from durable
-checkpoints.
+checkpoints, including respecting cancellation requested before restart.
 
 ```sh
 pnpm --dir ghost exec vitest run -c vitest.config.db.ts \

@@ -60,6 +60,7 @@ describe('CSV import inspection', function () {
     assert.match(meta.upload_id, /^[a-f0-9]{24}$/);
     assert.deepEqual(meta.columns, ['Heading', 'Other']);
     assert.equal(meta.rows.length, 20);
+    assert.equal(meta.total, 22);
     assert.deepEqual(meta.rows[19], { Heading: 'Post 20', Other: 'sample' });
 
     const url = `posts/upload/inspect/${meta.upload_id}/`;
@@ -78,8 +79,70 @@ describe('CSV import inspection', function () {
       body: { meta },
     } = await agent.post('posts/upload/inspect/').attach('postsfile', large).expectStatus(200);
     assert.ok(Buffer.byteLength(meta.rows[0].Heading) <= 256 * 1024);
+    assert.equal(meta.total, 1);
     assert.doesNotMatch(meta.rows[0].Heading, /�/);
     await agent.delete(`posts/upload/inspect/${meta.upload_id}/`).expectStatus(204);
+  });
+
+  it('counts the data CSV in a wrapped ZIP without counting CSV attachments', async function () {
+    const source = path.join(directory, 'csv-archive');
+    await fs.mkdir(path.join(source, 'export/content/files'), { recursive: true });
+    await fs.writeFile(
+      path.join(source, 'export/posts.csv'),
+      'title,html\n' +
+        Array.from({ length: 25 }, (_, index) => `Post ${index},"<p>First\nSecond</p>"`).join(
+          '\n',
+        ) +
+        '\n,\n',
+    );
+    await fs.writeFile(
+      path.join(source, 'export/content/files/attachment.csv'),
+      'title\nAttachment\n',
+    );
+    const zip = path.join(directory, 'csv-archive.zip');
+    await compress(source, zip);
+    await agent.loginAsOwner();
+
+    const {
+      body: { meta },
+    } = await agent.post('posts/upload/inspect/').attach('postsfile', zip).expectStatus(200);
+
+    assert.equal(meta.total, 25);
+    assert.equal(meta.rows.length, 20);
+    assert.equal(meta.rows[0].html, '<p>First\nSecond</p>');
+    await agent.delete(`posts/upload/inspect/${meta.upload_id}/`).expectStatus(204);
+  });
+
+  it('rejects malformed CSV beyond the preview instead of returning an incomplete total', async function () {
+    const malformed = path.join(directory, 'late-invalid.csv');
+    await fs.writeFile(malformed, (await fs.readFile(file, 'utf8')) + '\n"Unclosed');
+    await agent.loginAsOwner();
+
+    const { body } = await agent
+      .post('posts/upload/inspect/')
+      .attach('postsfile', malformed)
+      .expectStatus(422);
+
+    assert.equal(
+      body.errors[0].message,
+      'The CSV could not be parsed: Quoted field unterminated (row 24).',
+    );
+    assert.equal(body.meta, undefined);
+  });
+
+  it('rejects malformed closing quotes instead of importing recovered cells', async function () {
+    const malformed = path.join(directory, 'invalid-closing-quote.csv');
+    await fs.writeFile(malformed, 'title,html\nExample,"hello"world');
+    await agent.loginAsOwner();
+    const { body } = await agent
+      .post('posts/upload/inspect/')
+      .attach('postsfile', malformed)
+      .expectStatus(422);
+    assert.equal(
+      body.errors[0].message,
+      'The CSV could not be parsed: Trailing quote on quoted field is malformed (row 2).',
+    );
+    assert.equal(body.meta, undefined);
   });
 
   for (const scenario of ['multiple CSVs', 'malformed CSV', 'corrupt ZIP']) {

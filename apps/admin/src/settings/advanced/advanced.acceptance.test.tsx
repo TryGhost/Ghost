@@ -329,8 +329,10 @@ describe('Advanced settings', () => {
     },
   );
 
-  it('keeps the import label while cancelling a staged CSV', async () => {
-    const label = 'Import';
+  it.each([
+    { total: 1133, label: 'Import 1,133 items' },
+    { total: undefined, label: 'Import' },
+  ])('shows "$label" for inspected CSVs and retains cancellation', async ({ total, label }) => {
     fakeSettingsScreens();
     const response = configResponse();
     response.config.contentImport = { stagedInspection: true };
@@ -339,6 +341,7 @@ describe('Advanced settings', () => {
         upload_id: 'staged-csv',
         columns: ['title'],
         rows: Array.from({ length: 20 }, (_, i) => ({ title: `Sample ${i + 1}` })),
+        ...(total === undefined ? {} : { total }),
       },
     });
     let finishCancellation!: () => void;

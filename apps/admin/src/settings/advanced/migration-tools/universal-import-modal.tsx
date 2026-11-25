@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Dropzone, Link } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { SettingsModal } from '@tryghost/shade/patterns';
+import { formatNumber } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -23,6 +24,7 @@ interface CSVImportState {
   rows: Record<string, string>[];
   mapping: ContentFieldMapping;
   sampleIndex: number;
+  total?: number;
 }
 
 const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -77,6 +79,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           setCSVImport({
             source: { uploadId: meta.upload_id },
             rows: meta.rows,
+            total: meta.total,
             mapping: ContentFieldMapping.detect(meta.columns),
             sampleIndex: 0,
           });
@@ -106,6 +109,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         setCSVImport({
           source: { file },
           rows,
+          total: rows.length,
           mapping: ContentFieldMapping.detect(columnsOf(rows)),
           sampleIndex: 0,
         });
@@ -202,7 +206,11 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           Cancel
         </Button>
         <Button disabled={busy || missingTitle} type="button" onClick={() => void importCSV()}>
-          {uploading ? 'Uploading...' : 'Import'}
+          {uploading
+            ? 'Uploading...'
+            : csvImport.total !== undefined
+              ? `Import ${formatNumber(csvImport.total)} ${csvImport.total === 1 ? 'item' : 'items'}`
+              : 'Import'}
         </Button>
       </Inline>
     </Inline>

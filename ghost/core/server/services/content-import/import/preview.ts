@@ -9,14 +9,20 @@ const SAMPLE_BYTES = 256 * 1024;
 export async function readCSVPreview(input: Readable): Promise<{
   columns: string[];
   rows: Array<Record<string, string>>;
+  total: number;
 }> {
   let remaining = SAMPLE_BYTES;
+  let total = 0;
   let columns: string[] = [];
   const rows: Array<Record<string, string>> = [];
 
   for await (const record of readCSVRecords(input)) {
     if ('columns' in record) {
       columns = record.columns;
+      continue;
+    }
+    total += 1;
+    if (rows.length === SAMPLE_ROWS) {
       continue;
     }
     const row: Record<string, string> = Object.create(null);
@@ -36,14 +42,11 @@ export async function readCSVPreview(input: Readable): Promise<{
       remaining -= keyBytes + Buffer.byteLength(sample);
     }
     rows.push(row);
-    if (rows.length === SAMPLE_ROWS) {
-      break;
-    }
   }
   if (!rows.length) {
     throw new errors.ValidationError({
       message: 'File is empty, nothing to import. Please select a different file.',
     });
   }
-  return { columns, rows };
+  return { columns, rows, total };
 }

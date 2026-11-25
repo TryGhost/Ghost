@@ -164,7 +164,12 @@ describe('posts api', () => {
 
   it('inspects a file and confirms it by ID without reuploading the file', async () => {
     const file = new File(['title\nHello'], 'posts.csv', { type: 'text/csv' });
-    const preview = { upload_id: 'upload-id', columns: ['title'], rows: [{ title: 'Hello' }] };
+    const preview = {
+      upload_id: 'upload-id',
+      columns: ['title'],
+      rows: [{ title: 'Hello' }],
+      total: 1133,
+    };
     await withMockFetch({ json: { meta: preview } }, async (mock) => {
       const { result } = renderHookWithProviders(() => ({
         inspect: useInspectContentCSV(),

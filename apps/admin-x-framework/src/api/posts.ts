@@ -217,6 +217,8 @@ export interface StagedCSVInspection {
   upload_id: string;
   columns: string[];
   rows: Record<string, string>[];
+  // Older Core versions return the sample without a complete row count.
+  total?: number;
 }
 
 type CSVInspectionResponse = { meta: StagedCSVInspection } | { meta?: never };
