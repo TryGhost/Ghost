@@ -297,7 +297,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
           )}
           data-testid="members-page"
         >
-          <ListPage.Header className="py-4 sidebar:py-5">
+          {/* Under the Admin 7 design the header is pulled up over the large title, so its
+              buttons sit beside it. The title is a button here, so the header lets clicks
+              through to it until it has scrolled into the header's place, and keeps its own
+              buttons and the rows under it clickable. */}
+          <ListPage.Header className="py-4 sidebar:py-5 [&_[data-page-header=actions]]:pointer-events-auto [&_[data-page-header=page-header]~*]:pointer-events-auto [&[data-large-title-header]:not([data-condensed])]:pointer-events-none">
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
               <PageHeader blurredBackground={false} sticky={false}>
                 {/* A segment's facts can be a long line. The title block takes the room left by

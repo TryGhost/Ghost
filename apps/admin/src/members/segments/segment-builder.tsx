@@ -414,12 +414,19 @@ export function SegmentBuilderDialog({
 interface SegmentBuilderPopoverProps extends SegmentBuilderProps {
   /** What the popover hangs from: the picker or button a segment is being made for. */
   anchorRef: RefObject<HTMLElement>;
+  /**
+   * Which edge of that control the popover lines up with, and so which way it grows as it
+   * widens for its filters. From a control at the right of its row it lines up with the end, as
+   * the custom field form does. Under a field as wide as its card, it is centred on it.
+   */
+  align?: 'start' | 'center' | 'end';
 }
 
 function SegmentBuilderPopoverContent({
   onOpenChange,
   startFrom,
   withPin = false,
+  align = 'end',
   onCreated,
 }: Omit<SegmentBuilderPopoverProps, 'open' | 'anchorRef'>) {
   const builder = useSegmentBuilder({ startFrom, onCreated, onDone: () => onOpenChange(false) });
@@ -429,7 +436,7 @@ function SegmentBuilderPopoverContent({
 
   return (
     <PopoverContent
-      align="end"
+      align={align}
       aria-label="New segment"
       // As wide as the custom field form's popover until there is a filter, then wide enough
       // for a filter's three parts on one line.

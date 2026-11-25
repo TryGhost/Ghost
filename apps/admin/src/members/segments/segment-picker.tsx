@@ -115,6 +115,7 @@ export function SegmentPicker({
         </Combobox>
       </div>
       <SegmentBuilderPopover
+        align="center"
         anchorRef={pickerRef}
         open={creating}
         onCreated={(segment) => onChange(segment.id)}
