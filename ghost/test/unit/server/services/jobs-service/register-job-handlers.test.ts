@@ -1,3 +1,6 @@
+const {
+  default: CleanCSVUploadsJob,
+} = require('../../../../../core/server/services/content-import/jobs/clean-csv-uploads-job');
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
@@ -29,7 +32,7 @@ describe('register-job-handlers', function () {
   let siteImporter: { executeImport: sinon.SinonStub };
   let emailService: { handleSendEmailJob: sinon.SinonStub };
   let tinybirdSync: { sync: sinon.SinonStub };
-  let contentImport: { handleJob: sinon.SinonStub };
+  let contentImport: { handleJob: sinon.SinonStub; cleanupUploads: sinon.SinonStub };
   let updateCheck: sinon.SinonStub;
   let signingKeys: { check: sinon.SinonStub };
   let authCleanup: { clearExpired: sinon.SinonStub };
@@ -62,12 +65,13 @@ describe('register-job-handlers', function () {
     siteImporter = { executeImport: sinon.stub().resolves() };
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
     tinybirdSync = { sync: sinon.stub().resolves() };
-    contentImport = { handleJob: sinon.stub().resolves() };
+    contentImport = { handleJob: sinon.stub().resolves(), cleanupUploads: sinon.stub().resolves() };
     updateCheck = sinon.stub().resolves();
     signingKeys = { check: sinon.stub().resolves() };
     authCleanup = { clearExpired: sinon.stub().resolves() };
 
     registerJobHandlers({
+      cleanCSVUploadsJob: CleanCSVUploadsJob,
       gifts: { startFetch: sinon.stub().resolves() },
       automationAnalytics: { startFetch: sinon.stub().resolves() },
       newsletters: { startFetch: sinon.stub().resolves() },
@@ -231,6 +235,12 @@ describe('register-job-handlers', function () {
     await membersImportHandler(job);
 
     assert.ok(membersService.handleImportJob.calledOnceWithExactly(job));
+  });
+
+  it('routes the expiry job to the CSV importer', async function () {
+    assert.equal(registrationFor('clean-csv-import-uploads').args[0], CleanCSVUploadsJob);
+    await handlerFor('clean-csv-import-uploads')({});
+    sinon.assert.calledOnce(contentImport.cleanupUploads);
   });
 
   // The legacy inline queue ran members imports alongside the other one-off jobs, so

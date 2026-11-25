@@ -116,6 +116,23 @@ describe('Content import composition root', function () {
     sinon.assert.calledOnce(handled);
   });
 
+  it('schedules hourly cleanup and reports scheduling failures without failing startup', async function () {
+    const scheduleRecurring = sandbox.stub().resolves();
+    sandbox.replace(require.cache[jobsPath]!, 'exports', {
+      getInstance: () => ({ scheduleRecurring }),
+    });
+    delete require.cache[rootPath];
+    root = require(rootPath);
+    await root.scheduleUploadCleanup();
+    sinon.assert.calledOnce(scheduleRecurring);
+    assert.equal(scheduleRecurring.firstCall.args[0].constructor.type, 'clean-csv-import-uploads');
+    assert.deepEqual(scheduleRecurring.firstCall.args[1], { cron: '0 0 * * * *' });
+    const failure = new Error('scheduler unavailable');
+    scheduleRecurring.rejects(failure);
+    await root.scheduleUploadCleanup();
+    sinon.assert.calledOnceWithExactly(sentry.captureException, failure);
+  });
+
   it('looks up jobs, storage and media only when work runs', async function () {
     const getJobs = sandbox.stub().throws(new Error('Jobs not ready'));
     sandbox.replace(require.cache[jobsPath]!, 'exports', { getInstance: getJobs });

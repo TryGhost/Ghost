@@ -116,6 +116,49 @@ describe('content import staged file', function () {
     await assert.rejects(adapter.begin('uncertain', 1), /no longer available/);
   });
 
+  it('expires a source saved before its adapter-assigned key reached the manifest', async function () {
+    const directoryKey = 'content-csv-import/test-site/interrupted';
+    await uploads.create('interrupted', owner, now, {
+      key: directoryKey + '/source',
+      name: 'posts.csv',
+    });
+    await storage.save({ name: 'renamed', path: sourcePath }, directoryKey);
+
+    const report = sinon.stub();
+    await stager().cleanupExpired(new Date('2026-01-03'), report);
+
+    sinon.assert.notCalled(report);
+    assert.deepEqual((await storage.listPrefix(directoryKey)).keys, []);
+    assert.equal(await uploads.get('interrupted'), undefined);
+  });
+
+  it('does not resurrect a source that expired during staging', async function () {
+    const adapter = stager();
+    const copying = Promise.withResolvers<void>();
+    const resume = Promise.withResolvers<void>();
+    const save = storage.save.bind(storage);
+    sinon.stub(storage, 'save').callsFake(async (file, target) => {
+      copying.resolve();
+      await resume.promise;
+      return save(file, target);
+    });
+    const stage = assert.rejects(
+      adapter.stage({ filePath: sourcePath, fileName: 'posts.csv', owner }, 'expired-copy', now),
+      { errorType: 'NotFoundError' },
+    );
+    try {
+      await copying.promise;
+      const report = sinon.stub();
+      await adapter.cleanupExpired(new Date('2026-01-03'), report);
+      sinon.assert.notCalled(report);
+    } finally {
+      resume.resolve();
+      await stage;
+    }
+    assert.equal(await uploads.get('expired-copy'), undefined);
+    assert.deepEqual(await storage.listPrefix('content-csv-import/test-site'), { keys: [] });
+  });
+
   it('removes partial staged artifacts after storage fails', async function () {
     const adapter = stager();
     const save = storage.save.bind(storage);
@@ -136,6 +179,53 @@ describe('content import staged file', function () {
       stager(() => ({})).stage({ filePath: sourcePath, fileName: 'posts.csv' }, 'first', now),
       { errorType: 'IncorrectUsageError' },
     );
+    assert.deepEqual((await storage.listPrefix('content-csv-uploads/test-site')).keys, []);
+  });
+
+  it('expires unclaimed and uncertain sources, but protects concurrent acceptance', async function () {
+    const adapter = stager();
+    const request = { filePath: sourcePath, fileName: 'posts.csv', owner };
+    await adapter.stage(request, 'ready', now);
+    await adapter.stage(request, 'uncertain', now);
+    await adapter.stage(request, 'racing', now);
+    await adapter.begin('uncertain', 1);
+    await adapter.begin('racing', 1);
+    const report = sinon.stub();
+    await adapter.cleanupExpired(now, report);
+    assert.equal((await storage.listPrefix('content-csv-uploads/test-site')).keys.length, 3);
+
+    const conditionalWrite = storage.writeVersionedMetadata.bind(storage);
+    sinon.stub(storage, 'writeVersionedMetadata').callsFake(async (key, bytes, version) => {
+      if (key.endsWith('/racing.json') && JSON.parse(bytes.toString()).state === 'deleting') {
+        await adapter.acknowledge('racing');
+      }
+      return conditionalWrite(key, bytes, version);
+    });
+    await adapter.cleanupExpired(new Date('2026-01-03'), report);
+    assert.deepEqual((await storage.listPrefix('content-csv-uploads/test-site')).keys, [
+      'content-csv-uploads/test-site/racing.json',
+    ]);
+    assert.deepEqual((await storage.listPrefix('content-csv-import/test-site')).keys, [
+      'content-csv-import/test-site/racing/source',
+    ]);
+    sinon.assert.notCalled(report);
+  });
+
+  it('continues expiry cleanup and retries artifacts after a storage error', async function () {
+    const adapter = stager();
+    const request = { filePath: sourcePath, fileName: 'posts.csv', owner };
+    await adapter.stage(request, 'failed', now);
+    await adapter.stage(request, 'next', now);
+    const deleteObject = storage.delete.bind(storage);
+    const failure = new Error('storage unavailable');
+    const deletion = sinon.stub(storage, 'delete').callsFake(deleteObject);
+    deletion.onFirstCall().rejects(failure);
+    const report = sinon.stub();
+    await adapter.cleanupExpired(new Date('2026-01-03'), report);
+    assert.equal((await uploads.get('failed'))?.state, 'deleting');
+    assert.equal(await uploads.get('next'), undefined);
+    sinon.assert.calledOnceWithExactly(report, failure);
+    await adapter.cleanupExpired(new Date('2026-01-03'), report);
     assert.deepEqual((await storage.listPrefix('content-csv-uploads/test-site')).keys, []);
   });
 });

@@ -119,6 +119,7 @@ function harness(
       begin: async () => {},
       acknowledge: async () => {},
       start: async () => {},
+      cleanupExpired: async () => {},
       remove: async (_id: string, file: { key: string; name: string }) => {
         removedFiles.push(file);
       },

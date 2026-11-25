@@ -23,6 +23,7 @@ import { isLocalMediaUrl } from './import/local-media-url';
 import { urlForImportedPost } from './import/post-link';
 import { createImportFileStager, type DownloadedImportFile } from './import/staged-file';
 import ContentCSVImportJob from './jobs/content-csv-import-job';
+import CleanCSVUploadsJob from './jobs/clean-csv-uploads-job';
 import { getInstance as getJobsService } from '../jobs-service';
 
 // File access is wired here; temporary paths are resolved when an operation runs.
@@ -170,4 +171,20 @@ export function handleJob(job: ContentCSVImportJob): Promise<void> {
   }
 
   return importer.handle(job);
+}
+
+export function cleanupUploads(): Promise<void> {
+  if (!importer) {
+    throw new errors.InternalServerError({ message: 'Content import service used before init' });
+  }
+  return importer.cleanupUploads();
+}
+
+export async function scheduleUploadCleanup(): Promise<void> {
+  try {
+    await getJobsService().scheduleRecurring(new CleanCSVUploadsJob(), { cron: '0 0 * * * *' });
+  } catch (error) {
+    logging.error(error, 'Could not schedule CSV upload cleanup');
+    sentry.captureException(error);
+  }
 }

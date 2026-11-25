@@ -1,3 +1,4 @@
+import CleanCSVUploadsJob from '../../../../../core/server/services/content-import/jobs/clean-csv-uploads-job';
 import EmailAnalyticsGiftFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
@@ -60,7 +61,11 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
         }),
       ),
     };
-    registerJobHandlers({ jobsService, [wrapperName]: newsletters });
+    registerJobHandlers({
+      cleanCSVUploadsJob: CleanCSVUploadsJob,
+      jobsService,
+      [wrapperName]: newsletters,
+    });
     const calls = jobsService.handle
       .getCalls()
       .filter((call) => call.args[0].type === JobClass.type);
@@ -96,6 +101,7 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
     };
     const sibling = { startFetch: sinon.stub().resolves() };
     registerJobHandlers({
+      cleanCSVUploadsJob: CleanCSVUploadsJob,
       jobsService,
       [wrapperName]: wrapper,
       [siblingPipeline.wrapperName]: sibling,
@@ -141,7 +147,11 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
     const enqueue = sinon.spy(backend as unknown as { _push: () => void }, '_push');
     const jobsService = new JobsService({ backend, logging: createLoggingFake() });
     const newsletters = { startFetch: sinon.stub().resolves() };
-    registerJobHandlers({ jobsService, [wrapperName]: newsletters });
+    registerJobHandlers({
+      cleanCSVUploadsJob: CleanCSVUploadsJob,
+      jobsService,
+      [wrapperName]: newsletters,
+    });
     const scheduler = new EmailAnalyticsJobScheduler({
       config: { get: () => true },
       models: {

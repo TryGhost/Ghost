@@ -25,6 +25,7 @@ export interface ImportFileStager {
   acknowledge(id: string): Promise<void>;
   start(id: string, now: Date): Promise<void>;
   remove(id: string, file: StagedImportFile): Promise<void>;
+  cleanupExpired(now: Date, report: (error: unknown) => void): Promise<void>;
 }
 
 type ImportsStorage = VersionedImportStorage & Pick<StorageBase, 'save' | 'urlToPath'>;
@@ -145,6 +146,41 @@ export function createImportFileStager({
         }
         return { value: undefined, change: { state: 'accepted' } };
       });
+    },
+
+    async cleanupExpired(now, report) {
+      for await (const id of uploads.ids()) {
+        try {
+          const eligible = await uploads.change(id, (row) => {
+            if (!row || row.state === 'deleting') {
+              return { value: true };
+            }
+            if (row.state !== 'accepted' && row.expires_at <= now) {
+              return { value: true, change: { state: 'deleting' } };
+            }
+            return { value: false };
+          });
+          if (eligible) {
+            const storage = importsStorage(getStorage());
+            const directory = prefix(id);
+            let cursor: string | undefined;
+            do {
+              const page = await storage.listPrefix(directory, { cursor });
+              for (const key of page.keys) {
+                if (key.startsWith(`${directory}/`)) {
+                  await storage.delete(key);
+                }
+              }
+              cursor = page.cursor;
+            } while (cursor);
+            await storage.delete(directory);
+            await uploads.remove(id);
+          }
+        } catch (error) {
+          // Leave the manifest eligible so the next tick can retry cleanup.
+          report(error);
+        }
+      }
     },
 
     remove,

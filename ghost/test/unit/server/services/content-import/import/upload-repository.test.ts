@@ -80,4 +80,21 @@ describe('CSV upload manifests', function () {
     );
     await assert.rejects(uploads.get('upload'), /Invalid CSV upload manifest/);
   });
+
+  it('paginates through the site manifest prefix and ignores unrelated keys', async function () {
+    const list = storage.listPrefix.bind(storage);
+    sinon
+      .stub(storage, 'listPrefix')
+      .callsFake((key, options) => list(key, { ...options, limit: 1 }));
+    await uploads.create('upload', owner, now, file);
+    await uploads.create('other-upload', owner, now, file);
+    await storage.replaceMetadata(prefix + '/not-a-manifest.txt', Buffer.from(''));
+    await storage.replaceMetadata(prefix + '/subdirectory/nested.json', Buffer.from(''));
+    await storage.replaceMetadata(prefix + '-other-tenant/foreign.json', Buffer.from(''));
+    const ids: string[] = [];
+    for await (const id of uploads.ids()) {
+      ids.push(id);
+    }
+    assert.deepEqual(ids, ['other-upload', 'upload']);
+  });
 });

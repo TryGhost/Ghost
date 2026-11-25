@@ -1,3 +1,4 @@
+import CleanCSVUploadsJob from '../../../../../core/server/services/content-import/jobs/clean-csv-uploads-job';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -175,6 +176,7 @@ describe('Media inliner service root', function () {
     const first = root.service;
     const jobsService = sinon.createStubInstance(JobsService);
     registerJobHandlers({
+      cleanCSVUploadsJob: CleanCSVUploadsJob,
       jobsService,
       gifts: { startFetch: sinon.stub().resolves() },
       automationAnalytics: { startFetch: sinon.stub().resolves() },
@@ -188,7 +190,10 @@ describe('Media inliner service root', function () {
       emailService: {} as never,
       siteImporter: { executeImport: sinon.stub().resolves() },
       tinybirdSync: { sync: sinon.stub().resolves() },
-      contentImport: { handleJob: sinon.stub().resolves() },
+      contentImport: {
+        handleJob: sinon.stub().resolves(),
+        cleanupUploads: sinon.stub().resolves(),
+      },
       updateCheck: sinon.stub().resolves(),
       signingKeys: { check: sinon.stub().resolves() },
       authCleanup: { clearExpired: sinon.stub().resolves() },

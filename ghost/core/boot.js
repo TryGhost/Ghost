@@ -493,6 +493,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   debug('Begin: Register job handlers');
   const registerJobHandlers =
     require('./server/services/jobs-service/register-job-handlers').default;
+  const cleanCSVUploadsJob =
+    require('./server/services/content-import/jobs/clean-csv-uploads-job').default;
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
   const tinybirdSync = require('./server/services/tinybird-sync');
@@ -506,6 +508,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   assert(membersService.handleImportJob, 'Members service should be initialized');
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
+    cleanCSVUploadsJob,
     gifts: emailAnalytics.getGifts(),
     automationAnalytics: emailAnalytics.getAutomations(),
     newsletters: emailAnalytics.getNewsletters(),
@@ -525,6 +528,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     authCleanup: require('./server/auth/better-auth/cleanup'),
   });
   await jobsService.start();
+  await contentImport.scheduleUploadCleanup();
   debug('End: Register job handlers');
 
   automationsService.init({

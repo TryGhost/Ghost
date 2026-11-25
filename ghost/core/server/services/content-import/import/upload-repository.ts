@@ -91,6 +91,24 @@ export class ImportUploadRepository {
     });
   }
 
+  async *ids(): AsyncGenerator<string> {
+    const storage = this.storage();
+    const directory = this.directory();
+    let cursor: string | undefined;
+    do {
+      const page = await storage.listPrefix(directory, { cursor });
+      for (const key of page.keys) {
+        const match =
+          key.startsWith(`${directory}/`) &&
+          /^([a-zA-Z0-9-]+)\.json$/.exec(key.slice(directory.length + 1));
+        if (match) {
+          yield match[1];
+        }
+      }
+      cursor = page.cursor;
+    } while (cursor);
+  }
+
   remove(id: string): Promise<void> {
     return this.storage().deleteVersionedMetadata(this.key(id));
   }

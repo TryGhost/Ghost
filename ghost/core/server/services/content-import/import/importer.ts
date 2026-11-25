@@ -223,6 +223,10 @@ class ContentCSVImporter {
     }
   }
 
+  cleanupUploads(): Promise<void> {
+    return this._fileStager.cleanupExpired(this._now(), this._report);
+  }
+
   private async processRows(
     runId: string,
     importTagNames: string[],

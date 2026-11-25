@@ -12,6 +12,7 @@ import SendGiftRemindersJob from '../gifts/jobs/send-gift-reminders-job';
 import type ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
+import type CleanCSVUploadsJob from '../content-import/jobs/clean-csv-uploads-job';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
 import MembersImportJob from '../members/jobs/members-import-job';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
@@ -40,6 +41,7 @@ const WEBMENTIONS_QUEUE: JobHandlingOptions = { queue: 'webmentions', concurrenc
 const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
 
 interface RegisterJobHandlersDependencies {
+  cleanCSVUploadsJob: typeof CleanCSVUploadsJob;
   jobsService: JobsService;
   gifts: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   automationAnalytics: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
@@ -64,6 +66,7 @@ interface RegisterJobHandlersDependencies {
   };
   contentImport: {
     handleJob(job: ContentCSVImportJob): Promise<void>;
+    cleanupUploads(): Promise<void>;
   };
   updateCheck: (options: { rethrowErrors: boolean }) => Promise<void>;
   signingKeys: Pick<SigningKeyService, 'check'>;
@@ -73,6 +76,7 @@ interface RegisterJobHandlersDependencies {
 }
 
 export default function registerJobHandlers({
+  cleanCSVUploadsJob,
   jobsService,
   gifts,
   automationAnalytics,
@@ -128,6 +132,10 @@ export default function registerJobHandlers({
 
   jobsService.handle(ContentCSVImportJob, async (job) => {
     await contentImport.handleJob(job);
+  });
+
+  jobsService.handle(cleanCSVUploadsJob, async () => {
+    await contentImport.cleanupUploads();
   });
 
   jobsService.handle(ContentImportJob, async (job) => {

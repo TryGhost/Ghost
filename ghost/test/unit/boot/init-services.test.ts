@@ -31,6 +31,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const register = sinon.stub();
   const signingKeys = {};
   const start = sinon.stub().resolves();
+  const scheduleUploadCleanup = sinon.stub().resolves();
   // Production init returns before its first poll. Poll behavior belongs to
   // the automations tests, not this boot orchestration harness.
   const automations = sinon.stub();
@@ -86,6 +87,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/signing-keys': { default: { service: signingKeys } },
+      './server/services/content-import': { init() {}, scheduleUploadCleanup },
       './server/services/automations': { automationsService: { init: automations } },
     },
     { fallback: () => ({ ...genericService, default: genericService }) },
@@ -116,6 +118,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     register,
     signingKeys,
     start,
+    scheduleUploadCleanup,
     automations,
     reschedule,
   };
@@ -148,7 +151,14 @@ it('initializes dependencies and starts jobs before calling automations init', a
   for (const dependency of [boot.gifts, boot.mentions, boot.analytics, boot.media, boot.email]) {
     sinon.assert.callOrder(dependency, boot.register);
   }
-  sinon.assert.callOrder(boot.register, boot.start, boot.automations, boot.reschedule);
+  sinon.assert.callOrder(
+    boot.register,
+    boot.start,
+    boot.scheduleUploadCleanup,
+    boot.automations,
+    boot.reschedule,
+  );
+  sinon.assert.calledOnce(boot.scheduleUploadCleanup);
   sinon.assert.calledOnce(boot.automations);
 });
 
@@ -344,6 +354,7 @@ for (const dependency of [
 
     sinon.assert.calledOnce(boot.register);
     sinon.assert.calledOnce(boot.start);
+    sinon.assert.calledOnce(boot.scheduleUploadCleanup);
     sinon.assert.calledOnce(boot.automations);
     sinon.assert.calledOnce(boot.reschedule);
   });
@@ -391,6 +402,7 @@ it('waits for jobs startup to finish before automations init and post rescheduli
     await setImmediate();
     sinon.assert.calledOnce(boot.register);
     sinon.assert.calledOnce(boot.start);
+    sinon.assert.notCalled(boot.scheduleUploadCleanup);
     sinon.assert.notCalled(boot.automations);
     sinon.assert.notCalled(boot.reschedule);
   } finally {
@@ -410,6 +422,7 @@ it('propagates the same jobs startup error without automations init or post resc
   await assert.rejects(boot.initServices(), (error) => error === failure);
 
   sinon.assert.calledOnce(boot.register);
+  sinon.assert.notCalled(boot.scheduleUploadCleanup);
   sinon.assert.notCalled(boot.automations);
   sinon.assert.notCalled(boot.reschedule);
 });
