@@ -69,6 +69,7 @@ const PRIVATE_FEATURES = [
   'editorLease',
   'commentsAnalytics',
   'oauthBridge',
+  'segmentEmails',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

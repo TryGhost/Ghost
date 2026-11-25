@@ -11,7 +11,7 @@ type Setting = { key: string; value: unknown };
 type ExportData = { segments?: unknown[]; settings: Setting[] };
 type Export = { db: [{ meta: { version: string }; data: ExportData }] };
 
-type Problem = { help: string };
+type Problem = { help: string; message: string };
 
 type ApiRequest = Promise<{
   body: { segments: Segment[]; settings: Setting[]; problems: Problem[] } & Export;
@@ -290,6 +290,22 @@ describe('Segments in a site export and import', function () {
     await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
 
     assert.equal(await sharedViews(), JSON.stringify([postsView]));
+  });
+
+  it('skips a segment whose filter names another segment and imports the rest', async function () {
+    const problems = await importData({
+      segments: [
+        { name: 'Free', filter: 'status:free', sort_order: 0 },
+        { name: 'Nested', filter: 'segment:0123456789abcdef01234567', sort_order: 1 },
+      ],
+      settings: [],
+    });
+
+    assert.deepEqual(await names(), ['Free']);
+    assert.match(
+      problems.find(({ help }) => help === 'Segment')?.message ?? '',
+      /names another segment/,
+    );
   });
 
   it('cuts a name that is too long and leaves out a view that cannot be a segment', async function () {

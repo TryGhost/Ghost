@@ -19,6 +19,7 @@ const { METAFIELDS_RELATION } = require('../services/members-metafields/members-
 const {
   createMetafieldsFilterTransformer,
 } = require('../services/members-metafields/metafields/filter');
+const { segmentStep, readSegmentsWith } = require('./member-segments');
 
 // `subscribed` isn't a column. `subscribed:true` selects members subscribed to an active
 // newsletter, and `subscribed:false` selects members subscribed to none.
@@ -670,12 +671,14 @@ const Member = ghostBookshelf.Model.extend(
      * without any call site wiring it. The filter is parsed once and rewritten by these steps, in
      * this order:
      *
-     * 1. The caller's own rewrite, such as the Admin API's restricted-field check, which sees the
-     *    keys as the filter wrote them, none of them renamed yet.
-     * 2. `subscribed`, which isn't a column, rewritten as the status of the member's newsletters.
-     * 3. The custom fields rewrite, which turns `metafields` statements into queries on the values
+     * 1. The segments the filter names, each put in place of its `segment` statement, so every
+     *    later step sees a segment's own conditions.
+     * 2. The caller's own rewrite, such as the Admin API's restricted-field check, which sees those
+     *    conditions and the keys not yet renamed.
+     * 3. `subscribed`, which isn't a column, rewritten as the status of the member's newsletters.
+     * 4. The custom fields rewrite, which turns `metafields` statements into queries on the values
      *    table.
-     * 4. `opened_emails.post_id`, then the keys that only rename a relation's column, mapped onto
+     * 5. `opened_emails.post_id`, then the keys that only rename a relation's column, mapped onto
      *    the relation keys filterRelations() names.
      *
      * The resolved filter's queries compile the result with filterRelations().
@@ -684,6 +687,7 @@ const Member = ghostBookshelf.Model.extend(
       return resolveFilterWithSteps(
         this,
         [
+          segmentStep,
           callerTransformerStep(options.mongoTransformer),
           transformerStep(mapSubscribedToNewsletterStatus),
           transformerStep(createMetafieldsFilterTransformer()),
@@ -692,6 +696,15 @@ const Member = ghostBookshelf.Model.extend(
         ],
         options,
       );
+    },
+
+    /**
+     * Gives members filters the segments they name. Boot calls this once the segments service is
+     * ready.
+     * @param {import('./member-segments').FilterSegments} source
+     */
+    readSegmentsWith(source) {
+      readSegmentsWith(source);
     },
 
     findPage(options = {}) {

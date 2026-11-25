@@ -185,9 +185,10 @@ const FILTERS: ReadonlyArray<{ field: string; filter: (site: Site) => string; ex
 ];
 
 /**
- * A filter on any field the members screen offers selects the same members on the members list as
- * in an email send. The email goes to the members the filter selects who are subscribed to the
- * newsletter and can be emailed.
+ * A filter on any field the members screen offers selects the same members on the members list,
+ * through a segment saved with it, and in an email send. The email goes to the members the filter
+ * selects who are subscribed to the newsletter and can be emailed, and the count the publish flow
+ * takes for the segment is the number the send reaches.
  */
 describe('A members filter selects the same members everywhere', function () {
   let agent: Agent;
@@ -231,10 +232,35 @@ describe('A members filter selects the same members everywhere', function () {
     return rows.map((row) => nameOf(row.member_email)).sort();
   }
 
+  async function saveSegment(name: string, filter: string): Promise<string> {
+    const { body } = await agent
+      .post('segments/')
+      .body({ segments: [{ name, filter }] })
+      .expectStatus(201);
+    return body.segments[0].id;
+  }
+
   async function membersList(filter?: string): Promise<Name[]> {
     const query = filter ? `filter=${encodeURIComponent(filter)}&` : '';
     const { body } = await agent.get(`members/?${query}limit=all`).expectStatus(200);
     return body.members.map((member: { email: string }) => nameOf(member.email)).sort();
+  }
+
+  /** How many members `filter` selects, read from a page of the members list as Admin reads it. */
+  async function membersCount(filter: string): Promise<number> {
+    const { body } = await agent
+      .get(`members/?filter=${encodeURIComponent(filter)}&limit=1`)
+      .expectStatus(200);
+    return body.meta.pagination.total;
+  }
+
+  /**
+   * How many members an email through the suite's newsletter to `filter` reaches, counted as the
+   * publish flow counts it: Admin adds the newsletter's rules to the filter
+   * (getFullRecipientFilter in admin-x-framework) and reads the members list's total.
+   */
+  async function publishCount(filter: string): Promise<number> {
+    return membersCount(`newsletters.slug:${site.newsletterSlug}+email_disabled:0+(${filter})`);
   }
 
   beforeAll(async function () {
@@ -242,6 +268,7 @@ describe('A members filter selects the same members everywhere', function () {
     await fixtureManager.init('users');
     await agent.loginAsOwner();
     mockRecordingMailgun();
+    mockManager.mockLabsEnabled('segmentEmails');
 
     const addNewsletter = async (name: string) => {
       const { body } = await agent
@@ -465,9 +492,25 @@ describe('A members filter selects the same members everywhere', function () {
       );
 
       assert.deepEqual(await membersList(nql), selected, `members list, ${nql}`);
+      const segmentId = await saveSegment(field, nql);
+      assert.deepEqual(
+        await membersList(`segment:${segmentId}`),
+        selected,
+        `members list by segment, ${nql}`,
+      );
+      const reached = selected.filter((name) => REACHABLE.includes(name));
+      assert.equal(
+        await membersCount(`segment:${segmentId}`),
+        selected.length,
+        `members count by segment, ${nql}`,
+      );
+      assert.equal(
+        await publishCount(`segment:${segmentId}`),
+        reached.length,
+        `publish count by segment, ${nql}`,
+      );
 
       const post = await send(`Emailed to ${field}`, site.newsletterSlug, nql);
-      const reached = selected.filter((name) => REACHABLE.includes(name));
       assert.equal(post.email.email_count, reached.length, `email count, ${nql}`);
       assert.deepEqual(await recipientsOf(post.email.id), reached, `email recipients, ${nql}`);
     });

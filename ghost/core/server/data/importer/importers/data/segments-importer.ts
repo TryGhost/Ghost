@@ -1,6 +1,7 @@
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import segments from '../../../../services/segments';
+import { filterNamesSegment } from '../../../../services/segments/expansion';
 import { MAX_NAME_LENGTH, SegmentFilter, SegmentName } from '../../../../services/segments/models';
 import { isNameTakenError, normalizeName } from '../../../../services/segments/rejections';
 import {
@@ -148,6 +149,10 @@ export class SegmentsImporter {
       const filter = SegmentFilter.safeParse(segment.filter);
       if (!filter.success || !SegmentName.safeParse(numbered(segment.name, 1)).success) {
         this.skipped(segment, 'Segment was not imported because its name or filter is invalid.');
+      } else if (filterNamesSegment(filter.data)) {
+        // A segment's filter can't name another segment, and the segment ids in an import don't
+        // match the site's segments anyway
+        this.skipped(segment, 'Segment was not imported because its filter names another segment.');
       } else if (isHeld(segment.name, filter.data)) {
         this.skipped(segment, 'Segment was not imported because the site already has it.');
       } else {
