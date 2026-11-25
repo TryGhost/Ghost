@@ -128,7 +128,6 @@ export class AbuseWebhookService {
       const requestOptions = buildSignedWebhookRequest({
         payload,
         secret: webhookSecretValue,
-        retryLimit: 2,
       });
 
       const sanitizedUrl = sanitizeWebhookUrl(webhookUrl);

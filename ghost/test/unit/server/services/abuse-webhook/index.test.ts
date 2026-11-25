@@ -368,6 +368,7 @@ describe('Abuse Webhook service root', function () {
     await send.lastCall.returnValue;
 
     sinon.assert.calledOnce(request);
-    assert.deepEqual(request.lastCall.args[1].retry, { limit: 2, methods: ['POST'] });
+    const options = request.lastCall.args[1] as { retry: { limit: number; methods: string[] } };
+    assert.deepEqual(options.retry, { limit: 2, methods: ['POST'] });
   });
 });
