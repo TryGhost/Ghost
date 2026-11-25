@@ -264,7 +264,7 @@ describe('Staff service root', function () {
     it('gives Stripe donation checkout the staff emails read at each access', async function () {
       const stripe = require('../../../../../core/server/services/stripe');
 
-      await assertReadOnEachAccess(stripe.webhookController.checkoutSessionEventService.deps);
+      await assertReadOnEachAccess(stripe.checkoutSessionEventService.deps);
     });
 
     it('gives Gifts the staff emails read at each access', async function () {
