@@ -187,6 +187,21 @@ const controller = {
     },
   },
 
+  downloadCSVImportReport: {
+    headers: { cacheInvalidate: false },
+    permissions: importPermissions,
+    options: ['import_id', 'filename'],
+    async query(frame) {
+      const { import_id: importId, filename } = frame.options;
+      const source = await contentImportService.openReport(
+        importId,
+        filename,
+        csvUploadOwner(frame),
+      );
+      return { source, filename };
+    },
+  },
+
   read: {
     headers: {
       cacheInvalidate: false,

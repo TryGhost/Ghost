@@ -247,7 +247,7 @@ describe('content import staged file', function () {
     const adapter = stager();
     const save = storage.save.bind(storage);
     sinon.stub(storage, 'save').callsFake(async (file, target) => {
-      await save(file, target);
+      await save({ ...file, name: 'partial' }, target);
       throw new Error('copy failed');
     });
     await assert.rejects(

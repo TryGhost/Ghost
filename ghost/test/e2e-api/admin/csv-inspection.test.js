@@ -3,11 +3,19 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
+const { Readable } = require('node:stream');
 const FormData = require('form-data');
 const { compress } = require('@tryghost/zip');
 const fsExtra = require('fs-extra');
 const sinon = require('sinon');
 const models = require('../../../core/server/models');
+const {
+  createReportArchive,
+} = require('../../../core/server/services/content-import/import/report-archive');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
+const settingsCache = require('../../../core/shared/settings-cache');
+const ghostConfig = require('../../../core/shared/config');
 const {
   agentProvider,
   fixtureManager,
@@ -130,6 +138,47 @@ describe('CSV import inspection', function () {
     mockManager.mockLabsDisabled('csvContentImporter');
     await agent.post('posts/upload/inspect/').attach('postsfile', file).expectStatus(404);
     await agent.delete('posts/upload/inspect/123456789012345678901234/').expectStatus(404);
+  });
+
+  it('streams a retained report only to its authenticated owner', async function () {
+    const id = 'abcdefabcdefabcdefabcdef';
+    const owner = await models.User.getOwnerUser();
+    const storage = adapterManager.getAdapter('storage:imports');
+    const namespace = createHash('sha256')
+      .update(String(settingsCache.get('site_uuid') || ghostConfig.getSiteUrl()))
+      .digest('hex');
+    const archive = createReportArchive(
+      () => storage,
+      () => namespace,
+    );
+    const text = 'line,title,outcome\r\n2,Example,created';
+    const now = new Date();
+    await archive.retain(
+      id,
+      owner.id,
+      [{ name: 'report.csv', bytes: Buffer.byteLength(text) }],
+      {
+        readStream: async () => Readable.from([text]),
+      },
+      now,
+    );
+    const url = `posts/upload/reports/${id}/report.csv/`;
+    try {
+      await agent.loginAsEditor();
+      await agent.get(url).expectStatus(403);
+      await agent.loginAsAdmin();
+      await agent.get(url).expectStatus(404);
+      await agent.loginAsOwner();
+      const response = await agent.get(url).expectStatus(200);
+      assert.equal(response.text, text);
+      assert.match(response.headers['content-disposition'], /filename="report\.csv"/);
+      assert.match(response.headers['cache-control'], /private, no-store/);
+      mockManager.mockLabsDisabled('csvContentImporter');
+      await agent.get(url).expectStatus(404);
+    } finally {
+      await storage.delete(`content-csv-import-reports/${namespace}/${id}/report.csv`);
+      await storage.delete(`content-csv-import-reports/${namespace}/${id}/manifest.json`);
+    }
   });
 
   it('confirms the staged source once and preserves the receipt after the worker finishes', async function () {

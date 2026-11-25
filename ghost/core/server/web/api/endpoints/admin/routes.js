@@ -67,6 +67,12 @@ module.exports = function apiRoutes() {
     labs.enabledMiddleware('csvContentImporter'),
     http(api.posts.cancelCSVUpload),
   );
+  router.get(
+    '/posts/upload/reports/:import_id/:filename',
+    mw.authAdminApi,
+    labs.enabledMiddleware('csvContentImporter'),
+    http(api.posts.downloadCSVImportReport),
+  );
   router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
   router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
   router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));

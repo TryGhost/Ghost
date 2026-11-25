@@ -3,6 +3,7 @@ const mappers = require('./mappers');
 const tiersService = require('../../../../../services/tiers').default;
 const { createCSVTransform } = require('./posts-csv-transform');
 const { createCSVStreamResponse } = require('./stream-csv-response');
+const { createStreamResponse } = require('./stream-response');
 
 module.exports = {
   // 204 No Content — bookshelf clears the destroyed model's attributes
@@ -82,6 +83,18 @@ module.exports = {
 
   cancelCSVUpload(_result, _apiConfig, frame) {
     frame.response = null;
+  },
+
+  downloadCSVImportReport({ source, filename }, _apiConfig, frame) {
+    const download = createStreamResponse({
+      source,
+      filename,
+      contentType: 'text/csv; charset=utf-8',
+    });
+    frame.response = (req, res, next) => {
+      res.setHeader('Cache-Control', 'private, no-store');
+      return download(req, res, next);
+    };
   },
 
   bulkEdit(bulkActionResult, _apiConfig, frame) {

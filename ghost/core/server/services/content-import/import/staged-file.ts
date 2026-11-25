@@ -1,9 +1,13 @@
 import type { Readable } from 'node:stream';
 import type { StorageBase } from 'ghost-storage-base';
 import errors from '@tryghost/errors';
-import type { VersionedImportStorage } from '../../../adapters/storage/import-storage';
+import {
+  clearImportPrefix,
+  type VersionedImportStorage,
+} from '../../../adapters/storage/import-storage';
 import { ImportUploadRepository, type ImportOwner, type ImportUpload } from './upload-repository';
 import type { JournalStorage } from './journal';
+import { createReportArchive } from './report-archive';
 
 export interface StagedImportFile {
   key: string;
@@ -49,6 +53,7 @@ function isAccepted(row: ImportUpload): boolean {
 }
 
 export interface ImportFileStager {
+  reports: ReturnType<typeof createReportArchive>;
   stage(
     file: { filePath: string; fileName: string; owner?: ImportOwner },
     id: string,
@@ -112,24 +117,15 @@ export function createImportFileStager({
   function assertSourceKey(id: string, key: string): void {
     const directory = prefix(id) + '/';
     const name = key.slice(directory.length);
-    if (!key.startsWith(directory) || !name || name === '.' || name === '..' || /[/\\]/.test(name)) {
+    if (
+      !key.startsWith(directory) ||
+      !name ||
+      name === '.' ||
+      name === '..' ||
+      /[/\\]/.test(name)
+    ) {
       throw new errors.InternalServerError({ message: 'Invalid CSV upload source.' });
     }
-  }
-
-  async function clearPrefix(directory: string): Promise<void> {
-    const storage = importsStorage(getStorage());
-    let cursor: string | undefined;
-    do {
-      const page = await storage.listPrefix(directory, { cursor });
-      for (const key of page.keys) {
-        if (key.startsWith(`${directory}/`)) {
-          await storage.delete(key);
-        }
-      }
-      cursor = page.cursor;
-    } while (cursor);
-    await storage.delete(directory);
   }
 
   async function remove(id: string, file: StagedImportFile): Promise<void> {
@@ -145,13 +141,17 @@ export function createImportFileStager({
         : { value: true };
     });
     const storage = importsStorage(getStorage());
-    await storage.delete(file.key);
     if (discard) {
+      // A failed save may have created an object before returning its actual key.
+      await clearImportPrefix(storage, prefix(id));
       await uploads.remove(id);
+    } else {
+      await storage.delete(file.key);
     }
   }
 
   return {
+    reports: createReportArchive(privateStorage, namespace),
     artifacts(id) {
       const storage = importsStorage(getStorage());
       const key = (name: string) => `${prefix(id)}/journal/${name}`;
@@ -162,7 +162,7 @@ export function createImportFileStager({
       };
     },
     clearArtifacts(id) {
-      return clearPrefix(`${prefix(id)}/journal`);
+      return clearImportPrefix(privateStorage(), `${prefix(id)}/journal`);
     },
     async stage({ filePath, fileName, owner }, id, now) {
       const storage = importsStorage(getStorage());
@@ -261,7 +261,7 @@ export function createImportFileStager({
             return { value: false };
           });
           if (eligible) {
-            await clearPrefix(prefix(id));
+            await clearImportPrefix(privateStorage(), prefix(id));
             await uploads.remove(id);
           }
         } catch (error) {

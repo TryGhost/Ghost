@@ -150,6 +150,7 @@ function harness(
       jobs.push(job);
     },
     fileStager: {
+      reports: { open: sinon.stub(), retain: sinon.stub(), expire: sinon.stub().resolves() },
       stage: async ({ fileName }: { fileName: string }) => {
         const file = { key: `staged-${stagedFiles.length + 1}`, name: fileName };
         stagedFiles.push(file);

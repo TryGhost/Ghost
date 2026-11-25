@@ -48,3 +48,24 @@ export async function readImportMetadata(source: Readable): Promise<Buffer> {
   }
   return Buffer.concat(chunks, bytes);
 }
+
+export async function clearImportPrefix(
+  storage: ImportStorage,
+  directory: string,
+  manifestLast?: string,
+): Promise<void> {
+  let cursor: string | undefined;
+  do {
+    const page = await storage.listPrefix(directory, { cursor });
+    for (const key of page.keys) {
+      if (key.startsWith(`${directory}/`) && key !== manifestLast) {
+        await storage.delete(key);
+      }
+    }
+    cursor = page.cursor;
+  } while (cursor);
+  if (manifestLast) {
+    await storage.delete(manifestLast);
+  }
+  await storage.delete(directory);
+}

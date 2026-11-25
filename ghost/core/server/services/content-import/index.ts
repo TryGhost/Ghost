@@ -211,6 +211,10 @@ export function cancelUpload(id: string, owner: ImportOwner): Promise<void> {
   return getImporter().cancelUpload(id, owner);
 }
 
+export function openReport(id: string, filename: string, owner: ImportOwner) {
+  return getImporter().openReport(id, filename, owner);
+}
+
 export function handleJob(job: ContentCSVImportJob): Promise<void> {
   if (!importer) {
     throw new errors.InternalServerError({ message: 'Content import service used before init' });

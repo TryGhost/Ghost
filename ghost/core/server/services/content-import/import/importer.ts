@@ -359,8 +359,14 @@ class ContentCSVImporter {
     this._pending?.delete(id);
   }
 
-  cleanupUploads(): Promise<void> {
-    return this._fileStager.cleanupExpired(this._now(), this._report);
+  async cleanupUploads(): Promise<void> {
+    const now = this._now();
+    await this.settle(() => this._fileStager.cleanupExpired(now, this._report));
+    await this.settle(() => this._fileStager.reports.expire(now, this._report));
+  }
+
+  openReport(id: string, filename: string, owner: ImportOwner) {
+    return this._fileStager.reports.open(id, filename, owner, this._now());
   }
 
   private async processRows(
