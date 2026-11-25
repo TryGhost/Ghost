@@ -5,20 +5,17 @@ import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import type { Caller } from './callers';
 import {
   ACTIVE_ONLY,
   fieldReference,
   onField,
   type FieldIdentity,
   type FieldSource,
-} from './metafields/queries';
-import { DbBoundField, DbNamedBinding } from './members-resource';
-import { FIELD_STATUS } from './metafields/schema';
-import type { MetafieldPlan, MetafieldValuesService } from './metafields/values-service';
-import { ensureTransaction } from '../../lib/ensure-transaction';
-
-const BINDINGS_TABLE = 'members_metafield_bindings';
+} from './queries';
+import type { MetafieldResource } from './resource';
+import { DbBoundField, DbNamedBinding, FIELD_STATUS, type MetafieldBindingRow } from './schema';
+import type { MetafieldPlan, MetafieldValuesService } from './values-service';
+import { ensureTransaction } from '../../../lib/ensure-transaction';
 
 export interface BoundField {
   bindingId: string;
@@ -53,25 +50,42 @@ export interface RoutedPlans {
 
 /**
  * Where a source sends what it collected: a `port` is the name that source uses for a
- * thing, and the binding resolves it to one of the publisher's fields.
+ * thing, and the binding resolves it to one of the publisher's fields on one resource. The
+ * source declares its ports; this only records which field each one writes into.
  */
-export class MetafieldBindingsService {
+export class MetafieldBindingsService<Caller> {
   private knex: Knex;
+  private table: string;
   private fields: FieldSource<Caller>;
   private values: Pick<MetafieldValuesService<Caller>, 'planOrRefuse'>;
+  private internal: Caller;
 
   constructor({
     knex,
+    resource,
     fields,
     values,
+    internal,
   }: {
     knex: Knex;
+    resource: MetafieldResource;
     fields: FieldSource<Caller>;
     values: Pick<MetafieldValuesService<Caller>, 'planOrRefuse'>;
+    /**
+     * The caller Ghost itself writes as. A port's values are planned as Ghost's, since the
+     * binding, not whoever sent them, is what admits them.
+     */
+    internal: Caller;
   }) {
     this.knex = knex;
+    this.table = resource.tables.bindings;
     this.fields = fields;
     this.values = values;
+    this.internal = internal;
+  }
+
+  private bindings(db: Knex) {
+    return db<MetafieldBindingRow>(this.table);
   }
 
   /**
@@ -86,20 +100,20 @@ export class MetafieldBindingsService {
     executor: Knex = this.knex,
   ): Promise<string> {
     return ensureTransaction(executor, async (trx) => {
-      const existing = await trx(BINDINGS_TABLE).where({ port }).first();
+      const existing = await this.bindings(trx).where({ port }).first();
       if (
         existing?.metafield_namespace === field.namespace &&
         existing.metafield_key === field.key
       ) {
-        await trx(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
+        await this.bindings(trx).where('id', existing.id).update({ updated_at: now });
         return existing.id;
       }
       if (existing) {
-        await trx(BINDINGS_TABLE).where('id', existing.id).del();
+        await this.bindings(trx).where('id', existing.id).del();
       }
 
       const bindingId = new ObjectID().toHexString();
-      await trx(BINDINGS_TABLE).insert({
+      await this.bindings(trx).insert({
         id: bindingId,
         port,
         ...fieldReference(field),
@@ -113,13 +127,13 @@ export class MetafieldBindingsService {
   /**
    * Each of these ports that writes into a field, whatever that field's status, with the field
    * it names, such as `custom.delivery_address`, or null when it names none. A port names its
-   * field while that field is active and open to members, as that's when a member can read what
-   * they hold there: a field kept from members isn't theirs to know of, and an archived one holds
-   * nothing they can read. Deleting a field deletes its bindings, so a port bound here always has
-   * one.
+   * field while that field is active and `caller` can read it: one kept from them isn't theirs to
+   * know of, and an archived one holds nothing they can read. Deleting a field deletes its
+   * bindings, so a port bound here always has one.
    */
   async boundPorts(
     ports: readonly string[],
+    caller: Caller,
     executor: Knex = this.knex,
   ): Promise<Map<string, string | null>> {
     if (!ports.length) {
@@ -128,15 +142,15 @@ export class MetafieldBindingsService {
 
     const binding = z
       .array(z.string())
-      .parse(await executor(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
+      .parse(await this.bindings(executor).whereIn('port', ports).pluck('port'));
     const bound = new Map<string, string | null>(binding.map((port) => [port, null]));
-    // Read the way a member's own reads ask for fields, so a port names exactly the fields a
-    // member holds values for.
+    // Read the way the caller's own reads ask for fields, so a port names exactly the fields the
+    // caller holds values for.
     const named = await this.fields
-      .definitions(executor, { caller: 'members', status: ACTIVE_ONLY })
-      .read.join(BINDINGS_TABLE, onField(this.fields.name, BINDINGS_TABLE))
-      .whereIn(`${BINDINGS_TABLE}.port`, ports)
-      .select(`${BINDINGS_TABLE}.port`, `${this.fields.name}.namespace`, `${this.fields.name}.key`);
+      .definitions(executor, { caller, status: ACTIVE_ONLY })
+      .read.join(this.table, onField(this.fields.name, this.table))
+      .whereIn(`${this.table}.port`, ports)
+      .select(`${this.table}.port`, `${this.fields.name}.namespace`, `${this.fields.name}.key`);
     for (const row of named) {
       const read = DbNamedBinding.safeParse(row);
       if (read.success) {
@@ -148,7 +162,7 @@ export class MetafieldBindingsService {
 
   /** Whether any port writes into this field. */
   async isBound(field: FieldIdentity, executor: Knex = this.knex): Promise<boolean> {
-    return (await executor(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
+    return (await this.bindings(executor).where(fieldReference(field)).first('id')) !== undefined;
   }
 
   /**
@@ -156,7 +170,7 @@ export class MetafieldBindingsService {
    * `executor` it joins that transaction; given a plain connection it opens its own.
    */
   async remove(port: string, executor: Knex = this.knex): Promise<void> {
-    await ensureTransaction(executor, (trx) => trx(BINDINGS_TABLE).where({ port }).del());
+    await ensureTransaction(executor, (trx) => this.bindings(trx).where({ port }).del());
   }
 
   /**
@@ -203,7 +217,7 @@ export class MetafieldBindingsService {
 
     const { writes, refusals } = await this.values.planOrRefuse(
       input,
-      'internal',
+      this.internal,
       // Every value planned came through a port, so each refusal names one.
       (identity) => routed.get(identity)?.port ?? identity,
       executor,
@@ -239,15 +253,15 @@ export class MetafieldBindingsService {
       return fields;
     }
 
-    const rows = await executor(BINDINGS_TABLE)
-      .join(this.fields.asRead(executor), onField(this.fields.name, BINDINGS_TABLE))
-      .whereIn(`${BINDINGS_TABLE}.port`, ports)
+    const rows = await this.bindings(executor)
+      .join(this.fields.asRead(executor), onField(this.fields.name, this.table))
+      .whereIn(`${this.table}.port`, ports)
       // An archived field is still where a port points, and still not somewhere a value can
       // land, so it's left out rather than waited for.
       .where(`${this.fields.name}.status`, FIELD_STATUS.active)
       .select(
-        `${BINDINGS_TABLE}.port`,
-        `${BINDINGS_TABLE}.id as binding_id`,
+        `${this.table}.port`,
+        `${this.table}.id as binding_id`,
         `${this.fields.name}.namespace`,
         `${this.fields.name}.key`,
         `${this.fields.name}.type`,

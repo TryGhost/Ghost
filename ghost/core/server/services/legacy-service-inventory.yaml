@@ -4488,7 +4488,7 @@ services:
       sources:
         - core/server/services/members-metafields/index.ts
         - core/server/services/members-metafields/metafields/definitions-service.ts
-        - core/server/services/members-metafields/bindings-service.ts
+        - core/server/services/members-metafields/metafields/bindings-service.ts
         - core/server/services/members/service.js
         - core/boot.js
       dependencies:
@@ -4553,7 +4553,7 @@ services:
           - core/server/services/members-metafields/metafields/namespaces.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
-          - core/server/services/members-metafields/bindings-service.ts
+          - core/server/services/members-metafields/metafields/bindings-service.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
@@ -4576,7 +4576,7 @@ services:
           - core/server/services/members-metafields/definition-limit.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
-          - core/server/services/members-metafields/bindings-service.ts
+          - core/server/services/members-metafields/metafields/bindings-service.ts
           - core/server/data/db/index.js
           - core/server/data/db/connection.ts
         tests:
@@ -4654,7 +4654,7 @@ services:
         sources:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/metafields/values-service.ts
-          - core/server/services/members-metafields/bindings-service.ts
+          - core/server/services/members-metafields/metafields/bindings-service.ts
           - core/server/services/members/service.js
           - core/server/data/schema/schema.ts
         tests:
@@ -4693,7 +4693,7 @@ services:
         sources:
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
-          - core/server/services/members-metafields/bindings-service.ts
+          - core/server/services/members-metafields/metafields/bindings-service.ts
           - core/server/services/members-metafields/metafields/changes.ts
           - core/server/lib/action-log/custom-fields.ts
           - core/server/lib/action-log/action-log.ts
@@ -4719,7 +4719,7 @@ services:
         sources:
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
-          - core/server/services/members-metafields/bindings-service.ts
+          - core/server/services/members-metafields/metafields/bindings-service.ts
           - core/server/services/members-metafields/metafields/changes.ts
           - core/server/lib/action-log/custom-fields.ts
           - core/server/lib/action-log/action-log.ts

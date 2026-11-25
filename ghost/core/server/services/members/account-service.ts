@@ -5,7 +5,7 @@ import { CHECKOUT_PORTS, matchRequirement } from '@tryghost/checkout';
 import {
   refusalError,
   type MemberMetafieldValues,
-  type MetafieldBindingsService,
+  type MemberBindings,
   type MetafieldPlan,
   type Refusal,
 } from '../members-metafields';
@@ -73,7 +73,7 @@ interface EmailSuppressionList {
 }
 
 type MetafieldValues = Pick<MemberMetafieldValues, 'unwrapWire' | 'planWrite'>;
-type MetafieldBindings = Pick<MetafieldBindingsService, 'planThrough'>;
+type MetafieldBindings = Pick<MemberBindings, 'planThrough'>;
 
 const AnswersInput = z.object({
   // An answer holds something: a `null` would clear what the field holds, which no answer can.

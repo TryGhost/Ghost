@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
-import { FieldTypeSchema, type MetafieldChangeEntry } from '@tryghost/metafield-types';
-import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
-import { DbDate } from '../../lib/db-types/date';
+import type { MetafieldChangeEntry } from '@tryghost/metafield-types';
 import type { Caller } from './callers';
 import type { EditedDefinition } from './metafields/definitions-service';
 import { metafieldsRelation } from './metafields/filter';
@@ -11,6 +9,8 @@ import type { Namespaces } from './metafields/namespaces';
 import type { MetafieldResource } from './metafields/resource';
 import {
   FIELD_STATUS,
+  DbMetafieldBinding,
+  type MetafieldBindingRow,
   DbMetafieldChangeEvent,
   DbMetafieldValue,
   type FieldsTable,
@@ -25,6 +25,7 @@ export const MEMBERS_RESOURCE: MetafieldResource = {
     fields: 'members_metafields',
     values: 'members_metafield_values',
     changeEvents: 'members_metafield_change_events',
+    bindings: 'members_metafield_bindings',
   },
   idColumn: 'member_id',
 };
@@ -88,33 +89,6 @@ export type MetafieldChangeEvent = MetafieldChangeEntry<Date> & {
 export const DbMetafieldChangeEventWithMember = z
   .object({ event: DbMemberChangeEvent, member: DbChangeEventMember })
   .transform(({ event, member }): MetafieldChangeEvent => ({ ...event, member }));
-
-export const DbMetafieldBinding = z.object({
-  id: z.string(),
-  port: z.string(),
-  metafield_namespace: z.string(),
-  metafield_key: z.string(),
-  created_at: DbDate,
-  updated_at: DbDate.nullable(),
-});
-
-export type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
-
-/** A binding joined to the field it points at, which is how a collected value is routed. */
-export const DbBoundField = z.object({
-  port: z.string(),
-  binding_id: z.string(),
-  namespace: NamespaceSchema,
-  key: KeySchema,
-  type: FieldTypeSchema,
-});
-
-/** A binding joined to the field it points at, by that field's identity. */
-export const DbNamedBinding = z.object({
-  port: z.string(),
-  namespace: NamespaceSchema,
-  key: KeySchema,
-});
 
 declare module 'knex/types/tables' {
   interface Tables {

@@ -225,3 +225,31 @@ export type FieldsTable = Knex.CompositeTableType<
 export type MetafieldChangeEventInsert = Omit<MetafieldChangeEventRow, 'created_at'> & {
   created_at: string;
 };
+
+/** A port pointed at a field: the name another domain collects a thing under, and where it lands. */
+export const DbMetafieldBinding = z.object({
+  id: z.string(),
+  port: z.string(),
+  metafield_namespace: z.string(),
+  metafield_key: z.string(),
+  created_at: DbDate,
+  updated_at: DbDate.nullable(),
+});
+
+export type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
+
+/** A binding joined to the field it points at, which is how a collected value is routed. */
+export const DbBoundField = z.object({
+  port: z.string(),
+  binding_id: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+  type: FieldTypeSchema,
+});
+
+/** A binding joined to the field it points at, by that field's identity. */
+export const DbNamedBinding = z.object({
+  port: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+});

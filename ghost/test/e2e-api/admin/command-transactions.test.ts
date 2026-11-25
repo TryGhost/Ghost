@@ -544,7 +544,9 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             bindings.bind(PHONE_PORT, { namespace: CUSTOM_NAMESPACE, key }, new Date(), trx),
-          read: async (executor) => [...(await bindings.boundPorts([PHONE_PORT], executor)).keys()],
+          read: async (executor) => [
+            ...(await bindings.boundPorts([PHONE_PORT], 'members', executor)).keys(),
+          ],
         };
       },
     },
