@@ -1,30 +1,44 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useMemo } from 'react';
-import { useMemberViews } from '@/members/api';
+import { SEGMENT_PARAM, useMemberViews, useSegmentPins } from '@/members/api';
 import { type NavSavedView } from './nav-saved-views';
 
-function getMemberViewUrl(filter: string) {
-  return `members?${new URLSearchParams({ filter }).toString()}`;
+function getMemberViewUrl(id: string, filter: string) {
+  return `members?${new URLSearchParams({ filter, [SEGMENT_PARAM]: id }).toString()}`;
 }
 
-function isMemberViewActive(pathname: string, currentSearch: string, filter: string) {
+/**
+ * Whether the members screen is showing this segment: its URL names it, or, for a link with no
+ * segment in it, the filter applied is the segment's own.
+ */
+function isMemberViewActive(pathname: string, currentSearch: string, id: string, filter: string) {
   if (pathname !== '/members') {
     return false;
   }
 
-  return new URLSearchParams(currentSearch).get('filter') === filter;
+  const searchParams = new URLSearchParams(currentSearch);
+  const shown = searchParams.get(SEGMENT_PARAM);
+
+  return shown ? shown === id : searchParams.get('filter') === filter;
 }
 
+/**
+ * The segments pinned to the sidebar, as shortcuts under Members. A segment isn't pinned until
+ * someone pins it, so most sites show none.
+ */
 export function useMemberSidebarViews() {
   const location = useLocation();
   const memberViews = useMemberViews();
+  const { isPinned } = useSegmentPins();
 
   return useMemo<NavSavedView[]>(() => {
-    return memberViews.map((view) => ({
-      key: `${view.name}:${view.filter}`,
-      name: view.name,
-      to: getMemberViewUrl(view.filter),
-      isActive: isMemberViewActive(location.pathname, location.search, view.filter),
-    }));
-  }, [location.pathname, location.search, memberViews]);
+    return memberViews
+      .filter((view) => isPinned(view.id))
+      .map((view) => ({
+        key: view.id,
+        name: view.name,
+        to: getMemberViewUrl(view.id, view.filter),
+        isActive: isMemberViewActive(location.pathname, location.search, view.id, view.filter),
+      }));
+  }, [location.pathname, location.search, memberViews, isPinned]);
 }

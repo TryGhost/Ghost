@@ -177,14 +177,10 @@ export class SegmentsService {
     return this.tracking.change('edit', (attempt) =>
       ensureTransaction(executor, async (trx) => {
         const previous = (await this.lock(id, trx)) ?? notFound(attempt);
-        if (input.filter !== undefined && input.filter !== previous.filter) {
-          attempt.rejecting('filter_changed');
-          throw new errors.ValidationError({
-            message: "A segment's filter cannot be changed",
-            property: 'filter',
-          });
-        }
-        if (input.name === previous.name) {
+        // POC (poc/segments-ui): a segment's filter can change, so Admin can prototype editing
+        // a segment's conditions. On main a filter other than the segment's own is rejected.
+        const filter = input.filter ?? previous.filter;
+        if (input.name === previous.name && filter === previous.filter) {
           attempt.unchanged();
           return previous;
         }
@@ -197,7 +193,7 @@ export class SegmentsService {
         try {
           await trx(TABLE)
             .where('id', previous.id)
-            .update({ name: input.name, updated_at: toDatabaseDate(new Date()) });
+            .update({ name: input.name, filter, updated_at: toDatabaseDate(new Date()) });
         } catch (err) {
           // The database's collation counts the name as another segment's, or another request
           // took the name at the same time.
@@ -207,7 +203,7 @@ export class SegmentsService {
           throw err;
         }
 
-        const segment = { ...previous, name: input.name };
+        const segment = { ...previous, name: input.name, filter };
         await this.onSegmentUpdated(trx, context, new SegmentRenamed(previous, segment));
         return segment;
       }),

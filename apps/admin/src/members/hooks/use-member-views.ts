@@ -3,6 +3,7 @@ import { canManageMembers, hasAdminAccess } from '@tryghost/admin-x-framework/ap
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useEffect, useMemo } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useSimulateNoSegments } from '@/members/segments/poc-store';
 
 /**
  * Saved member views, for the members screen and the sidebar. A saved member view is a segment:
@@ -31,7 +32,10 @@ export function useMemberViews(): Segment[] {
     }
   }, [error, handleError]);
 
-  return data?.segments ?? NO_VIEWS;
+  // POC (poc/segments-ui): the prototype's switch that shows the site with no segments.
+  const { simulateNoSegments } = useSimulateNoSegments();
+
+  return simulateNoSegments ? NO_VIEWS : (data?.segments ?? NO_VIEWS);
 }
 
 /**

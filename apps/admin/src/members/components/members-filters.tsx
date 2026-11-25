@@ -1,7 +1,6 @@
 import { useMobileFilters } from '@tryghost/shade/patterns';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
-import ManageViewPopover from './manage-view-popover';
 import React, { useCallback, useMemo } from 'react';
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { cn } from '@tryghost/shade/utils';
@@ -31,16 +30,27 @@ import {
   usePostResourceValueSource,
   useTierValueSource,
 } from '@/shared/filter-sources';
-import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 
 interface MembersFiltersProps {
   mobileBarContainer?: HTMLElement | null;
   filters: Filter[];
   multipleActiveSubscriptionsCount: number;
-  nql?: string;
   onFiltersChange: (filters: Filter[]) => void;
-  savedViews?: Segment[];
-  activeView?: Segment | null;
+  /**
+   * What the filters can be saved as, shown after them: the members screen's segment actions.
+   * Only shown while there are filters.
+   */
+  segmentActions?: React.ReactNode;
+  /**
+   * What the button before those actions does, when it isn't clearing the filters: putting a
+   * changed segment's own filters back.
+   */
+  clearAction?: { label: string; onSelect: () => void };
+  /**
+   * The filters as a control inside something else, such as the new segment dialog: no keyboard
+   * shortcut, which the members screen behind it owns, and no room kept for the page's actions.
+   */
+  embedded?: boolean;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
@@ -88,10 +98,10 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   filters,
   mobileBarContainer,
   multipleActiveSubscriptionsCount,
-  nql,
   onFiltersChange,
-  savedViews = [],
-  activeView,
+  segmentActions,
+  clearAction,
+  embedded = false,
 }) => {
   const { data: offersData } = useBrowseOffers({});
   const { data: newslettersData } = useBrowseNewsletters({ searchParams: { limit: '100' } });
@@ -192,18 +202,11 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         className="hidden items-center lg:inline-flex"
         type="button"
         variant="ghost"
-        onClick={() => onFiltersChange([])}
+        onClick={clearAction ? clearAction.onSelect : () => onFiltersChange([])}
       >
-        Clear
+        {clearAction ? clearAction.label : 'Clear'}
       </FilterBar.Action>
-      {nql && (
-        <ManageViewPopover
-          activeView={activeView}
-          existingViews={savedViews}
-          filter={nql}
-          onDeleted={() => onFiltersChange([])}
-        />
-      )}
+      {segmentActions}
     </FilterBar.Actions>
   ) : undefined;
 
@@ -212,23 +215,18 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
       addButton={<Filters.Trigger />}
       barContainer={mobileBarContainer}
       className={
-        mobile ? undefined : cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')
+        mobile || embedded
+          ? undefined
+          : // The actions sit over the bar's right edge, so the filters keep clear of them:
+            // enough for the clear button and one segment action.
+            cn('[&>button]:order-last', hasFilters ? 'sm:!pr-60' : 'w-auto')
       }
 
       clearButton={clearAndSaveButtons}
       fields={filterFields}
       filters={displayFilters}
-      inlineActions={
-        nql ? (
-          <ManageViewPopover
-            activeView={activeView}
-            existingViews={savedViews}
-            filter={nql}
-            onDeleted={() => onFiltersChange([])}
-          />
-        ) : undefined
-      }
-      keyboardShortcut="f"
+      inlineActions={hasFilters ? segmentActions : undefined}
+      keyboardShortcut={embedded ? undefined : 'f'}
       popoverAlign="start"
       popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
       showClearButton={hasFilters}

@@ -12,7 +12,7 @@ import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { Box, Container } from '@tryghost/shade/primitives';
 import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { keepPreviousData } from '@tanstack/react-query';
-import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatDisplayDate, formatNumber } from '@tryghost/shade/utils';
 import { buildMemberListSearchParams, getMemberActiveColumns } from './member-query-params';
 import { canBulkDeleteMembers, shouldShowMembersLoading } from './members-view-state';
 import {
@@ -26,11 +26,21 @@ import {
   useMembersFilterState,
 } from './hooks/use-members-filter-state';
 import { useMemberFilterSources } from './hooks/use-member-filter-sources';
-import { useActiveMemberView, useMemberViews } from './hooks/use-member-views';
+import {
+  useActiveMemberView,
+  useCanChangeMemberViews,
+  useMemberViews,
+} from './hooks/use-member-views';
+import { MemberSegmentActions } from './segments/member-segment-actions';
+import { PocEmptySegmentsToggle } from './segments/poc-empty-toggle';
+import { SegmentBuilderDialog } from './segments/segment-builder';
+import { SEGMENT_PARAM, buildSegmentUrl } from './segments/segment-route';
+import { SegmentSwitcher } from './segments/segment-switcher';
+import { useSegmentFacts } from './segments/use-segment-facts';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/members';
 import { useDebouncedCallback } from 'use-debounce';
-import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
+import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
 import { useIdlePreload } from '@/shared/use-idle-preload';
 import { preloadMapAtlas } from './detail/map-atlas';
@@ -63,15 +73,34 @@ const MembersPage: React.FC<MembersPageProps> = ({
   // saved filter on a custom field be read precisely. Archived fields are included so a filter
   // on one still shows its values, matching the read-only pill the filter bar renders for it.
   //
-  const [filterSearchParams] = useSearchParams();
+  const [filterSearchParams, setFilterSearchParams] = useSearchParams();
   const { newsletters, customFields } = useMemberFilterSources(
     filterSearchParams.get('filter') ?? undefined,
   );
   const { filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll } =
     useMembersFilterState(timezone, newsletters, customFields);
   const location = useLocation();
+  const navigate = useNavigate();
   const savedViews = useMemberViews();
   const activeView = useActiveMemberView(savedViews, nql);
+  // The segment the screen is showing: the one its URL names, so it is still known once its
+  // filters are changed, or else the one whose filter is applied, as older links have no id.
+  const segmentParam = filterSearchParams.get(SEGMENT_PARAM);
+  const appliedFilter = filterSearchParams.get('filter') ?? undefined;
+  const viewedSegment = savedViews.find(({ id }) => id === segmentParam) ?? activeView;
+  const isSegmentModified = Boolean(viewedSegment && appliedFilter !== viewedSegment.filter);
+  const canChangeSegments = useCanChangeMemberViews();
+  const factsOf = useSegmentFacts(savedViews);
+  const [newSegmentOpen, setNewSegmentOpen] = useState(false);
+
+  // With its filters cleared the screen shows every member, which is no longer the segment.
+  useEffect(() => {
+    if (segmentParam && !appliedFilter) {
+      const next = new URLSearchParams(filterSearchParams);
+      next.delete(SEGMENT_PARAM);
+      setFilterSearchParams(next, { replace: true });
+    }
+  }, [segmentParam, appliedFilter, filterSearchParams, setFilterSearchParams]);
   const [showMobileSearch, setShowMobileSearch] = useState(search.length > 0);
   const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
   const [searchInput, setSearchInput] = useState(search);
@@ -156,6 +185,36 @@ const MembersPage: React.FC<MembersPageProps> = ({
     clearAll({ replace: false });
   };
 
+  const segmentActions = nql ? (
+    <MemberSegmentActions
+      filter={nql}
+      isModified={isSegmentModified}
+      segment={viewedSegment}
+      onLeaveSegment={() => navigate('/members')}
+      onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
+    />
+  ) : undefined;
+
+  // While a segment's filters are changed, the bar's clear button puts them back instead.
+  const clearAction =
+    viewedSegment && isSegmentModified
+      ? { label: 'Reset', onSelect: () => navigate(buildSegmentUrl(viewedSegment)) }
+      : undefined;
+
+  // What the header says about the segment being shown: who made it, and when. What uses it is
+  // said where it matters, when the segment is about to be changed or deleted.
+  const segmentFacts = viewedSegment ? factsOf(viewedSegment.id) : null;
+  const segmentMeta = [
+    segmentFacts?.createdBy && `Created by ${segmentFacts.createdBy}`,
+    segmentFacts?.createdAt && formatDisplayDate(segmentFacts.createdAt, timezone),
+    segmentFacts?.editedAt &&
+      `Edited ${formatDisplayDate(segmentFacts.editedAt, timezone)}${
+        segmentFacts.editedBy ? ` by ${segmentFacts.editedBy}` : ''
+      }`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   const headerSearch = shouldShowMemberControls && (
     <>
       <Box className="hidden lg:flex">
@@ -175,12 +234,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
   const headerFilters = shouldShowMemberControls && (!hasFilters || mobileFilters) && (
     <MembersFilters
-      activeView={activeView}
+      clearAction={clearAction}
       filters={filters}
       mobileBarContainer={mobileFilterBar}
       multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-      nql={nql}
-      savedViews={savedViews}
+      segmentActions={segmentActions}
       onFiltersChange={setFilters}
     />
   );
@@ -208,13 +266,22 @@ const MembersPage: React.FC<MembersPageProps> = ({
           <ListPage.Header className="py-4 sidebar:py-5">
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
               <PageHeader blurredBackground={false} sticky={false}>
-                <PageHeader.Left>
+                {/* A segment's facts can be a long line. The title block takes the room left by
+                    the actions and cuts the line short, rather than pushing them to a row below. */}
+                <PageHeader.Left className={viewedSegment ? 'min-w-48 flex-1 basis-0' : undefined}>
                   <PageHeader.Title>
-                    Members{' '}
+                    <SegmentSwitcher
+                      current={viewedSegment}
+                      segments={savedViews}
+                      onNewSegment={canChangeSegments ? () => setNewSegmentOpen(true) : undefined}
+                    />{' '}
                     {!shouldShowLoading && totalMembers > 0 && (
                       <PageHeader.Count className="hidden sm:inline">
                         {formatNumber(totalMembers)}
                       </PageHeader.Count>
+                    )}
+                    {viewedSegment && segmentMeta && (
+                      <PageHeader.Meta className="truncate">{segmentMeta}</PageHeader.Meta>
                     )}
                   </PageHeader.Title>
                 </PageHeader.Left>
@@ -247,11 +314,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
               {shouldShowMemberControls && shouldShowFiltersRow && !mobileFilters && (
                 <FilterBar className={filtersClassName}>
                   <MembersFilters
-                    activeView={activeView}
+                    clearAction={clearAction}
                     filters={filters}
                     multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                    nql={nql}
-                    savedViews={savedViews}
+                    segmentActions={segmentActions}
                     onFiltersChange={setFilters}
                   />
                 </FilterBar>
@@ -321,6 +387,15 @@ const MembersPage: React.FC<MembersPageProps> = ({
             )}
           </ListPage.Body>
         </ListPage>
+        {newSegmentOpen && (
+          <SegmentBuilderDialog
+            open
+            withPin
+            onCreated={(segment) => navigate(buildSegmentUrl(segment))}
+            onOpenChange={setNewSegmentOpen}
+          />
+        )}
+        <PocEmptySegmentsToggle />
       </Container>
     </Box>
   );

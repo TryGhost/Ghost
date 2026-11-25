@@ -196,6 +196,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
               />
             </NavMenuItem>
           )}
+          <NavMenuItem>
+            <NavMenuItem.Link to="segments" activeOnSubpath>
+              <LucideIcon.ChartPie />
+              <NavMenuItem.Label>Segments</NavMenuItem.Label>
+            </NavMenuItem.Link>
+          </NavMenuItem>
         </>
       )}
 

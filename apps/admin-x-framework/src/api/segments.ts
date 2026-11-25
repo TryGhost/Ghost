@@ -77,11 +77,17 @@ export const useAddSegment = createMutation<SegmentsResponseType, Pick<Segment, 
   },
 );
 
-/** Renames a segment; its filter and position stay as they are. */
-export const useEditSegment = createMutation<SegmentsResponseType, Pick<Segment, 'id' | 'name'>>({
+/**
+ * Renames a segment; its position stays as it is. POC (poc/segments-ui): a `filter` changes the
+ * segment's conditions too. Left out, the filter stays as it is.
+ */
+export const useEditSegment = createMutation<
+  SegmentsResponseType,
+  Pick<Segment, 'id' | 'name'> & Partial<Pick<Segment, 'filter'>>
+>({
   method: 'PUT',
   path: ({ id }) => `/segments/${encodeURIComponent(id)}/`,
-  body: ({ name }) => ({ segments: [{ name }] }),
+  body: ({ name, filter }) => ({ segments: [filter === undefined ? { name } : { name, filter }] }),
   parseResponse: parseSegmentsResponse,
   invalidateQueries: changedDataTypes,
   updateQueries: {

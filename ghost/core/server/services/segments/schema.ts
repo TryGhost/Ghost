@@ -17,8 +17,8 @@ interface NewSegmentRow extends Segment {
   created_at: DatabaseDate;
 }
 
-/** Only a segment's name changes once it is stored. */
-interface SegmentUpdate extends Pick<Segment, 'name'> {
+/** A segment's name changes once it is stored and, in the POC, its filter. */
+interface SegmentUpdate extends Pick<Segment, 'name' | 'filter'> {
   updated_at: DatabaseDate;
 }
 
