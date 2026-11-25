@@ -13,7 +13,7 @@ const RENEW_BEFORE_EXPIRY_MS = 10 * 60 * 1000;
  */
 const MIN_RENEW_DELAY_MS = 5 * 60 * 1000;
 /**
- * A renewal that failed otherwise is tried again after this, doubling each time. Nothing asks
+ * A renewal that failed otherwise is tried again after this, doubling each time. No call asks
  * Ghost again sooner than this after a failed renewal.
  */
 const RETRY_MS = 60 * 1000;
@@ -98,7 +98,10 @@ export function createAppTokenHolder({
   const schedule = (delay: number) => {
     clearTimeout(timer);
     timer = renewal
-      ? setTimeout(() => void holder.renew(), Math.min(Math.max(0, delay), MAX_DELAY_MS))
+      ? setTimeout(
+          () => void renewNow({ onDemand: false }),
+          Math.min(Math.max(0, delay), MAX_DELAY_MS),
+        )
       : undefined;
   };
   const untilRenewal = () => expiresAt - RENEW_BEFORE_EXPIRY_MS - Date.now();
@@ -124,6 +127,58 @@ export function createAppTokenHolder({
     }
   };
 
+  /**
+   * Renews now, sharing a renewal already under way. The backoff after a failure holds back
+   * renewals on demand; the timer, which the backoff set, renews whenever it fires.
+   */
+  const renewNow = ({ onDemand }: { onDemand: boolean }): Promise<boolean> => {
+    if (renewing) {
+      return renewing;
+    }
+    const backingOff = failures > 0 && performance.now() - failedAt < RETRY_MS;
+    if (ended || !renewal || (onDemand && backingOff)) {
+      return Promise.resolve(false);
+    }
+    renewing = renewal
+      .renew()
+      .then((answer) => {
+        const parsed = AppSessionTokenSchema.safeParse(answer);
+        if (!parsed.success) {
+          throw new Error('Ghost renewed an app token without a token', { cause: parsed.error });
+        }
+        const next = parsed.data;
+        current = next;
+        expiresAt = Date.now() + next.expires_in * 1000;
+        failures = 0;
+        schedule(Math.max(MIN_RENEW_DELAY_MS, untilRenewal()));
+        return true;
+      })
+      .catch((error: unknown) => {
+        // Admin's API layer found the staff session expired and is signing in again. Checked
+        // first: Ghost refuses a request with no staff session as a `NoPermissionError`, which
+        // would otherwise end the app session and start another that's refused too.
+        if (error instanceof SessionExpiredError) {
+          stopRenewing();
+          return false;
+        }
+        if (endsAppSession(error)) {
+          end();
+          return false;
+        }
+        if (failures === 0) {
+          onError(error);
+        }
+        failures += 1;
+        failedAt = performance.now();
+        scheduleRetry();
+        return false;
+      })
+      .finally(() => {
+        renewing = undefined;
+      });
+    return renewing;
+  };
+
   const holder: AppTokenHolder = {
     async send(call) {
       const sent = current.access_token;
@@ -139,50 +194,7 @@ export function createAppTokenHolder({
     },
 
     renew() {
-      if (renewing) {
-        return renewing;
-      }
-      if (ended || !renewal || (failures > 0 && performance.now() - failedAt < RETRY_MS)) {
-        return Promise.resolve(false);
-      }
-      renewing = renewal
-        .renew()
-        .then((answer) => {
-          const parsed = AppSessionTokenSchema.safeParse(answer);
-          if (!parsed.success) {
-            throw new Error('Ghost renewed an app token without a token', { cause: parsed.error });
-          }
-          const next = parsed.data;
-          current = next;
-          expiresAt = Date.now() + next.expires_in * 1000;
-          failures = 0;
-          schedule(Math.max(MIN_RENEW_DELAY_MS, untilRenewal()));
-          return true;
-        })
-        .catch((error: unknown) => {
-          // Admin's API layer found the staff session expired and is signing in again. Checked
-          // first: Ghost refuses a request with no staff session as a `NoPermissionError`, which
-          // would otherwise end the app session and start another that's refused too.
-          if (error instanceof SessionExpiredError) {
-            stopRenewing();
-            return false;
-          }
-          if (endsAppSession(error)) {
-            end();
-            return false;
-          }
-          if (failures === 0) {
-            onError(error);
-          }
-          failures += 1;
-          failedAt = performance.now();
-          scheduleRetry();
-          return false;
-        })
-        .finally(() => {
-          renewing = undefined;
-        });
-      return renewing;
+      return renewNow({ onDemand: true });
     },
 
     start(next) {

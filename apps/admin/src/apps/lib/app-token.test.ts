@@ -149,6 +149,27 @@ describe('createAppTokenHolder', () => {
     expect(await tokenOf(holder)).toBe('ghost_app_renewed');
   });
 
+  it('tries a failed renewal again when its retry is set a millisecond short of a minute', async () => {
+    const renew = vi
+      .fn<() => Promise<ReturnType<typeof tokenExpiringIn>>>()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(tokenExpiringIn(HOUR, 'ghost_app_renewed'));
+    const { holder, start } = holderWith(renew);
+    start();
+    // The fake clock is exact, so the millisecond a real one ticks between recording the failure
+    // and setting its retry is put there by hand
+    const now = performance.now.bind(performance);
+    vi.spyOn(performance, 'now')
+      .mockImplementationOnce(() => now())
+      .mockImplementationOnce(() => now() + 1);
+
+    expect(await holder.renew()).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(MINUTE);
+    expect(renew).toHaveBeenCalledTimes(2);
+    expect(await tokenOf(holder)).toBe('ghost_app_renewed');
+  });
+
   it.each([
     ['no token', undefined],
     ['a token without a value', { expires_in: 3600 }],
