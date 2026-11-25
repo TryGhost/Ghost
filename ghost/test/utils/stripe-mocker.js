@@ -532,6 +532,12 @@ class StripeMocker {
         };
       }
 
+      // As Stripe does, an update that sets a subscription to end with its current period sets
+      // `canceled_at` to the time of that update, and one that sets it to continue clears it.
+      if (id && typeof decoded.cancel_at_period_end === 'boolean' && !('canceled_at' in decoded)) {
+        decoded.canceled_at = decoded.cancel_at_period_end ? Math.floor(Date.now() / 1000) : null;
+      }
+
       if (typeof decoded.customer === 'string') {
         // Add customer to customer list
         const customer = this.#getData(this.customers, decoded.customer)[1];
@@ -766,10 +772,17 @@ class StripeMocker {
     return [200, paymentMethod];
   }
 
-  /** What Stripe answers a DELETE with. */
+  /**
+   * What Stripe answers a DELETE with: a subscription canceled now, or a deleted webhook endpoint.
+   */
   #delete({ resource, id }) {
     if (resource === 'subscriptions' && id) {
-      return this.#postData(this.subscriptions, id, 'status=canceled', resource);
+      return this.#postData(
+        this.subscriptions,
+        id,
+        { status: 'canceled', canceled_at: Math.floor(Date.now() / 1000) },
+        resource,
+      );
     }
     if (resource === 'webhook_endpoints' && id) {
       const index = this.webhookEndpoints.findIndex((endpoint) => endpoint.id === id);

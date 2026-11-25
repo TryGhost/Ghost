@@ -318,6 +318,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       // Create a new customer in Stripe
@@ -506,6 +507,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(customer, {
@@ -616,6 +618,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(subscription, buildSubscription(first_subscription_id, 'item_first'));
@@ -745,6 +748,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(customer, {
@@ -849,6 +853,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       // Create a new customer in Stripe
@@ -1085,6 +1090,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       // Create a new customer in Stripe
@@ -1218,6 +1224,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
     });
 
@@ -1486,6 +1493,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 365,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(customer, {
@@ -1579,6 +1587,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(customer, {
@@ -1645,6 +1654,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       };
 
       // Register the comp subscription in overrides so the DELETE and GET handlers can find it
@@ -1665,6 +1675,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       };
 
       // Update shared objects for the paid subscription
@@ -1802,6 +1813,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       };
 
       set(subscription, paidSubscription);
@@ -1933,6 +1945,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       };
 
       set(subscription, paidSubscription);
@@ -2105,6 +2118,7 @@ describe('Members API', function () {
           start_date: beforeNow / 1000,
           current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
           cancel_at_period_end: false,
+          canceled_at: null,
         };
 
         set(subscription, paidSubscription);
@@ -2280,6 +2294,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(customer, {
@@ -2329,6 +2344,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       };
 
       // Define the paid subscription
@@ -2361,6 +2377,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       };
 
       // Register it so GET can find it
@@ -2477,6 +2494,7 @@ describe('Members API', function () {
         start_date: Date.now() / 1000,
         current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       };
 
       // Set up shared mocks
@@ -2630,6 +2648,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
         metadata: {},
       });
 
@@ -3032,6 +3051,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(customer, {
@@ -3239,6 +3259,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
 
       set(customer, {
@@ -3426,6 +3447,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
         metadata: attribution
           ? stripeMetadata({
               attribution_id: attribution.id,
@@ -3815,6 +3837,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
         metadata: stripeMetadata({
           // set the attribution on the subscription
           attribution_id: attribution.id,
@@ -3928,6 +3951,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
         metadata: stripeMetadata({
           attribution_id: attribution.id,
           attribution_url: attribution.url,
@@ -4059,6 +4083,7 @@ describe('Members API', function () {
           customer: customerId,
           status: 'incomplete',
           cancel_at_period_end: false,
+          canceled_at: null,
           start_date: beforeNow / 1000,
           current_period_end: beforeNow / 1000 + 86400 * 31,
           items: {
@@ -4438,6 +4463,7 @@ describe('Members API', function () {
         start_date: beforeNow / 1000,
         current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
         cancel_at_period_end: false,
+        canceled_at: null,
       });
     });
 

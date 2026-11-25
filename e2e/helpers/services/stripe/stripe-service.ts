@@ -273,6 +273,7 @@ export class StripeTestService {
   async cancelSubscription(opts: { subscription: StripeSubscription }): Promise<void> {
     const subscription = opts.subscription;
     subscription.cancel_at_period_end = true;
+    subscription.canceled_at = Math.floor(Date.now() / 1000);
 
     this.server.upsertSubscription(subscription);
     debug('Updated subscription %s with cancel_at_period_end=true', subscription.id);

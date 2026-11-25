@@ -120,6 +120,11 @@ test.describe('Stripe fixtures - builder shapes match captured Stripe responses'
     },
     {
       object: 'subscription',
+      path: 'canceled_at',
+      readAt: 'member-repository linkSubscription',
+    },
+    {
+      object: 'subscription',
       path: 'items.data.0.price.id',
       readAt: 'member-repository linkSubscription',
     },
