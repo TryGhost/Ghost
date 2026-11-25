@@ -60,12 +60,12 @@ function parseBlueskyDomainHandle(value: unknown): BlueskyDomainHandle | null {
 }
 
 /**
- * Whether the site's domain reaches the ActivityPub service, so it's worth
- * offering as the Bluesky handle. It doesn't say the domain is free
+ * The domain that would become the Bluesky handle right now, so it's worth
+ * offering: no other account uses it, and it reaches the ActivityPub service
  */
 const blueskyDomainHandleCheckSchema = z.object({
   domain: z.string(),
-  reachable: z.boolean(),
+  available: z.boolean(),
 });
 
 export type BlueskyDomainHandleCheck = z.infer<typeof blueskyDomainHandleCheckSchema>;

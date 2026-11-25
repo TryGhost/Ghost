@@ -49,8 +49,8 @@ type DomainHandleBannerState = 'offer' | 'switching' | 'switched' | 'taken' | 'f
  * The outcome of a switch is only shown when the publisher asked for it:
  * during this visit, or earlier if it is still in progress. Otherwise a domain
  * that isn't the handle yet is offered, whatever happened before, as long as
- * it can work right now (eg not when the proxy doesn't route
- * /.well-known/atproto-did)
+ * it can work right now (eg not when another account uses it, or the proxy
+ * doesn't route /.well-known/atproto-did)
  */
 function getDomainHandleBannerState({
   domainHandle,
@@ -58,14 +58,14 @@ function getDomainHandleBannerState({
   requesting,
   requestFailed,
   showsDomain,
-  reachable,
+  available,
 }: {
   domainHandle: BlueskyDomainHandle | null;
   requested: boolean;
   requesting: boolean;
   requestFailed: boolean;
   showsDomain: boolean;
-  reachable: boolean;
+  available: boolean;
 }): DomainHandleBannerState | null {
   if (requesting) {
     return 'switching';
@@ -94,7 +94,7 @@ function getDomainHandleBannerState({
     return null;
   }
 
-  return reachable ? 'offer' : null;
+  return available ? 'offer' : null;
 }
 
 const DomainHandleBanner: React.FC<{
@@ -413,7 +413,7 @@ const BlueskySharing: React.FC = () => {
         requesting: claimBlueskyDomainHandleMutation.isPending,
         requestFailed: domainHandleRequestFailed,
         showsDomain,
-        reachable: domainHandleCheck?.reachable === true,
+        available: domainHandleCheck?.available === true,
       })
     : null;
   // The offer names the domain that works, the rest the domain that was tried

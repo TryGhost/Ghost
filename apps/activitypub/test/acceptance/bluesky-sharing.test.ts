@@ -55,11 +55,11 @@ function confirmBlueskyHandle(response: object) {
   } as const;
 }
 
-function checkBlueskyDomainHandle(reachable: boolean) {
+function checkBlueskyDomainHandle(available: boolean, domain = 'site.com') {
   return {
     method: 'POST',
     path: '/v2/actions/bluesky/domain-handle/check',
-    response: { domain: 'site.com', reachable },
+    response: { domain, available, reason: available ? null : 'not_reachable' },
   } as const;
 }
 
@@ -403,6 +403,24 @@ test.describe('Bluesky sharing', async () => {
       await expect(page.getByText(`@${DEFAULT_HANDLE}`)).toBeVisible();
       await expect.poll(() => lastApiRequests.checkBlueskyDomainHandle).toBeTruthy();
       await expectNoDomainHandleBanner(page);
+    });
+
+    test("I'm offered the domain that would become my handle when it isn't my main one", async ({
+      page,
+    }) => {
+      await mockApi({
+        page,
+        requests: {
+          getMyAccount: getMyAccount({ blueskyHandle: DEFAULT_HANDLE, blueskyDomainHandle: null }),
+          checkBlueskyDomainHandle: checkBlueskyDomainHandle(true, 'www.site.com'),
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/preferences/bluesky-sharing');
+
+      await expect(page.getByText('Use @www.site.com as your Bluesky handle')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Use @www.site.com' })).toBeVisible();
     });
 
     test("I'm not offered my domain when it can't be checked", async ({ page }) => {

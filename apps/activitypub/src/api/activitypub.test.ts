@@ -2839,12 +2839,14 @@ describe('ActivityPubAPI', function () {
       );
     }
 
-    test('It returns whether the domain reaches the service', async function () {
-      const api = apiAnswering(JSONResponse({ domain: 'example.com', reachable: false }));
+    test('It returns whether the domain can be used', async function () {
+      const api = apiAnswering(
+        JSONResponse({ domain: 'example.com', available: false, reason: 'taken' }),
+      );
 
       expect(await api.checkBlueskyDomainHandle()).toEqual({
         domain: 'example.com',
-        reachable: false,
+        available: false,
       });
     });
 
