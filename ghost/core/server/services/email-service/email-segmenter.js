@@ -1,5 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const { allOf } = require('@tryghost/nql-string');
 
 const messages = {
   noneFilterError: 'Cannot send email to "none" recipient filter',
@@ -24,29 +25,47 @@ class EmailSegmenter {
     this.#membersRepository = membersRepository;
   }
 
+  /**
+   * The members filter of an email through `newsletter` to `emailRecipientFilter`: the members it
+   * selects who are subscribed to the newsletter and can be emailed, only paid members when the
+   * newsletter is for paid members, and only those `segment` selects when the email is sent in
+   * parts.
+   */
   getMemberFilterForSegment(newsletter, emailRecipientFilter, segment) {
-    const filter = [`newsletters.id:'${newsletter.id}'`, 'email_disabled:0'];
+    return allOf(
+      `newsletters.id:'${newsletter.id}'`,
+      'email_disabled:0',
+      this.#recipients(emailRecipientFilter),
+      this.#paidOnly(newsletter),
+      segment ?? undefined,
+    );
+  }
 
+  /**
+   * The members a post's recipient filter selects: no condition for `all`, and an error for `none`,
+   * which no email is sent to.
+   */
+  #recipients(emailRecipientFilter) {
     switch (emailRecipientFilter) {
       case 'all':
-        break;
+        return undefined;
       case 'none':
         throw new errors.InternalServerError({
           message: tpl(messages.noneFilterError),
         });
       default:
-        filter.push(`(${emailRecipientFilter})`);
-        break;
+        return emailRecipientFilter;
     }
+  }
 
+  /** Paid members only for a newsletter that is for paid members, otherwise no condition. */
+  #paidOnly(newsletter) {
     const visibility = newsletter.get('visibility');
     switch (visibility) {
       case 'members':
-        // No need to add a member status filter as the email is available to all members
-        break;
+        return undefined;
       case 'paid':
-        filter.push(`status:-free`);
-        break;
+        return 'status:-free';
       default:
         throw new errors.InternalServerError({
           message: tpl(messages.newsletterVisibilityError, {
@@ -54,12 +73,6 @@ class EmailSegmenter {
           }),
         });
     }
-
-    if (segment) {
-      filter.push(`(${segment})`);
-    }
-
-    return filter.join('+');
   }
 
   async getMembersCount(newsletter, emailRecipientFilter, segment) {
