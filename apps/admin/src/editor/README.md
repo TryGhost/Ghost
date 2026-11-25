@@ -319,7 +319,8 @@ arrival reveals any hidden controls; once they leave, typing hides the UI again.
 The row keeps extra space before the header's actions. The avatar for this tab
 shows a standard tooltip saying the writer is editing. Hovering or clicking
 another tab's editing avatar opens a card that says who is editing and offers
-Take over, or Edit here for the writer's own tab. The same explanation and actions appear above the locked
+Take over, or Edit here for the writer's own tab. Keyboard activation focuses
+the card's actions; hover and automatic notices preserve writing focus. The same explanation and actions appear above the locked
 settings fields. The card opens by itself when the writer needs
 to know without asking: the lease was just taken from them, what they typed
 was put back, or they typed into the read-only document. While a takeover
@@ -332,7 +333,8 @@ normal editing status. Any unsaved-content message and Copy content action remai
 Take over and Edit here open a confirmation dialog before changing editing
 access. The warning about stopping the previous editor and possibly losing
 their unsaved content appears only in that dialog. Cancel leaves the lease
-unchanged; if the previous holder leaves first, the confirmation closes.
+unchanged; if the previous holder leaves or another person becomes the holder
+first, the confirmation closes.
 
 The lease is advisory. The server refuses no save because of it, and the
 collision check still decides a save built on an older version.

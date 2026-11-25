@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -230,6 +230,8 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   const [open, setOpen] = useState(false);
   const closing = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const hovered = useRef(false);
+  const focusOnOpen = useRef(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const taking = lease.locked && lease.reason === 'taking';
   const [wasTaking, setWasTaking] = useState(taking);
@@ -298,6 +300,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   };
 
   const enter = () => {
+    focusOnOpen.current = false;
     clearTimeout(closing.current);
     hovered.current = true;
     setOpen(true);
@@ -312,7 +315,13 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
       }
     }, HOVER_CLOSE_MS);
   };
-  const pin = () => {
+  const pin = (event: MouseEvent<HTMLButtonElement>) => {
+    focusOnOpen.current = event.detail === 0;
+    // A hovered card may already be open when the avatar is activated by keyboard.
+    if (open && focusOnOpen.current) {
+      focusOnOpen.current = false;
+      contentRef.current?.querySelector('button')?.focus();
+    }
     clearTimeout(closing.current);
     hovered.current = false;
     setOpen(true);
@@ -382,6 +391,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     <Popover open={open} onOpenChange={changeOpen}>
       <PopoverAnchor asChild>{trigger}</PopoverAnchor>
       <PopoverContent
+        ref={contentRef}
         align="center"
         className="w-max max-w-64 p-4"
         data-testid={editorLeaseCard}
@@ -394,8 +404,12 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
           }
         }}
         onOpenAutoFocus={(event) => {
-          // The card explains; it must not pull focus out of whatever the writer was reading.
-          event.preventDefault();
+          // Hover and automatic notices leave writing focus alone. Keyboard
+          // activation moves into the card so its actions can be reached.
+          if (takeoverSucceeded || !focusOnOpen.current) {
+            event.preventDefault();
+          }
+          focusOnOpen.current = false;
         }}
         onPointerEnter={takeoverSucceeded ? undefined : enter}
         onPointerLeave={takeoverSucceeded ? undefined : leave}

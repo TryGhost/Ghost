@@ -335,6 +335,35 @@ describe('Post editor lease', () => {
         );
     });
 
+    it('lets a keyboard user open the avatar card and reach takeover', async () => {
+      fakePublishedPost();
+      alex();
+      fakeLease().state.other = OTHER_USER;
+      await open();
+      await expect.element(avatar()).toBeVisible();
+      avatar().element().focus();
+
+      await userEvent.keyboard('{Enter}');
+
+      const takeOver = card().getByRole('button', { name: 'Take over', exact: true });
+      await expect.element(takeOver).toHaveFocus();
+      await userEvent.keyboard('{Enter}');
+      await expect.element(takeoverDialog()).toBeVisible();
+    });
+
+    it('keeps writing focus when the avatar card opens on hover', async () => {
+      fakePublishedPost();
+      alex();
+      fakeLease().state.other = OTHER_USER;
+      await open();
+      editorScreen.titleInput().element().focus();
+
+      await userEvent.hover(avatar());
+
+      await expect.element(card()).toBeVisible();
+      await expect.element(editorScreen.titleInput()).toHaveFocus();
+    });
+
     it('says why when the writer types', async () => {
       fakePublishedPost();
       alex();
@@ -463,6 +492,28 @@ describe('Post editor lease', () => {
 
       await expect.element(takeoverDialog()).not.toBeInTheDocument();
       await expect.poll(canvasLocked).toBe(false);
+      expect(asked(polls.requests)).not.toContain('take');
+    });
+
+    it('dismisses takeover confirmation when another person becomes the editor', async () => {
+      fakePublishedPost();
+      alex();
+      const { state, polls, me } = fakeLease();
+      state.other = OTHER_USER;
+      await open();
+      await avatar().click();
+      await card().getByRole('button', { name: 'Take over' }).click();
+      await expect.element(takeoverDialog()).toBeVisible();
+
+      // A poll can replace the holder directly, without a free lease in between.
+      state.other = me;
+      pollNow();
+
+      await expect
+        .element(avatar())
+        .toHaveAttribute('aria-label', 'This post is being edited in another of your tabs');
+      await expect.element(takeoverDialog()).not.toBeInTheDocument();
+      expect(canvasLocked()).toBe(true);
       expect(asked(polls.requests)).not.toContain('take');
     });
 

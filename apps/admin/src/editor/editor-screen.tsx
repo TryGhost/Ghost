@@ -228,11 +228,14 @@ function EditorContent({
     revert: session.revert,
     onBehind: notifyReloadedOverTyping,
   });
-  const [confirmingTakeover, setConfirmingTakeover] = useState(false);
-  if (confirmingTakeover && (!editLease.locked || editLease.reason !== 'held')) {
-    setConfirmingTakeover(false);
+  const heldUserId = editLease.locked && editLease.reason === 'held' ? editLease.userId : null;
+  const [confirmationHolder, setConfirmationHolder] = useState<string | null>(null);
+  const confirmingTakeover = confirmationHolder !== null && confirmationHolder === heldUserId;
+  if (confirmationHolder !== null && confirmationHolder !== heldUserId) {
+    setConfirmationHolder(null);
   }
-  const requestTakeover = () => setConfirmingTakeover(true);
+  const changeTakeoverConfirm = (open: boolean) => setConfirmationHolder(open ? heldUserId : null);
+  const requestTakeover = () => changeTakeoverConfirm(true);
   const leaseHolderId =
     editLease.locked && editLease.reason === 'held' && !editLease.ownTab ? editLease.userId : null;
   const editingHere =
@@ -721,7 +724,7 @@ function EditorContent({
           open={confirmingTakeover}
           resourceId={session.persistedId}
           resourceType={postType}
-          onOpenChange={setConfirmingTakeover}
+          onOpenChange={changeTakeoverConfirm}
           onTakeOver={presence.takeOver}
         />
         <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
