@@ -19,9 +19,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  rowSurfaceClasses,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
-import { LucideIcon, formatDisplayDate, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatDisplayDate, formatNumber } from '@tryghost/shade/utils';
 import { SegmentMenu } from './segment-menu';
 import { type SegmentFacts, useSegmentFacts } from './use-segment-facts';
 
@@ -47,14 +48,18 @@ interface SegmentRowProps {
 
 function SegmentRow({ segment, facts, timezone, canChange, onOpen }: SegmentRowProps) {
   return (
-    <TableRow data-testid="segment-list-row">
+    <TableRow className={rowSurfaceClasses.inset} data-testid="segment-list-row">
       <TableHead
         className="static h-auto max-w-0 py-3 text-left text-base font-normal tracking-normal text-foreground"
         scope="row"
       >
         <RowPrimaryAction asChild>
+          {/* The row's click area is drawn from this button and reaches 16px past each side
+              of the row. Shade's inset variant is meant to pull it in, but its rule is less
+              specific than the one it overrides, so it has no effect on the click area. Pulled
+              in here, or the box scrolls sideways. */}
           <button
-            className="block max-w-full truncate rounded-sm text-left text-md font-semibold focus-visible:outline-hidden"
+            className="block max-w-full truncate rounded-sm text-left text-md font-semibold after:inset-x-0! focus-visible:outline-hidden"
             type="button"
             onClick={onOpen}
           >
@@ -157,15 +162,13 @@ export function ManageSegmentsDialog({
             </EmptyIndicator>
           </Inline>
         ) : (
-          // The rows keep their highlight inside themselves: a scrolling box has no gutter for it.
+          // Each row keeps its highlight inside itself: a scrolling box has no gutter for it,
+          // and a highlight reaching past the rows would make the box scroll sideways. The
+          // class goes on the rows themselves. It isn't a utility a parent can apply.
           <div className="max-h-[60vh] overflow-y-auto">
-            <Table
-              aria-label="Segments"
-              className="[&_.shade-row]:shade-row-inset table-fixed"
-              data-testid="segments-list"
-            >
+            <Table aria-label="Segments" className="table-fixed" data-testid="segments-list">
               <TableHeader>
-                <TableRow className="hover:bg-transparent">
+                <TableRow className={cn(rowSurfaceClasses.inset, 'hover:bg-transparent')}>
                   <TableHead scope="col">Segment</TableHead>
                   <TableHead className="w-24" scope="col">
                     Members
