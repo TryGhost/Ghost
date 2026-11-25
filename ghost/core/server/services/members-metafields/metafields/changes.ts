@@ -1,4 +1,5 @@
 import { Added, Batch, Deleted, Edited, type OnUpdated } from '../../../lib/changes';
+import type { Namespace } from '@tryghost/metafield-types/identity';
 import type { Definition } from './models';
 
 /** A definition was added, as one of the definitions a request added together. */
@@ -22,7 +23,15 @@ export class DefinitionDeleted extends Deleted('DefinitionDeleted')<Definition> 
  * A namespace's definitions were put in a new order. Each list is every definition in the
  * namespace, in the order it had.
  */
-export class DefinitionsReordered extends Edited('DefinitionsReordered')<Definition[]> {}
+export class DefinitionsReordered extends Edited('DefinitionsReordered')<Definition[]> {
+  /** The namespace whose definitions were put in order. */
+  readonly namespace: Namespace;
+
+  constructor(namespace: Namespace, previous: Definition[], next: Definition[]) {
+    super(previous, next);
+    this.namespace = namespace;
+  }
+}
 
 /**
  * A change a command made to a resource's definitions, in general terms. Each command makes one

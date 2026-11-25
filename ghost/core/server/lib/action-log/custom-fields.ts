@@ -43,7 +43,7 @@ function actionsFor(change: DefinitionChange): FieldAction[] {
           resourceId: null,
           actionName: 'reordered',
           count: change.next.length,
-          context: { namespace: namespaceOf(change.next) },
+          context: { namespace: change.namespace },
         },
       ];
   }
@@ -124,12 +124,4 @@ function fieldAction(
     primaryName: field.name,
     context: { namespace: field.namespace, key: field.key, ...change },
   };
-}
-
-/**
- * The namespace a reorder put in order. A reorder names every field in one namespace, and at
- * least one, so the first says which.
- */
-function namespaceOf(ordered: Definition[]): Definition['namespace'] | null {
-  return ordered[0]?.namespace ?? null;
 }
