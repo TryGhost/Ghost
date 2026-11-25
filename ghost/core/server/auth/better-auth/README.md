@@ -183,9 +183,10 @@ Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
 
 - The provider and the `jwt` plugin it signs with are registered only when the
   `apps` labs flag is on at boot and their in-development tables exist, so a
-  site without the flag sees no change to sign-in or session reads and none of
-  the provider's routes. Plugins are fixed at boot: turning the flag on takes
-  effect at the next restart. The `jwt` plugin sets no header on session reads.
+  site that boots without the flag sees no change to sign-in or session reads.
+  Plugins are fixed at boot: turning the flag on or off takes effect at the
+  next restart, and until then a site that turned it off keeps the provider's
+  hooks. The `jwt` plugin sets no header on session reads.
 - Boot reads the flag before remote flags load, so it must come from config
   or the Labs setting. A flag turned on only through remote flags never
   registers the provider, however often Ghost restarts.
@@ -193,13 +194,12 @@ Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
   no scopes, `openid` included, so it issues no ID tokens; an ID token would
   last 5 minutes. Nobody manages clients through the provider's endpoints
   (`clientPrivileges` refuses every action), and none registers itself.
-- Of the two plugins' routes only `/jwks`, which ID tokens will need, stays
-  mounted. It answers anyone with the public signing keys. Ghost issues and
-  validates app tokens through the provider's server API, so every other path
-  either plugin declares is in `disabledPaths` (`appOAuthDisabledPaths`):
-  token, authorize, introspection, revocation, userinfo, end-session, consent,
-  registration and client management, `jwt`'s session JWT (`/token`), and the
-  metadata the provider serves from `onRequest`
+- Neither plugin's routes are mounted. Ghost issues and validates app tokens
+  through the provider's server API, so every path either plugin declares is
+  in `disabledPaths` (`appOAuthDisabledPaths`): token, authorize,
+  introspection, revocation, userinfo, end-session, consent, registration and
+  client management, `jwt`'s session JWT (`/token`) and signing keys
+  (`/jwks`), and the metadata the provider serves from `onRequest`
   (`/.well-known/oauth-authorization-server`,
   `/.well-known/openid-configuration`), so it advertises nothing. The list is
   read from the plugins, so a route an upgrade adds is disabled too; a test
@@ -213,7 +213,7 @@ Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
   logout for clients that registered a URI (none does).
 
 The provider's per-IP rate limits don't apply: the `customStorage` limiter
-allows every path it doesn't map, `/jwks` included.
+allows every path it doesn't map.
 
 ## Running Better Auth locally
 

@@ -67,6 +67,7 @@ describe("Better Auth's OAuth provider for apps", function () {
 
   afterEach(async function () {
     await knex('oauth_clients').del();
+    await knex('oauth_jwks').del();
     await knex('user_sessions').del();
   });
 
@@ -120,7 +121,7 @@ describe("Better Auth's OAuth provider for apps", function () {
       await assert.rejects(auth.api.getOpenIdConfig(), { statusCode: 404 });
     });
 
-    it('serves none of the provider or jwt routes but /jwks, signed in or not', async function () {
+    it('serves none of the provider or jwt routes, signed in or not', async function () {
       const auth = build({ apps: true });
       const { cookie } = await signIn(auth);
 
@@ -146,30 +147,14 @@ describe("Better Auth's OAuth provider for apps", function () {
         }
       }
       assert.equal((await knex('oauth_clients').count({ count: '*' }))[0].count, 0);
-    });
-
-    it('serves the public signing keys on /jwks to anyone', async function () {
-      const auth = build({ apps: true });
-      const { cookie } = await signIn(auth);
-
-      const anonymous = await auth.handler(new Request(url('/jwks')));
-      const signedIn = await auth.handler(new Request(url('/jwks'), { headers: { cookie } }));
-
-      for (const response of [anonymous, signedIn]) {
-        assert.equal(response.status, 200);
-        const body = await response.json();
-        assert.deepEqual(Object.keys(body), ['keys']);
-        for (const key of body.keys) {
-          assert.equal(key.d, undefined, 'a private key part');
-        }
-      }
+      assert.equal((await knex('oauth_jwks').count({ count: '*' }))[0].count, 0);
     });
 
     it('leaves no provider or jwt route mounted that is neither disabled nor deliberately kept', async function () {
       const auth = build({ apps: true });
       const disabledPaths: string[] = auth.options.disabledPaths ?? [];
 
-      assert.deepEqual(APP_OAUTH_MOUNTED_PATHS, ['/jwks']);
+      assert.deepEqual(APP_OAUTH_MOUNTED_PATHS, []);
       for (const { path, serverOnly } of appRoutes()) {
         if (serverOnly || APP_OAUTH_MOUNTED_PATHS.includes(path)) {
           continue;

@@ -3,7 +3,6 @@ import { jwt } from 'better-auth/plugins';
 import { oauthProvider, type OAuthOptions, type Scope } from '@better-auth/oauth-provider';
 import { ghostJwtSchema, ghostOAuthProviderSchema } from '../ghost-models';
 import { APP_TOKEN_PREFIX } from '../../app-token-prefix';
-import { ROUTES } from '../routes';
 
 /** The tables the provider and jwt plugins need; neither is registered without them. */
 export const APP_OAUTH_TABLES: readonly string[] = [
@@ -46,10 +45,10 @@ export function appOAuthPlugins(options: AppProviderOptions) {
 }
 
 /**
- * The provider and jwt routes left mounted. ID tokens will need `/jwks`; Ghost issues and
- * validates app tokens through the provider's server API, so it serves none of the rest.
+ * The provider and jwt routes left mounted. Ghost issues and validates app tokens through the
+ * provider's server API, so it serves none of them.
  */
-export const APP_OAUTH_MOUNTED_PATHS: readonly string[] = [ROUTES.jwks];
+export const APP_OAUTH_MOUNTED_PATHS: readonly string[] = [];
 
 /**
  * Every path the plugins declare but the mounted ones, so a route an upgrade adds is disabled

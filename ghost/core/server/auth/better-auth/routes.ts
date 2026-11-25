@@ -24,8 +24,6 @@ export const ROUTES = {
   // ghostDeviceVerification plugin
   deviceVerificationSend: '/device-verification/send',
   deviceVerificationVerify: '/device-verification/verify',
-  // jwt plugin
-  jwks: '/jwks',
 } as const;
 
 /** ghostDeviceVerification's paths, which an unverified session may use */
