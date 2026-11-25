@@ -17,11 +17,18 @@ export function createStaffSessions(deps: StaffSessionsDeps) {
   return {
     /**
      * Also deletes legacy rows, so a rollback to `legacy` can't revive them (plan §8), and the
-     * user's app tokens.
+     * user's app tokens. Legacy rows are deleted even when revoking the rest fails.
      */
     async revokeUserSessions(userId: string) {
-      await deps.getAuth().revokeUserSessions({ body: { userId } });
-      await deps.deleteLegacyUserSessions(userId);
+      const results = await Promise.allSettled([
+        deps.getAuth().revokeUserSessions({ body: { userId } }),
+        deps.deleteLegacyUserSessions(userId),
+      ]);
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          throw result.reason;
+        }
+      }
     },
 
     /** Also deletes every app token. */
