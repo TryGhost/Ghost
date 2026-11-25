@@ -162,6 +162,39 @@ describe('Comments analytics', () => {
     await expect.element(commentsScreen.analyticsKpiTrend('commenters')).not.toBeInTheDocument();
   });
 
+  it.each([
+    { current: 1500, previous: 1000, change: 'up 50%', startingValue: '1,000' },
+    { current: 5, previous: 10, change: 'down 50%', startingValue: '10' },
+  ])(
+    'uses the overview trend tooltip wording and emphasis for $change',
+    async ({ current, previous, change, startingValue }) => {
+      fakeComments([comment()]);
+      fakeCommentsStats({
+        ...overview,
+        stats: [
+          {
+            ...overview.stats[0],
+            totals: totals(current, 7, 2),
+            previous_totals: totals(previous, 7, 1),
+          },
+        ],
+      });
+      await renderAdminApp('/comments?range=30', { labs });
+
+      await commentsScreen.analyticsKpiTrend('comments').hover();
+      const tooltip = page.getByRole('tooltip');
+      await expect
+        .element(tooltip)
+        .toHaveTextContent(`Trending ${change} from ${startingValue} compared to the last 30 days`);
+      expect(
+        getComputedStyle(tooltip.getByText(change, { exact: true }).element()).fontWeight,
+      ).toBe('600');
+      expect(
+        getComputedStyle(tooltip.getByText(startingValue, { exact: true }).element()).fontWeight,
+      ).toBe('600');
+    },
+  );
+
   it('places the shared date control above both columns and removes Date from the filter menu', async () => {
     fakeComments([comment({ html: '<p>Below the page header</p>' })]);
     fakeCommentsStats();
@@ -470,7 +503,7 @@ describe('Comments analytics', () => {
           await commentsScreen.analyticsTopCommenters().row('Regular Reader').click();
           await expect(commentsApi).toHaveSentFilter(/member_id:'?member1'?/);
           await expect
-            .element(commentsScreen.analyticsKpiTab('Comments'))
+            .element(commentsScreen.analyticsKpiTab('Commenters'))
             .toHaveAttribute('aria-selected', 'true');
         }
         await expect.poll(filterVisible).toBe(true);
@@ -497,54 +530,68 @@ describe('Comments analytics', () => {
     await commentsScreen.analyticsTopPosts().row('Popular post 1').click();
 
     await expect(commentsApi).toHaveSentFilter(/post_id:'?post0'?/);
-    await expect.element(commentsScreen.analyticsTopPosts()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopPosts()).toBeVisible();
     await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
 
     await commentsScreen.analyticsTopCommenters().row('Regular Reader').click();
 
     await expect(commentsApi).toHaveSentFilter(/member_id:'?member1'?/);
     await expect(commentsApi).toHaveSentFilter(/post_id:'?post0'?/);
-    await expect
-      .poll(() => requestedFilter(statsApis.overviewApi))
-      .toMatch(/member_id:'?member1'?/);
-    await expect.poll(() => requestedFilter(statsApis.overviewApi)).toMatch(/post_id:'?post0'?/);
-    await expect.element(commentsScreen.analyticsTopCommenters()).not.toBeInTheDocument();
-    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).not.toBeInTheDocument();
+    for (const api of Object.values(statsApis)) {
+      await expect.poll(() => requestedFilter(api)).toMatch(/member_id:'?member1'?/);
+      await expect.poll(() => requestedFilter(api)).toMatch(/post_id:'?post0'?/);
+    }
+    await expect.element(commentsScreen.analyticsTopPosts()).toBeVisible();
+    await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
+    for (const tab of ['Comments', 'Commenters', 'Reported']) {
+      await expect.element(commentsScreen.analyticsKpiTab(tab)).toBeVisible();
+    }
   });
 
-  it('hides top posts for a selected post without fetching that ranking', async () => {
+  it('keeps both rankings and every tab for a selected post', async () => {
     fakeComments([comment()]);
     const { topPostsApi, topCommentersApi } = fakeCommentsStats();
     fakeFilterLookups();
     await renderAdminApp('/comments?filter=post_id:post0', { labs });
 
     await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
-    await expect.element(commentsScreen.analyticsTopPosts()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopPosts()).toBeVisible();
     await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
-    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).toBeVisible();
-    expect(topPostsApi.requests).toHaveLength(0);
-    await expect.poll(() => topCommentersApi.requests.length).toBe(1);
+    for (const tab of ['Comments', 'Commenters', 'Reported']) {
+      await expect.element(commentsScreen.analyticsKpiTab(tab)).toBeVisible();
+    }
+    for (const api of [topPostsApi, topCommentersApi]) {
+      await expect.poll(() => requestedFilter(api)).toMatch(/post_id:'?post0'?/);
+    }
   });
 
-  it('hides commenter rankings and tab for a selected commenter, then restores them on Clear', async () => {
+  it('keeps both rankings and the active commenters tab for a selected commenter and on Clear', async () => {
     fakeComments([comment()]);
-    const { topCommentersApi } = fakeCommentsStats();
+    const { topPostsApi, topCommentersApi } = fakeCommentsStats();
     fakeFilterLookups();
     await renderAdminApp('/comments?tab=commenters&filter=member_id:member1', { labs });
 
     await expect
-      .element(commentsScreen.analyticsKpiTab('Comments'))
+      .element(commentsScreen.analyticsKpiTab('Commenters'))
       .toHaveAttribute('aria-selected', 'true');
-    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).not.toBeInTheDocument();
-    await expect.element(commentsScreen.analyticsTopCommenters()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsKpiTab('Comments')).toBeVisible();
+    await expect.element(commentsScreen.analyticsKpiTab('Reported')).toBeVisible();
+    await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
     await expect.element(commentsScreen.analyticsTopPosts()).toBeVisible();
-    await expect.poll(currentRoute).toContain('tab=comments');
-    expect(topCommentersApi.requests).toHaveLength(0);
+    await expect.poll(currentRoute).toContain('tab=commenters');
+    for (const api of [topPostsApi, topCommentersApi]) {
+      await expect.poll(() => requestedFilter(api)).toMatch(/member_id:'?member1'?/);
+    }
 
     await page.getByRole('button', { name: 'Clear', exact: true }).click();
     await expect.element(commentsScreen.analyticsKpiTab('Commenters')).toBeVisible();
     await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
-    await expect.poll(() => topCommentersApi.requests.length).toBe(1);
+    await expect
+      .poll(() => new URL(topCommentersApi.lastRequest!.url).searchParams.has('filter'))
+      .toBe(false);
+    await expect
+      .element(commentsScreen.analyticsKpiTab('Commenters'))
+      .toHaveAttribute('aria-selected', 'true');
   });
 
   it('keeps both rankings and the commenters tab for exclusion filters', async () => {
@@ -720,6 +767,12 @@ describe('Comments analytics', () => {
 
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
     await expect(commentsApi).toHaveSentFilter(/member_id:'?member1'?/);
+    await commentsScreen.analyticsButton().click();
+    await expect.element(commentsScreen.analyticsTopPosts()).toBeVisible();
+    await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
+    for (const tab of ['Comments', 'Commenters', 'Reported']) {
+      await expect.element(commentsScreen.analyticsKpiTab(tab)).toBeVisible();
+    }
   });
 
   it('hides analytics for an empty filtered list and restores it after resetting the shared scope', async () => {

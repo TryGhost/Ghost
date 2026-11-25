@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getCommentsStatsSearchParams,
   getCommentsListFilter,
-  getComparisonText,
+  getComparisonPeriod,
   getTrend,
   parseCommentsCustomRange,
   parseRangeParam,
@@ -92,8 +92,8 @@ describe('comments analytics helpers', () => {
   });
 
   it('compares against the previous period', () => {
-    expect(getTrend(15, 10, 30)).toEqual({ direction: 'up', value: '+50%' });
-    expect(getTrend(5, 10, 30)).toEqual({ direction: 'down', value: '-50%' });
+    expect(getTrend(15, 10, 30)).toEqual({ direction: 'up', value: '50%' });
+    expect(getTrend(5, 10, 30)).toEqual({ direction: 'down', value: '50%' });
   });
 
   it('hides the trend when there is no change or nothing to compare', () => {
@@ -103,7 +103,11 @@ describe('comments analytics helpers', () => {
   });
 
   it('describes the comparison period', () => {
-    expect(getComparisonText('+50%', 1)).toBe('+50% compared to the previous day');
-    expect(getComparisonText('+50%', 7)).toBe('+50% compared to the previous 7 days');
+    expect(getComparisonPeriod(1)).toBe('previous day');
+    expect(getComparisonPeriod(7)).toBe('last 7 days');
+    expect(getComparisonPeriod(30)).toBe('last 30 days');
+    expect(getComparisonPeriod(365)).toBe('last 12 months');
+    expect(getComparisonPeriod(-1)).toBe('same number of days before January 1');
+    expect(getComparisonPeriod(10)).toBe('previous 10 days');
   });
 });

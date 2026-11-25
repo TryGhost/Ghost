@@ -121,7 +121,7 @@ function CommentsList({
 
   return (
     <TooltipProvider>
-      <div ref={parentRef} className="overflow-hidden border-t">
+      <div ref={parentRef} className={cn('overflow-hidden', !compactComments && 'border-t')}>
         <div className="flex flex-col" data-testid="comments-list">
           <div className="flex flex-col">
             <SpacerRow height={spaceBefore} />
@@ -135,7 +135,12 @@ function CommentsList({
               const row = (
                 <div
                   {...props}
-                  className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b px-0 py-3 md:py-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                  className={cn(
+                    'grid w-full grid-cols-1 items-start justify-between gap-4 px-0',
+                    compactComments
+                      ? 'py-4 md:py-6 lg:grid-cols-[minmax(0,1fr)_120px] lg:gap-8'
+                      : 'border-b py-3 md:py-5 lg:grid-cols-[minmax(0,1fr)_144px]',
+                  )}
                   data-testid="comment-list-row"
                   onClick={() => {
                     // Close sidebar when clicking on a comment in the main list
@@ -154,7 +159,7 @@ function CommentsList({
                       src={item.member?.avatar_image}
                     />
 
-                    <Stack className="min-w-0" gap="md">
+                    <Stack className="min-w-0" gap={compactComments ? 'sm' : 'md'}>
                       <Stack gap={compactComments ? 'xs' : 'md'}>
                         <div>
                           <CommentHeader
@@ -243,7 +248,11 @@ function CommentsList({
                     {item.post?.feature_image ? (
                       <img
                         alt={item.post.title || 'Post feature image'}
-                        className={`hidden aspect-video w-36 rounded object-cover lg:block ${item.status === 'hidden' && 'opacity-50'}`}
+                        className={cn(
+                          'hidden aspect-video rounded object-cover lg:block',
+                          compactComments ? 'w-30' : 'w-36',
+                          item.status === 'hidden' && 'opacity-50',
+                        )}
                         src={item.post.feature_image}
                       />
                     ) : null}

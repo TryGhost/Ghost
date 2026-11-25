@@ -1,6 +1,6 @@
 import { STATS_RANGES, STATS_RANGE_OPTIONS } from '@/shared/analytics/constants';
 import { formatPercentage } from '@tryghost/shade/utils';
-import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
 import type { CommentsStatsInterval } from '@tryghost/admin-x-framework/api/stats';
 import moment from 'moment-timezone';
 
@@ -102,18 +102,18 @@ export function getTrend(current: number, previous: number, range: number): Comm
   }
   return {
     direction: change > 0 ? 'up' : 'down',
-    value: `${change > 0 ? '+' : '-'}${formatPercentage(Math.abs(change))}`,
+    value: formatPercentage(Math.abs(change)),
   };
 }
 
-export function getComparisonText(value: string, range: number): string {
+export function getComparisonPeriod(range: number): string {
   if (range === STATS_RANGES.yearToDate.value) {
-    return `${value} compared to the same number of days before January 1`;
+    return 'same number of days before January 1';
   }
   if (range === STATS_RANGES.today.value) {
-    return `${value} compared to the previous day`;
+    return 'previous day';
   }
-  return `${value} compared to the previous ${range} days`;
+  return getPeriodText(range).replace('in the ', '') || `previous ${range} days`;
 }
 
 // Day counts that make Shade's date formatters read as day, week or month

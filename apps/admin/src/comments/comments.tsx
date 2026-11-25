@@ -46,16 +46,6 @@ const CommentsPage: React.FC<{
   const { filters, nql, setFilters } = useFilterState(timezone);
   const dislikesEnabled = true;
   const analyticsEnabled = useFeatureFlag('commentsAnalytics') && !singleCommentId;
-  const isSelected = (field: string) =>
-    filters.some(
-      (filter) =>
-        filter.field === field &&
-        filter.operator === 'is' &&
-        filter.values.length === 1 &&
-        Boolean(filter.values[0]),
-    );
-  const postFiltered = analyticsEnabled && isSelected('post');
-  const commenterFiltered = analyticsEnabled && isSelected('author');
   const wideLayout = useWideLayout();
   const [analyticsSheetOpen, setAnalyticsSheetOpen] = useState(false);
   // Narrow screens fetch nothing until the sheet first opens
@@ -64,7 +54,6 @@ const CommentsPage: React.FC<{
     timezone,
     analyticsEnabled && timezoneReady && (wideLayout || analyticsSheetOpened),
     nql,
-    { postFiltered, commenterFiltered },
   );
   const handleAddFilter = useCallback(
     (field: string, value: string, operator: string = 'is') => {

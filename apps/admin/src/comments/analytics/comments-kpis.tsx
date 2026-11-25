@@ -11,7 +11,7 @@ import {
   COMMENTS_ANALYTICS_TABS,
   type CommentsAnalyticsTab,
   DISPLAY_RANGE_BY_INTERVAL,
-  getComparisonText,
+  getComparisonPeriod,
   getTrend,
 } from './comments-analytics-helpers';
 import { Inline } from '@tryghost/shade/primitives';
@@ -47,10 +47,8 @@ const CommentsKpis: React.FC<{
   comparisonDays?: number;
   tab: CommentsAnalyticsTab;
   isLoading: boolean;
-  showCommenters?: boolean;
   onTabChange: (tab: CommentsAnalyticsTab) => void;
-}> = ({ stats, range, comparisonDays, tab, isLoading, showCommenters = true, onTabChange }) => {
-  const tabs = COMMENTS_ANALYTICS_TABS.filter((key) => showCommenters || key !== 'commenters');
+}> = ({ stats, range, comparisonDays, tab, isLoading, onTabChange }) => {
   const { label, color } = TABS[tab];
   // admin7Design charts are flat, like the newsletter analytics bars
   const { admin7Design } = useShade();
@@ -79,8 +77,8 @@ const CommentsKpis: React.FC<{
       variant="kpis"
       onValueChange={(value) => onTabChange(value as CommentsAnalyticsTab)}
     >
-      <TabsList className={showCommenters ? 'grid grid-cols-3' : 'grid grid-cols-2'}>
-        {tabs.map((key) => {
+      <TabsList className="grid grid-cols-3">
+        {COMMENTS_ANALYTICS_TABS.map((key) => {
           const trend = stats
             ? getTrend(stats.totals[key], stats.previous_totals[key], range)
             : { direction: 'hidden' as const, value: '' };
@@ -90,7 +88,21 @@ const CommentsKpis: React.FC<{
                 data-testid={`comments-analytics-kpi-${key}`}
                 diffDirection={trend.direction}
                 diffInverted={TABS[key].inverted}
-                diffTooltip={getComparisonText(trend.value, comparisonDays ?? range)}
+                diffTooltip={
+                  stats && trend.direction !== 'hidden' ? (
+                    <span>
+                      Trending{' '}
+                      <span className="font-semibold">
+                        {trend.direction} {trend.value}
+                      </span>{' '}
+                      from{' '}
+                      <span className="font-semibold">
+                        {formatNumber(stats.previous_totals[key])}
+                      </span>{' '}
+                      compared to the {getComparisonPeriod(comparisonDays ?? range)}
+                    </span>
+                  ) : undefined
+                }
                 diffValue=""
                 label={TABS[key].label}
                 value={stats ? formatKpi(stats.totals[key]) : '–'}

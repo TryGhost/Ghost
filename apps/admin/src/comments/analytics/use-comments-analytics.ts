@@ -15,19 +15,14 @@ import {
   useCommentsTopCommenters,
   useCommentsTopPosts,
 } from '@tryghost/admin-x-framework/api/stats';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useSearchParams } from '@tryghost/admin-x-framework';
 import { parseCommentFilter, serializeCommentFilters } from '@/comments/comment-filter-query';
 import { removeLegacyCommentFilterParams } from '@/comments/legacy-comment-filter-query';
 
 const isNotFound = (error: unknown) => error instanceof APIError && error.response?.status === 404;
 
-export function useCommentsAnalytics(
-  timezone: string,
-  enabled: boolean,
-  filter?: string,
-  { postFiltered = false, commenterFiltered = false } = {},
-) {
+export function useCommentsAnalytics(timezone: string, enabled: boolean, filter?: string) {
   const [searchParams, setSearchParams] = useSearchParams();
   const parsedRange = parseRangeParam(searchParams.get('range'));
   const customRange =
@@ -42,8 +37,7 @@ export function useCommentsAnalytics(
     parsedRange === CUSTOM_COMMENTS_RANGE && !customRange
       ? DEFAULT_COMMENTS_ANALYTICS_RANGE
       : parsedRange;
-  const requestedTab = parseTabParam(searchParams.get('tab'));
-  const tab = commenterFiltered && requestedTab === 'commenters' ? 'comments' : requestedTab;
+  const tab = parseTabParam(searchParams.get('tab'));
   const statsParams: Record<string, string> = {
     ...getCommentsStatsSearchParams(range, timezone, customRange),
     ...(filter ? { filter } : {}),
@@ -76,16 +70,8 @@ export function useCommentsAnalytics(
     defaultErrorHandler: false,
   };
   const overview = useCommentsOverview(query);
-  const topPosts = useCommentsTopPosts({ ...query, enabled: enabled && !postFiltered });
-  const topCommenters = useCommentsTopCommenters({
-    ...query,
-    enabled: enabled && !commenterFiltered,
-  });
-  const visibleQueries = [
-    overview,
-    ...(!postFiltered ? [topPosts] : []),
-    ...(!commenterFiltered ? [topCommenters] : []),
-  ];
+  const topPosts = useCommentsTopPosts(query);
+  const topCommenters = useCommentsTopCommenters(query);
 
   const setParam = useCallback(
     (key: string, value: string) => {
@@ -95,18 +81,6 @@ export function useCommentsAnalytics(
     },
     [searchParams, setSearchParams],
   );
-
-  useEffect(() => {
-    // Wait for the filter navigation to commit before writing the tab, otherwise
-    // the older URL can overwrite a filter that was just selected locally.
-    if (
-      commenterFiltered &&
-      requestedTab === 'commenters' &&
-      searchParams.get('filter') === filter
-    ) {
-      setParam('tab', 'comments');
-    }
-  }, [commenterFiltered, requestedTab, setParam, searchParams, filter]);
 
   const setDateRange = useCallback(
     (value: number, dates?: CommentsCustomRange) => {
@@ -134,8 +108,6 @@ export function useCommentsAnalytics(
   );
 
   return {
-    postFiltered,
-    commenterFiltered,
     range,
     customRange,
     listFilter: getCommentsListFilter(range, timezone, filter, customRange),
@@ -154,7 +126,7 @@ export function useCommentsAnalytics(
     overview,
     topPosts,
     topCommenters,
-    unavailable: visibleQueries.some(
+    unavailable: [overview, topPosts, topCommenters].some(
       ({ error, data }) => isNotFound(error) || (data !== undefined && data.meta?.filters !== true),
     ),
   };
