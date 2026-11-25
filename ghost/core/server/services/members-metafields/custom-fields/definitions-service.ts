@@ -3,7 +3,7 @@ import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import { Metafield } from '../metafields/models';
+import { Definition } from '../metafields/models';
 import {
   FieldTypeSchema,
   TypedSettingsInputSchema,
@@ -114,7 +114,7 @@ function definitionInputs(maxLength: FieldSource<Caller>['maxLength']) {
 
 /** A field as an edit left it. */
 export interface EditedField {
-  field: Metafield;
+  field: Definition;
   /**
    * Whether the edit started or stopped members reading the field: archiving or restoring it, or
    * keeping it from members or opening it to them.
@@ -160,7 +160,7 @@ export class MetafieldDefinitionsService {
     options: { namespace: Namespace; filter?: string },
     caller: Caller,
     executor: Knex = this.knex,
-  ): Promise<Metafield[]> {
+  ): Promise<Definition[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
     // narrows the list, it never reorders it.
     const { namespace, filter } = options;
@@ -182,13 +182,13 @@ export class MetafieldDefinitionsService {
     return this.list(this.fields.definitions(executor, { caller, status: ACTIVE_ONLY, namespace }));
   }
 
-  private async list(query: DefinitionQuery): Promise<Metafield[]> {
+  private async list(query: DefinitionQuery): Promise<Definition[]> {
     const rows = await inFieldOrder(query.read, this.fields.name).select('*');
     return rows.flatMap((row) => this.readField(row) ?? []);
   }
 
   /** A stored definition, or null for one that can't be read even with its type's defaults. */
-  private readField(row: Readonly<Record<string, unknown>>): Metafield | null {
+  private readField(row: Readonly<Record<string, unknown>>): Definition | null {
     return readStoredField(
       row,
       { asStored: metafieldCodec, withDefaults: metafieldCodecWithDefaults },
@@ -201,7 +201,7 @@ export class MetafieldDefinitionsService {
     key: Key,
     caller: Caller,
     executor: Knex = this.knex,
-  ): Promise<Metafield> {
+  ): Promise<Definition> {
     const [field] = await this.list(
       this.fields.definitions(executor, {
         caller,
@@ -233,7 +233,7 @@ export class MetafieldDefinitionsService {
     namespace: Namespace,
     input: unknown,
     executor: Knex = this.knex,
-  ): Promise<Metafield[]> {
+  ): Promise<Definition[]> {
     return this.tracking.definition('create', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const requestedCount = Array.isArray(input) ? input.length : 0;
@@ -268,7 +268,7 @@ export class MetafieldDefinitionsService {
         return base;
       });
 
-      let created: Metafield[];
+      let created: Definition[];
       try {
         created = await ensureTransaction(executor, async (trx) => {
           await this.assertRoom(trx, namespace, fields.length);
@@ -394,7 +394,7 @@ export class MetafieldDefinitionsService {
     namespace: Namespace,
     input: unknown,
     executor: Knex = this.knex,
-  ): Promise<Metafield[]> {
+  ): Promise<Definition[]> {
     return this.tracking.definition('reorder', async () => {
       await this.namespaces.assertChangeable(namespace);
       const parsed = ReorderInput.safeParse(input);
@@ -471,7 +471,7 @@ export class MetafieldDefinitionsService {
   }
 
   /** Read back a batch in the order its keys were created, not the table's order. */
-  private async readMany(db: Knex, namespace: Namespace, keys: Key[]): Promise<Metafield[]> {
+  private async readMany(db: Knex, namespace: Namespace, keys: Key[]): Promise<Definition[]> {
     const rows = await this.fields
       .table(db)
       .where('namespace', namespace)
@@ -696,7 +696,7 @@ export class MetafieldDefinitionsService {
   private async lockedField(
     trx: Knex.Transaction,
     field: FieldIdentity,
-  ): Promise<Metafield | null> {
+  ): Promise<Definition | null> {
     const row = await this.fields
       .table(trx)
       .where({ namespace: field.namespace, key: field.key })

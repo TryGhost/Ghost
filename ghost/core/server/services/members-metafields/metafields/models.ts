@@ -5,7 +5,7 @@ import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 import { FieldStatusSchema } from './schema';
 
 // Its type and settings are one value, so a field can't carry settings its type doesn't take.
-export const Metafield = withTypedSettings(
+export const Definition = withTypedSettings(
   {
     id: z.string(),
     namespace: NamespaceSchema,
@@ -18,4 +18,4 @@ export const Metafield = withTypedSettings(
   },
   READ_SETTINGS,
 );
-export type Metafield = z.infer<typeof Metafield>;
+export type Definition = z.infer<typeof Definition>;

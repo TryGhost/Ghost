@@ -3,7 +3,7 @@ import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { type Identity, IdentitySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { parseRequest } from '../../lib/parse-request';
-import { Metafield } from './metafields/models';
+import { Definition } from './metafields/models';
 
 const NamespaceRoute = z.object({ namespace: NamespaceSchema });
 
@@ -23,7 +23,7 @@ export function fieldRoute(options: unknown): Identity {
 const MetafieldsResponse = z.object({ members_metafields: z.array(MetafieldDefinitionSchema) });
 
 export const toMetafieldsResponse = z
-  .array(Metafield)
+  .array(Definition)
   .transform((fields): z.input<typeof MetafieldsResponse> => ({
     members_metafields: fields.map(({ createdAt, updatedAt, ...field }) => ({
       ...snakeKeys(field),
