@@ -33,27 +33,13 @@ const newsletterBasicCache = {
   },
 };
 
-// Moderation can change a filtered set (for example Status=Published) without
-// changing the overall number of comments. Those queries must reflect the
-// refetch Admin triggers after moderation rather than an older host-cache entry.
-const commentsStatsCache = {
-  get(key, getResponse) {
-    return JSON.parse(key).options.filter ? undefined : statsCache.get(key, getResponse);
-  },
-  set(key, response) {
-    if (!JSON.parse(key).options.filter) {
-      return statsCache.set(key, response);
-    }
-  },
-};
-
 /**
- * A comments stats method; its cache key covers exactly the options it accepts
- * @param {string} method
+ * Comment stats bypass the host cache so refetches after moderation return fresh
+ * totals and rankings, including in the unfiltered view.
  * @param {'getCommentsOverview' | 'getCommentsTopPosts' | 'getCommentsTopCommenters'} serviceMethod
  * @param {string[]} [extraOptions]
  */
-function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
+function commentsStatsEndpoint(serviceMethod, extraOptions = []) {
   const options = ['date_from', 'date_to', 'timezone', 'filter', ...extraOptions];
   return {
     headers: {
@@ -63,14 +49,6 @@ function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
     permissions: {
       docName: 'comments',
       method: 'browse',
-    },
-    cache: commentsStatsCache,
-    generateCacheKeyData(frame) {
-      return {
-        method,
-        filters: true,
-        options: Object.fromEntries(options.map((option) => [option, frame.options[option]])),
-      };
     },
     async query(frame) {
       const result = await statsService.service.api[serviceMethod](frame.options);
@@ -205,13 +183,9 @@ const controller = {
       return await statsService.service.api.getTopContent(frame.options);
     },
   },
-  commentsOverview: commentsStatsEndpoint('commentsOverview', 'getCommentsOverview'),
-  commentsTopPosts: commentsStatsEndpoint('commentsTopPosts', 'getCommentsTopPosts', ['limit']),
-  commentsTopCommenters: commentsStatsEndpoint(
-    'commentsTopCommenters',
-    'getCommentsTopCommenters',
-    ['limit'],
-  ),
+  commentsOverview: commentsStatsEndpoint('getCommentsOverview'),
+  commentsTopPosts: commentsStatsEndpoint('getCommentsTopPosts', ['limit']),
+  commentsTopCommenters: commentsStatsEndpoint('getCommentsTopCommenters', ['limit']),
   topPosts: {
     headers: {
       cacheInvalidate: false,

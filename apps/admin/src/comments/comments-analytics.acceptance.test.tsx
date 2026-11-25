@@ -990,6 +990,32 @@ describe('Comments analytics', () => {
     await expect.element(commentsScreen.errorMessage()).not.toBeInTheDocument();
   });
 
+  it.each([
+    {
+      endpoint: '',
+      stats: [{ ...overview.stats[0], totals: { ...totals(12, 7, 2), comments: 'invalid' } }],
+    },
+    { endpoint: 'top-posts/', stats: [{ post_id: 'post1', title: 'A post', comments: 'invalid' }] },
+    {
+      endpoint: 'top-commenters/',
+      stats: [{ member_id: 'member1', name: 'A reader', comments: 1, avatar_image: 42 }],
+    },
+  ])('rejects malformed analytics responses from $endpoint', async ({ endpoint, stats }) => {
+    fakeComments([comment({ html: '<p>Still listed with malformed analytics</p>' })]);
+    fakeCommentsStats();
+    fakeAdminEndpoint('GET', new RegExp(`^/stats/comments/${endpoint}\\?`), {
+      meta: { filters: true },
+      stats,
+    });
+    await renderAdminApp('/comments', { labs });
+
+    await expect
+      .element(commentsScreen.commentRow('Still listed with malformed analytics'))
+      .toBeVisible();
+    await expect.element(commentsScreen.analyticsError()).toBeVisible();
+    await expect.element(commentsScreen.analyticsRetryButton()).toBeVisible();
+  });
+
   it('shows a retry for other errors', async () => {
     fakeComments([comment()]);
     const stats = {

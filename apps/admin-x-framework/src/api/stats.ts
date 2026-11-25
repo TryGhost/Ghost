@@ -1,6 +1,7 @@
 import { createQuery, createQueryWithId } from '../utils/api/hooks';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
 
 // Types
 
@@ -224,48 +225,51 @@ export type SubscriptionStatsResponseType = {
 
 // Requests
 
-export type CommentsStatsTotals = {
-  comments: number;
-  commenters: number;
-  reported: number;
-};
+const commentsStatsTotalsSchema = z.object({
+  comments: z.number(),
+  commenters: z.number(),
+  reported: z.number(),
+});
+const commentsStatsIntervalSchema = z.enum(['day', 'week', 'month']);
+const commentsStatsMetaSchema = z.object({ filters: z.boolean().optional() }).optional();
+const commentsOverviewStatsSchema = z.object({
+  totals: commentsStatsTotalsSchema,
+  previous_totals: commentsStatsTotalsSchema,
+  interval: commentsStatsIntervalSchema,
+  series: z.array(commentsStatsTotalsSchema.extend({ date: z.string() })),
+});
+const commentsOverviewResponseSchema = z.object({
+  stats: z.array(commentsOverviewStatsSchema),
+  meta: commentsStatsMetaSchema,
+});
+const commentsTopPostSchema = z.object({
+  post_id: z.string(),
+  title: z.string(),
+  comments: z.number(),
+});
+const commentsTopPostsResponseSchema = z.object({
+  stats: z.array(commentsTopPostSchema),
+  meta: commentsStatsMetaSchema,
+});
+const commentsTopCommenterSchema = z.object({
+  member_id: z.string(),
+  name: z.string().nullable(),
+  avatar_image: z.string().nullable().optional(),
+  comments: z.number(),
+});
+const commentsTopCommentersResponseSchema = z.object({
+  stats: z.array(commentsTopCommenterSchema),
+  meta: commentsStatsMetaSchema,
+});
 
-export type CommentsStatsInterval = 'day' | 'week' | 'month';
-
-export type CommentsOverviewStats = {
-  totals: CommentsStatsTotals;
-  previous_totals: CommentsStatsTotals;
-  interval: CommentsStatsInterval;
-  series: (CommentsStatsTotals & { date: string })[];
-};
-
-export type CommentsOverviewResponseType = {
-  stats: CommentsOverviewStats[];
-  meta?: { filters?: boolean };
-};
-
-export type CommentsTopPostItem = {
-  post_id: string;
-  title: string;
-  comments: number;
-};
-
-export type CommentsTopPostsResponseType = {
-  stats: CommentsTopPostItem[];
-  meta?: { filters?: boolean };
-};
-
-export type CommentsTopCommenterItem = {
-  member_id: string;
-  name: string | null;
-  avatar_image?: string | null;
-  comments: number;
-};
-
-export type CommentsTopCommentersResponseType = {
-  stats: CommentsTopCommenterItem[];
-  meta?: { filters?: boolean };
-};
+export type CommentsStatsTotals = z.infer<typeof commentsStatsTotalsSchema>;
+export type CommentsStatsInterval = z.infer<typeof commentsStatsIntervalSchema>;
+export type CommentsOverviewStats = z.infer<typeof commentsOverviewStatsSchema>;
+export type CommentsOverviewResponseType = z.infer<typeof commentsOverviewResponseSchema>;
+export type CommentsTopPostItem = z.infer<typeof commentsTopPostSchema>;
+export type CommentsTopPostsResponseType = z.infer<typeof commentsTopPostsResponseSchema>;
+export type CommentsTopCommenterItem = z.infer<typeof commentsTopCommenterSchema>;
+export type CommentsTopCommentersResponseType = z.infer<typeof commentsTopCommentersResponseSchema>;
 
 export const commentsStatsDataTypes = [
   'CommentsOverviewResponseType',
@@ -442,14 +446,17 @@ export const usePostMemberCounts = (postIds: string[], { enabled = true } = {}) 
 export const useCommentsOverview = createQuery<CommentsOverviewResponseType>({
   dataType: 'CommentsOverviewResponseType',
   path: '/stats/comments/',
+  parseResponse: (data) => commentsOverviewResponseSchema.parse(data),
 });
 
 export const useCommentsTopPosts = createQuery<CommentsTopPostsResponseType>({
   dataType: 'CommentsTopPostsResponseType',
   path: '/stats/comments/top-posts/',
+  parseResponse: (data) => commentsTopPostsResponseSchema.parse(data),
 });
 
 export const useCommentsTopCommenters = createQuery<CommentsTopCommentersResponseType>({
   dataType: 'CommentsTopCommentersResponseType',
   path: '/stats/comments/top-commenters/',
+  parseResponse: (data) => commentsTopCommentersResponseSchema.parse(data),
 });

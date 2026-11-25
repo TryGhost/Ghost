@@ -304,7 +304,7 @@ describe('Stats service root', function () {
     sinon.assert.notCalled(adapter.set);
   });
 
-  it('returns fresh filtered stats after hide/show while retaining the unfiltered host cache', async function () {
+  it('returns fresh comment stats after moderation with or without filters when host caching is enabled', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
     const api = buildAdminMethods();
@@ -328,8 +328,8 @@ describe('Stats service root', function () {
 
       assert.deepEqual(await api[name](options), expected(1));
       published = 0;
-      assert.deepEqual(await api[name](options), expected(1));
-      sinon.assert.calledOnce(query);
+      assert.deepEqual(await api[name](options), expected(0));
+      sinon.assert.calledTwice(query);
 
       published = 1;
       const filtered = { ...options, filter: 'status:published' };
@@ -338,13 +338,12 @@ describe('Stats service root', function () {
       assert.deepEqual(await api[name](filtered), expected(0));
       published = 1; // Show
       assert.deepEqual(await api[name](filtered), expected(1));
-      assert.equal(query.callCount, 4);
+      assert.equal(query.callCount, 5);
     }
 
-    assert.equal(entries.size, 3, 'only unfiltered responses reach the host cache');
-    for (const key of entries.keys()) {
-      assert.equal(JSON.parse(key).filters, true, 'old cache entries lack the support marker');
-    }
+    assert.equal(entries.size, 0, 'moderation-sensitive responses never reach the host cache');
+    sinon.assert.notCalled(adapter.get);
+    sinon.assert.notCalled(adapter.set);
   });
 
   it('runs a stats request built by the API pipeline once per call without a stats cache', async function () {
