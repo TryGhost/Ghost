@@ -4,9 +4,11 @@ import { createTestQueryClient, renderHookWithProviders } from '../../../src/tes
 import {
   postsDataType,
   useAddPost,
+  useCancelContentCSV,
   useEditPost,
   useEditorPost,
   useImportContentCSV,
+  useInspectContentCSV,
   usePost,
 } from '../../../src/api/posts';
 import { searchIndexQueryMeta } from '../../../src/api/search-index';
@@ -158,6 +160,34 @@ describe('posts api', () => {
       globalThis.fetch = originalFetch;
       vi.useRealTimers();
     }
+  });
+
+  it('inspects a file and confirms it by ID without reuploading the file', async () => {
+    const file = new File(['title\nHello'], 'posts.csv', { type: 'text/csv' });
+    const preview = { upload_id: 'upload-id', columns: ['title'], rows: [{ title: 'Hello' }] };
+    await withMockFetch({ json: { meta: preview } }, async (mock) => {
+      const { result } = renderHookWithProviders(() => ({
+        inspect: useInspectContentCSV(),
+        confirm: useImportContentCSV(),
+        cancel: useCancelContentCSV(),
+      }));
+      await act(async () => {
+        expect(await result.current.inspect.mutateAsync(file)).toEqual({ meta: preview });
+        await result.current.confirm.mutateAsync({
+          uploadId: preview.upload_id,
+          mapping: { title: 'title', ignored: '' },
+        });
+        await result.current.cancel.mutateAsync(preview.upload_id);
+      });
+      expect(mock.calls[0][0]).toContain('/posts/upload/inspect/');
+      expect(mock.calls[0][1].body.get('postsfile')).toBe(file);
+      expect(mock.calls[1][0]).toContain('/posts/upload/');
+      expect(mock.calls[1][1].body.get('postsfile')).toBeNull();
+      expect(mock.calls[1][1].body.get('upload_id')).toBe(preview.upload_id);
+      expect(mock.calls[1][1].body.get('mapping[ignored]')).toBe('');
+      expect(mock.calls[2][0]).toContain('/posts/upload/inspect/upload-id/');
+      expect(mock.calls[2][1].method).toBe('DELETE');
+    });
   });
 
   it('creates a draft through the posts endpoint with the write contract params', async () => {

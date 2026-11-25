@@ -19,6 +19,7 @@ export type Config = {
   database: string;
   blogUrl?: string;
   labs: Record<string, boolean>;
+  contentImport?: { stagedInspection?: boolean };
   stripeDirect: boolean;
   mail: string;
   stats?: JSONObject & {

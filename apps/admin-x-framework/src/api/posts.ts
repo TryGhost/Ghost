@@ -208,18 +208,47 @@ export const useCopyPost = createMutation<PostsResponseType, string>({
   path: (id) => `/posts/${id}/copy/`,
 });
 
-export interface ImportContentCSVPayload {
-  file: File;
-  mapping: Record<string, string>;
+export type ImportContentCSVPayload = { mapping: Record<string, string> } & (
+  | { file: File; uploadId?: never }
+  | { uploadId: string; file?: never }
+);
+
+export interface StagedCSVInspection {
+  upload_id: string;
+  columns: string[];
+  rows: Record<string, string>[];
 }
+
+type CSVInspectionResponse = { meta: StagedCSVInspection } | { meta?: never };
+
+export const useInspectContentCSV = createMutation<CSVInspectionResponse, File>({
+  method: 'POST',
+  retry: false,
+  path: () => '/posts/upload/inspect/',
+  body: (file) => {
+    const formData = new FormData();
+    formData.append('postsfile', file);
+    return formData;
+  },
+});
+
+export const useCancelContentCSV = createMutation<unknown, string>({
+  method: 'DELETE',
+  retry: false,
+  path: (uploadId) => `/posts/upload/inspect/${encodeURIComponent(uploadId)}/`,
+});
 
 export const useImportContentCSV = createMutation<unknown, ImportContentCSVPayload>({
   method: 'POST',
   retry: false,
   path: () => '/posts/upload/',
-  body: ({ file, mapping }) => {
+  body: ({ file, uploadId, mapping }) => {
     const formData = new FormData();
-    formData.append('postsfile', file);
+    if (file) {
+      formData.append('postsfile', file);
+    } else {
+      formData.append('upload_id', uploadId);
+    }
     for (const [header, field] of Object.entries(mapping)) {
       formData.append(`mapping[${header}]`, field);
     }
