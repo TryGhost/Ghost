@@ -273,6 +273,22 @@ describe('createAppTokenHolder', () => {
     });
   });
 
+  it('tries a failed renewal again a minute later when the browser’s clock goes back meanwhile', async () => {
+    const renew = vi
+      .fn<() => Promise<ReturnType<typeof tokenExpiringIn>>>()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(tokenExpiringIn(HOUR, 'ghost_app_renewed'));
+    const { holder, start } = holderWith(renew);
+    start();
+
+    expect(await holder.renew()).toBe(false);
+    vi.setSystemTime(Date.now() - HOUR);
+    await vi.advanceTimersByTimeAsync(MINUTE);
+
+    expect(renew).toHaveBeenCalledTimes(2);
+    expect(await tokenOf(holder)).toBe('ghost_app_renewed');
+  });
+
   it('keeps renewing on schedule when the browser’s clock jumps mid-life', async () => {
     const renew = vi.fn(() => Promise.resolve(tokenExpiringIn(HOUR, 'ghost_app_renewed')));
     const { start } = holderWith(renew);

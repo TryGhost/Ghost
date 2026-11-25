@@ -90,6 +90,7 @@ export function createAppTokenHolder({
   let timer: ReturnType<typeof setTimeout> | undefined;
   let renewing: Promise<boolean> | undefined;
   let failures = 0;
+  // By `performance.now()`, so a change to the browser's clock doesn't stretch the backoff
   let failedAt = 0;
   // Ghost refused a renewal while the holder was stopped, which ends the session once started
   let endedWhileStopped = false;
@@ -103,7 +104,7 @@ export function createAppTokenHolder({
   const untilRenewal = () => expiresAt - RENEW_BEFORE_EXPIRY_MS - Date.now();
   const scheduleRetry = () => {
     if (failures < MAX_TIMED_RENEWALS) {
-      schedule(failedAt + RETRY_MS * 2 ** (failures - 1) - Date.now());
+      schedule(failedAt + RETRY_MS * 2 ** (failures - 1) - performance.now());
     } else {
       clearTimeout(timer);
       timer = undefined;
@@ -141,7 +142,7 @@ export function createAppTokenHolder({
       if (renewing) {
         return renewing;
       }
-      if (ended || !renewal || (failures > 0 && Date.now() - failedAt < RETRY_MS)) {
+      if (ended || !renewal || (failures > 0 && performance.now() - failedAt < RETRY_MS)) {
         return Promise.resolve(false);
       }
       renewing = renewal
@@ -174,7 +175,7 @@ export function createAppTokenHolder({
             onError(error);
           }
           failures += 1;
-          failedAt = Date.now();
+          failedAt = performance.now();
           scheduleRetry();
           return false;
         })
