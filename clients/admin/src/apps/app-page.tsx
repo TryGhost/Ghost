@@ -539,7 +539,9 @@ const ActiveApp: React.FC<{
 
 /**
  * A suspended app doesn't load. The review of its changes opens over the page straight away. The
- * page behind it explains why, and has a button to reopen the review once it's closed.
+ * page behind it explains why, and has a button to review the changes once it's closed. The button
+ * opens the app again, which re-checks its manifest, so changes withdrawn in the meantime resume
+ * the app rather than leaving a review with nothing in it.
  *
  * Approving starts a new session. So does a review that finds the changes already approved, for
  * example from another tab. If the review finds the app was uninstalled in the meantime, it offers
@@ -547,10 +549,11 @@ const ActiveApp: React.FC<{
  * meantime, it has found a different installation. Either way, the page opens that installation
  * instead.
  */
-const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () => void }> = ({
-  installation,
-  onApproved,
-}) => {
+const NeedsApproval: React.FC<{
+  installation: AppInstallation;
+  onApproved: () => void;
+  onReview: () => void;
+}> = ({ installation, onApproved, onReview }) => {
   const navigate = useNavigate();
   const [reviewing, setReviewing] = useState(true);
   const onDone = (done: InstallDone | undefined) => {
@@ -563,7 +566,7 @@ const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () =>
   return (
     <Centered testId="app-needs-approval">
       <EmptyIndicator
-        actions={<Button onClick={() => setReviewing(true)}>Review changes</Button>}
+        actions={<Button onClick={onReview}>Review changes</Button>}
         description="It’s been updated and needs your approval before it can open."
         title={`${installation.manifest.name} needs approval`}
       >
@@ -755,7 +758,7 @@ export const AppPage: React.FC = () => {
   } else if (installation?.status === 'suspended') {
     body = (
       <WithAppFooter app={installation}>
-        <NeedsApproval installation={installation} onApproved={restart} />
+        <NeedsApproval installation={installation} onApproved={restart} onReview={restart} />
       </WithAppFooter>
     );
   } else if (blocked) {

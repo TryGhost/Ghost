@@ -451,9 +451,31 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(currentRoute()).toBe(APP_ROUTE);
     expect(approveApi.requests).toHaveLength(1);
-    // Approving starts a new session, pinned to the approved revision.
-    expect(sessionsApi.requests).toHaveLength(2);
+    // Reopening the review re-checks the app in a new session, and approving starts another,
+    // pinned to the approved revision.
+    expect(sessionsApi.requests).toHaveLength(3);
     expect((await appState()).context?.session).toEqual({ revision: 2 });
+  });
+
+  it('loads a suspended app when its changes were withdrawn after the review was closed', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi, set } = await fakeAppPage(suspended);
+    const reviewApi = fakeReview();
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    await appsScreen.cancelButton().click();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+
+    // The developer reverts the manifest, so the next session's re-check resumes the app.
+    set(installation({ revision: 2 }));
+    await appsScreen.reviewChangesButton().click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    expect(currentRoute()).toBe(APP_ROUTE);
+    expect(sessionsApi.requests).toHaveLength(2);
+    expect(reviewApi.requests).toHaveLength(1);
   });
 
   it('loads a suspended app once the review finds its changes already approved', async () => {
