@@ -160,7 +160,6 @@ export class AppInstallationsService {
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
   private sessionTokens: AppSessionTokens;
-  private logging: Pick<GhostLogger, 'error'>;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -188,7 +187,6 @@ export class AppInstallationsService {
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
-    this.logging = logging;
     this.sessionTokens = new AppSessionTokens({
       appTokens,
       findInstallation: (id) => this.currentInstallation(id),
@@ -272,7 +270,7 @@ export class AppInstallationsService {
     // A deadlock rolls back the whole transaction, so only one this command opened can be run
     // again. A caller's transaction is the caller's to retry.
     const installation = await (transactionOf(executor) ? install() : retryOnDeadlock(install));
-    await this.keepClientInStepOnCommit(executor, installation);
+    await this.keepClientInStepOnCommit(executor, installation.id);
     return installation;
   }
 
@@ -335,7 +333,7 @@ export class AppInstallationsService {
       throw await this.changedSinceReview(checked, id);
     }
     const approved = await this.read(id, { executor });
-    await this.keepClientInStepOnCommit(executor, approved);
+    await this.keepClientInStepOnCommit(executor, id);
     return approved;
   }
 
@@ -349,7 +347,7 @@ export class AppInstallationsService {
     await this.recheck(id);
     const installation = await this.read(id);
     // A re-check that suspended the app, or an uninstall, ends its tokens
-    await this.sessionTokens.keepClientInStep(installation);
+    await this.sessionTokens.keepClientInStep(id);
     // Uninstalled after the re-check, or during a re-check this session shared.
     if (installation.status === 'uninstalled') {
       throw notInstalled();
@@ -377,7 +375,7 @@ export class AppInstallationsService {
    * plain read yet; given a plain connection it opens its own.
    */
   async uninstall(context: RequestContext, id: string, executor: Knex = this.knex): Promise<void> {
-    const ended = await ensureTransaction(executor, async (transacting) => {
+    await ensureTransaction(executor, async (transacting) => {
       // Before any plain read, which would fix the snapshot and miss a manifest applied meanwhile.
       await this.repository.lock(id, { transacting });
       const installation = await this.read(id, { executor: transacting });
@@ -389,28 +387,23 @@ export class AppInstallationsService {
           new AppUninstalled(installation, await this.read(id, { executor: transacting })),
         );
       }
-      return installation;
     });
-    await this.keepClientInStepOnCommit(executor, { ...ended, status: 'uninstalled' });
+    await this.keepClientInStepOnCommit(executor, id);
   }
 
   /**
    * Brings the installation's OAuth client in step with a change once it's committed. A
    * transaction this command opened has committed by now; a caller's commits later, so the
-   * client follows when it does, from the installation as committed, and stays as it was if
-   * the caller rolls back.
+   * client follows when it does, and stays as it was if the caller rolls back.
    */
-  private async keepClientInStepOnCommit(executor: Knex, installation: Installation) {
+  private async keepClientInStepOnCommit(executor: Knex, id: string) {
     const transaction = transactionOf(executor);
     if (!transaction) {
-      await this.sessionTokens.keepClientInStep(installation);
+      await this.sessionTokens.keepClientInStep(id);
       return;
     }
     transaction.executionPromise.then(
-      () =>
-        this.read(installation.id)
-          .then((committed) => this.sessionTokens.keepClientInStep(committed))
-          .catch((err) => this.logging.error(err)),
+      () => this.sessionTokens.keepClientInStep(id),
       // Rolled back: nothing changed
       () => {},
     );

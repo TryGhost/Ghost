@@ -3,6 +3,7 @@ import { AppSessionTokens } from '../../../../../core/server/services/app-instal
 import type { Installation } from '../../../../../core/server/services/app-installations/codec';
 import type { AppTokens } from '../../../../../core/server/auth/better-auth/app-tokens';
 import type { Principal } from '../../../../../core/server/auth/principal';
+import { reconcileAppUserClient } from '../../../../../core/server/auth/better-auth/plugins/app-clients';
 
 const principal: Principal = {
   kind: 'user',
@@ -242,5 +243,130 @@ describe('App session tokens', function () {
       null,
     );
     assert.deepEqual(tokens.reconciled, [{ id: 'installation-id', active: false }]);
+  });
+
+  describe('with the real client reconcile', function () {
+    /**
+     * An installation whose changes are committed one at a time, with a client row and token
+     * store in memory behind the real reconcile.
+     */
+    function site() {
+      let installation: Installation | undefined = installationAt('active');
+      let client: Record<string, unknown> | undefined;
+      let tokens: string[] = [];
+      let next = 0;
+      let stalled: Promise<void> | undefined;
+      const adapter = {
+        findOne: async () => (client ? { ...client } : null),
+        create: async ({ data }: { data: Record<string, unknown> }) => {
+          client = { ...data };
+        },
+        update: async ({ update }: { update: Record<string, unknown> }) => {
+          client = { ...client, ...update };
+        },
+        deleteMany: async () => {
+          tokens = [];
+        },
+      };
+      const sessionTokens = new AppSessionTokens({
+        appTokens: {
+          availability: () => 'ready',
+          reconcileClient: async ({ id, active, scopes }) => {
+            const stall = stalled;
+            stalled = undefined;
+            await stall;
+            await reconcileAppUserClient(adapter as never, { installationId: id, active, scopes });
+          },
+          issue: async () => {
+            if (!client || client.disabled !== false) {
+              return { refused: 'client_unavailable' };
+            }
+            next += 1;
+            const accessToken = `ghost_app_${next}`;
+            tokens.push(accessToken);
+            return { accessToken, expiresIn: 3600 };
+          },
+          validate: async () => null,
+        },
+        findInstallation: async () => (installation ? { ...installation } : undefined),
+        logging: {
+          error(err: unknown) {
+            throw err;
+          },
+        },
+      });
+      return {
+        sessionTokens,
+        commit(change: Partial<Installation>) {
+          installation = { ...installation!, ...change, revision: installation!.revision + 1 };
+          return { ...installation };
+        },
+        uninstall() {
+          installation = undefined;
+        },
+        /** Holds the next reconcile between reading the installation and writing the client. */
+        stallNextReconcile() {
+          let release!: () => void;
+          stalled = new Promise((resolve) => {
+            release = resolve;
+          });
+          return release;
+        },
+        isValid: (token: string) => tokens.includes(token),
+        clientDisabled: () => client?.disabled !== false,
+      };
+    }
+
+    const staff = { userId: 'user-id', sessionId: 'session-id' };
+
+    it('keeps a token issued after the installation was approved again', async function () {
+      const { sessionTokens, commit, isValid } = site();
+      commit({});
+      await sessionTokens.keepClientInStep('installation-id');
+      commit({ status: 'suspended' });
+      const approved = commit({ status: 'active' });
+      await sessionTokens.keepClientInStep('installation-id');
+      const token = await sessionTokens.issue(approved, staff);
+      assert.ok(token);
+
+      // The reconcile requested by the suspension runs last
+      await sessionTokens.keepClientInStep('installation-id');
+
+      assert.equal(isValid(token.access_token), true);
+    });
+
+    it('renews a token deleted by a reconcile that stalled after reading a suspension', async function () {
+      const { sessionTokens, commit, isValid, stallNextReconcile } = site();
+      commit({});
+      await sessionTokens.keepClientInStep('installation-id');
+      commit({ status: 'suspended' });
+      const release = stallNextReconcile();
+      const stale = sessionTokens.keepClientInStep('installation-id');
+      const approved = commit({ status: 'active' });
+      await sessionTokens.keepClientInStep('installation-id');
+      const token = await sessionTokens.issue(approved, staff);
+      assert.ok(token);
+      release();
+      await stale;
+      assert.equal(isValid(token.access_token), false);
+
+      const renewed = await sessionTokens.renew('installation-id', approved.revision, principal);
+
+      assert.equal(isValid(renewed.access_token), true);
+    });
+
+    it('disables the client and deletes its tokens once the installation is uninstalled', async function () {
+      const { sessionTokens, commit, uninstall, isValid, clientDisabled } = site();
+      const active = commit({});
+      await sessionTokens.keepClientInStep('installation-id');
+      const token = await sessionTokens.issue(active, staff);
+      assert.ok(token);
+
+      uninstall();
+      await sessionTokens.keepClientInStep('installation-id');
+
+      assert.equal(clientDisabled(), true);
+      assert.equal(isValid(token.access_token), false);
+    });
   });
 });

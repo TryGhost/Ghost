@@ -140,7 +140,7 @@ export class AppSessionTokens {
           return null;
         }
         if (retry) {
-          await this.keepClientInStep(current);
+          await this.reconcileClient(current.id, current);
           return this.issueOnce(installation, staff, atRevision, { retry: false });
         }
       }
@@ -163,7 +163,7 @@ export class AppSessionTokens {
     if (current?.status === 'active') {
       return current;
     }
-    await this.keepClientInStep(current ?? { ...installation, status: 'uninstalled' });
+    await this.reconcileClient(installation.id, current);
     if (!current) {
       throw notInstalled();
     }
@@ -192,17 +192,32 @@ export class AppSessionTokens {
   }
 
   /**
-   * Brings the installation's OAuth client in step once its own change has been made, outside
-   * its transaction. A failure is logged rather than failing that change: every call with a
-   * token checks the installation, so a client out of step grants nothing, and the next run
-   * heals it. A client of an installation that isn't active is disabled and its tokens deleted.
+   * Brings the installation's OAuth client in step with it as it is now, once a change to it
+   * has been made, outside that change's transaction. A failure is logged rather than failing
+   * the change: every call with a token checks the installation, so a client out of step
+   * grants nothing, and the next run heals it. A client of an installation that isn't active,
+   * or has been uninstalled, is disabled and its tokens deleted.
    */
-  async keepClientInStep(installation: Installation): Promise<void> {
+  async keepClientInStep(id: string): Promise<void> {
+    let installation: Installation | undefined;
+    try {
+      // Not atomic with the client write: a run that stalls after this read can still land
+      // after a newer one and delete a token issued since, which the app's renewal recovers.
+      installation = await this.findInstallation(id);
+    } catch (err) {
+      this.logging.error(err);
+      return;
+    }
+    await this.reconcileClient(id, installation);
+  }
+
+  /** Brings the client in step with an installation just read, undefined if uninstalled. */
+  private async reconcileClient(id: string, installation: Installation | undefined) {
     try {
       await this.appTokens.reconcileClient({
-        id: installation.id,
-        active: installation.status === 'active',
-        scopes: installation.manifest.scopes,
+        id,
+        active: installation?.status === 'active',
+        scopes: installation?.manifest.scopes ?? [],
       });
     } catch (err) {
       this.logging.error(err);
