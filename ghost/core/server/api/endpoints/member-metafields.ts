@@ -1,6 +1,6 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import { actingContext } from '../../lib/actor';
-import { booted } from '../../services/members-metafields';
+import { booted, changedForMembers } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
 const permissionsService = require('../../auth/permissions');
@@ -133,10 +133,13 @@ const controller = {
       );
       // Tiers list to anyone the field a port writes into while members can read it, so the site's
       // cache is cleared when an edit starts or stops that for a field a port writes into.
-      if (edited.changedForMembers && (await booted().bindings.isBound(field))) {
+      if (
+        changedForMembers(booted().namespaces, edited) &&
+        (await booted().bindings.isBound(field))
+      ) {
         frame.setHeader('X-Cache-Invalidate', '/*');
       }
-      return edited.field;
+      return edited.next;
     },
   },
 

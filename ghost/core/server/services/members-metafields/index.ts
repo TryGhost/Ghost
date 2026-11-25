@@ -2,9 +2,10 @@ import errors from '@tryghost/errors';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { recordMemberDefinitionChanges } from '../../lib/action-log/custom-fields';
 import { limitService } from '../limits';
-import { MetafieldDefinitionsService } from './custom-fields/definitions-service';
+import { MetafieldDefinitionsService } from './metafields/definitions-service';
 import { MemberMetafieldValues } from './member-values';
 import { MEMBERS_RESOURCE } from './members-resource';
+export { changedForMembers } from './members-resource';
 import { MetafieldBindingsService } from './bindings-service';
 import { resolveMaxDefinitions } from './custom-fields/config';
 import { customFields, memberAccessPolicy } from './custom-fields/namespace';
@@ -25,7 +26,8 @@ export {
   type Refusal,
 } from './metafields/values-service';
 export type { MetafieldBindingsService } from './bindings-service';
-export type { MetafieldDefinitionsService } from './custom-fields/definitions-service';
+/** The members' definitions, read and changed for every namespace. */
+export type MemberDefinitions = MetafieldDefinitionsService<Caller>;
 export { adminWriteOrigin } from './write-origin';
 export type { BoundField } from './bindings-service';
 export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
@@ -48,7 +50,7 @@ export { MEMBER_ACCESS, type Caller, type MemberAccess } from './callers';
 export let namespaces: Namespaces<Caller> | undefined;
 /** The fields as this site reads them, for every read here and in the domains that join them. */
 export let fields: FieldSource | undefined;
-export let definitions: MetafieldDefinitionsService | undefined;
+export let definitions: MemberDefinitions | undefined;
 export let values: MemberMetafieldValues | undefined;
 export let bindings: MetafieldBindingsService | undefined;
 
@@ -58,7 +60,7 @@ export let bindings: MetafieldBindingsService | undefined;
  */
 export function booted(): {
   namespaces: Namespaces<Caller>;
-  definitions: MetafieldDefinitionsService;
+  definitions: MemberDefinitions;
   values: MemberMetafieldValues;
   bindings: MetafieldBindingsService;
 } {

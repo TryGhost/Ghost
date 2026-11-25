@@ -3,9 +3,14 @@ import type { Knex } from 'knex';
 import { FieldTypeSchema, type MetafieldChangeEntry } from '@tryghost/metafield-types';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 import { DbDate } from '../../lib/db-types/date';
+import type { Caller } from './callers';
+import type { EditedDefinition } from './metafields/definitions-service';
 import { metafieldsRelation } from './metafields/filter';
+import type { Definition } from './metafields/models';
+import type { Namespaces } from './metafields/namespaces';
 import type { MetafieldResource } from './metafields/resource';
 import {
+  FIELD_STATUS,
   DbMetafieldChangeEvent,
   DbMetafieldValue,
   type FieldsTable,
@@ -29,6 +34,28 @@ export const MEMBERS_RESOURCE: MetafieldResource = {
  * the member's values.
  */
 export const METAFIELDS_RELATION = metafieldsRelation(MEMBERS_RESOURCE);
+
+/**
+ * Whether an edit started or stopped members reading the definition: archiving or restoring it,
+ * or keeping it from members or opening it to them. An edit is only made while the namespace is
+ * available, so availability can't differ between the two.
+ */
+export function changedForMembers(
+  namespaces: Pick<Namespaces<Caller>, 'canRead'>,
+  { previous, next }: EditedDefinition,
+): boolean {
+  return readByMembers(namespaces, previous) !== readByMembers(namespaces, next);
+}
+
+function readByMembers(namespaces: Pick<Namespaces<Caller>, 'canRead'>, definition: Definition) {
+  return (
+    definition.status === FIELD_STATUS.active &&
+    namespaces.canRead('members', {
+      namespace: definition.namespace,
+      memberAccess: definition.access.member,
+    })
+  );
+}
 
 /** The column a member's values and change events hold the member's id in. */
 type OwnedByMember = { member_id: string };
