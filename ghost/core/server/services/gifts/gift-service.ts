@@ -13,7 +13,7 @@ import type {
 } from './gift-bookshelf-repository';
 import type { GiftDeliveryDispatchResult, GiftDeliveryService } from './gift-delivery-service';
 import type { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
-import { GiftCadenceSchema, type GiftCadence } from './gift-schema';
+import type { GiftCadence } from './gift-schema';
 import tpl from '@tryghost/tpl';
 import {
   GIFT_MAX_SCHEDULE_DAYS,
@@ -136,21 +136,6 @@ interface StaffServiceEmails {
     buyerEmail: string;
   }): Promise<void>;
 }
-
-const GiftPurchaseDataSchema = z.object({
-  token: z.string().min(1),
-  buyerEmail: z.string().min(1),
-  stripeCustomerId: z.string().min(1).nullable(),
-  tierId: z.string().min(1),
-  cadence: GiftCadenceSchema,
-  duration: z.number().int().positive(),
-  currency: z.string().min(1),
-  amount: z.number().int().nonnegative(),
-  stripeCheckoutSessionId: z.string().min(1),
-  stripePaymentIntentId: z.string().min(1),
-});
-
-export type GiftPurchaseData = z.input<typeof GiftPurchaseDataSchema>;
 
 const StripeBuyerEmailSchema = z.unknown().transform((value): string | null => {
   if (typeof value !== 'string') {
@@ -507,14 +492,6 @@ export class GiftService {
     return token;
   }
 
-  async completePurchase(input: GiftPurchaseData | GiftPaymentCompletionData): Promise<boolean> {
-    if ('giftId' in input) {
-      return this.completePendingPurchase(input);
-    }
-
-    return this.completeLegacyPurchase(input);
-  }
-
   // The publication timezone setting, falling back to UTC when unset or
   // when the bundled tz data doesn't know the zone — an unknown name would
   // otherwise resolve to the host's zone and date gift lifecycle values
@@ -567,7 +544,13 @@ export class GiftService {
     };
   }
 
-  private async completePendingPurchase(input: GiftPaymentCompletionData): Promise<boolean> {
+  /**
+   * Completes the purchase of the gift Ghost recorded when the buyer started its checkout, once
+   * Stripe has received the payment, and sends the purchase emails. Returns false when there's no
+   * such gift, or it's no longer waiting for its payment, such as when Stripe sends the payment
+   * again.
+   */
+  async completePurchase(input: GiftPaymentCompletionData): Promise<boolean> {
     const parsed = GiftPaymentCompletionSchema.safeParse(input);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
@@ -653,47 +636,6 @@ export class GiftService {
       );
     }
     await this.sendPurchaseNotifications(completed, member, delivery);
-    return true;
-  }
-
-  private async completeLegacyPurchase(input: GiftPurchaseData): Promise<boolean> {
-    const parsed = GiftPurchaseDataSchema.safeParse(input);
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0];
-      throw new errors.ValidationError({
-        message: 'Invalid gift purchase data.',
-        property: issue.path.join('.'),
-        context: issue.message,
-      });
-    }
-    const data = parsed.data;
-    const purchasedAt = new Date();
-
-    if (await this.deps.giftRepository.existsByCheckoutSessionId(data.stripeCheckoutSessionId)) {
-      return false;
-    }
-
-    const member = data.stripeCustomerId
-      ? await this.deps.memberRepository.get({ customer_id: data.stripeCustomerId })
-      : null;
-
-    const gift = Gift.fromPurchase({
-      token: data.token,
-      buyerEmail: data.buyerEmail,
-      buyerMemberId: member?.id ?? null,
-      tierId: data.tierId,
-      cadence: data.cadence,
-      duration: data.duration,
-      currency: data.currency,
-      amount: data.amount,
-      stripeCheckoutSessionId: data.stripeCheckoutSessionId,
-      stripePaymentIntentId: data.stripePaymentIntentId,
-      purchasedAt,
-      expiryTimeZone: this.siteZone(),
-    });
-
-    await this.deps.giftRepository.create(gift);
-    await this.sendPurchaseNotifications(gift, member, null);
     return true;
   }
 

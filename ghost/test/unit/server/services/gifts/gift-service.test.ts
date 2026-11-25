@@ -3,10 +3,7 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import sinon from 'sinon';
 import type { Knex } from 'knex';
-import {
-  GiftService,
-  type GiftPurchaseData,
-} from '../../../../../core/server/services/gifts/gift-service';
+import { GiftService } from '../../../../../core/server/services/gifts/gift-service';
 import { Gift } from '../../../../../core/server/services/gifts/gift';
 import type {
   FindPendingReminderOptions,
@@ -44,7 +41,6 @@ function buildRedeemer(id: string = 'member_1') {
 
 describe('GiftService', function () {
   type GiftRepositoryStub = {
-    existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
     getById: sinon.SinonStub<
       Parameters<GiftRepository['getById']>,
       ReturnType<GiftRepository['getById']>
@@ -110,22 +106,8 @@ describe('GiftService', function () {
       read: sinon.SinonStub;
     };
   };
-  const purchaseData: GiftPurchaseData = {
-    token: 'abc-123',
-    buyerEmail: 'buyer@example.com',
-    stripeCustomerId: 'cust_123',
-    tierId: 'tier_1',
-    cadence: 'year',
-    duration: 1,
-    currency: 'usd',
-    amount: 5000,
-    stripeCheckoutSessionId: 'cs_123',
-    stripePaymentIntentId: 'pi_456',
-  };
-
   beforeEach(function () {
     giftRepository = {
-      existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
       getById: sinon
         .stub<Parameters<GiftRepository['getById']>, ReturnType<GiftRepository['getById']>>()
         .resolves(null),
@@ -480,8 +462,6 @@ describe('GiftService', function () {
         giftId: 'gift_1',
         buyerEmail: null,
         stripeCustomerId: null,
-        currency: 'usd',
-        amount: 5000,
         stripeCheckoutSessionId: 'cs_pending',
         stripePaymentIntentId: 'pi_pending',
       });
@@ -525,8 +505,6 @@ describe('GiftService', function () {
         giftId: 'gift_1',
         buyerEmail: null,
         stripeCustomerId: null,
-        currency: 'usd',
-        amount: 5000,
         stripeCheckoutSessionId: 'cs_pending',
         stripePaymentIntentId: 'pi_pending',
       });
@@ -588,218 +566,106 @@ describe('GiftService', function () {
       sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
     });
 
-    it('creates a Gift entity and saves it', async function () {
-      const service = createService();
+    /** The payment for the anonymous pending gift, by a buyer with the Stripe customer given, if any. */
+    function paidFor(stripeCustomerId: string | null = null) {
+      return {
+        giftId: 'gift_1',
+        buyerEmail: 'buyer@example.com',
+        stripeCustomerId,
+        stripeCheckoutSessionId: 'cs_pending',
+        stripePaymentIntentId: 'pi_pending',
+      };
+    }
 
-      const result = await service.completePurchase(purchaseData);
-
-      assert.equal(result, true);
-      sinon.assert.calledOnce(giftRepository.create);
-
-      const gift = giftRepository.create.getCall(0).args[0];
-
-      assert.ok(gift instanceof Gift);
-      assert.equal(gift.token, 'abc-123');
-      assert.equal(gift.status, 'purchased');
-    });
-
-    it('stores the claim deadline at the end of the publication-local calendar date', async function () {
+    it('dates the claim deadline at the end of the publication-local calendar date', async function () {
       const clock = sinon.useFakeTimers(new Date('2026-08-18T23:30:00.000Z'));
+      giftRepository.getById.resolves(buildAnonymousPendingGift());
       const service = createService({ timezone: 'America/Los_Angeles' });
 
-      await service.completePurchase(purchaseData);
+      await service.completePurchase(paidFor());
 
-      const gift = giftRepository.create.firstCall.firstArg;
-      assert.equal(gift.purchasedAt.toISOString(), '2026-08-18T23:30:00.000Z');
-      assert.equal(gift.expiresAt.toISOString(), '2027-08-19T06:59:59.999Z');
+      const purchased = giftRepository.update.firstCall.firstArg;
+      assert.equal(purchased.purchasedAt.toISOString(), '2026-08-18T23:30:00.000Z');
+      assert.equal(purchased.expiresAt.toISOString(), '2027-08-19T06:59:59.999Z');
       clock.restore();
     });
 
     it('dates the claim deadline in UTC when the publication timezone is not a known zone', async function () {
       const clock = sinon.useFakeTimers(new Date('2026-08-18T23:30:00.000Z'));
+      giftRepository.getById.resolves(buildAnonymousPendingGift());
       const service = createService({ timezone: 'Not/AZone' });
 
-      await service.completePurchase(purchaseData);
+      await service.completePurchase(paidFor());
 
-      const gift = giftRepository.create.firstCall.firstArg;
-      assert.equal(gift.expiresAt.toISOString(), '2027-08-18T23:59:59.999Z');
+      const purchased = giftRepository.update.firstCall.firstArg;
+      assert.equal(purchased.expiresAt.toISOString(), '2027-08-18T23:59:59.999Z');
       clock.restore();
     });
 
-    it('returns false and skips create for duplicate checkout session', async function () {
-      giftRepository.existsByCheckoutSessionId.resolves(true);
-
-      const service = createService();
-      const result = await service.completePurchase(purchaseData);
-
-      assert.equal(result, false);
-
-      sinon.assert.notCalled(giftRepository.create);
-    });
-
-    it('resolves member by stripeCustomerId', async function () {
+    it('tells staff about the purchase under the name and email of the member who bought it', async function () {
       const memberGet = sinon.stub();
-
       memberGet.withArgs('name').returns('Member Name');
       memberGet.withArgs('email').returns('member@example.com');
-
       memberRepository.get.resolves({ id: 'member_1', get: memberGet });
-
+      giftRepository.getById.resolves(buildAnonymousPendingGift());
       const service = createService();
 
-      await service.completePurchase(purchaseData);
+      await service.completePurchase(paidFor('cust_123'));
 
-      sinon.assert.calledWith(memberRepository.get, { customer_id: 'cust_123' });
-
-      const gift = giftRepository.create.getCall(0).args[0];
-
-      assert.equal(gift.buyerMemberId, 'member_1');
+      sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftPurchased, {
+        name: 'Member Name',
+        email: 'member@example.com',
+        memberId: 'member_1',
+        amount: 5000,
+        currency: 'usd',
+        tierName: 'Bronze',
+        cadence: 'year',
+        duration: 1,
+      });
     });
 
-    it('sets buyerMemberId to null when stripeCustomerId is null', async function () {
+    it('tells staff about the purchase under the buyer’s email when the buyer is not a member', async function () {
+      giftRepository.getById.resolves(buildAnonymousPendingGift());
       const service = createService();
 
-      await service.completePurchase({ ...purchaseData, stripeCustomerId: null });
+      await service.completePurchase(paidFor());
 
       sinon.assert.notCalled(memberRepository.get);
-
-      const gift = giftRepository.create.getCall(0).args[0];
-
-      assert.equal(gift.buyerMemberId, null);
-    });
-
-    it('sets buyerMemberId to null when member not found', async function () {
-      memberRepository.get.resolves(null);
-
-      const service = createService();
-
-      await service.completePurchase(purchaseData);
-
-      const gift = giftRepository.create.getCall(0).args[0];
-
-      assert.equal(gift.buyerMemberId, null);
-    });
-
-    it('accepts a normalized numeric duration', async function () {
-      const service = createService();
-
-      await service.completePurchase({ ...purchaseData, duration: 3 });
-
-      const gift = giftRepository.create.getCall(0).args[0];
-
-      assert.equal(gift.duration, 3);
-    });
-
-    it('keeps legacy completion tolerant of Stripe email formats', async function () {
-      const service = createService();
-
-      await service.completePurchase({ ...purchaseData, buyerEmail: 'unusual..local@example.com' });
-
-      assert.equal(
-        giftRepository.create.firstCall.firstArg.buyerEmail,
-        'unusual..local@example.com',
+      sinon.assert.calledOnceWithExactly(
+        staffServiceEmails.notifyGiftPurchased,
+        sinon.match({ name: null, email: 'buyer@example.com', memberId: null }),
       );
     });
 
-    it('throws ValidationError for an unnormalized duration', async function () {
+    it('sends the buyer a confirmation with the gift’s link, tier and claim deadline', async function () {
+      giftRepository.getById.resolves(buildAnonymousPendingGift());
       const service = createService();
 
-      await assert.rejects(
-        () =>
-          service.completePurchase({
-            ...purchaseData,
-            duration: '3months',
-          } as unknown as GiftPurchaseData),
-        (err: any) => {
-          assert.equal(err.errorType, 'ValidationError');
-          assert.equal(err.property, 'duration');
-          return true;
-        },
+      await service.completePurchase(paidFor());
+
+      sinon.assert.calledOnceWithExactly(tiersService.api.read, 'tier_1');
+      const purchased = giftRepository.update.firstCall.firstArg;
+      sinon.assert.calledOnceWithExactly(
+        giftEmailService.sendPurchaseConfirmation,
+        sinon.match({
+          buyerEmail: 'buyer@example.com',
+          token: 'pending-token',
+          tierName: 'Bronze',
+          cadence: 'year',
+          duration: 1,
+          expiresAt: purchased.expiresAt,
+        }),
       );
-
-      sinon.assert.notCalled(giftRepository.create);
     });
 
-    it('sends staff notification email after recording purchase', async function () {
-      const memberGet = sinon.stub();
-
-      memberGet.withArgs('name').returns('Member Name');
-      memberGet.withArgs('email').returns('member@example.com');
-
-      memberRepository.get.resolves({ id: 'member_1', get: memberGet });
-
-      const service = createService();
-
-      await service.completePurchase(purchaseData);
-
-      sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
-
-      const emailData = staffServiceEmails.notifyGiftPurchased.getCall(0).args[0];
-
-      assert.equal(emailData.name, 'Member Name');
-      assert.equal(emailData.email, 'member@example.com');
-      assert.equal(emailData.memberId, 'member_1');
-      assert.equal(emailData.amount, 5000);
-      assert.equal(emailData.currency, 'usd');
-      assert.equal(emailData.tierName, 'Bronze');
-      assert.equal(emailData.cadence, 'year');
-      assert.equal(emailData.duration, 1);
-    });
-
-    it('keeps a legacy purchase completed when its tier is not found for notifications', async function () {
+    it('completes the purchase when the buyer’s confirmation email fails', async function () {
       sinon.stub(logging, 'error');
-      tiersService.api.read.resolves(null);
-
-      const service = createService();
-
-      assert.equal(await service.completePurchase(purchaseData), true);
-
-      sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
-      sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
-    });
-
-    it('uses buyerEmail and null name when buyer is not a member', async function () {
-      const service = createService();
-
-      await service.completePurchase({ ...purchaseData, stripeCustomerId: null });
-
-      sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
-
-      const emailData = staffServiceEmails.notifyGiftPurchased.getCall(0).args[0];
-
-      assert.equal(emailData.name, null);
-      assert.equal(emailData.email, 'buyer@example.com');
-      assert.equal(emailData.memberId, null);
-    });
-
-    it('sends buyer confirmation email', async function () {
-      const service = createService();
-
-      await service.completePurchase(purchaseData);
-
-      sinon.assert.calledOnce(tiersService.api.read);
-      sinon.assert.calledWith(tiersService.api.read, 'tier_1');
-      sinon.assert.calledOnce(giftEmailService.sendPurchaseConfirmation);
-
-      const emailData = giftEmailService.sendPurchaseConfirmation.getCall(0).args[0];
-
-      assert.equal(emailData.buyerEmail, 'buyer@example.com');
-      assert.equal(emailData.token, 'abc-123');
-      assert.equal(emailData.tierName, 'Bronze');
-      assert.equal(emailData.cadence, 'year');
-      assert.equal(emailData.duration, 1);
-      assert.ok(emailData.expiresAt instanceof Date);
-    });
-
-    it('does not fail purchase when buyer confirmation email throws', async function () {
+      giftRepository.getById.resolves(buildAnonymousPendingGift());
       giftEmailService.sendPurchaseConfirmation.rejects(new Error('SMTP error'));
-
       const service = createService();
 
-      const result = await service.completePurchase(purchaseData);
-
-      assert.equal(result, true);
-      sinon.assert.calledOnce(giftRepository.create);
+      assert.equal(await service.completePurchase(paidFor()), true);
+      assert.equal(giftRepository.update.firstCall.firstArg.status, 'purchased');
     });
   });
 

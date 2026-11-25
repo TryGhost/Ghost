@@ -1214,6 +1214,33 @@ describe('Stripe webhook outcomes', function () {
         );
       },
     );
+
+    // Before 2026-08-19, Ghost marked a gift's checkout with `ghost_gift` and created the gift
+    // only once it was paid. A site that upgraded while such a gift's delayed payment settled
+    // still receives its payment, which Ghost can no longer complete, so it fails loudly.
+    itWritesNothing([
+      {
+        name: 'responds with 422 on every attempt to a paid gift whose checkout started before Ghost recorded gifts ahead of their checkout',
+        event: () => ({
+          type: 'checkout.session.async_payment_succeeded',
+          object: paymentCheckout({ metadata: { ghost_gift: 'true' }, amount: 500 }),
+        }),
+        attempts: 2,
+        status: 422,
+        webhook: span(
+          {
+            type: 'checkout.session.async_payment_succeeded',
+            kind: 'gift_checkout',
+            ...failedBecause('unclassified', 'ghost'),
+          },
+          'ValidationError',
+        ),
+        checkout: checkoutSpan(
+          { type: 'gift', ...failedBecause('unclassified', 'ghost') },
+          'ValidationError',
+        ),
+      },
+    ]);
   });
 
   describe('checkout.session.async_payment_succeeded and async_payment_failed', function () {
