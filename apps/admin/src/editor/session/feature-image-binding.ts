@@ -106,9 +106,11 @@ export function useFeatureImageBinding(
   captionRef.current = caption;
 
   if (loadedKey !== contentKey) {
+    // A replaced document starts the caption editor over, as it does the body.
     setLoadedKey(contentKey);
     setFeatureImage(record?.feature_image ?? null);
     setCaption(record?.feature_image_caption ?? null);
+    setCaptionKey((key) => key + 1);
     setCaptionFocused(false);
   } else if (!captionFocused && port.featureImageCaption !== caption) {
     // Reloading under the writer's cursor would drop it, so a focused caption
