@@ -5,7 +5,6 @@
  */
 export { membersRouteChildren } from './routes';
 export const lazyMemberActivityScreen = () => import('./activity/member-activity');
-export const lazySegmentsScreen = () => import('./segments/segments-list');
 export { buildMembersUrl } from './member-route';
 export { formatMemberName, getMemberInitials, memberAvatarProps } from './member-format';
 export {

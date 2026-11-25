@@ -24,9 +24,7 @@ import { useMemberSidebarViews } from './member-sidebar-views';
 import { usePostNavigation } from './use-post-navigation';
 import { useIsActiveLink } from './use-is-active-link';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useLocation } from '@tryghost/admin-x-framework';
 import { AdminLink } from '@/shared/admin-link';
-import { SEGMENT_PARAM } from '@/members/api';
 
 function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
   const admin7Design = useFeatureFlag('admin7Design');
@@ -95,27 +93,6 @@ function MembersNavItemContent({
   );
 }
 
-function SegmentsNavItemContent({
-  collapsible,
-  isActive,
-}: {
-  collapsible: boolean;
-  isActive: boolean;
-}) {
-  return (
-    <NavMenuItem.Link isActive={isActive} to="segments">
-      <LucideIcon.ChartPie
-        className={
-          collapsible
-            ? 'pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0'
-            : ''
-        }
-      />
-      <NavMenuItem.Label>Segments</NavMenuItem.Label>
-    </NavMenuItem.Link>
-  );
-}
-
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const { data: currentUser } = useCurrentUser();
   const { data: settingsData } = useBrowseSettings();
@@ -130,11 +107,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const admin7Design = useFeatureFlag('admin7Design');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
-  const isSegmentsRouteActive = useIsActiveLink({ path: 'segments', activeOnSubpath: true });
-  const location = useLocation();
-  // The members screen showing a segment belongs to Segments in the sidebar, not to Members.
-  const isViewingSegment =
-    location.pathname === '/members' && new URLSearchParams(location.search).has(SEGMENT_PARAM);
 
   const showTags = currentUser && canManageTags(currentUser);
   const showMembers = currentUser && canManageMembers(currentUser);
@@ -147,17 +119,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     ? postNavigation.isMainActive || hasActivePostChild
     : savedPostsExpanded;
   const hasActiveMemberView = hasMemberViews && memberViews.some((view) => view.isActive);
-  const isInSegment = isViewingSegment || hasActiveMemberView;
-  // The pinned segments open under Segments. The stored preference is the one the list had
-  // while it sat under Members.
-  const segmentsExpanded = admin7Design
-    ? isSegmentsRouteActive || isInSegment
+  const membersExpanded = admin7Design
+    ? isMembersRouteActive || isMemberActivityActive
     : savedMembersExpanded;
-  const membersNavActive = isMembersRouteActive ? !isInSegment : isMemberActivityActive;
-  // Segments is lit on its own screen, and for a segment that has no row of its own showing:
-  // one that isn't pinned, or any while the list is closed.
-  const segmentsNavActive =
-    isSegmentsRouteActive || (isInSegment && (!hasActiveMemberView || !segmentsExpanded));
+  const membersNavActive = isMembersRouteActive
+    ? !hasActiveMemberView || !membersExpanded
+    : isMemberActivityActive;
   const postsRoute = postNavigation.mainUrl;
   const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
   const hasAudienceItems = Boolean(showMembers) || Boolean(showAutomations && automationsEnabled);
@@ -200,22 +167,19 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     <>
       {showMembers && (
         <>
-          <NavMenuItem>
-            <MembersNavItemContent
-              collapsible={false}
-              isActive={membersNavActive}
-              showCount={!admin7Design}
-              to="members"
-            />
-          </NavMenuItem>
           {hasMemberViews ? (
             <NavMenuItem.Collapsible
-              expanded={segmentsExpanded}
-              id="segments-submenu"
+              expanded={membersExpanded}
+              id="members-submenu"
               onExpandedChange={setMembersExpanded}
             >
-              <NavMenuItem.CollapsibleItem ariaLabel="Toggle pinned segments">
-                <SegmentsNavItemContent collapsible={!admin7Design} isActive={segmentsNavActive} />
+              <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
+                <MembersNavItemContent
+                  collapsible={!admin7Design}
+                  isActive={membersNavActive}
+                  showCount={!admin7Design}
+                  to="members"
+                />
               </NavMenuItem.CollapsibleItem>
 
               <NavMenuItem.CollapsibleMenu>
@@ -224,7 +188,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             </NavMenuItem.Collapsible>
           ) : (
             <NavMenuItem>
-              <SegmentsNavItemContent collapsible={false} isActive={segmentsNavActive} />
+              <MembersNavItemContent
+                collapsible={false}
+                isActive={membersNavActive}
+                showCount={!admin7Design}
+                to="members"
+              />
             </NavMenuItem>
           )}
         </>

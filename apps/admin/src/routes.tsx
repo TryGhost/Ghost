@@ -30,7 +30,7 @@ import {
 import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
-import { lazyMemberActivityScreen, lazySegmentsScreen, membersRouteChildren } from './members/api';
+import { lazyMemberActivityScreen, membersRouteChildren } from './members/api';
 import { OnboardingRedirect, lazyOnboardingScreen } from './onboarding/api';
 import {
   lazyPagesListRoute,
@@ -126,12 +126,6 @@ const appRoutes: RouteObject[] = [
     path: '/members',
     handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
     children: membersRouteChildren,
-  },
-  {
-    // Every segment, to manage them. POC (poc/segments-ui).
-    path: '/segments',
-    handle: { requiresAccess: canManageMembers } satisfies AccessRouteHandle,
-    lazy: lazyComponent(lazySegmentsScreen),
   },
   {
     path: '/members-activity',

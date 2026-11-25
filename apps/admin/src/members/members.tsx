@@ -32,8 +32,7 @@ import {
   useMemberViews,
 } from './hooks/use-member-views';
 import { MemberSegmentActions } from './segments/member-segment-actions';
-import { PocEmptySegmentsToggle } from './segments/poc-empty-toggle';
-import { SegmentBuilderDialog } from './segments/segment-builder';
+import { PocControls } from './segments/poc-controls';
 import { SEGMENT_PARAM, buildSegmentUrl } from './segments/segment-route';
 import { SegmentSwitcher } from './segments/segment-switcher';
 import { useSegmentFacts } from './segments/use-segment-facts';
@@ -91,7 +90,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const isSegmentModified = Boolean(viewedSegment && appliedFilter !== viewedSegment.filter);
   const canChangeSegments = useCanChangeMemberViews();
   const factsOf = useSegmentFacts(savedViews);
-  const [newSegmentOpen, setNewSegmentOpen] = useState(false);
 
   // With its filters cleared the screen shows every member, which is no longer the segment.
   useEffect(() => {
@@ -144,6 +142,28 @@ const MembersPage: React.FC<MembersPageProps> = ({
 
   const totalMembers = data?.meta?.pagination?.total ?? 0;
   const hasFilters = filters.length > 0;
+
+  // A new segment starts by filtering the list: the filters and the list are what builds one,
+  // and it is saved from the filter bar. So "New segment" shows every member and opens the
+  // filter control. POC: the control only opens to its own shortcut, which is sent to it here.
+  const filterPickerWanted = useRef(false);
+  const openFilterPicker = useCallback(() => {
+    window.setTimeout(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f' })), 50);
+  }, []);
+  const startNewSegment = () => {
+    if (hasFilterOrSearch || viewedSegment) {
+      filterPickerWanted.current = true;
+      navigate('/members');
+    } else {
+      openFilterPicker();
+    }
+  };
+  useEffect(() => {
+    if (filterPickerWanted.current && !hasFilters) {
+      filterPickerWanted.current = false;
+      openFilterPicker();
+    }
+  }, [hasFilters, openFilterPicker]);
   const shouldShowMobileSearchRow = showMobileSearch;
   const shouldShowFiltersRow = hasFilters;
   const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
@@ -270,15 +290,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
                     the actions and cuts the line short, rather than pushing them to a row below. */}
                 <PageHeader.Left className={viewedSegment ? 'min-w-48 flex-1 basis-0' : undefined}>
                   <PageHeader.Title>
-                    {viewedSegment ? (
-                      <SegmentSwitcher
-                        current={viewedSegment}
-                        segments={savedViews}
-                        onNewSegment={canChangeSegments ? () => setNewSegmentOpen(true) : undefined}
-                      />
-                    ) : (
-                      'Members'
-                    )}{' '}
+                    <SegmentSwitcher
+                      current={viewedSegment}
+                      segments={savedViews}
+                      onNewSegment={canChangeSegments ? startNewSegment : undefined}
+                    />{' '}
                     {!shouldShowLoading && totalMembers > 0 && (
                       <PageHeader.Count className="hidden sm:inline">
                         {formatNumber(totalMembers)}
@@ -391,15 +407,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
             )}
           </ListPage.Body>
         </ListPage>
-        {newSegmentOpen && (
-          <SegmentBuilderDialog
-            open
-            withPin
-            onCreated={(segment) => navigate(buildSegmentUrl(segment))}
-            onOpenChange={setNewSegmentOpen}
-          />
-        )}
-        <PocEmptySegmentsToggle />
+        <PocControls onSegmentCreated={(segment) => navigate(buildSegmentUrl(segment))} />
       </Container>
     </Box>
   );

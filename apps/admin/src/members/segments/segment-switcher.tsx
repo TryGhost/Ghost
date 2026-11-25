@@ -1,9 +1,9 @@
 import { useNavigate } from '@tryghost/admin-x-framework';
+import { useMemberCount, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 import {
   Command,
   CommandCheck,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -12,31 +12,45 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useState } from 'react';
 import { buildSegmentUrl } from './segment-route';
 
-// A row that stays at an edge of the scrolling list, over the popover's own surface.
-const STICKY_ROW = 'sticky z-10 border-border bg-surface-elevated-2';
+/** A count beside a name, as the page title shows its own: quieter than the name. */
+function Count({ value }: { value: number | null | undefined }) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  return <span className="text-muted-foreground tabular-nums">{formatNumber(value)}</span>;
+}
+
+/**
+ * How many members a segment has. POC: one request for each segment listed, made when the list
+ * opens. The segments API would return the counts with the list.
+ */
+function SegmentCount({ filter }: { filter: string }) {
+  const { count } = useMembersCount(filter);
+  return <Count value={count} />;
+}
 
 interface SegmentSwitcherProps {
   segments: Segment[];
-  /** The segment the members screen is showing. */
-  current: Segment;
+  /** The segment the members screen is showing, or null for every member. */
+  current: Segment | null;
   /** Starts a new segment. Left out for staff who can't change segments. */
   onNewSegment?: () => void;
 }
 
 /**
- * The members screen's title while it shows a segment, as the way between segments: it names
- * the segment and opens the list of segments to switch to, so moving from one to another never
- * goes through a different page.
- *
- * A long list scrolls above "New segment", which stays in view, and can be searched by name.
+ * The members screen's title, as the way between segments: it names what the screen is showing
+ * and opens the list to switch to, so moving from one segment to another never leaves the page.
+ * Each is listed with how many members it has, and the list can be searched by name.
  */
 export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwitcherProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const allMembers = useMemberCount();
   const go = (to: string) => {
     setOpen(false);
     navigate(to);
@@ -50,7 +64,7 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
           data-testid="segment-switcher"
           type="button"
         >
-          <span className="truncate">{current.name}</span>
+          <span className="truncate">{current ? current.name : 'Members'}</span>
           <LucideIcon.ChevronDown className="size-4 shrink-0 text-muted-foreground" />
         </button>
       </PopoverTrigger>
@@ -61,12 +75,16 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
       >
         <Command>
           <CommandInput placeholder="Search segments..." />
-          {/* Everything is in the one list, so the arrow keys reach all of it. The last row
-              sticks to its edge, in view however far the segments are scrolled. */}
-          <CommandList className="p-0">
-            <CommandEmpty>No segments found.</CommandEmpty>
+          <CommandList>
+            <CommandGroup>
+              <CommandItem value="All members" onSelect={() => go('/members')}>
+                <span>All members</span>
+                <Count value={allMembers} />
+                {!current && <CommandCheck />}
+              </CommandItem>
+            </CommandGroup>
             {segments.length > 0 && (
-              <CommandGroup>
+              <CommandGroup heading="Segments">
                 {segments.map((segment) => (
                   <CommandItem
                     key={segment.id}
@@ -74,23 +92,26 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
                     onSelect={() => go(buildSegmentUrl(segment))}
                   >
                     <span className="min-w-0 truncate">{segment.name}</span>
-                    {segment.id === current.id && <CommandCheck />}
+                    <SegmentCount filter={segment.filter} />
+                    {segment.id === current?.id && <CommandCheck />}
                   </CommandItem>
                 ))}
               </CommandGroup>
             )}
+            {/* A row of the list, drawn as the custom field picker draws "Add custom field":
+                the arrow keys reach it, and when a search matches nothing it is the row left. */}
             {onNewSegment && (
-              // Offered whatever is searched for.
-              <CommandGroup className={`${STICKY_ROW} bottom-0 border-t`} forceMount>
+              <CommandGroup className="pt-0" forceMount>
                 <CommandItem
-                  value="New segment"
+                  className="font-semibold text-green"
+                  value="__new-segment__"
                   forceMount
                   onSelect={() => {
                     setOpen(false);
                     onNewSegment();
                   }}
                 >
-                  <LucideIcon.Plus />
+                  <LucideIcon.Plus className="size-4" />
                   <span>New segment</span>
                 </CommandItem>
               </CommandGroup>

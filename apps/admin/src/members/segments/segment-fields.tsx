@@ -1,44 +1,9 @@
-import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { Input, Label, Switch } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { formatNumber } from '@tryghost/shade/utils';
 import { useId } from 'react';
 
 /** The longest segment name the API accepts, in characters. */
 export const SEGMENT_NAME_MAX_LENGTH = 191;
-
-/**
- * How many members a filter matches, as a sentence. For a place that builds conditions without
- * the members list in view, where the count is the only sign of who they match.
- */
-export function MatchingMembers({ filter }: { filter: string | undefined }) {
-  const { count } = useMembersCount(filter ?? null);
-
-  if (!filter) {
-    return (
-      <Text size="sm" tone="secondary">
-        Add a condition to choose who is in this segment.
-      </Text>
-    );
-  }
-
-  if (count === null) {
-    return (
-      <Text size="sm" tone="secondary">
-        Counting members…
-      </Text>
-    );
-  }
-
-  return (
-    <Text size="sm" tone="secondary">
-      <Text as="span" size="sm" weight="semibold">
-        {formatNumber(count)}
-      </Text>{' '}
-      {count === 1 ? 'member matches' : 'members match'}
-    </Text>
-  );
-}
 
 interface SegmentFieldsProps {
   name: string;
