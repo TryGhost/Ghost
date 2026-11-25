@@ -5,7 +5,7 @@ import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
 import { MetafieldBindingsService } from './bindings-service';
 import { resolveMaxDefinitions } from './config';
-import { customFields } from './custom-fields';
+import { customFields, memberAccessPolicy } from './custom-fields';
 import { createNamespaces, type Namespaces } from './namespaces';
 import { fieldSource, type FieldSource } from './queries';
 import { meter, tracer } from '../../lib/tracing';
@@ -25,7 +25,6 @@ export {
   INTERNAL,
   MEMBERS,
   MEMBER_ACCESS,
-  canWrite,
   type Audience,
   type MemberAccess,
 } from './access';
@@ -39,7 +38,7 @@ export {
 // crossing.
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
-/** The namespaces fields can be defined in, and the policy each one's fields follow. */
+/** The namespaces fields can be defined in, each with its owner, limits and access policy. */
 export let namespaces: Namespaces | undefined;
 /** The fields as this site reads them, for every read here and in the domains that join them. */
 export let fields: FieldSource | undefined;
@@ -84,7 +83,12 @@ export function init(): void {
 
   // Custom fields are the one application of metafields so far, and the only namespace
   // anyone can define fields in.
-  namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })]);
+  namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })], {
+    // Nobody owns another namespace yet, so a field stored in one, as an app's would be, is
+    // reached by its member access, the way a custom field is. An app that owns its namespace
+    // will state its own grants.
+    unowned: memberAccessPolicy,
+  });
   fields = fieldSource(namespaces);
 
   const tracking = metafieldsTracking({ tracer, meter });
@@ -101,7 +105,7 @@ export function init(): void {
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the ceiling, which also caps how many values one request can carry — no handle on the
   // definitions service.
-  values = new MetafieldValuesService({ knex, fields, getMaxDefinitions, tracking });
+  values = new MetafieldValuesService({ knex, fields, namespaces, getMaxDefinitions, tracking });
 
   // Built after the values, which is what a binding routes into. It has no handle on the
   // definitions: making a field is not part of binding to one, so a caller that needs both
