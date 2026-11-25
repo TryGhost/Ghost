@@ -41,6 +41,7 @@ const context = {
   user: { id: '1', role: 'Owner' },
   theme,
   session: { revision: 3 },
+  scopes: ['post:browse', 'post:edit'],
   path: '/episodes/12',
   layout: {
     safeArea: { top: 0, right: 0, bottom: 57, left: 285 },
@@ -198,6 +199,9 @@ describe('a start context', () => {
     check(context, true);
     check({ ...context, user: { ...context.user, email: 'person@example.com' }, extra: 1 }, true);
     check({ ...context, session: { revision: 0 } }, true);
+    check({ ...context, scopes: [] }, true);
+    // A newer Admin may know scopes this SDK doesn't.
+    check({ ...context, scopes: ['post:browse', 'member:browse'] }, true);
   });
 
   it('rejects a context missing anything the SDK relies on', () => {
@@ -211,6 +215,9 @@ describe('a start context', () => {
       { ...context, session: { revision: -1 } },
       { ...context, session: { revision: 1.5 } },
       { ...context, session: { revision: '3' } },
+      { ...context, scopes: undefined },
+      { ...context, scopes: 'post:browse' },
+      { ...context, scopes: ['post:browse', 1] },
       { ...context, path: 'episodes' },
       { ...context, path: '//evil.example' },
       { ...context, layout: undefined },

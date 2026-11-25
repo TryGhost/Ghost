@@ -110,6 +110,7 @@ describe('connect', () => {
     expect(ghost.user).toEqual(context.user);
     expect(ghost.theme).toEqual(context.theme);
     expect(ghost.session).toEqual({ revision: 3 });
+    expect(ghost.scopes).toEqual(context.scopes);
     expect(ghost.path.current).toBe('/episodes/12');
     expect(ghost.connected).toBe(true);
   });

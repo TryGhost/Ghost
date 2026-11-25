@@ -23,6 +23,7 @@ const context = (overrides: Partial<StartContext> = {}): StartContext => ({
   user: { id: 'user-1', role: 'Owner' },
   theme: { mode: 'light', accent_color: '#ff5500' },
   session: { revision: 0 },
+  scopes: ['post:browse'],
   path: '/',
   layout: {
     safeArea: { top: 0, right: 0, bottom: 57, left: 0 },

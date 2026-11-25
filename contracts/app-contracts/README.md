@@ -330,7 +330,9 @@ the root entry point exports them as well:
   `BRIDGE_ERROR_CODES` all of them;
 - the shapes Admin sends the page, `Theme`, `StartContext`, `ConnectMessage`
   and `FetchResponse`, with a guard for each (`isTheme`, `isStartContext`,
-  `isConnectMessage`, `isFetchResponse`).
+  `isConnectMessage`, `isFetchResponse`). The start context carries the
+  installation's approved `scopes`, so an app knows what Ghost will let it
+  call.
 
 The SDK checks what it sends and what Admin sends it with these, without zod.
 What Admin sends has no schema, because Admin builds it and never parses it;

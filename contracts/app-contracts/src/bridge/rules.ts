@@ -9,6 +9,8 @@
  * rather than `undefined` somewhere in the app. Only the schemas check limits.
  */
 
+import type { AppPermissionKey } from '../scopes.ts';
+
 /** Posted by the app's page to `window.parent` once the SDK has loaded. */
 export const HELLO_MESSAGE_TYPE = 'ghost-app:hello';
 
@@ -225,6 +227,13 @@ export type StartContext = {
     revision: number;
   };
   /**
+   * The permission keys the installation was approved for, exactly as its approved manifest
+   * lists them, such as `post:browse`. Ghost holds every call the app makes to these, so an app
+   * reads them to know what it may call without trying. They stay the same for the session: a
+   * change to them is a new revision, which ends it.
+   */
+  scopes: AppPermissionKey[];
+  /**
    * The app's route, taken from Admin's URL, so a reload or a shared link opens the same page:
    * the path, query and fragment of the frame's URL on the app's origin. Admin loads a new
    * frame at it, so it's where the page already is, unless the page's server redirected it.
@@ -355,6 +364,8 @@ export function isStartContext(value: unknown): value is StartContext {
     isRecord(value.session) &&
     Number.isSafeInteger(value.session.revision) &&
     (value.session.revision as number) >= 0 &&
+    Array.isArray(value.scopes) &&
+    value.scopes.every((scope) => typeof scope === 'string') &&
     isContainedPath(value.path) &&
     isLayout(value.layout)
   );
