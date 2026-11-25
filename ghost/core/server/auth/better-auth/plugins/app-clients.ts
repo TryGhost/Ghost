@@ -157,9 +157,12 @@ export async function reconcileAppUserClient(
 /**
  * Deletes app tokens: a user's across every app, or every app's. Through the adapter, so it
  * reaches them wherever they're stored; does nothing unless the provider is registered.
+ *
+ * Runs inside security events after their sessions are gone, and validation refuses a token
+ * without its session anyway, so a failed delete is logged rather than failing the event.
  */
 export async function deleteAppTokens(
-  context: Pick<AuthContext, 'adapter' | 'hasPlugin'>,
+  context: Pick<AuthContext, 'adapter' | 'hasPlugin' | 'logger'>,
   of: { userId: string } | { all: true },
 ): Promise<void> {
   if (!context.hasPlugin(APP_PROVIDER_ID)) {
@@ -169,6 +172,10 @@ export async function deleteAppTokens(
   if ('userId' in of) {
     where.push({ field: 'userId', value: of.userId });
   }
-  const adapter = await getCurrentAdapter(context.adapter);
-  await adapter.deleteMany({ model: 'oauthAccessToken', where });
+  try {
+    const adapter = await getCurrentAdapter(context.adapter);
+    await adapter.deleteMany({ model: 'oauthAccessToken', where });
+  } catch (err) {
+    context.logger.error('Failed to delete app tokens', err);
+  }
 }

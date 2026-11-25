@@ -390,7 +390,8 @@ user's in the same hook that deletes their legacy rows. Every event above
 goes through one of them. The delete goes through Better Auth's adapter and
 doesn't rely on token rows cascading with their staff session, which stops
 once either is stored outside MySQL. It does nothing unless the OAuth
-provider is registered.
+provider is registered. A failed delete is logged and doesn't fail the event:
+the sessions are already gone, and a token is refused without its session.
 
 Revoking a user's sessions also deletes their legacy `sessions` rows, so a
 rollback to `legacy` (plan §8) can't revive a session a security event ended.

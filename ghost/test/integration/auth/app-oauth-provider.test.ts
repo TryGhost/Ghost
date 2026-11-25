@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import sinon from 'sinon';
 import * as security from '@tryghost/security';
 import { betterAuth } from 'better-auth/minimal';
 import { jwt } from 'better-auth/plugins';
@@ -41,14 +42,16 @@ const limiters = {
   verificationEmail: allow,
 };
 
-function build({ apps }: { apps: boolean }) {
+type Logger = Parameters<typeof createAuth>[0]['logger'];
+
+function build({ apps, logger }: { apps: boolean; logger?: Logger }) {
   return createAuth({
     db: knex,
     secret: 'a'.repeat(64),
     sessionMaxAgeMs: config.get('admin:sessionMaxAgeMs'),
     urlUtils,
     password: security.password,
-    logger: { debug() {}, info() {}, warn() {}, error() {} },
+    logger: logger ?? { debug() {}, info() {}, warn() {}, error() {} },
     limiters,
     sendPasswordResetEmail: async () => {},
     isStaffDeviceVerificationEnabled: () => false,
@@ -84,6 +87,7 @@ describe("Better Auth's OAuth provider for apps", function () {
   beforeAll(testUtils.setup('users:roles'));
 
   afterEach(async function () {
+    sinon.restore();
     await knex('oauth_access_tokens').del();
     await knex('oauth_clients').del();
     await knex('oauth_jwks').del();
@@ -743,6 +747,69 @@ describe("Better Auth's OAuth provider for apps", function () {
 
       assert.equal(response.status, 200);
       assert.equal(await tokenCount(), 0);
+    });
+
+    describe('when deleting the app tokens fails', function () {
+      const failure = new Error('delete failed');
+
+      /** An instance whose app token deletes fail, and the errors it logs */
+      async function buildFailingDeletes() {
+        const errors: unknown[] = [];
+        const auth = build({
+          apps: true,
+          logger: { debug() {}, info() {}, warn() {}, error: (...args) => errors.push(args) },
+        });
+        const id = installationId();
+        await auth.api.reconcileAppClient({
+          body: { installationId: id, active: true, scopes: ['post:browse'] },
+        });
+        await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+        const { adapter } = await auth.$context;
+        const deleteMany = adapter.deleteMany.bind(adapter);
+        sinon
+          .stub(adapter, 'deleteMany')
+          .callsFake((query) =>
+            query.model === 'oauthAccessToken' ? Promise.reject(failure) : deleteMany(query),
+          );
+        return { auth, errors };
+      }
+
+      const sessionCount = async () =>
+        Number((await knex('user_sessions').count({ count: '*' }))[0].count);
+
+      it("still ends the user's sessions, and logs the failure", async function () {
+        const { auth, errors } = await buildFailingDeletes();
+
+        await auth.api.revokeUserSessions({ body: { userId: owner.id } });
+
+        assert.equal(await sessionCount(), 0);
+        assert.ok(errors.flat().includes(failure));
+      });
+
+      it('still ends every session, and logs the failure', async function () {
+        const { auth, errors } = await buildFailingDeletes();
+
+        await auth.api.revokeAllSessions();
+
+        assert.equal(await sessionCount(), 0);
+        assert.ok(errors.flat().includes(failure));
+      });
+
+      it('still changes the password natively, and logs the failure', async function () {
+        const { auth, errors } = await buildFailingDeletes();
+        const { cookie } = await signIn(auth);
+
+        const response = await auth.handler(
+          new Request(url('/change-password'), {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', origin, cookie },
+            body: JSON.stringify({ currentPassword: owner.password, newPassword: owner.password }),
+          }),
+        );
+
+        assert.equal(response.status, 200);
+        assert.ok(errors.flat().includes(failure));
+      });
     });
 
     it("refuses a token whose client doesn't say it is that installation's user client", async function () {
