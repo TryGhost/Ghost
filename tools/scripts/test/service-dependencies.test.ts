@@ -657,6 +657,24 @@ it('allows the exact libraries required by Custom Theme Settings without allowin
   );
 });
 
+it('limits streaming CSV parsing to the record and journal readers', (t) => {
+  const readers = [
+    `${services}/content-import/csv/read-records.ts`,
+    `${services}/content-import/import/journal.ts`,
+  ];
+  const other = `${services}/content-import/import/other.ts`;
+  const f = fixture(t, {
+    ...Object.fromEntries([...readers, other].map((file) => [file, "import 'csv-parse';"])),
+    'node_modules/csv-parse/package.json': '{"name":"csv-parse","main":"index.js"}',
+    'node_modules/csv-parse/index.js': 'module.exports = {};',
+  });
+  const graph = f.graph();
+  assert.equal(edges(graph).length, 3);
+  assert.deepEqual(violations(graph), [
+    ['specialist-dependencies', other, 'node_modules/csv-parse/index.js'],
+  ]);
+});
+
 it('allows supplied-storage helpers and UTF-8 decoding without exposing storage adapters', (t) => {
   const helper = 'ghost/core/server/adapters/storage/import-storage.ts';
   const adapter = 'ghost/core/server/adapters/storage/LocalStorageBase.ts';

@@ -19,29 +19,45 @@ function uniqueColumnName(preferred: string, used: Set<string>): string {
 }
 
 export default function buildErrorsFile(run: ImportRun): string | undefined {
-  const rows = run.rows.filter(isActionable);
-  if (!rows.length) {
-    return undefined;
-  }
+  const format = createErrorsFileFormatter(run.sourceColumns);
+  const rows = run.rows.flatMap((row) => {
+    const error = format.row(row);
+    return error ? [error] : [];
+  });
+  return rows.length ? [format.header, ...rows].join('\r\n') : undefined;
+}
 
-  const usedColumns = new Set(run.sourceColumns);
+export function createErrorsFileFormatter(sourceColumns: string[]) {
+  const usedColumns = new Set(sourceColumns);
   const [outcomeColumn, reasonColumn, mediaFailuresColumn] = ANNOTATION_NAMES.map((name) =>
     uniqueColumnName(name, usedColumns),
   );
-  const columns = [outcomeColumn, reasonColumn, mediaFailuresColumn, ...run.sourceColumns];
-
-  return serialize(
-    rows.map((row) => {
-      const sourceCells = Object.fromEntries(
-        run.sourceColumns.map((column) => [column, row.source?.[column] ?? '']),
-      );
-      return {
-        ...sourceCells,
-        [outcomeColumn]: row.status,
-        [reasonColumn]: row.reason ?? '',
-        [mediaFailuresColumn]: row.mediaFailures?.length ? JSON.stringify(row.mediaFailures) : '',
-      };
+  const columns = [outcomeColumn, reasonColumn, mediaFailuresColumn, ...sourceColumns];
+  return {
+    header: serialize([Object.fromEntries(columns.map((column) => [column, column]))], {
+      columns,
+      header: false,
     }),
-    { columns },
-  );
+    row(row: RowOutcome) {
+      if (!isActionable(row)) {
+        return undefined;
+      }
+      const sourceCells = Object.fromEntries(
+        sourceColumns.map((column) => [column, row.source?.[column] ?? '']),
+      );
+      return serialize(
+        [
+          {
+            ...sourceCells,
+            [outcomeColumn]: row.status,
+            [reasonColumn]: row.reason ?? '',
+            [mediaFailuresColumn]: row.mediaFailures?.length
+              ? JSON.stringify(row.mediaFailures)
+              : '',
+          },
+        ],
+        { columns, header: false },
+      );
+    },
+  };
 }

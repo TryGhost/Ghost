@@ -160,7 +160,10 @@ const specialistDependencies = [
   {
     // Streaming CSV records and committed CSV journal parts, from supplied streams.
     dependency: npm('csv-parse'),
-    owners: [service('content-import/csv/read-records.ts')],
+    owners: [
+      service('content-import/csv/read-records.ts'),
+      service('content-import/import/journal.ts'),
+    ],
   },
   {
     // CSV parsing and writing.
