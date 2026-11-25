@@ -280,6 +280,19 @@ test.describe('Call To Action Card', async () => {
         expect(card.textValue).toContain('<h2');
     });
 
+    test('turns ## and ### at the start of a line into headings in the content editor', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="cta-card-content-editor"]');
+        await page.keyboard.type('## Join our newsletter');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('### Before Thanksgiving');
+
+        const content = page.locator('[data-testid="cta-card-content-editor"]');
+        await expect(content.locator('h2')).toHaveText('Join our newsletter');
+        await expect(content.locator('h3')).toHaveText('Before Thanksgiving');
+    });
+
     test('sponsor label toolbar has no heading options', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
