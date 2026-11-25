@@ -59,6 +59,12 @@ describe('Custom theme settings root and retained consumers', function () {
     previousCache = cache.getAll();
     cache.populate([{ key: 'previous', value: 'still cached' }]);
     findAll = sandbox.stub(models.CustomThemeSetting, 'findAll').resolves(settingsCollection());
+    const transacting = () => ({ where: () => ({ forUpdate: () => ({ first: async () => {} }) }) });
+    sandbox
+      .stub(models.CustomThemeSetting, 'transaction')
+      .callsFake((...args: unknown[]) =>
+        (args[0] as (trx: typeof transacting) => unknown)(transacting),
+      );
     populate = sandbox.spy(cache, 'populate');
     activateFrontend = sandbox.stub(frontendBridge, 'activateTheme').resolves();
     sandbox.stub(validate, 'init');
@@ -217,7 +223,7 @@ describe('Custom theme settings root and retained consumers', function () {
     assert.deepEqual(cache.getAll(), { accent_color: '#112233' });
     assert.equal(controller.browse.query().length, 1);
     sinon.assert.calledOnce(init);
-    sinon.assert.calledTwice(findAll);
+    sinon.assert.calledOnce(findAll);
     sinon.assert.callOrder(init, findAll, activateFrontend, boot.offers.init);
 
     findAll.resetHistory();
@@ -225,7 +231,7 @@ describe('Custom theme settings root and retained consumers', function () {
     await boot.init();
 
     sinon.assert.calledTwice(init);
-    sinon.assert.calledTwice(findAll);
+    sinon.assert.calledOnce(findAll);
     sinon.assert.calledOnceWithExactly(activateFrontend, theme, checkedTheme);
     assert.deepEqual(cache.getAll(), { accent_color: '#112233' });
     assert.equal(controller.browse.query().length, 1);
