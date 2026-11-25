@@ -21,19 +21,18 @@ const STICKY_ROW = 'sticky z-10 border-border bg-surface-elevated-2';
 
 interface SegmentSwitcherProps {
   segments: Segment[];
-  /** The segment the members screen is showing, or null for every member. */
-  current: Segment | null;
+  /** The segment the members screen is showing. */
+  current: Segment;
   /** Starts a new segment. Left out for staff who can't change segments. */
   onNewSegment?: () => void;
 }
 
 /**
- * The members screen's title, as the way between segments: it names what the screen is showing
- * and opens the list of segments to switch to, so moving from one to another never goes through
- * a different page.
+ * The members screen's title while it shows a segment, as the way between segments: it names
+ * the segment and opens the list of segments to switch to, so moving from one to another never
+ * goes through a different page.
  *
- * A long list scrolls between "All members" and "New segment", which stay in view, and can be
- * searched by name.
+ * A long list scrolls above "New segment", which stays in view, and can be searched by name.
  */
 export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwitcherProps) {
   const navigate = useNavigate();
@@ -51,7 +50,7 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
           data-testid="segment-switcher"
           type="button"
         >
-          <span className="truncate">{current ? current.name : 'Members'}</span>
+          <span className="truncate">{current.name}</span>
           <LucideIcon.ChevronDown className="size-4 shrink-0 text-muted-foreground" />
         </button>
       </PopoverTrigger>
@@ -62,18 +61,12 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
       >
         <Command>
           <CommandInput placeholder="Search segments..." />
-          {/* Everything is in the one list, so the arrow keys reach all of it. The first and
-              last rows stick to its edges, in view however far the segments are scrolled. */}
+          {/* Everything is in the one list, so the arrow keys reach all of it. The last row
+              sticks to its edge, in view however far the segments are scrolled. */}
           <CommandList className="p-0">
             <CommandEmpty>No segments found.</CommandEmpty>
-            <CommandGroup className={`${STICKY_ROW} top-0 border-b`}>
-              <CommandItem value="All members" onSelect={() => go('/members')}>
-                <span>All members</span>
-                {!current && <CommandCheck />}
-              </CommandItem>
-            </CommandGroup>
             {segments.length > 0 && (
-              <CommandGroup heading="Segments">
+              <CommandGroup>
                 {segments.map((segment) => (
                   <CommandItem
                     key={segment.id}
@@ -81,7 +74,7 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
                     onSelect={() => go(buildSegmentUrl(segment))}
                   >
                     <span className="min-w-0 truncate">{segment.name}</span>
-                    {segment.id === current?.id && <CommandCheck />}
+                    {segment.id === current.id && <CommandCheck />}
                   </CommandItem>
                 ))}
               </CommandGroup>

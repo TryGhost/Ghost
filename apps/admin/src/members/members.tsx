@@ -270,11 +270,15 @@ const MembersPage: React.FC<MembersPageProps> = ({
                     the actions and cuts the line short, rather than pushing them to a row below. */}
                 <PageHeader.Left className={viewedSegment ? 'min-w-48 flex-1 basis-0' : undefined}>
                   <PageHeader.Title>
-                    <SegmentSwitcher
-                      current={viewedSegment}
-                      segments={savedViews}
-                      onNewSegment={canChangeSegments ? () => setNewSegmentOpen(true) : undefined}
-                    />{' '}
+                    {viewedSegment ? (
+                      <SegmentSwitcher
+                        current={viewedSegment}
+                        segments={savedViews}
+                        onNewSegment={canChangeSegments ? () => setNewSegmentOpen(true) : undefined}
+                      />
+                    ) : (
+                      'Members'
+                    )}{' '}
                     {!shouldShowLoading && totalMembers > 0 && (
                       <PageHeader.Count className="hidden sm:inline">
                         {formatNumber(totalMembers)}
