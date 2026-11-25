@@ -91,12 +91,14 @@ export function SegmentMenu({ segment, children, leadingItems, onDeleted }: Segm
             <LucideIcon.Trash2 className="size-4" />
             Delete
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+          {/* Prototype only, and marked so, for recordings to leave it out. */}
+          <DropdownMenuSeparator data-poc />
+          <DropdownMenuLabel className="text-xs font-normal text-muted-foreground" data-poc>
             Prototype only
           </DropdownMenuLabel>
           <DropdownMenuCheckboxItem
             checked={isSimulated(segment.id)}
+            data-poc
             onCheckedChange={(checked) => setSimulated(segment.id, checked)}
           >
             Pretend it is in use
