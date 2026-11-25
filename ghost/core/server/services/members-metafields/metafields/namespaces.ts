@@ -126,12 +126,15 @@ export function createNamespaces<Caller>(
   registrations: readonly NamespaceRegistration<Caller>[],
   {
     unowned,
+    definitionLimit,
   }: {
     /**
      * Who reaches the fields of a namespace nobody owns. Nobody can define a field in one, but a
      * field can still be stored there, as an app's is.
      */
     unowned: AccessPolicy<Caller>;
+    /** How many fields each namespace may hold, counted for each namespace alone. */
+    definitionLimit: CountLimit;
   },
 ): Namespaces<Caller> {
   const byNamespace = new Map(
@@ -196,7 +199,9 @@ export function createNamespaces<Caller>(
     },
 
     async assertRoom(namespace, held, adding) {
-      for (const limit of owned(namespace).limits) {
+      // The namespace's own limits first, so a namespace switched off says so rather than that
+      // it is full.
+      for (const limit of [...owned(namespace).limits, definitionLimit]) {
         switch (limit.kind) {
           case 'availability':
             if (!limit.isAvailable()) {

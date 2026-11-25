@@ -4518,7 +4518,7 @@ services:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/callers.ts
           - core/server/services/members-metafields/metafields/schema.ts
-          - core/server/services/members-metafields/custom-fields/config.ts
+          - core/server/services/members-metafields/config.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/metafields/queries.ts
@@ -4561,8 +4561,8 @@ services:
         summary: >-
           Init obtains the shared Knex getter and config, then publishes namespaces,
           fields, definitions, values and bindings sequentially; bindings retains that values instance.
-          Namespaces is built from custom fields' registration, which holds the host limit service and a
-          ceiling callback, both asked on each use.
+          Namespaces is built from custom fields' registration, which holds the host limit service, and
+          Members' definition limit, which holds the ceiling callback, both asked on each use.
           Definitions receives the function it reports changes to and the namespaces;
           values receives the namespaces and the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
@@ -4573,6 +4573,7 @@ services:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/metafields/namespaces.ts
           - core/server/services/members-metafields/custom-fields/namespace.ts
+          - core/server/services/members-metafields/definition-limit.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
@@ -4634,7 +4635,7 @@ services:
         sources:
           - core/boot.js
           - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/custom-fields/config.ts
+          - core/server/services/members-metafields/config.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/web/members/account/routes.ts
           - core/server/api/endpoints/member-metafields.ts
@@ -4661,7 +4662,7 @@ services:
           - test/e2e-api/members/custom-fields.test.ts
       configuration:
         summary: >-
-          Limit callbacks read members:metafields:maxDefinitions when adding custom fields or
+          Limit callbacks read members:metafields:maxDefinitions when adding fields in any namespace or
           planning value writes; the shipped fallback is captured and validated at import.
           The parser accepts nonnegative safe integers/numeric strings, including zero, and
           falls back to the shipped 100 for invalid input. Adding counts the namespace's active and
@@ -4670,8 +4671,8 @@ services:
           immutable config tree. Constructors retain Knex; schema/type/key rules are imported.
         sources:
           - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/custom-fields/config.ts
-          - core/server/services/members-metafields/custom-fields/namespace.ts
+          - core/server/services/members-metafields/config.ts
+          - core/server/services/members-metafields/definition-limit.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts
           - core/server/services/members-metafields/metafields/schema.ts
