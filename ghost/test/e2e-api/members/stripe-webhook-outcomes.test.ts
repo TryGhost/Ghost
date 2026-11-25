@@ -1913,6 +1913,140 @@ describe('Stripe webhook outcomes', function () {
         checkout: null,
       },
     ]);
+
+    it('saves the card a member’s Stripe customer pays with on a subscription without a card of its own, as when they change their card in the billing portal', async function () {
+      const { customer } = await paidMember();
+      const paymentMethod = {
+        id: stripeId('pm'),
+        object: 'payment_method',
+        type: 'card',
+        customer: customer.id,
+        billing_details: { name: 'Card Holder', email: null, phone: null, address: null },
+        card: { brand: 'visa', last4: '1881', exp_month: 12, exp_year: 2034, country: 'GB' },
+      };
+      stripeMocker.paymentMethods.push(paymentMethod);
+      Object.assign(customer, { invoice_settings: { default_payment_method: paymentMethod.id } });
+      const subscription = addSubscription(customer);
+
+      assert.equal(await send(updated, subscription), 200);
+
+      assert.equal((await linkedSubscription(subscription.id)).default_payment_card_last4, '1881');
+    });
+
+    it('saves no card on a subscription when neither it nor the member’s Stripe customer has one', async function () {
+      const { customer } = await paidMember();
+      Object.assign(customer, { invoice_settings: { default_payment_method: null } });
+      const subscription = addSubscription(customer);
+
+      assert.equal(await send(updated, subscription), 200);
+
+      assert.equal((await linkedSubscription(subscription.id)).default_payment_card_last4, null);
+    });
+
+    /**
+     * A discount of half off for three months, from a coupon Stripe holds, as Stripe sends it on a
+     * subscription of `customer`: it started a minute ago and ends in 90 days.
+     */
+    function repeatingDiscount(customer: { id: string }) {
+      const coupon = {
+        // Short enough to fit in the name of the offer Ghost creates for the coupon.
+        id: `co_${crypto.randomBytes(5).toString('hex')}`,
+        object: 'coupon',
+        amount_off: null,
+        currency: null,
+        duration: 'repeating',
+        duration_in_months: 3,
+        name: '50% off',
+        percent_off: 50,
+        valid: true,
+      };
+      stripeMocker.coupons.push(coupon);
+      const start = now() - 60;
+      return {
+        id: stripeId('di'),
+        object: 'discount',
+        coupon,
+        customer: customer.id,
+        start,
+        end: start + 60 * 60 * 24 * 90,
+      };
+    }
+
+    it('saves when the discount on a subscription started and when it ends', async function () {
+      const { customer } = await paidMember();
+      const discount = repeatingDiscount(customer);
+      const subscription = addSubscription(customer, { discount });
+
+      assert.equal(await send(updated, subscription), 200);
+
+      const linked = await linkedSubscription(subscription.id);
+      assert.equal(new Date(linked.discount_start).getTime(), discount.start * 1000);
+      assert.equal(new Date(linked.discount_end).getTime(), discount.end * 1000);
+    });
+
+    it('clears when the discount on a subscription started and ends once Stripe removes the discount', async function () {
+      const { customer } = await paidMember();
+      const subscription = addSubscription(customer, { discount: repeatingDiscount(customer) });
+      assert.equal(await send(updated, subscription), 200);
+      assert.notEqual((await linkedSubscription(subscription.id)).discount_start, null);
+
+      Object.assign(subscription, { discount: null });
+      assert.equal(await send(updated, subscription), 200);
+
+      const linked = await linkedSubscription(subscription.id);
+      assert.equal(linked.discount_start, null);
+      assert.equal(linked.discount_end, null);
+    });
+
+    it('saves when a subscription’s trial started and when it ends', async function () {
+      const { customer } = await paidMember();
+      const trialStart = now() - 60;
+      const trialEnd = trialStart + 60 * 60 * 24 * 7;
+      const subscription = addSubscription(customer);
+      Object.assign(subscription, {
+        status: 'trialing',
+        trial_start: trialStart,
+        trial_end: trialEnd,
+      });
+
+      assert.equal(await send(updated, subscription), 200);
+
+      const linked = await linkedSubscription(subscription.id);
+      assert.equal(new Date(linked.trial_start_at).getTime(), trialStart * 1000);
+      assert.equal(new Date(linked.trial_end_at).getTime(), trialEnd * 1000);
+    });
+  });
+
+  describe('customer.subscription.created', function () {
+    it('records where the member came from, with the UTM parameters of the link they followed, from the metadata of a subscription Stripe sends without a checkout', async function () {
+      const { customer } = await paidMember();
+      const post = await db.knex('posts').first();
+      // Every key Ghost writes into a subscription's metadata for where the member came from.
+      const metadata = {
+        attribution_id: post.id,
+        attribution_url: '/a-post/',
+        attribution_type: 'post',
+        referrer_source: 'Google',
+        referrer_medium: 'search',
+        referrer_url: 'https://www.google.com/',
+        utm_source: 'newsletter',
+        utm_medium: 'email',
+        utm_campaign: 'summer',
+        utm_term: 'stripe',
+        utm_content: 'header',
+      };
+      const subscription = addSubscription(customer);
+      Object.assign(subscription, { metadata });
+
+      assert.equal(await send('customer.subscription.created', subscription), 200);
+
+      const { id } = await linkedSubscription(subscription.id);
+      const started = await db
+        .knex('members_subscription_created_events')
+        .where({ subscription_id: id })
+        .first(Object.keys(metadata));
+      assert.deepEqual({ ...started }, metadata);
+    });
   });
 
   describe('invoice.payment_succeeded', function () {
