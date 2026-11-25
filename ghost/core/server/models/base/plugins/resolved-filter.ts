@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import type { FilterTransformer } from '../../../lib/filters';
 
 // A model's filter is resolved before it builds a query, because resolving can be asynchronous,
 // such as reading records the filter names, and building a model's query is not.
@@ -7,8 +8,7 @@ import type { Knex } from 'knex';
 // which has none of the methods, so the mistake fails at the first call instead of building a
 // query without the filter.
 
-/** Rewrites a parsed filter, as NQL's `mongoTransformer` option takes it. */
-export type FilterTransformer = (filter: unknown) => unknown;
+export type { FilterTransformer };
 
 /** The query options a filter is resolved from. Models read other options besides these. */
 export interface FilterOptions {

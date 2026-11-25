@@ -341,9 +341,7 @@ describe('Upfront recipient preparation through MySQL', () => {
 
   it('does not retry malformed audience filters', async () => {
     filter = 'status:(';
-    const audience = sinon.spy(ResolvedFilter.prototype, 'query');
-    await assert.rejects(prepare());
-    sinon.assert.calledOnce(audience);
+    await assert.rejects(prepare(), { name: 'BadRequestError', message: 'Error parsing filter' });
     assert.deepEqual(await service.getBatches(email), []);
   });
 
