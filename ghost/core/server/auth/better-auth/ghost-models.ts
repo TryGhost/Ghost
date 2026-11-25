@@ -2,7 +2,25 @@ import ObjectId from 'bson-objectid';
 import type { BetterAuthOptions } from 'better-auth/types';
 import type { VirtualColumn } from './knex-adapter';
 
-const timestamps = { createdAt: 'created_at', updatedAt: 'updated_at' };
+// `requirePKCE` is `require_pkce`
+const snakeCase = (field: string) =>
+  field.replace(
+    /([a-z])([A-Z]+)/g,
+    (_, last: string, upper: string) => `${last}_${upper.toLowerCase()}`,
+  );
+
+/** Maps each field to its snake_case column, as Ghost's tables name them. */
+function snakeFields<const T extends string>(fields: readonly T[]): Record<T, string> {
+  return Object.fromEntries(fields.map((field) => [field, snakeCase(field)])) as Record<T, string>;
+}
+
+/**
+ * A core model's Better Auth field names. A spread or returned object skips
+ * excess-property checks, so each field list is checked against this instead.
+ */
+type CoreField<Model extends 'user' | 'session' | 'account' | 'verification'> = keyof NonNullable<
+  NonNullable<BetterAuthOptions[Model]>['fields']
+>;
 
 /** Ghost ids are ObjectIds. Pass as `advanced.database.generateId`. */
 export const generateGhostId = () => new ObjectId().toHexString();
@@ -15,41 +33,43 @@ export const ghostModelOptions = {
   user: {
     modelName: 'users',
     fields: {
-      ...timestamps,
+      ...snakeFields(['createdAt', 'updatedAt', 'emailVerified'] satisfies CoreField<'user'>[]),
       image: 'profile_image',
-      emailVerified: 'email_verified',
     },
   },
   session: {
     modelName: 'user_sessions',
-    fields: {
-      ...timestamps,
-      userId: 'user_id',
-      expiresAt: 'expires_at',
-      ipAddress: 'ip_address',
-      userAgent: 'user_agent',
-    },
+    fields: snakeFields([
+      'createdAt',
+      'updatedAt',
+      'userId',
+      'expiresAt',
+      'ipAddress',
+      'userAgent',
+    ] satisfies CoreField<'session'>[]),
   },
   account: {
     modelName: 'user_accounts',
-    fields: {
-      ...timestamps,
-      userId: 'user_id',
-      accountId: 'account_id',
-      providerId: 'provider_id',
-      accessToken: 'access_token',
-      refreshToken: 'refresh_token',
-      idToken: 'id_token',
-      accessTokenExpiresAt: 'access_token_expires_at',
-      refreshTokenExpiresAt: 'refresh_token_expires_at',
-    },
+    fields: snakeFields([
+      'createdAt',
+      'updatedAt',
+      'userId',
+      'accountId',
+      'providerId',
+      'accessToken',
+      'refreshToken',
+      'idToken',
+      'accessTokenExpiresAt',
+      'refreshTokenExpiresAt',
+    ] satisfies CoreField<'account'>[]),
   },
   verification: {
     modelName: 'verifications',
-    fields: {
-      ...timestamps,
-      expiresAt: 'expires_at',
-    },
+    fields: snakeFields([
+      'createdAt',
+      'updatedAt',
+      'expiresAt',
+    ] satisfies CoreField<'verification'>[]),
   },
 } satisfies Pick<BetterAuthOptions, 'user' | 'session' | 'account' | 'verification'>;
 
@@ -79,15 +99,10 @@ export const ghostVirtualColumns: Record<string, Record<string, VirtualColumn>> 
  * `user_two_factors` row, and the virtual column drops that write.
  */
 export const ghostTwoFactorSchema = {
-  user: { fields: { twoFactorEnabled: 'two_factor_enabled' } },
+  user: { fields: snakeFields(['twoFactorEnabled']) },
   twoFactor: {
     modelName: 'user_two_factors',
-    fields: {
-      userId: 'user_id',
-      backupCodes: 'backup_codes',
-      failedVerificationCount: 'failed_verification_count',
-      lockedUntil: 'locked_until',
-    },
+    fields: snakeFields(['userId', 'backupCodes', 'failedVerificationCount', 'lockedUntil']),
   },
 };
 
@@ -103,18 +118,6 @@ export const ghostCreateDefaults: Record<
 > = {
   users: (row) => ({ slug: row.id, password: '!' }),
 };
-
-// `requirePKCE` is `require_pkce`
-const snakeCase = (field: string) =>
-  field.replace(
-    /([a-z])([A-Z]+)/g,
-    (_, last: string, upper: string) => `${last}_${upper.toLowerCase()}`,
-  );
-
-/** Maps each field to its snake_case column, as Ghost's tables name them. */
-function snakeFields(fields: readonly string[]): Record<string, string> {
-  return Object.fromEntries(fields.map((field) => [field, snakeCase(field)]));
-}
 
 /**
  * Pass as `oauthProvider({ schema: ghostOAuthProviderSchema })`. Maps the
