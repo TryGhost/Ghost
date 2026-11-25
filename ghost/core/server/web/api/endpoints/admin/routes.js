@@ -51,6 +51,20 @@ module.exports = function apiRoutes() {
     apiMw.upload.validation({ type: 'posts' }),
     http(api.posts.importCSV),
   );
+  router.post(
+    '/posts/upload/inspect',
+    mw.authAdminApi,
+    labs.enabledMiddleware('csvContentImporter'),
+    apiMw.upload.csvImport('postsfile'),
+    apiMw.upload.validation({ type: 'posts' }),
+    http(api.posts.inspectCSV),
+  );
+  router.delete(
+    '/posts/upload/inspect/:upload_id',
+    mw.authAdminApi,
+    labs.enabledMiddleware('csvContentImporter'),
+    http(api.posts.cancelCSVUpload),
+  );
   router.get('/posts/:id', mw.authAdminApi, http(api.posts.read));
   router.get('/posts/slug/:slug', mw.authAdminApi, http(api.posts.read));
   router.put('/posts/:id', mw.authAdminApi, http(api.posts.edit));

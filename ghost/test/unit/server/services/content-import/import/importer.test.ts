@@ -1,3 +1,4 @@
+import { importFiles } from '../../../../../utils/csv-import-files';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
@@ -62,7 +63,7 @@ function harness(
   };
 
   const deps = {
-    files: { getSize: async () => 0 },
+    files: { ...importFiles, getSize: async () => 0 },
     readRows: async () =>
       source
         ? {
@@ -121,6 +122,7 @@ function harness(
       acknowledge: async () => {},
       start: async () => {},
       cleanupExpired: async () => {},
+      cancel: async () => {},
       remove: async (_id: string, file: { key: string; name: string }) => {
         removedFiles.push(file);
       },

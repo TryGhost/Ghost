@@ -26,6 +26,7 @@ const noCleanup = async (): Promise<void> => {};
 export async function prepareImportSource(
   files: ArchiveFiles,
   request: ImportSourceRequest,
+  { includeAssets = true }: { includeAssets?: boolean } = {},
 ): Promise<PreparedImportSource> {
   const extension = path.extname(request.fileName).toLowerCase();
   if (extension === '.csv') {
@@ -89,7 +90,9 @@ export async function prepareImportSource(
 
     return {
       filePath: path.join(directory, csvFiles[0]),
-      assets: await prepareAssetBatch(archive, directory, baseDirectory),
+      assets: includeAssets
+        ? await prepareAssetBatch(archive, directory, baseDirectory)
+        : undefined,
       cleanup,
     };
   } catch (error) {

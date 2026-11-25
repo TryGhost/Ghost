@@ -76,6 +76,14 @@ module.exports = {
     frame.response = result;
   },
 
+  inspectCSV(result, apiConfig, frame) {
+    frame.response = result;
+  },
+
+  cancelCSVUpload(_result, _apiConfig, frame) {
+    frame.response = null;
+  },
+
   bulkEdit(bulkActionResult, _apiConfig, frame) {
     frame.response = {
       bulk: {

@@ -23,6 +23,7 @@ import { PostMediaInliner } from './import/media';
 import { isLocalMediaUrl } from './import/local-media-url';
 import { urlForImportedPost } from './import/post-link';
 import { createImportFileStager, type DownloadedImportFile } from './import/staged-file';
+import type { ImportOwner } from './import/upload-repository';
 import ContentCSVImportJob from './jobs/content-csv-import-job';
 import CleanCSVUploadsJob from './jobs/clean-csv-uploads-job';
 import { getInstance as getJobsService } from '../jobs-service';
@@ -101,7 +102,7 @@ function makeImporter(): ContentCSVImporter {
   return new ContentCSVImporter({
     files,
     readRows: readPostRows,
-    prepareSource: (request) => prepareImportSource(files, request),
+    prepareSource: (request, options) => prepareImportSource(files, request, options),
     posts: new BookshelfPostsRepository(models),
     getHtmlToLexical: () => lexicalLib.htmlToLexicalConverter,
     getMarkdownToHtml: () => require('@tryghost/kg-markdown-html-renderer').render,
@@ -154,11 +155,15 @@ export function init(): void {
   importer ??= makeImporter();
 }
 
-export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
+function getImporter(): ContentCSVImporter {
   if (!importer) {
     throw new errors.InternalServerError({ message: 'Content import service used before init' });
   }
 
+  return importer;
+}
+
+function validateRequest(request: ImportRequest): ImportRequest {
   const parsedRequest = importRequestSchema.safeParse(request);
 
   if (!parsedRequest.success) {
@@ -168,7 +173,22 @@ export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
     });
   }
 
-  return importer.importCSV(parsedRequest.data);
+  return parsedRequest.data;
+}
+
+export function importCSV(request: ImportRequest): Promise<ImportAccepted> {
+  return getImporter().importCSV(validateRequest(request));
+}
+
+export function inspectCSV(request: ImportRequest) {
+  return getImporter().inspectCSV(validateRequest(request));
+}
+
+export function cancelUpload(id: string, owner: ImportOwner): Promise<void> {
+  if (!/^[a-f0-9]{24}$/.test(id)) {
+    throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
+  }
+  return getImporter().cancelUpload(id, owner);
 }
 
 export function handleJob(job: ContentCSVImportJob): Promise<void> {

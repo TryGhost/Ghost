@@ -657,6 +657,21 @@ it('allows the exact libraries required by Custom Theme Settings without allowin
   );
 });
 
+it('allows supplied-storage helpers and UTF-8 decoding without exposing storage adapters', (t) => {
+  const helper = 'ghost/core/server/adapters/storage/import-storage.ts';
+  const adapter = 'ghost/core/server/adapters/storage/LocalStorageBase.ts';
+  const f = fixture(t, {
+    [`${alpha}/allowed.ts`]:
+      "import 'node:string_decoder'; import '../../adapters/storage/import-storage';",
+    [`${alpha}/rejected.ts`]: "import '../../adapters/storage/LocalStorageBase';",
+    [helper]: 'export {};',
+    [adapter]: 'export {};',
+  });
+  const graph = f.graph();
+  assert.equal(edges(graph).length, 3);
+  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, adapter]]);
+});
+
 it('allows individual Lodash functions without allowing the whole library, its builds or lodash/fp', (t) => {
   const approved = ['lodash/isEmpty', 'lodash/isEmpty.js', 'lodash/pick', 'lodash/indexOf'];
   const rejected = {

@@ -24,6 +24,13 @@ const allowedIncludes = [
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
 const postsService = getPostServiceInstance();
+const importPermissions = { docName: 'content_imports', method: 'importContent' };
+
+function csvUploadOwner(frame) {
+  return frame.options.context.integration
+    ? { type: 'integration', id: frame.options.context.integration.id }
+    : { type: 'user', id: frame.user.id };
+}
 
 /**
  * @param {string} event
@@ -116,10 +123,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    permissions: {
-      docName: 'content_imports',
-      method: 'importContent',
-    },
+    permissions: importPermissions,
     async query(frame) {
       // The content-import service stages and validates the upload before this response;
       // Multer deletes the request temp file as soon as the 202 is sent.
@@ -128,11 +132,33 @@ const controller = {
         fileName: frame.file.name,
         mapping: frame.data.mapping,
         requestUserEmail: frame.user ? frame.user.get('email') : null,
-        owner: frame.options.context.integration
-          ? { type: 'integration', id: frame.options.context.integration.id }
-          : { type: 'user', id: frame.user.id },
+        owner: csvUploadOwner(frame),
       });
       return { meta: { import_id: importId, total } };
+    },
+  },
+
+  inspectCSV: {
+    headers: { cacheInvalidate: false },
+    permissions: importPermissions,
+    async query(frame) {
+      return {
+        meta: await contentImportService.inspectCSV({
+          filePath: frame.file.path,
+          fileName: frame.file.name,
+          owner: csvUploadOwner(frame),
+        }),
+      };
+    },
+  },
+
+  cancelCSVUpload: {
+    headers: { cacheInvalidate: false },
+    permissions: importPermissions,
+    statusCode: 204,
+    options: ['upload_id'],
+    async query(frame) {
+      await contentImportService.cancelUpload(frame.options.upload_id, csvUploadOwner(frame));
     },
   },
 

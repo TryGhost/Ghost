@@ -43,6 +43,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
   '^(node:)?path$', // Path string parsing and joining.
+  '^(node:)?string_decoder$', // Incremental decoding of caller-supplied bytes; no file or network access.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.

@@ -15,7 +15,9 @@ import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
 import type { ImportFileStager, DownloadedImportFile, StagedImportFile } from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
+import { readCSVPreview } from './preview';
 import { assertCSVUploadSize } from './limits';
+import type { ImportOwner } from './upload-repository';
 import type { ImportFiles } from './files';
 
 export type { ImportRequest } from './schema';
@@ -46,7 +48,10 @@ type ReadRows = (
   path: string,
   mapping?: Record<string, string>,
 ) => Promise<PreparedPostRows | PostImportRow[]>;
-type PrepareSource = (request: ImportRequest) => Promise<PreparedImportSource>;
+type PrepareSource = (
+  request: ImportRequest,
+  options?: { includeAssets?: boolean },
+) => Promise<PreparedImportSource>;
 
 const messages = {
   unreadableFile: 'The file could not be parsed as a CSV file.',
@@ -63,7 +68,7 @@ function logLifecycle(message: string): void {
 }
 
 interface ImporterDeps {
-  files: Pick<ImportFiles, 'getSize'>;
+  files: Pick<ImportFiles, 'readSource' | 'getSize'>;
   readRows: ReadRows;
   prepareSource?: PrepareSource;
   posts: PostsRepository;
@@ -184,6 +189,23 @@ class ContentCSVImporter {
         await this.cleanupStagedFile(runId, stagedFile);
       }
     }
+  }
+
+  async inspectCSV(request: ImportRequest) {
+    assertCSVUploadSize(await this._files.getSize(request.filePath));
+    const source = await this._prepareSource(request, { includeAssets: false });
+    try {
+      const sample = await readCSVPreview(this._files.readSource(source.filePath));
+      const uploadId = this._newRunId();
+      await this._fileStager.stage(request, uploadId, this._now());
+      return { upload_id: uploadId, ...sample };
+    } finally {
+      await this.cleanupSource(source.cleanup);
+    }
+  }
+
+  cancelUpload(id: string, owner: ImportOwner): Promise<void> {
+    return this._fileStager.cancel(id, owner);
   }
 
   async handle(job: ContentCSVImportJob): Promise<void> {

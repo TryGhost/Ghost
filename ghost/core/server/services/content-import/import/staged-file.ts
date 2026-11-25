@@ -25,6 +25,7 @@ export interface ImportFileStager {
   acknowledge(id: string): Promise<void>;
   start(id: string, now: Date): Promise<void>;
   remove(id: string, file: StagedImportFile): Promise<void>;
+  cancel(id: string, owner: ImportOwner): Promise<void>;
   cleanupExpired(now: Date, report: (error: unknown) => void): Promise<void>;
 }
 
@@ -70,6 +71,14 @@ export function createImportFileStager({
     () => `content-csv-uploads/${namespace()}`,
   );
 
+  function assertSourceKey(id: string, key: string): void {
+    const directory = prefix(id) + '/';
+    const name = key.slice(directory.length);
+    if (!key.startsWith(directory) || !name || name === '.' || name === '..' || /[/\\]/.test(name)) {
+      throw new errors.InternalServerError({ message: 'Invalid CSV upload source.' });
+    }
+  }
+
   async function remove(id: string, file: StagedImportFile): Promise<void> {
     const discard = await uploads.change(id, (row) => {
       if (row?.state === 'accepted') {
@@ -98,7 +107,9 @@ export function createImportFileStager({
       try {
         const source = { name: 'source', path: filePath, private: true };
         const url = await storage.save(source, prefix(id));
-        file.key = storage.urlToPath(url);
+        const key = storage.urlToPath(url);
+        assertSourceKey(id, key);
+        file.key = key;
         await uploads.change(id, (upload) => {
           if (upload?.state !== 'staging') {
             throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
@@ -181,6 +192,24 @@ export function createImportFileStager({
           report(error);
         }
       }
+    },
+
+    async cancel(id, owner) {
+      const file = await uploads.change(id, (row) => {
+        if (!row || row.owner_id !== owner.id || row.owner_type !== owner.type) {
+          throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
+        }
+        if (row.state !== 'ready' && row.state !== 'deleting') {
+          throw new errors.ConflictError({
+            message: 'This CSV upload can no longer be cancelled.',
+          });
+        }
+        assertSourceKey(id, row.file.key);
+        return row.state === 'deleting'
+          ? { value: row.file }
+          : { value: row.file, change: { state: 'deleting' } };
+      });
+      await remove(id, file);
     },
 
     remove,
