@@ -1097,7 +1097,9 @@ jobs:
 
   # The e2e API suites under auth:engine=better-auth, until the legacy engine goes
   # (docs/plans/better-auth-migration.md §7). One Node leg: the engine, not the
-  # runtime, is what differs from job_acceptance-tests.
+  # runtime, is what differs from job_acceptance-tests. Collecting coverage turns
+  # strict mode off (test/utils/strict-mode.ts), so where coverage is collected a
+  # second leg runs without it and keeps one strict run.
   job_better-auth-tests:
     runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
@@ -1125,10 +1127,14 @@ jobs:
           --health-interval=2s
           --health-timeout=5s
           --health-retries=60
+    strategy:
+      fail-fast: false
+      matrix:
+        coverage: ${{ fromJSON(needs.job_setup.outputs.coverage_enabled == 'true' && '[true, false]' || '[false]') }}
     env:
       NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
-      COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' }}
-    name: E2E API tests (better-auth, mysql8)
+      COVERAGE_ENABLED: ${{ matrix.coverage }}
+    name: E2E API tests (better-auth, mysql8${{ matrix.coverage && ', coverage' || '' }})
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm

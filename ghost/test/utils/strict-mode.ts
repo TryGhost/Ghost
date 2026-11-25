@@ -62,8 +62,9 @@ function addUseStrict(content: string): string {
 // @vitest/coverage-v8 only corrects offsets for modules vitest loads itself —
 // not ones loaded through Node's require — so with the hook on, coverage maps
 // counts onto the wrong ranges. Runs that collect coverage therefore skip it.
-// In CI those are only the acceptance lanes on the primary Node version; the
-// other Node leg runs the same suites without coverage and keeps strict mode.
+// In CI those are the acceptance lanes on the primary Node version and one leg
+// of the better-auth lane. The other Node leg, and the better-auth lane's other
+// leg, run the same suites without coverage and keep strict mode.
 //
 // Called from the vitest configs, which run in the main process where --coverage
 // is visible; the result goes into `test.env`, which reaches every worker.
