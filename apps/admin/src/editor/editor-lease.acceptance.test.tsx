@@ -383,6 +383,12 @@ describe('Post editor lease', () => {
         .element(card().getByRole('status'))
         .toHaveTextContent('You’re now editing this post.');
       expect(card().element().querySelector('svg')).toHaveClass('text-state-success');
+      // Reloading the editor can return focus to its new writing surface.
+      editorScreen.titleInput().element().focus();
+      await expect.element(editorScreen.titleInput()).toHaveFocus();
+      await expect
+        .element(card().getByRole('status'))
+        .toHaveTextContent('You’re now editing this post.');
       await expect.element(card()).not.toBeInTheDocument();
       const editing = page.getByRole('button', { name: 'You are editing this post', exact: true });
       await userEvent.hover(editing);
@@ -390,6 +396,31 @@ describe('Post editor lease', () => {
         .element(page.getByRole('tooltip'))
         .toHaveTextContent('You are editing this post.');
     });
+
+    it('shows success below the new owner’s avatar while the previous editor remains present', async () => {
+      fakePublishedPost();
+      alex();
+      const { state } = fakeLease(() => [
+        { userId: OTHER_USER, resourceId: POST_ID, resourceType: 'post', ts: Date.now() },
+      ]);
+      state.other = OTHER_USER;
+      await open();
+      await avatar().click();
+      await card().getByRole('button', { name: 'Take over' }).click();
+      await confirmTakeover();
+
+      await expect
+        .element(card(), { timeout: 14_000 })
+        .toHaveTextContent('You’re now editing this post.');
+      await expect.element(card()).toBeVisible();
+      const editing = page.getByRole('button', { name: 'You are editing this post', exact: true });
+      const anchor = editing.element().getBoundingClientRect();
+      const popup = card().element().getBoundingClientRect();
+      expect(popup.top).toBeGreaterThanOrEqual(anchor.bottom);
+      expect(
+        Math.abs((popup.left + popup.right) / 2 - (anchor.left + anchor.right) / 2),
+      ).toBeLessThan(2);
+    }, 20_000);
 
     it('reads the latest copy and opens by itself once they have gone', async () => {
       let current = { title: 'Published example', updated_at: LOADED_AT };
