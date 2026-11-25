@@ -84,6 +84,14 @@ interface NothingWritten extends Omit<Outcome, 'writes'> {
 const FIXTURE_PRODUCT = '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d';
 const FIXTURE_PRICE = '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12';
 
+/**
+ * A buyer's name longer than the 191 characters Ghost stores, as Stripe accepts, and the name
+ * Ghost saves for it: its first 191 characters. The cut falls on an emoji, which counts as one
+ * character and is kept whole.
+ */
+const LONG_NAME = `${'x'.repeat(190)}${'🙂'.repeat(10)}`;
+const FITTED_NAME = `${'x'.repeat(190)}🙂`;
+
 /** Stripe's error responses, as Stripe returns them for each failure seen in production. */
 const STRIPE: Record<'accessRevoked' | 'locked', StripeFailure> = {
   accessRevoked: [
@@ -226,19 +234,36 @@ describe('Stripe webhook outcomes', function () {
     return subscription;
   }
 
-  /** A new Stripe customer with one subscription to the fixture tier, both of which Stripe holds. */
+  /**
+   * A new Stripe customer with one subscription to the fixture tier, both of which Stripe holds.
+   * With a `cardholder`, the subscription is paid by a card in that name, which the customer lists
+   * expanded, as Ghost fetches it.
+   */
   function stripeCustomer({
     email = `${stripeId('buyer')}@example.com`,
     name = 'Checkout Buyer',
-  }: { email?: string; name?: string } = {}) {
+    cardholder,
+  }: { email?: string; name?: string; cardholder?: string } = {}) {
     const id = stripeId('cus');
     const subscription = subscriptionFor(id);
+    const listed = cardholder
+      ? {
+          ...subscription,
+          default_payment_method: {
+            id: stripeId('pm'),
+            object: 'payment_method',
+            type: 'card',
+            billing_details: { name: cardholder, email: null, phone: null, address: null },
+            card: { brand: 'visa', last4: '4242', exp_month: 12, exp_year: 2034, country: 'GB' },
+          },
+        }
+      : subscription;
     const customer = {
       id,
       object: 'customer',
       email,
       name,
-      subscriptions: { object: 'list', data: [subscription] },
+      subscriptions: { object: 'list', data: [listed] },
     };
     stripeMocker.customers.push(customer);
     return { customer, subscription };
@@ -300,12 +325,14 @@ describe('Stripe webhook outcomes', function () {
     metadata = {},
     amount = 1200,
     email = `${stripeId('payer')}@example.com`,
+    name = 'Payer',
     id = stripeId('cs'),
   }: {
     paymentStatus?: 'paid' | 'unpaid';
     metadata?: Record<string, string>;
     amount?: number;
     email?: string;
+    name?: string;
     id?: string;
   } = {}) {
     return {
@@ -323,7 +350,7 @@ describe('Stripe webhook outcomes', function () {
       customer_email: email,
       customer_details: {
         email,
-        name: 'Payer',
+        name,
         phone: null,
         address: null,
         tax_exempt: 'none',
@@ -1003,34 +1030,65 @@ describe('Stripe webhook outcomes', function () {
       );
     });
 
-    it('creates a free member and then responds with 500 on every attempt when the buyer’s name is longer than the name column', async function () {
-      const bought = stripeCustomer({ name: 'x'.repeat(250) });
-      let memberId: string | undefined;
+    it('completes the checkout with the buyer’s names shortened to fit when they’re longer than Ghost stores', async function () {
+      const bought = stripeCustomer({ name: LONG_NAME });
 
       await pinOutcome(
-        { type: completed, object: subscriptionCheckout(bought) },
+        { type: completed, object: subscriptionCheckout(bought, { name: LONG_NAME }) },
         {
-          attempts: 2,
-          status: 500,
+          status: 200,
           writes: async () => {
             const member = await memberByEmail(bought.customer.email);
-            assert.equal(member.get('status'), 'free');
-            assert.equal(member.related('stripeCustomers').length, 0);
-            memberId ??= member.id;
-            assert.equal(member.id, memberId);
+            assert.equal(member.get('status'), 'paid');
+            assert.equal(member.get('name'), FITTED_NAME);
+            assert.deepEqual(
+              member
+                .related('stripeCustomers')
+                .toJSON()
+                .map(({ customer_id, name }: { customer_id: string; name: string }) => ({
+                  customer_id,
+                  name,
+                })),
+              [{ customer_id: bought.customer.id, name: FITTED_NAME }],
+            );
+            assert.equal((await linkedSubscription(bought.subscription.id)).status, 'active');
           },
-          webhook: span(
-            {
-              type: completed,
-              kind: 'subscription_checkout',
-              ...failedBecause('unclassified', 'ghost'),
-            },
-            '_OTHER',
-          ),
-          checkout: checkoutSpan(
-            { type: 'subscription', member: 'new', ...failedBecause('unclassified', 'ghost') },
-            '_OTHER',
-          ),
+          webhook: span({ type: completed, kind: 'subscription_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'subscription', member: 'new' }),
+        },
+      );
+    });
+
+    it('gives a signed-in member without a name the cardholder’s name, shortened to fit, when they upgrade', async function () {
+      const email = `${stripeId('member')}@example.com`;
+      const membersService = require('../../../core/server/services/members');
+      await membersService.api.members.create({ email });
+      // Signed up before the checkout started, which Ghost compares to the second.
+      await db
+        .knex('members')
+        .where({ email })
+        .update({ created_at: new Date(Date.now() - 60 * 1000) });
+      const bought = stripeCustomer({ email, name: LONG_NAME, cardholder: LONG_NAME });
+
+      await pinOutcome(
+        {
+          type: completed,
+          object: subscriptionCheckout(bought, {
+            checkoutType: 'upgrade',
+            ghostSignupContext: 'already_authenticated',
+          }),
+        },
+        {
+          status: 200,
+          writes: async () => {
+            const member = await memberByEmail(email);
+            assert.equal(member.get('status'), 'paid');
+            assert.equal(member.get('name'), FITTED_NAME);
+            assert.equal(member.related('stripeCustomers').first().get('name'), FITTED_NAME);
+            assert.equal((await linkedSubscription(bought.subscription.id)).status, 'active');
+          },
+          webhook: span({ type: completed, kind: 'subscription_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'subscription', member: 'signed_in' }),
         },
       );
     });
@@ -1057,6 +1115,26 @@ describe('Stripe webhook outcomes', function () {
           },
           webhook: span({ type: completed, kind: 'card_update_checkout', result: 'handled' }),
           checkout: checkoutSpan({ type: 'setup' }),
+        },
+      );
+    });
+
+    it('records a donation under the donor’s name, shortened to fit, when it’s longer than Ghost stores', async function () {
+      const email = `${stripeId('donor')}@example.com`;
+
+      await pinOutcome(
+        {
+          type: completed,
+          object: paymentCheckout({ metadata: { ghost_donation: 'true' }, email, name: LONG_NAME }),
+        },
+        {
+          status: 200,
+          writes: async () => {
+            const donation = await db.knex('donation_payment_events').where({ email }).first();
+            assert.equal(donation.name, FITTED_NAME);
+          },
+          webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'donation' }),
         },
       );
     });

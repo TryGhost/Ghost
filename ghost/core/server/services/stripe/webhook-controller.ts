@@ -7,6 +7,7 @@ import { classifyFailure, FAILURE_CODES } from './webhook/failures';
 import {
   readEnvelope,
   toWebhookEvent,
+  type CheckoutSessionObject,
   type StripeEventEnvelope,
   type StripeObject,
   type WebhookEvent,
@@ -21,10 +22,10 @@ export interface WebhookControllerDeps {
     parseWebhook(body: unknown, signature: string): unknown;
   };
   checkoutSessionEventService: {
-    completeSubscriptionCheckout(session: StripeObject): Promise<unknown>;
-    updateCard(session: StripeObject): Promise<unknown>;
-    completeGiftPurchase(session: StripeObject): Promise<unknown>;
-    recordDonation(session: StripeObject): Promise<unknown>;
+    completeSubscriptionCheckout(session: CheckoutSessionObject): Promise<unknown>;
+    updateCard(session: CheckoutSessionObject): Promise<unknown>;
+    completeGiftPurchase(session: CheckoutSessionObject): Promise<unknown>;
+    recordDonation(session: CheckoutSessionObject): Promise<unknown>;
   };
   subscriptionEventService: {
     handleSubscriptionEvent(subscription: StripeObject): Promise<unknown>;

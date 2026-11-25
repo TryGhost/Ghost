@@ -1559,6 +1559,19 @@ describe('Members API', function () {
     });
   });
 
+  it('Refuses a name longer than Ghost stores', async function () {
+    // Only names from Stripe are shortened to fit, when a buyer has already paid.
+    await agent
+      .post(`/members/`)
+      .body({ members: [{ email: 'member-with-long-name@test.com', name: 'x'.repeat(192) }] })
+      .expectStatus(422)
+      .expect(({ body }) => {
+        assert.equal(body.errors[0].type, 'ValidationError');
+      });
+
+    assert.equal(await models.Member.findOne({ email: 'member-with-long-name@test.com' }), null);
+  });
+
   it('Can add and send a signup confirmation email', async function () {
     const member = {
       name: 'Send Me Confirmation',
@@ -2314,6 +2327,29 @@ describe('Members API', function () {
         },
       ],
     });
+  });
+
+  it('Links a Stripe customer whose name is longer than Ghost stores, with the name shortened to fit', async function () {
+    // The name comes from Stripe, so the staff user adding the member can't shorten it.
+    const customer = {
+      id: 'cus_long_name',
+      name: `${'x'.repeat(190)}${'🙂'.repeat(10)}`,
+      email: 'member-with-long-stripe-name@test.com',
+      subscriptions: { type: 'list', data: [] },
+    };
+    stripeMocker.customers.push(customer);
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [{ email: customer.email, stripe_customer_id: customer.id }] })
+      .expectStatus(201);
+
+    const linked = await models.MemberStripeCustomer.findOne({ member_id: body.members[0].id });
+    // Later tests count the members, and expect only those they name.
+    await agent.delete(`/members/${body.members[0].id}/`).expectStatus(204);
+
+    assert.equal(linked.get('customer_id'), customer.id);
+    assert.equal(linked.get('name'), `${'x'.repeat(190)}🙂`);
   });
 
   let memberWithPaidSubscription;

@@ -15,6 +15,7 @@ const {
   taxSessionParams,
   withoutParts,
 } = require('./checkout-session-params');
+const { StripeCustomer } = require('./stripe-api-responses');
 
 /** @import { CheckoutDefinition } from '../stripe-checkout-config' */
 /** @import { CheckoutSessionParts, Refusal } from './checkout-session-params' */
@@ -444,7 +445,8 @@ module.exports = class StripeAPI {
    * @param {string} id
    * @param {ICustomerRetrieveParams} options
    *
-   * @returns {Promise<ICustomer|IDeletedCustomer>}
+   * @returns {Promise<import('./stripe-api-responses').StripeCustomer>} The customer, with its names
+   *   shortened to fit what Ghost stores.
    * @throws {Error}
    */
   async getCustomer(id, options = {}) {
@@ -458,9 +460,10 @@ module.exports = class StripeAPI {
       }
       const customer = await this._stripe.customers.retrieve(id, options);
       debug(`getCustomer(${id}, ${JSON.stringify(options)}) -> Success`);
-      return customer;
+      // Ghost saves a customer's names, which Stripe allows to be longer than Ghost stores.
+      return StripeCustomer.parse(customer);
     } catch (err) {
-      debug(`getCustomer(${id}, ${JSON.stringify(options)}) -> ${err.type}`);
+      debug(`getCustomer(${id}, ${JSON.stringify(options)}) -> ${err.type ?? err.name}`);
       throw err;
     }
   }
