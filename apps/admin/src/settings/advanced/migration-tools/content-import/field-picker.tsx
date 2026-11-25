@@ -52,9 +52,10 @@ export function FieldPicker({ column, value, disabled, onValueChange }: FieldPic
           <LucideIcon.ChevronDown className="size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
+      {/* SettingsModal's backdrop is at z-[1000]; keep the portalled picker above it. */}
       <PopoverContent
         align="start"
-        className="w-(--radix-popover-trigger-width) min-w-64 p-0"
+        className="z-[9999] w-(--radix-popover-trigger-width) min-w-64 p-0"
         collisionPadding={16}
       >
         <Command>

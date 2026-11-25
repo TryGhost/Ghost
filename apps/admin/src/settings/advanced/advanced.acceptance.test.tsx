@@ -156,6 +156,67 @@ describe('Advanced settings', () => {
     await expect.poll(() => api.requests.length).toBe(1);
   });
 
+  it('keeps the CSV field picker above the import modal while searching and selecting', async () => {
+    fakeSettingsScreens();
+    const config = configResponse();
+    config.config.contentImport = { stagedInspection: true };
+    fakeAdminEndpoint('POST', '/posts/upload/inspect/', {
+      meta: {
+        upload_id: 'staged-csv',
+        columns: ['Heading'],
+        rows: [{ Heading: 'Example post' }],
+        total: 1,
+      },
+    });
+    const cancellation = fakeAdminEndpoint('DELETE', '/posts/upload/inspect/staged-csv/', {});
+    await renderAdminApp('/settings/migration', {
+      labs: { csvContentImporter: true },
+      boot: { browseConfig: { response: config } },
+    });
+    await settingsScreen
+      .section('migrationtools')
+      .getByRole('button', { name: 'Universal import' })
+      .click();
+    const modal = page.getByTestId('universal-import-modal');
+    const input = modal.element().querySelector<HTMLInputElement>('#import-file');
+    if (!input) {
+      throw new Error('Import file input was not rendered');
+    }
+    await page
+      .elementLocator(input)
+      .upload(new File(['Heading\nExample post'], 'posts.csv', { type: 'text/csv' }));
+    await modal.getByRole('combobox', { name: 'Field for Heading, not imported' }).click();
+    const search = page.getByPlaceholder('Search post fields...');
+    // A modal popover disables pointer events behind it, so hit testing alone
+    // can pass even when the popup is painted underneath the settings modal.
+    const popup = search.element().closest('[data-radix-popper-content-wrapper]')!;
+    const backdrop = document.getElementById('modal-backdrop')!;
+    expect(Number(getComputedStyle(popup).zIndex)).toBeGreaterThan(
+      Number(getComputedStyle(backdrop).zIndex),
+    );
+    await expect
+      .poll(() => {
+        const element = search.element();
+        const rect = element.getBoundingClientRect();
+        return element.contains(
+          document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2),
+        );
+      })
+      .toBe(true);
+    await search.fill('title');
+    await page.getByRole('option', { name: 'Title (required)', exact: true }).click();
+    await expect
+      .element(modal.getByRole('combobox', { name: 'Field for Heading, Title' }))
+      .toBeVisible();
+    await expect
+      .element(modal.getByRole('button', { name: 'Import 1 item', exact: true }))
+      .toBeEnabled();
+    await expect(search).toHaveCount(0);
+    await page.elementLocator(backdrop).click({ position: { x: 8, y: 8 } });
+    await expect(modal).toHaveCount(0);
+    expect(cancellation.requests).toHaveLength(1);
+  });
+
   it.each([
     { input: 'spam.xyz\njunk.com', saved: '["spam.xyz","junk.com"]' },
     { input: 'hello@Spam.xyz\n@junk.com', saved: '["spam.xyz","junk.com"]' },
@@ -242,19 +303,81 @@ describe('Advanced settings', () => {
     await expect(settingsScreen.confirmationModal()).toHaveCount(0);
   });
 
-  it('closes the universal importer without importing when cancelled', async () => {
+  it.each(['Cancel', 'backdrop'])(
+    'closes the universal importer without importing using %s',
+    async (action) => {
+      fakeSettingsScreens();
+      const importApi = fakeAdminEndpoint('POST', '/db/', {});
+      await renderAdminApp('/settings/migration');
+
+      await settingsScreen
+        .section('migrationtools')
+        .getByRole('button', { name: 'Universal import' })
+        .click();
+      const modal = page.getByTestId('universal-import-modal');
+      await expect.element(modal).toBeVisible();
+      if (action === 'backdrop') {
+        await page
+          .elementLocator(document.getElementById('modal-backdrop')!)
+          .click({ position: { x: 8, y: 8 } });
+      } else {
+        await modal.getByRole('button', { name: 'Cancel' }).click();
+      }
+
+      await expect(modal).toHaveCount(0);
+      expect(importApi.requests).toHaveLength(0);
+    },
+  );
+
+  it('keeps the import label while cancelling a staged CSV', async () => {
+    const label = 'Import';
     fakeSettingsScreens();
-    const importApi = fakeAdminEndpoint('POST', '/db/', {});
-    await renderAdminApp('/settings/migration');
+    const response = configResponse();
+    response.config.contentImport = { stagedInspection: true };
+    fakeAdminEndpoint('POST', '/posts/upload/inspect/', {
+      meta: {
+        upload_id: 'staged-csv',
+        columns: ['title'],
+        rows: Array.from({ length: 20 }, (_, i) => ({ title: `Sample ${i + 1}` })),
+      },
+    });
+    let finishCancellation!: () => void;
+    const cancellation = new Promise<void>((resolve) => {
+      finishCancellation = resolve;
+    });
+    const cancelApi = fakeAdminEndpoint('DELETE', '/posts/upload/inspect/staged-csv/', async () => {
+      await cancellation;
+      return {};
+    });
+    const importApi = fakeAdminEndpoint('POST', '/posts/upload/', {});
+    await renderAdminApp('/settings/migration', {
+      labs: { csvContentImporter: true },
+      boot: { browseConfig: { response } },
+    });
 
     await settingsScreen
       .section('migrationtools')
       .getByRole('button', { name: 'Universal import' })
       .click();
     const modal = page.getByTestId('universal-import-modal');
-    await expect.element(modal).toBeVisible();
-    await modal.getByRole('button', { name: 'Cancel' }).click();
+    const input = modal.element().querySelector<HTMLInputElement>('#import-file');
+    if (!input) {
+      throw new Error('import file input was not rendered');
+    }
+    await page
+      .elementLocator(input)
+      .upload(new File(['title\nSample'], 'posts.csv', { type: 'text/csv' }));
 
+    await expect.element(modal.getByRole('button', { name: label, exact: true })).toBeEnabled();
+    await expect.element(modal.getByRole('button', { name: 'Start over' })).toBeVisible();
+    await modal.getByRole('button', { name: 'Cancel' }).click();
+    await expect.poll(() => cancelApi.requests.length).toBe(1);
+    try {
+      await expect.element(modal.getByRole('button', { name: label, exact: true })).toBeDisabled();
+      await expect(modal.getByText('Uploading...')).toHaveCount(0);
+    } finally {
+      finishCancellation();
+    }
     await expect(modal).toHaveCount(0);
     expect(importApi.requests).toHaveLength(0);
   });

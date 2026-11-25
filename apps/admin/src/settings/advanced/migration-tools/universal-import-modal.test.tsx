@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Config } from '@tryghost/admin-x-framework/api/config';
 import UniversalImportModal from '@/settings/advanced/migration-tools/universal-import-modal';
 import { ConfirmationProvider } from '@/settings/providers/confirmation-provider';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -7,12 +8,18 @@ import JSZip from 'jszip';
 const {
   mockImportContent,
   mockImportContentCSV,
+  mockInspectContentCSV,
+  mockCancelContentCSV,
+  mockBrowseConfig,
   mockUseFeatureFlag,
   mockHandleError,
   mockToastError,
 } = vi.hoisted(() => ({
   mockImportContent: vi.fn(),
   mockImportContentCSV: vi.fn(),
+  mockInspectContentCSV: vi.fn(),
+  mockCancelContentCSV: vi.fn(),
+  mockBrowseConfig: vi.fn<() => { data: { config: Pick<Config, 'contentImport'> } }>(),
   mockUseFeatureFlag: vi.fn(),
   mockHandleError: vi.fn(),
   mockToastError: vi.fn(),
@@ -35,8 +42,17 @@ vi.mock('@tryghost/admin-x-framework/api/posts', async () => {
   const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/posts')>(
     '@tryghost/admin-x-framework/api/posts',
   );
-  return { ...actual, useImportContentCSV: () => ({ mutateAsync: mockImportContentCSV }) };
+  return {
+    ...actual,
+    useImportContentCSV: () => ({ mutateAsync: mockImportContentCSV }),
+    useInspectContentCSV: () => ({ mutateAsync: mockInspectContentCSV }),
+    useCancelContentCSV: () => ({ mutateAsync: mockCancelContentCSV }),
+  };
 });
+
+vi.mock('@tryghost/admin-x-framework/api/config', () => ({
+  useBrowseConfig: () => mockBrowseConfig(),
+}));
 
 vi.mock('@tryghost/admin-x-framework/hooks', async () => {
   const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
@@ -58,6 +74,8 @@ describe('UniversalImportModal', () => {
     vi.clearAllMocks();
     mockImportContent.mockResolvedValue({});
     mockImportContentCSV.mockResolvedValue({});
+    mockBrowseConfig.mockReturnValue({ data: { config: {} } });
+    mockCancelContentCSV.mockResolvedValue({});
   });
 
   const showModal = () => {
@@ -95,6 +113,132 @@ describe('UniversalImportModal', () => {
     const bytes = await archive.generateAsync({ type: 'arraybuffer' });
     return new File([bytes], 'import.zip', { type: 'application/zip' });
   };
+
+  const enableStagedInspection = () => {
+    mockUseFeatureFlag.mockReturnValue(true);
+    mockBrowseConfig.mockReturnValue({
+      data: { config: { contentImport: { stagedInspection: true } } },
+    });
+    mockInspectContentCSV.mockResolvedValue({
+      meta: { upload_id: 'staged-id', columns: ['title'], rows: [{ title: 'Sample title' }] },
+    });
+  };
+
+  it('uploads once and confirms the staged ID after mapping', async () => {
+    enableStagedInspection();
+    showModal();
+    const file = new File(['ignored locally'], 'export.csv', { type: 'text/csv' });
+    await dropFile(file);
+    expect(await screen.findByText('Sample title')).toBeInTheDocument();
+    expect(mockInspectContentCSV).toHaveBeenCalledOnce();
+    expect(mockInspectContentCSV).toHaveBeenCalledWith(file);
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    await waitFor(() =>
+      expect(mockImportContentCSV).toHaveBeenCalledWith({
+        uploadId: 'staged-id',
+        mapping: { title: 'title' },
+      }),
+    );
+    expect(mockCancelContentCSV).not.toHaveBeenCalled();
+  });
+
+  it('shows the pending label while submitting', async () => {
+    enableStagedInspection();
+    let finish!: () => void;
+    const submission = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    mockImportContentCSV.mockReturnValueOnce(submission);
+    showModal();
+    await dropFile(new File(['inspected on the server'], 'export.csv'));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Import' }));
+    expect(await screen.findByRole('button', { name: 'Uploading...' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    fireEvent.mouseDown(document.getElementById('modal-backdrop')!);
+    expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
+    expect(mockCancelContentCSV).not.toHaveBeenCalled();
+    await act(async () => {
+      finish();
+      await submission;
+    });
+    expect(await screen.findByTestId('confirmation-modal')).toBeInTheDocument();
+  });
+
+  it.each(['Start over', 'Cancel', 'backdrop'])(
+    'deletes the staged upload on %s',
+    async (action) => {
+      enableStagedInspection();
+      let finish!: () => void;
+      const cancellation = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      mockCancelContentCSV.mockReturnValueOnce(cancellation);
+      showModal();
+      await dropFile(new File(['ignored locally'], 'export.csv', { type: 'text/csv' }));
+      if (action === 'backdrop') {
+        await screen.findByText('Map CSV fields');
+        fireEvent.mouseDown(document.getElementById('modal-backdrop')!);
+      } else {
+        fireEvent.click(await screen.findByRole('button', { name: action }));
+      }
+      await waitFor(() => expect(mockCancelContentCSV).toHaveBeenCalledWith('staged-id'));
+      expect(screen.queryByText('Uploading...')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Start over' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+      expect(screen.getByRole('combobox', { name: /Field for title/ })).toBeDisabled();
+      fireEvent.mouseDown(document.getElementById('modal-backdrop')!);
+      expect(mockCancelContentCSV).toHaveBeenCalledTimes(1);
+      expect(mockImportContentCSV).not.toHaveBeenCalled();
+      await act(async () => {
+        finish();
+        await cancellation;
+      });
+      if (action === 'Start over') {
+        expect(await fileInput()).toBeInTheDocument();
+      } else {
+        expect(screen.queryByTestId('universal-import-modal')).not.toBeInTheDocument();
+      }
+    },
+  );
+
+  it('keeps the modal open on backdrop clicks while inspecting an upload', async () => {
+    enableStagedInspection();
+    let finish!: (result: unknown) => void;
+    const inspection = new Promise((resolve) => {
+      finish = resolve;
+    });
+    mockInspectContentCSV.mockReturnValueOnce(inspection);
+    showModal();
+    await dropFile(new File(['inspected on the server'], 'export.csv'));
+    expect(await description()).toHaveTextContent('Reading import file...');
+    fireEvent.mouseDown(document.getElementById('modal-backdrop')!);
+    expect(screen.getByTestId('universal-import-modal')).toBeInTheDocument();
+    expect(mockCancelContentCSV).not.toHaveBeenCalled();
+    await act(async () => {
+      finish({
+        meta: {
+          upload_id: 'staged-id',
+          columns: ['title'],
+          rows: [{ title: 'Example' }],
+        },
+      });
+      await inspection;
+    });
+    expect(screen.getByText('Map CSV fields')).toBeInTheDocument();
+  });
+
+  it('does not re-upload a ZIP handled by the legacy importer during inspection', async () => {
+    enableStagedInspection();
+    mockInspectContentCSV.mockResolvedValueOnce({});
+    showModal();
+    const zip = await zipFile((archive) => archive.file('content.json', '{}'));
+    await dropFile(zip);
+    expect(await screen.findByTestId('confirmation-modal')).toHaveTextContent('Import in progress');
+    expect(mockInspectContentCSV).toHaveBeenCalledWith(zip);
+    expect(mockImportContent).not.toHaveBeenCalled();
+  });
 
   it('reads the csvContentImporter flag', async () => {
     mockUseFeatureFlag.mockReturnValue(false);

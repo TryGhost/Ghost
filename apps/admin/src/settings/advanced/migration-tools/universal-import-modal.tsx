@@ -6,14 +6,20 @@ import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useImportContent } from '@tryghost/admin-x-framework/api/db';
-import { useImportContentCSV } from '@tryghost/admin-x-framework/api/posts';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import {
+  useCancelContentCSV,
+  useImportContentCSV,
+  useInspectContentCSV,
+} from '@tryghost/admin-x-framework/api/posts';
+import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { ContentFieldMapping } from './content-import/mapping';
 import { MappingStep } from './content-import/mapping-step';
 import { columnsOf, parseCSV, readCSV } from './content-import/csv';
 import { ImportArchiveError, inspectImportArchive } from './content-import/archive';
 
 interface CSVImportState {
-  file: File;
+  source: { file: File } | { uploadId: string };
   rows: Record<string, string>[];
   mapping: ContentFieldMapping;
   sampleIndex: number;
@@ -22,9 +28,14 @@ interface CSVImportState {
 const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { mutateAsync: importContent } = useImportContent();
   const { mutateAsync: importContentCSV } = useImportContentCSV();
+  const { mutateAsync: inspectContentCSV } = useInspectContentCSV();
+  const { mutateAsync: cancelContentCSV } = useCancelContentCSV();
+  const { data: config } = useBrowseConfig();
   const csvContentImporter = useFeatureFlag('csvContentImporter');
   const [uploading, setUploading] = useState(false);
   const [reading, setReading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const busy = uploading || reading || cancelling;
   const [csvImport, setCSVImport] = useState<CSVImportState | null>(null);
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
@@ -49,11 +60,28 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   };
 
   const importFile = async (file: File) => {
+    if (busy) {
+      return;
+    }
     const isCSV = csvContentImporter && file.name.toLowerCase().endsWith('.csv');
     const isZIP = csvContentImporter && file.name.toLowerCase().endsWith('.zip');
     if (isCSV || isZIP) {
       setReading(true);
       try {
+        if (config?.config.contentImport?.stagedInspection) {
+          const { meta } = await inspectContentCSV(file);
+          if (!meta?.upload_id) {
+            finishImport(false);
+            return;
+          }
+          setCSVImport({
+            source: { uploadId: meta.upload_id },
+            rows: meta.rows,
+            mapping: ContentFieldMapping.detect(meta.columns),
+            sampleIndex: 0,
+          });
+          return;
+        }
         let rows: Record<string, string>[];
         if (isZIP) {
           const contents = await inspectImportArchive(file);
@@ -76,7 +104,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           throw new Error('File is empty, nothing to import. Please select a different file.');
         }
         setCSVImport({
-          file,
+          source: { file },
           rows,
           mapping: ContentFieldMapping.detect(columnsOf(rows)),
           sampleIndex: 0,
@@ -105,17 +133,44 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   };
 
   const importCSV = async () => {
-    if (!csvImport) {
+    if (!csvImport || busy) {
       return;
     }
     setUploading(true);
     try {
-      await importContentCSV({ file: csvImport.file, mapping: csvImport.mapping.toJSON() });
+      await importContentCSV({ ...csvImport.source, mapping: csvImport.mapping.toJSON() });
       finishImport(true);
     } catch (error) {
+      if (
+        error instanceof JSONError &&
+        error.data?.errors[0]?.code === 'CSV_IMPORT_SUBMISSION_UNCERTAIN'
+      ) {
+        // We cannot safely cancel or retry a confirmation whose acceptance is unknown.
+        setCSVImport(null);
+      }
       handleError(error);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const resetImport = async (close: boolean) => {
+    if (busy) {
+      return;
+    }
+    try {
+      if (csvImport && 'uploadId' in csvImport.source) {
+        setCancelling(true);
+        await cancelContentCSV(csvImport.source.uploadId);
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setCancelling(false);
+      setCSVImport(null);
+      if (close) {
+        onClose();
+      }
     }
   };
 
@@ -130,18 +185,23 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const footer = csvImport ? (
     <Inline align="center" className="w-full p-8" justify="between">
       <Button
-        disabled={uploading}
+        disabled={busy}
         type="button"
         variant="outline"
-        onClick={() => setCSVImport(null)}
+        onClick={() => void resetImport(false)}
       >
         Start over
       </Button>
       <Inline gap="sm">
-        <Button disabled={uploading} type="button" variant="outline" onClick={onClose}>
+        <Button
+          disabled={busy}
+          type="button"
+          variant="outline"
+          onClick={() => void resetImport(true)}
+        >
           Cancel
         </Button>
-        <Button disabled={uploading || missingTitle} type="button" onClick={() => void importCSV()}>
+        <Button disabled={busy || missingTitle} type="button" onClick={() => void importCSV()}>
           {uploading ? 'Uploading...' : 'Import'}
         </Button>
       </Inline>
@@ -151,7 +211,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       <Link href="https://docs.ghost.org/migration/ghost" external>
         Learn more
       </Link>
-      <Button disabled={uploading || reading} type="button" variant="outline" onClick={onClose}>
+      <Button disabled={busy} type="button" variant="outline" onClick={onClose}>
         Cancel
       </Button>
     </Inline>
@@ -159,18 +219,17 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
   return (
     <SettingsModal
-      backDropClick={false}
       footer={footer}
       okLabel=""
       size={csvImport ? 'lg' : 'sm'}
       testId="universal-import-modal"
       title={csvImport ? 'Map CSV fields' : 'Universal import'}
-      onClose={onClose}
+      onClose={() => void resetImport(true)}
     >
       <Stack className="py-4">
         {csvImport ? (
           <MappingStep
-            disabled={uploading}
+            disabled={busy}
             mapping={csvImport.mapping}
             missingTitle={missingTitle}
             rows={csvImport.rows}
