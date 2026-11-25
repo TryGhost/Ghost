@@ -7,7 +7,11 @@ export const shouldIgnoreEvent = (event: KeyboardEvent | ClipboardEvent | InputE
 
     const metaKey = 'metaKey' in event ? event.metaKey : false;
     const key = 'key' in event ? event.key : undefined;
-    const target = event.target as HTMLElement;
+    const {target} = event;
+    if (!(target instanceof Element)) {
+        return false;
+    }
+
     const isEscape = key === 'Escape';
     const isMetaEnter = metaKey && key === 'Enter';
 
