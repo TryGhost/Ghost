@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
+import { StripeBuyerEmail } from '../../gifts/gift-service';
 import { StripeName } from '../codecs';
 import { FAILURE_CODES } from './failures';
 
@@ -31,7 +32,9 @@ export type SubscriptionEventType =
  *   wait for their payment: Ghost records a donation, or starts a subscription, when the checkout
  *   completes.
  * - `not_a_ghost_checkout`: a Checkout session Ghost didn't create, such as a Stripe Payment Link
- *   sale, which is neither a subscription, a card update, a gift nor a donation.
+ *   sale, which is neither a subscription, a card update, a gift nor a donation. Also a card
+ *   update whose setup intent Ghost didn't create, such as another app's on the same Stripe
+ *   account, as its metadata names no Stripe customer.
  * - `conflicting_checkout_markers`: a Checkout session marked as both a gift and a donation.
  */
 export type IgnoreReason =
@@ -59,9 +62,9 @@ export type Ignored =
  */
 export interface WebhookEvents {
   subscription_checkout: { session: CheckoutSessionObject };
-  card_update_checkout: { session: CheckoutSessionObject };
-  gift_checkout: { session: CheckoutSessionObject };
-  donation_checkout: { session: CheckoutSessionObject };
+  card_update_checkout: CardUpdateCheckout;
+  gift_checkout: GiftCheckout;
+  donation_checkout: DonationCheckout;
   subscription: Subscription;
   invoice: Invoice;
   refund: Refund;
@@ -197,9 +200,8 @@ function subscriptionEvent(type: SubscriptionEventType) {
  * A Checkout session as the webhook reads it from Stripe. Every field it doesn't declare passes
  * through as Stripe sent it.
  *
- * - `customer_details.name` is the name the buyer gave Stripe, and `metadata.name` the name they
- *   gave the site's signup form, which Ghost passes to Stripe when it creates the session. Both
- *   are shortened to fit what Ghost stores.
+ * - `metadata.name` is the name the buyer gave the site's signup form, which Ghost passes to
+ *   Stripe when it creates the session, shortened to fit what Ghost stores.
  * - `metadata.ghost_site_uuid` is the uuid of the site that created the session. Several Ghost
  *   sites can share one Stripe account, and Stripe sends each event on it to every site, so a
  *   site handles only the sessions it created and those that record no site: sessions created
@@ -210,7 +212,6 @@ function subscriptionEvent(type: SubscriptionEventType) {
  */
 const CheckoutSessionObject = z
   .object({
-    customer_details: z.object({ name: StripeName.nullish() }).loose().nullish(),
     metadata: z
       .object({ name: StripeName.optional(), ghost_site_uuid: z.string().optional() })
       .loose()
@@ -248,6 +249,144 @@ const CheckoutSession = z
     };
   });
 
+/**
+ * A completed card update: the setup intent that holds the member's new card. Ghost fetches the
+ * setup intent for the card and the member's Stripe customer.
+ */
+const CardUpdateCheckoutPayload = z
+  .object({ setup_intent: z.string() })
+  .loose()
+  .transform(({ setup_intent: setupIntentId }) => ({ setupIntentId }));
+
+export type CardUpdateCheckout = z.output<typeof CardUpdateCheckoutPayload>;
+
+/**
+ * A paid gift purchase: the gift Ghost recorded when the buyer started the checkout, the session
+ * and payment that bought it, and the buyer's Stripe customer and email when Stripe has them. The
+ * gift service checks them against the gift it holds, and takes them as they're read here: every
+ * id is a non-empty string, and the buyer's email is read as the gift service stores it (see
+ * `StripeBuyerEmail`). A session marked only with `ghost_gift`, as Ghost 6.27 to 6.58 marked gifts
+ * before recording them ahead of their checkout, has no gift id and can't be completed. It fails
+ * here, reported and retried, so the site can see the payment and settle the gift by hand,
+ * instead of it being ignored as if it weren't a gift. A session expires within a day, so only a
+ * delayed payment, such as a bank debit, settling after a site upgrades from those versions
+ * reaches this.
+ */
+const GiftCheckoutPayload = z
+  .object({
+    id: z.string().min(1),
+    payment_intent: z.string().min(1),
+    customer: z.string().min(1).nullable(),
+    customer_details: z.object({ email: StripeBuyerEmail }).loose().nullish(),
+    metadata: z.object({ ghost_gift_id: z.string().min(1) }).loose(),
+  })
+  .loose()
+  .transform(
+    ({ id, payment_intent: paymentIntentId, customer, customer_details: buyer, metadata }) => ({
+      giftId: metadata.ghost_gift_id,
+      sessionId: id,
+      paymentIntentId,
+      customerId: customer,
+      buyerEmail: buyer?.email ?? null,
+    }),
+  );
+
+export type GiftCheckout = z.output<typeof GiftCheckoutPayload>;
+
+/**
+ * Where a buyer came from, as Ghost writes it into the metadata of the Checkout sessions it
+ * creates: the page they bought from, the referrer that brought them there, and the UTM parameters
+ * of the link they followed. Ghost leaves out each one it doesn't know.
+ */
+const AttributionMetadata = z
+  .object({
+    attribution_id: z.string().optional(),
+    attribution_url: z.string().optional(),
+    attribution_type: z.string().optional(),
+    referrer_source: z.string().optional(),
+    referrer_medium: z.string().optional(),
+    referrer_url: z.string().optional(),
+    utm_source: z.string().optional(),
+    utm_medium: z.string().optional(),
+    utm_campaign: z.string().optional(),
+    utm_term: z.string().optional(),
+    utm_content: z.string().optional(),
+  })
+  .loose();
+
+/** Where a buyer came from, from a checkout's metadata, with null for each part Ghost doesn't know. */
+function attributionOf(metadata: z.output<typeof AttributionMetadata>) {
+  return {
+    attributionId: metadata.attribution_id ?? null,
+    attributionUrl: metadata.attribution_url ?? null,
+    attributionType: metadata.attribution_type ?? null,
+    referrerSource: metadata.referrer_source ?? null,
+    referrerMedium: metadata.referrer_medium ?? null,
+    referrerUrl: metadata.referrer_url ?? null,
+    utmSource: metadata.utm_source ?? null,
+    utmMedium: metadata.utm_medium ?? null,
+    utmCampaign: metadata.utm_campaign ?? null,
+    utmTerm: metadata.utm_term ?? null,
+    utmContent: metadata.utm_content ?? null,
+  };
+}
+
+/** `text`, or null when it's missing or only whitespace. */
+function nonBlank(text: string | null | undefined): string | null {
+  return text?.trim() ? text : null;
+}
+
+/** The key of the custom field Ghost adds to a donation's checkout for the donor's message. */
+const DONATION_MESSAGE = 'donation_message';
+
+/**
+ * A donation: what was paid, the donor's Stripe customer when they have one, the name and email
+ * they gave Stripe, the message they left, and where they came from. The name is shortened to fit
+ * what Ghost stores, and an email or message the donor left empty is none. A custom field has
+ * `text` only when it's a text field, as Ghost's message field is.
+ */
+const DonationCheckoutPayload = z
+  .object({
+    amount_total: z.number(),
+    currency: z.string(),
+    customer: z.string().nullable(),
+    customer_details: z
+      .object({ name: StripeName.nullish(), email: z.string().nullish() })
+      .loose()
+      .nullish(),
+    custom_fields: z
+      .array(
+        z
+          .object({
+            key: z.string(),
+            text: z.object({ value: z.string().nullish() }).loose().nullish(),
+          })
+          .loose(),
+      )
+      .optional(),
+    metadata: AttributionMetadata,
+  })
+  .loose()
+  .transform(
+    ({
+      amount_total: amount,
+      currency,
+      customer,
+      customer_details: donor,
+      custom_fields: fields,
+      metadata,
+    }) => ({
+      amount,
+      currency,
+      customerId: customer,
+      donor: { name: donor?.name ?? null, email: nonBlank(donor?.email) },
+      message: fields?.find(({ key }) => key === DONATION_MESSAGE)?.text?.value || null,
+      attribution: attributionOf(metadata),
+    }),
+  );
+
+export type DonationCheckout = z.output<typeof DonationCheckoutPayload>;
+
 const ignored = (reason: Exclude<IgnoreReason, 'listed_customer'>): WebhookEvent => ({
   kind: 'ignored',
   reason,
@@ -259,7 +398,8 @@ const ignored = (reason: Exclude<IgnoreReason, 'listed_customer'>): WebhookEvent
  * a member's new card, and one in `subscription` mode is a paid signup or upgrade. A session in
  * `payment` mode is a gift or a donation, by its markers. A gift paid with a method that settles
  * later completes on `checkout.session.async_payment_succeeded`, so only a paid gift is completed.
- * The event carries the session with the buyer's names shortened to fit what Ghost stores.
+ * A paid signup or upgrade carries the session, and every other kind carries the input its command
+ * takes, read from the session.
  */
 function checkoutEvent(
   type: CheckoutSessionEventType,
@@ -281,7 +421,10 @@ function checkoutEvent(
     }
   } else {
     if (mode === 'setup') {
-      return { kind: 'card_update_checkout', session };
+      return {
+        kind: 'card_update_checkout',
+        ...readPayload(CardUpdateCheckoutPayload, received, type),
+      };
     }
     if (mode === 'subscription') {
       return { kind: 'subscription_checkout', session };
@@ -294,9 +437,11 @@ function checkoutEvent(
     return ignored('conflicting_checkout_markers');
   }
   if (gift) {
-    return paid ? { kind: 'gift_checkout', session } : ignored('gift_not_paid');
+    return paid
+      ? { kind: 'gift_checkout', ...readPayload(GiftCheckoutPayload, received, type) }
+      : ignored('gift_not_paid');
   }
-  return { kind: 'donation_checkout', session };
+  return { kind: 'donation_checkout', ...readPayload(DonationCheckoutPayload, received, type) };
 }
 
 /**

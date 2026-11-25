@@ -11,9 +11,24 @@ const thisSite = {
   listedCustomers: new Set<string>(),
 };
 
+/**
+ * The fields of a Checkout session that the command for each kind reads, as Stripe sends them on
+ * every session, so each case sets only the fields that decide its kind.
+ */
+const SESSION = {
+  id: 'cs_1',
+  customer: null,
+  customer_details: { name: 'A buyer', email: 'buyer@example.com' },
+  amount_total: 500,
+  currency: 'usd',
+  payment_intent: 'pi_1',
+  setup_intent: 'seti_1',
+  metadata: {},
+};
+
 /** The webhook event for a Checkout session event of `type` carrying `session`. */
 function checkout(type: CheckoutSessionEventType, session: Record<string, unknown>): WebhookEvent {
-  return toWebhookEvent(type, { type, data: { object: session } }, thisSite);
+  return toWebhookEvent(type, { type, data: { object: { ...SESSION, ...session } } }, thisSite);
 }
 
 const COMPLETED = 'checkout.session.completed';
@@ -59,12 +74,6 @@ describe('Stripe webhook events', function () {
         expected: 'not_a_ghost_checkout',
       },
       {
-        name: 'a paid gift',
-        type: COMPLETED,
-        session: { mode: 'payment', payment_status: 'paid', metadata: { ghost_gift: 'true' } },
-        expected: 'gift_checkout',
-      },
-      {
         name: 'a paid gift marked with its gift id',
         type: COMPLETED,
         session: { mode: 'payment', payment_status: 'paid', metadata: { ghost_gift_id: 'gift_1' } },
@@ -73,19 +82,33 @@ describe('Stripe webhook events', function () {
       {
         name: 'a gift Stripe has not been paid for yet',
         type: COMPLETED,
+        session: {
+          mode: 'payment',
+          payment_status: 'unpaid',
+          metadata: { ghost_gift_id: 'gift_1' },
+        },
+        expected: 'gift_not_paid',
+      },
+      {
+        name: 'an unpaid gift marked only with the marker Ghost wrote before gift ids',
+        type: COMPLETED,
         session: { mode: 'payment', payment_status: 'unpaid', metadata: { ghost_gift: 'true' } },
         expected: 'gift_not_paid',
       },
       {
         name: 'a gift whose delayed payment arrived',
         type: PAID_LATER,
-        session: { mode: 'payment', payment_status: 'paid', metadata: { ghost_gift: 'true' } },
+        session: { mode: 'payment', payment_status: 'paid', metadata: { ghost_gift_id: 'gift_1' } },
         expected: 'gift_checkout',
       },
       {
         name: 'a delayed payment Stripe still reports as unpaid',
         type: PAID_LATER,
-        session: { mode: 'payment', payment_status: 'unpaid', metadata: { ghost_gift: 'true' } },
+        session: {
+          mode: 'payment',
+          payment_status: 'unpaid',
+          metadata: { ghost_gift_id: 'gift_1' },
+        },
         expected: 'gift_not_paid',
       },
       {
@@ -97,7 +120,7 @@ describe('Stripe webhook events', function () {
       {
         name: 'a failed delayed payment',
         type: PAYMENT_FAILED,
-        session: { mode: 'payment', metadata: { ghost_gift: 'true' } },
+        session: { mode: 'payment', metadata: { ghost_gift_id: 'gift_1' } },
         expected: 'payment_failed',
       },
       {
@@ -115,7 +138,7 @@ describe('Stripe webhook events', function () {
       {
         name: 'a payment marked as both a gift and a donation',
         type: COMPLETED,
-        session: { mode: 'payment', metadata: { ghost_donation: true, ghost_gift: 'true' } },
+        session: { mode: 'payment', metadata: { ghost_donation: true, ghost_gift_id: 'gift_1' } },
         expected: 'conflicting_checkout_markers',
       },
       {
@@ -124,7 +147,7 @@ describe('Stripe webhook events', function () {
         session: {
           mode: 'payment',
           payment_status: 'paid',
-          metadata: { ghost_donation: 'true', ghost_gift: 'true' },
+          metadata: { ghost_donation: 'true', ghost_gift_id: 'gift_1' },
         },
         expected: 'conflicting_checkout_markers',
       },

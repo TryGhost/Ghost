@@ -3,6 +3,7 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import type donationsRoot from '../../../../../core/server/services/donations';
 import type { DonationPaymentEvent } from '../../../../../core/server/services/donations/donation-payment-event';
+import type { DonationCheckout } from '../../../../../core/server/services/stripe/webhook/webhook-event';
 
 // Keep the real CommonJS identities used by the factory and Stripe's composition.
 const models = require('../../../../../core/server/models');
@@ -17,15 +18,26 @@ const { IncorrectUsageError } = require('@tryghost/errors');
 
 type DonationsRoot = typeof donationsRoot;
 
-function donationSession() {
+function donation(): DonationCheckout {
   return {
-    mode: 'payment',
-    customer: null,
-    customer_details: { name: 'A reader', email: 'reader@example.com' },
-    amount_total: 2500,
+    amount: 2500,
     currency: 'gbp',
-    custom_fields: [{ key: 'donation_message', text: { value: 'Keep writing' } }],
-    metadata: { ghost_donation: 'true', utm_source: 'newsletter' },
+    customerId: null,
+    donor: { name: 'A reader', email: 'reader@example.com' },
+    message: 'Keep writing',
+    attribution: {
+      attributionId: null,
+      attributionUrl: null,
+      attributionType: null,
+      referrerSource: null,
+      referrerMedium: null,
+      referrerUrl: null,
+      utmSource: 'newsletter',
+      utmMedium: null,
+      utmCampaign: null,
+      utmTerm: null,
+      utmContent: null,
+    },
   };
 }
 
@@ -99,9 +111,9 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
     const save = sandbox.spy(root.service, 'save');
 
-    const result = await stripe.checkoutSessionEventService.recordDonation(donationSession());
+    const result = await stripe.webhookCommands.donation_checkout(donation());
 
-    assert.equal(result, undefined);
+    assert.deepEqual(result, { result: 'handled' });
     sinon.assert.calledOnce(save);
     assert.equal(await save.firstCall.returnValue, undefined);
     sinon.assert.calledOnceWithExactly(add, {
@@ -138,8 +150,8 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
 
     let completed = false;
-    const handling: Promise<void> = stripe.checkoutSessionEventService
-      .recordDonation(donationSession())
+    const handling: Promise<void> = stripe.webhookCommands
+      .donation_checkout(donation())
       .then(() => {
         completed = true;
       });
@@ -168,7 +180,7 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
 
     await assert.rejects(
-      stripe.checkoutSessionEventService.recordDonation(donationSession()),
+      stripe.webhookCommands.donation_checkout(donation()),
       (error: unknown) => error === failure,
     );
 

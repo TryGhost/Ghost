@@ -108,7 +108,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 1200,
           currency: 'usd',
-          customer: stripeMocker.checkoutSessions[0].customer,
+          customer: stripeMocker.checkoutSessions[0].customer ?? null,
           customer_details: {
             name: 'Paid Test',
             email: 'exampledonation@example.com',
@@ -206,7 +206,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 100,
           currency: 'usd',
-          customer: checkoutSession.customer,
+          customer: checkoutSession.customer ?? null,
           customer_details: {
             name: 'Reserved Metadata Donor',
             email,
@@ -290,7 +290,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 1220,
           currency: 'eur',
-          customer: stripeMocker.checkoutSessions[0].customer,
+          customer: stripeMocker.checkoutSessions[0].customer ?? null,
           customer_details: {
             name: 'Member Test',
             email: email,
@@ -389,7 +389,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 1200,
           currency: 'usd',
-          customer: stripeMocker.checkoutSessions[0].customer,
+          customer: stripeMocker.checkoutSessions[0].customer ?? null,
           customer_details: {
             name: 'Paid Test',
             email: 'exampledonation@example.com',
@@ -543,7 +543,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 2500,
           currency: 'usd',
-          customer: checkoutSession.customer,
+          customer: checkoutSession.customer ?? null,
           customer_details: {
             name: 'UTM Donor',
             email: 'utm-donation@test.com',
