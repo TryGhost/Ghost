@@ -24,6 +24,10 @@ export const FAILURES = {
   stripe_unavailable: { owner: 'dependency', sentry: true },
   no_member_for_customer: { owner: 'site', sentry: true },
   unsupported_subscription: { owner: 'site', sentry: true },
+  // A checkout whose buyer Ghost can't record anything under, such as a donation without the
+  // donor's email. It's the site's Stripe data, and Ghost can't fix it, so the failure is counted
+  // by its reason and owner on the webhook's span rather than reported.
+  unusable_customer: { owner: 'site', sentry: false },
   unreadable_stripe_response: { owner: 'ghost', sentry: true },
   unreadable_stripe_event: { owner: 'ghost', sentry: true },
   unclassified: { owner: 'ghost', sentry: true },
@@ -43,6 +47,7 @@ export const FAILURE_CODES = {
   signatureMismatch: 'STRIPE_WEBHOOK_SIGNATURE_MISMATCH',
   noMemberForCustomer: 'STRIPE_WEBHOOK_NO_MEMBER_FOR_CUSTOMER',
   unsupportedSubscription: 'STRIPE_WEBHOOK_UNSUPPORTED_SUBSCRIPTION',
+  unusableCustomer: 'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
   unreadableEvent: 'STRIPE_WEBHOOK_UNREADABLE_EVENT',
 } as const;
 
@@ -55,6 +60,7 @@ const REASON_OF_CODE: ReadonlyMap<string, FailureReason> = new Map([
   [FAILURE_CODES.signatureMismatch, 'signature_mismatch'],
   [FAILURE_CODES.noMemberForCustomer, 'no_member_for_customer'],
   [FAILURE_CODES.unsupportedSubscription, 'unsupported_subscription'],
+  [FAILURE_CODES.unusableCustomer, 'unusable_customer'],
   [FAILURE_CODES.unreadableEvent, 'unreadable_stripe_event'],
   [UNREADABLE_RESPONSE, 'unreadable_stripe_response'],
 ]);

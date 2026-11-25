@@ -137,7 +137,12 @@ interface StaffServiceEmails {
   }): Promise<void>;
 }
 
-const StripeBuyerEmailSchema = z.unknown().transform((value): string | null => {
+/**
+ * The email Stripe has for a gift's buyer, as the gift service stores it: trimmed, or null when
+ * it isn't a string, is empty or is longer than Ghost stores. Stripe checked it when the buyer
+ * typed it, so its format isn't checked again.
+ */
+export const StripeBuyerEmail = z.unknown().transform((value): string | null => {
   if (typeof value !== 'string') {
     return null;
   }
@@ -146,15 +151,18 @@ const StripeBuyerEmailSchema = z.unknown().transform((value): string | null => {
   return email && email.length <= GIFT_EMAIL_MAX_LENGTH ? email : null;
 });
 
-const GiftPaymentCompletionSchema = z.object({
-  giftId: z.string().min(1),
-  buyerEmail: StripeBuyerEmailSchema,
-  stripeCustomerId: z.string().min(1).nullable(),
-  stripeCheckoutSessionId: z.string().min(1),
-  stripePaymentIntentId: z.string().min(1),
-});
-
-export type GiftPaymentCompletionData = z.input<typeof GiftPaymentCompletionSchema>;
+/**
+ * A paid gift checkout, as the Stripe webhook reads it: the gift Ghost recorded when the buyer
+ * started the checkout, the Checkout session and payment intent that paid for it, and the buyer's
+ * Stripe customer and email when Stripe has them (see `StripeBuyerEmail`). Every id is non-empty.
+ */
+export interface GiftPaymentCompletion {
+  giftId: string;
+  buyerEmail: string | null;
+  stripeCustomerId: string | null;
+  stripeCheckoutSessionId: string;
+  stripePaymentIntentId: string;
+}
 
 interface GiftServiceDeps {
   giftRepository: GiftRepository;
@@ -548,19 +556,9 @@ export class GiftService {
    * Completes the purchase of the gift Ghost recorded when the buyer started its checkout, once
    * Stripe has received the payment, and sends the purchase emails. Returns false when there's no
    * such gift, or it's no longer waiting for its payment, such as when Stripe sends the payment
-   * again.
+   * again. The payment is taken as the Stripe webhook read it (see `GiftPaymentCompletion`).
    */
-  async completePurchase(input: GiftPaymentCompletionData): Promise<boolean> {
-    const parsed = GiftPaymentCompletionSchema.safeParse(input);
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0];
-      throw new errors.ValidationError({
-        message: 'Invalid gift purchase data.',
-        property: issue.path.join('.'),
-        context: issue.message,
-      });
-    }
-    const data = parsed.data;
+  async completePurchase(data: GiftPaymentCompletion): Promise<boolean> {
     const purchasedAt = new Date();
     const member = data.stripeCustomerId
       ? await this.deps.memberRepository.get({ customer_id: data.stripeCustomerId })

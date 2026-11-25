@@ -327,6 +327,8 @@ describe('Stripe webhook outcomes', function () {
     email = `${stripeId('payer')}@example.com`,
     name = 'Payer',
     id = stripeId('cs'),
+    customer = null,
+    customFields = [],
   }: {
     paymentStatus?: 'paid' | 'unpaid';
     metadata?: Record<string, string>;
@@ -334,6 +336,8 @@ describe('Stripe webhook outcomes', function () {
     email?: string;
     name?: string;
     id?: string;
+    customer?: string | null;
+    customFields?: object[];
   } = {}) {
     return {
       id,
@@ -346,7 +350,7 @@ describe('Stripe webhook outcomes', function () {
       amount_subtotal: amount,
       amount_total: amount,
       currency: 'usd',
-      customer: null,
+      customer,
       customer_email: email,
       customer_details: {
         email,
@@ -361,16 +365,35 @@ describe('Stripe webhook outcomes', function () {
       subscription: null,
       payment_link: null,
       shipping: null,
-      custom_fields: [],
+      custom_fields: customFields,
       metadata,
+    };
+  }
+
+  /**
+   * The custom field Ghost adds to a donation's checkout for a message, as Stripe sends it once the
+   * donor has filled it in, or with a null value when they left it empty.
+   */
+  function donationMessage(value: string | null) {
+    return {
+      key: 'donation_message',
+      label: { type: 'custom', custom: 'Add a personal note' },
+      optional: true,
+      type: 'text',
+      text: { maximum_length: null, minimum_length: null, value },
     };
   }
 
   /**
    * A completed card update, as Stripe sends one for the session Ghost creates: Ghost names the
    * member's Stripe customer only in the setup intent's metadata, so the session has no customer.
+   * Setup intents from older Ghost versions also name the subscription the card is for, and a
+   * setup intent Ghost didn't create, with a null `customerId`, names no customer.
    */
-  function cardUpdateCheckout(customerId: string, { last4 = '1881' }: { last4?: string } = {}) {
+  function cardUpdateCheckout(
+    customerId: string | null,
+    { last4 = '1881', subscriptionId }: { last4?: string; subscriptionId?: string } = {},
+  ) {
     const paymentMethod = {
       id: stripeId('pm'),
       object: 'payment_method',
@@ -384,7 +407,10 @@ describe('Stripe webhook outcomes', function () {
       object: 'setup_intent',
       status: 'succeeded',
       payment_method: paymentMethod.id,
-      metadata: { customer_id: customerId },
+      metadata: {
+        ...(customerId ? { customer_id: customerId } : {}),
+        ...(subscriptionId ? { subscription_id: subscriptionId } : {}),
+      },
     };
     stripeMocker.paymentMethods.push(paymentMethod);
     stripeMocker.setupIntents.push(setupIntent);
@@ -548,12 +574,15 @@ describe('Stripe webhook outcomes', function () {
   }
 
   /**
-   * A paid member, created by a completed checkout, whose Stripe customer and subscription Stripe
-   * holds.
+   * A paid member, created by a completed checkout with `metadata`, whose Stripe customer and
+   * subscription Stripe holds.
    */
-  async function paidMember() {
+  async function paidMember(metadata: Record<string, string> = {}) {
     const bought = stripeCustomer();
-    assert.equal(await send('checkout.session.completed', subscriptionCheckout(bought)), 200);
+    assert.equal(
+      await send('checkout.session.completed', subscriptionCheckout(bought, metadata)),
+      200,
+    );
     // The checkout starts the buyer's signup email without waiting for it, and the new member's
     // events run after it commits. Wait for both, while this test's mocks still catch them.
     await DomainEvents.allSettled();
@@ -566,6 +595,11 @@ describe('Stripe webhook outcomes', function () {
 
   async function memberByEmail(email: string) {
     return await models.Member.findOne({ email }, { withRelated: ['stripeCustomers'] });
+  }
+
+  /** A subscription as Stripe holds it now. */
+  function heldSubscription(subscriptionId: string) {
+    return stripeMocker.subscriptions.find((held: { id: string }) => held.id === subscriptionId);
   }
 
   async function linkedSubscription(subscriptionId: string) {
@@ -988,6 +1022,63 @@ describe('Stripe webhook outcomes', function () {
         checkout: checkoutSpan({ type: 'setup' }),
       },
       {
+        name: 'responds with 200 to a card update whose setup intent Ghost didn’t create, such as another app’s on the same Stripe account, and records it as ignored rather than as a completed checkout',
+        event: () => ({ type: completed, object: cardUpdateCheckout(null).session }),
+        status: 200,
+        webhook: span({
+          type: completed,
+          kind: 'card_update_checkout',
+          result: 'ignored',
+          reason: 'not_a_ghost_checkout',
+        }),
+        checkout: checkoutSpan({}),
+      },
+      ...(
+        [
+          ['without the donor’s email', null],
+          ['whose donor’s email is blank', '  '],
+        ] as const
+      ).map(([which, email]): NothingWritten => ({
+        name: `responds with 422 on every attempt to a donation ${which}`,
+        event: () => {
+          const object = paymentCheckout({ metadata: { ghost_donation: 'true' } });
+          return {
+            type: completed,
+            object: { ...object, customer_details: { ...object.customer_details, email } },
+          };
+        },
+        attempts: 2,
+        status: 422,
+        webhook: span(
+          {
+            type: completed,
+            kind: 'donation_checkout',
+            ...failedBecause('unusable_customer', 'site'),
+          },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+        checkout: checkoutSpan(
+          { type: 'donation', ...failedBecause('unusable_customer', 'site') },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+      })),
+      {
+        name: 'responds with 500 on every attempt to a donation without fields Ghost reads',
+        event: () => {
+          const { currency: _currency, ...withoutCurrency } = paymentCheckout({
+            metadata: { ghost_donation: 'true' },
+          });
+          return { type: completed, object: withoutCurrency };
+        },
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: completed, ...failedBecause('unreadable_stripe_event', 'ghost') },
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
+        ),
+        checkout: null,
+      },
+      {
         name: 'responds with 200 and leaves a gift purchase pending when its payment hasn’t arrived yet',
         event: async () => {
           const { sessionId, giftId } = await startGiftCheckout();
@@ -1143,6 +1234,60 @@ describe('Stripe webhook outcomes', function () {
       );
     });
 
+    it('leaves the card of a member’s canceled subscription as it was when they update their card', async function () {
+      const { customer, subscription } = await paidMember();
+      const canceled = addSubscription(customer);
+      canceled.status = 'canceled';
+      assert.equal(await send('customer.subscription.updated', canceled), 200);
+      const { paymentMethod, session } = cardUpdateCheckout(customer.id, { last4: '1881' });
+
+      await pinOutcome(
+        { type: completed, object: session },
+        {
+          status: 200,
+          writes: async () => {
+            assert.equal(
+              heldSubscription(subscription.id).default_payment_method,
+              paymentMethod.id,
+            );
+            assert.equal(heldSubscription(canceled.id).default_payment_method, null);
+            assert.equal((await linkedSubscription(canceled.id)).default_payment_card_last4, null);
+          },
+          webhook: span({ type: completed, kind: 'card_update_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'setup' }),
+        },
+      );
+    });
+
+    it('saves the new card only on the subscription a card update from an older Ghost version names', async function () {
+      const { customer, subscription } = await paidMember();
+      const named = addSubscription(customer);
+      assert.equal(await send('customer.subscription.updated', named), 200);
+      const { paymentMethod, session } = cardUpdateCheckout(customer.id, {
+        last4: '4444',
+        subscriptionId: named.id,
+      });
+
+      await pinOutcome(
+        { type: completed, object: session },
+        {
+          status: 200,
+          writes: async () => {
+            assert.equal(paymentMethod.customer, customer.id);
+            assert.equal(heldSubscription(named.id).default_payment_method, paymentMethod.id);
+            assert.equal((await linkedSubscription(named.id)).default_payment_card_last4, '4444');
+            assert.equal(heldSubscription(subscription.id).default_payment_method, null);
+            assert.equal(
+              (await linkedSubscription(subscription.id)).default_payment_card_last4,
+              null,
+            );
+          },
+          webhook: span({ type: completed, kind: 'card_update_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'setup' }),
+        },
+      );
+    });
+
     it('records a donation under the donor’s name, shortened to fit, when it’s longer than Ghost stores', async function () {
       const email = `${stripeId('donor')}@example.com`;
 
@@ -1156,6 +1301,65 @@ describe('Stripe webhook outcomes', function () {
           writes: async () => {
             const donation = await db.knex('donation_payment_events').where({ email }).first();
             assert.equal(donation.name, FITTED_NAME);
+          },
+          webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'donation' }),
+        },
+      );
+    });
+
+    it.each([
+      ['the message the donor left', 'Keep writing!', 'Keep writing!'],
+      ['no message when the donor left it empty', null, null],
+    ] as const)('records a donation with %s', async (_name, left, saved) => {
+      const email = `${stripeId('donor')}@example.com`;
+
+      await pinOutcome(
+        {
+          type: completed,
+          object: paymentCheckout({
+            metadata: { ghost_donation: 'true' },
+            email,
+            customFields: [donationMessage(left)],
+          }),
+        },
+        {
+          status: 200,
+          writes: async () => {
+            const donation = await db.knex('donation_payment_events').where({ email }).first();
+            assert.equal(donation.donation_message, saved);
+          },
+          webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'donation' }),
+        },
+      );
+    });
+
+    it('records a member’s donation under the member’s name and email rather than those the donor gave Stripe', async function () {
+      const { customer } = await paidMember({ name: 'A member' });
+      const member = await memberByEmail(customer.email);
+
+      await pinOutcome(
+        {
+          type: completed,
+          object: paymentCheckout({
+            metadata: { ghost_donation: 'true' },
+            customer: customer.id,
+            email: `${stripeId('payer')}@example.com`,
+            name: 'Card Holder',
+          }),
+        },
+        {
+          status: 200,
+          writes: async () => {
+            const donation = await db
+              .knex('donation_payment_events')
+              .where({ member_id: member.id })
+              .first();
+            assert.deepEqual(
+              { name: donation.name, email: donation.email },
+              { name: 'A member', email: customer.email },
+            );
           },
           webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
           checkout: checkoutSpan({ type: 'donation' }),
@@ -1215,30 +1419,55 @@ describe('Stripe webhook outcomes', function () {
       },
     );
 
+    it('records the email the buyer gave Stripe, trimmed, on a gift Ghost holds no buyer email for', async function () {
+      const { sessionId, giftId } = await startGiftCheckout();
+      await db.knex('gifts').where({ id: giftId }).update({ buyer_email: null });
+      const bought = paymentCheckout({
+        id: sessionId,
+        metadata: { ghost_gift_id: giftId },
+        amount: 500,
+        email: '  stripe-buyer@example.com  ',
+      });
+
+      await pinOutcome(
+        { type: 'checkout.session.completed', object: bought },
+        {
+          status: 200,
+          writes: async () => {
+            const gift = await models.Gift.findOne({ id: giftId }, { require: true });
+            assert.equal(gift.get('status'), 'purchased');
+            assert.equal(gift.get('buyer_email'), 'stripe-buyer@example.com');
+          },
+          webhook: span({
+            type: 'checkout.session.completed',
+            kind: 'gift_checkout',
+            result: 'handled',
+          }),
+          checkout: checkoutSpan({ type: 'gift' }),
+        },
+      );
+    });
+
     // Before 2026-08-19, Ghost marked a gift's checkout with `ghost_gift` and created the gift
     // only once it was paid. A site that upgraded while such a gift's delayed payment settled
-    // still receives its payment, which Ghost can no longer complete, so it fails loudly.
+    // still receives its payment, which has no gift id for Ghost to complete, so it fails loudly.
     itWritesNothing([
       {
-        name: 'responds with 422 on every attempt to a paid gift whose checkout started before Ghost recorded gifts ahead of their checkout',
+        name: 'responds with 500 on every attempt to a paid gift whose checkout started before Ghost recorded gifts ahead of their checkout',
         event: () => ({
           type: 'checkout.session.async_payment_succeeded',
           object: paymentCheckout({ metadata: { ghost_gift: 'true' }, amount: 500 }),
         }),
         attempts: 2,
-        status: 422,
+        status: 500,
         webhook: span(
           {
             type: 'checkout.session.async_payment_succeeded',
-            kind: 'gift_checkout',
-            ...failedBecause('unclassified', 'ghost'),
+            ...failedBecause('unreadable_stripe_event', 'ghost'),
           },
-          'ValidationError',
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
         ),
-        checkout: checkoutSpan(
-          { type: 'gift', ...failedBecause('unclassified', 'ghost') },
-          'ValidationError',
-        ),
+        checkout: null,
       },
     ]);
   });

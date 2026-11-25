@@ -416,7 +416,7 @@ describe('GiftService', function () {
       assert.equal(
         await service.completePurchase({
           giftId: 'gift_1',
-          buyerEmail: ' stripe-buyer@example.com ',
+          buyerEmail: 'stripe-buyer@example.com',
           stripeCustomerId: null,
           stripeCheckoutSessionId: 'cs_pending',
           stripePaymentIntentId: 'pi_pending',
@@ -550,7 +550,7 @@ describe('GiftService', function () {
         () =>
           service.completePurchase({
             giftId: 'gift_1',
-            buyerEmail: undefined,
+            buyerEmail: null,
             stripeCustomerId: null,
             stripeCheckoutSessionId: 'cs_pending',
             stripePaymentIntentId: 'pi_pending',

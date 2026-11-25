@@ -112,15 +112,6 @@ module.exports = class StripeService {
       get eventRepository() {
         return membersService.api.events;
       },
-      get donationRepository() {
-        return donationService.service;
-      },
-      get giftService() {
-        return giftService.service;
-      },
-      get staffServiceEmails() {
-        return staffService.service.emails;
-      },
       sendSignupEmail(email) {
         return membersService.api.sendEmailWithMagicLink({
           email,
@@ -145,6 +136,34 @@ module.exports = class StripeService {
       },
     });
 
+    const cardUpdateCheckoutDeps = {
+      api,
+      tracking,
+      get memberRepository() {
+        return membersService.api.members;
+      },
+    };
+
+    const giftCheckoutDeps = {
+      tracking,
+      get giftService() {
+        return giftService.service;
+      },
+    };
+
+    const donationCheckoutDeps = {
+      tracking,
+      get memberRepository() {
+        return membersService.api.members;
+      },
+      get donationRepository() {
+        return donationService.service;
+      },
+      get staffServiceEmails() {
+        return staffService.service.emails;
+      },
+    };
+
     const refundDeps = {
       get giftService() {
         return giftService.service;
@@ -153,6 +172,9 @@ module.exports = class StripeService {
 
     const commands = webhookCommands({
       checkoutSessionEventService,
+      card_update_checkout: cardUpdateCheckoutDeps,
+      gift_checkout: giftCheckoutDeps,
+      donation_checkout: donationCheckoutDeps,
       subscription: subscriptionDeps,
       invoice: invoiceDeps,
       refund: refundDeps,
@@ -172,6 +194,7 @@ module.exports = class StripeService {
     this.webhookManager = webhookManager;
     this.webhookController = webhookController;
     this.checkoutSessionEventService = checkoutSessionEventService;
+    this.webhookCommands = commands;
     this.billingPortalManager = billingPortalManager;
     /** @private */
     this.ephemeralWebhook = false;

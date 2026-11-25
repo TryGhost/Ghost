@@ -60,35 +60,9 @@ function getStripeResourceId(resource) {
   return null;
 }
 
-function getGiftBuyerEmailFromSession(session) {
-  if (session.customer_details?.email) {
-    return session.customer_details.email;
-  }
-
-  if (
-    session.customer &&
-    typeof session.customer === 'object' &&
-    !session.customer.deleted &&
-    session.customer.email
-  ) {
-    return session.customer.email;
-  }
-
-  return null;
-}
-
 /**
- * Handles `checkout.session.completed` webhook events
- *
- * The `checkout.session.completed` event is triggered when a customer completes a checkout session.
- *
- * It is triggered for the following scenarios:
- * - Subscription
- * - Donation
- * - Gift purchase
- * - Setup intent
- *
- * This service delegates the event to the appropriate handler based on the session mode and metadata.
+ * Completes a paid signup or upgrade from a Checkout session in `subscription` mode. Card updates,
+ * gifts and donations complete in their own services in this folder.
  *
  * The `session` payload can be found here: https://docs.stripe.com/api/checkout/sessions/object
  */
@@ -98,9 +72,6 @@ module.exports = class CheckoutSessionEventService {
    * @param {import('../../stripe-api')} deps.api
    * @param {Pick<import('../../tracking').StripeTracking, 'checkoutCompletion' | 'collectedPhone'>} deps.tracking
    * @param {object} deps.memberRepository
-   * @param {object} deps.donationRepository
-   * @param {object} deps.giftService
-   * @param {object} deps.staffServiceEmails
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
    * @param {{isSet(flag: string): boolean}} deps.labs
@@ -124,176 +95,6 @@ module.exports = class CheckoutSessionEventService {
       attempt.completing('subscription');
       await this.handleSubscriptionEvent(session, attempt);
     });
-  }
-
-  /**
-   * Saves the card a member added in a completed Checkout session in `setup` mode as the payment
-   * method of their subscriptions. Records a `stripe_checkout.complete` span.
-   *
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   */
-  async updateCard(session) {
-    return this.deps.tracking.checkoutCompletion(async (attempt) => {
-      attempt.completing('setup');
-      await this.handleSetupEvent(session);
-    });
-  }
-
-  /**
-   * Completes a gift purchase once Stripe has received the payment. Records a
-   * `stripe_checkout.complete` span.
-   *
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   */
-  async completeGiftPurchase(session) {
-    return this.deps.tracking.checkoutCompletion(async (attempt) => {
-      attempt.completing('gift');
-      await this.handleGiftEvent(session);
-    });
-  }
-
-  /**
-   * Records a donation and tells the site's staff about it. Records a `stripe_checkout.complete`
-   * span.
-   *
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   */
-  async recordDonation(session) {
-    return this.deps.tracking.checkoutCompletion(async (attempt) => {
-      attempt.completing('donation');
-      await this.handleDonationEvent(session);
-    });
-  }
-
-  /**
-   * Handles a `checkout.session.completed` event for a gift subscription purchase
-   *
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   */
-  async handleGiftEvent(session) {
-    await this.deps.giftService.completePurchase({
-      giftId: session.metadata.ghost_gift_id,
-      buyerEmail: getGiftBuyerEmailFromSession(session),
-      stripeCustomerId: getStripeResourceId(session.customer),
-      stripeCheckoutSessionId: session.id,
-      stripePaymentIntentId: getStripeResourceId(session.payment_intent),
-    });
-  }
-
-  /**
-   * Handles a `checkout.session.completed` event for a donation
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   */
-  async handleDonationEvent(session) {
-    const donationField = session.custom_fields?.find((obj) => obj?.key === 'donation_message');
-    const donationMessage = donationField?.text?.value ? donationField.text.value : null;
-    const amount = session.amount_total;
-    const currency = session.currency;
-
-    const memberRepository = this.deps.memberRepository;
-    const member = session.customer
-      ? await memberRepository.get({ customer_id: session.customer })
-      : null;
-
-    const { DonationPaymentEvent } = require('../../../donations/donation-payment-event');
-    const data = DonationPaymentEvent.create({
-      name: member?.get('name') ?? session.customer_details.name,
-      email: member?.get('email') ?? session.customer_details.email,
-      memberId: member?.id ?? null,
-      amount,
-      currency,
-      donationMessage,
-      attributionId: session.metadata?.attribution_id ?? null,
-      attributionUrl: session.metadata?.attribution_url ?? null,
-      attributionType: session.metadata?.attribution_type ?? null,
-      referrerSource: session.metadata?.referrer_source ?? null,
-      referrerMedium: session.metadata?.referrer_medium ?? null,
-      referrerUrl: session.metadata?.referrer_url ?? null,
-      utmSource: session.metadata?.utm_source ?? null,
-      utmMedium: session.metadata?.utm_medium ?? null,
-      utmCampaign: session.metadata?.utm_campaign ?? null,
-      utmTerm: session.metadata?.utm_term ?? null,
-      utmContent: session.metadata?.utm_content ?? null,
-    });
-
-    const donationRepository = this.deps.donationRepository;
-    await donationRepository.save(data);
-
-    const staffServiceEmails = this.deps.staffServiceEmails;
-    await staffServiceEmails.notifyDonationReceived({ donationPaymentEvent: data });
-  }
-
-  /**
-   * Handles a `checkout.session.completed` event for a setup intent
-   *
-   * This is used when a customer adds or changes their payment method outside
-   * of the normal subscription flow.
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   */
-  async handleSetupEvent(session) {
-    const setupIntent = await this.api.getSetupIntent(session.setup_intent);
-
-    const memberRepository = this.deps.memberRepository;
-    const member = await memberRepository.get({
-      customer_id: setupIntent.metadata.customer_id,
-    });
-
-    if (!member) {
-      return;
-    }
-
-    await this.api.attachPaymentMethodToCustomer(
-      setupIntent.metadata.customer_id,
-      setupIntent.payment_method,
-    );
-
-    if (setupIntent.metadata.subscription_id) {
-      const updatedSubscription = await this.api.updateSubscriptionDefaultPaymentMethod(
-        setupIntent.metadata.subscription_id,
-        setupIntent.payment_method,
-      );
-      try {
-        await memberRepository.linkSubscription({
-          id: member.id,
-          subscription: updatedSubscription,
-        });
-      } catch (err) {
-        if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-          throw err;
-        }
-        throw new errors.ConflictError({
-          err,
-        });
-      }
-      return;
-    }
-
-    const subscriptions = await member.related('stripeSubscriptions').fetch();
-    const activeSubscriptions = subscriptions.models.filter((subscription) =>
-      ['active', 'trialing', 'unpaid', 'past_due'].includes(subscription.get('status')),
-    );
-
-    for (const subscription of activeSubscriptions) {
-      if (subscription.get('customer_id') === setupIntent.metadata.customer_id) {
-        const updatedSubscription = await this.api.updateSubscriptionDefaultPaymentMethod(
-          subscription.get('subscription_id'),
-          setupIntent.payment_method,
-        );
-        try {
-          await memberRepository.linkSubscription({
-            id: member.id,
-            subscription: updatedSubscription,
-          });
-        } catch (err) {
-          if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-            throw err;
-          }
-          throw new errors.ConflictError({
-            err,
-          });
-        }
-      }
-    }
   }
 
   /**
