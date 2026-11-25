@@ -18,7 +18,7 @@ const sanitizeHostSettings = (hostSettings) => {
   return omit(hostSettings, [
     'export.webhookSecret',
     'emailVerification.webhookSecret',
-    'contentCheck.webhookSecret',
+    'contentCheck',
   ]);
 };
 

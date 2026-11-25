@@ -265,7 +265,7 @@ describe('Public-config response builders', function () {
       assert.equal(configProperties.featurebase.apiKey, undefined);
     });
 
-    it('should strip webhook secrets from hostSettings', function () {
+    it('should strip webhook secrets and omit contentCheck from hostSettings', function () {
       configUtils.set('hostSettings', {
         siteId: '123',
         export: {
@@ -298,12 +298,8 @@ describe('Public-config response builders', function () {
           webhookType: 'email_verification',
           webhookUrl: 'https://example.com/verify',
         },
-        contentCheck: {
-          webhookUrl: 'https://example.com/abuse',
-          siteCreatedAt: '2026-10-15T10:00:00.000Z',
-          maxSiteAgeDays: 30,
-        },
       });
+      assert.equal(configProperties.hostSettings.contentCheck, undefined);
     });
   });
 });
