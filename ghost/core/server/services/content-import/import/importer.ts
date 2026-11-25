@@ -266,7 +266,7 @@ class ContentCSVImporter {
     try {
       const sample = await readCSVPreview(this._files.readSource(source.filePath));
       const uploadId = this._newRunId();
-      await this._fileStager.stage(request, uploadId, this._now());
+      await this._fileStager.stage({ ...request, total: sample.total }, uploadId, this._now());
       return { upload_id: uploadId, ...sample };
     } finally {
       await this.cleanupSource(source.cleanup);
@@ -275,6 +275,10 @@ class ContentCSVImporter {
 
   cancelUpload(id: string, owner: ImportOwner): Promise<void> {
     return this._fileStager.cancel(id, owner);
+  }
+
+  progress(id: string, owner: ImportOwner) {
+    return this._fileStager.progress(id, owner, this._now());
   }
 
   async handle(job: ContentCSVImportJob): Promise<void> {
@@ -350,6 +354,12 @@ class ContentCSVImporter {
               // Rows that completed before an ordinary failure still belong in the report.
               await journal?.flush().catch(this._report);
             }
+            await this.settle(() =>
+              this._fileStager.finalizeProgress(
+                job.importId,
+                failureReason ? 'failed' : 'complete',
+              ),
+            );
             const summary = createSummary(
               job.importId,
               failureReason ? 'failed' : 'complete',
@@ -390,6 +400,7 @@ class ContentCSVImporter {
             }
           });
         }
+        await this.settle(() => this._fileStager.finishProgress(job.importId));
         await this.settle(() => this._fileStager.clearArtifacts(job.importId));
         await this.cleanupStagedFile(job.importId, job.file);
       }

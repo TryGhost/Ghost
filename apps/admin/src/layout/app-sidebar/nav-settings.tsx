@@ -5,6 +5,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
 import { NavMenuItem } from './nav-menu-item';
+import { NavImportProgress } from './nav-import-progress';
 import { NavGhostProItem } from './nav-ghost-pro';
 import { NavHelpItem } from './nav-help-item';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
@@ -24,6 +25,7 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
       <SidebarGroupContent>
         <SidebarMenu>
           {admin7Design && <NavGhostProItem />}
+          {showSettings && <NavImportProgress />}
           {showSettings && (
             <NavMenuItem>
               <NavMenuItem.Link state={settingsReturnToState} to="settings">

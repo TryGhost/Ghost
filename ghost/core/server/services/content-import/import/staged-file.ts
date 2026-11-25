@@ -5,8 +5,13 @@ import {
   clearImportPrefix,
   type VersionedImportStorage,
 } from '../../../adapters/storage/import-storage';
-import { ImportUploadRepository, type ImportOwner, type ImportUpload } from './upload-repository';
-import type { JournalStorage } from './journal';
+import {
+  ImportUploadRepository,
+  type ImportOwner,
+  type ImportUpload,
+  type ImportProgress,
+} from './upload-repository';
+import { readJournalPosition, type JournalStorage } from './journal';
 import { createReportArchive } from './report-archive';
 
 export interface StagedImportFile {
@@ -55,7 +60,7 @@ function isAccepted(row: ImportUpload): boolean {
 export interface ImportFileStager {
   reports: ReturnType<typeof createReportArchive>;
   stage(
-    file: { filePath: string; fileName: string; owner?: ImportOwner },
+    file: { filePath: string; fileName: string; owner?: ImportOwner; total?: number },
     id: string,
     now: Date,
   ): Promise<StagedImportFile>;
@@ -67,6 +72,9 @@ export interface ImportFileStager {
   start(id: string, now: Date): Promise<boolean>;
   claimEmail(id: string): Promise<boolean>;
   claimCacheInvalidation(id: string): Promise<boolean>;
+  progress(id: string, owner: ImportOwner, now: Date): Promise<ImportProgress>;
+  finalizeProgress(id: string, outcome: 'complete' | 'failed'): Promise<void>;
+  finishProgress(id: string): Promise<void>;
   remove(id: string, file: StagedImportFile): Promise<void>;
   cancel(id: string, owner: ImportOwner): Promise<void>;
   lookup(id: string, owner: ImportOwner, now: Date): Promise<Submission>;
@@ -152,25 +160,47 @@ export function createImportFileStager({
     }
   }
 
+  function artifacts(id: string): JournalStorage {
+    const storage = importsStorage(getStorage());
+    const key = (name: string) => `${prefix(id)}/journal/${name}`;
+    return {
+      readStream: ({ path: name }) => storage.readStream({ path: key(name) }),
+      writeStream: (name, source) => storage.writeStream(key(name), source),
+      replaceMetadata: (name, bytes) => storage.replaceMetadata(key(name), bytes),
+    };
+  }
+
+  function assertProgressOwner(
+    row: ImportUpload | undefined,
+    owner: ImportOwner,
+    now: Date,
+  ): asserts row is ImportUpload & { progress: NonNullable<ImportUpload['progress']> } {
+    // Accepted imports remain protected while queued/running, even past staging expiry.
+    if (
+      !row ||
+      (row.state !== 'accepted' && row.state !== 'finished') ||
+      row.owner_id !== owner.id ||
+      row.owner_type !== owner.type ||
+      (row.state === 'finished' && row.expires_at <= now) ||
+      !row.progress
+    ) {
+      throw new errors.NotFoundError({
+        message: 'This CSV import progress is no longer available.',
+      });
+    }
+  }
+
   return {
     reports: createReportArchive(privateStorage, namespace),
-    artifacts(id) {
-      const storage = importsStorage(getStorage());
-      const key = (name: string) => `${prefix(id)}/journal/${name}`;
-      return {
-        readStream: ({ path: name }) => storage.readStream({ path: key(name) }),
-        writeStream: (name, source) => storage.writeStream(key(name), source),
-        replaceMetadata: (name, bytes) => storage.replaceMetadata(key(name), bytes),
-      };
-    },
+    artifacts,
     clearArtifacts(id) {
       return clearImportPrefix(privateStorage(), `${prefix(id)}/journal`);
     },
-    async stage({ filePath, fileName, owner }, id, now) {
+    async stage({ filePath, fileName, owner, total }, id, now) {
       const storage = importsStorage(getStorage());
       const uploadOwner = owner ?? (await getDefaultOwner());
       const file = { key: `${prefix(id)}/source`, name: fileName };
-      await uploads.create(id, uploadOwner, now, file);
+      await uploads.create(id, uploadOwner, now, file, total);
       try {
         const source = { name: 'source', path: filePath, private: true };
         const url = await storage.save(source, prefix(id));
@@ -216,14 +246,79 @@ export function createImportFileStager({
 
     async start(id, now) {
       return uploads.change(id, (row) => {
-        if (row?.state === 'accepted') {
-          return { value: row.receipt !== 'email-claimed' };
+        if (row?.state === 'accepted' && row.receipt === 'email-claimed') {
+          return { value: false };
         }
-        if (row?.state !== 'submitting' || row.expires_at <= now) {
+        if (
+          !row ||
+          (row.state !== 'accepted' && (row.state !== 'submitting' || row.expires_at <= now))
+        ) {
           throw new errors.NotFoundError({ message: 'This CSV upload is no longer available.' });
         }
-        return { value: true, change: { state: 'accepted' } };
+        return {
+          value: true,
+          change: {
+            state: 'accepted',
+            progress: { processed: 0, total: null, ...row.progress, status: 'running' },
+          },
+        };
       });
+    },
+
+    async progress(id, owner, now) {
+      let row = await uploads.get(id);
+      assertProgressOwner(row, owner, now);
+      let processed = row.progress.processed;
+      if (row.progress.status === 'running') {
+        let checkpointError: unknown;
+        try {
+          processed = (await readJournalPosition(artifacts(id))).record;
+        } catch (error) {
+          checkpointError = error;
+        }
+        // Finalization can delete the checkpoint during a poll. Re-read the manifest
+        // to use its retained final count rather than reporting zero after cleanup.
+        row = await uploads.get(id);
+        assertProgressOwner(row, owner, now);
+        if (checkpointError && row.progress.status === 'running') {
+          throw checkpointError;
+        }
+      }
+      const progress = row.progress;
+      return {
+        status: progress.status,
+        total: progress.total,
+        processed: Math.max(processed, progress.processed),
+      };
+    },
+
+    async finalizeProgress(id, outcome) {
+      const { record } = await readJournalPosition(artifacts(id));
+      await uploads.change(id, (row) => ({
+        value: undefined,
+        ...(row?.state === 'accepted'
+          ? {
+              change: {
+                progress: {
+                  status: 'finalizing' as const,
+                  processed: record,
+                  total: row.progress?.total ?? (outcome === 'complete' ? record : null),
+                  outcome,
+                },
+              },
+            }
+          : {}),
+      }));
+    },
+
+    async finishProgress(id) {
+      // Redelivery after the email claim skips processing, but must retain its outcome.
+      await uploads.change(id, (row) => ({
+        value: undefined,
+        ...(row?.progress?.outcome
+          ? { change: { progress: { ...row.progress, status: row.progress.outcome } } }
+          : {}),
+      }));
     },
 
     async claimEmail(id) {

@@ -71,6 +71,24 @@ describe('Content import composition root', function () {
     sinon.assert.notCalled(send);
   });
 
+  it('validates progress IDs and forwards the owner to the initialized importer', async function () {
+    const id = 'abcdefabcdefabcdefabcdef';
+    const owner = { id: 'staff', type: 'user' } as const;
+    assert.throws(() => root.progress(id, owner), /Content import service used before init/);
+    root.init();
+    const progress = sandbox
+      .stub(ContentCSVImporter.prototype, 'progress')
+      .resolves({ status: 'running', processed: 25, total: 100 });
+    assert.throws(() => root.progress('../private', owner), { errorType: 'NotFoundError' });
+    sinon.assert.notCalled(progress);
+    assert.deepEqual(await root.progress(id, owner), {
+      status: 'running',
+      processed: 25,
+      total: 100,
+    });
+    sinon.assert.calledOnceWithExactly(progress, id, owner);
+  });
+
   it('validates requests before forwarding and retains the same importer for requests and jobs', async function () {
     const accepted = Promise.resolve({ importId: 'run_test', total: 1 });
     const imported = sandbox.stub(ContentCSVImporter.prototype, 'importCSV').returns(accepted);

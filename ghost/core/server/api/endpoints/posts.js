@@ -187,6 +187,22 @@ const controller = {
     },
   },
 
+  csvImportProgress: {
+    headers: { cacheInvalidate: false },
+    permissions: importPermissions,
+    options: ['import_id'],
+    async query(frame) {
+      frame.setHeader('Cache-Control', 'private, no-store');
+      const importId = frame.options.import_id;
+      return {
+        meta: {
+          import_id: importId,
+          ...(await contentImportService.progress(importId, csvUploadOwner(frame))),
+        },
+      };
+    },
+  },
+
   downloadCSVImportReport: {
     headers: { cacheInvalidate: false },
     permissions: importPermissions,

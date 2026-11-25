@@ -5,6 +5,7 @@ import {
   postsDataType,
   useAddPost,
   useCancelContentCSV,
+  useContentCSVProgress,
   useEditPost,
   useEditorPost,
   useImportContentCSV,
@@ -26,6 +27,26 @@ const requestParams = (mock: any) => Object.fromEntries(requestUrl(mock).searchP
 const requestBody = (mock: any) => JSON.parse(mock.calls[0][1].body as string);
 
 describe('posts api', () => {
+  it('reads CSV progress through the encoded import endpoint', async () => {
+    const meta = { import_id: 'import/id', status: 'running', processed: 25, total: 100 };
+    await withMockFetch(
+      {
+        json: { meta, users: [{ id: 'user-1', roles: [] }] },
+        headers: { 'content-type': 'application/json' },
+      },
+      async (mock) => {
+        const { result } = renderHookWithProviders(() => useContentCSVProgress('import/id'));
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.data?.meta).toEqual(meta);
+        expect(
+          mock.calls.some(([url]: [unknown]) =>
+            String(url).includes('/posts/upload/import%2Fid/progress/'),
+          ),
+        ).toBe(true);
+      },
+    );
+  });
+
   it('reads a single post with both content formats', async () => {
     await withMockFetch(
       {

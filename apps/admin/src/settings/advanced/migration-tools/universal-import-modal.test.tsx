@@ -6,6 +6,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import JSZip from 'jszip';
 
 const {
+  mockTrackImport,
   mockImportContent,
   mockImportContentCSV,
   mockInspectContentCSV,
@@ -15,6 +16,7 @@ const {
   mockHandleError,
   mockToastError,
 } = vi.hoisted(() => ({
+  mockTrackImport: vi.fn(),
   mockImportContent: vi.fn(),
   mockImportContentCSV: vi.fn(),
   mockInspectContentCSV: vi.fn(),
@@ -24,6 +26,8 @@ const {
   mockHandleError: vi.fn(),
   mockToastError: vi.fn(),
 }));
+
+vi.mock('@/content-import/api', () => ({ useImportProgress: () => ({ track: mockTrackImport }) }));
 
 vi.mock('sonner', () => ({
   toast: {
@@ -131,6 +135,7 @@ describe('UniversalImportModal', () => {
 
   it('uploads once and confirms the staged ID after mapping', async () => {
     enableStagedInspection();
+    mockImportContentCSV.mockResolvedValueOnce({ meta: { import_id: 'abcdefabcdefabcdefabcdef' } });
     showModal();
     const file = new File(['ignored locally'], 'export.csv', { type: 'text/csv' });
     await dropFile(file);
@@ -144,6 +149,7 @@ describe('UniversalImportModal', () => {
         mapping: { title: 'title' },
       }),
     );
+    await waitFor(() => expect(mockTrackImport).toHaveBeenCalledWith('abcdefabcdefabcdefabcdef'));
     expect(mockCancelContentCSV).not.toHaveBeenCalled();
   });
 

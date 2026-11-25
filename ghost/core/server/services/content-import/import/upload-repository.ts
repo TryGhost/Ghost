@@ -14,11 +14,20 @@ const uploadSchema = z.object({
   state: z.enum(['staging', 'ready', 'submitting', 'accepted', 'finished', 'deleting']),
   expires_at: z.iso.datetime().transform((value) => new Date(value)),
   receipt: z.string().nullable(),
+  progress: z
+    .object({
+      status: z.enum(['queued', 'running', 'finalizing', 'complete', 'failed']),
+      processed: z.number().int().nonnegative(),
+      total: z.number().int().nonnegative().nullable(),
+      outcome: z.enum(['complete', 'failed']).optional(),
+    })
+    .optional(),
 });
 
 export type ImportUpload = z.output<typeof uploadSchema>;
 export type ImportOwner = { id: string; type: ImportUpload['owner_type'] };
-type Change = Partial<Pick<ImportUpload, 'state' | 'receipt' | 'file'>>;
+export type ImportProgress = Omit<NonNullable<ImportUpload['progress']>, 'outcome'>;
+type Change = Partial<Pick<ImportUpload, 'state' | 'receipt' | 'file' | 'progress'>>;
 type Decision<T> = { value: T; change?: Change };
 
 export class ImportUploadRepository {
@@ -39,6 +48,7 @@ export class ImportUploadRepository {
     owner: ImportOwner,
     now: Date,
     file: ImportUpload['file'],
+    total: number | null = null,
   ): Promise<void> {
     const manifest: ImportUpload = {
       file,
@@ -47,10 +57,11 @@ export class ImportUploadRepository {
       state: 'staging',
       expires_at: new Date(now.getTime() + UPLOAD_TTL_MS),
       receipt: null,
+      progress: { status: 'queued', processed: 0, total },
     };
     const bytes = this.encode(manifest);
     // Reserve space for state and receipt changes before publishing the first revision.
-    if (bytes.length > MAX_IMPORT_METADATA_BYTES - 128) {
+    if (bytes.length > MAX_IMPORT_METADATA_BYTES - 256) {
       throw new errors.ValidationError({ message: 'The CSV file name is too long.' });
     }
     if (!(await this.storage().writeVersionedMetadata(this.key(id), bytes, null))) {

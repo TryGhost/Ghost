@@ -81,6 +81,10 @@ module.exports = {
     frame.response = result;
   },
 
+  csvImportProgress(result, apiConfig, frame) {
+    frame.response = result;
+  },
+
   cancelCSVUpload(_result, _apiConfig, frame) {
     frame.response = null;
   },

@@ -68,6 +68,12 @@ module.exports = function apiRoutes() {
     http(api.posts.cancelCSVUpload),
   );
   router.get(
+    '/posts/upload/:import_id/progress',
+    mw.authAdminApi,
+    labs.enabledMiddleware('csvContentImporter'),
+    http(api.posts.csvImportProgress),
+  );
+  router.get(
     '/posts/upload/reports/:import_id/:filename',
     mw.authAdminApi,
     labs.enabledMiddleware('csvContentImporter'),

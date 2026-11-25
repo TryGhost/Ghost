@@ -47,6 +47,33 @@ both the parser and its input while the next row waits to be consumed. Source
 records retain the 8 MiB raw-byte limit; malformed quotes reject inspection or
 stop a running import with partial results, rather than importing recovered cells.
 
+## Import progress
+
+Poll `GET /ghost/api/admin/posts/upload/:import_id/progress/` using the ID returned
+by submission. The endpoint requires the CSV Labs flag, content import permission,
+and the same user or integration that submitted the upload. Responses are private
+and must not be cached.
+
+```json
+{"meta":{"import_id":"...","status":"running","processed":2500,"total":5000}}
+```
+
+`processed` counts committed data records of every outcome: created, updated,
+skipped and failed. It follows the durable checkpoint and can lag behind processing
+until the next journal flush. `total` comes from inspection; direct uploads without
+inspection return `null` until the full source has been processed. A terminal
+failure may therefore have an unknown total.
+
+Statuses are `queued`, `running`, `finalizing`, `complete` and `failed`. `running`
+is the last recorded execution state, not a worker heartbeat. Row processing at
+100% can still be `finalizing` while reports and the completion email are prepared.
+`complete` means processing finished, even if individual rows failed; `failed`
+means an infrastructure or unexpected processing error stopped the run.
+
+Final progress survives journal cleanup in the existing upload manifest, until
+its original 24-hour expiry. Accepted imports remain readable beyond that expiry
+while queued or running. Missing, expired or another owner's imports return 404.
+
 Run the recovery suite from the repository root with the local MySQL
 test service available. It kills isolated workers after a post commit and
 checks that retained outbox jobs resume raw CSV and ZIP imports from durable

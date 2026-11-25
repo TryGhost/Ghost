@@ -7,6 +7,7 @@ import fs from 'fs-extra';
 import sinon from 'sinon';
 import LocalStorageBase from '../../../../../../core/server/adapters/storage/LocalStorageBase';
 import { createImportFileStager } from '../../../../../../core/server/services/content-import/import/staged-file';
+import { ImportJournal } from '../../../../../../core/server/services/content-import/import/journal';
 import { ImportUploadRepository } from '../../../../../../core/server/services/content-import/import/upload-repository';
 
 describe('content import staged file', function () {
@@ -59,6 +60,7 @@ describe('content import staged file', function () {
       expires_at: new Date('2026-01-02'),
       state: 'ready',
       receipt: null,
+      progress: { status: 'queued', processed: 0, total: null },
     });
 
     assert.equal((await fs.stat(path.dirname(path.join(directory, file.key)))).mode & 0o777, 0o700);
@@ -99,6 +101,184 @@ describe('content import staged file', function () {
     assert.deepEqual((await uploads.get('renamed'))?.file, file);
     await adapter.remove('renamed', file);
     assert.equal(await fs.pathExists(path.join(directory, file.key)), false);
+  });
+
+  it('reports committed rows of every outcome and retains final progress after cleanup', async function () {
+    const adapter = stager();
+    const file = await adapter.stage(
+      { filePath: sourcePath, fileName: 'posts.zip', total: 4 },
+      'progress',
+      now,
+    );
+    await adapter.begin('progress');
+    await adapter.acknowledge('progress');
+    assert.deepEqual(await adapter.progress('progress', owner, now), {
+      status: 'queued',
+      processed: 0,
+      total: 4,
+    });
+    await adapter.start('progress', now);
+    const journal = new ImportJournal(adapter.artifacts('progress'), [], { record: 0, part: 0 });
+    for (const status of ['created', 'updated', 'skipped', 'failed'] as const) {
+      await journal.append({ line: 2, title: 'Example', status });
+    }
+    assert.equal((await adapter.progress('progress', owner, now)).processed, 0);
+    await journal.flush();
+    assert.deepEqual(await stager().progress('progress', owner, now), {
+      status: 'running',
+      processed: 4,
+      total: 4,
+    });
+    await adapter.finalizeProgress('progress', 'complete');
+    assert.deepEqual(await adapter.progress('progress', owner, now), {
+      status: 'finalizing',
+      processed: 4,
+      total: 4,
+    });
+    await adapter.claimEmail('progress');
+    assert.equal(await stager().start('progress', now), false);
+    await adapter.finishProgress('progress');
+    await adapter.clearArtifacts('progress');
+    await adapter.remove('progress', file);
+    assert.deepEqual(await stager().progress('progress', owner, now), {
+      status: 'complete',
+      processed: 4,
+      total: 4,
+    });
+    const later = new Date('2026-01-03');
+    await assert.rejects(adapter.progress('progress', owner, later), {
+      errorType: 'NotFoundError',
+    });
+    await adapter.cleanupExpired(later, (error) => {
+      throw error;
+    });
+    assert.equal(await uploads.get('progress'), undefined);
+  });
+
+  it.each(['complete', 'failed'] as const)(
+    'keeps an unknown direct-upload total until the full source finishes (%s)',
+    async function (outcome) {
+      const adapter = stager();
+      await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv' }, 'direct', now);
+      await adapter.begin('direct');
+      await adapter.start('direct', now);
+      assert.deepEqual(await adapter.progress('direct', owner, now), {
+        status: 'running',
+        processed: 0,
+        total: null,
+      });
+      const journal = new ImportJournal(adapter.artifacts('direct'), [], { record: 0, part: 0 });
+      await journal.append({ line: 2, title: 'Example', status: 'created' });
+      await journal.flush();
+      await adapter.finalizeProgress('direct', outcome);
+      await adapter.finishProgress('direct');
+      assert.deepEqual(await adapter.progress('direct', owner, now), {
+        status: outcome,
+        processed: 1,
+        total: outcome === 'complete' ? 1 : null,
+      });
+    },
+  );
+
+  it('preserves the full inspected total when a run fails partway through', async function () {
+    const adapter = stager();
+    await adapter.stage(
+      { filePath: sourcePath, fileName: 'posts.csv', total: 100 },
+      'partial',
+      now,
+    );
+    await adapter.begin('partial');
+    await adapter.start('partial', now);
+    await adapter.finalizeProgress('partial', 'failed');
+    await adapter.finishProgress('partial');
+    assert.deepEqual(await adapter.progress('partial', owner, now), {
+      status: 'failed',
+      processed: 0,
+      total: 100,
+    });
+  });
+
+  it('protects progress by owner and tenant and hides unsubmitted or missing uploads', async function () {
+    const adapter = stager();
+    await assert.rejects(adapter.progress('missing', owner, now), { errorType: 'NotFoundError' });
+    await adapter.finalizeProgress('missing', 'failed');
+    await adapter.finishProgress('missing');
+    assert.equal(await uploads.get('missing'), undefined);
+    await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv' }, 'private', now);
+    await assert.rejects(adapter.progress('private', owner, now), { errorType: 'NotFoundError' });
+    await adapter.begin('private');
+    await assert.rejects(adapter.progress('private', owner, now), { errorType: 'NotFoundError' });
+    await adapter.acknowledge('private');
+    for (const foreign of [
+      { ...owner, id: 'other' },
+      { ...owner, type: 'integration' as const },
+    ]) {
+      await assert.rejects(adapter.progress('private', foreign, now), {
+        errorType: 'NotFoundError',
+      });
+    }
+    const otherSite = createImportFileStager({
+      downloadToTempFile: sinon.stub(),
+      getStorage: () => storage,
+      namespace: () => 'other-site',
+      getDefaultOwner: async () => owner,
+    });
+    await assert.rejects(otherSite.progress('private', owner, now), { errorType: 'NotFoundError' });
+    assert.equal(
+      (await adapter.progress('private', owner, new Date('2026-01-03'))).status,
+      'queued',
+    );
+    await uploads.change('private', () => ({ value: undefined, change: { progress: undefined } }));
+    await assert.rejects(adapter.progress('private', owner, now), { errorType: 'NotFoundError' });
+    await adapter.start('private', now); // Older queued jobs gain progress on first delivery.
+    assert.deepEqual(await adapter.progress('private', owner, now), {
+      status: 'running',
+      processed: 0,
+      total: null,
+    });
+  });
+
+  it.each([false, true])(
+    'keeps the final count when cleanup races with checkpoint reading (missing marker: %s)',
+    async function (markerMissing) {
+      const adapter = stager();
+      await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv', total: 1 }, 'race', now);
+      await adapter.begin('race');
+      await adapter.start('race', now);
+      const journal = new ImportJournal(adapter.artifacts('race'), [], { record: 0, part: 0 });
+      await journal.append({ line: 2, title: 'Example', status: 'created' });
+      await journal.flush();
+      const readStream = storage.readStream.bind(storage);
+      const read = sinon.stub(storage, 'readStream').callsFake(async (options) => {
+        assert.ok(options?.path);
+        if (options.path.endsWith(markerMissing ? 'commits/1.txt' : 'checkpoint.txt')) {
+          read.restore();
+          await adapter.finalizeProgress('race', 'complete');
+          await adapter.finishProgress('race');
+          await adapter.clearArtifacts('race');
+        }
+        return readStream(options);
+      });
+      assert.deepEqual(await adapter.progress('race', owner, now), {
+        status: 'complete',
+        processed: 1,
+        total: 1,
+      });
+    },
+  );
+
+  it('surfaces checkpoint failures while running and rechecks ownership after reading', async function () {
+    const adapter = stager();
+    await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv' }, 'broken', now);
+    await adapter.begin('broken');
+    await adapter.start('broken', now);
+    await adapter.artifacts('broken').replaceMetadata('checkpoint.txt', Buffer.from('invalid'));
+    await assert.rejects(adapter.progress('broken', owner, now), /Invalid CSV import checkpoint/);
+    sinon.stub(storage, 'readStream').callsFake(async () => {
+      await uploads.remove('broken');
+      throw new Error('read failed');
+    });
+    await assert.rejects(adapter.progress('broken', owner, now), { errorType: 'NotFoundError' });
   });
 
   it('protects acknowledged sources and rejects late uncertain delivery', async function () {

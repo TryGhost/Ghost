@@ -1,3 +1,4 @@
+import { ImportProgressCards } from '@/content-import/api';
 import MigrationToolsExport from './migration-tools/migration-tools-export';
 import MigrationToolsImport from './migration-tools/migration-tools-import';
 import React, { useState } from 'react';
@@ -28,6 +29,7 @@ const MigrationTools: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           <TabsTrigger value="export">Export</TabsTrigger>
         </TabsList>
         <TabsContent value="import">
+          <ImportProgressCards />
           <MigrationToolsImport />
         </TabsContent>
         <TabsContent value="export">

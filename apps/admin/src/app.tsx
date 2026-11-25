@@ -21,6 +21,7 @@ import { useDocumentTitle } from './hooks/use-document-title';
 import { usePrivateSiteLogin } from './hooks/use-private-site-login';
 import { SignedOutApp, useAuthNotice } from './auth/api';
 import { useSentry } from './sentry';
+import { ImportProgressTracker } from './content-import/api';
 import { BootError, BootLoader } from './boot-states';
 
 function App() {
@@ -49,11 +50,14 @@ function App() {
     <>
       <AdminAlerts store={alerts} />
       {currentUser ? (
-        <AdminLayout>
-          <Outlet />
-          <BillingFrame alerts={alerts} />
-          <ClientExtensionScript />
-        </AdminLayout>
+        <>
+          <ImportProgressTracker key={currentUser.id} user={currentUser} />
+          <AdminLayout key={currentUser.id}>
+            <Outlet />
+            <BillingFrame alerts={alerts} />
+            <ClientExtensionScript />
+          </AdminLayout>
+        </>
       ) : bootError ? (
         <BootError error={bootError} />
       ) : isSignedOut ? (

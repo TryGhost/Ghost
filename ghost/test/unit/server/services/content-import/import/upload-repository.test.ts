@@ -41,6 +41,7 @@ describe('CSV upload manifests', function () {
       expires_at: new Date('2026-01-02'),
       state: 'staging',
       receipt: null,
+      progress: { status: 'queued', processed: 0, total: null },
     });
     await uploads.remove('upload');
     assert.equal(await uploads.get('upload'), undefined);

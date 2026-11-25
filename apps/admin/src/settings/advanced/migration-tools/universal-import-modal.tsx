@@ -1,3 +1,4 @@
+import { useImportProgress } from '@/content-import/api';
 import React, { useState } from 'react';
 import { Button, Dropzone, Link } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
@@ -41,6 +42,7 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const [csvImport, setCSVImport] = useState<CSVImportState | null>(null);
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
+  const { track } = useImportProgress();
 
   const acceptedTypes: React.ComponentProps<typeof Dropzone>['accept'] = csvContentImporter
     ? { 'application/json': ['.json'], 'application/zip': ['.zip'], 'text/csv': ['.csv'] }
@@ -142,7 +144,13 @@ const UniversalImportModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     }
     setUploading(true);
     try {
-      await importContentCSV({ ...csvImport.source, mapping: csvImport.mapping.toJSON() });
+      const response = await importContentCSV({
+        ...csvImport.source,
+        mapping: csvImport.mapping.toJSON(),
+      });
+      if (response?.meta?.import_id) {
+        track(response.meta.import_id);
+      }
       finishImport(true);
     } catch (error) {
       if (

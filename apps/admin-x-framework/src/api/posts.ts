@@ -240,7 +240,27 @@ export const useCancelContentCSV = createMutation<unknown, string>({
   path: (uploadId) => `/posts/upload/inspect/${encodeURIComponent(uploadId)}/`,
 });
 
-export const useImportContentCSV = createMutation<unknown, ImportContentCSVPayload>({
+export interface ContentCSVProgress {
+  import_id: string;
+  status: 'queued' | 'running' | 'finalizing' | 'complete' | 'failed';
+  processed: number;
+  total: number | null;
+}
+
+export const useContentCSVProgress = createQueryWithId<{ meta: ContentCSVProgress }>({
+  dataType: 'ContentCSVProgress',
+  path: (id) => `/posts/upload/${encodeURIComponent(id)}/progress/`,
+});
+
+// Older Core responses may omit the receipt used for progress tracking.
+export interface ContentCSVImportResponse {
+  meta?: { import_id?: string };
+}
+
+export const useImportContentCSV = createMutation<
+  ContentCSVImportResponse,
+  ImportContentCSVPayload
+>({
   method: 'POST',
   retry: false,
   path: () => '/posts/upload/',

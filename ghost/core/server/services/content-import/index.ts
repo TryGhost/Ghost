@@ -242,6 +242,13 @@ export function openReport(id: string, filename: string, owner: ImportOwner) {
   return getImporter().openReport(id, filename, owner);
 }
 
+export function progress(id: string, owner: ImportOwner) {
+  if (!/^[a-f0-9]{24}$/.test(id)) {
+    throw new errors.NotFoundError({ message: 'This CSV import progress is no longer available.' });
+  }
+  return getImporter().progress(id, owner);
+}
+
 export function handleJob(job: ContentCSVImportJob): Promise<void> {
   if (!importer) {
     throw new errors.InternalServerError({ message: 'Content import service used before init' });

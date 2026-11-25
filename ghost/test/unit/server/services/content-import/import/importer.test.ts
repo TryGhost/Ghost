@@ -171,6 +171,9 @@ function harness(
       start: async () => true,
       claimEmail: async () => true,
       claimCacheInvalidation: async () => true,
+      progress: sinon.stub().resolves({ status: 'running', processed: 1, total: 2 }),
+      finalizeProgress: sinon.stub().resolves(),
+      finishProgress: sinon.stub().resolves(),
       cleanupExpired: async () => {},
       cancel: async () => {},
       lookup: async () => ({ status: 'accepted' as const }),
@@ -299,6 +302,61 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.sentRuns[0].status, 'complete');
     assert.equal(h.sentRuns[0].total, 2);
     sinon.assert.calledWith(h.sendEmail, sinon.match.object, 'owner@example.com');
+  });
+
+  it('delegates progress with the authenticated owner and current clock', async function () {
+    const h = harness();
+    const owner = { id: 'staff', type: 'user' } as const;
+    assert.deepEqual(await h.importer.progress('run_test', owner), {
+      status: 'running',
+      processed: 1,
+      total: 2,
+    });
+    sinon.assert.calledOnceWithExactly(h.deps.fileStager.progress, 'run_test', owner, h.deps.now());
+  });
+
+  it.each([false, true])(
+    'retains progress before email and cleanup, including partial failure (%s)',
+    async function (failed) {
+      const h = harness();
+      if (failed) {
+        h.inlineMedia.onSecondCall().rejects(new Error('unexpected failure'));
+      }
+      h.deps.fileStager.finalizeProgress.callsFake(async () => {
+        assert.equal(
+          (await readJournalPosition(h.deps.fileStager.artifacts())).record,
+          failed ? 1 : 2,
+        );
+        sinon.assert.notCalled(h.sendEmail);
+      });
+      h.sendEmail.callsFake(async () => {
+        sinon.assert.notCalled(h.deps.fileStager.finishProgress);
+        throw new Error('mail unavailable');
+      });
+      h.deps.fileStager.finishProgress.callsFake(() => {
+        assert.ok(h.files.has('checkpoint.txt'));
+        return Promise.resolve();
+      });
+      await h.run();
+      sinon.assert.calledOnceWithExactly(
+        h.deps.fileStager.finalizeProgress,
+        'run_test',
+        failed ? 'failed' : 'complete',
+      );
+      sinon.assert.calledOnceWithExactly(h.deps.fileStager.finishProgress, 'run_test');
+      assert.equal(h.files.size, 0);
+    },
+  );
+
+  it('reports progress persistence failures without preventing email or cleanup', async function () {
+    const h = harness();
+    const error = new Error('progress unavailable');
+    h.deps.fileStager.finalizeProgress.rejects(error);
+    h.deps.fileStager.finishProgress.rejects(error);
+    await h.run();
+    assert.deepEqual(h.reported, [error, error]);
+    sinon.assert.calledOnce(h.sendEmail);
+    assert.equal(h.files.size, 0);
   });
 
   it('logs when the class-based job is queued', async function () {
