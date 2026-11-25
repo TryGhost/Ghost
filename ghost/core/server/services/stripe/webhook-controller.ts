@@ -17,6 +17,8 @@ import {
 export interface WebhookControllerDeps {
   /** The Stripe API version of Ghost's webhook endpoint, which Stripe formats events for. */
   apiVersion: string;
+  /** This site's uuid, which tells the Checkout sessions it created from other sites'. */
+  siteUuid(): string;
   webhookManager: {
     webhookSecret: string | null;
     parseWebhook(body: unknown, signature: string): unknown;
@@ -151,7 +153,7 @@ export class WebhookController {
         // Before the event is parsed into its kind, so a mismatch is still logged when it's the
         // reason the event doesn't parse.
         this.#checkApiVersion(envelope);
-        const event = toWebhookEvent(envelope.type, verified);
+        const event = toWebhookEvent(envelope.type, verified, this.#deps.siteUuid());
         attempt.matching(event.kind);
         logging.info(
           {

@@ -164,6 +164,8 @@ module.exports = class StripeAPI {
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
    * @param {StripeTracking} deps.tracking
+   * @param {() => string} deps.siteUuid This site's uuid, which every Checkout session it creates
+   *   records (see `CheckoutSession` in `webhook/webhook-event.ts`).
    */
   constructor(deps) {
     /** @type {Stripe} */
@@ -171,6 +173,7 @@ module.exports = class StripeAPI {
     this._configured = false;
     this.labs = deps.labs;
     this.tracking = deps.tracking;
+    this.siteUuid = deps.siteUuid;
   }
 
   /**
@@ -202,10 +205,11 @@ module.exports = class StripeAPI {
   }
 
   /**
-   * Asks Stripe to create the session. When Stripe refuses the request because of parts of the
-   * checkout (see `refusalOf`), sends the request again without those parts, until Stripe accepts
-   * it. The session fails instead when Stripe refuses a parameter Ghost sets itself, or keeps
-   * refusing once no parts are left, because then the checkout settings weren't the reason.
+   * Asks Stripe to create the session, recording that this site created it. When Stripe refuses
+   * the request because of parts of the checkout (see `refusalOf`), sends the request again
+   * without those parts, until Stripe accepts it. The session fails instead when Stripe refuses a
+   * parameter Ghost sets itself, or keeps refusing once no parts are left, because then the
+   * checkout settings weren't the reason.
    *
    * @private
    * @param {object} params
@@ -219,7 +223,10 @@ module.exports = class StripeAPI {
   async _createWithFallback(params, requestOptions, parts, onRefused) {
     try {
       return await this._stripe.checkout.sessions.create(
-        sessionCreateParams(params, parts),
+        sessionCreateParams(
+          { ...params, metadata: { ...params.metadata, ghost_site_uuid: this.siteUuid() } },
+          parts,
+        ),
         requestOptions,
       );
     } catch (err) {

@@ -77,6 +77,8 @@ module.exports = new StripeService({
   giftService,
   staffService,
   settingsCache,
+  // Read each time it's used, as the site's uuid is a site fact (see docs/practices/dependencies.md).
+  siteUuid: () => settingsCache.get('site_uuid'),
 });
 
 function stripeSettingsChanged(model) {

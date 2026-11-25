@@ -603,21 +603,31 @@ describe('Stripe webhook outcomes', function () {
       .map(({ amount, currency }) => ({ amount, currency }));
   }
 
-  /** Starts a gift checkout through the members API, which Ghost records as a pending gift. */
-  async function startGiftCheckout() {
+  /**
+   * Starts a checkout of the fixture tier through the members API, and returns the Checkout
+   * session Ghost created: its id, and its metadata as Stripe sends it back, with every value a
+   * string.
+   */
+  async function startCheckout(body: Record<string, unknown>) {
     const tier = await models.Product.findOne({ type: 'paid' }, { require: true });
     await membersAgent
       .post('/api/create-stripe-checkout-session/')
-      .body({
-        type: 'gift',
-        tierId: tier.id,
-        cadence: 'month',
-        customerEmail: 'gift-buyer@example.com',
-        metadata: {},
-      })
+      .body({ tierId: tier.id, cadence: 'month', metadata: {}, ...body })
       .expectStatus(200);
     const started = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
-    return { sessionId: started.id, giftId: String(started.metadata.ghost_gift_id) };
+    const metadata: Record<string, string> = Object.fromEntries(
+      Object.entries(started.metadata ?? {}).map(([key, value]) => [key, String(value)]),
+    );
+    return { sessionId: String(started.id), metadata };
+  }
+
+  /** Starts a gift checkout through the members API, which Ghost records as a pending gift. */
+  async function startGiftCheckout() {
+    const { sessionId, metadata } = await startCheckout({
+      type: 'gift',
+      customerEmail: 'gift-buyer@example.com',
+    });
+    return { sessionId, giftId: metadata.ghost_gift_id };
   }
 
   async function giftStatus(giftId: string) {
@@ -824,7 +834,7 @@ describe('Stripe webhook outcomes', function () {
 
     itWritesNothing([
       {
-        name: 'responds with 500 on every attempt when the checkout’s metadata has newsletters this site doesn’t have, as another site’s checkout on the same Stripe account does',
+        name: 'responds with 500 on every attempt when the checkout’s metadata has newsletters this site doesn’t have, as a checkout another site created before sites recorded their checkouts does',
         event: () => ({
           type: completed,
           object: subscriptionCheckout(stripeCustomer(), {
@@ -988,7 +998,7 @@ describe('Stripe webhook outcomes', function () {
       },
     ]);
 
-    it('responds with 500 on every attempt when the checkout’s metadata has an offer this site doesn’t have, as another site’s checkout on the same Stripe account can, and leaves a free member with a Stripe customer but no subscription', async function () {
+    it('responds with 500 on every attempt when the checkout’s metadata has an offer this site doesn’t have, as a checkout another site created before sites recorded their checkouts can, and leaves a free member with a Stripe customer but no subscription', async function () {
       const bought = stripeCustomer();
       let memberId: string | undefined;
 
@@ -1232,6 +1242,124 @@ describe('Stripe webhook outcomes', function () {
         checkout: null,
       },
     ]);
+  });
+
+  describe('Sites sharing a Stripe account', function () {
+    // Stripe sends each event on an account to every webhook endpoint on it, so each site on a
+    // shared account receives the other sites' checkouts too.
+    const completed = 'checkout.session.completed';
+    const anotherSite = { ghost_site_uuid: crypto.randomUUID() };
+
+    /** An event about a checkout another site created, which this site ignores. */
+    function anotherSitesCheckout(
+      name: string,
+      type: string,
+      object: () => object,
+    ): NothingWritten {
+      return {
+        name,
+        event: () => ({ type, object: object() }),
+        status: 200,
+        webhook: span({ type, kind: 'ignored', result: 'ignored', reason: 'another_site' }),
+        checkout: null,
+      };
+    }
+
+    itWritesNothing([
+      anotherSitesCheckout(
+        'responds with 200 to a signup on another site, with newsletters this site doesn’t have',
+        completed,
+        () =>
+          subscriptionCheckout(stripeCustomer(), {
+            ...anotherSite,
+            newsletters: JSON.stringify([{ id: 'a00000000000000000000001' }]),
+          }),
+      ),
+      anotherSitesCheckout('responds with 200 to a donation to another site', completed, () =>
+        paymentCheckout({ metadata: { ...anotherSite, ghost_donation: 'true' } }),
+      ),
+      anotherSitesCheckout('responds with 200 to a card update on another site', completed, () => ({
+        ...cardUpdateCheckout(stripeId('cus')).session,
+        metadata: anotherSite,
+      })),
+      anotherSitesCheckout(
+        'responds with 200 when the delayed payment for a gift on another site arrives',
+        'checkout.session.async_payment_succeeded',
+        () =>
+          paymentCheckout({
+            metadata: { ...anotherSite, ghost_gift_id: 'a00000000000000000000003' },
+          }),
+      ),
+    ]);
+
+    it('creates a paid member from a signup checkout this site created', async function () {
+      const bought = stripeCustomer();
+      const { metadata } = await startCheckout({ customerEmail: bought.customer.email });
+
+      await pinOutcome(
+        { type: completed, object: subscriptionCheckout(bought, metadata) },
+        {
+          status: 200,
+          writes: async () => {
+            await DomainEvents.allSettled();
+            await mockManager.assert.sentEmailEventually({
+              to: bought.customer.email,
+              subject: /Thank you for signing up/,
+            });
+            assert.equal((await memberByEmail(bought.customer.email)).get('status'), 'paid');
+          },
+          webhook: span({ type: completed, kind: 'subscription_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'subscription', member: 'new' }),
+        },
+      );
+    });
+
+    it('completes a checkout whose buyer sent another site’s uuid in its metadata', async function () {
+      const bought = stripeCustomer();
+      const { metadata } = await startCheckout({
+        customerEmail: bought.customer.email,
+        metadata: anotherSite,
+      });
+
+      await pinOutcome(
+        { type: completed, object: subscriptionCheckout(bought, metadata) },
+        {
+          status: 200,
+          writes: async () => {
+            await DomainEvents.allSettled();
+            await mockManager.assert.sentEmailEventually({
+              to: bought.customer.email,
+              subject: /Thank you for signing up/,
+            });
+            assert.equal((await memberByEmail(bought.customer.email)).get('status'), 'paid');
+          },
+          webhook: span({ type: completed, kind: 'subscription_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'subscription', member: 'new' }),
+        },
+      );
+    });
+
+    it('records a donation from a donation checkout this site created', async function () {
+      const before = await donationsRecorded();
+      const { sessionId, metadata } = await startCheckout({
+        type: 'donation',
+        customerEmail: 'donor@example.com',
+      });
+
+      await pinOutcome(
+        { type: completed, object: paymentCheckout({ id: sessionId, metadata }) },
+        {
+          status: 200,
+          writes: async () => {
+            assert.deepEqual(await donationsAddedSince(before), [
+              { amount: 1200, currency: 'usd' },
+            ]);
+          },
+          webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'donation' }),
+        },
+      );
+    });
   });
 
   describe('customer.subscription.updated', function () {

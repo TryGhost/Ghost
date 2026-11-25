@@ -45,6 +45,8 @@ module.exports = class StripeService {
    * @param {*} deps.staffService
    * @param {import('./webhook-manager').StripeWebhook} deps.StripeWebhook
    * @param {object} deps.settingsCache
+   * @param {() => string} deps.siteUuid This site's uuid, which tells the Checkout sessions it
+   *   created from other sites' (see `CheckoutSession` in `webhook/webhook-event.ts`).
    * @param {object} deps.models
    * @param {object} deps.models.Product
    * @param {object} deps.models.StripePrice
@@ -63,9 +65,10 @@ module.exports = class StripeService {
     staffService,
     StripeWebhook,
     settingsCache,
+    siteUuid,
     models,
   }) {
-    const api = new StripeAPI({ labs, tracking });
+    const api = new StripeAPI({ labs, tracking, siteUuid });
 
     const webhookManager = new WebhookManager({
       StripeWebhook,
@@ -152,6 +155,7 @@ module.exports = class StripeService {
 
     const webhookController = new WebhookController({
       apiVersion: StripeAPI.API_VERSION,
+      siteUuid,
       webhookManager,
       subscriptionEventService,
       invoiceEventService,
