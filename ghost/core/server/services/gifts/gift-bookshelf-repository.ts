@@ -59,7 +59,6 @@ export interface FindPendingReminderOptions {
 }
 
 export interface GiftRepository {
-  existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean>;
   getById(id: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
   getByToken(token: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
   getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null>;
@@ -156,17 +155,6 @@ export class GiftBookshelfRepository implements GiftRepository {
   constructor({ GiftModel, knex }: { GiftModel: GiftBookshelfModel; knex: Knex }) {
     this.model = GiftModel;
     this.knex = knex;
-  }
-
-  async existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean> {
-    const existing = await this.model.findOne(
-      {
-        stripe_checkout_session_id: checkoutSessionId,
-      },
-      { require: false },
-    );
-
-    return !!existing;
   }
 
   async getById(id: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {

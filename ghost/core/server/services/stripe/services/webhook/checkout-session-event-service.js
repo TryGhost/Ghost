@@ -171,55 +171,13 @@ module.exports = class CheckoutSessionEventService {
    * @param {import('stripe').Stripe.Checkout.Session} session
    */
   async handleGiftEvent(session) {
-    const stripeCustomerId = getStripeResourceId(session.customer);
-
-    if (session.metadata?.ghost_gift_id) {
-      await this.deps.giftService.completePurchase({
-        giftId: session.metadata.ghost_gift_id,
-        buyerEmail: getGiftBuyerEmailFromSession(session),
-        stripeCustomerId,
-        stripeCheckoutSessionId: session.id,
-        stripePaymentIntentId: getStripeResourceId(session.payment_intent),
-      });
-      return;
-    }
-
-    const buyerEmail = await this.getGiftBuyerEmail(session, stripeCustomerId);
     await this.deps.giftService.completePurchase({
-      token: session.metadata?.gift_token,
-      buyerEmail,
-      stripeCustomerId,
-      tierId: session.metadata?.tier_id,
-      cadence: session.metadata?.cadence,
-      duration: Number(session.metadata?.duration),
-      currency: session.currency,
-      amount: session.amount_total,
+      giftId: session.metadata.ghost_gift_id,
+      buyerEmail: getGiftBuyerEmailFromSession(session),
+      stripeCustomerId: getStripeResourceId(session.customer),
       stripeCheckoutSessionId: session.id,
       stripePaymentIntentId: getStripeResourceId(session.payment_intent),
     });
-  }
-
-  /**
-   * Legacy gift Checkout sessions predate persisted buyer details. If their
-   * webhook snapshot has no customer details, recover the required buyer email
-   * from the Customer associated with the session.
-   *
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   * @param {string|null} stripeCustomerId
-   * @returns {Promise<string|null>}
-   */
-  async getGiftBuyerEmail(session, stripeCustomerId) {
-    const sessionEmail = getGiftBuyerEmailFromSession(session);
-    if (sessionEmail) {
-      return sessionEmail;
-    }
-
-    if (!stripeCustomerId) {
-      return null;
-    }
-
-    const customer = await this.api.getCustomer(stripeCustomerId);
-    return customer.deleted ? null : (customer.email ?? null);
   }
 
   /**

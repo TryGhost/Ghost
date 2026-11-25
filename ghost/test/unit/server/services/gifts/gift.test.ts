@@ -1,65 +1,8 @@
 import assert from 'node:assert/strict';
-import { Gift, type GiftFromPurchaseData } from '../../../../../core/server/services/gifts/gift';
+import { Gift } from '../../../../../core/server/services/gifts/gift';
 import { buildGift } from './utils';
 
 describe('Gift', function () {
-  const purchaseData: GiftFromPurchaseData = {
-    token: 'abc-123',
-    buyerEmail: 'buyer@example.com',
-    buyerMemberId: 'member_1',
-    tierId: 'tier_1',
-    cadence: 'year',
-    duration: 1,
-    currency: 'usd',
-    amount: 5000,
-    stripeCheckoutSessionId: 'cs_123',
-    stripePaymentIntentId: 'pi_456',
-    purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-    expiryTimeZone: 'America/Los_Angeles',
-  };
-
-  describe('fromPurchase', function () {
-    it('sets status to purchased', function () {
-      const gift = Gift.fromPurchase(purchaseData);
-
-      assert.equal(gift.status, 'purchased');
-    });
-
-    it('uses the authoritative purchase time and claim deadline', function () {
-      const gift = Gift.fromPurchase(purchaseData);
-
-      assert.equal(gift.purchasedAt?.toISOString(), purchaseData.purchasedAt.toISOString());
-      assert.equal(gift.expiresAt?.toISOString(), '2027-08-19T06:59:59.999Z');
-    });
-
-    it('sets null defaults for redemption fields', function () {
-      const gift = Gift.fromPurchase(purchaseData);
-
-      assert.equal(gift.redeemerMemberId, null);
-      assert.equal(gift.consumesAt, null);
-      assert.equal(gift.redeemedAt, null);
-      assert.equal(gift.consumedAt, null);
-      assert.equal(gift.expiredAt, null);
-      assert.equal(gift.refundedAt, null);
-      assert.equal(gift.consumesSoonReminderSentAt, null);
-    });
-
-    it('passes through purchase data', function () {
-      const gift = Gift.fromPurchase(purchaseData);
-
-      assert.equal(gift.token, 'abc-123');
-      assert.equal(gift.buyerEmail, 'buyer@example.com');
-      assert.equal(gift.buyerMemberId, 'member_1');
-      assert.equal(gift.tierId, 'tier_1');
-      assert.equal(gift.cadence, 'year');
-      assert.equal(gift.duration, 1);
-      assert.equal(gift.currency, 'usd');
-      assert.equal(gift.amount, 5000);
-      assert.equal(gift.stripeCheckoutSessionId, 'cs_123');
-      assert.equal(gift.stripePaymentIntentId, 'pi_456');
-    });
-  });
-
   describe('fromCheckout', function () {
     it('holds local purchase details without creating a redeemable gift', function () {
       const gift = Gift.fromCheckout({
