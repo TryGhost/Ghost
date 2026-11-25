@@ -117,7 +117,7 @@ export function MemberSegmentActions({
             {/* Icons, as the Edit segment menu that opens from the same place has. */}
             <DropdownMenuItem onSelect={() => setUpdating(true)}>
               <LucideIcon.RefreshCw className="size-4" />
-              Update “{segment.name}”
+              Update segment
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
