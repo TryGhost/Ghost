@@ -22,13 +22,16 @@ import {
   DialogTitle,
   Input,
   Label,
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
   Skeleton,
   Switch,
 } from '@tryghost/shade/components';
 import { type Filter, FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { useId, useMemo, useState } from 'react';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
+import { type RefObject, useId, useMemo, useState } from 'react';
 import { formatMemberName, memberAvatarProps } from '@/members/member-format';
 import { SEGMENT_NAME_MAX_LENGTH } from './segment-fields';
 import { useSaveSegment } from './use-save-segment';
@@ -90,40 +93,35 @@ function PreviewMessage({ icon, children }: { icon: React.ReactNode; children: R
  * Who the conditions match, as they are built: the count, and the first members as a short
  * list. It stands in for the members screen, which isn't in view wherever this is used.
  */
-function MatchingMembersPreview({ filter }: { filter: string | undefined }) {
+function MatchingMembersPreview({ filter, compact }: { filter: string; compact?: boolean }) {
   const { data, isLoading } = useBrowseMembers({
-    searchParams: { filter: filter ?? '', limit: String(PREVIEW_SIZE), order: 'created_at desc' },
-    enabled: Boolean(filter),
+    searchParams: { filter, limit: String(PREVIEW_SIZE), order: 'created_at desc' },
     placeholderData: keepPreviousData,
     defaultErrorHandler: false,
   });
-  const members = filter ? (data?.members ?? []) : [];
+  const members = data?.members ?? [];
   const total = data?.meta?.pagination.total ?? members.length;
 
   return (
     <Stack gap="sm">
       <Text size="sm" tone="secondary">
-        {filter && !isLoading ? (
+        {isLoading ? (
+          'Matching members'
+        ) : (
           <>
             <Text as="span" size="sm" weight="semibold">
               {formatNumber(total)}
             </Text>{' '}
             {total === 1 ? 'member matches' : 'members match'}
           </>
-        ) : (
-          'Matching members'
         )}
       </Text>
       {/* A set height, so the dialog doesn't move as the conditions change. */}
       <div
-        className="h-64 overflow-y-auto rounded-md border border-border"
+        className={cn('overflow-y-auto rounded-md border border-border', compact ? 'h-44' : 'h-64')}
         data-testid="segment-builder-preview"
       >
-        {!filter ? (
-          <PreviewMessage icon={<LucideIcon.ListFilter className="size-5 text-muted-foreground" />}>
-            Add a filter to see who is in this segment.
-          </PreviewMessage>
-        ) : isLoading ? (
+        {isLoading ? (
           <Stack className="p-3" gap="md">
             {Array.from({ length: 4 }, (_, index) => (
               <Inline key={index} gap="md">
@@ -173,12 +171,154 @@ function MatchingMembersPreview({ filter }: { filter: string | undefined }) {
   );
 }
 
-interface SegmentBuilderDialogProps {
+interface SegmentBuilderOptions {
+  /** Conditions to start building from, such as a template's. */
+  startFrom?: string;
+  onCreated?: (segment: Segment) => void;
+  /** Called once the segment is saved, to put the builder away. */
+  onDone: () => void;
+}
+
+/** A segment being built: its name, its conditions, and the save. One per open builder. */
+function useSegmentBuilder({ startFrom, onCreated, onDone }: SegmentBuilderOptions) {
+  const conditions = useDraftConditions(startFrom);
+  const draft = useSaveSegment(onCreated);
+  const filterError = draft.filterError(conditions.filter);
+
+  const save = async () => {
+    if (await draft.save(conditions.filter)) {
+      onDone();
+    }
+  };
+
+  return {
+    conditions,
+    draft,
+    filterError,
+    hasFilters: conditions.filters.length > 0,
+    hasError: Boolean(draft.error || filterError),
+    /** Whether anything has been entered, which a stray click shouldn't throw away. */
+    isDirty: Boolean(draft.name) || conditions.filters.length > 0,
+    save,
+  };
+}
+
+type SegmentBuilder = ReturnType<typeof useSegmentBuilder>;
+
+/**
+ * The builder's fields, whatever it is shown in: the name, the conditions, and the members they
+ * match, listed once there is a filter.
+ */
+function SegmentBuilderForm({ builder, compact }: { builder: SegmentBuilder; compact?: boolean }) {
+  const { conditions, draft, filterError, save } = builder;
+
+  return (
+    <Stack gap={compact ? 'md' : 'lg'}>
+      <Stack gap="xs">
+        <Input
+          aria-invalid={Boolean(draft.error)}
+          aria-label="Segment name"
+          maxLength={SEGMENT_NAME_MAX_LENGTH}
+          placeholder="Segment name"
+          value={draft.name}
+          autoFocus
+          onChange={(event) => draft.setName(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              void save();
+            }
+          }}
+        />
+        {draft.error && (
+          <Text className="text-destructive" role="alert" size="xs">
+            {draft.error}
+          </Text>
+        )}
+      </Stack>
+      <Stack gap="xs">
+        <FilterBar className="mt-0">
+          <MembersFilters
+            filters={conditions.filters}
+            multipleActiveSubscriptionsCount={0}
+            embedded
+            onFiltersChange={conditions.setFilters}
+          />
+        </FilterBar>
+        {filterError && (
+          <Text className="text-destructive" role="alert" size="xs">
+            {filterError}
+          </Text>
+        )}
+      </Stack>
+      {/* Nothing is listed until there is a filter: an empty list would be the largest thing
+          in the builder, and draw the eye away from the one step there is to take. The list
+          opens downwards. Closed, it gives back the gap the stack put above it. */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows,margin] duration-200 ease-out',
+          conditions.filter ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+          !conditions.filter && (compact ? '-mt-3' : '-mt-5'),
+        )}
+      >
+        <div className="overflow-hidden">
+          {conditions.filter && (
+            <MatchingMembersPreview compact={compact} filter={conditions.filter} />
+          )}
+        </div>
+      </div>
+    </Stack>
+  );
+}
+
+interface SegmentBuilderActionsProps {
+  builder: SegmentBuilder;
+  /** Whether the builder asks if the segment is pinned to the sidebar. */
+  withPin: boolean;
+  size?: 'sm';
+  onCancel: () => void;
+}
+
+/** The builder's pin switch, where the place asks for it, and its buttons. */
+function SegmentBuilderActions({ builder, withPin, size, onCancel }: SegmentBuilderActionsProps) {
+  const pinId = useId();
+  const { draft, hasError, save } = builder;
+
+  return (
+    <Inline className="w-full" gap="md" justify="between">
+      {withPin ? (
+        <Inline gap="sm">
+          <Switch checked={draft.pinned} id={pinId} onCheckedChange={draft.setPinned} />
+          <Label className="font-normal" htmlFor={pinId}>
+            Pin in sidebar
+          </Label>
+        </Inline>
+      ) : (
+        <span />
+      )}
+      <Inline gap="sm">
+        <Button disabled={draft.isPending} size={size} variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          disabled={draft.isPending}
+          size={size}
+          variant={hasError ? 'destructive' : 'default'}
+          onClick={() => void save()}
+        >
+          {draft.isPending ? 'Saving…' : hasError ? 'Retry' : size ? 'Save' : 'Save segment'}
+        </Button>
+      </Inline>
+    </Inline>
+  );
+}
+
+interface SegmentBuilderProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** Conditions to start building from, such as a template's. */
   startFrom?: string;
-  /** Whether the dialog asks if the segment is pinned to the sidebar. It is made unpinned either way. */
+  /** Whether the builder asks if the segment is pinned to the sidebar. It is made unpinned either way. */
   withPin?: boolean;
   onCreated?: (segment: Segment) => void;
 }
@@ -189,6 +329,9 @@ interface SegmentBuilderDialogProps {
  * control, and the members they match, listed as the conditions change. The members screen
  * itself has no need of it: there the filters and the list are the page.
  *
+ * This is the builder as a dialog. `SegmentBuilderPopover` is the same builder hung from a
+ * control.
+ *
  * A segment is made unpinned. A place can offer the sidebar switch (`withPin`), as a custom field
  * made in passing is staff-only unless the place asks who can see it.
  */
@@ -198,77 +341,98 @@ export function SegmentBuilderDialog({
   startFrom,
   withPin = false,
   onCreated,
-}: SegmentBuilderDialogProps) {
-  const pinId = useId();
-  const conditions = useDraftConditions(startFrom);
-  const draft = useSaveSegment(onCreated);
-
-  const save = async () => {
-    if (await draft.save(conditions.filter)) {
-      onOpenChange(false);
-    }
-  };
+}: SegmentBuilderProps) {
+  const builder = useSegmentBuilder({ startFrom, onCreated, onDone: () => onOpenChange(false) });
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !draft.isPending && onOpenChange(next)}>
-      <DialogContent className="max-w-2xl" data-testid="segment-builder-dialog">
+    <Dialog open={open} onOpenChange={(next) => !builder.draft.isPending && onOpenChange(next)}>
+      {/* Small until there is a filter, then wide enough for the filters and the members they
+          match. The dialog's own timing animates the change, as it does in the members import. */}
+      <DialogContent
+        className={cn(
+          'transition-[max-width] ease-out',
+          builder.hasFilters ? 'max-w-2xl' : 'max-w-lg',
+        )}
+        data-testid="segment-builder-dialog"
+      >
         <DialogHeader>
           <DialogTitle>New segment</DialogTitle>
         </DialogHeader>
-        <Stack gap="lg">
-          <Stack gap="xs">
-            <Input
-              aria-invalid={Boolean(draft.error)}
-              aria-label="Segment name"
-              maxLength={SEGMENT_NAME_MAX_LENGTH}
-              placeholder="Segment name"
-              value={draft.name}
-              autoFocus
-              onChange={(event) => draft.setName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-                  event.preventDefault();
-                  void save();
-                }
-              }}
-            />
-            {draft.error && (
-              <Text className="text-destructive" role="alert" size="xs">
-                {draft.error}
-              </Text>
-            )}
-          </Stack>
-          <FilterBar className="mt-0">
-            <MembersFilters
-              filters={conditions.filters}
-              multipleActiveSubscriptionsCount={0}
-              embedded
-              onFiltersChange={conditions.setFilters}
-            />
-          </FilterBar>
-          <MatchingMembersPreview filter={conditions.filter} />
-        </Stack>
-        <DialogFooter className="sm:items-center sm:justify-between">
-          {withPin ? (
-            <Inline gap="sm">
-              <Switch checked={draft.pinned} id={pinId} onCheckedChange={draft.setPinned} />
-              <Label className="font-normal" htmlFor={pinId}>
-                Pin in sidebar
-              </Label>
-            </Inline>
-          ) : (
-            <span />
-          )}
-          <Inline gap="sm">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button disabled={!draft.canSave(conditions.filter)} onClick={() => void save()}>
-              {draft.isPending ? 'Saving…' : 'Save segment'}
-            </Button>
-          </Inline>
+        <SegmentBuilderForm builder={builder} />
+        <DialogFooter>
+          <SegmentBuilderActions
+            builder={builder}
+            withPin={withPin}
+            onCancel={() => onOpenChange(false)}
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface SegmentBuilderPopoverProps extends SegmentBuilderProps {
+  /** What the popover hangs from: the picker or button a segment is being made for. */
+  anchorRef: RefObject<HTMLElement>;
+}
+
+function SegmentBuilderPopoverContent({
+  onOpenChange,
+  startFrom,
+  withPin = false,
+  onCreated,
+}: Omit<SegmentBuilderPopoverProps, 'open' | 'anchorRef'>) {
+  const builder = useSegmentBuilder({ startFrom, onCreated, onDone: () => onOpenChange(false) });
+  // Kept while it holds something or is saving: a click outside or Escape would throw the
+  // segment away, and Cancel is the one way to do that.
+  const keepOpen = builder.isDirty || builder.draft.isPending;
+
+  return (
+    <PopoverContent
+      align="end"
+      aria-label="New segment"
+      className="max-h-(--radix-popover-content-available-height) w-[540px] max-w-[calc(100vw-32px)] overflow-y-auto"
+      collisionPadding={16}
+      data-testid="segment-builder-popover"
+      sideOffset={8}
+      onEscapeKeyDown={(event) => {
+        if (keepOpen) {
+          event.preventDefault();
+        }
+      }}
+      onPointerDownOutside={(event) => {
+        if (keepOpen) {
+          event.preventDefault();
+        }
+      }}
+    >
+      <Stack gap="lg">
+        <SegmentBuilderForm builder={builder} compact />
+        <SegmentBuilderActions
+          builder={builder}
+          size="sm"
+          withPin={withPin}
+          onCancel={() => onOpenChange(false)}
+        />
+      </Stack>
+    </PopoverContent>
+  );
+}
+
+/**
+ * The segment builder hung from a control, as the custom field form is from its picker: for a
+ * place that is choosing a segment and finds it needs a new one, where a dialog would take over
+ * the screen for a small step. It holds the same fields as the dialog, with a shorter list.
+ *
+ * Once something is entered it stays open until it is saved or cancelled.
+ */
+export function SegmentBuilderPopover({ open, anchorRef, ...props }: SegmentBuilderPopoverProps) {
+  return (
+    // Modal, as the custom field form's popover is: what is behind it holds still while it is
+    // open, so it can't be scrolled away from the control it belongs to.
+    <Popover open={open} modal onOpenChange={props.onOpenChange}>
+      <PopoverAnchor virtualRef={anchorRef} />
+      {open && <SegmentBuilderPopoverContent {...props} />}
+    </Popover>
   );
 }

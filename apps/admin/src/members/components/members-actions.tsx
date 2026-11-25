@@ -34,6 +34,8 @@ interface MembersActionsProps {
   showMenu?: boolean;
   showNewMember?: boolean;
   onImportComplete?: (importResponse?: ImportResponse) => void;
+  /** Opens the list of every segment. Left out, the menu doesn't offer it. */
+  onManageSegments?: () => void;
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
@@ -46,6 +48,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   showMenu = true,
   showNewMember = true,
   onImportComplete,
+  onManageSegments,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -259,16 +262,30 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                 Import members
               </DropdownMenuItem>
 
+              {/* Export */}
+              {memberCount > 0 && (
+                <DropdownMenuItem onClick={() => void handleExport()}>
+                  <LucideIcon.Download className="mr-2 size-4" />
+                  {hasFilterOrSearch
+                    ? `Export ${formatNumber(memberCount)} members`
+                    : 'Export all members'}
+                </DropdownMenuItem>
+              )}
+
+              {/* Segments: apart from importing and exporting, and from what is done to the
+                  members listed. */}
+              {onManageSegments && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onManageSegments}>
+                    <LucideIcon.ChartPie className="mr-2 size-4" />
+                    Manage segments
+                  </DropdownMenuItem>
+                </>
+              )}
+
               {memberCount > 0 && (
                 <>
-                  {/* Export */}
-                  <DropdownMenuItem onClick={() => void handleExport()}>
-                    <LucideIcon.Download className="mr-2 size-4" />
-                    {hasFilterOrSearch
-                      ? `Export ${formatNumber(memberCount)} members`
-                      : 'Export all members'}
-                  </DropdownMenuItem>
-
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
                     <LucideIcon.Tags className="mr-2 size-4" />

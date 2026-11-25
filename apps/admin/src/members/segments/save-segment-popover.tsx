@@ -32,8 +32,13 @@ export function SaveSegmentForm({ filter, onClose, onCreated }: SaveSegmentFormP
           onNameChange={draft.setName}
           onSubmit={() => void save()}
         />
-        <Button className="w-full" disabled={!draft.canSave(filter)} onClick={() => void save()}>
-          {draft.isPending ? 'Saving...' : 'Save'}
+        <Button
+          className="w-full"
+          disabled={draft.isPending}
+          variant={draft.error ? 'destructive' : 'default'}
+          onClick={() => void save()}
+        >
+          {draft.isPending ? 'Saving...' : draft.error ? 'Retry' : 'Save'}
         </Button>
       </Stack>
     </PopoverContent>

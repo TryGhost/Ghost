@@ -9,7 +9,7 @@ import {
   PopoverAnchor,
 } from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSegmentUsage } from './poc-store';
 import { SaveSegmentForm, SaveSegmentPopover } from './save-segment-popover';
 import { UpdateSegmentDialog } from './segment-dialogs';
@@ -26,6 +26,11 @@ interface MemberSegmentActionsProps {
   onOpenSegment: (segment: Segment) => void;
   /** Leaves the segment, after it is deleted. */
   onLeaveSegment: () => void;
+  /**
+   * Counts the times something else on the screen asked for these filters to be saved as a new
+   * segment, such as "New segment" in the title's list. Each new count opens the name form.
+   */
+  saveRequest?: number;
 }
 
 /**
@@ -45,6 +50,7 @@ export function MemberSegmentActions({
   isModified,
   onOpenSegment,
   onLeaveSegment,
+  saveRequest = 0,
 }: MemberSegmentActionsProps) {
   const canChange = useCanChangeMemberViews();
   const { usageOf } = useSegmentUsage();
@@ -53,6 +59,13 @@ export function MemberSegmentActions({
   // The menu hands focus back to its button as it closes. When it closes to open the save
   // form, that would take focus out of the form, which closes on losing it.
   const openingSaveForm = useRef(false);
+  const answeredSaveRequest = useRef(saveRequest);
+  useEffect(() => {
+    if (saveRequest !== answeredSaveRequest.current) {
+      answeredSaveRequest.current = saveRequest;
+      setSaving(true);
+    }
+  }, [saveRequest]);
 
   if (!canChange) {
     return null;

@@ -25,6 +25,7 @@ import { Fragment, useState } from 'react';
 import { type SegmentUsage, isInUse, usageSummary } from './poc-store';
 import { SegmentFields } from './segment-fields';
 import { segmentWriteFailure } from './segment-write-failure';
+import { NAME_MISSING } from './use-save-segment';
 
 interface SegmentDialogProps {
   segment: Segment;
@@ -90,7 +91,11 @@ export function RenameSegmentDialog({ segment, open, onOpenChange }: SegmentDial
 
   const save = async () => {
     const trimmed = name.trim();
-    if (!trimmed || isPending) {
+    if (isPending) {
+      return;
+    }
+    if (!trimmed) {
+      setError(NAME_MISSING);
       return;
     }
     try {
@@ -120,8 +125,12 @@ export function RenameSegmentDialog({ segment, open, onOpenChange }: SegmentDial
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button disabled={isPending || !name.trim()} onClick={() => void save()}>
-            {isPending ? 'Saving…' : 'Save'}
+          <Button
+            disabled={isPending}
+            variant={error ? 'destructive' : 'default'}
+            onClick={() => void save()}
+          >
+            {isPending ? 'Saving…' : error ? 'Retry' : 'Save'}
           </Button>
         </DialogFooter>
       </DialogContent>

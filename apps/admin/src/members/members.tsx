@@ -31,6 +31,7 @@ import {
   useCanChangeMemberViews,
   useMemberViews,
 } from './hooks/use-member-views';
+import { ManageSegmentsDialog } from './segments/manage-segments-dialog';
 import { MemberSegmentActions } from './segments/member-segment-actions';
 import { PocControls } from './segments/poc-controls';
 import { SEGMENT_PARAM, buildSegmentUrl } from './segments/segment-route';
@@ -144,14 +145,23 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const hasFilters = filters.length > 0;
 
   // A new segment starts by filtering the list: the filters and the list are what builds one,
-  // and it is saved from the filter bar. So "New segment" shows every member and opens the
-  // filter control. POC: the control only opens to its own shortcut, which is sent to it here.
+  // and it is saved from the filter bar. What "New segment" does depends on what is on screen,
+  // and it never throws away filters that haven't been saved:
+  // - filters that are no segment's, or a segment's changed ones, are what the new segment is
+  //   made of, so it asks for their name
+  // - a segment shown as it is saved is left for a fresh start on every member
+  // - with no filters, the filter control opens
+  // POC: the control only opens to its own shortcut, which is sent to it here.
   const filterPickerWanted = useRef(false);
+  const [saveRequest, setSaveRequest] = useState(0);
+  const [managingSegments, setManagingSegments] = useState(false);
   const openFilterPicker = useCallback(() => {
     window.setTimeout(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f' })), 50);
   }, []);
   const startNewSegment = () => {
-    if (hasFilterOrSearch || viewedSegment) {
+    if (nql && (!viewedSegment || isSegmentModified)) {
+      setSaveRequest((request) => request + 1);
+    } else if (viewedSegment) {
       filterPickerWanted.current = true;
       navigate('/members');
     } else {
@@ -209,6 +219,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <MemberSegmentActions
       filter={nql}
       isModified={isSegmentModified}
+      saveRequest={saveRequest}
       segment={viewedSegment}
       onLeaveSegment={() => navigate('/members')}
       onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
@@ -320,6 +331,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       onImportComplete={() => {
                         void refetch();
                       }}
+                      onManageSegments={() => setManagingSegments(true)}
                     >
                       {!mobileFilters && headerFilters}
                     </MembersActions>
@@ -407,6 +419,14 @@ const MembersPage: React.FC<MembersPageProps> = ({
             )}
           </ListPage.Body>
         </ListPage>
+        {managingSegments && (
+          <ManageSegmentsDialog
+            open
+            onNewSegment={canChangeSegments ? startNewSegment : undefined}
+            onOpenChange={setManagingSegments}
+            onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
+          />
+        )}
         <PocControls onSegmentCreated={(segment) => navigate(buildSegmentUrl(segment))} />
       </Container>
     </Box>

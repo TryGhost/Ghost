@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { buildSegmentUrl } from './segment-route';
 
 /** A count beside a name, as the page title shows its own: quieter than the name. */
@@ -51,6 +51,9 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const allMembers = useMemberCount();
+  // Closing hands focus back to the title. "New segment" opens the filter control or the name
+  // form, which take focus themselves and close when it is taken from them.
+  const keepFocusWhereItGoes = useRef(false);
   const go = (to: string) => {
     setOpen(false);
     navigate(to);
@@ -72,6 +75,12 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
         align="start"
         className="w-72 p-0 font-normal tracking-normal"
         collisionPadding={16}
+        onCloseAutoFocus={(event) => {
+          if (keepFocusWhereItGoes.current) {
+            keepFocusWhereItGoes.current = false;
+            event.preventDefault();
+          }
+        }}
       >
         <Command>
           <CommandInput placeholder="Search segments..." />
@@ -107,6 +116,7 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
                   value="__new-segment__"
                   forceMount
                   onSelect={() => {
+                    keepFocusWhereItGoes.current = true;
                     setOpen(false);
                     onNewSegment();
                   }}
