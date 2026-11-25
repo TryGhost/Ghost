@@ -19,6 +19,7 @@ interface WorkerMessage {
   importId: string;
   html?: string;
   message?: string;
+  cancellationPath?: string;
 }
 
 async function receive(worker: ChildProcess, type: WorkerMessage['type']): Promise<WorkerMessage> {
@@ -54,9 +55,14 @@ describe('CSV import worker recovery through the retained outbox', function () {
     await getJobsService().shutdown();
   });
 
-  it.each(['csv', 'zip'] as const)(
-    'replays an unfinished %s import after killing the worker',
-    async function (format) {
+  it.each([
+    ['csv', false],
+    ['zip', false],
+    ['csv', true],
+    ['zip', true],
+  ] as const)(
+    'replays an unfinished %s import after killing the worker (cancel: %s)',
+    async function (format, cancel) {
       const directory = await mkdtemp(path.join(os.tmpdir(), 'csv-worker-recovery-'));
       const children: ChildProcess[] = [];
       const contentPath: string = config.get('paths:contentPath');
@@ -82,7 +88,7 @@ describe('CSV import worker recovery through the retained outbox', function () {
       try {
         const fileName = `recovery.${format}`;
         const filePath = path.join(directory, fileName);
-        const title = `Worker recovery ${format}`;
+        const title = `Worker recovery ${format} ${cancel}`;
         const rows = Array.from(
           { length: 27 },
           (_, index) =>
@@ -120,6 +126,10 @@ describe('CSV import worker recovery through the retained outbox', function () {
           'the job had already been handed to the first worker',
         );
 
+        if (cancel) {
+          assert.ok(paused.cancellationPath);
+          await writeFile(paused.cancellationPath, '');
+        }
         const second = spawnWorker([]);
         const result = await receive(second, 'finished');
         assert.equal(result.importId, paused.importId);
@@ -129,15 +139,22 @@ describe('CSV import worker recovery through the retained outbox', function () {
           },
           { timeout: 5000 },
         );
-        assert.match(result.html ?? '', /Created:<\/strong> 26/);
-        assert.match(result.html ?? '', /Skipped:<\/strong> 1/);
+        if (cancel) {
+          // Row 26 committed before the crash but was never journalled. Cancellation
+          // must not replay it or start row 27; the report retains the 25 durable rows.
+          assert.match(result.html ?? '', /Your content import was cancelled/);
+          assert.match(result.html ?? '', /Created:<\/strong> 25/);
+        } else {
+          assert.match(result.html ?? '', /Created:<\/strong> 26/);
+          assert.match(result.html ?? '', /Skipped:<\/strong> 1/);
+        }
         const { data: posts } = await models.Post.findPage({
           filter: `title:~'${title}'`,
           status: 'all',
           limit: 'all',
         });
-        assert.equal(posts.length, 27);
-        if (format === 'zip') {
+        assert.equal(posts.length, cancel ? 26 : 27);
+        if (format === 'zip' && !cancel) {
           const assets = await readdir(path.join(contentPath, 'files'));
           assert.deepEqual(
             assets.filter((asset) => asset.startsWith('recovery-guide')),

@@ -1,3 +1,5 @@
+const path = require('node:path');
+const adapterManager = require('../../core/server/services/adapter-manager').default;
 const boot = require('../../core/boot');
 const { GhostMailer } = require('../../core/server/lib/mail');
 const ContentCSVImporter =
@@ -23,7 +25,15 @@ ContentCSVImporter.prototype.handle = async function (job) {
       const result = await write.apply(this, args);
       writes += 1;
       if (writes === 26) {
-        process.send({ type: 'paused', importId: job.importId });
+        process.send({
+          type: 'paused',
+          importId: job.importId,
+          cancellationPath: path.join(
+            adapterManager.getAdapter('storage:imports').storagePath,
+            path.dirname(job.file.key),
+            `cancel-import-${job.importId}`,
+          ),
+        });
         // The parent kills this worker after the DB commit and before journaling.
         await new Promise(() => {});
       }

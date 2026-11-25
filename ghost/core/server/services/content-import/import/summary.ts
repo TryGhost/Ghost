@@ -5,7 +5,7 @@ export type OutcomeCounts = Record<RowStatus, number> & { warningRows: number };
 
 export interface ImportSummary {
   id: string;
-  status: 'complete' | 'failed';
+  status: 'complete' | 'failed' | 'cancelled';
   failureReason?: string;
   total: number;
   counts: OutcomeCounts;

@@ -176,6 +176,8 @@ function harness(
       finishProgress: sinon.stub().resolves(),
       cleanupExpired: async () => {},
       cancel: async () => {},
+      cancellationRequested: sinon.stub().resolves(false),
+      cancelImport: sinon.stub().resolves('cancelling'),
       lookup: async () => ({ status: 'accepted' as const }),
       claim: async () => true,
       remove: async (_id: string, file: { key: string; name: string }) => {
@@ -265,6 +267,113 @@ describe('ContentCSVImporter', function () {
   afterEach(function () {
     sinon.restore();
   });
+
+  it('checks cancellation between ZIP assets without writing posts', async function () {
+    const clock = sinon.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    try {
+      const h = harness();
+      h.deps.fileStager.cancellationRequested.onSecondCall().resolves(true);
+      const assets = {
+        files: [],
+        rewriteRows: sinon.stub(),
+        store: async (_journal: unknown, _onStored: unknown, check?: () => void) => {
+          await clock.tickAsync(2000);
+          check?.();
+        },
+      };
+      const importer = new ContentCSVImporter({
+        ...h.deps,
+        prepareSource: async () => ({ filePath: '/tmp/source', assets, cleanup: async () => {} }),
+      });
+      await importer.importCSV({ filePath: '/tmp/source', fileName: 'posts.zip' });
+      await importer.handle(h.jobs[0]);
+      assert.equal(h.sentRuns[0].status, 'cancelled');
+      assert.equal(h.created.length, 0);
+      assert.equal(h.reported.length, 0);
+    } finally {
+      clock.restore();
+    }
+  });
+
+  it('reports a failed final flush independently of an intentional cancellation', async function () {
+    const clock = sinon.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const failure = new Error('Could not persist the last batch');
+    const flush = sinon.stub(ImportJournal.prototype, 'flush').rejects(failure);
+    try {
+      const h = harness();
+      h.deps.fileStager.cancellationRequested.onSecondCall().resolves(true);
+      h.inlineMedia.onFirstCall().callsFake(() => clock.tickAsync(2000));
+      await h.run();
+      assert.equal(h.sentRuns[0].status, 'failed');
+      assert.deepEqual(h.reported, [failure]);
+    } finally {
+      flush.restore();
+      clock.restore();
+    }
+  });
+
+  it('forwards cancellation to the owner-bound storage operation', async function () {
+    const h = harness();
+    const owner = { id: 'staff', type: 'user' as const };
+    assert.equal(await h.importer.cancelImport('run_test', owner), 'cancelling');
+    sinon.assert.calledOnceWithExactly(
+      h.deps.fileStager.cancelImport,
+      'run_test',
+      owner,
+      h.deps.now(),
+    );
+  });
+
+  it('cancels before opening a source and emails a zero-row partial result', async function () {
+    const h = harness();
+    h.deps.fileStager.cancellationRequested.resolves(true);
+    const download = sinon.spy(h.deps.fileStager, 'download');
+    await h.run();
+    sinon.assert.notCalled(download);
+    assert.equal(h.created.length, 0);
+    assert.equal(h.sentRuns[0].status, 'cancelled');
+    assert.equal(h.sentRuns[0].total, 0);
+    assert.deepEqual(h.sentRuns[0].reports, {});
+    assert.equal(h.reported.length, 0);
+    sinon.assert.notCalled(h.deps.signalSiteChanged);
+    assert.equal(h.removedFiles.length, 1);
+  });
+
+  it.each(['media', 'write', 'read-error'] as const)(
+    'stops at a safe row boundary during %s',
+    async function (phase) {
+      const clock = sinon.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+      try {
+        const h = harness();
+        const failure = new Error('Cannot check cancellation');
+        if (phase === 'read-error') {
+          h.deps.fileStager.cancellationRequested.onSecondCall().rejects(failure);
+        } else {
+          h.deps.fileStager.cancellationRequested.onSecondCall().resolves(true);
+        }
+        if (phase === 'write') {
+          const write = h.deps.posts.write;
+          h.deps.posts.write = async (...args) => {
+            const result = await write(...args);
+            await clock.tickAsync(2000);
+            return result;
+          };
+        } else {
+          h.inlineMedia.onFirstCall().callsFake(() => clock.tickAsync(2000));
+        }
+        await h.run();
+        assert.equal(h.created.length, phase === 'write' ? 1 : 0);
+        assert.equal(h.sentRuns[0].status, phase === 'read-error' ? 'failed' : 'cancelled');
+        assert.equal(h.sentRuns[0].total, h.created.length);
+        assert.equal(h.sentRuns[0].counts.failed, 0);
+        assert.deepEqual(h.reported, phase === 'read-error' ? [failure] : []);
+        assert.equal(h.deps.signalSiteChanged.callCount, phase === 'write' ? 1 : 0);
+        assert.equal(clock.countTimers(), 0);
+      } finally {
+        clock.restore();
+      }
+    },
+  );
 
   it('accepts the upload without counting rows and dispatches one serializable job', async function () {
     const h = harness();

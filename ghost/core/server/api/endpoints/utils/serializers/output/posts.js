@@ -85,6 +85,10 @@ module.exports = {
     frame.response = result;
   },
 
+  cancelCSVImport(result, apiConfig, frame) {
+    frame.response = result;
+  },
+
   cancelCSVUpload(_result, _apiConfig, frame) {
     frame.response = null;
   },

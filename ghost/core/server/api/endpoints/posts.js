@@ -187,6 +187,19 @@ const controller = {
     },
   },
 
+  cancelCSVImport: {
+    headers: { cacheInvalidate: false },
+    permissions: importPermissions,
+    options: ['import_id'],
+    statusCode: (result) => (result.meta.status === 'cancelled' ? 200 : 202),
+    async query(frame) {
+      frame.setHeader('Cache-Control', 'private, no-store');
+      const importId = frame.options.import_id;
+      const status = await contentImportService.cancelImport(importId, csvUploadOwner(frame));
+      return { meta: { import_id: importId, status } };
+    },
+  },
+
   csvImportProgress: {
     headers: { cacheInvalidate: false },
     permissions: importPermissions,

@@ -16,17 +16,19 @@ const uploadSchema = z.object({
   receipt: z.string().nullable(),
   progress: z
     .object({
-      status: z.enum(['queued', 'running', 'finalizing', 'complete', 'failed']),
+      status: z.enum(['queued', 'running', 'finalizing', 'complete', 'failed', 'cancelled']),
       processed: z.number().int().nonnegative(),
       total: z.number().int().nonnegative().nullable(),
-      outcome: z.enum(['complete', 'failed']).optional(),
+      outcome: z.enum(['complete', 'failed', 'cancelled']).optional(),
     })
     .optional(),
 });
 
 export type ImportUpload = z.output<typeof uploadSchema>;
 export type ImportOwner = { id: string; type: ImportUpload['owner_type'] };
-export type ImportProgress = Omit<NonNullable<ImportUpload['progress']>, 'outcome'>;
+export type ImportProgress = Omit<NonNullable<ImportUpload['progress']>, 'outcome' | 'status'> & {
+  status: NonNullable<ImportUpload['progress']>['status'] | 'cancelling';
+};
 type Change = Partial<Pick<ImportUpload, 'state' | 'receipt' | 'file' | 'progress'>>;
 type Decision<T> = { value: T; change?: Change };
 

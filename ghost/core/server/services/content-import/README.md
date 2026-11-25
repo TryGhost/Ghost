@@ -64,7 +64,7 @@ until the next journal flush. `total` comes from inspection; direct uploads with
 inspection return `null` until the full source has been processed. A terminal
 failure may therefore have an unknown total.
 
-Statuses are `queued`, `running`, `finalizing`, `complete` and `failed`. `running`
+Statuses are `queued`, `running`, `finalizing`, `complete`, `failed`, `cancelling` and `cancelled`. `running`
 is the last recorded execution state, not a worker heartbeat. Row processing at
 100% can still be `finalizing` while reports and the completion email are prepared.
 `complete` means processing finished, even if individual rows failed; `failed`
@@ -73,6 +73,36 @@ means an infrastructure or unexpected processing error stopped the run.
 Final progress survives journal cleanup in the existing upload manifest, until
 its original 24-hour expiry. Accepted imports remain readable beyond that expiry
 while queued or running. Missing, expired or another owner's imports return 404.
+
+## Stopping an import
+
+`POST /ghost/api/admin/posts/upload/:import_id/cancel/` requests a graceful stop.
+It requires the CSV Labs flag, content import permission, and the same user or
+integration that submitted the import. A `202` response with `status: cancelling`
+acknowledges the request, not that processing has stopped. Repeated requests are
+safe; an already cancelled import returns `200`, while an import already normally
+finalizing or finished returns `409`.
+
+The request atomically writes an empty, extension-less `cancel-import-<import-id>`
+file beside the source in the site's private imports directory. Its existence is
+the signal, independent of its contents. The worker checks before preparing the
+source and every two seconds without overlapping reads. Each row and post-write
+boundary checks the locally remembered result, as does each ZIP asset upload.
+An operation already underway can finish; two seconds is a polling interval, not
+a stopping deadline. Storage errors fail the import instead of silently ignoring
+a potential cancellation.
+
+Cancellation keeps committed content and stored assets, flushes completed row
+outcomes and sends a partial report with a cancelled heading. Unprocessed rows
+are not reported as failures or skips. The progress API reports `cancelling` until
+finalization finishes, then `cancelled`, with the actual processed count. Known
+source totals are retained. The Admin sidebar indicator disappears at completion. Settings retains the result
+until the publisher clicks Done, then restores the import options.
+
+The marker survives source/journal cleanup and is removed by the existing expired
+upload cleanup. A redelivered job checks it before importing more content. Normal
+email claiming, report retention, and completion-only cache invalidation still
+apply. The jobs service and JSON importer are unchanged.
 
 Run the recovery suite from the repository root with the local MySQL
 test service available. It kills isolated workers after a post commit and

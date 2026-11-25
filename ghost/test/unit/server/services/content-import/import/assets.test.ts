@@ -1,3 +1,4 @@
+import { ImportCancelled } from '../../../../../../core/server/services/content-import/import/cancellation';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -25,6 +26,42 @@ describe('content import assets', function () {
   afterEach(async function () {
     sinon.restore();
     await rm(directory, { recursive: true, force: true });
+  });
+
+  it('keeps stored ZIP assets and flushes mappings on cancellation between files', async function () {
+    const stored = {
+      originalPath: 'content/files/one.pdf',
+      stored: '/content/files/one.pdf',
+      newPath: '/content/files/one.pdf',
+    };
+    const file = { ...stored, name: 'one.pdf', path: '/tmp/one.pdf', targetDir: '.' };
+    const importer = {
+      type: 'files' as const,
+      doImport: sinon.stub().resolves([stored]),
+      rollback: sinon.stub(),
+      preProcess: (data: Record<string, unknown>) => data,
+    };
+    const batch = new PreparedAssetBatch([
+      {
+        type: 'files',
+        files: [file, { ...file, originalPath: 'content/files/two.pdf' }],
+        importer,
+      },
+    ]);
+    const check = sinon.stub();
+    check.onSecondCall().throws(new ImportCancelled());
+    const onStored = sinon.stub().resolves();
+    await assert.rejects(
+      batch.store(await openAssetJournal(storage), onStored, check),
+      ImportCancelled,
+    );
+    sinon.assert.calledOnce(importer.doImport);
+    sinon.assert.calledOnce(onStored);
+    sinon.assert.notCalled(importer.rollback);
+    assert.equal(
+      (await openAssetJournal(storage)).assets.get(stored.originalPath)?.stored,
+      stored.stored,
+    );
   });
 
   it('recognizes top-level, content, and wrapper asset directories', function () {

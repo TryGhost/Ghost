@@ -1,3 +1,4 @@
+import { ImportCancellation, ImportCancelled } from './cancellation';
 import moment from 'moment-timezone';
 import buildPostData, {
   RowSkipped,
@@ -277,6 +278,10 @@ class ContentCSVImporter {
     return this._fileStager.cancel(id, owner);
   }
 
+  cancelImport(id: string, owner: ImportOwner) {
+    return this._fileStager.cancelImport(id, owner, this._now());
+  }
+
   progress(id: string, owner: ImportOwner) {
     return this._fileStager.progress(id, owner, this._now());
   }
@@ -291,6 +296,10 @@ class ContentCSVImporter {
     let mutations: ImportMutations | undefined;
     let journal: ImportJournal | undefined;
     let failureReason: string | undefined;
+    let cancelled = false;
+    const cancellation = new ImportCancellation(() =>
+      this._fileStager.cancellationRequested(job.importId),
+    );
     this.track(job.importId);
 
     try {
@@ -303,6 +312,7 @@ class ContentCSVImporter {
       const runMutations = new ImportMutations(storage);
       mutations = runMutations;
       const onStored = () => runMutations.recordAssetWrite();
+      await cancellation.start();
       materialized = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
         filePath: materialized.path,
@@ -318,7 +328,9 @@ class ContentCSVImporter {
       const position = await readJournalPosition(storage);
       journal = new ImportJournal(storage, preparedRows.columns, position);
       if (source.assets) {
-        await source.assets.store(await openAssetJournal(storage), onStored);
+        await source.assets.store(await openAssetJournal(storage), onStored, () =>
+          cancellation.throwIfStopped(),
+        );
       }
       await this.processRows(
         journal,
@@ -326,18 +338,26 @@ class ContentCSVImporter {
         rowsAfterCheckpoint(preparedRows.rows, position.record),
         source,
         onStored,
+        cancellation,
       );
+      await cancellation.stop();
+      cancellation.throwIfStopped();
       await journal.flush();
     } catch (error) {
-      failureReason = messageOf(error);
-      this._report(error);
-      if (storage) {
-        const artifacts = storage;
-        await this.settle(() =>
-          artifacts.replaceMetadata('failure.txt', Buffer.from(messageOf(error).slice(0, 1000))),
-        );
+      if (error instanceof ImportCancelled) {
+        cancelled = true;
+      } else {
+        failureReason = messageOf(error);
+        this._report(error);
+        if (storage) {
+          const artifacts = storage;
+          await this.settle(() =>
+            artifacts.replaceMetadata('failure.txt', Buffer.from(messageOf(error).slice(0, 1000))),
+          );
+        }
       }
     } finally {
+      await cancellation.stop();
       if (preparedRows) {
         await this.cleanupSource(preparedRows.close);
       }
@@ -350,19 +370,22 @@ class ContentCSVImporter {
       if (started) {
         if (canProcess) {
           await this.settle(async () => {
-            if (failureReason) {
+            if (failureReason || cancelled) {
               // Rows that completed before an ordinary failure still belong in the report.
-              await journal?.flush().catch(this._report);
+              await journal?.flush().catch((error) => {
+                failureReason = messageOf(error);
+                this._report(error);
+              });
             }
             await this.settle(() =>
               this._fileStager.finalizeProgress(
                 job.importId,
-                failureReason ? 'failed' : 'complete',
+                failureReason ? 'failed' : cancelled ? 'cancelled' : 'complete',
               ),
             );
             const summary = createSummary(
               job.importId,
-              failureReason ? 'failed' : 'complete',
+              failureReason ? 'failed' : cancelled ? 'cancelled' : 'complete',
               failureReason,
             );
             let reports: ImportReportContents = {};
@@ -441,6 +464,7 @@ class ContentCSVImporter {
     rows: AsyncIterable<PreparedPostRow>,
     source: PreparedImportSource,
     onStored: () => Promise<void>,
+    cancellation: ImportCancellation,
   ): Promise<void> {
     let urlFailureCount = 0;
     let firstUrlFailure: unknown;
@@ -459,6 +483,7 @@ class ContentCSVImporter {
       let firstRowFailure: unknown;
 
       for await (const { data: row, source: sourceCells, line } of rows) {
+        cancellation.throwIfStopped();
         source.assets?.rewriteRows([row]);
         let data: PostData;
 
@@ -501,6 +526,7 @@ class ContentCSVImporter {
           throw error;
         }
 
+        cancellation.throwIfStopped();
         let result: PostWriteResult;
         try {
           // options.importing preserves the supplied timestamps and keeps the import silent:

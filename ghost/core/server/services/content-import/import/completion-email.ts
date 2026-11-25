@@ -26,6 +26,9 @@ function escapeHTML(value: string): string {
 }
 
 function headingFor(run: ImportSummary, counts: OutcomeCounts): string {
+  if (run.status === 'cancelled') {
+    return 'Your content import was cancelled';
+  }
   if (run.status === 'failed') {
     return 'Your content import could not be completed';
   }
@@ -139,6 +142,7 @@ function renderCompletionEmail(
       <img src="https://static.ghost.org/v4.0.0/images/ghost-orb-4.png" width="60" height="60" alt="Ghost" style="display: block; margin: 0 auto 40px;" />
       <h1 style="color: #15212A; font-size: 21px; line-height: 25px; margin: 0 0 24px;">${heading}</h1>
       ${failureCopy}
+      ${run.status === 'cancelled' ? '<p style="font-size: 16px; line-height: 25px; color: #3A464C;">Already imported posts and pages have been kept. Remaining rows were not imported. The results below cover only the rows that were processed.</p>' : ''}
       <p style="font-size: 16px; line-height: 25px; color: #3A464C;">The import processed ${formatNumber(run.total)} ${run.total === 1 ? 'row' : 'rows'}:</p>
       <ul style="font-size: 16px; line-height: 25px; color: #3A464C; padding-left: 24px;">${summaryItems(counts, errorDelivery)}</ul>
       ${warningCopy}

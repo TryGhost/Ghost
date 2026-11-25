@@ -238,6 +238,13 @@ export function cancelUpload(id: string, owner: ImportOwner): Promise<void> {
   return getImporter().cancelUpload(id, owner);
 }
 
+export function cancelImport(id: string, owner: ImportOwner) {
+  if (!/^[a-f0-9]{24}$/.test(id)) {
+    throw new errors.NotFoundError({ message: 'This CSV import is no longer available.' });
+  }
+  return getImporter().cancelImport(id, owner);
+}
+
 export function openReport(id: string, filename: string, owner: ImportOwner) {
   return getImporter().openReport(id, filename, owner);
 }

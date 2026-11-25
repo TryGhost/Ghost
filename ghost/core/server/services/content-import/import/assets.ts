@@ -1,3 +1,4 @@
+import { ImportCancelled } from './cancellation';
 import type { AssetJournal, StoredAsset } from './asset-journal';
 import type { PostImportRow } from './row';
 import {
@@ -48,7 +49,11 @@ export interface AssetPreparationDeps {
 
 export interface ImportAssetBatch {
   readonly files: PreparedAsset[];
-  store(journal: AssetJournal, onStored: () => Promise<void>): Promise<void>;
+  store(
+    journal: AssetJournal,
+    onStored: () => Promise<void>,
+    checkCancellation?: () => void,
+  ): Promise<void>;
   isStoredUrl?(url: string): boolean;
   rewriteRows(rows: PostImportRow[]): void;
 }
@@ -69,13 +74,18 @@ export class PreparedAssetBatch implements ImportAssetBatch {
     return this.storedUrls.has(url.trim());
   }
 
-  async store(journal: AssetJournal, onStored: () => Promise<void>): Promise<void> {
+  async store(
+    journal: AssetJournal,
+    onStored: () => Promise<void>,
+    checkCancellation?: () => void,
+  ): Promise<void> {
     const storedByImporter = new Map<AssetImporter, StoredAsset[]>();
     try {
       for (const group of this.groups) {
         const newlyStored: StoredAsset[] = [];
         storedByImporter.set(group.importer, newlyStored);
         for (const file of group.files) {
+          checkCancellation?.();
           const saved = journal.assets.get(file.originalPath);
           if (saved) {
             file.newPath = saved.newPath;
@@ -92,6 +102,10 @@ export class PreparedAssetBatch implements ImportAssetBatch {
       }
       await journal.flush();
     } catch (error) {
+      if (error instanceof ImportCancelled) {
+        await journal.flush();
+        throw error;
+      }
       // Persist the failure before rolling back so redelivery cannot use a
       // committed mapping to an asset that this attempt removed.
       await journal.stop(error);

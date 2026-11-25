@@ -71,6 +71,19 @@ describe('Content import composition root', function () {
     sinon.assert.notCalled(send);
   });
 
+  it('validates cancellation IDs and forwards ownership', async function () {
+    const id = 'abcdefabcdefabcdefabcdef';
+    const owner = { id: 'staff', type: 'user' } as const;
+    assert.throws(() => root.cancelImport(id, owner), /used before init/);
+    root.init();
+    const cancel = sandbox
+      .stub(ContentCSVImporter.prototype, 'cancelImport')
+      .resolves('cancelling');
+    assert.throws(() => root.cancelImport('../private', owner), { errorType: 'NotFoundError' });
+    assert.equal(await root.cancelImport(id, owner), 'cancelling');
+    sinon.assert.calledOnceWithExactly(cancel, id, owner);
+  });
+
   it('validates progress IDs and forwards the owner to the initialized importer', async function () {
     const id = 'abcdefabcdefabcdefabcdef';
     const owner = { id: 'staff', type: 'user' } as const;

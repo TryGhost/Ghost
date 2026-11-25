@@ -1,5 +1,8 @@
 import { text } from 'node:stream/consumers';
 import { afterEach, beforeEach, describe, it } from 'vitest';
+import { Readable } from 'node:stream';
+import { GetObjectCommand, PutObjectCommand, NotFound, type S3Client } from '@aws-sdk/client-s3';
+import S3Storage from '../../../../../../core/server/adapters/storage/S3Storage';
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
@@ -48,6 +51,140 @@ describe('content import staged file', function () {
       getDefaultOwner: async () => owner,
     });
   }
+
+  it('uses private S3 marker objects, scopes them by site, and closes their response streams', async function () {
+    const send = sinon.stub().resolves({});
+    const s3 = new S3Storage({
+      staticFileURLPrefix: 'content/imports',
+      bucket: 'private-imports',
+      region: 'us-east-1',
+      cdnUrl: 'https://cdn.example.com',
+      multipartUploadThresholdBytes: 10 * 1024 * 1024,
+      multipartChunkSizeBytes: 10 * 1024 * 1024,
+      tenantPrefix: 'tenant-a',
+      s3Client: { send } as unknown as S3Client,
+    });
+    const adapter = stager(() => s3);
+    const key = 'content-csv-import/test-site/run/cancel-import-run';
+    await s3.replaceMetadata(key, Buffer.alloc(0));
+    const put = send.firstCall.args[0];
+    assert.ok(put instanceof PutObjectCommand);
+    assert.ok(Buffer.isBuffer(put.input.Body));
+    assert.ok(put.input.Key);
+    assert.equal(put.input.Body.length, 0);
+    assert.match(put.input.Key, /tenant-a\//);
+    assert.ok(put.input.Key.endsWith(key));
+    const body = Readable.from(['contents are irrelevant']);
+    send.resolves({ Body: body });
+    assert.equal(await adapter.cancellationRequested('run'), true);
+    const get = send.lastCall.args[0];
+    assert.ok(get instanceof GetObjectCommand);
+    assert.equal(get.input.Key, put.input.Key);
+    assert.equal(body.destroyed, true);
+    send.rejects(new NotFound({ $metadata: { httpStatusCode: 404 }, message: 'Missing' }));
+    assert.equal(await adapter.cancellationRequested('other-run'), false);
+    assert.notEqual(send.lastCall.args[0].input.Key, put.input.Key);
+  });
+
+  it('allows finalization to win a race with a late cancellation request', async function () {
+    const adapter = stager();
+    await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv' }, 'race', now);
+    await adapter.begin('race');
+    await adapter.acknowledge('race');
+    const replace = storage.replaceMetadata.bind(storage);
+    sinon.stub(storage, 'replaceMetadata').callsFake(async (key, bytes) => {
+      await adapter.finalizeProgress('race', 'complete');
+      await adapter.finishProgress('race');
+      return replace(key, bytes);
+    });
+    assert.equal(await adapter.cancelImport('race', owner, now), 'cancelling');
+    assert.equal((await adapter.progress('race', owner, now)).status, 'complete');
+    await assert.rejects(adapter.cancelImport('race', owner, now), { errorType: 'ConflictError' });
+  });
+
+  it('shares an extension-less cancellation marker across instances and retains it until expiry', async function () {
+    const adapter = stager();
+    const file = await adapter.stage(
+      { filePath: sourcePath, fileName: 'posts.csv', total: 10 },
+      'stop',
+      now,
+    );
+    await adapter.begin('stop');
+    await adapter.acknowledge('stop');
+    assert.equal(await adapter.cancellationRequested('stop'), false);
+    assert.equal(await adapter.cancelImport('stop', owner, now), 'cancelling');
+    assert.equal(await adapter.cancelImport('stop', owner, now), 'cancelling');
+    const marker = path.join(directory, 'content-csv-import/test-site/stop/cancel-import-stop');
+    assert.equal((await fs.stat(marker)).size, 0);
+    assert.equal(await stager().cancellationRequested('stop'), true);
+    assert.equal((await stager().progress('stop', owner, now)).status, 'cancelling');
+    await adapter.start('stop', now);
+    const journal = new ImportJournal(adapter.artifacts('stop'), [], { record: 0, part: 0 });
+    await journal.append({ line: 2, title: 'Kept', status: 'created' });
+    await journal.flush();
+    await adapter.finalizeProgress('stop', 'cancelled');
+    assert.equal(await adapter.cancelImport('stop', owner, now), 'cancelling');
+    assert.deepEqual(await adapter.progress('stop', owner, now), {
+      status: 'cancelling',
+      processed: 1,
+      total: 10,
+    });
+    await adapter.claimEmail('stop');
+    assert.equal(await stager().start('stop', now), false);
+    await adapter.finishProgress('stop');
+    await adapter.clearArtifacts('stop');
+    await adapter.remove('stop', file);
+    assert.deepEqual(await adapter.progress('stop', owner, now), {
+      status: 'cancelled',
+      processed: 1,
+      total: 10,
+    });
+    assert.equal(await adapter.cancelImport('stop', owner, now), 'cancelled');
+    assert.equal(await stager().start('stop', now), false);
+    assert.equal(await adapter.cancellationRequested('stop'), true);
+    await adapter.cleanupExpired(new Date('2026-01-03'), (error) => {
+      throw error;
+    });
+    assert.equal(await adapter.cancellationRequested('stop'), false);
+  });
+
+  it('rejects cancellation for other owners, unconfirmed, finalizing, finished and expired imports', async function () {
+    const adapter = stager();
+    const file = await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv' }, 'stop', now);
+    await assert.rejects(adapter.cancelImport('stop', owner, now), { errorType: 'NotFoundError' });
+    await adapter.begin('stop');
+    await adapter.acknowledge('stop');
+    for (const other of [
+      { ...owner, id: 'another' },
+      { ...owner, type: 'integration' as const },
+    ]) {
+      await assert.rejects(adapter.cancelImport('stop', other, now), {
+        errorType: 'NotFoundError',
+      });
+    }
+    await adapter.start('stop', now);
+    await adapter.finalizeProgress('stop', 'complete');
+    await assert.rejects(adapter.cancelImport('stop', owner, now), { errorType: 'ConflictError' });
+    await adapter.finishProgress('stop');
+    await adapter.remove('stop', file);
+    await assert.rejects(adapter.cancelImport('stop', owner, now), { errorType: 'ConflictError' });
+    await assert.rejects(adapter.cancelImport('stop', owner, new Date('2026-01-03')), {
+      errorType: 'NotFoundError',
+    });
+    assert.equal(await adapter.cancellationRequested('stop'), false);
+  });
+
+  it('does not interpret storage read/write failures as missing markers or acknowledged cancellation', async function () {
+    const adapter = stager();
+    await adapter.stage({ filePath: sourcePath, fileName: 'posts.csv' }, 'stop', now);
+    await adapter.begin('stop');
+    await adapter.acknowledge('stop');
+    const error = new Error('Storage offline');
+    sinon.stub(storage, 'replaceMetadata').rejects(error);
+    await assert.rejects(adapter.cancelImport('stop', owner, now), (failure) => failure === error);
+    sinon.stub(storage, 'readStream').rejects(error);
+    await assert.rejects(adapter.cancellationRequested('stop'), (failure) => failure === error);
+  });
 
   it('opens a staged source by storage key and retains the owner-bound manifest', async function () {
     const adapter = stager();
@@ -155,7 +292,7 @@ describe('content import staged file', function () {
     assert.equal(await uploads.get('progress'), undefined);
   });
 
-  it.each(['complete', 'failed'] as const)(
+  it.each(['complete', 'failed', 'cancelled'] as const)(
     'keeps an unknown direct-upload total until the full source finishes (%s)',
     async function (outcome) {
       const adapter = stager();

@@ -72,8 +72,10 @@ export interface ImportFileStager {
   start(id: string, now: Date): Promise<boolean>;
   claimEmail(id: string): Promise<boolean>;
   claimCacheInvalidation(id: string): Promise<boolean>;
+  cancellationRequested(id: string): Promise<boolean>;
+  cancelImport(id: string, owner: ImportOwner, now: Date): Promise<'cancelling' | 'cancelled'>;
   progress(id: string, owner: ImportOwner, now: Date): Promise<ImportProgress>;
-  finalizeProgress(id: string, outcome: 'complete' | 'failed'): Promise<void>;
+  finalizeProgress(id: string, outcome: 'complete' | 'failed' | 'cancelled'): Promise<void>;
   finishProgress(id: string): Promise<void>;
   remove(id: string, file: StagedImportFile): Promise<void>;
   cancel(id: string, owner: ImportOwner): Promise<void>;
@@ -190,7 +192,38 @@ export function createImportFileStager({
     }
   }
 
+  const cancellationKey = (id: string) => `${prefix(id)}/cancel-import-${id}`;
+  async function cancellationRequested(id: string): Promise<boolean> {
+    try {
+      const stream = await privateStorage().readStream({ path: cancellationKey(id) });
+      // Presence is the signal; never parse or buffer marker contents.
+      stream.destroy();
+      return true;
+    } catch (error) {
+      if (error instanceof errors.NotFoundError) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
   return {
+    cancellationRequested,
+    async cancelImport(id, owner, now) {
+      const row = await uploads.get(id);
+      assertProgressOwner(row, owner, now);
+      if (row.progress.status === 'cancelled') {
+        return 'cancelled';
+      }
+      if (row.progress.outcome === 'cancelled') {
+        return 'cancelling';
+      }
+      if (!['queued', 'running'].includes(row.progress.status)) {
+        throw new errors.ConflictError({ message: 'This CSV import can no longer be stopped.' });
+      }
+      await privateStorage().replaceMetadata(cancellationKey(id), Buffer.alloc(0));
+      return 'cancelling';
+    },
     reports: createReportArchive(privateStorage, namespace),
     artifacts,
     clearArtifacts(id) {
@@ -246,6 +279,9 @@ export function createImportFileStager({
 
     async start(id, now) {
       return uploads.change(id, (row) => {
+        if (row?.state === 'finished' && row.progress?.outcome === 'cancelled') {
+          return { value: false };
+        }
         if (row?.state === 'accepted' && row.receipt === 'email-claimed') {
           return { value: false };
         }
@@ -285,8 +321,11 @@ export function createImportFileStager({
         }
       }
       const progress = row.progress;
+      const cancelling =
+        (progress.outcome === 'cancelled' && progress.status === 'finalizing') ||
+        (['queued', 'running'].includes(progress.status) && (await cancellationRequested(id)));
       return {
-        status: progress.status,
+        status: cancelling ? 'cancelling' : progress.status,
         total: progress.total,
         processed: Math.max(processed, progress.processed),
       };

@@ -51,6 +51,25 @@ function run(overrides: Partial<ImportRun> = {}): ImportRun {
 }
 
 describe('content import completion email', function () {
+  it('describes cancellation without classifying remaining rows as failures', function () {
+    const summary = createSummary('cancelled-run', 'cancelled');
+    addOutcome(summary, {
+      line: 2,
+      title: 'Kept post',
+      status: 'created',
+      url: 'https://example.com/kept',
+    });
+    const email = renderEmail(summary, 'owner@example.com', ADMIN_URL, {
+      report: 'partial report',
+    });
+    assert.equal(email.subject, 'Your content import was cancelled');
+    assert.match(email.html, /Already imported posts and pages have been kept/);
+    assert.match(email.html, /processed 1 row/);
+    assert.match(email.html, /Failed:<\/strong> 0/);
+    assert.match(email.html, /Kept post/);
+    assert.equal(email.attachments[0].content, 'partial report');
+  });
+
   it('summarises every row outcome and warning-bearing post', function () {
     const email = buildCompletionEmail(run(), 'requester@example.com', ADMIN_URL);
 
