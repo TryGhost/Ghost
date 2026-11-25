@@ -1,6 +1,6 @@
 // util to avoid processing events in Koenig when they originate from an editor
 // element inside a card
-export const shouldIgnoreEvent = (event: KeyboardEvent | ClipboardEvent): boolean => {
+export const shouldIgnoreEvent = (event: KeyboardEvent | ClipboardEvent | InputEvent | null): boolean => {
     if (!event) {
         return false;
     }
