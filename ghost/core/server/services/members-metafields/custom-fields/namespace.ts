@@ -1,6 +1,7 @@
 import type { LimitService } from '@tryghost/limit-service';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { MEMBER_ACCESS, type Caller } from '../callers';
+import type { Members } from '../members-resource';
 import type {
   AvailabilityLimit,
   Grant,
@@ -18,7 +19,7 @@ export function customFields({
   limitService,
 }: {
   limitService: Pick<LimitService, 'isDisabled' | 'errorIfWouldGoOverLimit'>;
-}): NamespaceRegistration<Caller> {
+}): NamespaceRegistration<Members> {
   return {
     namespace: CUSTOM_NAMESPACE,
     owner: { staff: 'member_custom_field' },
@@ -50,7 +51,7 @@ const WRITABLE: Record<Caller, Grant> = {
 };
 
 /** The custom namespace's access policy, which depends on each field's member access setting. */
-export const memberAccessPolicy: AccessPolicy<Caller> = {
+export const memberAccessPolicy: AccessPolicy<Members> = {
   read: (caller) => READABLE[caller],
   write: (caller) => WRITABLE[caller],
 };

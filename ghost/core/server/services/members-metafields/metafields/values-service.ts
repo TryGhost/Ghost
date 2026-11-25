@@ -39,7 +39,7 @@ import {
 } from './queries';
 import { MemberAccessSchema } from '@tryghost/metafield-types';
 import type { Namespaces } from './namespaces';
-import type { MetafieldResource } from './resource';
+import type { MetafieldResource, ResourceKind } from './resource';
 import { readStoredField } from './stored-fields';
 import {
   VALUE_COLUMNS,
@@ -181,11 +181,11 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
  * definitions service because a value belongs to its member or post and a definition belongs to
  * the site's settings, which are different aggregates rather than different layers.
  */
-export class MetafieldValuesService<Caller> {
+export class MetafieldValuesService<R extends ResourceKind> {
   protected knex: Knex;
   protected resource: MetafieldResource;
-  private fields: FieldSource<Caller>;
-  private namespaces: Pick<Namespaces<Caller>, 'canWrite'>;
+  private fields: FieldSource<R>;
+  private namespaces: Pick<Namespaces<R>, 'canWrite'>;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
@@ -209,9 +209,9 @@ export class MetafieldValuesService<Caller> {
   }: {
     knex: Knex;
     resource: MetafieldResource;
-    fields: FieldSource<Caller>;
+    fields: FieldSource<R>;
     /** Whose grant decides what a caller may write, namespace by namespace. */
-    namespaces: Pick<Namespaces<Caller>, 'canWrite'>;
+    namespaces: Pick<Namespaces<R>, 'canWrite'>;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
     /** Called with each write, inside its transaction. */
@@ -240,7 +240,7 @@ export class MetafieldValuesService<Caller> {
   private async allowedFieldsByIdentity(
     executor: Knex,
     identities: string[],
-    caller: Caller,
+    caller: R['Caller'],
   ): Promise<Map<string, AllowedField>> {
     // A write names whole fields, so an identity naming a part is one no field answers to.
     const keysByNamespace = new Map<Namespace, Key[]>();
@@ -295,7 +295,7 @@ export class MetafieldValuesService<Caller> {
    */
   async getValuesFor(
     resourceId: string,
-    caller: Caller,
+    caller: R['Caller'],
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
     return (await this.getValuesForMany([resourceId], caller, executor)).get(resourceId);
@@ -306,7 +306,10 @@ export class MetafieldValuesService<Caller> {
    * whose settings can't be read is read with its type's defaults, and one that can't be read even
    * so is left out, and its values with it.
    */
-  private async typedFields(executor: Knex, caller: Caller): Promise<Map<string, TypedSettings>> {
+  private async typedFields(
+    executor: Knex,
+    caller: R['Caller'],
+  ): Promise<Map<string, TypedSettings>> {
     const rows = await this.fields
       .definitions(executor, { caller, status: ACTIVE_ONLY })
       .read.select(...TYPED_FIELD_COLUMNS);
@@ -330,7 +333,7 @@ export class MetafieldValuesService<Caller> {
    */
   async getValuesForMany(
     resourceIds: string[],
-    caller: Caller,
+    caller: R['Caller'],
     executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (resourceIds.length === 0) {
@@ -457,7 +460,7 @@ export class MetafieldValuesService<Caller> {
    */
   async planWrite(
     input: unknown,
-    caller: Caller,
+    caller: R['Caller'],
     executor: Knex = this.knex,
   ): Promise<PlannedWrite[]> {
     const { writes, refusals } = await this.planOrRefuse(input, caller, undefined, executor);
@@ -482,7 +485,7 @@ export class MetafieldValuesService<Caller> {
    */
   async planOrRefuse(
     input: unknown,
-    caller: Caller,
+    caller: R['Caller'],
     named?: (identity: string) => string,
     executor: Knex = this.knex,
   ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
@@ -773,7 +776,7 @@ export class MetafieldValuesService<Caller> {
    */
   async heldValues(
     field: FieldIdentity,
-    caller: Caller,
+    caller: R['Caller'],
     executor: Knex = this.knex,
   ): Promise<string[]> {
     const values = this.resource.tables.values;

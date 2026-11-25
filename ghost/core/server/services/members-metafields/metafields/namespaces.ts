@@ -1,15 +1,8 @@
 import errors from '@tryghost/errors';
 import { unreachable } from '../../../lib/unreachable';
 import type { Namespace } from '@tryghost/metafield-types/identity';
-import type { ObjectType, permissions } from '../../../auth/permissions/permissions-data';
 import type { MemberAccess } from '@tryghost/metafield-types';
-
-/** The staff permissions that cover managing fields: each grants adding, editing and deleting. */
-type ManagingPermission = {
-  [Type in ObjectType]: 'add' | 'edit' | 'destroy' extends (typeof permissions)[Type][number]
-    ? Type
-    : never;
-}[ObjectType];
+import type { ResourceKind } from './resource';
 
 /**
  * Who manages a namespace's fields: defines, renames, reorders, archives, restores and deletes
@@ -18,8 +11,8 @@ type ManagingPermission = {
  * An app owning its own namespace will be another kind of owner, and not a permission at all:
  * the caller has to *be* that app rather than hold a role.
  */
-export interface Owner {
-  staff: ManagingPermission;
+export interface Owner<R extends ResourceKind> {
+  staff: R['StaffPermission'];
 }
 
 /**
@@ -63,11 +56,11 @@ export type Grant =
  * Who may read and write a namespace's fields. The namespace's owner decides it, as reaching
  * another's fields is a grant of the owner's, not a property of the field or of the caller.
  */
-export interface AccessPolicy<Caller> {
+export interface AccessPolicy<R extends ResourceKind> {
   /** The fields `caller` may read. A field it can't read is one it can't tell exists. */
-  read(caller: Caller): Grant;
+  read(caller: R['Caller']): Grant;
   /** The fields `caller` may write the values of, of the ones it can read. */
-  write(caller: Caller): Grant;
+  write(caller: R['Caller']): Grant;
 }
 
 /**
@@ -75,12 +68,12 @@ export interface AccessPolicy<Caller> {
  * fields in a namespace registers it, and this domain applies the rules, so it never has to know
  * whose namespace it is or why its limits are what they are.
  */
-export interface NamespaceRegistration<Caller> {
+export interface NamespaceRegistration<R extends ResourceKind> {
   namespace: Namespace;
-  owner: Owner;
+  owner: Owner<R>;
   /** Every limit on the namespace. They stack: each one applies. */
   limits: readonly NamespaceLimit[];
-  accessPolicy: AccessPolicy<Caller>;
+  accessPolicy: AccessPolicy<R>;
 }
 
 /** A namespace and what one caller is granted of its fields. */
@@ -97,9 +90,9 @@ export interface Grants {
   unowned: Grant;
 }
 
-export interface Namespaces<Caller> {
+export interface Namespaces<R extends ResourceKind> {
   /** The registration of a namespace someone owns. Nobody owns any other, so no field can be defined there. */
-  owned(namespace: Namespace): NamespaceRegistration<Caller>;
+  owned(namespace: Namespace): NamespaceRegistration<R>;
   /** The namespaces unavailable right now, whose fields read as archived. */
   unavailable(): Namespace[];
   /** Refuses any change to the namespace's fields its limits don't allow. */
@@ -107,11 +100,17 @@ export interface Namespaces<Caller> {
   /** Refuses adding `adding` fields to the `held` the namespace already has. */
   assertRoom(namespace: Namespace, held: number, adding: number): Promise<void>;
   /** What `caller` may read in each namespace. */
-  readable(caller: Caller): Grants;
+  readable(caller: R['Caller']): Grants;
   /** Whether `caller` may read `field`, by its namespace's grant, whatever the field's status. */
-  canRead(caller: Caller, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
+  canRead(
+    caller: R['Caller'],
+    field: { namespace: Namespace; memberAccess: MemberAccess },
+  ): boolean;
   /** Whether `caller` may write the values of `field`, by its namespace's grant. */
-  canWrite(caller: Caller, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
+  canWrite(
+    caller: R['Caller'],
+    field: { namespace: Namespace; memberAccess: MemberAccess },
+  ): boolean;
 }
 
 /**
@@ -122,8 +121,8 @@ export interface Namespaces<Caller> {
  * would be refused for want of a permission, telling the caller to go and get one, when no
  * permission would have helped.
  */
-export function createNamespaces<Caller>(
-  registrations: readonly NamespaceRegistration<Caller>[],
+export function createNamespaces<R extends ResourceKind>(
+  registrations: readonly NamespaceRegistration<R>[],
   {
     unowned,
     definitionLimit,
@@ -132,18 +131,18 @@ export function createNamespaces<Caller>(
      * Who reaches the fields of a namespace nobody owns. Nobody can define a field in one, but a
      * field can still be stored there, as an app's is.
      */
-    unowned: AccessPolicy<Caller>;
+    unowned: AccessPolicy<R>;
     /** How many fields each namespace may hold, counted for each namespace alone. */
     definitionLimit: CountLimit;
   },
-): Namespaces<Caller> {
+): Namespaces<R> {
   const byNamespace = new Map(
     registrations.map((registration) => [registration.namespace, registration]),
   );
   const accessPolicyOf = (namespace: Namespace) =>
     byNamespace.get(namespace)?.accessPolicy ?? unowned;
 
-  const owned = (namespace: Namespace): NamespaceRegistration<Caller> => {
+  const owned = (namespace: Namespace): NamespaceRegistration<R> => {
     const registration = byNamespace.get(namespace);
     if (!registration) {
       throw new errors.ValidationError({
