@@ -47,7 +47,7 @@ module.exports = class MemberBREADService {
    * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
    * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
    * @param {IGiftsModule} deps.giftService
-   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues Required: boot builds it before the members service
+   * @param {import('../../../members-metafields').MemberMetafieldValues} deps.metafieldValues Required: boot builds it before the members service
    * @param {<T>(fn: (transacting: import('knex').Knex.Transaction) => Promise<T>) => Promise<T>} deps.transaction
    *   Runs `fn` in a database transaction.
    */
@@ -99,7 +99,7 @@ module.exports = class MemberBREADService {
    * @returns {Promise<Record<string, Record<string, unknown>>>}
    */
   async readMetafieldsForMember(memberId, audience, { transacting } = {}) {
-    return (await this.metafieldValues.getValuesForMember(memberId, audience, transacting)) ?? {};
+    return (await this.metafieldValues.getValuesFor(memberId, audience, transacting)) ?? {};
   }
 
   /**
@@ -111,7 +111,7 @@ module.exports = class MemberBREADService {
    * @returns {Promise<Map<string, Record<string, Record<string, unknown>>>>}
    */
   async readMetafieldsForMembers(memberIds, audience) {
-    const byMember = await this.metafieldValues.getValuesForMembers(memberIds, audience);
+    const byMember = await this.metafieldValues.getValuesForMany(memberIds, audience);
     return new Map(memberIds.map((memberId) => [memberId, byMember.get(memberId) ?? {}]));
   }
 
@@ -474,7 +474,7 @@ module.exports = class MemberBREADService {
    * @private
    * @param {object} data the member payload, whose `metafields` key is removed
    * @param {object} options
-   * @returns {Promise<import('../../../members-metafields/values-service').MetafieldPlan | null>}
+   * @returns {Promise<import('../../../members-metafields').MetafieldPlan | null>}
    *   null when there is nothing to write
    */
   async planStaffMetafields(data, options) {
@@ -514,7 +514,7 @@ module.exports = class MemberBREADService {
    * @private
    * @param {object} data the member attributes
    * @param {object} options
-   * @param {import('../../../members-metafields/values-service').MetafieldPlan} metafields
+   * @param {import('../../../members-metafields').MetafieldPlan} metafields
    */
   async createWithMetafields(data, options, { writes, origin }) {
     return this.transaction(async (transacting) => {
@@ -687,7 +687,7 @@ module.exports = class MemberBREADService {
    *
    * @param {object} data the member attributes to change
    * @param {object} options must name the member by `id`
-   * @param {import('../../../members-metafields/values-service').MetafieldPlan[]} plans
+   * @param {import('../../../members-metafields').MetafieldPlan[]} plans
    *   applied in order, so where two write one field the last is what it holds
    */
   async updateWithMetafields(data, options, plans) {

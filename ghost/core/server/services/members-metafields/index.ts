@@ -2,20 +2,33 @@ import errors from '@tryghost/errors';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './definitions-service';
-import { MetafieldValuesService } from './values-service';
+import { MemberMetafieldValues } from './member-values';
+import { MEMBERS_RESOURCE } from './members-resource';
 import { MetafieldBindingsService } from './bindings-service';
 import { resolveMaxDefinitions } from './config';
 import { customFields, memberAccessPolicy } from './custom-fields';
 import { createNamespaces, type Namespaces } from './namespaces';
-import { fieldSource, type FieldSource } from './queries';
+import { fieldSource, type FieldSource as ResourceFieldSource } from './queries';
+import type { Audience } from './access';
 import { meter, tracer } from '../../lib/tracing';
 import { metafieldsTracking } from './tracking';
 
 export type { Metafield } from './models';
-export type { FieldSource } from './queries';
+/** The members' fields as this site reads them, for every read here and in the domains that join them. */
+export type FieldSource = ResourceFieldSource<Audience>;
+export type { MemberMetafieldValues } from './member-values';
+export {
+  refusalError,
+  type MetafieldPlan,
+  type PlannedWrite,
+  type Refusal,
+} from './values-service';
+export type { MetafieldBindingsService } from './bindings-service';
+export type { MetafieldDefinitionsService } from './definitions-service';
 export { adminWriteOrigin } from './write-origin';
 export type { BoundField } from './bindings-service';
-export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
+export type { WriteOrigin, WrittenBy } from './schema';
+export type { MetafieldChangeEvent } from './members-resource';
 
 // Which door a request came through, which is what decides how much of a member's
 // answers it may see or change. Required wherever that is asked, so a new caller
@@ -39,11 +52,11 @@ export {
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 /** The namespaces fields can be defined in, each with its owner, limits and access policy. */
-export let namespaces: Namespaces | undefined;
+export let namespaces: Namespaces<Audience> | undefined;
 /** The fields as this site reads them, for every read here and in the domains that join them. */
 export let fields: FieldSource | undefined;
 export let definitions: MetafieldDefinitionsService | undefined;
-export let values: MetafieldValuesService | undefined;
+export let values: MemberMetafieldValues | undefined;
 export let bindings: MetafieldBindingsService | undefined;
 
 /**
@@ -51,9 +64,9 @@ export let bindings: MetafieldBindingsService | undefined;
  * throws.
  */
 export function booted(): {
-  namespaces: Namespaces;
+  namespaces: Namespaces<Audience>;
   definitions: MetafieldDefinitionsService;
-  values: MetafieldValuesService;
+  values: MemberMetafieldValues;
   bindings: MetafieldBindingsService;
 } {
   if (!namespaces || !definitions || !values || !bindings) {
@@ -89,7 +102,7 @@ export function init(): void {
     // will state its own grants.
     unowned: memberAccessPolicy,
   });
-  fields = fieldSource(namespaces);
+  fields = fieldSource(MEMBERS_RESOURCE, namespaces);
 
   const tracking = metafieldsTracking({ tracer, meter });
   // A field type still in development can be created only where its Labs flag is on.
@@ -105,7 +118,14 @@ export function init(): void {
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the ceiling, which also caps how many values one request can carry — no handle on the
   // definitions service.
-  values = new MetafieldValuesService({ knex, fields, namespaces, getMaxDefinitions, tracking });
+  values = new MemberMetafieldValues({
+    knex,
+    resource: MEMBERS_RESOURCE,
+    fields,
+    namespaces,
+    getMaxDefinitions,
+    tracking,
+  });
 
   // Built after the values, which is what a binding routes into. It has no handle on the
   // definitions: making a field is not part of binding to one, so a caller that needs both

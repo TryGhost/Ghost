@@ -126,7 +126,7 @@ describe('custom field value storage', function () {
         path: string,
         value: string,
       ) => ({
-        member_id: memberId,
+        resource_id: memberId,
         namespace,
         key,
         path,
@@ -158,7 +158,7 @@ describe('custom field value storage', function () {
 
     it('leaves out a namespace whose fields all read as nothing, and a member left with none', function () {
       const row = (memberId: string, namespace: string, key: string) => ({
-        member_id: memberId,
+        resource_id: memberId,
         namespace,
         key,
         path: ROOT_PATH,

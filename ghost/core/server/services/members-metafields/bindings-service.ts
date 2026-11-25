@@ -5,10 +5,9 @@ import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { INTERNAL, MEMBERS } from './access';
+import { INTERNAL, MEMBERS, type Audience } from './access';
 import {
   ACTIVE_ONLY,
-  FIELDS_TABLE,
   fieldReference,
   onField,
   type FieldIdentity,
@@ -57,8 +56,8 @@ export interface RoutedPlans {
  */
 export class MetafieldBindingsService {
   private knex: Knex;
-  private fields: FieldSource;
-  private values: Pick<MetafieldValuesService, 'planOrRefuse'>;
+  private fields: FieldSource<Audience>;
+  private values: Pick<MetafieldValuesService<Audience>, 'planOrRefuse'>;
 
   constructor({
     knex,
@@ -66,8 +65,8 @@ export class MetafieldBindingsService {
     values,
   }: {
     knex: Knex;
-    fields: FieldSource;
-    values: Pick<MetafieldValuesService, 'planOrRefuse'>;
+    fields: FieldSource<Audience>;
+    values: Pick<MetafieldValuesService<Audience>, 'planOrRefuse'>;
   }) {
     this.knex = knex;
     this.fields = fields;
@@ -130,13 +129,13 @@ export class MetafieldBindingsService {
       .array(z.string())
       .parse(await executor(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
     const bound = new Map<string, string | null>(binding.map((port) => [port, null]));
-    // Read the way a member's own reads ask for fields, so a port names exactly the fields their
-    // record holds values for.
+    // Read the way a member's own reads ask for fields, so a port names exactly the fields a
+    // member holds values for.
     const named = await this.fields
       .definitions(executor, { audience: MEMBERS, status: ACTIVE_ONLY })
-      .read.join(BINDINGS_TABLE, onField(FIELDS_TABLE, BINDINGS_TABLE))
+      .read.join(BINDINGS_TABLE, onField(this.fields.name, BINDINGS_TABLE))
       .whereIn(`${BINDINGS_TABLE}.port`, ports)
-      .select(`${BINDINGS_TABLE}.port`, `${FIELDS_TABLE}.namespace`, `${FIELDS_TABLE}.key`);
+      .select(`${BINDINGS_TABLE}.port`, `${this.fields.name}.namespace`, `${this.fields.name}.key`);
     for (const row of named) {
       const read = DbNamedBinding.safeParse(row);
       if (read.success) {
@@ -240,17 +239,17 @@ export class MetafieldBindingsService {
     }
 
     const rows = await executor(BINDINGS_TABLE)
-      .join(this.fields.table(executor), onField(FIELDS_TABLE, BINDINGS_TABLE))
+      .join(this.fields.asRead(executor), onField(this.fields.name, BINDINGS_TABLE))
       .whereIn(`${BINDINGS_TABLE}.port`, ports)
       // An archived field is still where a port points, and still not somewhere a value can
       // land, so it's left out rather than waited for.
-      .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
+      .where(`${this.fields.name}.status`, FIELD_STATUS.active)
       .select(
         `${BINDINGS_TABLE}.port`,
         `${BINDINGS_TABLE}.id as binding_id`,
-        `${FIELDS_TABLE}.namespace`,
-        `${FIELDS_TABLE}.key`,
-        `${FIELDS_TABLE}.type`,
+        `${this.fields.name}.namespace`,
+        `${this.fields.name}.key`,
+        `${this.fields.name}.type`,
       );
 
     for (const row of rows) {

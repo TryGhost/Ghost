@@ -3,12 +3,9 @@ import type { Knex } from 'knex';
 import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
-import type { Audience } from './access';
 import type { Grant, Grants, Namespaces } from './namespaces';
-import { FIELD_STATUS, type MetafieldRow } from './schema';
-
-/** The fields table's name, which is also the name a `FieldSource` reads it under by default. */
-export const FIELDS_TABLE = 'members_metafields';
+import type { MetafieldResource } from './resource';
+import { FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
 
 /**
  * The columns a field is read with, besides its status, which reads as its namespace allows.
@@ -42,17 +39,17 @@ export { knexify };
  * Narrows a read of the fields to the ones `grants` reach: in each namespace someone owns, by its
  * owner's grant, and in every other namespace by the grant for those.
  */
-function readableBy<T extends Knex.QueryBuilder>(query: T, grants: Grants): T {
-  const namespaceColumn = `${FIELDS_TABLE}.namespace`;
+function readableBy<T extends Knex.QueryBuilder>(query: T, fieldsName: string, grants: Grants): T {
+  const namespaceColumn = `${fieldsName}.namespace`;
   const owned = grants.owned.map(({ namespace }) => namespace);
   const reached: Array<(where: Knex.QueryBuilder) => void> = [
     ...grants.owned.map(
-      ({ namespace: owner, grant }) =>
+      ({ namespace, grant }) =>
         (where: Knex.QueryBuilder) =>
-          narrowTo(where.where(namespaceColumn, owner), grant),
+          narrowTo(where.where(namespaceColumn, namespace), fieldsName, grant),
     ),
     (where: Knex.QueryBuilder) =>
-      narrowTo(where.whereNotIn(namespaceColumn, owned), grants.unowned),
+      narrowTo(where.whereNotIn(namespaceColumn, owned), fieldsName, grants.unowned),
   ];
   query.where((anyNamespace) => {
     for (const narrow of reached) {
@@ -63,16 +60,16 @@ function readableBy<T extends Knex.QueryBuilder>(query: T, grants: Grants): T {
 }
 
 /** Narrows a read already scoped to some namespaces to the fields `grant` reaches in them. */
-function narrowTo(where: Knex.QueryBuilder, grant: Grant): void {
+function narrowTo(where: Knex.QueryBuilder, fieldsName: string, grant: Grant): void {
   switch (grant.fields) {
     case 'all':
       return;
     case 'none':
       // An empty `IN` matches nothing.
-      where.whereIn(`${FIELDS_TABLE}.namespace`, []);
+      where.whereIn(`${fieldsName}.namespace`, []);
       return;
     case 'by member access':
-      where.whereIn(`${FIELDS_TABLE}.member_access`, grant.levels);
+      where.whereIn(`${fieldsName}.member_access`, grant.levels);
       return;
     default: {
       const _exhaustive: never = grant;
@@ -91,10 +88,14 @@ export const ACTIVE_ONLY = 'active-only';
 export const ANY_STATUS = 'any-status';
 export type StatusScope = typeof ACTIVE_ONLY | typeof ANY_STATUS;
 
-// Typed with the row itself rather than the table registration: a read goes on to read from
-// the fields as the source reads them, a subquery the registration doesn't describe.
-function metafieldsTable(db: Knex) {
-  return db<MetafieldRow>(FIELDS_TABLE);
+function storedFields(db: Knex, resource: MetafieldResource) {
+  return db<FieldsTable>(resource.tables.fields);
+}
+
+// Typed with the row itself rather than the table's composite type: a read goes on to read from
+// the fields as the source reads them, a subquery that type doesn't describe.
+function metafieldsTable(db: Knex, resource: MetafieldResource) {
+  return db<MetafieldRow>(resource.tables.fields);
 }
 
 /**
@@ -116,8 +117,8 @@ class ScopedDefinitions {
 
 export type DefinitionQuery = ScopedDefinitions;
 
-/** Which fields a definitions read is for. */
-export interface DefinitionScope {
+/** Which fields a definitions read is for, and who for. */
+export interface DefinitionScope<Audience> {
   audience: Audience;
   status: StatusScope;
   /** One namespace's fields. Without it, every namespace's. */
@@ -137,16 +138,31 @@ export interface DefinitionScope {
  * holds for every one of them. That includes the check before writing a value. Writes, and
  * the reads a change to the field list is compared with, name the table itself.
  */
-export interface FieldSource {
+export interface FieldSource<Audience> {
+  /**
+   * The name the fields are read under: their table's, so a column is qualified the same way
+   * whether a read names the table or the fields as this reads them.
+   */
+  name: string;
   /**
    * Narrows a read that joins the fields to the ones `audience` may read, as each namespace's
    * owner grants them.
    */
   readable<T extends Knex.QueryBuilder>(query: T, audience: Audience): T;
-  /** The fields under `alias`, for a read that joins them. */
-  table(db: Knex, alias?: string): Knex.TableDescriptor;
+  /** The longest name and key the fields table can store. */
+  maxLength: { name: number; key: number };
+  /**
+   * The fields table as stored, for writing definitions. A read that should apply the rules
+   * above uses `asRead` or `definitions` instead.
+   */
+  table(db: Knex): ReturnType<typeof storedFields>;
+  /**
+   * The fields with an unavailable namespace's fields shown as archived, under `alias`, for a
+   * query that joins them.
+   */
+  asRead(db: Knex, alias?: string): Knex.TableDescriptor;
   /** The fields `scope` names, in no particular order. */
-  definitions(db: Knex, scope: DefinitionScope): DefinitionQuery;
+  definitions(db: Knex, scope: DefinitionScope<Audience>): DefinitionQuery;
   /**
    * The fields `keys` name in `namespace`, held against change until `trx` ends. The lock is
    * taken in the same statement as the read, on the rows as stored.
@@ -159,7 +175,14 @@ export interface FieldSource {
  * available reads as archived. Which namespaces aren't is asked on every read, as it can change
  * while Ghost runs.
  */
-export function fieldSource(namespaces: Pick<Namespaces, 'unavailable' | 'readable'>): FieldSource {
+export function fieldSource<Audience>(
+  resource: MetafieldResource,
+  namespaces: Pick<Namespaces<Audience>, 'unavailable' | 'readable'>,
+): FieldSource<Audience> {
+  const tableName = resource.tables.fields;
+  // The canonical schema, which the migrations and models also read, so these can't drift from
+  // the database.
+  const columns = require('../../data/schema').tables[tableName];
   const asRead = (db: Knex, rows: Knex.QueryBuilder) => {
     const unavailable = namespaces.unavailable();
     return rows.select(
@@ -178,35 +201,43 @@ export function fieldSource(namespaces: Pick<Namespaces, 'unavailable' | 'readab
     );
   };
 
-  const source: FieldSource = {
+  const source: FieldSource<Audience> = {
+    name: tableName,
+
+    maxLength: { name: columns.name.maxlength, key: columns.key.maxlength },
+
     readable(query, audience) {
-      return readableBy(query, namespaces.readable(audience));
+      return readableBy(query, tableName, namespaces.readable(audience));
     },
 
-    table(db, alias = FIELDS_TABLE) {
-      return asRead(db, db(FIELDS_TABLE)).as(alias);
+    table(db) {
+      return storedFields(db, resource);
+    },
+
+    asRead(db, alias = tableName) {
+      return asRead(db, db(tableName)).as(alias);
     },
 
     definitions(db, scope) {
-      let query = metafieldsTable(db);
+      let query = metafieldsTable(db, resource);
 
       // Applied while the query still reads the table by its name, then pointed at the fields as
       // the source reads them, under the same name: the NQL bridge qualifies every column with
       // whatever the query reads from, and a subquery is no name to qualify one with.
       if (scope.filter) {
-        query = knexify(query, scope.filter, { tableName: FIELDS_TABLE });
+        query = knexify(query, scope.filter, { tableName });
       }
-      query = query.from<MetafieldRow>(source.table(db));
+      query = query.from<MetafieldRow>(source.asRead(db));
       if (scope.namespace !== undefined) {
-        query = query.where(`${FIELDS_TABLE}.namespace`, scope.namespace);
+        query = query.where(`${tableName}.namespace`, scope.namespace);
       }
       if (scope.field !== undefined) {
         query = query
-          .where(`${FIELDS_TABLE}.namespace`, scope.field.namespace)
-          .where(`${FIELDS_TABLE}.key`, scope.field.key);
+          .where(`${tableName}.namespace`, scope.field.namespace)
+          .where(`${tableName}.key`, scope.field.key);
       }
       if (scope.status === ACTIVE_ONLY) {
-        query = query.where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active);
+        query = query.where(`${tableName}.status`, FIELD_STATUS.active);
       }
       if (scope.limit !== undefined) {
         query = query.limit(scope.limit);
@@ -218,8 +249,8 @@ export function fieldSource(namespaces: Pick<Namespaces, 'unavailable' | 'readab
     locked(trx, namespace, keys) {
       // Locked inside, as MySQL takes no lock on the rows behind a derived table for a lock asked
       // of the query around it.
-      const rows = trx(FIELDS_TABLE).where('namespace', namespace).whereIn('key', keys).forShare();
-      return trx.from(asRead(trx, rows).as(FIELDS_TABLE));
+      const rows = trx(tableName).where('namespace', namespace).whereIn('key', keys).forShare();
+      return trx.from(asRead(trx, rows).as(tableName));
     },
   };
   return source;
@@ -237,28 +268,29 @@ export function fieldReference(field: FieldIdentity) {
  * Joins a row that points at a field to that field. On namespace and key together, since
  * a key alone names a field in every namespace that has one.
  */
-export function onField(fieldsTable: string, pointingTable: string) {
+export function onField(fieldsName: string, pointingTable: string) {
   return function (this: Knex.JoinClause) {
-    this.on(`${fieldsTable}.namespace`, `${pointingTable}.metafield_namespace`).andOn(
-      `${fieldsTable}.key`,
+    this.on(`${fieldsName}.namespace`, `${pointingTable}.metafield_namespace`).andOn(
+      `${fieldsName}.key`,
       `${pointingTable}.metafield_key`,
     );
   };
 }
 
 /**
- * The publisher's order, applied to every read of the list. Here for the same reason the
+ * The publisher's order, applied to every read of the list, whose fields are read under
+ * `fieldsName`. Here for the same reason the
  * status filter is: a read that forgets it comes back in whatever order the engine chose.
  *
  * Each namespace is its own list with its own ranks, so a read across several keeps each
  * one together. `created_at` orders a site that has never reordered, where every row still
  * holds the default rank; `id` settles the rest so the order is total.
  */
-export function inFieldOrder<T extends Knex.QueryBuilder>(query: T): T {
+export function inFieldOrder<T extends Knex.QueryBuilder>(query: T, fieldsName: string): T {
   query
-    .orderBy(`${FIELDS_TABLE}.namespace`, 'asc')
-    .orderBy(`${FIELDS_TABLE}.sort_order`, 'asc')
-    .orderBy(`${FIELDS_TABLE}.created_at`, 'asc')
-    .orderBy(`${FIELDS_TABLE}.id`, 'asc');
+    .orderBy(`${fieldsName}.namespace`, 'asc')
+    .orderBy(`${fieldsName}.sort_order`, 'asc')
+    .orderBy(`${fieldsName}.created_at`, 'asc')
+    .orderBy(`${fieldsName}.id`, 'asc');
   return query;
 }

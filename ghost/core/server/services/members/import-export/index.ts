@@ -1,9 +1,12 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-csv';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { INTERNAL } from '../../members-metafields';
-import type { MetafieldDefinitionsService } from '../../members-metafields/definitions-service';
-import type { MetafieldValuesService, PlannedWrite } from '../../members-metafields/values-service';
+import {
+  INTERNAL,
+  type MemberMetafieldValues,
+  type MetafieldDefinitionsService,
+  type PlannedWrite,
+} from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -50,14 +53,14 @@ interface ImporterServices {
   // The metafields services the members service hands the import composition root.
   metafields: {
     definitions: Pick<MetafieldDefinitionsService, 'browse'>;
-    values: Pick<MetafieldValuesService, 'planWrite' | 'applyImportedWrite'>;
+    values: Pick<MemberMetafieldValues, 'planWrite' | 'applyImportedWrite'>;
   };
 }
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
   definitions: Pick<MetafieldDefinitionsService, 'browse'>;
-  values: Pick<MetafieldValuesService, 'getValuesForMembers'>;
+  values: Pick<MemberMetafieldValues, 'getValuesForMany'>;
 }
 
 // Build the members CSV importer. This is the composition root: today's models and
@@ -206,7 +209,7 @@ export function makeExporter({
       activeDefinitions: async (): Promise<CsvField[]> =>
         definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
       valuesForMembers: (memberIds, executor) =>
-        values.getValuesForMembers(memberIds, INTERNAL, executor),
+        values.getValuesForMany(memberIds, INTERNAL, executor),
     },
 
     tracking: importExportTracking(tracer),
