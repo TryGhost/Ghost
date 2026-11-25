@@ -565,15 +565,37 @@ img.kg-cta-image {
     line-height: 1.4;
 }
 
-.kg-cta-text p:last-child {
+.kg-cta-text p:last-child,
+.kg-cta-text h1:last-child,
+.kg-cta-text h2:last-child,
+.kg-cta-text h3:last-child,
+.kg-cta-text h4:last-child,
+.kg-cta-text h5:last-child,
+.kg-cta-text h6:last-child {
     margin-bottom: 0;
+}
+
+/* Headings keep their default margins, except above the first one in the card */
+.kg-cta-text h1:first-child,
+.kg-cta-text h2:first-child,
+.kg-cta-text h3:first-child,
+.kg-cta-text h4:first-child,
+.kg-cta-text h5:first-child,
+.kg-cta-text h6:first-child {
+    margin-top: 0;
 }
 
 .kg-cta-bg-none:not(.kg-cta-minimal.kg-cta-has-img) .kg-cta-text p {
     line-height: 1.6;
 }
 
-.kg-cta-immersive.kg-cta-centered .kg-cta-text p {
+.kg-cta-immersive.kg-cta-centered .kg-cta-text p,
+.kg-cta-immersive.kg-cta-centered .kg-cta-text h1,
+.kg-cta-immersive.kg-cta-centered .kg-cta-text h2,
+.kg-cta-immersive.kg-cta-centered .kg-cta-text h3,
+.kg-cta-immersive.kg-cta-centered .kg-cta-text h4,
+.kg-cta-immersive.kg-cta-centered .kg-cta-text h5,
+.kg-cta-immersive.kg-cta-centered .kg-cta-text h6 {
     text-align: center;
 }
 
