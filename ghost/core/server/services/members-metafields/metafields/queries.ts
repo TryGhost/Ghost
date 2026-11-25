@@ -1,4 +1,4 @@
-import errors from '@tryghost/errors';
+import { unreachable } from '../../../lib/unreachable';
 import type { Knex } from 'knex';
 import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
@@ -71,10 +71,8 @@ function narrowTo(where: Knex.QueryBuilder, fieldsName: string, grant: Grant): v
     case 'by member access':
       where.whereIn(`${fieldsName}.member_access`, grant.levels);
       return;
-    default: {
-      const _exhaustive: never = grant;
-      throw new errors.InternalServerError({ message: `Unhandled grant: ${_exhaustive}` });
-    }
+    default:
+      unreachable(grant, 'grant');
   }
 }
 
