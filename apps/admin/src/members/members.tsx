@@ -304,16 +304,21 @@ const MembersPage: React.FC<MembersPageProps> = ({
           <ListPage.Header className="py-4 sidebar:py-5 [&_[data-page-header=actions]]:pointer-events-auto [&_[data-page-header=page-header]~*]:pointer-events-auto [&[data-large-title-header]:not([data-condensed])]:pointer-events-none">
             <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
               <PageHeader blurredBackground={false} sticky={false}>
-                {/* A segment's facts can be a long line. The title block takes the room left by
-                    the actions and cuts the line short, rather than pushing them to a row below. */}
-                <PageHeader.Left className={viewedSegment ? 'min-w-48 flex-1 basis-0' : undefined}>
+                {/* The title block takes the room the actions leave, whatever it holds. A
+                    segment's facts can be a long line, and are cut short rather than pushing the
+                    actions to a row below. And the title has real room to measure itself against,
+                    not a block that is only as wide as the title. */}
+                <PageHeader.Left className="min-w-48 flex-1 basis-0">
                   {/* The title is a row of its own, as tall as the header's buttons, with the
                       title centred in it. It is then in the same place whether or not a segment's
                       facts follow: they are added under the row and only make the header taller. */}
                   <PageHeader.Title className="flex h-(--control-height) items-center">
                     {/* One item of that row, so the title and its count still read as a line
-                        of text, on one baseline, as they did before. */}
-                    <span className="min-w-0">
+                        of text, on one baseline, as they did before. It takes the row's whole
+                        width: the title may shorten to fit its container, and a container only
+                        as wide as the title itself made it shorten by a fraction of a pixel
+                        whenever the count beside it was hidden, as it is while members load. */}
+                    <span className="min-w-0 flex-1">
                       <SegmentSwitcher
                         current={viewedSegment}
                         segments={savedViews}
