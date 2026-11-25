@@ -2757,11 +2757,11 @@ describe('Managing apps', () => {
 
     const dialog = appsScreen.uninstallDialog();
     await expect.element(dialog).toHaveTextContent('Uninstall Podcast?');
-    // A copy already open elsewhere closes at its next call to Ghost, not straight away
+    // A copy already open elsewhere closes on its own, not straight away
     await expect
       .element(dialog)
       .toHaveTextContent(
-        'The app stops opening for everyone. Where it’s already open, in another tab or for another staff user, it closes the next time it calls Ghost.',
+        'The app loses its access to your site straight away, and no one can open it. If someone has it open right now, it will close on its own within the hour.',
       );
     // Once it closes nothing of it runs, so the dialog doesn't say its other requests still work
     await expect.element(dialog).not.toHaveTextContent('anywhere other than Ghost');
