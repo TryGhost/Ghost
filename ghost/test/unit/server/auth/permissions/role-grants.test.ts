@@ -73,6 +73,28 @@ const GRANTS: [string, string, string[]][] = [
     'post',
     ['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration', 'Super Editor'],
   ],
+  [
+    'read_stats',
+    'post',
+    ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor'],
+  ],
+  [
+    'export',
+    'post',
+    [
+      'Administrator',
+      'Editor',
+      'Author',
+      'Contributor',
+      'Admin Integration',
+      'DB Backup Integration',
+      'Super Editor',
+    ],
+  ],
+  // Author and Contributor delete only their own posts, one at a time
+  ['bulk_destroy', 'post', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']],
+  // Integration keys can't reach the stats routes, so no integration role holds it
+  ['browse', 'stat', ['Administrator', 'Editor', 'Author', 'Contributor', 'Super Editor']],
   ['flushReminders', 'gift', ['Scheduler Integration']],
   ['flushDeliveries', 'gift', ['Scheduler Integration']],
   ['manage', 'gift_link', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']],
@@ -332,9 +354,9 @@ const holders = (actionType: string, objectType: string) =>
 
 describe('Permissions', function () {
   describe('role grants', function () {
-    it('defines 154 permissions', function () {
+    it('defines 158 permissions', function () {
       // If you have to change this number, add the relevant rows to GRANTS.
-      assert.equal(allPermissionKeys.length, 154);
+      assert.equal(allPermissionKeys.length, 158);
     });
 
     it('lists every permission exactly once in GRANTS', function () {

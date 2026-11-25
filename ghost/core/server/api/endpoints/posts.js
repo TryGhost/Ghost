@@ -100,7 +100,7 @@ const controller = {
       stream: true,
     },
     permissions: {
-      method: 'browse',
+      method: 'export',
     },
     validation: {},
     async query(frame) {
@@ -280,7 +280,7 @@ const controller = {
     },
     options: ['filter'],
     permissions: {
-      method: 'destroy',
+      method: 'bulk_destroy',
     },
     async query(frame) {
       const result = await postsService.bulkDestroy(frame.options);

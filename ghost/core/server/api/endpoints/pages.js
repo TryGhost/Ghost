@@ -213,7 +213,7 @@ const controller = {
     options: ['filter'],
     permissions: {
       docName: 'posts',
-      method: 'destroy',
+      method: 'bulk_destroy',
     },
     async query(frame) {
       const result = await postsService.bulkDestroy(frame.options);
