@@ -4,15 +4,7 @@
  */
 
 /**
- * @typedef {object} StripeWebhookModel
- * @prop {string} webhook_id
- * @prop {string} secret
- */
-
-/**
- * @typedef {object} StripeWebhook
- * @prop {(data: StripeWebhookModel) => Promise<void>} save
- * @prop {() => Promise<StripeWebhookModel>} get
+ * @typedef {import('./webhook-store').WebhookStore} StripeWebhook
  */
 
 module.exports = class WebhookManager {
@@ -75,7 +67,7 @@ module.exports = class WebhookManager {
   }
 
   /**
-   * Starts the Stripe Webhook Endpoint and saves the webhook ID and secret.
+   * Starts the Stripe Webhook Endpoint. A new endpoint's ID and secret are saved.
    *
    * @returns {Promise<void>}
    */
@@ -86,11 +78,6 @@ module.exports = class WebhookManager {
     const existingWebhook = await this.StripeWebhook.get();
 
     const webhook = await this.setupWebhook(existingWebhook.webhook_id, existingWebhook.secret);
-
-    await this.StripeWebhook.save({
-      webhook_id: webhook.id,
-      secret: webhook.secret,
-    });
 
     this.webhookSecret = webhook.secret;
   }
@@ -116,6 +103,9 @@ module.exports = class WebhookManager {
    * - If the webhook exists, delete it and create a new one
    * - If the webhook does not exist, create a new one
    *
+   * A new webhook is created and saved while holding a lock on the stored webhook, so that of
+   * several Ghosts starting for one site only one creates it and the others use the one it saved.
+   *
    * @param {string} [id]
    * @param {string} [secret]
    * @param {object} [opts]
@@ -126,21 +116,37 @@ module.exports = class WebhookManager {
    */
   async setupWebhook(id, secret, opts = {}) {
     if (!id || !secret || opts.forceCreate) {
-      if (id && !opts.skipDelete) {
-        try {
-          await this.api.deleteWebhookEndpoint(id);
-        } catch (err) {
-          // Continue
+      return this.StripeWebhook.transaction(async (transacting) => {
+        const stored = await this.StripeWebhook.getForUpdate(transacting);
+        if (stored.webhook_id && stored.secret && stored.webhook_id !== id) {
+          return {
+            id: stored.webhook_id,
+            secret: stored.secret,
+          };
         }
-      }
-      const webhook = await this.api.createWebhookEndpoint(
-        this.config.webhookHandlerUrl,
-        WebhookManager.events,
-      );
-      return {
-        id: webhook.id,
-        secret: webhook.secret,
-      };
+        if (id && !opts.skipDelete) {
+          try {
+            await this.api.deleteWebhookEndpoint(id);
+          } catch (err) {
+            // Continue
+          }
+        }
+        const webhook = await this.api.createWebhookEndpoint(
+          this.config.webhookHandlerUrl,
+          WebhookManager.events,
+        );
+        await this.StripeWebhook.save(
+          {
+            webhook_id: webhook.id,
+            secret: webhook.secret,
+          },
+          { transacting },
+        );
+        return {
+          id: webhook.id,
+          secret: webhook.secret,
+        };
+      });
     } else {
       try {
         await this.api.updateWebhookEndpoint(

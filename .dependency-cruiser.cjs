@@ -279,6 +279,7 @@ const specialistDependencies = [
       core('server/models/label.js'),
       service('jobs-service/index.ts'),
       service('members/service.js'),
+      service('stripe/webhook-store.ts'),
       service('url/routable-resources.js'),
     ],
   },

@@ -6,10 +6,10 @@ const { stripeTracking } = require('./tracking');
 const sentry = require('../../../shared/sentry');
 const membersService = require('../members');
 const config = require('../../../shared/config');
-const settings = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils').default;
 const events = require('../../lib/common/events');
 const models = require('../../models');
+const { WebhookStore } = require('./webhook-store');
 const { getConfig } = require('./config');
 const settingsHelpers = require('../settings-helpers');
 const donationService = require('../donations').default;
@@ -53,26 +53,11 @@ module.exports = new StripeService({
     'Offer',
     'Settings',
   ]),
-  StripeWebhook: {
-    async get() {
-      return {
-        webhook_id: settings.get('members_stripe_webhook_id'),
-        secret: settings.get('members_stripe_webhook_secret'),
-      };
-    },
-    async save(data) {
-      await models.Settings.edit([
-        {
-          key: 'members_stripe_webhook_id',
-          value: data.webhook_id,
-        },
-        {
-          key: 'members_stripe_webhook_secret',
-          value: data.secret,
-        },
-      ]);
-    },
-  },
+  StripeWebhook: new WebhookStore({
+    settingsCache,
+    Settings: models.Settings,
+    transaction: (fn) => models.Base.transaction(fn),
+  }),
   donationService,
   giftService,
   staffService,
