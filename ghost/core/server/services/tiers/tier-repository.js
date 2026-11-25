@@ -61,14 +61,10 @@ module.exports = class TierRepository {
     const models = await this.#ProductModel.findAll({
       withRelated: ['benefits'],
     });
-    this.#ids.clear();
-    this.#store = await Promise.all(
-      models.map(async (model) => {
-        const tier = await Tier.create(this.mapToTier(model));
-        this.#ids.add(tier.id.toHexString());
-        return tier;
-      }),
-    );
+    const store = await Promise.all(models.map((model) => Tier.create(this.mapToTier(model))));
+    // Swapped together, so a save() meanwhile still finds the tiers it edits
+    this.#store = store;
+    this.#ids = new Set(store.map((tier) => tier.id.toHexString()));
   }
 
   /**
