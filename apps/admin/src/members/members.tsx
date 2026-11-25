@@ -323,9 +323,13 @@ const MembersPage: React.FC<MembersPageProps> = ({
                         current={viewedSegment}
                         segments={savedViews}
                         onNewSegment={canChangeSegments ? startNewSegment : undefined}
-                      />{' '}
+                      />
+                      {/* The count sits as far from the title as it does on main. There the
+                          small title has a space before the count, and the large one a set gap
+                          in its place. */}
+                      <span className="[[data-large-title]_&]:hidden"> </span>
                       {!shouldShowLoading && totalMembers > 0 && (
-                        <PageHeader.Count className="hidden sm:inline">
+                        <PageHeader.Count className="hidden sm:inline [[data-large-title]_&]:ml-4">
                           {formatNumber(totalMembers)}
                         </PageHeader.Count>
                       )}

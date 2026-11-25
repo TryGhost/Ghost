@@ -39,9 +39,11 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
             title's own type in both designs. Shade's button sets its own size and weight, which
             under the Admin 7 design shrank the large title to button text. The chevron carries
             empty space of its own on each side, so the right padding is the smaller for the two
-            sides to look alike, and it is sized from the title so it grows with a large one. */}
+            sides to look alike, and it is sized from the title so it grows with a large one.
+            The button gives back its padding on both sides, so what is around the title sits
+            where it would beside a plain title. */}
         <button
-          className="-ml-2.5 inline-flex max-w-full cursor-pointer items-center gap-1 rounded-full py-0.5 pr-1.5 pl-2.5 align-baseline outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring data-[state=open]:bg-accent"
+          className="-mr-1.5 -ml-2.5 inline-flex max-w-full cursor-pointer items-center gap-1 rounded-full py-0.5 pr-1.5 pl-2.5 align-baseline outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-focus-ring data-[state=open]:bg-accent"
           data-testid="segment-switcher"
           type="button"
         >
