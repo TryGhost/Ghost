@@ -9,12 +9,16 @@ import path from 'node:path';
 import semver from 'semver';
 import { knex as dbKnex } from '../../../core/server/data/db';
 import { v4Schema } from '../../utils/fixtures/schema/v4';
-// @ts-expect-error This module lacks type definitions.
+import type { TableDefinition } from '../../../core/server/data/schema/types';
 import rawSchema from '../../../core/server/data/schema/schema';
-// @ts-expect-error This module lacks type definitions.
 import * as commands from '../../../core/server/data/schema/commands';
 import { isInDevelopmentTable } from '../../../core/server/data/schema/in-development';
 import { type ForeignKey, foreignKeysOf } from '../../../core/server/data/schema/lib/foreign-keys';
+import {
+  type PatternCheck,
+  patternChecksOf,
+} from '../../../core/server/data/schema/lib/column-patterns';
+import { readPatternChecks } from '../../utils/pattern-checks';
 // @ts-expect-error This module lacks type definitions.
 import * as dbUtils from '../../utils/db-utils';
 
@@ -51,6 +55,7 @@ type NormalizedTable = {
   indexes: string[][];
   uniques: string[][];
   foreignKeys: ForeignKey[];
+  checks: PatternCheck[];
 };
 
 type NormalizedSchema = Record<string, NormalizedTable>;
@@ -133,7 +138,7 @@ const V4_FIXTURE_TABLES: Record<string, keyof typeof v4Schema> = {
   Integration: 'integrations',
 };
 
-// Tables knex-migrator uses to track its own state; they are not in schema.js
+// Tables knex-migrator uses to track its own state; they are not in schema.ts
 const KNEX_MIGRATOR_TABLES = ['migrations', 'migrations_lock'];
 
 const knexMigrator = new KnexMigrator({
@@ -141,7 +146,7 @@ const knexMigrator = new KnexMigrator({
 });
 
 /**
- * Reduces schema.js-style table definitions to what can be read back out of
+ * Reduces schema.ts-style table definitions to what can be read back out of
  * the database, so that they can be compared with `readSchemaFromDatabase()`.
  */
 function normalizeSchema(tables: SchemaTables): NormalizedSchema {
@@ -204,6 +209,7 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
       indexes: sortIndexes(indexes),
       uniques: sortIndexes(uniques),
       foreignKeys: sortForeignKeys(foreignKeysOf(tableName, tableSpec)),
+      checks: sortBy(patternChecksOf(tableName, tableSpec), 'constraintName'),
     };
   }
 
@@ -265,6 +271,8 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       'r.DELETE_RULE',
     );
 
+  const checks = await readPatternChecks(knex);
+
   const result: NormalizedSchema = {};
 
   for (const row of columnRows) {
@@ -274,6 +282,7 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
       indexes: [],
       uniques: [],
       foreignKeys: [],
+      checks: checks[row.TABLE_NAME] ?? [],
     };
 
     const type =
@@ -318,7 +327,7 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
   }
 
   // MySQL implicitly creates an index for a foreign key that no other index
-  // covers, and names it after the constraint. schema.js doesn't list those.
+  // covers, and names it after the constraint. schema.ts doesn't list those.
   const foreignKeyNames = new Set(foreignKeyRows.map((row) => row.CONSTRAINT_NAME));
 
   const indexesByTable = groupBy(indexRows, 'TABLE_NAME');
@@ -353,7 +362,7 @@ async function createMigratedDatabase(knex: Knex) {
   await knexMigrator.init({ noScripts: true });
 
   for (const [tableName, tableSpec] of Object.entries(v4Schema)) {
-    await commands.createTable(tableName, knex, tableSpec);
+    await commands.createTable(tableName, knex, tableSpec as TableDefinition);
   }
 
   await knex.schema.createTable('migrations', function (table) {
@@ -363,14 +372,16 @@ async function createMigratedDatabase(knex: Knex) {
     table.string('currentVersion');
   });
 
+  // knex-migrator records a .ts migration under its .js name, as a real 4.47 database has it
+  const recordedName = (file: string) => file.replace(/\.ts$/, '.js');
   const executed: ExecutedMigration[] = [];
   for (const name of fs.readdirSync(path.join(MIGRATIONS_PATH, 'init'))) {
-    executed.push({ name, version: 'init', currentVersion: V4_VERSION });
+    executed.push({ name: recordedName(name), version: 'init', currentVersion: V4_VERSION });
   }
   for (const version of fs.readdirSync(path.join(MIGRATIONS_PATH, 'versions'))) {
     if (semver.lte(semver.coerce(version)!, semver.coerce(V4_VERSION)!)) {
       for (const name of fs.readdirSync(path.join(MIGRATIONS_PATH, 'versions', version))) {
-        executed.push({ name, version, currentVersion: V4_VERSION });
+        executed.push({ name: recordedName(name), version, currentVersion: V4_VERSION });
       }
     }
   }
@@ -459,7 +470,7 @@ describe('migrations', function () {
     await knexMigrator.init();
   }, 120_000);
 
-  it('builds the schema in schema.js when every migration runs', async function () {
+  it('builds the schema in schema.ts when every migration runs', async function () {
     await createMigratedDatabase(dbKnex);
 
     const actualSchema = await readSchemaFromDatabase(dbKnex);
@@ -467,8 +478,8 @@ describe('migrations', function () {
       omitBy(schema, (_tableSpec, tableName) => isInDevelopmentTable(tableName)),
     );
 
-    // Known drift between migrations and schema.js. Sites that were created
-    // with `knex-migrator init` have what's in schema.js; sites that ran these
+    // Known drift between migrations and schema.ts. Sites that were created
+    // with `knex-migrator init` have what's in schema.ts; sites that ran these
     // migrations have what's below.
     //
     // TODO: Fix this drift. See NY-1482 and NY-1483.

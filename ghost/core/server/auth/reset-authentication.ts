@@ -2,7 +2,7 @@ import type { Knex } from 'knex';
 import type { InternalApiKey, InternalKeys } from '../services/internal-keys';
 import internalKeysDefault from '../services/internal-keys';
 const modelsDefault = require('../models');
-const { deleteAllSessions: deleteAllSessionsDefault } = require('./session');
+const { deleteAllSessions: deleteAllSessionsDefault } = require('./session').default;
 
 interface ResetAuthenticationArgs {
   schedulerAdapter: { rescheduleAll(opts: { previousKey?: InternalApiKey }): Promise<unknown> };
@@ -11,6 +11,8 @@ interface ResetAuthenticationArgs {
   models?: any;
   internalKeys?: InternalKeys;
   deleteAllSessions?: () => Promise<void>;
+  /** Deletes Better Auth's sessions, under either engine; legacy rows go either way */
+  revokeAllSessions?: () => Promise<void>;
 }
 
 interface ResetAuthenticationResult {
@@ -36,6 +38,7 @@ export default async function resetAuthentication({
   models = modelsDefault,
   internalKeys = internalKeysDefault.service,
   deleteAllSessions = deleteAllSessionsDefault,
+  revokeAllSessions = async () => {},
 }: ResetAuthenticationArgs): Promise<ResetAuthenticationResult> {
   const previousSchedulerKey = await internalKeys.get('ghost-scheduler');
   const actorId = options?.context?.user ?? null;
@@ -71,6 +74,7 @@ export default async function resetAuthentication({
 
   internalKeys.clear();
   await deleteAllSessions();
+  await revokeAllSessions();
   await schedulerAdapter.rescheduleAll({ previousKey: previousSchedulerKey });
 
   return { apiKeysRotated, usersLocked };

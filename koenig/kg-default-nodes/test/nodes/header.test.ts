@@ -137,7 +137,7 @@ describe('HeaderNode', function () {
                 const headerNode = $createHeaderNode(dataset);
                 const result = headerNode.exportDOM(editor, exportOptions);
                 const expectedElement = html`
-                <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url(https://example.com/image.jpg)">
+                <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url('https://example.com/image.jpg')">
                     <h2 class="kg-header-card-header" id="this-is-the-header-card">This is the header card</h2>
                     <h3 class="kg-header-card-subheader" id="hello">hello</h3>
                     <a class="kg-header-card-button" href="https://example.com/">The button</a>

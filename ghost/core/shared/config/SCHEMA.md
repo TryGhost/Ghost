@@ -19,56 +19,58 @@ nconf's own reset-then-reapply rebuild was not.
 
 ## Where a schema belongs
 
-Not every key belongs in [`schema.ts`](schema.ts). This file is the bottom of the
-dependency graph, and it knows nothing about any feature. A schema covering every
-key would give it inbound knowledge of `bulkEmail`, `tinybird`, `machinePayments`
-and the rest — the lowest-level module in the tree describing the highest-level
-features. Keep it small on purpose.
+Every key belongs in the central schema, the same way every table belongs in
+`schema.ts` however many models read it. Config is grouped by who sets it —
+Ghost(Pro), a self-hoster, a feature's deployment knobs — not by which code
+reads it, and most keys have readers in more than one place: `hostSettings`,
+`tinybird:stats`, `apps` and `explore` all do. A schema owned by one of those
+readers would be describing config the others read too.
 
-Split by who needs the guarantee:
+One schema also means one place a key is described, a type at every existing
+`config.get()` call site rather than only the code that opted in, and a
+reference for self-hosters generated from `configSchema` alone.
 
-- **Boot cannot start without it** — `url`, `env`, `paths`, `database`. Central,
-  so it fails at load. Small and stable, and genuinely config's own business.
-- **Everything else** — the feature's concern, validated by the feature when it
-  initialises.
+The schema knows feature names, but not feature code: the files hold shapes,
+import `zod` and pure helpers from this directory such as `makePathsAbsolute`, and
+never a feature module. That is the same trade `schema.ts` makes. Files in
+[`schema/`](schema/) go further and import only `zod` and each other; the
+`config-schema-zod-only` boundary rule enforces it.
 
-The second needs nothing from this directory. The tree is loose and frozen, so a
-feature can parse its own slice today, next to the code that reads it:
+Organise it by area:
 
-```ts
-// in the feature, not here
-const schema = z.object({tag: z.string().default('bulk-email')});
+- **Keys boot cannot start without** — `url`, `env`, `paths`, `database` — are
+  listed first in [`schema.ts`](schema.ts). The first three are defined there
+  too. `database` is a union on its client with shared helpers, so it is in
+  [`schema/database.ts`](schema/database.ts); a core key that outgrows an inline
+  shape moves out the same way.
+- **Every other area** gets its own file in [`schema/`](schema/), named after the
+  top-level key it describes and composed into `configSchema` in `schema.ts`.
+  [`schema/auth.ts`](schema/auth.ts) and [`schema/explore.ts`](schema/explore.ts)
+  are the first. An area file may export named types for its values, such as
+  `AuthConfig` and `AuthEngine`, so code that passes a value around imports it rather than
+  restating it.
+- **Field types more than one area uses**, such as `httpUrl()`, are in
+  [`schema/primitives.ts`](schema/primitives.ts). A shape several areas embed
+  gets its own file instead: [`schema/redis.ts`](schema/redis.ts) is the one
+  Redis connection block. Its keys are ioredis option names, so the parsed value
+  is the client's options, and it is loose, like `database:connection` for
+  mysql2, so any other ioredis option passes through.
 
-export function mailgunOptions() {
-  return schema.parse(config.get('bulkEmail:mailgun') ?? {});
-}
-```
+An area file is reviewed by the people who own the code that reads it, in the
+same change as that code.
 
-Parsing a frozen subtree returns a fresh, unfrozen object, so that works as
-written. It is also the better place for it:
-
-- **It can use the things the central schema forbids.** `z.object()` to reject
-  unknown keys, defaults, coercion — all fine when the blast radius is one
-  feature rather than every running site.
-- **It fails the feature, not the site.** A broken Mailgun config should not stop
-  Ghost serving pages.
-- **The people who own the code own the schema**, and review it in the same
-  change as the code that reads it.
-
-Read central keys through `config.get('url')`. Read a feature's keys through one
-accessor the feature owns, rather than `config.get` scattered across it.
-
-Two approaches were considered and rejected for the long tail. Self-registration
+Two alternatives were tried and rejected. Self-registration
 (`registerConfigSection()` at import time) cannot work: config is the first thing
-loaded — `loggingrc.js` and `MigratorConfig.js` require it before any feature
-module exists — so which sections got validated would depend on import order.
-Generating this file from per-feature schemas does work, but it buys load-time
-failure for feature config, which is the wrong behaviour for most of it.
+loaded — `loggingrc.js` and `MigratorConfig.mts` load it before any feature
+module exists — so which keys got validated would depend on import order. A
+schema per feature, parsed by the feature at init, was built and dropped: no
+migrated service turned out to own a top-level key outright, and a feature
+schema cannot say who owns a shared one.
 
-## Adding a key to the central schema
+## Adding a key
 
-1. Check it belongs here at all — see above. Then add it to `configSchema` in
-   [`schema.ts`](schema.ts) with a schema that is
+1. Add it to its area's file in [`schema/`](schema/) — or a new file there,
+   composed into `configSchema` in [`schema.ts`](schema.ts) — with a schema that is
    **no stricter than what Ghost already accepts**. Look at `defaults.json`,
    `overrides.json`, `env/*.json`, and how the key is actually read first.
 2. Describe it with `.meta({description})`, and `examples` where the shape is not
@@ -79,65 +81,60 @@ failure for feature config, which is the wrong behaviour for most of it.
    Those are real mismatches between what the code assumes and what the schema
    says — one of the two is wrong.
 4. Run `pnpm --dir ghost test:single test/unit/shared/config/validated.test.ts`.
-   It round-trips `defaults.json` against every shipped env config and fails if
-   the schema changed a value rather than only checking it.
+   It parses `defaults.json` with every shipped env config and fails if the
+   output differs from what Ghost produced before - a value the schema changed
+   that it should only have checked.
 
 Adding a key to the schema enforces its type: a caller that treated a string as
 a number, or assumed a key is always present, stops compiling.
 
 ## Rules
 
-- **Validate, don't transform — for now.** `z.coerce.*` rewrites values, which
-  would silently change config a running site already has, and the round-trip
-  test fails if it does. Use plain validators. Secrets are deliberately left
-  unparsed by [`secrets.ts`](secrets.ts) — a password of `01234` must stay a
-  string.
+- **Transform only what Ghost already transformed.** A transform's output must
+  match what a running site already gets, which the round-trip test checks.
+  `z.coerce.*` is the usual trap: it rewrites values Ghost has always passed
+  through. Secrets are deliberately left unparsed by [`secrets.ts`](secrets.ts) —
+  a password of `01234` must stay a string.
 
-  Unknown **keys** are a separate decision, and not covered by this rule: the top
-  level is `z.looseObject()` and must stay so, while a nested section like
-  `paths` is `z.object()` and strips what it does not name. See
+  The transforms in the schema today are the loader's old ones: `paths` resolves
+  against Ghost's install directory, `database:client` accepts `mysql` and
+  `sqlite3` as aliases for their driver names, and each client drops the other's
+  connection keys. `database:connection:port` coerces a quoted port, which
+  mysql2 accepts as a string anyway.
+
+  A transform must also be idempotent, because `config.set()` re-parses on every
+  call, and one that moved a value further each pass would corrupt config on the
+  second override.
+
+  Unknown **keys** are a separate decision: the top level is `z.looseObject()`
+  and must stay so, while a nested section like `paths` is `z.object()` and
+  strips what it does not name. See
   [Why the top level is loose](#why-the-top-level-is-loose-and-nested-sections-are-not)
   before adding a section either way.
 
-  A zod `.transform()` is the wrong tool here, and that is not a style
-  preference. zod's output is all-or-nothing: one bad key anywhere and
-  `safeParse` returns no data at all. Outside `development` and `test*` a
-  violation only logs and the raw tree is used, so a transform attached to the
-  schema silently would not run in exactly the environments that do not throw.
-  For `paths` that would leave every path relative to the working directory on a
-  live site — content, migrations and Admin assets all missing — triggered by an
-  unrelated mistake elsewhere in the schema. This was measured, not reasoned
-  about: with one bad `url` and nothing else changed, `paths:contentPath` came
-  back `content/` instead of absolute.
+- **One bad key costs only that key.** zod's own parse is all-or-nothing: one
+  bad leaf and it returns no data, so no transform or default anywhere would run.
+  Outside strict environments, [`lenient.ts`](lenient.ts) parses a copy of the
+  schema in which every leaf falls back to its raw value instead, and every
+  section falls back as a whole if it fails as a whole — a missing section, or
+  an unknown key in a strict object. Everything else parses, transforms
+  included, and each fallback is logged by its key path. Strict environments
+  parse the schema itself and throw.
 
-  So a transform may not be conditional on the schema being right. Today that
-  means a plain function applied **before** `safeParse` and used on both
-  branches, not in the schema object.
+  This was the reason transforms used to live in the loader: with one bad `url`
+  and nothing else changed, `paths:contentPath` came back `content/` instead of
+  absolute, because the parse failed and the raw tree was used.
 
-  There is a second route, for when a transform genuinely belongs with the
-  schema. Wrapping every field in `.catch((ctx) => ctx.value)` makes a field fall
-  back to its raw input instead of failing the parse, so the parse always
-  succeeds and an object-level transform always runs — a bad `url` no longer
-  costs `paths` its transform, and a bad leaf inside `paths` costs only that
-  leaf. `ctx.error` is still available, so the handler can collect issues and
-  strict mode can throw on them. Two things to weigh first: `ctx.error.issues[]`
-  arrives with an empty `path`, so each wrapper has to name its own key or the
-  log stops saying which key was wrong; and it inverts the default from
-  fail-closed to fail-open, since the parse then always succeeds and strictness
-  becomes a check someone has to remember — which wants a single entry point
-  where that check cannot be skipped.
+- **Some keys are fatal everywhere.** Mark a key `.meta({fatal: true})` when
+  Ghost cannot run without it being right, and has always refused to boot
+  without it. A fatal key's failure throws in every environment, whatever
+  `GHOST_CONFIG_SCHEMA_STRICT` says. `url` is the only one today; it replaced a
+  loader check that had always thrown.
 
-  Either way a transform must be idempotent, because `config.set()` re-parses
-  from source on every call, and one that moved a value further each pass would
-  corrupt config on the second override.
-
-  Both existing transforms stay in [`utils.ts`](utils.ts) for now.
-  `makePathsAbsolute` is unconditional there already, which is the property that
-  matters, so moving it buys nothing until there is a second transform to share
-  the plumbing. `sanitizeDatabaseProperties` is not really a transform: it
-  deletes keys based on a sibling's value, making it a discriminated union on
-  `database:client`, and it waits for `database` to be schemafied.
-
+- **Some keys are hidden.** Mark a key `.meta({hidden: true})` when it is for
+  developing Ghost rather than running it, such as a switch for in-development
+  work. A generated reference for self-hosters must leave hidden keys out; the
+  key is still validated like any other.
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
 - **Adding a key reorders its parent's keys.** `z.looseObject` emits the keys the
@@ -152,7 +149,8 @@ a number, or assumed a key is always present, stops compiling.
   `production`, and whatever NODE_ENV a self-hoster or embedder picks — logs and
   carries on. A schema mistake should fail a developer's boot or CI, never a live
   site's. `GHOST_CONFIG_SCHEMA_STRICT` overrides in either direction, which is how
-  a production deploy opts in once it trusts the schema.
+  a production deploy opts in once it trusts the schema. Fatal keys throw
+  regardless.
 
 ## Why the top level is loose, and nested sections are not
 
@@ -180,13 +178,51 @@ reader needs an unlisted key.
 strips it. A key added to config but not to its schema disappears, with no error.
 Add both.
 
+`database:connection` is closed for sqlite, where knex hands the driver only
+`filename`, and loose for mysql2, whose options are too many to list — only the
+common ones are validated.
+
 That is affordable for `paths` because its readers are enumerable. For a section
-where they are not, the safe form is `z.strictObject({...}).catch((ctx) => ctx.value)`
-— an unknown key drops that section back to raw and logs it, the rest of the tree
-stays validated, and strict environments still throw. Plain `z.strictObject()` is
-not: rejection fails the whole tree, so outside `development` and `test*` one
-unexpected key would quietly disable validation of _all_ config. That depends on
-the `.catch` mechanism described under Rules.
+where they are not, use `z.strictObject()`: outside strict environments an
+unknown key drops that section back to raw and logs it, the rest of the tree
+stays validated, and strict environments still throw. See
+[One bad key costs only that key](#rules).
+
+### Choosing how a closed section treats unknown keys
+
+Ghost never reads a key the schema doesn't name, so an unknown key changes
+nothing at runtime. The risk is that whoever wrote it thinks a setting applies
+when it doesn't. A closed section has three options:
+
+- **`z.object()` strips unknown keys without saying anything.** Use it where every
+  reader is in this repo and a stray key is unlikely, as in `paths`.
+- **`knownKeys(name, shape)`, from [`schema/primitives.ts`](schema/primitives.ts),
+  reports each unknown key, then strips it.** The warning names the key path,
+  such as `spam:user_logn`, and goes through `reportUnknownKeys` in
+  [`report.ts`](report.ts). Under `test*` an unknown key fails the parse, because
+  there it's a mistake in this repo's own config. Everywhere else it only warns,
+  even with `GHOST_CONFIG_SCHEMA_STRICT` set. Use it for sections that self-hosters
+  write by hand, where a typo or a key from another Ghost version is likely. A
+  failed boot over a key Ghost ignores would make every key removal or rename a
+  breaking change. `spam` is the example. Only the section's top-level keys are
+  checked: a nested `z.object()` inside it, such as one limiter block, still
+  strips without a warning.
+- **`z.strictObject()` rejects an unknown key.** Strict environments throw, and
+  everywhere else the section falls back to raw. Use it only where an unknown key
+  must be an error.
+
+### Keys that only apply to one mode
+
+When a section's other keys depend on one of its values, make it a
+`z.discriminatedUnion` on that value, with each option naming only the keys
+that mode reads. `auth` is the example: options specific to Better Auth go in
+its `better-auth` option, so they exist only under `engine: 'better-auth'`.
+Each option is a `knownKeys()` object, so a Better Auth key under
+`engine: 'legacy'` is reported and stripped like any other unknown key.
+
+`config.get()` types a path through a union per option: a key that one option
+lacks resolves to `undefined` for it, so `config.get('auth:sso')` would be
+`... | undefined` until the caller narrows on `auth:engine`.
 
 ## Don't mutate what `get()` returns
 
@@ -217,8 +253,8 @@ a derived object instead. Three places got this wrong, each writing through into
 config for every later reader:
 [`configure-knex.ts`](../../server/data/db/configure-knex.ts) assembling knex's
 options, `AdapterCacheRedis` folding `ttl` into `clusterConfig`, and
-[`MigratorConfig.js`](../../../MigratorConfig.js) handing the `database` subtree
-to knex-migrator, which mutates what it is given.
+`MigratorConfig` handing the `database` subtree to knex-migrator before 6.4,
+which mutated what it was given.
 
 The last one is the case to watch for: when a dependency assembles its own options
 from what you pass it, give it a copy. `_.cloneDeep` rather than

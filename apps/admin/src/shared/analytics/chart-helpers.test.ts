@@ -10,6 +10,7 @@ import {
   getRangeDates,
   getRangeForStartDate,
   resolveEffectiveRangeDays,
+  setSiteTimezoneFallback,
   sanitizeChartData,
   truncateLeadingEmptyData,
 } from '@/shared/analytics/chart-helpers';
@@ -42,9 +43,9 @@ describe('chart-helpers', () => {
     it('returns correct text for known ranges', () => {
       const ranges = [
         { value: 7, expected: 'in the last 7 days' },
-        { value: 31, expected: 'in the last 30 days' },
-        { value: 91, expected: 'in the last 90 days' },
-        { value: 372, expected: 'in the last 12 months' },
+        { value: 30, expected: 'in the last 30 days' },
+        { value: 90, expected: 'in the last 90 days' },
+        { value: 365, expected: 'in the last 12 months' },
         { value: -1, expected: 'year to date' },
         { value: 1000, expected: '(all time)' },
       ];
@@ -184,12 +185,12 @@ describe('chart-helpers', () => {
   describe('getAggregationStrategy', () => {
     it('applies the daily/weekly/monthly thresholds to fixed ranges', () => {
       expect(getAggregationStrategy(7)).toBe('none');
-      expect(getAggregationStrategy(31)).toBe('none');
-      expect(getAggregationStrategy(90)).toBe('none');
-      expect(getAggregationStrategy(91)).toBe('weekly');
+      expect(getAggregationStrategy(30)).toBe('none');
+      expect(getAggregationStrategy(89)).toBe('none');
+      expect(getAggregationStrategy(90)).toBe('weekly');
       expect(getAggregationStrategy(270)).toBe('weekly');
       expect(getAggregationStrategy(271)).toBe('monthly');
-      expect(getAggregationStrategy(372)).toBe('monthly');
+      expect(getAggregationStrategy(365)).toBe('monthly');
     });
 
     it('honors an override strategy', () => {
@@ -435,20 +436,20 @@ describe('chart-helpers', () => {
     });
 
     it('maps weekly bucketing into the "Week of" display band', () => {
-      expect(getEffectiveChartRange(180, createDateRange(180))).toBe(91);
+      expect(getEffectiveChartRange(180, createDateRange(180))).toBe(90);
     });
 
     it('maps monthly bucketing into the "MMM YYYY" display band', () => {
-      expect(getEffectiveChartRange(300, createDateRange(300))).toBe(366);
-      expect(getEffectiveChartRange(372, createDateRange(372))).toBe(366);
+      expect(getEffectiveChartRange(300, createDateRange(300))).toBe(365);
+      expect(getEffectiveChartRange(365, createDateRange(365))).toBe(365);
     });
 
     it('follows an override strategy', () => {
       expect(getEffectiveChartRange(31, createDateRange(31), { overrideStrategy: 'monthly' })).toBe(
-        366,
+        365,
       );
       expect(getEffectiveChartRange(31, createDateRange(31), { overrideStrategy: 'weekly' })).toBe(
-        91,
+        90,
       );
     });
 
@@ -481,6 +482,90 @@ describe('chart-helpers', () => {
       expect(centsToDollars(0)).toBe(0);
       expect(centsToDollars(1050)).toBe(11);
       expect(centsToDollars(123456)).toBe(1235);
+    });
+  });
+
+  describe('timezone fallback', () => {
+    // Chrome on Windows reports timeZone as undefined when the OS time zone
+    // has no ICU mapping; moment().tz(undefined) returns undefined and the
+    // chained .endOf('day') used to throw
+    const mockResolvedTimezone = (timeZone: string | undefined) => {
+      const options = new Intl.DateTimeFormat().resolvedOptions();
+      vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
+        ...options,
+        timeZone: timeZone as string,
+      });
+    };
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+      setSiteTimezoneFallback(undefined);
+    });
+
+    it.each([undefined, ''])(
+      'getRangeDates falls back to UTC when the browser reports %j',
+      (timeZone) => {
+        mockResolvedTimezone(timeZone);
+
+        const { startDate, endDate, timezone } = getRangeDates(30);
+
+        expect(timezone).toBe('Etc/UTC');
+        expect(endDate.isValid()).toBe(true);
+        expect(startDate.isValid()).toBe(true);
+        expect(endDate.diff(startDate, 'days')).toBe(29);
+      },
+    );
+
+    it('getRangeForStartDate falls back to UTC when the browser reports no timezone', () => {
+      mockResolvedTimezone(undefined);
+
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+      expect(getRangeForStartDate('2026-10-20T12:00:00Z')).toBe(10);
+    });
+
+    it('getRangeDates uses the site timezone fallback when the browser reports none', () => {
+      mockResolvedTimezone(undefined);
+      setSiteTimezoneFallback('America/Vancouver');
+
+      const { startDate, endDate, timezone } = getRangeDates(30);
+
+      expect(timezone).toBe('America/Vancouver');
+      expect(endDate.isValid()).toBe(true);
+      expect(startDate.isValid()).toBe(true);
+      expect(endDate.diff(startDate, 'days')).toBe(29);
+    });
+
+    it('getRangeDates uses an explicit timezone over the browser timezone', () => {
+      mockResolvedTimezone('Asia/Tokyo');
+      vi.useFakeTimers();
+      // Nov 17 in Tokyo, still Nov 16 in New York
+      vi.setSystemTime(new Date('2026-11-17T03:00:00Z'));
+
+      const { startDate, endDate, timezone } = getRangeDates(7, 'America/New_York');
+
+      expect(timezone).toBe('America/New_York');
+      expect(startDate.format('YYYY-MM-DD')).toBe('2026-11-10');
+      expect(endDate.format('YYYY-MM-DD')).toBe('2026-11-16');
+    });
+
+    it('prefers the browser timezone over the site timezone fallback', () => {
+      mockResolvedTimezone('Europe/Berlin');
+      setSiteTimezoneFallback('America/Vancouver');
+
+      expect(getRangeDates(30).timezone).toBe('Europe/Berlin');
+    });
+
+    it('getRangeForStartDate uses the site timezone fallback when the browser reports none', () => {
+      mockResolvedTimezone(undefined);
+      setSiteTimezoneFallback('America/Vancouver');
+
+      vi.useFakeTimers();
+      // 01:00 UTC on 29 Oct is still 28 Oct in Vancouver (UTC-7), so the count
+      // is one day shorter than the UTC fallback would give
+      vi.setSystemTime(new Date('2026-10-29T01:00:00Z'));
+      expect(getRangeForStartDate('2026-10-20T12:00:00Z')).toBe(9);
     });
   });
 

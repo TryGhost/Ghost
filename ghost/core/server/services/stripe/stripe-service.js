@@ -1,15 +1,14 @@
 const WebhookManager = require('./webhook-manager');
 const { BillingPortalManager } = require('./billing-portal-manager');
 const StripeAPI = require('./stripe-api');
-const WebhookController = require('./webhook-controller');
+const { WebhookController } = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const { StripeLiveEnabledEvent, StripeLiveDisabledEvent } = require('./events');
 const SubscriptionEventService = require('./services/webhook/subscription-event-service');
 const InvoiceEventService = require('./services/webhook/invoice-event-service');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
 const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
-const memberWelcomeEmailService = require('../member-welcome-emails/service');
-const stripeCheckoutConfig = require('../stripe-checkout-config');
+const memberWelcomeEmails = require('../member-welcome-emails').default;
 const metafields = require('../members-metafields');
 
 /**
@@ -38,12 +37,16 @@ module.exports = class StripeService {
   /**
    * @param {object} deps
    * @param {*} deps.labs
+   * @param {import('./tracking').StripeTracking} deps.tracking
+   * @param {{captureException(err: unknown): unknown}} deps.sentry
    * @param {*} deps.membersService
    * @param {*} deps.donationService
    * @param {*} deps.giftService
    * @param {*} deps.staffService
    * @param {import('./webhook-manager').StripeWebhook} deps.StripeWebhook
    * @param {object} deps.settingsCache
+   * @param {() => string} deps.siteUuid This site's uuid, which tells the Checkout sessions it
+   *   created from other sites' (see `CheckoutSession` in `webhook/webhook-event.ts`).
    * @param {object} deps.models
    * @param {object} deps.models.Product
    * @param {object} deps.models.StripePrice
@@ -54,21 +57,18 @@ module.exports = class StripeService {
    */
   constructor({
     labs,
+    tracking,
+    sentry,
     membersService,
     donationService,
     giftService,
     staffService,
     StripeWebhook,
     settingsCache,
+    siteUuid,
     models,
   }) {
-    const api = new StripeAPI({
-      labs,
-      // The module rather than its service: this runs when the module loads, before boot
-      // creates the service. Checkouts only start once boot has finished, so the service
-      // exists by the time the API reads it.
-      stripeCheckoutConfig,
-    });
+    const api = new StripeAPI({ labs, tracking, siteUuid });
 
     const webhookManager = new WebhookManager({
       StripeWebhook,
@@ -104,6 +104,7 @@ module.exports = class StripeService {
 
     const checkoutSessionEventService = new CheckoutSessionEventService({
       api,
+      tracking,
       get memberRepository() {
         return membersService.api.members;
       },
@@ -120,7 +121,7 @@ module.exports = class StripeService {
         return giftService.service;
       },
       get staffServiceEmails() {
-        return staffService.api.emails;
+        return staffService.service.emails;
       },
       sendSignupEmail(email) {
         return membersService.api.sendEmailWithMagicLink({
@@ -132,12 +133,11 @@ module.exports = class StripeService {
           tokenData: {},
         });
       },
+      // Read at call time: Member welcome emails initializes later in boot than this service.
       async isPaidWelcomeEmailActive() {
-        memberWelcomeEmailService.init();
-        return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
+        return memberWelcomeEmails.service.isMemberWelcomeEmailActive('paid');
       },
       labs,
-      stripeCheckoutConfig,
       // Getters, because these services are built later in boot than this one.
       get metafieldBindings() {
         return metafields.bindings;
@@ -154,17 +154,22 @@ module.exports = class StripeService {
     });
 
     const webhookController = new WebhookController({
+      apiVersion: StripeAPI.API_VERSION,
+      siteUuid,
       webhookManager,
       subscriptionEventService,
       invoiceEventService,
       checkoutSessionEventService,
       chargeRefundedEventService,
+      tracking,
+      sentry,
     });
 
     this.models = models;
     this.api = api;
     this.webhookManager = webhookManager;
     this.webhookController = webhookController;
+    this.checkoutSessionEventService = checkoutSessionEventService;
     this.billingPortalManager = billingPortalManager;
     /** @private */
     this.ephemeralWebhook = false;

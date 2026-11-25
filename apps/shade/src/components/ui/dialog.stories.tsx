@@ -114,6 +114,50 @@ export const PlacementExample: Story = {
   },
 };
 
+export const ScrollingOverlay: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'For a dialog that can be taller than the window: `scroll="overlay"` scrolls the backdrop, so the whole dialog moves as one piece instead of scrolling inside itself.',
+      },
+    },
+  },
+  args: {
+    children: (
+      <>
+        <DialogTrigger asChild>
+          <Button variant="outline">Open a long dialog</Button>
+        </DialogTrigger>
+        <DialogContent scroll="overlay">
+          <DialogHeader>
+            <DialogTitle>Review permissions</DialogTitle>
+            <DialogDescription>
+              Scroll the page to see every permission and the actions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 text-sm">
+            {Array.from({ length: 16 }, (_, index) => (
+              <div key={index} className="flex flex-col gap-1">
+                <span className="font-medium">Permission {index + 1}</span>
+                <span className="text-muted-foreground">
+                  View, create and edit the things this permission covers.
+                </span>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button>Approve</Button>
+          </DialogFooter>
+        </DialogContent>
+      </>
+    ),
+  },
+};
+
 export const NestedOverlayEscape: Story = {
   render: () => (
     <Dialog>

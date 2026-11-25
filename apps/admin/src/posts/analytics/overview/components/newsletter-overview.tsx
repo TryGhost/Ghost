@@ -29,7 +29,6 @@ import { type Post } from '@tryghost/admin-x-framework/api/posts';
 import { cleanTrackedUrl } from '@/posts/analytics/utils/link-helpers';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
 import { usePostTopLinks } from '@/posts/analytics/hooks/use-post-top-links';
 
 interface NewsletterOverviewProps {
@@ -43,7 +42,6 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
   isNewsletterStatsLoading,
   isWebShown,
 }) => {
-  const { isAdmin7 } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -114,7 +112,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({
               navigate(`/posts/analytics/${postId}/newsletter`);
             }}
           >
-            {isAdmin7 ? 'View more →' : 'View more'}
+            View more →
           </Button>
         )}
       </div>

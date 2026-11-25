@@ -95,7 +95,7 @@ describe('Models: crud', function () {
       });
     });
 
-    it('Sets the `lock` option to "forUpdate" when the `forUpdate` and `transacting` options are passed', async function () {
+    it('does not set the `lock` option, which would also lock eager-loaded relations', async function () {
       const data = {
         id: 670,
       };
@@ -113,7 +113,7 @@ describe('Models: crud', function () {
 
       await Base.Model.findOne(data, unfilteredOptions);
 
-      assert.equal(fetchStub.args[0][0].lock, 'forUpdate');
+      assert.equal(fetchStub.args[0][0].lock, undefined);
     });
   });
 
@@ -154,21 +154,19 @@ describe('Models: crud', function () {
       });
     });
 
-    it('sets options.lock to "forUpdate" if options.transacting is present', function () {
-      const data = {
-        base: 'cannon',
-      };
-      const unfilteredOptions = {
-        transacting: {},
-      };
-
+    it('locks only the edited row if options.transacting is present', async function () {
       const model = Base.Model.forge({});
       sinon.stub(Base.Model, 'forge').returns(model);
-      const fetchStub = sinon.stub(model, 'fetch').resolves();
+      const querySpy = sinon.spy(model, 'query');
+      const fetchStub = sinon.stub(model, 'fetch').resolves(model);
+      sinon.stub(model, 'save').resolves(model);
 
-      return Base.Model.findOne(data, unfilteredOptions).then(() => {
-        assert.equal(fetchStub.args[0][0].lock, undefined);
-      });
+      await Base.Model.edit({ base: 'cannon' }, { id: 'some id', transacting: {} });
+
+      const qb = { forUpdate: sinon.stub() };
+      querySpy.args[0][0](qb);
+      sinon.assert.calledOnce(qb.forUpdate);
+      assert.equal(fetchStub.args[0][0].lock, undefined);
     });
 
     it('sets model.hasTimestamps to false if options.importing is truthy', function () {

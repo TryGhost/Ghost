@@ -1,14 +1,27 @@
 import { page, type Locator } from 'vitest/browser';
 import {
+  analyticsButton,
+  analyticsErrorText,
+  analyticsSheetLabel,
   commentListRow,
+  commentsAnalytics,
+  commentsAnalyticsKpiPrefix,
+  commentsAnalyticsTopCommenters,
+  commentsAnalyticsTopPosts,
   commentThreadRowPrefix,
   commentingDisabledIndicator,
+  dateRangeSelect,
   filterButton,
   loadMoreRepliesButton,
   repliedToLink,
   repliesMetric,
+  retryButton,
   showAllCommentsButton,
+  somethingWentWrongText,
   threadSidebarLabel,
+  topCommentersLabel,
+  topPostsLabel,
+  viewAllButton,
 } from '@tryghost/test-data/selectors/comments';
 
 /** A row locator augmented with factories for the row's parts — still a locator for expect.element. */
@@ -18,6 +31,19 @@ export type CommentRowScope = Locator & {
   repliesMetric(): Locator;
   repliedToLink(): Locator;
 };
+
+/** A top posts/commenters list, with factories for its rows and View all button. */
+export type TopListScope = Locator & {
+  row(name: string): Locator;
+  viewAll(): Locator;
+};
+
+function topListScope(list: Locator): TopListScope {
+  return Object.assign(list, {
+    row: (name: string) => list.getByRole('button', { name }),
+    viewAll: () => list.getByRole('button', { name: viewAllButton }),
+  });
+}
 
 function rowScope(row: Locator): CommentRowScope {
   return Object.assign(row, {
@@ -40,6 +66,9 @@ export const commentsScreen = {
         .filter({ has: page.getByRole('paragraph').filter({ hasText: text }) }),
     ),
   filterButton: () => page.getByRole('button', { name: filterButton, exact: true }),
+  filterFieldOption: (name: string) => page.getByRole('option', { name, exact: true }),
+  resetFiltersButton: () => page.getByRole('button', { name: 'Reset filters', exact: true }),
+  filteredEmptyState: () => page.getByText('No comments match these filters', { exact: true }),
   showAllButton: () => page.getByRole('button', { name: showAllCommentsButton }),
   disableCommentingMenuItem: () => page.getByRole('menuitem', { name: 'Disable commenting' }),
   enableCommentingMenuItem: () => page.getByRole('menuitem', { name: 'Enable commenting' }),
@@ -51,6 +80,30 @@ export const commentsScreen = {
   threadRows: () => page.getByTestId(new RegExp(`^${commentThreadRowPrefix}`)),
   loadMoreRepliesButton: () =>
     commentsScreen.threadSidebar().getByRole('button', { name: loadMoreRepliesButton }),
+
+  analyticsPanel: () => page.getByTestId(commentsAnalytics),
+  analyticsButton: () => page.getByRole('button', { name: analyticsButton, exact: true }),
+  analyticsSheet: () => page.getByRole('dialog', { name: analyticsSheetLabel }),
+  analyticsDateRange: () => page.getByRole('combobox', { name: dateRangeSelect }),
+  analyticsDateRangeOption: (name: string) => page.getByRole('option', { name }),
+  customDateRangeDialog: () => page.getByRole('dialog', { name: 'Custom date range' }),
+  customDateRangeStart: () => commentsScreen.customDateRangeDialog().getByLabelText('Start date'),
+  customDateRangeEnd: () => commentsScreen.customDateRangeDialog().getByLabelText('End date'),
+  applyCustomDateRangeButton: () =>
+    commentsScreen.customDateRangeDialog().getByRole('button', { name: 'Apply', exact: true }),
+  analyticsKpiValue: (metric: 'comments' | 'commenters' | 'reported') =>
+    page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}`),
+  analyticsKpiTrend: (metric: 'comments' | 'commenters' | 'reported') =>
+    page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}-diff`),
+  analyticsKpiTab: (label: string) => page.getByRole('tab', { name: label }),
+  analyticsTopPosts: () => topListScope(page.getByTestId(commentsAnalyticsTopPosts)),
+  analyticsTopCommenters: () => topListScope(page.getByTestId(commentsAnalyticsTopCommenters)),
+  analyticsTopPostsSheet: () => topListScope(page.getByRole('dialog', { name: topPostsLabel })),
+  analyticsTopCommentersSheet: () =>
+    topListScope(page.getByRole('dialog', { name: topCommentersLabel })),
+  analyticsError: () => page.getByText(analyticsErrorText),
+  analyticsRetryButton: () => page.getByRole('button', { name: retryButton }),
+  errorMessage: () => page.getByText(somethingWentWrongText),
 
   async closeThreadSidebar(): Promise<void> {
     await commentsScreen.threadSidebar().getByRole('button', { name: 'Close' }).click();

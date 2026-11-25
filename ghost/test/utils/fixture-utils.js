@@ -4,14 +4,14 @@ const path = require('path');
 const fs = require('fs-extra');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
+const { IncorrectUsageError } = require('@tryghost/errors');
 const KnexMigrator = require('knex-migrator');
-// Resolve MigratorConfig.js from the package root, not process.cwd() — see db-utils.js.
+// Resolve MigratorConfig from the package root, not process.cwd() — see db-utils.js.
 const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
 
 // Ghost Internals
 const models = require('../../core/server/models');
 const { fixtureManager } = require('../../core/server/data/schema/fixtures');
-const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const labsService = require('../../core/shared/labs');
 const {
@@ -19,6 +19,7 @@ const {
 } = require('../../core/server/services/email-analytics/lib/queries');
 
 // Other Test Utilities
+const baseUtils = require('../../core/server/models/base/utils');
 const context = require('./fixtures/context');
 const DataGenerator = require('./fixtures/data-generator');
 const filterData = require('./fixtures/filter-param');
@@ -284,12 +285,39 @@ const fixtures = {
     });
   },
 
-  insertRoles: function insertRoles() {
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    );
+  /**
+   * User.add refuses the Owner role, so the owner is created without a role and
+   * the Owner role is attached directly, the same way fixtures.json does it.
+   */
+  addUser: async function addUser(user) {
+    const ownerRole = _.find(user.roles, { name: 'Owner' });
+
+    if (!ownerRole) {
+      return models.User.add(user, context.internal);
+    }
+
+    const addedUser = await models.User.add({ ...user, roles: [] }, context.internal);
+    await baseUtils.attach(models.User, addedUser.id, 'roles', [ownerRole.id], context.internal);
+
+    return models.User.findOne({ id: addedUser.id, status: 'all' }, context.internal);
+  },
+
+  /**
+   * Adds the role fixtures one at a time. A teardown or reset has usually just
+   * deleted roles with the same names, and MySQL keeps those deleted rows in the
+   * unique index on the role name until its purge thread removes them. An insert
+   * that finds one takes a shared gap lock in the index, so two concurrent
+   * inserts can each hold a gap lock that blocks the other, and MySQL rolls one
+   * of them back with a deadlock error.
+   */
+  insertRoles: async function insertRoles() {
+    const roles = [];
+
+    for (const role of DataGenerator.forKnex.roles) {
+      roles.push(await models.Role.add(role, context.internal));
+    }
+
+    return roles;
   },
 
   initOwnerUser: function initOwnerUser() {
@@ -298,21 +326,17 @@ const fixtures = {
     user = DataGenerator.forKnex.createBasic(user);
     user = _.extend({}, user, { status: 'inactive' });
 
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    ).then(function () {
+    return fixtures.insertRoles().then(function () {
       const userRolesRelation = _.cloneDeep(DataGenerator.forKnex.roles_users[0]);
       user.roles = _.filter(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
-      return models.User.add(user, context.internal);
+      return fixtures.addUser(user);
     });
   },
 
   insertOwnerUser: function insertOwnerUser() {
     const user = _.cloneDeep(DataGenerator.forKnex.users[0]);
     user.roles = [DataGenerator.forKnex.roles[3]];
-    return models.User.add(user, context.internal);
+    return fixtures.addUser(user);
   },
 
   overrideOwnerUser: async function overrideOwnerUser(slug) {
@@ -350,25 +374,21 @@ const fixtures = {
   },
 
   createUsersWithRoles: function createUsersWithRoles() {
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    ).then(function () {
-      return Promise.all(
-        _.cloneDeep(DataGenerator.forKnex.users).map((user) => {
-          let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {
-            user_id: user.id,
-          });
+    return fixtures.insertRoles().then(async function () {
+      // One at a time: concurrent credential inserts over keys the reset just
+      // deleted deadlock in MySQL
+      for (const user of _.cloneDeep(DataGenerator.forKnex.users)) {
+        let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {
+          user_id: user.id,
+        });
 
-          userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-            return _.find(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
-          });
+        userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
+          return _.find(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
+        });
 
-          user.roles = userRolesRelations;
-          return models.User.add(user, context.internal);
-        }),
-      );
+        user.roles = userRolesRelations;
+        await fixtures.addUser(user);
+      }
     });
   },
 
@@ -378,19 +398,19 @@ const fixtures = {
     let roles = await models.Role.fetchAll();
     roles = roles.toJSON();
 
-    const users = await Promise.all(
-      usersWithoutOwner.map((user) => {
-        let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, { user_id: user.id });
+    // One at a time, as in createUsersWithRoles
+    const users = [];
+    for (const user of usersWithoutOwner) {
+      let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, { user_id: user.id });
 
-        userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-          return _.find(roles, { name: userRolesRelation.role_name });
-        });
+      userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
+        return _.find(roles, { name: userRolesRelation.role_name });
+      });
 
-        user.roles = userRolesRelations;
+      user.roles = userRolesRelations;
 
-        return models.User.add(user, context.internal);
-      }),
-    );
+      users.push(await models.User.add(user, context.internal));
+    }
 
     // // Add API key for each user
     await Promise.all(
@@ -440,7 +460,7 @@ const fixtures = {
     // Concurrent user fixture inserts can deadlock on MySQL, so create them in order.
     const users = [];
     for (const user of extraUsers) {
-      user.roles = roles[user.id];
+      user.roles = [roles[user.id]];
       users.push(await models.User.add(user, context.internal));
     }
     return users;
@@ -489,73 +509,6 @@ const fixtures = {
 
       return data;
     });
-  },
-
-  permissionsFor: function permissionsFor(obj) {
-    let permsToInsert = _.cloneDeep(
-      fixtureManager.findModelFixtures('Permission', { object_type: obj }).entries,
-    );
-    const permsRolesToInsert = fixtureManager.findPermissionRelationsForObject(obj).entries;
-    const actions = [];
-    const permissionsRoles = {};
-
-    const roles = {
-      Administrator: DataGenerator.Content.roles[0].id,
-      Editor: DataGenerator.Content.roles[1].id,
-      Author: DataGenerator.Content.roles[2].id,
-      Owner: DataGenerator.Content.roles[3].id,
-      Contributor: DataGenerator.Content.roles[4].id,
-      'Admin Integration': DataGenerator.Content.roles[5].id,
-      'Super Editor': DataGenerator.Content.roles[6].id,
-    };
-
-    // Avoid an opaque database error from an empty insert.
-    if (_.isEmpty(permsToInsert)) {
-      return Promise.reject(new Error('no permission found:' + obj));
-    }
-
-    permsToInsert = _.map(permsToInsert, function (perms) {
-      perms.id = ObjectId().toHexString();
-
-      actions.push({ type: perms.action_type, permissionId: perms.id });
-      return DataGenerator.forKnex.createBasic(perms);
-    });
-
-    _.each(permsRolesToInsert, function (perms, role) {
-      if (perms[obj]) {
-        if (perms[obj] === 'all') {
-          _.each(actions, function (action) {
-            if (!permissionsRoles[action.permissionId]) {
-              permissionsRoles[action.permissionId] = [];
-            }
-
-            permissionsRoles[action.permissionId].push(
-              _.find(DataGenerator.Content.roles, { id: roles[role] }),
-            );
-          });
-        } else {
-          _.each(perms[obj], function (action) {
-            if (!permissionsRoles[_.find(actions, { type: action }).permissionId]) {
-              permissionsRoles[_.find(actions, { type: action }).permissionId] = [];
-            }
-
-            permissionsRoles[_.find(actions, { type: action }).permissionId].push(
-              _.find(DataGenerator.Content.roles, { id: roles[role] }),
-            );
-          });
-        }
-      }
-    });
-
-    return Promise.all(
-      permsToInsert.map((perm) => {
-        if (!_.isEmpty(permissionsRoles)) {
-          perm.roles = permissionsRoles[perm.id];
-        }
-
-        return models.Permission.add(perm, context.internal);
-      }),
-    );
   },
 
   insertInvites: function insertInvites() {
@@ -1023,12 +976,6 @@ const toDoList = {
   'owner:post': function overrideOwnerUser() {
     return fixtures.overrideOwnerUser();
   },
-  'perms:init': function initPermissions() {
-    return permissions.init();
-  },
-  perms: function permissionsFor(obj) {
-    return fixtures.permissionsFor(obj);
-  },
   filter: function createFilterParamFixtures() {
     return filterData(DataGenerator);
   },
@@ -1092,8 +1039,6 @@ const toDoList = {
  *
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialized
- *  * `perms:init` - initialize the permissions object after having added permissions
- *  * `perms:obj` - initialize permissions for a particular object type
  *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */
@@ -1122,25 +1067,26 @@ const getFixtureOps = (toDos) => {
 
   // Go through our list of things to do, and add them to an array
   _.each(toDos, function (value, toDo) {
-    let tmp;
-
-    if (toDo !== 'perms:init' && toDo.indexOf('perms:') !== -1) {
-      tmp = toDo.split(':');
-
-      fixtureOps.push(function addCustomFixture() {
-        return toDoList[tmp[0]](tmp[1]);
-      });
-    } else {
-      if (!toDoList[toDo]) {
-        throw new Error(`The fixture ${toDo} does not exist.`);
-      }
-
-      fixtureOps.push(toDoList[toDo]);
+    if (!toDoList[toDo]) {
+      throw new Error(`The fixture ${toDo} does not exist.`);
     }
+
+    fixtureOps.push(toDoList[toDo]);
   });
 
   fixtureOps.push(() => {
-    return require('../../core/server/services/tiers').repository?.init();
+    const tiers = require('../../core/server/services/tiers').default;
+    let service;
+    try {
+      service = tiers.service;
+    } catch (error) {
+      // Before Ghost boots there is no tier cache to reload; boot loads these rows itself.
+      if (error instanceof IncorrectUsageError) {
+        return;
+      }
+      throw error;
+    }
+    return service.repository.init();
   });
 
   return fixtureOps;

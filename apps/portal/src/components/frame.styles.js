@@ -11,6 +11,9 @@ import AccountHomePageStyles from './pages/AccountHomePage/account-home-page.css
 import { AccountPlanPageStyles } from './pages/account-plan-page';
 import { InputFieldStyles } from './common/input-field';
 import { MemberCustomFieldsStyles } from './common/member-custom-fields';
+import { PopoverStyles } from './common/popover';
+import { BottomSheetStyles } from './common/bottom-sheet';
+import { ListPickerStyles } from './common/list-picker';
 import { DatePickerStyles } from './common/date-picker';
 import { SignupPageStyles } from './pages/signup-page';
 import { ProductsSectionStyles } from './common/products-section';
@@ -1380,6 +1383,9 @@ export function getFrameStyles({ site }) {
     AccountPlanPageStyles +
     InputFieldStyles +
     MemberCustomFieldsStyles +
+    PopoverStyles +
+    BottomSheetStyles +
+    ListPickerStyles +
     DatePickerStyles +
     ProductsSectionStyles({ site }) +
     SwitchStyles +

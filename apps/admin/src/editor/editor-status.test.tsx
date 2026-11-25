@@ -8,6 +8,7 @@ import { reportShownAlert } from './report-error';
 
 vi.mock('./use-editor-settings', () => ({ useSiteTimezone: () => 'Etc/UTC' }));
 vi.mock('./report-error', () => ({ reportShownAlert: vi.fn() }));
+vi.mock('./publish/use-publish-inputs', () => ({ usePublishInputs: () => ({ isReady: true }) }));
 vi.mock('@tryghost/admin-x-framework/api/config', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@tryghost/admin-x-framework/api/config')>()),
   useBrowseConfig: () => ({ data: undefined }),
@@ -177,6 +178,97 @@ describe('EditorStatus reporting a failed save', () => {
       'Couldn’t reach the server. Check your connection and try again.',
       error,
     );
+  });
+});
+
+describe('EditorStatus revealing who a send reached', () => {
+  const newsletter = { slug: 'weekly', visibility: 'members', name: 'Weekly Digest' } as const;
+  const detail = (count = 3) =>
+    screen.getByText(`to ${count} ${count === 1 ? 'member' : 'members'} of Weekly Digest`);
+
+  it('rests on "Published and sent" and reveals the audience on hover', () => {
+    render(
+      <EditorStatus
+        isDirty={false}
+        record={{ status: 'published', emailStatus: 'submitted', emailCount: 3, newsletter }}
+        state={{ kind: 'idle' }}
+      />,
+    );
+    const status = screen.getByTestId(editorStatus);
+    expect(detail()).toHaveClass('sr-only');
+
+    fireEvent.mouseEnter(status);
+    expect(status).toHaveTextContent('Published and sent to 3 members of Weekly Digest');
+    expect(detail()).not.toHaveClass('sr-only');
+
+    fireEvent.mouseLeave(status);
+    expect(detail()).toHaveClass('sr-only');
+  });
+
+  it('reveals the newsletter when the status line is focused from the keyboard', () => {
+    render(
+      <EditorStatus
+        isDirty={false}
+        record={{
+          status: 'published',
+          url: 'https://example.com/p/',
+          emailStatus: 'submitted',
+          emailCount: 3,
+          newsletter,
+        }}
+        state={{ kind: 'idle' }}
+      />,
+    );
+    const link = screen.getByRole('link', { name: 'Published' });
+
+    fireEvent.focus(link);
+    expect(detail()).not.toHaveClass('sr-only');
+
+    fireEvent.blur(link);
+    expect(detail()).toHaveClass('sr-only');
+  });
+
+  it('reveals the newsletter when the Sent button is focused from the keyboard', () => {
+    render(
+      <EditorStatus
+        isDirty={false}
+        record={{ status: 'sent', emailStatus: 'submitted', emailCount: 1, newsletter }}
+        state={{ kind: 'idle' }}
+        onOpenUpdateFlow={vi.fn()}
+      />,
+    );
+    const button = screen.getByRole('button', { name: 'Sent' });
+
+    fireEvent.focus(button);
+    expect(detail(1)).not.toHaveClass('sr-only');
+
+    fireEvent.blur(button);
+    expect(detail(1)).toHaveClass('sr-only');
+  });
+
+  it('keeps the audience in the text screen readers read before any reveal', () => {
+    render(
+      <EditorStatus
+        isDirty={false}
+        record={{ status: 'sent', emailStatus: 'submitted', emailCount: 1, newsletter }}
+        state={{ kind: 'idle' }}
+      />,
+    );
+
+    expect(screen.getByTestId(editorStatus)).toHaveTextContent('Sent to 1 member of Weekly Digest');
+    expect(detail(1)).toHaveClass('sr-only');
+  });
+
+  it('names no newsletter for a post that was only published', () => {
+    render(
+      <EditorStatus
+        isDirty={false}
+        record={{ status: 'published', newsletter }}
+        state={{ kind: 'idle' }}
+      />,
+    );
+
+    expect(screen.getByTestId(editorStatus)).toHaveTextContent(/^Published$/);
   });
 });
 

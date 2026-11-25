@@ -4,7 +4,10 @@ interface ShadeContextType {
   isAnyTextFieldFocused: boolean;
   setFocusState: (value: boolean) => void;
   darkMode: boolean;
-  isAdmin7: boolean;
+  /** Admin's `admin7Design` Labs flag; see ShadeApp. */
+  admin7Design: boolean;
+  /** Temporary mobile-hardening switch, independent of admin7Design. */
+  admin7Mobile: boolean;
   controlShape: ControlShape;
 }
 
@@ -14,7 +17,8 @@ export const ShadeContext = createContext<ShadeContextType>({
   isAnyTextFieldFocused: false,
   setFocusState: () => {},
   darkMode: false,
-  isAdmin7: true,
+  admin7Design: true,
+  admin7Mobile: false,
   controlShape: 'pill',
 });
 

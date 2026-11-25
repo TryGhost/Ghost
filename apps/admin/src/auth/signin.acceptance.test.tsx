@@ -117,6 +117,15 @@ it('marks the password when Core rejects it', async () => {
   await expect.element(authScreen.passwordInput()).toHaveAttribute('aria-invalid', 'true');
   await expect.element(authScreen.emailInput()).not.toHaveAttribute('aria-invalid');
   await expect.element(authScreen.retryButton()).toBeVisible();
+
+  await authScreen.passwordInput().click();
+  await expect
+    .poll(
+      () =>
+        getComputedStyle(authScreen.passwordInput().element().closest('[data-slot="input-group"]')!)
+          .borderColor,
+    )
+    .toBe(getComputedStyle(authScreen.text('Your password is incorrect.').element()).color);
 });
 
 it('shows the full rate-limit message', async () => {
@@ -170,7 +179,7 @@ it('asks for a refresh when Ghost has been upgraded', async () => {
 
 it.each([
   ['2FA_TOKEN_REQUIRED', '2FA confirmation'],
-  ['2FA_NEW_DEVICE_DETECTED', "Verify it's really you"],
+  ['2FA_NEW_DEVICE_DETECTED', 'Verify it’s really you'],
 ])('asks for the emailed code when Core answers %s', async (code, heading) => {
   fakeSetupStatus();
   fakeAdminEndpoint(

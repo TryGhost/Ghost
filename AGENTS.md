@@ -40,7 +40,8 @@ matching `.claude/skills/<name>` symlink to
 `../../.agents/skills/<name>`. Run `pnpm lint:agent-skills` to verify discovery.
 
 Use the relevant repository skill before adding an Admin API endpoint, database
-migration, private feature flag, Shade component, or internal package.
+migration, private feature flag, Shade component, internal package, or Core
+service.
 
 ## Task routing and important warnings
 
@@ -49,6 +50,9 @@ migration, private feature flag, Shade component, or internal package.
   use `admin-x-framework` for APIs, and use Shade for UI. Admin and Core deploy
   independently, so feature-detect backend support and test the older-backend
   case.
+  - Shade docs: in this repo, `https://shade.ghost.org/docs/<page>.md` is the
+    source `apps/shade/src/docs/<page>.mdx`, and `docs/components/<path>.md`
+    is `apps/shade/src/components/<path>.mdx`. Read those files directly.
 - **Embedded Admin CSS:** do not import `@tryghost/shade/styles.css` from an
   embedded app. Admin owns the single Tailwind and Shade CSS lane.
 - **Translations:** follow the
@@ -61,10 +65,18 @@ migration, private feature flag, Shade component, or internal package.
 - **Ghost Core:** use the [server map](docs/codebase/monorepo-structure.md#ghost-core)
   and read the [services guide](ghost/core/server/services/README.md) before
   adding or relocating a service root; apply its placement rules rather than
-  inferring ownership from existing directory names. New standalone services
-  use TypeScript; keep CommonJS only
-  at existing `require()` boundaries. Boot owns service initialization; do not
-  initialize on the first request.
+  inferring ownership from existing directory names. Use
+  [add-service](.agents/skills/add-service/SKILL.md) for a new service and
+  [migrate-service](.agents/skills/migrate-service/SKILL.md) to adopt `defineService`
+  in an existing service. New standalone services use TypeScript; keep CommonJS
+  only at existing `require()` boundaries. Boot owns service initialization;
+  do not initialize on the first request.
+  Before writing a record's relations or link tables outside `Model.edit`,
+  read [row locking](docs/codebase/database.md#row-locking).
+  Before adding an import, check the
+  [dependency rules](docs/practices/dependencies.md).
+- **Background jobs:** read the [jobs guide](docs/codebase/jobs.md) before
+  adding a job.
 - **Repository tooling:** read the [tooling ownership guide](tools/README.md)
   and the owning folder README before adding or relocating scripts.
 - **ESLint:** use the shared factories and dependency rules in the

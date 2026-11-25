@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import { deferred } from '@/utils/deferred';
@@ -6,6 +6,7 @@ import {
   configResponse,
   currentRoute,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeEndpoint,
   fakeTags,
   renderAdminApp,
@@ -33,6 +34,90 @@ function fakeTagWorld(t: Tag) {
 }
 
 describe('Tag detail', () => {
+  it('keeps the legacy code injection accordion without auto-scroll', async () => {
+    const t = tag({
+      name: 'News',
+      slug: 'news',
+      codeinjection_head: null,
+      codeinjection_foot: null,
+    });
+    fakeTagWorld(t);
+    await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design: false } });
+    const trigger = tagDetailScreen.codeInjectionTrigger();
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+    trigger.element().scrollIntoView({ block: 'end', behavior: 'instant' });
+    const section = tagDetailScreen.codeInjectionCard().element();
+    const scrollIntoView = vi.spyOn(section, 'scrollIntoView');
+    await trigger.click();
+    await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
+    await Promise.allSettled(
+      section.getAnimations({ subtree: true }).map((animation) => animation.finished),
+    );
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    await trigger.click();
+    await expect.element(tagDetailScreen.footerEditor()).not.toBeInTheDocument();
+    scrollIntoView.mockRestore();
+  });
+
+  it('shows empty code injection editors without a toggle in Admin 7', async () => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    const t = tag({
+      name: 'News',
+      slug: 'news',
+      codeinjection_head: null,
+      codeinjection_foot: null,
+    });
+    fakeTagWorld(t);
+    await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design: true } });
+    await expect.element(tagDetailScreen.codeInjectionTrigger()).not.toBeInTheDocument();
+    await expect
+      .element(tagDetailScreen.codeInjectionCard().getByRole('heading', { name: 'Code injection' }))
+      .toBeVisible();
+    await expect.element(tagDetailScreen.headerEditor()).toBeVisible();
+    await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
+  });
+
+  it.each([false, true])(
+    'edits tag details and metadata with admin7Design=%s',
+    async (admin7Design) => {
+      if (admin7Design) {
+        fakeAdminStats.memberCount();
+        fakeAdminStats.mrr();
+      }
+      const t = tag({ name: 'News', slug: 'news' });
+      const saveApi = fakeTagWorld(t);
+      await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design } });
+
+      await expect.element(tagDetailScreen.nameInput()).toHaveValue('News');
+      await tagDetailScreen.nameInput().fill('Latest news');
+      await tagDetailScreen.metaTitleInput().fill('News from our team');
+      await tagDetailScreen.metadataCard().getByRole('tab', { name: 'X card' }).click();
+      await tagDetailScreen.xTitleInput().fill('Follow our news');
+      await tagDetailScreen.saveButton().click();
+
+      await expect.element(tagDetailScreen.savedButton()).toBeVisible();
+      expect((saveApi.lastRequest?.body as { tags: Partial<Tag>[] }).tags[0]).toMatchObject({
+        name: 'Latest news',
+        meta_title: 'News from our team',
+        twitter_title: 'Follow our news',
+      });
+      await tagDetailScreen
+        .metadataCard()
+        .getByRole('tab', { name: 'Search', exact: true })
+        .click();
+      await expect.element(tagDetailScreen.metaTitleInput()).toHaveValue('News from our team');
+      if (!admin7Design) {
+        await tagDetailScreen.codeInjectionTrigger().click();
+      }
+      await expect.element(tagDetailScreen.headerEditor()).toBeVisible();
+      await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
+    },
+  );
+
   it('renders the seeded tag', async () => {
     const t = tag({ name: 'News', slug: 'news', description: 'All the news', count: { posts: 3 } });
     fakeTagWorld(t);
@@ -138,54 +223,65 @@ describe('Tag detail', () => {
     ).toBeTruthy();
   });
 
-  it('edits and saves tag code injection with CodeMirror', async () => {
-    const head = '<script>\n    head();\n</script>';
-    const foot = '<style>\n    .footer { display: block; }\n</style>';
-    const t = tag({
-      name: 'News',
-      slug: 'news',
-      codeinjection_head: head,
-      codeinjection_foot: foot,
-    });
-    const saveApi = fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`);
+  it.each([false, true])(
+    'edits and saves code injection with admin7Design=%s',
+    async (admin7Design) => {
+      if (admin7Design) {
+        fakeAdminStats.memberCount();
+        fakeAdminStats.mrr();
+      }
+      const head = '<script>\n    head();\n</script>';
+      const foot = '<style>\n    .footer { display: block; }\n</style>';
+      const t = tag({
+        name: 'News',
+        slug: 'news',
+        codeinjection_head: head,
+        codeinjection_foot: foot,
+      });
+      const saveApi = fakeTagWorld(t);
+      await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design } });
 
-    await expect
-      .element(tagDetailScreen.codeInjectionTrigger())
-      .toHaveAttribute('aria-expanded', 'true');
-    const headerEditor = tagDetailScreen.headerEditor();
-    const footerEditor = tagDetailScreen.footerEditor();
-    await expect.element(headerEditor).toBeVisible();
-    await expect.element(footerEditor).toBeVisible();
-    await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
-    await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
+      if (admin7Design) {
+        await expect.element(tagDetailScreen.codeInjectionTrigger()).not.toBeInTheDocument();
+      } else {
+        await expect
+          .element(tagDetailScreen.codeInjectionTrigger())
+          .toHaveAttribute('aria-expanded', 'true');
+      }
+      const headerEditor = tagDetailScreen.headerEditor();
+      const footerEditor = tagDetailScreen.footerEditor();
+      await expect.element(headerEditor).toBeVisible();
+      await expect.element(footerEditor).toBeVisible();
+      await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
+      await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
 
-    const updatedHead = '<script>updatedHead();</script>';
-    const updatedFoot = '<style>.footer { display: grid; }</style>';
+      const updatedHead = '<script>updatedHead();</script>';
+      const updatedFoot = '<style>.footer { display: grid; }</style>';
 
-    // Playwright manipulates contenteditable DOM directly when clearing,
-    // which can race CodeMirror's document reconciliation. Clear through
-    // CodeMirror's keyboard handling before filling the empty editor.
-    await headerEditor.click();
-    await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
-    await userEvent.keyboard('{Backspace}');
-    await expect.poll(() => headerEditor.element().textContent).toBe('');
-    await headerEditor.fill(updatedHead);
-    await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
+      // Playwright manipulates contenteditable DOM directly when clearing,
+      // which can race CodeMirror's document reconciliation. Clear through
+      // CodeMirror's keyboard handling before filling the empty editor.
+      await headerEditor.click();
+      await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+      await userEvent.keyboard('{Backspace}');
+      await expect.poll(() => headerEditor.element().textContent).toBe('');
+      await headerEditor.fill(updatedHead);
+      await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
 
-    await footerEditor.click();
-    await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
-    await userEvent.keyboard('{Backspace}');
-    await expect.poll(() => footerEditor.element().textContent).toBe('');
-    await footerEditor.fill(updatedFoot);
-    await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
-    await tagDetailScreen.saveButton().click();
+      await footerEditor.click();
+      await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+      await userEvent.keyboard('{Backspace}');
+      await expect.poll(() => footerEditor.element().textContent).toBe('');
+      await footerEditor.fill(updatedFoot);
+      await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
+      await tagDetailScreen.saveButton().click();
 
-    await expect.element(tagDetailScreen.savedButton()).toBeVisible();
-    const saved = (saveApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
-    expect(saved.codeinjection_head).toBe(updatedHead);
-    expect(saved.codeinjection_foot).toBe(updatedFoot);
-  });
+      await expect.element(tagDetailScreen.savedButton()).toBeVisible();
+      const saved = (saveApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
+      expect(saved.codeinjection_head).toBe(updatedHead);
+      expect(saved.codeinjection_foot).toBe(updatedFoot);
+    },
+  );
 
   it('opens code injection when only the footer contains code', async () => {
     const t = tag({ name: 'News', slug: 'news', codeinjection_foot: '<script>footer();</script>' });
@@ -275,8 +371,7 @@ describe('Tag detail', () => {
     const saved = (saveApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
     expect(saved.name).toBe('Renamed');
     expect(saved.slug).toBe('news');
-    // The name changed, so the payload re-derives visibility (Ember
-    // `models/tag.js` recomputes it in `save()` whenever the name changed).
+    // The name changed, so the payload re-derives visibility.
     expect(saved.visibility).toBe('public');
   });
 
@@ -329,7 +424,7 @@ describe('Tag detail', () => {
 
     await tagDetailScreen.saveButton().click();
 
-    // Ember replaces `/tags/new` with the saved tag's route after creating.
+    // Creating replaces `/tags/new` with the saved tag's route.
     await expect.poll(currentRoute).toBe('/tags/weekly-news');
     await expect.element(tagDetailScreen.savedButton()).toBeVisible();
     const sent = (createApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
@@ -660,7 +755,6 @@ describe('Tag detail', () => {
     await expect.poll(unsavedChangesGuarded).toBe(true);
     await tagDetailScreen.backLink().click();
 
-    // The dialog carries Ember's ConfirmUnsavedChangesModal copy.
     await expect.element(tagDetailScreen.leaveConfirmationText()).toBeVisible();
     await tagDetailScreen.stayButton().click();
     // The dismissed dialog outlives the click, so re-triggering the guard

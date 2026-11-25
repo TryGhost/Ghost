@@ -7,9 +7,13 @@ import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/em
 import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemoryJobsBackend';
+import { createLoggingFake } from '../../../../utils/logging-utils';
+import configUtils from '../../../../utils/config-utils';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
+const jobsServiceRoot = require('../../../../../core/server/services/jobs-service');
+const emailAnalyticsJobs = require('../../../../../core/server/services/email-analytics/jobs');
 
 const pipelines = [
   {
@@ -21,7 +25,7 @@ const pipelines = [
   {
     JobClass: EmailAnalyticsAutomationFetchLatestJob,
     type: 'email-analytics-automation-fetch-latest',
-    wrapperName: 'automations',
+    wrapperName: 'automationAnalytics',
     schedule: 'scheduleRecurringAutomationsJob',
   },
   {
@@ -33,9 +37,9 @@ const pipelines = [
 ] as const;
 
 describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperName, schedule }) {
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore();
-    vi.unstubAllEnvs();
+    await configUtils.restore();
   });
 
   it('serializes only an empty payload and reconstructs the exact job type', function () {
@@ -80,7 +84,7 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
 
   it('admits an overlapping tick while a sibling queue progresses', async function () {
     const backend = new InMemoryJobsBackend();
-    const jobsService = new JobsService({ backend, logging: { info() {}, error() {} } });
+    const jobsService = new JobsService({ backend, logging: createLoggingFake() });
     const siblingPipeline = pipelines.find((pipeline) => pipeline.wrapperName !== wrapperName)!;
     let release!: () => void;
     const wrapper = {
@@ -112,7 +116,6 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   });
 
   it('leaves registration retryable after rejection', async function () {
-    vi.stubEnv('NODE_ENV', 'production');
     const jobsService = {
       scheduleRecurring: sinon.stub().onFirstCall().rejects(new Error('unavailable')),
     };
@@ -133,10 +136,10 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   });
 
   it('lets the real backend deduplicate concurrent recurring registration without fetching immediately', async function () {
-    vi.stubEnv('NODE_ENV', 'production');
     const backend = new InMemoryJobsBackend();
-    const enqueue = sinon.spy(backend, 'enqueue');
-    const jobsService = new JobsService({ backend, logging: { info() {}, error() {} } });
+    // Recurring ticks queue through the backend's internal push, not enqueue()
+    const enqueue = sinon.spy(backend as unknown as { _push: () => void }, '_push');
+    const jobsService = new JobsService({ backend, logging: createLoggingFake() });
     const newsletters = { startFetch: sinon.stub().resolves() };
     registerJobHandlers({ jobsService, [wrapperName]: newsletters });
     const scheduler = new EmailAnalyticsJobScheduler({
@@ -161,5 +164,21 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
       clock.restore();
       await jobsService.shutdown();
     }
+  });
+
+  it('schedules from the jobs entry only after config enables email analytics', async function () {
+    const jobsService = jobsServiceRoot.init({
+      knex: { client: { config: { client: 'sqlite3' } } },
+      config: { get: () => undefined },
+    });
+    const scheduleRecurring = sinon.stub(jobsService, 'scheduleRecurring').resolves();
+
+    await emailAnalyticsJobs[schedule](true);
+    sinon.assert.notCalled(scheduleRecurring);
+
+    configUtils.set('backgroundJobs:emailAnalytics', true);
+    await emailAnalyticsJobs[schedule](true);
+    sinon.assert.calledOnce(scheduleRecurring);
+    assert.equal(scheduleRecurring.firstCall.args[0].constructor.type, type);
   });
 });

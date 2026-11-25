@@ -1,20 +1,24 @@
 import { act } from 'react';
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import {
   automation,
   currentRoute,
   fakeAdminEndpoint,
   fakeAutomations,
+  fakeMembers,
+  label as buildLabel,
+  member,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail } from './run-history.test-utils';
 import { performanceBoot } from './run-list.test-utils';
 
-const labs = { automations: true, automationsPerTier: true };
+const labs = { automations: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
 const addWait = async () => {
   await button('Add step').click();
@@ -31,6 +35,8 @@ const serveCreation = () =>
     ],
   }));
 
+const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
+
 describe('New automation', () => {
   it('creates a free draft locally, warns before leaving, then adds and edits without remounting', async () => {
     fakeAutomations([
@@ -45,8 +51,8 @@ describe('New automation', () => {
     }));
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
-    await expect.element(page.getByText('New Automation (2)', { exact: true })).toBeVisible();
-    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(nameField()).toHaveValue('New Automation (2)');
+    await expect.element(button('Save')).toBeEnabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
@@ -70,7 +76,9 @@ describe('New automation', () => {
       automations: [
         {
           name: 'New Automation (2)',
-          trigger_tier_scope: 'free',
+          trigger_rules: [
+            { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+          ],
           status: 'inactive',
           actions: [{ type: 'wait' }],
         },
@@ -82,7 +90,26 @@ describe('New automation', () => {
     expect(create.requests).toHaveLength(1);
   });
 
-  it('starts a fresh creation session when navigating from the saved route to new', async () => {
+  it('saves a new automation without actions while keeping publish disabled', async () => {
+    fakeAutomations([]);
+    const create = serveCreation();
+    await renderAdminApp('/automations/new', { labs });
+
+    await expect.element(button('Save')).toBeEnabled();
+    await expect.element(button('Publish')).toBeDisabled();
+
+    await button('Save').click();
+
+    await expect.poll(currentRoute).toBe('/automations/created');
+    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(button('Publish')).toBeDisabled();
+    expect(create.requests).toHaveLength(1);
+    expect(create.requests[0].body).toMatchObject({
+      automations: [{ status: 'inactive', actions: [], edges: [] }],
+    });
+  });
+
+  it('starts a fresh creation session after returning to the automations list', async () => {
     fakeAutomations([]);
     const create = serveCreation();
     const edit = fakeAdminEndpoint('PUT', '/automations/created/', {
@@ -97,7 +124,8 @@ describe('New automation', () => {
     await expect.element(button('Save')).toBeDisabled();
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
-    window.location.hash = '#/automations/new';
+    await page.getByRole('link', { name: 'Back to automations' }).click();
+    await button('New automation').click();
     await expect
       .element(page.getByRole('textbox', { name: 'Wait for', exact: true }))
       .not.toBeInTheDocument();
@@ -127,9 +155,9 @@ describe('New automation', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
     window.location.hash = '#/automations/other';
-    await expect.element(page.getByText('Other automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Other automation');
     window.history.back();
-    await expect.element(page.getByText('Saved automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Saved automation');
     expect(read.requests).toHaveLength(1);
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
@@ -192,7 +220,19 @@ describe('New automation', () => {
     await button('Save').click();
     await expect.poll(() => create.requests.length).toBe(1);
     expect(create.requests[0].body).toMatchObject({
-      automations: [{ trigger_tier_scope: 'all_paid', actions: [{ data: { wait_hours: 72 } }] }],
+      automations: [
+        {
+          trigger_rules: [
+            {
+              trigger_type: 'paid_subscription_started',
+              scope: 'any_paid_tier',
+              product_id: null,
+              direction: null,
+            },
+          ],
+          actions: [{ data: { wait_hours: 72 } }],
+        },
+      ],
     });
   });
 
@@ -263,16 +303,13 @@ describe('New automation', () => {
       .click();
     await button('Edit email content').click();
     const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeDisabled();
-    await expect
-      .element(dialog.getByRole('tab', { name: 'Preview' }))
-      .toHaveAttribute('title', 'Save automation to preview or send a test');
-    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Minimize editor' }).click();
     await expect.element(dialog).not.toBeInTheDocument();
     await button('Save').click();
     await expect.poll(currentRoute).toBe('/automations/created');
     await button('Edit email content').click();
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeEnabled();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeEnabled();
   });
 
   it('plays the header entrance once, not again after a trigger is picked', async () => {
@@ -382,24 +419,27 @@ describe('New automation', () => {
     expect(runs.requests).toHaveLength(0);
   });
 
-  it('does not offer creation when its flag is off', async () => {
-    fakeAutomations([]);
-    await renderAdminApp('/automations/new', { labs: { automations: true } });
-    await expect.poll(currentRoute).toBe('/automations');
-    await expect.element(page.getByRole('heading', { name: /^Automations/ })).toBeVisible();
-    await expect.element(button('New automation')).not.toBeInTheDocument();
-  });
-
-  for (const [title, scope] of [
-    ['Free member signed up', 'free'],
-    ['Paid subscription started', 'all_paid'],
+  for (const { title, rule } of [
+    {
+      title: 'Free member signed up',
+      rule: { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+    },
+    {
+      title: 'Paid subscription started',
+      rule: {
+        trigger_type: 'paid_subscription_started',
+        scope: 'any_paid_tier',
+        product_id: null,
+        direction: null,
+      },
+    },
   ] as const) {
-    it(`selects ${scope} with Stripe connected`, async () => {
+    it(`selects ${title} with Stripe connected`, async () => {
       fakeAutomations([]);
       fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
       const create = serveCreation();
       await renderAdminApp('/automations/new', {
-        labs,
+        labs: { ...labs, automationsLeadMagnets: false },
         boot: {
           browseSettings: {
             response: settingsResponse({
@@ -409,9 +449,12 @@ describe('New automation', () => {
         },
       });
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+      await expect
+        .element(page.getByRole('button').getByText('Label added', { exact: true }))
+        .not.toBeInTheDocument();
       await expect.element(button('Hide automation sidebar')).not.toBeInTheDocument();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
-      if (scope === 'all_paid') {
+      if (rule.trigger_type === 'paid_subscription_started') {
         await expect
           .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
           .toBeVisible();
@@ -421,17 +464,272 @@ describe('New automation', () => {
       await expect
         .element(page.getByRole('tab', { name: 'Settings' }))
         .toHaveAttribute('data-state', 'active');
-      await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeVisible();
+      await expect
+        .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
+        .toBeVisible();
       await button('Hide automation sidebar').click();
-      await expect.element(button('Save')).toBeDisabled();
+      await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
+      // The canvas shifts while the sidebar collapses, and a click on a moving add-step button can
+      // press it and let go beside it, which opens nothing.
+      await settleTransitions();
       await addWait();
       await button('Save').click();
       await expect.poll(() => create.requests.length).toBe(1);
       await expect.element(button('Show automation sidebar')).toBeVisible();
       expect(create.requests[0].body).toMatchObject({
-        automations: [{ trigger_tier_scope: scope, trigger_tier_ids: null }],
+        automations: [
+          {
+            trigger_rules: [rule],
+          },
+        ],
       });
     });
   }
+
+  it('shows trigger chooser when lead magnets is enabled, even if Stripe is not', async () => {
+    fakeAutomations([]);
+    await renderAdminApp('/automations/new', {
+      labs: { ...labs, automationsLeadMagnets: true },
+    });
+
+    await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Free member signed up/ }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button').getByText('Label added', { exact: true }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription started/ }))
+      .not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription changed/ }))
+      .not.toBeInTheDocument();
+  });
+
+  it('focuses the label picker without opening it when its label is clicked', async () => {
+    fakeAutomations([]);
+    fakeMembers([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    const labels = fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    const picker = page.getByRole('combobox', {
+      name: 'Triggered when this label is added to a member:',
+    });
+
+    const triggerLabel = page.getByText('Triggered when this label is added to a member:', {
+      exact: true,
+    });
+    await triggerLabel.hover();
+    await expect.poll(() => picker.element().matches(':hover')).toBe(false);
+    await triggerLabel.click();
+    await expect.element(picker).toHaveFocus();
+    await expect.element(picker).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    expect(labels.requests).toHaveLength(0);
+
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(page.getByRole('option', { name: spring.name, exact: true }))
+      .toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await picker.hover();
+    await expect.poll(() => picker.element().matches(':hover')).toBe(true);
+    await picker.click();
+    await expect
+      .element(page.getByRole('option', { name: spring.name, exact: true }))
+      .toBeVisible();
+  });
+
+  it('dismisses the label picker when clicking elsewhere in its trigger card', async () => {
+    fakeAutomations([]);
+    fakeMembers([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    const picker = page.getByRole('combobox', {
+      name: 'Triggered when this label is added to a member:',
+    });
+    const search = page.getByRole('combobox', { name: 'Search labels' });
+
+    await picker.click();
+    await search.fill('Spring');
+    await expect.element(search).toBeVisible();
+    await page.getByText('Label added', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    await picker.click();
+    await expect.element(search).toHaveValue('');
+    await expect
+      .element(page.getByRole('option', { name: spring.name, exact: true }))
+      .toBeVisible();
+    await page.getByTestId('automation-canvas').click({ position: { x: 20, y: 100 }, force: true });
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  for (const action of ['Save', 'Publish'] as const) {
+    it(`validates label selection before ${action.toLowerCase()} and sends the selected label`, async () => {
+      fakeAutomations([]);
+      const createAutomation = serveCreation();
+      fakeMembers([]);
+      const spring = buildLabel({ name: 'Spring ebook' });
+      fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
+      fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
+
+      await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+      await page.getByRole('button').getByText('Label added', { exact: true }).click();
+      await expect
+        .element(page.getByRole('heading', { name: 'Label added', exact: true }))
+        .toBeVisible();
+      const picker = page.getByRole('combobox', {
+        name: 'Triggered when this label is added to a member:',
+      });
+      await expect.element(picker).toHaveTextContent('Search or create a label...');
+      await button('Save').click();
+      await expect.element(picker).toHaveAttribute('aria-invalid', 'true');
+      await expect.element(page.getByText('Select a label', { exact: true })).toBeVisible();
+      await settleTransitions();
+      await addWait();
+      await button('Publish').click();
+      await expect.element(page.getByText('Select a label', { exact: true })).toBeVisible();
+      await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
+      expect(createAutomation.requests).toHaveLength(0);
+
+      await picker.click();
+      await page.getByRole('option', { name: spring.name, exact: true }).click();
+      await expect.element(picker).toHaveTextContent(spring.name);
+      await expect.element(picker).not.toHaveAttribute('aria-invalid');
+      await button(action).click();
+      if (action === 'Publish') {
+        await page
+          .getByRole('alertdialog')
+          .getByRole('button', { name: 'Publish', exact: true })
+          .click();
+      }
+      await expect.poll(currentRoute).toBe('/automations/created');
+      await expect.element(button(action === 'Publish' ? 'Published' : 'Save')).toBeDisabled();
+      if (action === 'Publish') {
+        await expect.element(picker).toBeDisabled();
+        await expect
+          .element(picker)
+          .toHaveAccessibleDescription('Turn off automation to edit trigger');
+      } else {
+        await expect.element(picker).toBeEnabled();
+      }
+      expect(createAutomation.requests).toHaveLength(1);
+      expect(createAutomation.requests[0].body).toMatchObject({
+        automations: [
+          {
+            status: action === 'Publish' ? 'active' : 'inactive',
+            trigger_rules: [
+              {
+                trigger_type: 'label_added',
+                label_id: spring.id,
+                scope: null,
+                product_id: null,
+                direction: null,
+              },
+            ],
+            actions: [{ type: 'wait' }],
+          },
+        ],
+      });
+    });
+  }
+
+  it('counts holders of the selected label before publishing', async () => {
+    fakeAutomations([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    const members = fakeMembers(
+      Array.from({ length: 3 }, () => member({ labels: [spring] })),
+      { labels: [spring] },
+    );
+    fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    await page
+      .getByRole('combobox', { name: 'Triggered when this label is added to a member:' })
+      .click();
+    await page.getByRole('option', { name: spring.name, exact: true }).click();
+    await addWait();
+    await button('Publish').click();
+
+    const dialog = page.getByRole('alertdialog', { name: 'Start your automation?' });
+    await expect
+      .element(dialog)
+      .toHaveTextContent(
+        'Once published, your automation goes live. Members who get the Spring ebook label from now on will be enrolled automatically.',
+      );
+    await expect(members).toHaveSentFilter(`labels.id:'${spring.id}'`);
+    await expect
+      .element(dialog)
+      .toHaveTextContent('The 3 members already labeled Spring ebook will not be enrolled.');
+  });
+
+  it('searches for and creates a label in the trigger picker', async () => {
+    fakeAutomations([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    const labels = fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [] });
+    const createLabel = fakeAdminEndpoint('POST', '/labels/', { labels: [spring] });
+    fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    const picker = page.getByRole('combobox', {
+      name: 'Triggered when this label is added to a member:',
+    });
+    await picker.click();
+    await page.getByRole('combobox', { name: 'Search labels' }).fill(spring.name);
+    await page.getByRole('option', { name: `Create “${spring.name}”` }).click();
+    await expect.element(picker).toHaveTextContent(spring.name);
+    expect(createLabel.lastRequest?.body).toEqual({ labels: [{ name: spring.name }] });
+    expect(labels.lastRequest?.url).toContain('filter=');
+  });
+
+  it('fetches fresh labels on reopen and lets a deleted draft selection be replaced', async () => {
+    fakeAutomations([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    const fall = buildLabel({ name: 'Fall guide' });
+    let springDeleted = false;
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, () => ({
+      labels: springDeleted ? [fall] : [spring],
+    }));
+    fakeAdminEndpoint('GET', `/labels/${spring.id}/`, () =>
+      springDeleted ? new Response(null, { status: 404 }) : { labels: [spring] },
+    );
+    fakeAdminEndpoint('GET', `/labels/${fall.id}/`, { labels: [fall] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    const picker = page.getByRole('combobox', {
+      name: 'Triggered when this label is added to a member:',
+    });
+    await picker.click();
+    await page.getByRole('option', { name: spring.name, exact: true }).click();
+    await expect.element(picker).toHaveTextContent(spring.name);
+
+    springDeleted = true;
+    await picker.click();
+    const replacement = page.getByRole('option', { name: fall.name, exact: true });
+    await expect.element(replacement).toBeVisible();
+    await expect
+      .element(page.getByRole('option', { name: spring.name, exact: true }))
+      .not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(picker).toHaveTextContent('Spring ebook (deleted)');
+    await expect.element(picker).toHaveAttribute('aria-invalid', 'true');
+    await expect.element(page.getByText('Select a different label', { exact: true })).toBeVisible();
+
+    await picker.click();
+    await replacement.click();
+    await expect.element(picker).toHaveTextContent(fall.name);
+    await expect.element(picker).not.toHaveAttribute('aria-invalid');
+  });
 });

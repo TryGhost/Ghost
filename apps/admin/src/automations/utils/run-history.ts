@@ -1,7 +1,7 @@
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { formatNumber } from '@tryghost/shade/utils';
 import { emailTextExcerpt } from './history-email-preview';
-import { WELCOME_EMAIL_SLUGS } from './default-welcome-email-values';
+import { WELCOME_EMAIL_SLUGS } from '@/settings/api';
 
 export type HistoryEmail = { subject: string | null; text: string };
 
@@ -31,6 +31,7 @@ const stepStates = {
   failed: { state: 'exited', label: 'Step failed' },
   'automation disabled': { state: 'exited', label: 'Automation turned off' },
   'member changed status': { state: 'exited', label: 'Member changed subscription status' },
+  'member changed tier': { state: 'exited', label: 'Member changed subscription tier' },
   // The server also uses this status for a missing member.
   'member unsubscribed': { state: 'exited', label: 'Unsubscribed' },
 } as const satisfies Record<Step['status'], { state: HistoryCardState; label: string }>;

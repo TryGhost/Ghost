@@ -1,3 +1,4 @@
+import { useMobileFilters } from '@tryghost/shade/patterns';
 import MembersActions from './components/members-actions';
 import MembersEmptyState from './components/members-empty-state';
 import MembersFilters from './components/members-filters';
@@ -31,7 +32,6 @@ import { useBrowseMembersInfinite } from '@tryghost/admin-x-framework/api/member
 import { useDebouncedCallback } from 'use-debounce';
 import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import { useMultipleActiveSubscriptionsCount } from './hooks/use-multiple-active-subscriptions-count';
-import { useShade } from '@tryghost/shade/app';
 import { useIdlePreload } from '@/shared/use-idle-preload';
 import { preloadMapAtlas } from './detail/map-atlas';
 
@@ -51,9 +51,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
   membershipsEnabled,
   timezone,
 }) => {
-  const { isAdmin7 } = useShade();
   // Under a large title (admin7Design), a roomier row of column labels
   const { largeTitles } = usePageChrome();
+  const mobileFilters = useMobileFilters();
+  const [mobileFilterBar, setMobileFilterBar] = useState<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
     headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -71,7 +72,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const location = useLocation();
   const savedViews = useMemberViews();
   const activeView = useActiveMemberView(savedViews, nql);
-  const [showMobileSearch, setShowMobileSearch] = useState(isAdmin7 && search.length > 0);
+  const [showMobileSearch, setShowMobileSearch] = useState(search.length > 0);
   const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
   const [searchInput, setSearchInput] = useState(search);
   const commitSearch = useDebouncedCallback((value: string) => {
@@ -127,10 +128,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
   useEffect(() => {
     setSearchInput(search);
     commitSearch.cancel();
-    if (isAdmin7 && search) {
+    if (search) {
       setShowMobileSearch(true);
     }
-  }, [search, commitSearch, isAdmin7]);
+  }, [search, commitSearch]);
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -158,40 +159,25 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const headerSearch = shouldShowMemberControls && (
     <>
       <Box className="hidden lg:flex">
-        <MembersHeaderSearch
-          collapsible={isAdmin7}
-          search={searchInput}
-          onSearchChange={handleSearchChange}
-        />
+        <MembersHeaderSearch search={searchInput} collapsible onSearchChange={handleSearchChange} />
       </Box>
-      {isAdmin7 ? (
-        <PageHeader.Action
-          aria-expanded={showMobileSearch}
-          className="lg:hidden"
-          label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-          iconOnly
-          onClick={handleMobileSearchToggle}
-        >
-          <LucideIcon.Search />
-        </PageHeader.Action>
-      ) : (
-        <Button
-          aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-          className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-          variant="outline"
-          onClick={handleMobileSearchToggle}
-        >
-          <LucideIcon.Search className="size-4" />
-        </Button>
-      )}
+      <PageHeader.Action
+        aria-expanded={showMobileSearch}
+        className="lg:hidden"
+        label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+        iconOnly
+        onClick={handleMobileSearchToggle}
+      >
+        <LucideIcon.Search />
+      </PageHeader.Action>
     </>
   );
 
-  const headerFilters = shouldShowMemberControls && !hasFilters && (
+  const headerFilters = shouldShowMemberControls && (!hasFilters || mobileFilters) && (
     <MembersFilters
       activeView={activeView}
       filters={filters}
-      iconOnly={!isAdmin7}
+      mobileBarContainer={mobileFilterBar}
       multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
       nql={nql}
       savedViews={savedViews}
@@ -235,7 +221,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                 <PageHeader.Actions>
                   <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
                     {headerSearch}
-                    {!isAdmin7 && headerFilters}
+                    {mobileFilters && headerFilters}
                     <MembersActions
                       canBulkDelete={canBulkDelete}
                       hasFilterOrSearch={hasFilterOrSearch}
@@ -248,29 +234,28 @@ const MembersPage: React.FC<MembersPageProps> = ({
                         void refetch();
                       }}
                     >
-                      {isAdmin7 && headerFilters}
+                      {!mobileFilters && headerFilters}
                     </MembersActions>
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
               </PageHeader>
 
-              {isAdmin7 && mobileSearchRow}
-              {shouldShowMemberControls &&
-                (shouldShowFiltersRow || (!isAdmin7 && shouldShowMobileSearchRow)) && (
-                  <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
-                    {!isAdmin7 && mobileSearchRow}
-                    {shouldShowFiltersRow && (
-                      <MembersFilters
-                        activeView={activeView}
-                        filters={filters}
-                        multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
-                        nql={nql}
-                        savedViews={savedViews}
-                        onFiltersChange={setFilters}
-                      />
-                    )}
-                  </FilterBar>
-                )}
+              {mobileSearchRow}
+              {shouldShowMemberControls && mobileFilters && hasFilters && (
+                <div ref={setMobileFilterBar} />
+              )}
+              {shouldShowMemberControls && shouldShowFiltersRow && !mobileFilters && (
+                <FilterBar className={filtersClassName}>
+                  <MembersFilters
+                    activeView={activeView}
+                    filters={filters}
+                    multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
+                    nql={nql}
+                    savedViews={savedViews}
+                    onFiltersChange={setFilters}
+                  />
+                </FilterBar>
+              )}
               {hasStripeEnabled && (
                 <MultipleActiveSubscriptionsBanner
                   count={multipleActiveSubscriptionsCount}

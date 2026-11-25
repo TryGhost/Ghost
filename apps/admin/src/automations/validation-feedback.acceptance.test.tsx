@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { detail, setup } from './run-history.test-utils';
+import { editEmailSubject, fakeEmailEditorData } from './email-editor.test-utils';
 
 const lexical = JSON.stringify({
   root: { children: [{ type: 'paragraph', children: [{ type: 'text', text: 'Welcome' }] }] },
@@ -10,6 +11,7 @@ const lexical = JSON.stringify({
 
 const serve = (status: AutomationDetail['status'] = 'inactive', failSave = false) => {
   setup();
+  fakeEmailEditorData();
   const data: AutomationDetail = {
     ...detail('first'),
     status,
@@ -48,32 +50,22 @@ const boot = () =>
     labs: { automations: true },
   });
 
-const clearSubject = async () => {
-  await page.getByRole('textbox', { name: 'Subject line' }).fill('');
-};
+const emailCard = () => page.getByRole('article', { name: /^Send email/ });
+const clearSubject = () => editEmailSubject(emailCard(), '');
 
 describe('Automation action validation feedback', () => {
-  it('dismisses a card warning when clicking another canvas card', async () => {
+  // Keep the wait card's field in view below the email card.
+  beforeEach(() => page.viewport(1280, 1600));
+  afterEach(() => page.viewport(1280, 800));
+
+  it('shows a missing subject as an error under the email preview', async () => {
     serve();
     await boot();
     await clearSubject();
-    await page.getByRole('button', { name: 'Why this step needs attention' }).click();
-    const warning = page.getByText('Add a subject line before this email can be sent.', {
-      exact: true,
-    });
-    await expect.element(warning).toBeVisible();
-    await warning.click();
-    await expect.element(warning).toBeVisible();
-    await page.getByRole('heading', { name: 'Free member signed up', exact: true }).click();
-    await expect.element(warning).not.toBeInTheDocument();
-    await page.getByRole('button', { name: 'Why this step needs attention' }).click();
-    await expect.element(warning).toBeVisible();
-    const subject = page.getByRole('textbox', { name: 'Subject line' });
-    const { width, height } = subject.element().getBoundingClientRect();
-    // The open warning covers the input's center; its right padding stays exposed.
-    await subject.click({ position: { x: width - 8, y: height / 2 } });
-    await expect.element(warning).not.toBeInTheDocument();
-    await expect.element(subject).toHaveFocus();
+    await expect.element(emailCard().getByText('Add a subject', { exact: true })).toBeVisible();
+    await expect
+      .element(emailCard().getByRole('button', { name: 'Edit email content' }))
+      .toHaveAttribute('aria-invalid', 'true');
   });
 
   for (const status of ['inactive', 'active'] as const) {
@@ -92,19 +84,13 @@ describe('Automation action validation feedback', () => {
       const toast = page.getByText('Automation needs a few details', { exact: true });
       await expect.element(message).toBeVisible();
       await expect.element(toast).not.toBeInTheDocument();
-      await expect
-        .element(page.getByRole('button', { name: 'Why this step needs attention' }))
-        .toBeVisible();
+      await expect.element(emailCard().getByText('Add a subject', { exact: true })).toBeVisible();
       await userEvent.keyboard('{Escape}');
       await expect.element(message).not.toBeInTheDocument();
       await expect.element(publish).toHaveFocus();
       await publish.click();
       await expect.element(message).toBeVisible();
-      const subject = page.getByRole('textbox', { name: 'Subject line' });
-      await subject.click();
-      await subject.fill('Fixed');
-      await expect.element(subject).toHaveValue('Fixed');
-      await expect.element(subject).toHaveFocus();
+      await editEmailSubject(emailCard(), 'Fixed');
       await expect.element(message).not.toBeInTheDocument();
       await publish.click();
       await expect.element(page.getByRole('alertdialog')).toBeVisible();
@@ -123,7 +109,7 @@ describe('Automation action validation feedback', () => {
   it('keeps genuine save failures as toasts', async () => {
     serve('inactive', true);
     await boot();
-    await page.getByRole('textbox', { name: 'Subject line' }).fill('Updated');
+    await editEmailSubject(emailCard(), 'Updated');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect
       .element(page.getByText('Automation couldn’t be saved', { exact: true }))

@@ -9,6 +9,7 @@ const adapterManager = require('../services/adapter-manager').default;
 let nodes;
 let lexicalHtmlRenderer;
 let urlTransformMap;
+let cardVisibilityNodeTypes;
 let postsService;
 let serializePosts;
 
@@ -127,6 +128,20 @@ module.exports = {
     }
 
     return nodes;
+  },
+
+  // Cards whose web and email visibility this server renders, taken from the
+  // nodes that store visibility. Admin deploys ahead of the server on
+  // Ghost(Pro), so the editor only offers visibility settings for these.
+  get cardVisibilityNodeTypes() {
+    if (!cardVisibilityNodeTypes) {
+      cardVisibilityNodeTypes = this.nodes
+        .filter((node) => typeof node?.getType === 'function' && node.prototype?.hasVisibility?.())
+        .map((node) => node.getType())
+        .sort();
+    }
+
+    return cardVisibilityNodeTypes;
   },
 
   get urlTransformMap() {

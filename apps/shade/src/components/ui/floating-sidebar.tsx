@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Pin } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useShade } from '@/providers/shade-context';
 import {
   FLOATING_SIDEBAR_CLOSED_SIZE,
   FLOATING_SIDEBAR_INSET,
@@ -67,9 +68,11 @@ const SIZES = {
 // Around the header row's icon, and the body's side padding, so the search
 // field and nav rows line up with the icon.
 const PADDING = 20;
-const PIN_BUTTON_SIZE = 28;
+// With the body's own top padding, matches the side padding above a collapsed header.
+const COLLAPSED_HEADER_HEIGHT = 12;
+const PIN_BUTTON_SIZE = 32;
 // Puts the pin glyph PADDING from the panel's right edge.
-const PIN_BUTTON_RIGHT = 14;
+const PIN_BUTTON_RIGHT = 12;
 /*
  * The capsule floats within the viewport, less any chrome framing the page
  * around it: `--floating-sidebar-offset-top`, `-left` and `-bottom` (0 unless
@@ -191,9 +194,17 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
   label: string;
   /** Beside the icon in the open and pinned panel's header row (e.g. the site title); hidden while closed. */
   header: React.ReactNode;
+  /**
+   * Collapses the header row, icon included, giving its room to the body (e.g.
+   * a screen whose navigation has its own top row). It applies while pinned
+   * with `pinLocked`, as otherwise the pin button needs the row.
+   */
+  headerHidden?: boolean;
   /** Unfurls beneath the header when open or pinned. */
   children: React.ReactNode;
   bodyClassName?: string;
+  /** With Admin 7, let descendant effects paint outside the open panel. The caller must own content scrolling. */
+  overflow?: 'clip' | 'visible';
   /** The open and pinned panel's width. */
   openWidth?: number;
   /** Stops the panel opening (and closes it), e.g. while the page is locked. */
@@ -214,8 +225,9 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
    */
   armHoverOnRest?: boolean;
   /**
-   * Changing it (e.g. to the route's path) cancels a pending close: a layout
-   * shift inside the panel can fire a mouseleave though the pointer never left.
+   * Changing it (e.g. to the route's path) cancels a pending close while the
+   * pointer is over the panel: a layout shift inside the panel can fire a
+   * mouseleave though the pointer never left.
    */
   resetKey?: unknown;
   pinLabel?: string;
@@ -238,8 +250,10 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       icon,
       label,
       header,
+      headerHidden = false,
       children,
       bodyClassName,
+      overflow = 'clip',
       openWidth = FLOATING_SIDEBAR_OPEN_WIDTH,
       disabled = false,
       animate = true,
@@ -260,7 +274,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
   ) => {
     const narrow = useMediaQuery(NARROW_QUERY);
     const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-    const sizes = narrow ? SIZES.narrow : SIZES.regular;
+    const { admin7Design } = useShade();
+    const responsiveSizes = narrow ? SIZES.narrow : SIZES.regular;
+    const sizes = admin7Design
+      ? { ...responsiveSizes, icon: responsiveSizes.circleIcon }
+      : responsiveSizes;
     const headerHeight = PADDING + sizes.icon + PADDING;
     // Moves the icon from its place in the header row to the circle's centre
     const closedIconOffset = (CLOSED_SIZE - 2 - sizes.circleIcon) / 2 - PADDING;
@@ -322,8 +340,12 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         hide();
       }
     }, [disabled, hide]);
+    // A pointer that really left closes the panel, though the change it
+    // started renders after (e.g. moving off as Back to app navigates)
     React.useEffect(() => {
-      cancel();
+      if (wrapperRef.current?.matches(':hover')) {
+        cancel();
+      }
     }, [resetKey, cancel]);
 
     // The capsule and the hot zone act as one hover target. It only arms once
@@ -439,20 +461,22 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
 
     // Pinned, the panel is always open; `open` alone shows the pin button.
     const expanded = open || pinned;
+    const headerCollapsed = headerHidden && pinLocked && pinned;
 
     // The header, pin button and body are clipped away while closed, so they
     // must not be reachable; the circle itself takes focus. A locked pin
-    // button is hidden in every state.
+    // button is hidden in every state, as is a collapsed header.
     React.useLayoutEffect(() => {
-      for (const element of [headerRef.current, bodyRef.current]) {
-        if (element) {
-          element.inert = !expanded;
-        }
+      if (headerRef.current) {
+        headerRef.current.inert = !expanded || headerCollapsed;
+      }
+      if (bodyRef.current) {
+        bodyRef.current.inert = !expanded;
       }
       if (pinButtonRef.current) {
         pinButtonRef.current.inert = !expanded || pinLocked;
       }
-    }, [expanded, pinLocked]);
+    }, [expanded, headerCollapsed, pinLocked]);
 
     // The gap changes width at once, never through a transition: that would
     // lay the content out again on every frame. Content that should glide to
@@ -497,6 +521,12 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       onPinnedMorphEndRef.current = onPinnedMorphEnd;
     });
     const pendingMorph = React.useRef<{ pinned: boolean; timer: number } | null>(null);
+    // Pinning can mark the body unfurled before the capsule reaches its full
+    // width. Release paint clipping on this same morph-completion signal.
+    const [pinTransition, setPinTransition] = React.useState({ pinned, active: false });
+    if (pinTransition.pinned !== pinned || (!morph && pinTransition.active)) {
+      setPinTransition({ pinned, active: morph });
+    }
     const finishMorph = React.useCallback(() => {
       const pending = pendingMorph.current;
       if (!pending) {
@@ -504,6 +534,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       }
       window.clearTimeout(pending.timer);
       pendingMorph.current = null;
+      setPinTransition({ pinned: pending.pinned, active: false });
       onPinnedMorphEndRef.current?.(pending.pinned);
     }, []);
     const previousPinned = React.useRef(pinned);
@@ -531,6 +562,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         setUnfurled(expanded);
       }
     }, [expanded, morph, pinned]);
+    // The open sidebar is a paint surface, not a scrollport: banners can glow
+    // beyond it. Keep clipping for the closed/unfurling animation, and let the
+    // navigation and Banner's own content own their separate scroll boundaries.
+    const paintOutside =
+      admin7Design && overflow === 'visible' && expanded && unfurled && !pinTransition.active;
 
     // The floating open capsule's height (`auto`) on screen before the pin change
     const heightBefore = React.useRef<number | null>(null);
@@ -583,6 +619,9 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     }, [morph, morphDuration, pinned]);
 
     const state = pinned ? 'pinned' : open ? 'open' : 'closed';
+    // Descendant secondary actions share the pin's hover intent and keyboard
+    // state instead of retaining mouse-click focus through :focus-within.
+    const controlsVisible = open && !pinLocked;
 
     return (
       <div ref={ref} className="shrink-0 text-foreground" data-state={state} role="navigation">
@@ -629,9 +668,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           <div
             ref={capsuleRef}
             className={cn(
-              'relative flex shrink-0 flex-col overflow-hidden [interpolate-size:allow-keywords]',
+              'relative flex shrink-0 flex-col [interpolate-size:allow-keywords]',
+              paintOutside ? 'overflow-visible' : 'overflow-hidden',
               GLASS,
             )}
+            data-controls-visible={controlsVisible}
             data-sidebar="sidebar"
             data-slot="floating-sidebar"
             data-state={state}
@@ -666,12 +707,17 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
               data-slot="floating-sidebar-header"
               style={{
                 width: openWidth - 2,
-                height: headerHeight,
+                height: headerCollapsed ? COLLAPSED_HEADER_HEIGHT : headerHeight,
+                opacity: headerCollapsed ? 0 : 1,
+                pointerEvents: headerCollapsed ? 'none' : undefined,
                 gap: sizes.gap,
                 paddingLeft: PADDING,
                 paddingRight: onPinnedChange
                   ? PIN_BUTTON_RIGHT + PIN_BUTTON_SIZE + sizes.gap
                   : PADDING,
+                transitionProperty: morph ? 'height, opacity' : 'none',
+                transitionDuration: `${morphDuration}ms`,
+                transitionTimingFunction: glideEasing,
               }}
             >
               {/* The circle's focus target: focusing or clicking it opens the
@@ -684,10 +730,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                 aria-label={label}
                 className={cn(
                   'group relative shrink-0 outline-none',
+                  admin7Design && 'size-8',
                   pinned ? 'cursor-default' : 'cursor-pointer',
                 )}
                 data-slot="floating-sidebar-trigger"
-                style={{ width: sizes.icon, height: sizes.icon }}
+                style={admin7Design ? undefined : { width: sizes.icon, height: sizes.icon }}
                 tabIndex={pinned ? -1 : 0}
                 type="button"
                 onClick={show}
@@ -740,10 +787,10 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                 aria-hidden={pinLocked || undefined}
                 aria-label={pinned ? unpinLabel : pinLabel}
                 className={cn(
-                  'absolute z-10 flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,color,background-color] duration-200 hover:bg-interactive-hover hover:text-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+                  'absolute z-10 flex size-8 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,color,background-color] duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden',
                   // Follows the hover state, not pinning, so it hides when the
                   // pointer leaves a pinned panel too
-                  open && !pinLocked
+                  controlsVisible
                     ? 'pointer-events-auto opacity-100 delay-75'
                     : 'pointer-events-none opacity-0',
                 )}
@@ -770,7 +817,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                 animate it rather than swap its layout. */}
             <div
               ref={bodyRef}
-              className={cn('grid min-h-0', filled && 'flex-1')}
+              className={cn('grid min-h-0', (filled || paintOutside) && 'flex-1')}
               data-slot="floating-sidebar-body"
               style={{
                 gridTemplateRows: expanded ? '1fr' : '0fr',
@@ -792,18 +839,20 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
               <div
                 className={cn(
                   'min-h-0',
-                  filled
-                    ? 'flex flex-col overflow-hidden'
-                    : unfurled
-                      ? 'overflow-y-auto overscroll-contain'
-                      : 'overflow-hidden',
+                  paintOutside
+                    ? 'flex min-h-0 flex-1 flex-col overflow-visible'
+                    : filled
+                      ? 'flex flex-col overflow-hidden'
+                      : unfurled
+                        ? 'overflow-y-auto overscroll-contain'
+                        : 'overflow-hidden',
                 )}
               >
                 {/* The open width, so the content doesn't reflow as the capsule grows */}
                 <div
                   className={cn(
                     'flex flex-col pt-2 pb-4 transition-opacity duration-200',
-                    filled && 'min-h-0 flex-1',
+                    (filled || paintOutside) && 'min-h-0 flex-1',
                     expanded ? 'opacity-100 delay-75' : 'opacity-0',
                     bodyClassName,
                   )}

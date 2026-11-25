@@ -18,6 +18,8 @@ export interface PostHistorySectionProps {
   state: SaveEngineState;
   /** The excerpt has its own home under the title, and is restored with the version. */
   showExcerpt: boolean;
+  /** Another tab holds the document, so no version is restored into this one. */
+  locked?: boolean;
 }
 
 /**
@@ -31,8 +33,13 @@ export function PostHistorySection({
   cardConfig,
   showExcerpt,
   state,
+  locked = false,
 }: PostHistorySectionProps) {
   const [open, setOpen] = useState(false);
+  // The history is outside the panel the lock makes inert.
+  if (locked && open) {
+    setOpen(false);
+  }
   const triggerRef = useRef<HTMLButtonElement>(null);
   const { darkMode } = useFocusContext();
   const timezone = useSiteTimezone();

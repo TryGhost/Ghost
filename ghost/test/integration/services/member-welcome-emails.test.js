@@ -12,7 +12,8 @@ const {
   MEMBER_WELCOME_EMAIL_SLUGS,
   MESSAGES,
 } = require('../../../core/server/services/member-welcome-emails/constants');
-const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
+const memberWelcomeEmails = require('../../../core/server/services/member-welcome-emails').default;
+const linkTracking = require('../../../core/server/services/link-tracking');
 
 function parseDatabaseDate(date) {
   if (date instanceof Date) {
@@ -219,20 +220,30 @@ describe('Member Welcome Emails Integration', function () {
       },
       memberStatus = 'free',
     } = {}) {
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
-      await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
-      await memberWelcomeEmailService.api.send({
+      await memberWelcomeEmails.service.loadMemberWelcomeEmails();
+      await memberWelcomeEmails.service.send({
         member,
         memberStatus,
       });
     }
 
-    async function sendAutomationEmail({ trackOpens } = {}) {
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
+    async function sendAutomationEmail({
+      trackOpens,
+      reuseService = false,
+      children = [{ type: 'text', text: 'Hello' }],
+      member = {
+        email: 'automation-member@example.com',
+        name: 'Automation Member',
+        uuid: '99999999-9999-4999-8999-999999999999',
+      },
+      ...trackingOptions
+    } = {}) {
+      if (!reuseService) {
+        // The boot-owned instance is retained, so reload to drop the cached sender options.
+        await memberWelcomeEmails.service.loadMemberWelcomeEmails();
+      }
 
-      return await memberWelcomeEmailService.api.sendAutomationEmail({
+      return await memberWelcomeEmails.service.sendAutomationEmail({
         email: {
           designSettingId: defaultEmailDesignSettingId,
           lexical: JSON.stringify({
@@ -240,7 +251,7 @@ describe('Member Welcome Emails Integration', function () {
               children: [
                 {
                   type: 'paragraph',
-                  children: [{ type: 'text', text: 'Hello' }],
+                  children,
                 },
               ],
               direction: null,
@@ -252,13 +263,9 @@ describe('Member Welcome Emails Integration', function () {
           }),
           subject: 'Automation email',
         },
-        member: {
-          email: 'automation-member@example.com',
-          name: 'Automation Member',
-          uuid: '99999999-9999-4999-8999-999999999999',
-        },
-        memberStatus: 'free',
+        member,
         trackOpens,
+        ...trackingOptions,
       });
     }
 
@@ -507,6 +514,44 @@ describe('Member Welcome Emails Integration', function () {
       );
     });
 
+    it('keeps cached newsletter senders until welcome emails are reloaded', async function () {
+      const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+      await db.knex('newsletters').where('id', defaultNewsletter.id).update({
+        sender_name: 'First Sender',
+        sender_email: 'first@example.com',
+        sender_reply_to: 'first-reply@example.com',
+      });
+      await sendAutomationEmail();
+      const retainedApi = memberWelcomeEmails.service;
+
+      await db.knex('newsletters').where('id', defaultNewsletter.id).update({
+        sender_name: 'Second Sender',
+        sender_email: 'second@example.com',
+        sender_reply_to: 'second-reply@example.com',
+      });
+      await sendAutomationEmail({ reuseService: true });
+
+      for (const call of MailgunClient.prototype.send.getCalls()) {
+        assert.equal(call.args[0].from, '"First Sender" <first@example.com>');
+        assert.equal(call.args[0].replyTo, 'first-reply@example.com');
+      }
+      assert.equal(MailgunClient.prototype.send.callCount, 2);
+
+      await retainedApi.loadMemberWelcomeEmails();
+      await sendAutomationEmail({ reuseService: true });
+
+      assert.equal(memberWelcomeEmails.service, retainedApi);
+      assert.equal(MailgunClient.prototype.send.callCount, 3);
+      assert.equal(
+        MailgunClient.prototype.send.thirdCall.args[0].from,
+        '"Second Sender" <second@example.com>',
+      );
+      assert.equal(
+        MailgunClient.prototype.send.thirdCall.args[0].replyTo,
+        'second-reply@example.com',
+      );
+    });
+
     it('tags automation emails for automation analytics', async function () {
       await sendAutomationEmail();
 
@@ -624,12 +669,74 @@ describe('Member Welcome Emails Integration', function () {
 
       assert.match(
         message.html,
-        /\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&amp;key=[a-f0-9]+&amp;updatesandannouncements=1/,
+        /href="http[^"]*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updatesandannouncements=1"/,
       );
       assert.match(
         recipientData['automation-member@example.com'].list_unsubscribe,
         /^http.*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updatesandannouncements=1$/,
       );
+    });
+
+    describe('automation click tracking', function () {
+      const linkChildren = [
+        {
+          type: 'link',
+          url: 'https://external.example/page',
+          children: [{ type: 'text', text: 'Read more' }],
+        },
+      ];
+      let addAutomationTrackingToUrl;
+
+      beforeEach(function () {
+        addAutomationTrackingToUrl = sinon
+          .stub(linkTracking.service, 'addAutomationTrackingToUrl')
+          .callsFake(async (url, revisionId, runStepId, memberUuid) => {
+            const tracked = new URL('https://example.com/r/abc123');
+            tracked.searchParams.set('m', memberUuid);
+            tracked.searchParams.set('step', runStepId);
+            return tracked;
+          });
+      });
+
+      async function sendTracked(options = {}) {
+        await sendAutomationEmail({
+          children: linkChildren,
+          trackClicks: true,
+          automationActionRevisionId: 'revision-id',
+          automationRunStepId: 'run-step-id',
+          ...options,
+        });
+        return MailgunClient.prototype.send.firstCall.args[0].html;
+      }
+
+      it('tracks links with the member UUID and run step ID', async function () {
+        const html = await sendTracked();
+
+        sinon.assert.calledOnce(addAutomationTrackingToUrl);
+        assert(
+          html.includes(
+            'href="https://example.com/r/abc123?m=99999999-9999-4999-8999-999999999999&amp;step=run-step-id"',
+          ),
+        );
+      });
+
+      it('does not track links when the member UUID is absent', async function () {
+        const html = await sendTracked({
+          member: { email: 'automation-member@example.com', name: 'Automation Member' },
+        });
+
+        sinon.assert.notCalled(addAutomationTrackingToUrl);
+        assert(html.includes('href="https://external.example/page"'));
+        assert.doesNotMatch(html, /\/r\/abc123/);
+      });
+
+      it('does not track links when the automation run step ID is absent', async function () {
+        const html = await sendTracked({ automationRunStepId: null });
+
+        sinon.assert.notCalled(addAutomationTrackingToUrl);
+        assert(html.includes('href="https://external.example/page"'));
+        assert.doesNotMatch(html, /\/r\/abc123/);
+      });
     });
 
     it('does not add an unsubscribe link or one-click headers when automations is disabled', async function () {
@@ -664,10 +771,7 @@ describe('Member Welcome Emails Integration', function () {
         },
       });
 
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
-
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: 'test-member@example.com',
         subject: 'Welcome test',
         lexical,
@@ -682,8 +786,6 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     it('uses email design sender details for test welcome emails', async function () {
-      memberWelcomeEmailService.init();
-
       await db.knex('email_design_settings').where('id', defaultEmailDesignSettingId).update({
         sender_name: 'Design Sender',
         sender_email: 'design@example.com',
@@ -704,7 +806,7 @@ describe('Member Welcome Emails Integration', function () {
           sender_reply_to: 'welcome-reply@example.com',
         });
 
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: 'test-member@example.com',
         subject: 'Welcome test',
         lexical: JSON.stringify({
@@ -732,8 +834,6 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     it('uses newsletter sender details for test welcome emails when email design sender details are empty', async function () {
-      memberWelcomeEmailService.init();
-
       const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
       await db.knex('newsletters').where('id', defaultNewsletter.id).update({
@@ -762,7 +862,7 @@ describe('Member Welcome Emails Integration', function () {
           sender_reply_to: 'welcome-reply@example.com',
         });
 
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: 'test-member@example.com',
         subject: 'Welcome test',
         lexical: JSON.stringify({
@@ -792,21 +892,19 @@ describe('Member Welcome Emails Integration', function () {
 
   describe('design settings', function () {
     beforeEach(function () {
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
       sinon.stub(MailgunClient.prototype, 'send').resolves({ id: '<bulk-mailgun-message-id>' });
       sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
     });
 
     it('uses cached design settings after welcome emails are loaded', async function () {
-      await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+      await memberWelcomeEmails.service.loadMemberWelcomeEmails();
 
       await db.knex('email_design_settings').where('id', defaultEmailDesignSettingId).update({
         footer_content: '<p>Fresh footer content</p>',
         show_badge: false,
       });
 
-      await memberWelcomeEmailService.api.send({
+      await memberWelcomeEmails.service.send({
         member: {
           email: 'fresh-design@example.com',
           name: 'Fresh Design',

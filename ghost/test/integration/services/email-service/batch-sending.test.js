@@ -169,8 +169,8 @@ describe('Batch sending tests', function () {
     await fixtureManager.init('newsletters', 'members:newsletters');
     await agent.loginAsOwner();
 
-    linkRedirectService = require('../../../../core/server/services/link-redirection');
-    linkRedirectRepository = linkRedirectService.linkRedirectRepository;
+    linkRedirectService = require('../../../../core/server/services/link-redirection').default;
+    linkRedirectRepository = linkRedirectService.extras.linkRedirectRepository();
 
     linkTrackingService = require('../../../../core/server/services/link-tracking');
     linkClickRepository = linkTrackingService.linkClickRepository;
@@ -402,6 +402,20 @@ describe('Batch sending tests', function () {
       'label:label-1',
       [
         { segment: null, recipients: 1 }, // 1 member was subscribed, one member is not subscribed
+      ],
+    );
+  });
+
+  // Sending puts brackets around a recipient filter before it adds the newsletter's own
+  // clauses, so a filter that arrives in brackets ends up inside two pairs of them
+  it('Only sends to the members a recipient filter in brackets matches', async function () {
+    await testEmailBatches(
+      {
+        mobiledoc: mobileDocExample, // = same content for free and paid, no need to split batches
+      },
+      '(label:label-1)',
+      [
+        { segment: null, recipients: 1 }, // one subscribed member has the label
       ],
     );
   });

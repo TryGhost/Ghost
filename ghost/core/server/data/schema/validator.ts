@@ -2,10 +2,9 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import _ from 'lodash';
 import type { ReadonlyDeep } from 'type-fest';
-// @ts-expect-error This module lacks type definitions.
 import validator from '@tryghost/validator';
-// @ts-expect-error This module lacks type definitions.
 import schema from './schema';
+import type { ColumnDefinition, TableDefinition } from './types';
 
 const messages = {
   valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -13,6 +12,7 @@ const messages = {
   valueExceedsMaxLength:
     'Value in [{tableName}.{columnKey}] exceeds maximum length of {maxlength} characters.',
   valueIsNotInteger: 'Value in [{tableName}.{columnKey}] is not an integer.',
+  valueDoesNotMatchPattern: 'Value in [{tableName}.{columnKey}] must match {pattern}.',
 };
 
 type Model = {
@@ -20,6 +20,8 @@ type Model = {
   set(key: string, value: unknown): unknown;
   changed: Record<string, unknown>;
 };
+
+const tables: Record<string, TableDefinition> = schema;
 
 type Options = ReadonlyDeep<{
   method?: 'insert' | 'update';
@@ -43,10 +45,12 @@ type Options = ReadonlyDeep<{
 export function validateSchema(tableName: string, model: Model, options?: Options) {
   options = options || {};
 
-  const columns = _.keys(schema[tableName]);
+  const columns = Object.entries(tables[tableName] ?? {}).filter(
+    (entry): entry is [string, ColumnDefinition] => !entry[0].startsWith('@@'),
+  );
   let validationErrors: errors.ValidationError[] = [];
 
-  _.each(columns, function each(columnKey) {
+  columns.forEach(function each([columnKey, column]) {
     let message = ''; // KEEP: Validator.js only validates strings.
     const strVal = _.toString(model.get(columnKey));
 
@@ -56,11 +60,10 @@ export function validateSchema(tableName: string, model: Model, options?: Option
 
     // check nullable
     if (
-      Object.hasOwn(schema[tableName][columnKey], 'nullable') &&
-      schema[tableName][columnKey].nullable !== true &&
-      Object.hasOwn(schema[tableName][columnKey], 'type') &&
-      schema[tableName][columnKey].type !== 'text' &&
-      !Object.hasOwn(schema[tableName][columnKey], 'defaultTo')
+      Object.hasOwn(column, 'nullable') &&
+      column.nullable !== true &&
+      column.type !== 'text' &&
+      !Object.hasOwn(column, 'defaultTo')
     ) {
       if (validator.isEmpty(strVal)) {
         message = tpl(messages.valueCannotBeBlank, {
@@ -77,10 +80,7 @@ export function validateSchema(tableName: string, model: Model, options?: Option
     }
 
     // validate boolean columns
-    if (
-      Object.hasOwn(schema[tableName][columnKey], 'type') &&
-      schema[tableName][columnKey].type === 'boolean'
-    ) {
+    if (column.type === 'boolean') {
       if (!(validator.isBoolean(strVal) || validator.isEmpty(strVal))) {
         message = tpl(messages.valueMustBeBoolean, {
           tableName: tableName,
@@ -103,12 +103,12 @@ export function validateSchema(tableName: string, model: Model, options?: Option
     // TODO: check if mandatory values should be enforced
     if (model.get(columnKey) !== null && model.get(columnKey) !== undefined) {
       // check length
-      if (Object.hasOwn(schema[tableName][columnKey], 'maxlength')) {
-        if (!validator.isLength(strVal, 0, schema[tableName][columnKey].maxlength)) {
+      if ('maxlength' in column && column.maxlength !== undefined) {
+        if (!validator.isLength(strVal, 0, column.maxlength)) {
           message = tpl(messages.valueExceedsMaxLength, {
             tableName: tableName,
             columnKey: columnKey,
-            maxlength: schema[tableName][columnKey].maxlength,
+            maxlength: column.maxlength,
           });
           validationErrors.push(
             new errors.ValidationError({
@@ -119,32 +119,44 @@ export function validateSchema(tableName: string, model: Model, options?: Option
         }
       }
 
+      // check pattern
+      if (
+        'pattern' in column &&
+        column.pattern !== undefined &&
+        !RegExp(column.pattern).test(strVal)
+      ) {
+        message = tpl(messages.valueDoesNotMatchPattern, {
+          tableName: tableName,
+          columnKey: columnKey,
+          pattern: column.pattern,
+        });
+        validationErrors.push(
+          new errors.ValidationError({
+            message: message,
+            context: tableName + '.' + columnKey,
+          }),
+        );
+      }
+
       // check validations objects
-      if (Object.hasOwn(schema[tableName][columnKey], 'validations')) {
+      if (column.validations) {
         validationErrors = validationErrors.concat(
-          validator.validate(
-            strVal,
-            columnKey,
-            schema[tableName][columnKey].validations,
-            tableName,
-          ),
+          validator.validate(strVal, columnKey, column.validations, tableName),
         );
       }
 
       // check type
-      if (Object.hasOwn(schema[tableName][columnKey], 'type')) {
-        if (schema[tableName][columnKey].type === 'integer' && !validator.isInt(strVal)) {
-          message = tpl(messages.valueIsNotInteger, {
-            tableName: tableName,
-            columnKey: columnKey,
-          });
-          validationErrors.push(
-            new errors.ValidationError({
-              message: message,
-              context: tableName + '.' + columnKey,
-            }),
-          );
-        }
+      if (column.type === 'integer' && !validator.isInt(strVal)) {
+        message = tpl(messages.valueIsNotInteger, {
+          tableName: tableName,
+          columnKey: columnKey,
+        });
+        validationErrors.push(
+          new errors.ValidationError({
+            message: message,
+            context: tableName + '.' + columnKey,
+          }),
+        );
       }
     }
   });

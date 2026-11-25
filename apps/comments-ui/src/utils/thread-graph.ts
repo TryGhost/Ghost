@@ -23,7 +23,6 @@ export function buildThreadGraph(rootComment: Comment): ThreadGraph {
   const replies = rootComment.replies || [];
   const byId = new Map<string, ThreadedReply>();
   const parentById = new Map<string, string | null>();
-  const depthById = new Map<string, number>();
 
   replies.forEach((reply) => {
     byId.set(reply.id, { ...reply, depth: 1, nestedReplies: [], siblingIndex: 0, siblingCount: 0 });
@@ -53,7 +52,6 @@ export function buildThreadGraph(rootComment: Comment): ThreadGraph {
       reply.depth = depth;
       reply.siblingIndex = index;
       reply.siblingCount = siblings.length;
-      depthById.set(reply.id, depth);
 
       assignThreadMetadata(reply.nestedReplies, depth + 1);
     });

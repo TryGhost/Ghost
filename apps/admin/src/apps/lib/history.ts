@@ -12,6 +12,8 @@ export function historyTitle(entry: AppInstallationHistoryEntry): string {
       return 'Updated';
     case 'suspended':
       return 'Updated, needs approval';
+    case 'resumed':
+      return 'Resumed, changes withdrawn';
     case 'changes_approved':
       return entry.moved_to ? `Moved to ${entry.moved_to}` : 'Changes approved';
     case 'uninstalled':
@@ -19,8 +21,4 @@ export function historyTitle(entry: AppInstallationHistoryEntry): string {
     default:
       return 'Changed';
   }
-}
-
-export function installedBy(history: AppInstallationHistoryEntry[]): string | undefined {
-  return history.find((entry) => entry.event === 'installed')?.actor?.name ?? undefined;
 }

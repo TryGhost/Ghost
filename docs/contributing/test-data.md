@@ -62,6 +62,9 @@ Use `--tables` for a narrow dataset and `--quantities` when the relationships
 from the full default dataset matter. The generator adds required table
 dependencies automatically and rejects unknown table names.
 
+An installed Ghost tree, such as the production image, has no gx. Run
+`node bin/generate-data.js` from its install directory with the same options.
+
 For the implementation and instructions for adding an importer, see the
 [data generator README](../../ghost/core/server/data/seeders/README.md).
 

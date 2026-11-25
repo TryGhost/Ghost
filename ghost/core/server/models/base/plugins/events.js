@@ -19,7 +19,7 @@ module.exports = function (Bookshelf) {
         this.on('saving', function onSaving(newObj, attrs, options) {
           if (options.method === 'insert') {
             // id = 0 is still a valid value for external usage
-            if (_.isUndefined(newObj.id) || _.isNull(newObj.id)) {
+            if (newObj.id === undefined || newObj.id === null) {
               newObj.setId();
             }
           }
@@ -118,9 +118,14 @@ module.exports = function (Bookshelf) {
        *
        * Lock target collection/model for further update operations.
        * This avoids collisions and possible content override cases.
+       *
+       * Eager-loaded relations are not locked. They are often shared between
+       * records (tags, authors, tiers), so locking them made concurrent edits
+       * of different records deadlock. Locking the parent row already
+       * serialises edits of the same record.
        */
       onFetching: function onFetching(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
+        if (options.forUpdate && options.transacting && !options.isEager) {
           options.query.forUpdate();
         }
       },
@@ -128,7 +133,7 @@ module.exports = function (Bookshelf) {
       onFetchedCollection() {},
 
       onFetchingCollection: function onFetchingCollection(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
+        if (options.forUpdate && options.transacting && !options.isEager) {
           options.query.forUpdate();
         }
       },
@@ -169,14 +174,13 @@ module.exports = function (Bookshelf) {
            *
            * Happens after validation to ensure we don't set fields which are not nullable on db level.
            */
-          _.each(
-            Object.keys(schema.tables[this.tableName]).filter((key) => key.indexOf('@@') === -1),
-            (columnKey) => {
+          Object.keys(schema.tables[this.tableName])
+            .filter((key) => key.indexOf('@@') === -1)
+            .forEach((columnKey) => {
               if (model.get(columnKey) === undefined) {
                 model.set(columnKey, null);
               }
-            },
-          );
+            });
 
           model._changed = _.cloneDeep(model.changed);
         });

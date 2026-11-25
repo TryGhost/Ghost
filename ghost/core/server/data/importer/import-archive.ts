@@ -3,10 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'fs-extra';
 import { globSync } from 'glob';
+import { extract } from '@tryghost/zip';
 
-const { extract } = require('@tryghost/zip') as {
-  extract(filePath: string, directory: string): Promise<void>;
-};
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 
@@ -35,13 +33,13 @@ interface ImportArchiveOptions {
 }
 
 interface ImportArchiveDependencies {
-  extract?: (filePath: string, directory: string) => Promise<void>;
+  extract?: (filePath: string, directory: string) => Promise<unknown>;
 }
 
 export default class ImportArchive {
   readonly extensions: string[];
   readonly directories: string[];
-  private readonly extractArchive: (filePath: string, directory: string) => Promise<void>;
+  private readonly extractArchive: (filePath: string, directory: string) => Promise<unknown>;
 
   constructor(
     { extensions, directories }: ImportArchiveOptions,
@@ -144,6 +142,7 @@ export default class ImportArchive {
     } catch (error) {
       await fs.remove(tmpDir).catch(() => {});
       const message = messageOf(error);
+      const lowerMessage = message.toLowerCase();
 
       if (message.startsWith('ENAMETOOLONG:')) {
         throw new errors.UnsupportedMediaTypeError({
@@ -155,8 +154,8 @@ export default class ImportArchive {
       }
 
       if (
-        message.includes('end of central directory record signature not found') ||
-        message.includes('invalid comment length')
+        lowerMessage.includes('end of central directory record signature not found') ||
+        lowerMessage.includes('invalid comment length')
       ) {
         throw new errors.UnsupportedMediaTypeError({
           message: tpl(messages.invalidZipFileNameEncoding),

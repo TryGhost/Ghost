@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createReadStream, existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -14,7 +15,7 @@ const { BookshelfPostsRepository } =
   require('../../../../../core/server/services/content-import/import/post-repository') as typeof import('../../../../../core/server/services/content-import/import/post-repository');
 const jobsPath = require.resolve('../../../../../core/server/services/jobs-service');
 require(jobsPath);
-const media = require('../../../../../core/server/services/media-inliner');
+const media = require('../../../../../core/server/services/media-inliner').default;
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const mail = require('../../../../../core/server/lib/mail');
 const sentry = require('../../../../../core/shared/sentry');
@@ -26,7 +27,7 @@ type Root = typeof import('../../../../../core/server/services/content-import');
 function job() {
   return new ContentCSVImportJob({
     importId: 'run_test',
-    file: { path: '/tmp/staged-import', name: 'posts.csv' },
+    file: { key: 'staged-import', name: 'posts.csv' },
     importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
     emailRecipient: 'owner@example.com',
   });
@@ -59,21 +60,19 @@ describe('Content import composition root', function () {
     }
   });
 
-  it('rejects both entry points before init and makes allSettled a harmless no-op', async function () {
+  it('rejects both entry points before init', function () {
     assert.throws(
       () => root.importCSV({ filePath: '/tmp/upload', fileName: 'posts.csv' }),
       /Content import service used before init/,
     );
     assert.throws(() => root.handleJob(job()), /Content import service used before init/);
-    await root.allSettled();
     sinon.assert.notCalled(send);
   });
 
-  it('validates requests before forwarding and retains the same importer for requests, jobs and draining', async function () {
+  it('validates requests before forwarding and retains the same importer for requests and jobs', async function () {
     const accepted = Promise.resolve({ importId: 'run_test', total: 1 });
     const imported = sandbox.stub(ContentCSVImporter.prototype, 'importCSV').returns(accepted);
     const handled = sandbox.stub(ContentCSVImporter.prototype, 'handle').resolves();
-    const drained = sandbox.stub(ContentCSVImporter.prototype, 'allSettled').resolves();
     root.init();
     assert.throws(() => root.importCSV({ filePath: '', fileName: 'posts.csv' }), {
       errorType: 'ValidationError',
@@ -91,12 +90,9 @@ describe('Content import composition root', function () {
     root.init();
     const delivered = job();
     assert.equal(root.handleJob(delivered), handled.firstCall.returnValue);
-    assert.equal(root.allSettled(), drained.firstCall.returnValue);
-    await root.allSettled();
     sinon.assert.calledOnceWithExactly(imported, request);
     sinon.assert.calledOnceWithExactly(handled, delivered);
     assert.equal(handled.firstCall.thisValue, importer);
-    assert.equal(drained.firstCall.thisValue, importer);
     sinon.assert.notCalled(send);
   });
 
@@ -113,17 +109,17 @@ describe('Content import composition root', function () {
       (error) => error === failure,
     );
     assert.throws(() => root.handleJob(job()), /Content import service used before init/);
-    await root.allSettled();
     root.init();
     const handled = sandbox.stub(ContentCSVImporter.prototype, 'handle').resolves();
     await root.handleJob(job());
     sinon.assert.calledOnce(handled);
   });
 
-  it('looks up jobs, storage and media when work runs, keeping one run alive across repeated init', async function () {
+  it('looks up jobs, storage and media only when work runs', async function () {
     const getJobs = sandbox.stub().throws(new Error('Jobs not ready'));
     sandbox.replace(require.cache[jobsPath]!, 'exports', { getInstance: getJobs });
-    const getMedia = sandbox.stub(media, 'getInstance').throws(new Error('Media not ready'));
+    const getMedia = sandbox.stub().throws(new Error('Media not ready'));
+    sandbox.stub(media, 'service').get(getMedia);
     const getAdapter = sandbox
       .stub(adapterManager, 'getAdapter')
       .throws(new Error('Storage not ready'));
@@ -144,6 +140,7 @@ describe('Content import composition root', function () {
       storagePath: directory,
       save: sandbox.stub().resolves('/imports/posts.csv'),
       urlToPath: () => 'posts.csv',
+      readStream: sandbox.stub().callsFake(async () => createReadStream(filePath)),
       delete: sandbox.stub().resolves(),
     };
     getAdapter.withArgs('storage:imports').returns(storage);
@@ -200,12 +197,32 @@ describe('Content import composition root', function () {
     assert.ok(delivered instanceof ContentCSVImportJob);
     assert.equal(delivered.importId, accepted.importId);
     root.init();
+    const mkdtemp = sandbox.spy(fs, 'mkdtemp');
     await root.handleJob(delivered);
-    await root.allSettled();
-    sinon.assert.calledOnceWithExactly(importUrl, 'https://images.example/post.png');
+    assert.equal(existsSync(await mkdtemp.firstCall.returnValue), false);
+    sinon.assert.calledOnceWithExactly(
+      importUrl,
+      'https://images.example/post.png',
+      sinon.match({ originSchemes: sinon.match.has('get').and(sinon.match.has('set')) }),
+    );
     sinon.assert.calledOnce(write);
     assert.equal(write.firstCall.args[0].feature_image, '/content/images/local.png');
     sinon.assert.calledOnce(send);
+    sinon.assert.calledOnceWithExactly(storage.readStream, { path: 'posts.csv' });
     sinon.assert.calledOnce(storage.delete);
+  });
+
+  it('removes the local copy when the stored upload cannot be downloaded', async function () {
+    const failure = new Error('storage unavailable');
+    sandbox
+      .stub(adapterManager, 'getAdapter')
+      .withArgs('storage:imports')
+      .returns({ readStream: sandbox.stub().rejects(failure), delete: sandbox.stub().resolves() });
+    const mkdtemp = sandbox.spy(fs, 'mkdtemp');
+    root.init();
+
+    await assert.rejects(root.handleJob(job()), (thrown) => thrown === failure);
+
+    assert.equal(existsSync(await mkdtemp.firstCall.returnValue), false);
   });
 });

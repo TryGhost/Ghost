@@ -2,7 +2,10 @@ const _ = require('lodash');
 const { ValidationError } = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
-const AnnouncementBarSettings = require('../../../../../services/announcement-bar-service/announcement-bar-settings');
+const {
+  ANNOUNCEMENT_BACKGROUND_VALUES,
+  ANNOUNCEMENT_VISIBILITY_VALUES,
+} = require('../../../../../data/schema/default-settings/announcement.values');
 
 const messages = {
   invalidEmailReceived: 'Please send a valid email',
@@ -37,7 +40,7 @@ function parseArraySettingValue(value) {
 
 function isValidNavigationUrl(value) {
   return (
-    _.isString(value) &&
+    typeof value === 'string' &&
     !value.match(/\s/) &&
     (validator.isURL(value, { require_protocol: true }) || value.match(navUrlRegex))
   );
@@ -57,7 +60,7 @@ function isLocalhostIconUrl(value) {
 
 function isValidNavigationIcon(value) {
   return (
-    _.isString(value) &&
+    typeof value === 'string' &&
     !value.match(/\s/) &&
     (validator.isURL(value, iconUrlOptions) ||
       value.match(iconUrlRegex) ||
@@ -69,7 +72,7 @@ function validateNavigationItems(setting, errors) {
   const navigationItems = parseArraySettingValue(setting.value);
 
   navigationItems.forEach((item) => {
-    if (!_.isObject(item) || _.isFunction(item)) {
+    if (!_.isObject(item) || typeof item === 'function') {
       errors.push(
         new ValidationError({
           message: tpl(messages.invalidNavigationItemValueReceived),
@@ -79,7 +82,7 @@ function validateNavigationItems(setting, errors) {
       return;
     }
 
-    if (_.isUndefined(item.url) || !isValidNavigationUrl(item.url)) {
+    if (item.url === undefined || !isValidNavigationUrl(item.url)) {
       errors.push(
         new ValidationError({
           message: tpl(messages.invalidNavigationItemValueReceived),
@@ -88,10 +91,10 @@ function validateNavigationItems(setting, errors) {
       );
     }
 
-    const hasLabel = _.isString(item.label) && !item.label.match(/^\s*$/);
-    const hasIcon = _.isString(item.icon) && !item.icon.match(/^\s*$/);
+    const hasLabel = typeof item.label === 'string' && !item.label.match(/^\s*$/);
+    const hasIcon = typeof item.icon === 'string' && !item.icon.match(/^\s*$/);
 
-    if (!_.isUndefined(item.label) && !_.isString(item.label)) {
+    if (item.label !== undefined && typeof item.label !== 'string') {
       errors.push(
         new ValidationError({
           message: tpl(messages.invalidNavigationItemValueReceived),
@@ -101,7 +104,7 @@ function validateNavigationItems(setting, errors) {
     }
 
     if (
-      !_.isUndefined(item.icon) &&
+      item.icon !== undefined &&
       item.icon !== null &&
       item.icon !== '' &&
       !isValidNavigationIcon(item.icon)
@@ -124,7 +127,7 @@ function validateNavigationItems(setting, errors) {
     }
 
     if (
-      !_.isUndefined(item.visibility) &&
+      item.visibility !== undefined &&
       !navigationItemVisibilityValues.includes(item.visibility)
     ) {
       errors.push(
@@ -199,15 +202,9 @@ module.exports = {
         // NOTE: safe to parse because of array validation up top
         const visibilityValues = JSON.parse(setting.value);
 
-        const validVisibilityValues = [
-          AnnouncementBarSettings.VisibilityValues.VISITORS,
-          AnnouncementBarSettings.VisibilityValues.FREE_MEMBERS,
-          AnnouncementBarSettings.VisibilityValues.PAID_MEMBERS,
-        ];
-
         if (visibilityValues.length) {
           visibilityValues.forEach((visibilityValue) => {
-            if (!validVisibilityValues.includes(visibilityValue)) {
+            if (!ANNOUNCEMENT_VISIBILITY_VALUES.includes(visibilityValue)) {
               const visibilityError = new ValidationError({
                 message: tpl(messages.invalidAnnouncementVisibilityValueReceived),
                 property: setting.key,
@@ -221,7 +218,7 @@ module.exports = {
       if (setting.key === 'announcement_background') {
         const announcementBackgroundValue = setting.value;
 
-        if (!['accent', 'dark', 'light'].includes(announcementBackgroundValue)) {
+        if (!ANNOUNCEMENT_BACKGROUND_VALUES.includes(announcementBackgroundValue)) {
           const visibilityError = new ValidationError({
             message: tpl(messages.invalidAnnouncementBackgroundValueReceived),
             property: setting.key,

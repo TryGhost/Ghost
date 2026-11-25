@@ -23,6 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   LucideIcon,
@@ -42,6 +43,10 @@ import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletter
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import {
+  UnsupportedNewsletterPaginationError,
+  useNewsletterPeriodStats,
+} from '@/analytics/hooks/use-newsletter-period-stats';
+import {
   useNewsletterStatsWithRangeSplit,
   useSubscriberCountWithRange,
 } from '@/analytics/hooks/use-newsletter-stats-with-range';
@@ -54,8 +59,8 @@ export type AvgsDataItem = {
   sent_to: number;
   total_opens: number;
   open_rate: number;
-  total_clicks: number;
-  click_rate: number;
+  total_clicks?: number;
+  click_rate?: number;
 };
 
 // Separate component for just the table rows that handles data fetching
@@ -120,16 +125,18 @@ const NewsletterTableRows: React.FC<{
             <TableCell className="font-medium">
               <div className="group/link inline-flex items-center gap-2">
                 {post.post_id ? (
-                  <Button
-                    className="h-auto p-0 text-left whitespace-normal hover:underline!"
-                    title="View post analytics"
-                    variant="link"
-                    onClick={() => {
-                      navigate(`/posts/analytics/${post.post_id}/`);
-                    }}
-                  >
-                    {post.post_title}
-                  </Button>
+                  <RowPrimaryAction asChild>
+                    <Button
+                      className="h-auto p-0 text-left whitespace-normal hover:underline!"
+                      title="View post analytics"
+                      variant="link"
+                      onClick={() => {
+                        navigate(`/posts/analytics/${post.post_id}/`);
+                      }}
+                    >
+                      {post.post_title}
+                    </Button>
+                  </RowPrimaryAction>
                 ) : (
                   <>{post.post_title}</>
                 )}
@@ -288,6 +295,7 @@ const Newsletters: React.FC = () => {
   const { range, selectedNewsletterId } = useAnalytics();
   const [searchParams] = useSearchParams();
   const newslettersEnabled = useNewslettersEnabled();
+  const emailTrackClicksEnabled = useEmailTrackClicks();
 
   // Get the initial tab from URL search parameters
   const initialTab = searchParams.get('tab') || 'total-subscribers';
@@ -317,17 +325,21 @@ const Newsletters: React.FC = () => {
       shouldFetchStats || false,
     );
 
-  // Get newsletter stats with click data to check if any newsletters were sent in the time period
-  // and to calculate averages - using the same data source as the table for consistency
+  // Fetch every send in the selected period for the averages and charts.
   const {
     data: newsletterStatsData,
     isLoading: isNewsletterStatsLoading,
+    isError: isNewsletterStatsError,
+    error: newsletterStatsError,
+    refetch: refetchNewsletterStats,
     isClicksLoading,
-  } = useNewsletterStatsWithRangeSplit(
+    isClicksError,
+    refetchClicks,
+  } = useNewsletterPeriodStats(
     range,
-    'date asc',
     selectedNewsletterId || undefined,
     shouldFetchStats || false,
+    emailTrackClicksEnabled === true,
   );
 
   // Find the selected newsletter to get its active_members count
@@ -413,26 +425,14 @@ const Newsletters: React.FC = () => {
     return values;
   }, [subscriberStatsData, range]);
 
-  // Create avgsData from newsletter stats for the bar charts
-  const avgsData: AvgsDataItem[] = useMemo(() => {
-    if (!newsletterStatsData?.stats) {
-      return [];
-    }
-
-    return newsletterStatsData.stats.map((stat) => ({
-      post_id: stat.post_id,
-      post_title: stat.post_title,
-      send_date: stat.send_date,
-      sent_to: stat.sent_to,
-      total_opens: stat.total_opens,
-      open_rate: stat.open_rate,
-      total_clicks: stat.total_clicks || 0,
-      click_rate: stat.click_rate || 0,
-    }));
-  }, [newsletterStatsData]);
+  // Create avgsData from newsletter stats for the bar charts, oldest send first
+  const avgsData: AvgsDataItem[] = useMemo(
+    () => newsletterStatsData?.stats.slice().reverse() ?? [],
+    [newsletterStatsData],
+  );
 
   // Separate loading states for different sections
-  const isKPIsLoading = isSubscriberStatsLoading || isClicksLoading || isNewsletterStatsLoading;
+  const isKPIsLoading = isSubscriberStatsLoading;
 
   // Show data only if there are actual newsletters sent in the time period
   // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
@@ -458,11 +458,28 @@ const Newsletters: React.FC = () => {
             <CardContent>
               <NewsletterKPIs
                 avgsData={avgsData}
+                clickError={
+                  isClicksError ? 'Unable to load click statistics. Please try again.' : undefined
+                }
                 initialTab={initialTab}
-                isAvgsLoading={false}
+                isAvgsLoading={isNewsletterStatsLoading}
+                isClicksLoading={isClicksLoading}
                 isLoading={isKPIsLoading}
+                periodError={
+                  isNewsletterStatsError
+                    ? newsletterStatsError instanceof UnsupportedNewsletterPaginationError
+                      ? 'Update Ghost to see newsletter statistics for the whole period.'
+                      : 'Unable to load newsletter statistics. Please try again.'
+                    : undefined
+                }
                 subscribersData={subscribersData}
                 totals={totals}
+                onRetryClickStats={() => {
+                  void refetchClicks();
+                }}
+                onRetryPeriodStats={() => {
+                  void refetchNewsletterStats();
+                }}
               />
             </CardContent>
           </Card>

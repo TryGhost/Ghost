@@ -125,4 +125,4 @@ See `shade-tokens-not-hex` and `shade-no-dark-variants`.
 
 ## Source of truth
 
-Storybook → Overview / Contributing and the component's stories.
+Shade's [`CONTRIBUTING.md`](../../../apps/shade/CONTRIBUTING.md) and the component's stories.

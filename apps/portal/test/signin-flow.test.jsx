@@ -272,9 +272,7 @@ describe('Signin', () => {
       expectOTCEnabledSendMagicLinkAPICall(ghostApi, 'test@test-inbox-link.example');
     });
   });
-});
 
-describe('Signin', () => {
   afterEach(() => {
     window.location = realLocation;
   });

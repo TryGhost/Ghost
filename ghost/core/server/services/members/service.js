@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const MembersSSR = require('./members-ssr');
@@ -7,14 +6,13 @@ const MembersConfigProvider = require('./members-config-provider');
 const { makeImporter, makeExporter } = require('./import-export');
 const { resolveInlineThreshold } = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
-const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const models = require('../../models');
 const { GhostMailer } = require('../../lib/mail');
 const jobsService = require('../jobs-service');
-const tiersService = require('../tiers');
+const tiersService = require('../tiers').default;
 const giftService = require('../gifts');
 const VerificationTrigger = require('../verification-trigger');
 const { verificationWebhookService } = require('../verification/verification-webhook-service');
@@ -63,10 +61,10 @@ const buildImporterDeps = ({ stripeAPIService }) => {
       return api.members;
     },
     getDefaultTier: () => {
-      return tiersService.api.readDefaultTier();
+      return tiersService.service.api.readDefaultTier();
     },
     getTierByName: async (name) => {
-      const tiers = await tiersService.api.browse({
+      const tiers = await tiersService.service.api.browse({
         filter: {
           name,
         },
@@ -74,7 +72,7 @@ const buildImporterDeps = ({ stripeAPIService }) => {
 
       if (tiers.data.length > 0) {
         // It is possible that there are multiple tiers with the same name so return the last one in the array -
-        // `tiersService.api.browse` returns all tiers, but without any ordering applied, so we assume that
+        // `tiersService.service.api.browse` returns all tiers, but without any ordering applied, so we assume that
         // the last one in the array is the most recently created
         return tiers.data.pop();
       }
@@ -124,14 +122,11 @@ const countRemovedEmailRecipients = async (since, limit) => {
 
 const initVerificationTrigger = () => {
   return new VerificationTrigger({
-    getApiTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
-    getAdminTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
-    getImportTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+    getApiTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.apiThreshold,
+    getAdminTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.adminThreshold,
+    getImportTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.importThreshold,
     getRemovedRecipientsThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.removedRecipientsThreshold'),
+      config.get('hostSettings')?.emailVerification?.removedRecipientsThreshold,
     isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
     isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
     setVerificationRequired: (value) => settingsCache.set('email_verification_required', { value }),
@@ -170,10 +165,6 @@ module.exports = {
 
     if (!membersApi) {
       membersApi = createMembersApiInstance(membersConfig);
-
-      membersApi.bus.on('error', function (err) {
-        logging.error(err);
-      });
     }
 
     module.exports.requestIntegrityTokenProvider = new RequestIntegrityTokenProvider({

@@ -4,10 +4,6 @@ import type { PostResource } from '@/posts/list/post-resource';
 /**
  * Which metric columns a row shows, and where each links.
  *
- * Ported from `list-item-analytics.hbs` plus the `showEmailOpenAnalytics`,
- * `showEmailClickAnalytics` and `showAttributionAnalytics` computeds in
- * `apps/ember-admin/app/models/post.js`.
- *
  * Two rules are easy to get wrong and invisible unless a site is configured a
  * particular way: **Sent is a fallback**, shown only when neither Opens nor
  * Clicks is; and the email columns need tracking enabled *both* site-wide and
@@ -44,7 +40,7 @@ const COLUMNS: Record<PostMetricKey, Omit<PostMetricColumn, 'key'>> = {
 };
 
 /**
- * Ember's `hasBeenEmailed` — a post (never a page) that went out and didn't
+ * A post (never a page) that went out and didn't
  * fail. Gates the *rate* columns; the Sent column has a weaker gate, below.
  */
 function hasBeenEmailed(post: PostListItem, resource: PostResource): boolean {
@@ -107,10 +103,9 @@ function showsAttribution(
 /**
  * Which columns a row shows.
  *
- * These conditions come from `list-item-analytics.hbs`, **not** from the
- * `show*Analytics` computeds above — Ember deliberately renders two of the
- * columns under weaker conditions than the computeds that gate the trailing
- * button, and collapsing the two loses real columns:
+ * These conditions are **not** the `shows*` predicates above: two of the
+ * columns render under weaker conditions than the predicates that gate the
+ * trailing button, and collapsing the two loses real columns:
  *
  * - the Members column asks only "is source tracking on and is this
  *   published?", so an invite-only site still gets it;
@@ -154,7 +149,6 @@ export function getPostMetricColumns(
   return keys.map((key) => ({ key, ...COLUMNS[key] }));
 }
 
-/** `round(clicks / emailCount * 100)`, matching Ember's `clickRate`. */
 export function getPostClickRate(post: PostListItem): number {
   const sent = post.email?.email_count;
   const clicks = post.count?.clicks;
@@ -166,7 +160,6 @@ export function getPostClickRate(post: PostListItem): number {
   return Math.round((clicks / sent) * 100);
 }
 
-/** Ember stores this as an already-computed percentage on the email. */
 export function getPostOpenRate(post: PostListItem): number {
   const sent = post.email?.email_count;
   const opened = post.email?.opened_count;
@@ -179,8 +172,7 @@ export function getPostOpenRate(post: PostListItem): number {
 }
 
 /**
- * Whether the row's trailing button goes to the post's analytics screen, per
- * `hasAnalyticsPage` in `apps/ember-admin/app/models/post.js`.
+ * Whether the row's trailing button goes to the post's analytics screen.
  *
  * Note what it is *not*: web analytics ("Visitors") does not count. A post can
  * show a Visitors column and still have no analytics page — the button falls

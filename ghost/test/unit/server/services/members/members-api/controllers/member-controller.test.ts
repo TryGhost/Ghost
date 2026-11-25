@@ -1,6 +1,12 @@
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import MemberController from '../../../../../../../core/server/services/members/members-api/controllers/member-controller';
+import { createTracer } from '../../../../../../../core/server/lib/tracing/create-tracer';
+import { membersTracking } from '../../../../../../../core/server/services/members/tracking';
+
+const tracking = membersTracking({
+  tracer: createTracer({ transport: { metric: async () => null }, logging: { error() {} } }),
+});
 
 describe('MemberController', function () {
   describe('updateSubscription', function () {
@@ -59,6 +65,7 @@ describe('MemberController', function () {
       };
 
       const controller = new MemberController({
+        tracking,
         memberRepository,
         productRepository,
         tiersService,
@@ -108,6 +115,7 @@ describe('MemberController', function () {
       };
 
       const controller = new MemberController({
+        tracking,
         memberRepository,
         tiersService,
         tokenService,
@@ -151,6 +159,7 @@ describe('MemberController', function () {
       };
 
       const controller = new MemberController({
+        tracking,
         memberRepository,
         tiersService,
         tokenService,
@@ -205,6 +214,7 @@ describe('MemberController', function () {
       };
 
       const controller = new MemberController({
+        tracking,
         memberRepository,
         productRepository,
         StripePrice,
@@ -253,6 +263,7 @@ describe('MemberController', function () {
       };
 
       const controller = new MemberController({
+        tracking,
         memberRepository,
         stripePlansService,
         tokenService,
@@ -305,6 +316,7 @@ describe('MemberController', function () {
         };
 
         const controller = new MemberController({
+          tracking,
           memberRepository,
           stripePlansService,
           tokenService,
@@ -356,6 +368,7 @@ describe('MemberController', function () {
         };
 
         const controller = new MemberController({
+          tracking,
           memberRepository,
           stripePlansService,
           tokenService,

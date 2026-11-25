@@ -2,7 +2,6 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
@@ -93,15 +92,13 @@ type HeaderItem =
       shortcut?: string;
       /** The post's main action, Publish or Update, in the header's success colour. */
       emphasis?: boolean;
-      /** Unpublish and Unschedule keep their quieter button. */
-      quiet?: boolean;
       /** A contributor's Save keeps its plain button. */
       plain?: boolean;
     }
   | { kind: 'inputs-error'; id: string; message: string; onRetry: () => void };
 
 const EMPHASIS_BUTTON =
-  'font-semibold text-state-success hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100';
+  'font-semibold text-publish-accent hover:text-publish-accent disabled:text-text-secondary/60 disabled:opacity-100';
 
 /**
  * The header's controls, in the header row, or, below the small breakpoint, in
@@ -109,8 +106,16 @@ const EMPHASIS_BUTTON =
  * previews they open stay mounted where they are, so crossing the breakpoint
  * keeps an open flow and its choices.
  */
-function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTMLElement | null }) {
-  const { isAdmin7 } = useShade();
+function HeaderItems({
+  items,
+  bottomBar,
+  locked,
+}: {
+  items: HeaderItem[];
+  bottomBar: HTMLElement | null;
+  /** Another tab holds the document, so no action here can run. */
+  locked: boolean;
+}) {
   const atBottom = !!bottomBar;
   // The bar's rightmost action, Publish, Update or Save, is its primary button.
   const lastAction = items.map((item) => item.kind).lastIndexOf('action');
@@ -128,7 +133,7 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
           </Text>
           <Button
             className="bg-background/80 backdrop-blur-sm"
-            size={isAdmin7 ? 'default' : 'sm'}
+            size="default"
             variant="ghost"
             onClick={item.onRetry}
           >
@@ -141,8 +146,8 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
       return (
         <Button
           key={item.id}
-          disabled={item.disabled}
-          size={isAdmin7 ? 'default' : 'sm'}
+          disabled={locked || item.disabled}
+          size="default"
           onClick={item.onSelect}
         >
           {item.label}
@@ -153,9 +158,7 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
       <PageHeader.Action
         key={item.id}
         className={cn('bg-background/80 backdrop-blur-sm', item.emphasis && EMPHASIS_BUTTON)}
-        disabled={item.disabled}
-        fallbackSize="sm"
-        fallbackVariant={item.quiet ? 'ghost' : undefined}
+        disabled={locked || item.disabled}
         label={item.label}
         shortcut={atBottom ? undefined : item.shortcut}
         onClick={item.onSelect}
@@ -194,6 +197,8 @@ export interface EditorHeaderActionsProps {
   revealInvalidField: () => InvalidField | null;
   /** The editor's bottom bar, which holds the controls below the small breakpoint. */
   bottomBar: HTMLElement | null;
+  /** Another tab holds the document: every control is disabled and no shortcut saves or opens a flow. */
+  locked?: boolean;
 }
 
 /**
@@ -212,18 +217,27 @@ export function EditorHeaderActions({
   offersEmailRetry,
   revealInvalidField,
   bottomBar: bottomBarSlot,
+  locked = false,
 }: EditorHeaderActionsProps) {
   const bottomBar = useSmallScreen() ? bottomBarSlot : null;
   const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
+  // The preview publishes and saves the email subject, so it closes with the editor.
+  if (locked && previewOpen) {
+    setPreviewOpen(false);
+  }
   const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
   const contributorSave = useSaveButtonPhase(feedback.save, session.contentKey);
 
-  useSaveShortcut(() => void feedback.save());
+  useSaveShortcut(() => {
+    if (!locked) {
+      void feedback.save();
+    }
+  });
 
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
-  // audience query, so Ember offers a preview only while the post is a draft.
+  // audience query, so a preview is offered only while the post is a draft.
   const isDraft = post.status === 'draft';
 
   // Preview, Publish, Unpublish, Unschedule and their shortcuts open nothing while
@@ -259,10 +273,10 @@ export function EditorHeaderActions({
       }
       openPreview();
     }, [onOpenFlow, openPreview, previewOpen]),
-    isDraft && persistedId !== null,
+    isDraft && persistedId !== null && !locked,
   );
 
-  // Ember saves a dirty draft before previewing it and leaves every other post as it is.
+  // A dirty draft is saved before previewing; every other post is left as it is.
   const saveBeforePreview = useCallback(async () => {
     if (session.publishTime.status !== 'draft' || !session.isDirty()) {
       return;
@@ -329,6 +343,7 @@ export function EditorHeaderActions({
                 onSelect: () => void contributorSave.run(),
               },
             ]}
+            locked={locked}
           />
           {isDraft ? <PostPreviewModal {...preview} /> : null}
         </>
@@ -338,6 +353,7 @@ export function EditorHeaderActions({
           feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
+          locked={locked}
           offersEmailRetry={offersEmailRetry}
           openFlow={openFlow}
           post={post}
@@ -363,6 +379,7 @@ interface PublishActionsProps {
   tkCount: number;
   isDraft: boolean;
   isSaving: boolean;
+  locked: boolean;
   offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
@@ -387,6 +404,7 @@ function PublishActions({
   tkCount,
   isDraft,
   isSaving,
+  locked,
   offersEmailRetry,
   openFlow,
   preview,
@@ -405,13 +423,9 @@ function PublishActions({
     defaultErrorHandler: false,
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
-  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
   // The preview and the publish flow start from the draft's remembered newsletter,
   // and a pick in either is remembered for both.
   const draftNewsletter = useDraftNewsletter({
-    enabled: editorImprovements,
     postId: post.id,
     status: post.status,
     newsletters: inputs.isReady ? inputs.site.newsletters : null,
@@ -508,9 +522,9 @@ function PublishActions({
 
   // The chord stays off while the preview is open: the preview's own Publish
   // button is the only way into the flow from there.
-  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
+  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open && !locked);
 
-  // Ember routes a sent post to the update flow from its status line, not the header.
+  // A sent post reaches the update flow from its status line, not the header.
   const offersUpdateFlow = !isDraft && post.status !== 'sent';
   const sentOpensUpdateFlow = post.status === 'sent' && post.email?.status !== 'failed';
 
@@ -591,7 +605,6 @@ function PublishActions({
                 // The update flow is built from the publish inputs; a click before
                 // they load would open it unasked once they do.
                 disabled: !inputs.isReady,
-                quiet: true,
                 onSelect: openUpdateFlow,
               } satisfies HeaderItem,
             ]
@@ -613,7 +626,7 @@ function PublishActions({
 
   return (
     <>
-      <HeaderItems bottomBar={bottomBar} items={items} />
+      <HeaderItems bottomBar={bottomBar} items={items} locked={locked} />
       {isDraft ? (
         <PostPreviewModal
           {...preview}
@@ -649,10 +662,11 @@ function PublishActions({
             if (hasEmail) {
               draftNewsletter.forget();
             }
+            // Post analytics is Owner and Administrator only.
             const destination =
               post.displayName === 'page'
                 ? '/pages'
-                : !isScheduled && (hasEmail || post.email || post.emailOnly)
+                : inputs.user.isAdmin && !isScheduled && (hasEmail || post.email || post.emailOnly)
                   ? `/posts/analytics/${postId}`
                   : '/posts';
             navigate(destination);

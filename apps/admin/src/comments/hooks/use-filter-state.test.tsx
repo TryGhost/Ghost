@@ -140,6 +140,30 @@ describe('use-filter-state', () => {
       expect(result.current.query).toBe('thread=is%3Acomment_123&filter=count.reports%3A%3E0');
     });
 
+    it('hydrates external date-control changes without restoring stale Date filters', () => {
+      const { result } = renderHook(
+        () => {
+          const state = useFilterState('UTC');
+          const [searchParams, setSearchParams] = useSearchParams();
+          return { ...state, query: searchParams.toString(), setSearchParams };
+        },
+        {
+          wrapper: createWrapper(
+            "/?filter=status:hidden%2Bcreated_at:>='2026-01-01T00:00:00.000Z'",
+          ),
+        },
+      );
+
+      act(() => {
+        result.current.setSearchParams({ filter: 'status:hidden', range: '7' });
+      });
+
+      expect(result.current.filters.map(({ field }) => field)).toEqual(['status']);
+      expect(result.current.nql).toBe('status:hidden');
+      expect(new URLSearchParams(result.current.query).get('filter')).toBe('status:hidden');
+      expect(new URLSearchParams(result.current.query).get('range')).toBe('7');
+    });
+
     it('keeps draft filters that are not serializable yet', () => {
       const { result } = renderHook(
         () => {

@@ -38,6 +38,21 @@ test.describe('Koening Editor with minimal nodes', async function () {
         `);
     });
 
+    test('formats a selection as inline code when typing `', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('Hello World');
+        await selectBackwards(page, 5);
+
+        await page.keyboard.press('`');
+
+        await assertHTML(page, html`
+            <p dir="ltr">
+                <span data-lexical-text="true">Hello</span>
+                <code spellcheck="false" data-lexical-text="true"><span>World</span></code>
+            </p>
+        `);
+    });
+
     test('ignores hr card shortcut', async function () {
         await focusEditor(page);
 

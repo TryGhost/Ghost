@@ -140,7 +140,7 @@ describe('Front-end gift links', function () {
     ]);
 
     // Mint a live gift link for the paid post, the paid page and the members post.
-    const giftLinksService = require('../../core/server/services/gift-links');
+    const giftLinksService = require('../../core/server/services/gift-links').default;
     token = (await giftLinksService.service.ensure({ actor: null }, paidPost.id)).giftLinks[0]
       .token;
     pageToken = (await giftLinksService.service.ensure({ actor: null }, paidPage.id)).giftLinks[0]

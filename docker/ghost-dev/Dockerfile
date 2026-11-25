@@ -2,7 +2,7 @@
 # Minimal Development Dockerfile for Ghost Core
 # Source code is mounted at runtime for hot-reload support
 
-ARG NODE_VERSION=22.23.3
+ARG NODE_VERSION=22.23.5
 
 FROM node:$NODE_VERSION-bookworm-slim
 
@@ -49,6 +49,7 @@ COPY --parents \
     koenig/*/package.json \
     tools/configs/*/package.json \
     packages/**/package.json \
+    contracts/*/package.json \
     ./
 
 # Copy root lifecycle scripts/hooks needed by `pnpm install`. Only the preinstall

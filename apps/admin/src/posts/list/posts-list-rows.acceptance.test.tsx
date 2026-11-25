@@ -9,8 +9,10 @@ import {
   fakePosts,
   fakePostsListScreen,
   post,
+  fakeAdminStats,
   renderAdminApp,
   settingsResponse,
+  settleRequests,
   staffRole,
   tag,
 } from '@test-utils/acceptance';
@@ -28,10 +30,15 @@ const emailMetricsSettings = settingsResponse({
 });
 
 /**
- * What a row says, and the two empty states — the parity-critical surface of
- * the list. The strings themselves are unit-tested in post-row-copy.test.ts;
- * these check they reach the screen and that the states switch correctly.
+ * What a row says, and the two empty states. The strings themselves are
+ * unit-tested in post-row-copy.test.ts; these check they reach the screen and
+ * that the states switch correctly.
  */
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
+
 describe('Posts list rows', () => {
   // The filter bar mounts with the screen and probes these to resolve any
   // author/tag slug in the URL into a name.
@@ -113,6 +120,26 @@ describe('Posts list rows', () => {
       .toHaveAttribute('href', `#/editor/post/${target.id}`);
   });
 
+  it.each([false, true])('expands post hit areas with admin7Design %s', async (admin7Design) => {
+    const target = post({ title: 'Expanded target', status: 'draft' });
+    fakePosts([target]);
+    await renderAdminApp('/posts', { labs: { admin7Design } });
+
+    const row = postsListScreen.listItems().first();
+    const link = postsListScreen.rowLink().first();
+    await expect.element(link).toBeVisible();
+
+    await expect
+      .poll(() => {
+        const bounds = row.element().getBoundingClientRect();
+        const y = bounds.top + bounds.height / 2;
+        return [bounds.left - 8, bounds.right + 8].every(
+          (x) => document.elementFromPoint(x, y)?.closest('a') === link.element(),
+        );
+      })
+      .toBe(true);
+  });
+
   describe('as a Contributor', () => {
     const asContributor = () => {
       const me = currentUserResponse();
@@ -135,7 +162,7 @@ describe('Posts list rows', () => {
       await expect.element(link).toHaveAttribute('target', '_blank');
     });
 
-    // Ember's isPublished is strictly status === 'published', so an
+    // Only status === 'published' counts as published, so an
     // email-only post still opens in the editor.
     it('still links an email-only post to the editor', async () => {
       const target = post({ title: 'Email only', status: 'sent' });
@@ -255,6 +282,9 @@ describe('Posts list email sending status', () => {
     await expect.element(row).toHaveTextContent('Sending emails');
     await expect.element(row).not.toHaveTextContent('Published and sent');
     await expect.poll(() => failedStatusApi.requests.length).toBe(1);
+    // Focus doesn't refetch a query that's still fetching, and the fake records
+    // the request before the app has its error, so let it finish first
+    await settleRequests();
 
     const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
       email_statuses: [
@@ -504,7 +534,7 @@ describe('Posts list empty states', () => {
       .toHaveTextContent('No posts match the current filter');
   });
 
-  // Ember's "Show all posts" resets the filters but deliberately not the
+  // "Show all posts" resets the filters but deliberately not the
   // sort, so a chosen order survives.
   it('clears the filters but keeps the sort when taking that way back', async () => {
     fakePosts([]);
@@ -515,7 +545,7 @@ describe('Posts list empty states', () => {
     await expect.poll(currentRoute).toBe('/posts?order=published_at+asc');
   });
 
-  // Sorting is not filtering: Ember excludes `order` from this check, so
+  // Sorting is not filtering: `order` is excluded from this check, so
   // re-sorting an empty list still offers "write your first post".
   it('treats a sort-only URL as unfiltered', async () => {
     fakePosts([]);
@@ -571,7 +601,7 @@ describe('Posts list trailing action button', () => {
     await expect.element(postsListScreen.actionTooltip('Post analytics')).toBeVisible();
   });
 
-  // Same post, lesser role: Ember gates the analytics screen on isAdmin.
+  // Same post, lesser role: the analytics screen needs Owner or Administrator.
   it('falls back to the editor for an author', async () => {
     fakeAdminEndpoint('GET', /^\/settings\//, settingsWithTracking);
     fakePosts([emailedPost]);

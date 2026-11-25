@@ -25,7 +25,7 @@ import {
 /**
  * A cmd-click on a row is a cmd-click on a *link*, which opens a new browser
  * tab — dispatching the mousedown directly exercises the selection path
- * without asking the browser to open tabs mid-suite. Ember behaves the same.
+ * without asking the browser to open tabs mid-suite.
  */
 export function metaMouseDown(element: Element): void {
   element.dispatchEvent(
@@ -49,8 +49,8 @@ export const postsListScreen = {
   /** The <ul>. Carries `data-selection` so an inverted selection is observable. */
   listRoot: () => page.getByTestId(postsList).element(),
   /**
-   * Titles of the currently selected rows, keyed off the same `data-selected`
-   * attribute Ember sets. Read as elements rather than as a locator because
+   * Titles of the currently selected rows, keyed off the `data-selected`
+   * attribute. Read as elements rather than as a locator because
    * Vitest's locators have no attribute selector; pair it with `expect.poll`
    * so it still retries while React settles.
    */
@@ -116,7 +116,8 @@ export const postsListScreen = {
   emptyFiltered: () => page.getByTestId(postsEmptyFiltered),
   showAllButton: (plural: string) => page.getByRole('button', { name: `Show all ${plural}` }),
   filterBar: () => page.getByTestId(postsFilters),
-  addFilterButton: () => page.getByTestId(postsFilters).getByRole('button', { name: 'Filter' }),
+  addFilterButton: () =>
+    page.getByTestId(postsFilters).getByRole('button', { name: /^(Add filter|Filter)$/i }),
   /** An applied chip's value, which opens its picker. */
   filterValueButton: (label: string) =>
     page.getByTestId(postsFilters).getByRole('button', { name: label, exact: true }),

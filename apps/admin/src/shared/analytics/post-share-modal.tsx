@@ -1,5 +1,4 @@
 import React from 'react';
-import { useShade } from '@tryghost/shade/app';
 import { Button } from '@tryghost/shade/components';
 import { H3 } from '@tryghost/shade/primitives';
 import { ShareModal, type ShareModalSocialLink } from '@tryghost/shade/patterns';
@@ -42,7 +41,6 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
   siteTitle = '',
   ...props
 }) => {
-  const { isAdmin7 } = useShade();
   const encodedPostTitle = encodeURIComponent(postTitle);
   const encodedPostURL = encodeURIComponent(postURL);
   const encodedPostURLTitle = encodeURIComponent(`${postTitle} ${postURL}`);
@@ -84,7 +82,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
           <ShareModal.CloseButton className="absolute -top-5 -right-5" onClick={onClose} />
         </div>
         <ShareModal.Header className="relative -mt-5">
-          <ShareModal.Title className="text-3xl leading-[1.15em] font-bold">
+          <ShareModal.Title className="text-3xl leading-[1.15em] font-bold in-data-[admin7-design=true]:font-title">
             {primaryTitle && <span className="text-state-success">{primaryTitle}</span>}
             {primaryTitle && secondaryTitle && <br />}
             {secondaryTitle && <span>{secondaryTitle}</span>}
@@ -95,7 +93,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
             </ShareModal.Description>
           )}
         </ShareModal.Header>
-        <ShareModal.Preview className={isAdmin7 ? undefined : 'rounded-md'} href={postURL}>
+        <ShareModal.Preview href={postURL}>
           {featureImageURL && (
             <div
               className="aspect-video bg-cover bg-center"

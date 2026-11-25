@@ -1058,7 +1058,11 @@ describe('Email renderer', function () {
   });
 
   describe('getFromAddress', function () {
-    let siteTitle = 'Test Blog';
+    let siteTitle;
+    beforeEach(function () {
+      siteTitle = 'Test Blog';
+    });
+
     const emailRenderer = new EmailRenderer({
       settingsCache: {
         get: (key) => {
@@ -1121,32 +1125,38 @@ describe('Email renderer', function () {
   });
 
   describe('getReplyToAddress', function () {
-    const emailAddressService = {
-      getAddress(addresses) {
-        return addresses;
-      },
-      managedEmailEnabled: true,
-    };
-    const emailRenderer = new EmailRenderer({
-      settingsCache: {
-        get: (key) => {
-          if (key === 'title') {
-            return 'Test Blog';
-          }
+    // Tests reconfigure the address service, so each one starts from a fresh one
+    let emailAddressService;
+    let emailRenderer;
+
+    beforeEach(function () {
+      emailAddressService = {
+        getAddress(addresses) {
+          return addresses;
         },
-      },
-      settingsHelpers: {
-        getMembersSupportAddress: () => {
-          return 'support@example.com';
+        managedEmailEnabled: true,
+      };
+      emailRenderer = new EmailRenderer({
+        settingsCache: {
+          get: (key) => {
+            if (key === 'title') {
+              return 'Test Blog';
+            }
+          },
         },
-        getNoReplyAddress: () => {
-          return 'reply@example.com';
+        settingsHelpers: {
+          getMembersSupportAddress: () => {
+            return 'support@example.com';
+          },
+          getNoReplyAddress: () => {
+            return 'reply@example.com';
+          },
         },
-      },
-      labs: {
-        isSet: () => false,
-      },
-      emailAddressService,
+        labs: {
+          isSet: () => false,
+        },
+        emailAddressService,
+      });
     });
 
     it('returns support address', function () {
@@ -1246,25 +1256,29 @@ describe('Email renderer', function () {
   });
 
   describe('getSegments', function () {
-    let emailRenderer = new EmailRenderer({
-      renderers: {
-        lexical: {
-          render: () => {
-            return '<p> Lexical Test</p>';
+    // Tests swap in their own renderer, so each one starts from the default
+    let emailRenderer;
+    beforeEach(function () {
+      emailRenderer = new EmailRenderer({
+        renderers: {
+          lexical: {
+            render: () => {
+              return '<p> Lexical Test</p>';
+            },
+          },
+          mobiledoc: {
+            render: () => {
+              return '<p> Mobiledoc Test</p>';
+            },
           },
         },
-        mobiledoc: {
-          render: () => {
-            return '<p> Mobiledoc Test</p>';
-          },
+        getPostUrl: () => {
+          return 'http://example.com/post-id';
         },
-      },
-      getPostUrl: () => {
-        return 'http://example.com/post-id';
-      },
-      labs: {
-        isSet: () => false,
-      },
+        labs: {
+          isSet: () => false,
+        },
+      });
     });
 
     it('returns correct empty segment for post', async function () {
@@ -2098,6 +2112,89 @@ describe('Email renderer', function () {
       assert.equal($('.preheader').text(), 'Lexical Test some text for both');
     });
 
+    describe('preheader for posts with card visibility', function () {
+      const ALL = 'status:free,status:-free';
+
+      function postWithCard({ emailSegment, plaintext }) {
+        return createModel({
+          ...basePost,
+          plaintext,
+          lexical: JSON.stringify({
+            root: {
+              children: [
+                {
+                  type: 'html',
+                  html: '<p>card text</p>',
+                  visibility: {
+                    web: { nonMember: true, memberSegment: ALL },
+                    email: { memberSegment: emailSegment },
+                  },
+                },
+              ],
+            },
+          }),
+        });
+      }
+
+      it('leaves free-only card text out of the preheader for paid members', async function () {
+        renderedPost =
+          '<p>Lexical Test</p><div data-gh-segment="status:free"><p>free only section</p></div><p>some text for both</p>';
+        // The stored plaintext is built from the web render, which keeps every card
+        const post = postWithCard({
+          emailSegment: 'status:free',
+          plaintext: 'Lexical Test free only section some text for both',
+        });
+
+        const response = await emailRenderer.renderBody(
+          post,
+          createModel(baseNewsletter),
+          'status:-free',
+          {},
+        );
+
+        const preheader = cheerio.load(response.html)('.preheader').text();
+        assert(!preheader.includes('free only section'), preheader);
+        assert(preheader.includes('some text for both'), preheader);
+      });
+
+      it('leaves web-only card text out of the preheader when every member gets the same email', async function () {
+        // The email render drops cards hidden from email, so there is no wrapper to filter
+        renderedPost = '<p>Lexical Test</p><p>some text for both</p>';
+        const post = postWithCard({
+          emailSegment: '',
+          plaintext: 'Lexical Test web only section some text for both',
+        });
+
+        const response = await emailRenderer.renderBody(
+          post,
+          createModel(baseNewsletter),
+          null,
+          {},
+        );
+
+        const preheader = cheerio.load(response.html)('.preheader').text();
+        assert(!preheader.includes('web only section'), preheader);
+        assert(preheader.includes('some text for both'), preheader);
+      });
+
+      it('keeps the stored plaintext preheader for paid members when no card is restricted', async function () {
+        renderedPost = '<p>Lexical Test</p><blockquote>A quote</blockquote>';
+        const post = postWithCard({
+          emailSegment: ALL,
+          plaintext: 'Stored plaintext for post',
+        });
+
+        const response = await emailRenderer.renderBody(
+          post,
+          createModel(baseNewsletter),
+          'status:-free',
+          {},
+        );
+
+        assert.equal(cheerio.load(response.html)('.preheader').text(), 'Stored plaintext for post');
+      });
+    });
+
     it('excludes preheader spacing characters from plaintext', async function () {
       const post = createModel(basePost);
       const newsletter = createModel(baseNewsletter);
@@ -2384,6 +2481,114 @@ describe('Email renderer', function () {
         '%%{unsubscribe_url}%%',
         'https://ghost.org/?via=pbg-newsletter',
       ]);
+    });
+
+    it('keeps replacement strings in link paths intact if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://partner.transistor.fm/ghost/%%{uuid}%%">Listen to your podcasts</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://partner.transistor.fm/ghost/%%{uuid}%%'));
+      assert(response.replacements.some((replacement) => replacement.id === 'uuid'));
+    });
+
+    it('keeps replacement strings with fallbacks in link paths intact if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://example.com/hello/%%{first_name, &quot;friend&quot;}%%">Say hello</a><a href="https://example.com/after">After</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://example.com/hello/%%{first_name, "friend"}%%'));
+      assert(new Set(hrefs).has('https://example.com/after'));
+      assert(response.replacements.some((replacement) => replacement.id.startsWith('first_name')));
+    });
+
+    it('keeps entity-like fallback text in link paths literal if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://example.com/hello/%%{first_name, &quot;Tom &amp;amp; Jerry&quot;}%%">Say hello</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://example.com/hello/%%{first_name, "Tom &amp; Jerry"}%%'));
+    });
+
+    it('leaves malformed replacement strings in link paths encoded if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://example.com/broken/%%{first_name%zz}%%">Broken</a><a href="#relative-test">Relative</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://example.com/broken/%%%7Bfirst_name%zz%7D%%'));
+      assert(new Set(hrefs).has('http://example.com/#relative-test'));
     });
 
     it('handles encoded links', async function () {

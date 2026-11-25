@@ -20,7 +20,19 @@ const dropzoneBaseVariants = cva(
         button: 'flex-row',
         buttonSecondary: 'flex-row',
       },
+      admin7Design: {
+        true: '',
+        false: '',
+      },
     },
+    compoundVariants: [
+      {
+        variant: ['default', 'filled'],
+        admin7Design: true,
+        className: 'text-muted-foreground [&_svg.lucide]:stroke-[1.25px]',
+      },
+      { variant: 'default', admin7Design: true, className: 'border' },
+    ],
     defaultVariants: {
       variant: 'default',
     },
@@ -29,15 +41,16 @@ const dropzoneBaseVariants = cva(
 
 // Keep the exported variants function useful outside the component, with current defaults.
 function dropzoneVariants(
-  props: Parameters<typeof dropzoneBaseVariants>[0] = {},
-  isAdmin7 = true,
-  shape: ControlShape = isAdmin7 ? 'pill' : 'rounded',
+  props: Omit<NonNullable<Parameters<typeof dropzoneBaseVariants>[0]>, 'admin7Design'> = {},
+  shape: ControlShape = 'pill',
+  admin7Design = true,
 ) {
   return cn(
-    dropzoneBaseVariants(props),
-    props.variant === 'button' && buttonVariants({ isAdmin7, shape, variant: 'outline' }),
+    dropzoneBaseVariants({ variant: props.variant, admin7Design }),
+    props.class,
+    props.variant === 'button' && buttonVariants({ shape, variant: 'outline' }),
     props.variant === 'buttonSecondary' &&
-      buttonVariants({ isAdmin7, shape, size: 'sm', variant: 'secondary' }),
+      buttonVariants({ shape, size: 'sm', variant: 'secondary' }),
     props.className,
   );
 }

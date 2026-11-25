@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const sharedViewSchema = z.object({
+const sharedViewSchema = z.object({
   name: z.string(),
   route: z.string(),
   color: z.string().optional(),

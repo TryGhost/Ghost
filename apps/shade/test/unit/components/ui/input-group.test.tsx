@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
 import { InputGroup, InputGroupInput } from '../../../../src/components/ui/input-group';
@@ -16,9 +15,9 @@ describe('InputGroup Components', () => {
     const group = screen.getByTestId('input-group');
     const input = screen.getByTestId('input-group-input');
 
-    assert.match(group.className, /h-\(--control-height\)/);
-    assert.doesNotMatch(group.className, /h-9/);
-    assert.match(input.className, /h-\(--control-height\)/);
-    assert.doesNotMatch(input.className, /h-9/);
+    expect(group.className).toMatch(/h-\(--control-height\)/);
+    expect(group.className).not.toMatch(/h-9/);
+    expect(input.className).toMatch(/h-\(--control-height\)/);
+    expect(input.className).not.toMatch(/h-9/);
   });
 });

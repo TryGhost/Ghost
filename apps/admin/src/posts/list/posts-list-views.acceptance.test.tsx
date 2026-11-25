@@ -7,19 +7,13 @@ import {
   fakePostsListScreen,
   renderAdminApp,
   settingsResponse,
+  withSavedViews,
   type EditSettingsCapture,
-  type RenderAdminAppOptions,
+  type StoredView,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { postsListScreen } from './posts-list.screen';
 import { clearStickyPostFilters } from './posts-sticky-filters';
-
-interface StoredView {
-  name: string;
-  route: 'posts';
-  color: string;
-  filter: Record<string, string>;
-}
 
 const publicPosts: StoredView = {
   name: 'Public posts',
@@ -39,17 +33,6 @@ const membersOnly: StoredView = {
   color: 'red',
   filter: { visibility: 'members' },
 };
-
-/** Views saved before the test, in the `shared_views` setting's stored form. */
-function withSavedViews(...views: StoredView[]): RenderAdminAppOptions {
-  return {
-    boot: {
-      browseSettings: {
-        response: settingsResponse({ settings: { shared_views: JSON.stringify(views) } }),
-      },
-    },
-  };
-}
 
 /** The current route's query, independent of param order. */
 function routeParams(): Record<string, string> {
@@ -108,6 +91,32 @@ describe('Posts saved views', () => {
       .toHaveAttribute('aria-current', 'page');
     await expect.poll(() => sidebarScreen.viewColor('Paid news')).toBe('purple');
     await expect.poll(() => sidebarScreen.viewColor('Public posts')).toBe('green');
+  });
+
+  it('keeps views another session saved after the list loaded', async () => {
+    const vipMembers = { name: 'VIPs', route: 'members', filter: { filter: 'label:[VIP]' } };
+    let anotherSessionSaved = false;
+    await renderAdminApp('/posts?visibility=members', {
+      boot: {
+        browseSettings: {
+          response: () => {
+            const views = anotherSessionSaved ? [publicPosts, vipMembers] : [publicPosts];
+            return settingsResponse({ settings: { shared_views: JSON.stringify(views) } });
+          },
+        },
+      },
+    });
+    await expect.element(sidebarScreen.navLink('Public posts')).toBeVisible();
+    anotherSessionSaved = true;
+
+    await postsListScreen.saveView('Members only', 'red');
+
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'shared_views',
+        value: JSON.stringify([publicPosts, vipMembers, membersOnly]),
+      },
+    ]);
   });
 
   it('refuses a duplicate name, ignoring case, without saving', async () => {

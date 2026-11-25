@@ -8,7 +8,8 @@ import {
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
+import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
+import { signupAccessAllowsGifts } from '@/settings/utils/gift-subscriptions';
 import { searchKeywords as emailSearchKeywords } from '@/settings/email/search-keywords';
 import { searchKeywords as emailsSearchKeywords } from '@/settings/email/emails-search-keywords';
 
@@ -34,7 +35,7 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
   const paidMembersEnabled = usePaidMembersEnabled();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasAutomations = useFeatureFlag('automations');
-  const customFields = useCustomFieldsAvailable();
+  const customFields = useFeatureFlag(CUSTOM_FIELDS_FLAG);
 
   const settings = settingsData?.settings;
   const config = configData?.config;
@@ -57,7 +58,7 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
   }, [hasAutomations, hasNewslettersEnabled, hasMailgun]);
 
   const isLoading = isSettingsLoading || isConfigLoading;
-  const giftSubscriptions = Boolean(paidMembersEnabled);
+  const giftSubscriptions = Boolean(paidMembersEnabled) && signupAccessAllowsGifts(settings);
   const tipsAndDonations = hasTipsAndDonations && hasStripeEnabled;
 
   return useMemo(

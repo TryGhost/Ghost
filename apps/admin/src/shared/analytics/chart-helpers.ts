@@ -15,9 +15,26 @@ export const centsToDollars = (value: number) => {
   return Math.round(value / 100);
 };
 
-// Return today and startdate for charts
-export const getRangeDates = (range: number) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+// The site's configured timezone, pushed in by SiteTimezoneSync once settings
+// load. Lives in module state because these helpers are plain functions with
+// no access to the settings cache; it is only read when the browser reports
+// no timezone at all.
+let siteTimezoneFallback: string | undefined;
+
+export const setSiteTimezoneFallback = (timezone: string | undefined) => {
+  siteTimezoneFallback = timezone;
+};
+
+// Chrome on Windows reports no IANA zone (undefined) when the OS time zone
+// has no ICU mapping — e.g. the time zones added in the Windows October 2026
+// update — and moment().tz() with a falsy zone acts as a getter and returns
+// undefined, crashing the caller. Fall back to the site's configured timezone,
+// and to UTC before SiteTimezoneSync has pushed it in.
+const getCurrentTimezone = () =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone || siteTimezoneFallback || 'Etc/UTC';
+
+// Return today and startdate for charts, in the browser's timezone unless given one
+export const getRangeDates = (range: number, timezone = getCurrentTimezone()) => {
   const endDate = moment().tz(timezone).endOf('day');
   let startDate;
 
@@ -37,7 +54,7 @@ export const getRangeDates = (range: number) => {
 
 // Get range for date
 export const getRangeForStartDate = (startDate: string) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = getCurrentTimezone();
   const publishedDate = moment(startDate).tz(timezone).startOf('day');
   const today = moment().tz(timezone).startOf('day');
   const diffInDays = today.diff(publishedDate, 'days') + 1;
@@ -47,11 +64,11 @@ export const getRangeForStartDate = (startDate: string) => {
 };
 
 // formatDisplayDateWithRange (Shade) and GhAreaChart derive their tick/tooltip
-// format from a range day count: > 365 renders "MMM YYYY", >= 91 renders
+// format from a range day count: >= 365 renders "MMM YYYY", >= 90 renders
 // "Week of ...", anything below renders a plain date. These constants are the
 // smallest values that land in each display band.
-const WEEKLY_DISPLAY_RANGE = 91;
-const MONTHLY_DISPLAY_RANGE = 366;
+const WEEKLY_DISPLAY_RANGE = 90;
+const MONTHLY_DISPLAY_RANGE = 365;
 
 /**
  * Returns additional text for subheads
@@ -114,12 +131,12 @@ export function resolveEffectiveRangeDays(range: number, data: { date: string }[
 
 /**
  * Determines the bucketing for a chart. One rule for every range, including
- * the sentinels (via resolveEffectiveRangeDays): spans under 91 days render
- * daily points, 91-270 days render weekly buckets, anything longer renders
+ * the sentinels (via resolveEffectiveRangeDays): spans under 90 days render
+ * daily points, 90-270 days render weekly buckets, anything longer renders
  * monthly buckets. The weekly band caps at ~9 months because beyond that
  * weekly charts get too dense (~40+ points) while monthly already gives a
  * readable 9-12; only span-resolved ranges (Year to date, All time, post age)
- * can land between the fixed dropdown options of 91 and 372 days.
+ * can land between the fixed dropdown options of 90 and 365 days.
  */
 export function getAggregationStrategy(
   range: number,
@@ -135,7 +152,7 @@ export function getAggregationStrategy(
   if (effectiveDays > 270) {
     return 'monthly';
   }
-  if (effectiveDays >= 91) {
+  if (effectiveDays >= 90) {
     return 'weekly';
   }
   return 'none';
@@ -251,8 +268,8 @@ function trimForRange<T extends { date: string }>(
 
 /**
  * Sanitizes chart data based on the date range
- * - Spans under 91 days keep daily points
- * - Spans of 91-270 days aggregate into weekly buckets
+ * - Spans under 90 days keep daily points
+ * - Spans of 90-270 days aggregate into weekly buckets
  * - Longer spans aggregate into monthly buckets
  * Year to date and All time resolve to their real spans before the rule is
  * applied, so they bucket like the equivalent fixed range would.

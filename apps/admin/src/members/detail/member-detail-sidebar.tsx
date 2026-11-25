@@ -1,7 +1,8 @@
 import React from 'react';
 import moment from 'moment-timezone';
-import { Avatar } from '@tryghost/shade/components';
-import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { Avatar, Separator } from '@tryghost/shade/components';
+import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
 import { formatMemberLocation, getMemberReferrerSource } from './member-detail-format';
 import { memberAvatarProps } from '@/members/member-format';
@@ -21,25 +22,28 @@ const MetaRow: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = 
   </p>
 );
 
+const InfoRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+  <div className="flex min-w-0 flex-col gap-1.5">
+    <p className="stat-label text-muted-foreground">{label}</p>
+    <p className="min-w-0 truncate text-md text-foreground">{children}</p>
+  </div>
+);
+
 interface MemberDetailSidebarProps {
   // Saved member from the query — absent in create mode.
   member?: Member;
   // Live values from the draft: the sidebar mirrors what the user is typing so
-  // there's always an identity to show (matches Ember, which live-updates the
-  // sidebar title as the fields change).
+  // there's always an identity to show.
   draftName?: string;
   draftEmail?: string;
-  // Ember-parity gate for the engagement stats section (see
-  // `gh-member-details.hbs:84`). Owned by the parent so all settings
+  // Gate for the engagement stats section. Owned by the parent so all settings
   // reads happen in one place.
   engagementEnabled?: boolean;
   showIdentity?: boolean;
 }
 
-// Matches Ember's `first-name` helper (`ghost/admin/app/helpers/first-name.js`):
-// splits on a single space, takes the first token. NO trim — a name that
-// somehow slipped through with a leading space should render the same empty
-// first-token Ember would, not a coincidentally-different truthy one.
+// Takes the first token split on a single space, without trimming: a name with a
+// leading space yields an empty first name.
 const getFirstName = (name: string) => name.split(' ')[0] || '';
 
 const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
@@ -56,10 +60,88 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
   const email = (draftEmail ?? member?.email ?? '').trim();
   const identityName = name || email || 'New member';
   const isNewMember = !member;
+  const admin7Design = useFeatureFlag('admin7Design');
+  const referrerSource = getMemberReferrerSource(member?.attribution);
+  // Attribution URLs originate from external signup traffic (Referer header, UTM
+  // params), so validate the scheme before dropping it into an anchor `href`. Same
+  // rule set as the activity feed. Falls back to plain text when the URL is missing
+  // or unsafe.
+  const attributionPage =
+    member?.attribution?.title &&
+    (isSafeHref(member.attribution.url) ? (
+      <a
+        className="truncate text-foreground hover:underline"
+        href={member.attribution.url}
+        rel="noopener noreferrer"
+        target="_blank"
+        title={member.attribution.title}
+      >
+        {member.attribution.title}
+      </a>
+    ) : (
+      <span className="truncate text-foreground" title={member.attribution.title}>
+        {member.attribution.title}
+      </span>
+    ));
+  // Admin 7 drops the Signup info heading, so Engagement sits one level higher.
+  const EngagementHeading = admin7Design ? 'h3' : 'h4';
+  const engagement = member && engagementEnabled && (
+    <section
+      className={cn('flex flex-col text-sm', admin7Design ? 'gap-5' : 'mt-4 gap-3')}
+      data-testid="member-detail-engagement"
+    >
+      <EngagementHeading className="section-heading border-b border-border pb-2 text-base font-semibold in-data-[admin7-design=true]:border-b-0 in-data-[admin7-design=true]:pb-0">
+        Engagement
+      </EngagementHeading>
+      {/* A missing `email_count` counts as no newsletters received. */}
+      {(member.email_count ?? 0) === 0 ? (
+        // Falls back to a generic "this member" when no name is known.
+        <p className="text-muted-foreground in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
+          {name
+            ? `We’ll show ${getFirstName(name)}’s email stats here once they receive their first newsletter.`
+            : 'We’ll show this member’s email stats here once they receive their first newsletter.'}
+        </p>
+      ) : (
+        <div className="flex flex-col gap-4 in-data-[admin7-design=true]:grid in-data-[admin7-design=true]:grid-cols-2 in-data-[admin7-design=true]:gap-x-6 in-data-[admin7-design=true]:gap-y-8">
+          <div className="flex flex-col gap-0.5 in-data-[admin7-design=true]:gap-2">
+            <p className="stat-label text-muted-foreground">Emails received</p>
+            <p className="stat-value text-2xl font-semibold">
+              {formatNumber(member.email_count ?? 0)}
+            </p>
+          </div>
+          <div className="flex flex-col gap-0.5 in-data-[admin7-design=true]:gap-2">
+            <p className="stat-label text-muted-foreground">Emails opened</p>
+            <p className="stat-value text-2xl font-semibold">
+              {formatNumber(member.email_opened_count ?? 0)}
+            </p>
+          </div>
+          <div className="flex flex-col gap-0.5 in-data-[admin7-design=true]:col-span-2 in-data-[admin7-design=true]:gap-2">
+            <p className="stat-label text-muted-foreground">Average open rate</p>
+            {member.email_open_rate === null || member.email_open_rate === undefined ? (
+              // Server sends `null` until the member has
+              // been sent 5 newsletters.
+              <p className="text-muted-foreground in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
+                This metric is calculated once a member has received 5 newsletters.
+              </p>
+            ) : (
+              <p className="stat-value text-2xl font-semibold">
+                {formatNumber(member.email_open_rate)}
+                <span className="text-base font-normal text-muted-foreground">%</span>
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
 
   return (
     <aside
-      className="flex w-full shrink-0 flex-col gap-6 lg:w-80"
+      className={cn(
+        'flex w-full shrink-0 flex-col gap-6 in-data-[admin7-design=true]:max-lg:order-first lg:w-80',
+        admin7Design &&
+          "relative lg:self-stretch lg:before:pointer-events-none lg:before:absolute lg:before:inset-y-0 lg:before:-left-10 lg:before:border-l lg:before:border-border lg:before:content-['']",
+      )}
       data-testid="member-detail-sidebar"
     >
       {showIdentity && (
@@ -79,17 +161,41 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                 {email}
               </a>
             )}
-            {!name &&
-              email && (
-                // In create mode only the email is filled at first; still show it so the
-                // sidebar visibly follows what the user has typed.
-                <span className="block truncate text-muted-foreground">{email}</span>
-              )}
+            {!name && email && (
+              // In create mode only the email is filled at first; still show it so the
+              // sidebar visibly follows what the user has typed.
+              <span className="block truncate text-muted-foreground">{email}</span>
+            )}
           </div>
         </div>
       )}
 
-      {!isNewMember && member && (
+      {!isNewMember && member && admin7Design && (
+        <>
+          {engagement}
+          {engagement && <Separator />}
+          <div className="flex flex-col gap-6">
+            <InfoRow label="Location">
+              <span data-testid="member-detail-location">
+                {formatMemberLocation(member.geolocation)}
+              </span>
+            </InfoRow>
+            <InfoRow label="Created">{formatDate(member.created_at)}</InfoRow>
+            <InfoRow label="Last seen">
+              {member.last_seen_at ? formatDate(member.last_seen_at) : 'Not seen yet'}
+            </InfoRow>
+            {referrerSource && (
+              <InfoRow label="Source">
+                <span title={referrerSource}>{referrerSource}</span>
+              </InfoRow>
+            )}
+            {attributionPage && <InfoRow label="Page">{attributionPage}</InfoRow>}
+            {member.can_comment === false && <InfoRow label="Comments">Disabled</InfoRow>}
+          </div>
+        </>
+      )}
+
+      {!isNewMember && member && !admin7Design && (
         <>
           <div className="flex flex-col gap-2 text-sm">
             <MetaRow icon={<LucideIcon.MapPin size={16} />}>
@@ -108,107 +214,26 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
           </div>
 
           <div className="mt-4 flex flex-col gap-3 text-sm">
-            <h3 className="border-b border-border pb-2 text-base font-semibold">Signup info</h3>
+            <h3 className="section-heading border-b border-border pb-2 text-base font-semibold">
+              Signup info
+            </h3>
             <MetaRow icon={<LucideIcon.UserPlus size={16} />}>
               Created — <span className="text-foreground">{formatDate(member.created_at)}</span>
             </MetaRow>
-            {(() => {
-              const referrerSource = getMemberReferrerSource(member.attribution);
-              return referrerSource ? (
-                <MetaRow icon={<LucideIcon.Globe size={16} />}>
-                  Source —{' '}
-                  <span className="text-foreground" title={referrerSource}>
-                    {referrerSource}
-                  </span>
-                </MetaRow>
-              ) : null;
-            })()}
-            {member.attribution?.title && (
-              <MetaRow icon={<LucideIcon.FileText size={16} />}>
-                {/* Attribution URLs originate from external
-                                    signup traffic (Referer header, UTM params),
-                                    so validate the scheme before dropping it
-                                    into an anchor `href`. Same rule set as the
-                                    activity feed. Falls back to plain text
-                                    when the URL is missing or unsafe. */}
-                Page —{' '}
-                {isSafeHref(member.attribution.url) ? (
-                  <a
-                    className="truncate text-foreground hover:underline"
-                    href={member.attribution.url}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    title={member.attribution.title}
-                  >
-                    {member.attribution.title}
-                  </a>
-                ) : (
-                  <span className="truncate text-foreground" title={member.attribution.title}>
-                    {member.attribution.title}
-                  </span>
-                )}
+            {referrerSource && (
+              <MetaRow icon={<LucideIcon.Globe size={16} />}>
+                Source —{' '}
+                <span className="text-foreground" title={referrerSource}>
+                  {referrerSource}
+                </span>
               </MetaRow>
+            )}
+            {attributionPage && (
+              <MetaRow icon={<LucideIcon.FileText size={16} />}>Page — {attributionPage}</MetaRow>
             )}
           </div>
 
-          {engagementEnabled && (
-            <section
-              className="mt-4 flex flex-col gap-3 text-sm"
-              data-testid="member-detail-engagement"
-            >
-              <h4 className="border-b border-border pb-2 text-base font-semibold">Engagement</h4>
-              {/* `?? 0` matches Ember Data's serializer, which
-                                defaults `emailCount` to `0`
-                                (`ghost/admin/app/models/member.js:20`). A
-                                strict `=== 0` would diverge from Ember on
-                                a payload where the field is `undefined`. */}
-              {(member.email_count ?? 0) === 0 ? (
-                // Ember `gh-member-details.hbs:87-96`: same copy,
-                // same curly apostrophe. Falls back to a generic
-                // "this member" when no name is known.
-                <p className="text-muted-foreground">
-                  {name
-                    ? `We’ll show ${getFirstName(name)}’s email stats here once they receive their first newsletter.`
-                    : 'We’ll show this member’s email stats here once they receive their first newsletter.'}
-                </p>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-muted-foreground">Emails received</p>
-                    <p className="text-2xl font-semibold">
-                      {formatNumber(member.email_count ?? 0)}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-muted-foreground">Emails opened</p>
-                    {/* Ember Data defaults this to `0`
-                                            too (`ghost/admin/app/models/member.js:21`),
-                                            so mirror that here for parity. */}
-                    <p className="text-2xl font-semibold">
-                      {formatNumber(member.email_opened_count ?? 0)}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-muted-foreground">Average open rate</p>
-                    {member.email_open_rate === null || member.email_open_rate === undefined ? (
-                      // Server sends `null` until the member has
-                      // been sent 5 newsletters (Ember shows this
-                      // exact string via
-                      // `gh-member-details.hbs:112-114`).
-                      <p className="text-muted-foreground">
-                        This metric is calculated once a member has received 5 newsletters.
-                      </p>
-                    ) : (
-                      <p className="text-2xl font-semibold">
-                        {formatNumber(member.email_open_rate)}
-                        <span className="text-base font-normal text-muted-foreground">%</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
+          {engagement}
         </>
       )}
     </aside>

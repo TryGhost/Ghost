@@ -13,6 +13,7 @@ import {
   type PostStatus,
   type PrepareOutcome,
   type PublishOptions,
+  type ReloadOptions,
   type SaveCompletion,
   type ScheduleOptions,
   type SaveEngineState,
@@ -214,8 +215,10 @@ export interface EditorSession {
   dispatchRevert: () => Promise<SaveCompletion>;
   getLiveLexical: () => string | null;
   recordRefetched: (record: EditorRecord) => boolean;
+  /** Whether `record` is a later version of this post than the one the document was read or saved at. */
+  isBehind: (record: EditorRecord) => boolean;
   /** Replaces the whole document when the server copy safely advances this session. */
-  recordReloaded: (record: EditorRecord) => boolean;
+  recordReloaded: (record: EditorRecord, options?: ReloadOptions) => boolean;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
@@ -1073,8 +1076,8 @@ export function createEditorSession({
       restoringRevision = true;
       try {
         patchLive(revision);
-        // Ember's slug task bails once the post carries the revision's title, so a
-        // restore leaves the URL alone.
+        // The slug stops following a title the writer did not type, so a restore
+        // leaves the URL alone.
         slug.titleReplaced(revision.title);
 
         const completion = await engine.dispatch('explicit');
@@ -1151,9 +1154,14 @@ export function createEditorSession({
       return true;
     },
 
+    isBehind: (next) =>
+      !disposed &&
+      identity.id === next.id &&
+      isLaterToken(next.updated_at ?? null, identity.updatedAt),
+
     // A document boundary, not a refetch: the tracker reloads, so the baseline
     // the hidden instance reported for the old document is discarded with it.
-    recordReloaded: (next) => {
+    recordReloaded: (next, options) => {
       // The read outlives a session the writer navigated away from.
       const updatedAt = next.updated_at ?? '';
       if (
@@ -1165,24 +1173,28 @@ export function createEditorSession({
         return false;
       }
       if (
-        !engine.contentReloaded(updatedAt, () => {
-          identity = { id: next.id, updatedAt };
-          status = next.status ?? 'draft';
-          publishedAt = next.published_at ?? null;
-          latestRevision = latestRevisionOf(next);
-          live = projectionOf(next);
-          stagedPublishedAt = null;
-          publishedAtEditedAt = 0;
-          pendingSlugEdits.clear();
-          writerEdits.clear();
-          inFlightSince = null;
-          version += 1;
-          tracker.load(identity.id, live);
-          slug.reset();
-          // The machine may notify subscribers, so the document boundary must be
-          // complete first and no later mutation may overwrite a subscriber edit.
-          machine.loaded({ slug: live.slug, title: live.title });
-        })
+        !engine.contentReloaded(
+          updatedAt,
+          () => {
+            identity = { id: next.id, updatedAt };
+            status = next.status ?? 'draft';
+            publishedAt = next.published_at ?? null;
+            latestRevision = latestRevisionOf(next);
+            live = projectionOf(next);
+            stagedPublishedAt = null;
+            publishedAtEditedAt = 0;
+            pendingSlugEdits.clear();
+            writerEdits.clear();
+            inFlightSince = null;
+            version += 1;
+            tracker.load(identity.id, live);
+            slug.reset();
+            // The machine may notify subscribers, so the document boundary must be
+            // complete first and no later mutation may overwrite a subscriber edit.
+            machine.loaded({ slug: live.slug, title: live.title });
+          },
+          options,
+        )
       ) {
         return false;
       }

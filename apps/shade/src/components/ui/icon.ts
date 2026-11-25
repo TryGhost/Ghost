@@ -1,5 +1,6 @@
 import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { svgGraphicProps, type SvgGraphicProps } from '@/lib/svg-graphic';
 import { cn, kebabToPascalCase } from '@/lib/utils';
 
 const iconVariants = cva('', {
@@ -16,14 +17,19 @@ const iconVariants = cva('', {
   },
 });
 
-interface IconProps extends React.SVGProps<SVGSVGElement>, VariantProps<typeof iconVariants> {
+// Icons are decorative unless the caller names them with `title`,
+// `aria-label` or `aria-labelledby`.
+interface IconProps extends SvgGraphicProps, VariantProps<typeof iconVariants> {
   className?: string;
 }
 
-const iconModules = import.meta.glob<{ default: React.FC<IconProps> }>('../../assets/icons/*.svg', {
-  eager: true,
-  query: '?react',
-});
+const iconModules = import.meta.glob<{ default: React.FC<React.SVGProps<SVGSVGElement>> }>(
+  '../../assets/icons/*.svg',
+  {
+    eager: true,
+    query: '?react',
+  },
+);
 
 const Icon = Object.entries(iconModules).reduce(
   (acc, [path, module]) => {
@@ -34,7 +40,7 @@ const Icon = Object.entries(iconModules).reduce(
       const { size, className, ...rest } = props;
       const iconClassName = cn(iconVariants({ size, className }));
       return React.createElement(module.default, {
-        ...rest,
+        ...svgGraphicProps(rest),
         className: iconClassName,
       });
     };

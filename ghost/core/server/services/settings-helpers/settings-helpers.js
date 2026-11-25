@@ -1,7 +1,8 @@
 const net = require('net');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const emailAddressParser = require('../email-address/email-address-parser');
+const { parseMailbox } = require('@tryghost/parse-email-address/mailbox');
+const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
 const logging = require('@tryghost/logging');
 const crypto = require('crypto');
 const debug = require('@tryghost/debug')('services:settings-helpers');
@@ -130,7 +131,7 @@ class SettingsHelpers {
     if (!supportAddress) {
       // In the new flow, we make a difference between an empty setting (= use default) and a 'noreply' setting (=use noreply @ domain)
       // Also keep the name of the default email!
-      return emailAddressParser.stringify(this.getDefaultEmail());
+      return formatAddressForDelivery(this.getDefaultEmail());
     }
 
     // Any fromAddress without domain uses site domain, like default setting `noreply`
@@ -141,7 +142,7 @@ class SettingsHelpers {
   }
 
   /**
-   * @deprecated Use getDefaultEmail().address (without name) or emailAddressParser.stringify(this.getDefaultEmail()) (with name) instead
+   * @deprecated Use getDefaultEmail().address (without name) or formatAddressForDelivery(this.getDefaultEmail()) (with name) instead
    */
   getNoReplyAddress() {
     return this.getDefaultEmailAddress();
@@ -155,7 +156,7 @@ class SettingsHelpers {
     // parse the email here and remove the sender name
     // E.g. when set to "bar" <from@default.com>
     const configAddress = this.config.get('mail:from');
-    const parsed = emailAddressParser.parse(configAddress);
+    const parsed = parseMailbox(configAddress);
     if (parsed) {
       return parsed;
     }

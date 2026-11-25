@@ -55,7 +55,7 @@ export function useSidebarApps(): SidebarApps {
   const enabled = useFeatureFlag('apps');
   const { data: currentUser } = useCurrentUser();
   const visibleToUser = canSeeApps(currentUser, enabled);
-  // An older Ghost without the endpoint, or any failure, just hides the section.
+  // Any failure just hides the section.
   const { installations, pins } = useInstalledApps({ enabled: visibleToUser });
   const { pathname, search } = useLocation();
 

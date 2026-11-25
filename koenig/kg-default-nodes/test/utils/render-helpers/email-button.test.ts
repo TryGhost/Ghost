@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import {renderEmailButton} from '../../../src/utils/render-helpers/email-button.js';
+import {createDocument} from '../../test-utils/index.js';
 
 // The Ghost-side tests exercised private helpers (_getOptions, _getTextColor,
 // _getButtonClasses, _getButtonStyle, _getLinkStyle) which are not exported
 // here. The same behaviours are covered below via renderEmailButton output.
 describe('utils/render-helpers/email-button', function () {
+    // Values containing characters that are special in HTML
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+
     describe('renderEmailButton', function () {
         it('renders with default options when no options are provided', function () {
             const result = renderEmailButton();
@@ -21,10 +26,63 @@ describe('utils/render-helpers/email-button', function () {
             assert.ok(result.includes('<a href="http://example.com">Click me</a>'));
         });
 
+        it('renders a url and text containing special characters', function () {
+            const result = renderEmailButton({url: badUrl, text: badText});
+            const document = createDocument(result);
+            const link = document.querySelector('a');
+
+            assert.deepEqual(link?.getAttributeNames(), ['href']);
+            assert.equal(link?.getAttribute('href'), badUrl);
+            assert.equal(link?.textContent, badText);
+            assert.equal(link?.children.length, 0);
+        });
+
+        it('writes the text as text, rendering HTML entities as their characters', function () {
+            const result = renderEmailButton({url: 'http://example.com', text: 'Subscribe &rarr;'});
+
+            assert.equal(createDocument(result).querySelector('a')?.textContent, 'Subscribe →');
+        });
+
         it('renders alignment and button width attributes', function () {
             const result = renderEmailButton({alignment: 'center', buttonWidth: '200'});
             assert.ok(result.includes(' align="center">'));
             assert.ok(result.includes('<td align="center" width="200">'));
+        });
+
+        it('renders alignment and button width containing special characters', function () {
+            const badAlignment = 'center" x="<y>';
+            const badWidth = '200" x="<y>';
+            const result = renderEmailButton({alignment: badAlignment, buttonWidth: badWidth});
+            const document = createDocument(result);
+            const table = document.querySelector('table');
+            const cell = document.querySelector('td');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(table?.getAttributeNames(), ['class', 'border', 'cellspacing', 'cellpadding', 'align']);
+            assert.equal(table?.getAttribute('align'), badAlignment);
+            assert.deepEqual(cell?.getAttributeNames(), ['align', 'width']);
+            assert.equal(cell?.getAttribute('width'), badWidth);
+        });
+
+        it('ignores a colour that isn\'t in a supported format', function () {
+            for (const badColor of ['red; width: 100%', '#fff" x="', 'red>']) {
+                for (const style of ['fill', 'outline'] as const) {
+                    const result = renderEmailButton({url: 'http://example.com', text: 'Click me', color: badColor, style});
+                    const document = createDocument(result);
+
+                    assert.equal(document.querySelector('table')?.getAttribute('class'), 'btn', badColor);
+                    assert.deepEqual(document.querySelector('td')?.getAttributeNames(), ['align'], badColor);
+                    assert.deepEqual(document.querySelector('a')?.getAttributeNames(), ['href'], badColor);
+                }
+            }
+        });
+
+        it('renders rgb() and hsl() colours', function () {
+            const fill = createDocument(renderEmailButton({color: 'rgb(34, 34, 34)', style: 'fill'})).querySelector('td') as HTMLElement;
+            const outline = createDocument(renderEmailButton({color: 'hsl(0 0% 13%)', style: 'outline'})).querySelector('td') as HTMLElement;
+
+            assert.equal(fill.getAttribute('style'), 'background-color: rgb(34, 34, 34);');
+            assert.equal(outline.getAttribute('style'), 'color: hsl(0 0% 13%) !important; border: 1px solid hsl(0 0% 13%); border-color: currentColor; background-color: transparent;');
         });
 
         it('renders btn-accent class for accent color', function () {

@@ -11,14 +11,10 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * defined in Settings, the filter asks the API to return its values, and the list reads
  * them back under the name the publisher gave the field. A unit test can pin the column
  * derivation but cannot prove the values ever arrive.
- *
- * The membersCustomFields flag is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Custom field filter columns', () => {
-  test.use({ labs: { membersCustomFields: true } });
-
   test("a filtered custom field earns a column showing each member's value", async ({ page }) => {
     test.slow();
 
@@ -101,7 +97,7 @@ test.describe('Ghost Admin - Custom field filter columns', () => {
     // operator has to be named before there is anywhere to type one.
     await membersPage.addCustomFieldFilter({
       field: fieldName,
-      subfield: 'City',
+      part: 'City',
       operator: 'is',
       value: 'Berlin',
     });

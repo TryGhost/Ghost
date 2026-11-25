@@ -10,6 +10,7 @@ const { anyContentVersion, anyEtag, anyISODateTime, anyErrorId, stringMatching }
 
 const { tokens } = require('@tryghost/security');
 const models = require('../../../../core/server/models');
+const { passwordHashOf } = require('../../../utils/password-hash');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
 async function waitForEmailSent(emailMockReceiver, number = 1) {
@@ -468,7 +469,7 @@ describe('Authentication API', function () {
         expires: Date.now() + 1000 * 60,
         email: email,
         dbHash: settingsCache.get('db_hash'),
-        password: ownerUser.get('password'),
+        passwordHash: await passwordHashOf(ownerUser),
       });
 
       await agent
@@ -533,7 +534,7 @@ describe('Authentication API', function () {
         expires: dateInThePast,
         email: email,
         dbHash: settingsCache.get('db_hash'),
-        password: ownerUser.get('password'),
+        passwordHash: await passwordHashOf(ownerUser),
       });
 
       await agent
@@ -567,7 +568,7 @@ describe('Authentication API', function () {
         expires: Date.now() + 1000 * 60,
         email: email,
         dbHash: settingsCache.get('db_hash'),
-        password: 'invalid_password',
+        passwordHash: 'invalid_password',
       });
 
       await agent
@@ -638,6 +639,15 @@ describe('Authentication API', function () {
       }, {});
       const totalKeys = Object.keys(apiKeysBefore).length;
       assert.ok(totalKeys > 0, 'fixture should contain at least one API key');
+      // Left from an earlier run under better-auth
+      await models.Base.knex('user_sessions').insert({
+        id: 'b00000000000000000000001',
+        user_id: fixtureManager.get('users', 0).id,
+        token: 'reset-authentication-dormant-session',
+        expires_at: new Date(Date.now() + 60 * 60 * 1000),
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
 
       const { body } = await agent
         .post('authentication/reset')
@@ -676,6 +686,7 @@ describe('Authentication API', function () {
       // Every session is gone
       const sessions = await models.Session.fetchAll();
       assert.equal(sessions.length, 0, 'There should be no sessions left in the DB');
+      assert.equal((await models.Base.knex('user_sessions')).length, 0);
 
       // Audit entry recorded. The `context` column is stored as a JSON
       // string; the Action model doesn't auto-parse it on read.

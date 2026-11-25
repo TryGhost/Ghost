@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import type { Knex } from 'knex';
-import _ from 'lodash';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import config from '../../../shared/config';
@@ -9,8 +8,8 @@ import config from '../../../shared/config';
 const betterSqlitePatches = require('./better-sqlite3-patches');
 
 /**
- * The slice of `database` config this module reads. Replace with the schema's
- * own type once `database` is schemafied.
+ * The slice of `database` config this module reads. Wider than the schema's
+ * type, as the raw tree is used when validation fails.
  */
 export interface DatabaseConfig {
   client?: string;
@@ -76,7 +75,7 @@ export function configure(dbConfig: DatabaseConfig): Knex.Config {
     // but this won't work on Windows, so we need to replace the /tmp bit with
     // the Windows temp folder
     const filename = connection.filename;
-    if (process.platform === 'win32' && _.isString(filename) && filename.match(/^\/tmp/)) {
+    if (process.platform === 'win32' && typeof filename === 'string' && filename.match(/^\/tmp/)) {
       connection.filename = filename.replace(/^\/tmp/, os.tmpdir());
       logging.info(`Ghost DB path: ${connection.filename}`);
     }

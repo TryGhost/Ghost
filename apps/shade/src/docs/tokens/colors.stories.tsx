@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ColorPalette, ColorRow } from '../showcase/color-swatch';
+import { ContrastComparison, PaletteComparison } from '../showcase/palette-comparison';
 
 const rawPalette = (cssVars: string[]) =>
   cssVars.map((cssVar) => ({
@@ -32,7 +33,6 @@ const rawPalettes = {
     '--color-green-700',
     '--color-green-800',
     '--color-green-900',
-    '--color-green-950',
   ]),
   blue: rawPalette([
     '--color-blue-50',
@@ -45,7 +45,6 @@ const rawPalettes = {
     '--color-blue-700',
     '--color-blue-800',
     '--color-blue-900',
-    '--color-blue-950',
   ]),
   purple: rawPalette([
     '--color-purple-50',
@@ -58,7 +57,6 @@ const rawPalettes = {
     '--color-purple-700',
     '--color-purple-800',
     '--color-purple-900',
-    '--color-purple-950',
   ]),
   pink: rawPalette([
     '--color-pink-50',
@@ -71,7 +69,6 @@ const rawPalettes = {
     '--color-pink-700',
     '--color-pink-800',
     '--color-pink-900',
-    '--color-pink-950',
   ]),
   red: rawPalette([
     '--color-red-50',
@@ -84,7 +81,6 @@ const rawPalettes = {
     '--color-red-700',
     '--color-red-800',
     '--color-red-900',
-    '--color-red-950',
   ]),
   orange: rawPalette([
     '--color-orange-50',
@@ -97,7 +93,6 @@ const rawPalettes = {
     '--color-orange-700',
     '--color-orange-800',
     '--color-orange-900',
-    '--color-orange-950',
   ]),
   yellow: rawPalette([
     '--color-yellow-50',
@@ -110,7 +105,6 @@ const rawPalettes = {
     '--color-yellow-700',
     '--color-yellow-800',
     '--color-yellow-900',
-    '--color-yellow-950',
   ]),
   lime: rawPalette([
     '--color-lime-50',
@@ -123,7 +117,6 @@ const rawPalettes = {
     '--color-lime-700',
     '--color-lime-800',
     '--color-lime-900',
-    '--color-lime-950',
   ]),
 };
 
@@ -177,7 +170,83 @@ export const RawPalette: Story = {
     docs: {
       description: {
         story:
-          'Raw palette. Brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.',
+          'Raw palette. Colour families use a 10-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900. Gray adds 950.',
+      },
+    },
+  },
+};
+
+export const Admin7Comparison: Story = {
+  // Light mode only: the comparison reads the light values
+  globals: { scheme: 'light' },
+  render: () => (
+    <div className="flex flex-col gap-10">
+      <PaletteComparison
+        families={[
+          {
+            name: 'Gray',
+            cssVars: [...rawPalettes.gray.map((swatch) => swatch.cssVar), '--color-black'],
+          },
+          { name: 'Red', cssVars: rawPalettes.red.map((swatch) => swatch.cssVar) },
+          { name: 'Orange', cssVars: rawPalettes.orange.map((swatch) => swatch.cssVar) },
+          { name: 'Yellow', cssVars: rawPalettes.yellow.map((swatch) => swatch.cssVar) },
+          { name: 'Green', cssVars: rawPalettes.green.map((swatch) => swatch.cssVar) },
+          { name: 'Blue', cssVars: rawPalettes.blue.map((swatch) => swatch.cssVar) },
+          { name: 'Purple', cssVars: rawPalettes.purple.map((swatch) => swatch.cssVar) },
+          { name: 'Pink', cssVars: rawPalettes.pink.map((swatch) => swatch.cssVar) },
+          {
+            name: 'Chart',
+            cssVars: [
+              '--chart-1',
+              '--chart-2',
+              '--chart-3',
+              '--chart-4',
+              '--chart-5',
+              '--chart-blue',
+              '--chart-darkblue',
+              '--chart-teal',
+              '--chart-purple',
+              '--chart-green',
+              '--chart-rose',
+            ],
+          },
+          {
+            name: 'Chart (cont.)',
+            cssVars: [
+              '--chart-orange',
+              '--chart-amber',
+              '--chart-yellow',
+              '--chart-gray',
+              '--chart-darkgray',
+            ],
+          },
+        ]}
+      />
+      <ContrastComparison
+        pairs={[
+          { label: 'Primary text', text: '--text-primary', background: '--background' },
+          { label: 'Secondary text', text: '--text-secondary', background: '--background' },
+          { label: 'Tertiary text', text: '--text-tertiary', background: '--background' },
+          { label: 'Destructive text', text: '--destructive', background: '--background' },
+          {
+            label: 'Destructive button',
+            text: '--destructive-foreground',
+            background: '--destructive',
+          },
+          { label: 'Primary button', text: '--primary-foreground', background: '--primary' },
+          { label: 'Danger text', text: '--state-danger', background: '--background' },
+          { label: 'Success text', text: '--state-success', background: '--background' },
+          { label: 'Warning text', text: '--state-warning', background: '--background' },
+          { label: 'Info text', text: '--state-info', background: '--background' },
+        ]}
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The admin7Design palette next to the previous one, with WCAG contrast for the main text pairs (AA needs 4.5). Light mode only. Gray keeps Shade's lightness at each step with a slightly cool neutral tint; the colour families are Shapeshifter's ramps.",
       },
     },
   },
@@ -189,7 +258,9 @@ export const SemanticAuthoring: Story = {
       <p>
         Semantic color variables in <code>theme-variables.css</code> should resolve directly to raw
         color tokens such as <code>--color-gray-700</code>, not to another semantic token such as{' '}
-        <code>--foreground</code> or <code>--muted-foreground</code>.
+        <code>--foreground</code> or <code>--muted-foreground</code>, unless the two must always
+        match and the alias is deliberate, like <code>--interactive-hover</code> pointing at{' '}
+        <code>--button-hover</code>.
       </p>
       <p>
         This keeps each semantic decision inspectable in one place while the raw palette remains the
@@ -242,6 +313,7 @@ export const Surface: Story = {
         { name: 'glass', cssVar: '--surface-glass' },
         { name: 'filter-bar', cssVar: '--filter-bar-background' },
         { name: 'control-readonly', cssVar: '--control-readonly-surface' },
+        { name: 'field', cssVar: '--field-surface' },
       ]}
       title="Surface"
     />
@@ -311,6 +383,7 @@ export const Border: Story = {
       swatches={[
         { name: 'default', cssVar: '--border-default' },
         { name: 'control-border', cssVar: '--control-border' },
+        { name: 'field-border', cssVar: '--field-border' },
         { name: 'strong', cssVar: '--border-strong' },
         { name: 'glass', cssVar: '--border-glass' },
         { name: 'focus-ring', cssVar: '--focus-ring' },
@@ -335,8 +408,24 @@ export const State: Story = {
       swatches={[
         { name: 'info', cssVar: '--state-info' },
         { name: 'success', cssVar: '--state-success' },
+        { name: 'character count', cssVar: '--character-count' },
         { name: 'warning', cssVar: '--state-warning' },
+        { name: 'warning surface', cssVar: '--state-warning-surface' },
+        { name: 'warning border', cssVar: '--state-warning-border' },
+        { name: 'warning fill', cssVar: '--state-warning-fill' },
         { name: 'danger', cssVar: '--state-danger' },
+        { name: 'event email surface', cssVar: '--event-email-surface' },
+        { name: 'event email icon', cssVar: '--event-email-icon' },
+        { name: 'event gain surface', cssVar: '--event-gain-surface' },
+        { name: 'event gain icon', cssVar: '--event-gain-icon' },
+        { name: 'event loss surface', cssVar: '--event-loss-surface' },
+        { name: 'event loss icon', cssVar: '--event-loss-icon' },
+        { name: 'event warning surface', cssVar: '--event-warning-surface' },
+        { name: 'event warning icon', cssVar: '--event-warning-icon' },
+        { name: 'event engagement surface', cssVar: '--event-engagement-surface' },
+        { name: 'event engagement icon', cssVar: '--event-engagement-icon' },
+        { name: 'event gift surface', cssVar: '--event-gift-surface' },
+        { name: 'event gift icon', cssVar: '--event-gift-icon' },
       ]}
       title="State"
     />

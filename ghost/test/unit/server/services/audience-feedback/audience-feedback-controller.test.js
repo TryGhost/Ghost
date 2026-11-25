@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const permissions = require('../../../../../core/server/services/permissions');
+const permissions = require('../../../../../core/server/auth/permissions');
 const AudienceFeedbackController = require('../../../../../core/server/services/audience-feedback/audience-feedback-controller');
 
 describe('AudienceFeedbackController', function () {
@@ -14,6 +14,7 @@ describe('AudienceFeedbackController', function () {
 
     function createController({ buildLink, buildFallbackLink, getPostById }) {
       return new AudienceFeedbackController({
+        permissions,
         repository: { getPostById },
         audienceFeedbackService: { buildLink, buildFallbackLink },
       });
@@ -97,6 +98,7 @@ describe('AudienceFeedbackController', function () {
 
     function createController(getForPost) {
       return new AudienceFeedbackController({
+        permissions,
         repository: { getForPost },
         audienceFeedbackService: {},
       });

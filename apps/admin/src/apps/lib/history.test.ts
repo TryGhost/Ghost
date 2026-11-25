@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AppInstallationHistoryEntry } from '@tryghost/admin-x-framework/api/app-installations';
-import { historyTitle, installedBy } from './history';
+import { historyTitle } from './history';
 
 const entry = (
   event: AppInstallationHistoryEntry['event'],
@@ -18,6 +18,7 @@ describe('historyTitle', () => {
     expect(historyTitle(entry('installed'))).toBe('Installed');
     expect(historyTitle(entry('updated'))).toBe('Updated');
     expect(historyTitle(entry('suspended'))).toBe('Updated, needs approval');
+    expect(historyTitle(entry('resumed'))).toBe('Resumed, changes withdrawn');
     expect(historyTitle(entry('changes_approved'))).toBe('Changes approved');
     expect(historyTitle(entry('uninstalled'))).toBe('Uninstalled');
   });
@@ -32,23 +33,5 @@ describe('historyTitle', () => {
     expect(historyTitle(entry('changes_approved', { moved_to: 'podcast.example.net' }))).toBe(
       'Moved to podcast.example.net',
     );
-  });
-});
-
-describe('installedBy', () => {
-  it('names who installed the app', () => {
-    const history = [
-      entry('uninstalled', { actor: { id: 'user-2', name: 'Sam Jones' } }),
-      entry('installed', { actor: { id: 'user-1', name: 'Jamie Larson' } }),
-    ];
-
-    expect(installedBy(history)).toBe('Jamie Larson');
-  });
-
-  it('is unknown when staff history did not record the install', () => {
-    expect(installedBy([entry('installed')])).toBeUndefined();
-    expect(
-      installedBy([entry('installed', { actor: { id: 'user-1', name: null } })]),
-    ).toBeUndefined();
   });
 });

@@ -3,21 +3,35 @@ const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const stripe = require('stripe');
-const i18n = require('../../../../../core/server/services/i18n');
+const i18n = require('../../../../../core/shared/i18n');
 const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
+const {
+  NOTHING_COLLECTED,
+} = require('../../../../../core/server/services/stripe-checkout-config/checkout-service');
 
-i18n.init();
+i18n.init({ events: require('../../../../../core/server/lib/common/events') });
 
 describe('StripeAPI', function () {
   const mockCustomerEmail = 'foo@example.com';
   const mockCustomerId = 'cust_mock_123456';
   const mockCustomerName = 'Example Customer';
+  const SITE_UUID = '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11';
   const mockLabs = {
     isSet() {
       return false;
     },
   };
-  const api = new StripeAPI({ labs: mockLabs });
+  const api = new StripeAPI({
+    labs: mockLabs,
+    tracking: stripeTracking({
+      tracer: createTracer({ transport: { metric: () => Promise.resolve(null) }, logging }),
+      meter: createMeter({ transport: { metric: () => Promise.resolve(null) }, logging }),
+    }),
+    siteUuid: () => SITE_UUID,
+  });
 
   let mockStripe;
   let mockLabsIsSet;
@@ -322,21 +336,6 @@ describe('StripeAPI', function () {
       fontFamily: 'roboto',
     };
 
-    function configured(read) {
-      const designed = new StripeAPI({
-        labs: { isSet: (flag) => flag === 'stripeCheckoutDesign' },
-        stripeCheckoutConfig: { service: { read } },
-      });
-      designed.configure({
-        checkoutSessionSuccessUrl: '/success',
-        checkoutSessionCancelUrl: '/cancel',
-        checkoutSetupSessionSuccessUrl: '/setup-success',
-        checkoutSetupSessionCancelUrl: '/setup-cancel',
-        secretKey: '',
-      });
-      return designed;
-    }
-
     beforeEach(function () {
       mockStripe = {
         checkout: {
@@ -346,25 +345,17 @@ describe('StripeAPI', function () {
         },
       };
       sinon.stub(stripe, 'Stripe').returns(mockStripe);
+      api.configure({
+        checkoutSessionSuccessUrl: '/success',
+        checkoutSessionCancelUrl: '/cancel',
+        checkoutSetupSessionSuccessUrl: '/setup-success',
+        checkoutSetupSessionCancelUrl: '/setup-cancel',
+        secretKey: '',
+      });
     });
 
     afterEach(function () {
       sinon.restore();
-    });
-
-    it('creates the session unstyled when the config cannot be read', async function () {
-      const logged = sinon.stub(logging, 'error');
-
-      await configured(async () => {
-        throw new Error('database unavailable');
-      }).createCheckoutSetupSession('priceId', {});
-
-      sinon.assert.calledOnce(mockStripe.checkout.sessions.create);
-      assert.equal(
-        mockStripe.checkout.sessions.create.firstCall.firstArg.branding_settings,
-        undefined,
-      );
-      sinon.assert.calledOnce(logged);
     });
 
     it('creates the session again without the design when Stripe refuses it', async function () {
@@ -376,10 +367,9 @@ describe('StripeAPI', function () {
       mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
       mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_unstyled' });
 
-      const session = await configured(async () => ({ design })).createCheckoutSetupSession(
-        'priceId',
-        {},
-      );
+      const session = await api.createCheckoutSetupSession('priceId', {
+        checkout: { design, asks: NOTHING_COLLECTED },
+      });
 
       assert.equal(session.id, 'cs_unstyled');
       const [styled, unstyled] = mockStripe.checkout.sessions.create.getCalls();
@@ -401,10 +391,12 @@ describe('StripeAPI', function () {
       mockStripe.checkout.sessions.create.rejects(refusal);
 
       await assert.rejects(
-        configured(async () => ({ design: null })).createCheckoutSession('priceId', null, {
+        api.createPreviewCheckoutSession('priceId', {
           successUrl: '/success',
           cancelUrl: '/cancel',
-          design,
+          trialDays: 0,
+          expiresInSeconds: 31 * 60,
+          checkout: { design, asks: NOTHING_COLLECTED },
         }),
         { errorType: 'ValidationError', property: 'design' },
       );
@@ -419,30 +411,12 @@ describe('StripeAPI', function () {
       });
       mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
       mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_address' });
-      const shipping = {
-        tierIds: null,
-        allowedCountries: ['XX'],
-        addressCustomFieldKey: 'delivery_address',
-        nameCustomFieldKey: null,
-        collectable: true,
-      };
-      const shippingApi = new StripeAPI({
-        labs: {
-          isSet: (flag) => ['stripeCheckoutDesign', 'stripeCheckoutCollection'].includes(flag),
-        },
-        stripeCheckoutConfig: {
-          service: { read: async () => ({ design: null, shipping }) },
-          shippingCountriesFor: () => shipping.allowedCountries,
-        },
-      });
-      shippingApi.configure({
-        checkoutSessionSuccessUrl: '/success',
-        checkoutSessionCancelUrl: '/cancel',
-        secretKey: '',
-      });
 
-      const session = await shippingApi.createCheckoutSession('priceId', null, {
-        tierId: 'tier_1',
+      const session = await api.createCheckoutSession('priceId', null, {
+        checkout: {
+          design: null,
+          asks: { ...NOTHING_COLLECTED, shipping: { allowedCountries: ['XX'] } },
+        },
       });
 
       assert.equal(session.id, 'cs_no_address');
@@ -452,7 +426,67 @@ describe('StripeAPI', function () {
       sinon.assert.calledOnce(logged);
     });
 
-    it('does not retry a refusal that is not about the design', async function () {
+    it('creates the session again without the phone number when Stripe refuses it', async function () {
+      const logged = sinon.stub(logging, 'error');
+      const refusal = Object.assign(new Error('Invalid phone_number_collection'), {
+        type: 'StripeInvalidRequestError',
+        param: 'phone_number_collection[enabled]',
+      });
+      mockStripe.checkout.sessions.create.onFirstCall().rejects(refusal);
+      mockStripe.checkout.sessions.create.onSecondCall().resolves({ id: 'cs_no_phone' });
+
+      const session = await api.createCheckoutSession('priceId', null, {
+        checkout: { design: null, asks: { ...NOTHING_COLLECTED, phone: {} } },
+      });
+
+      assert.equal(session.id, 'cs_no_phone');
+      const [asking, plain] = mockStripe.checkout.sessions.create.getCalls();
+      assert.deepEqual(asking.firstArg.phone_number_collection, { enabled: true });
+      assert.equal(plain.firstArg.phone_number_collection, undefined);
+      sinon.assert.calledOnce(logged);
+    });
+
+    // Stripe can store a refusal against an idempotency key, and would answer a retry sent with
+    // different parameters under the same key with an error rather than a session.
+    it('creates the session again under an idempotency key of its own', async function () {
+      sinon.stub(logging, 'error');
+      const refusal = Object.assign(new Error('Invalid font_family'), {
+        type: 'StripeInvalidRequestError',
+        param: 'branding_settings[font_family]',
+      });
+      mockStripe.checkout.sessions.create.callsFake((params) =>
+        params.branding_settings ? Promise.reject(refusal) : Promise.resolve({ id: 'cs_gift' }),
+      );
+      const buyGift = () =>
+        api.createGiftCheckoutSession({
+          amount: 5000,
+          currency: 'usd',
+          tierName: 'Pro',
+          cadence: 'year',
+          duration: 1,
+          successUrl: '/gift-success',
+          cancelUrl: '/gift-cancel',
+          metadata: { ghost_gift_id: 'gift_123' },
+          idempotencyKey: 'gift_123',
+          customer: null,
+          checkout: { design, asks: NOTHING_COLLECTED },
+        });
+
+      // The buyer sends the same purchase twice, as a double click would.
+      await buyGift();
+      await buyGift();
+
+      const keys = mockStripe.checkout.sessions.create
+        .getCalls()
+        .map((call) => call.args[1].idempotencyKey);
+      assert.equal(keys[0], 'gift_123');
+      assert.notEqual(keys[1], 'gift_123');
+      // The same refusal retried lands on the same key, so Stripe answers the second purchase
+      // with the session it made for the first.
+      assert.deepEqual(keys.slice(2), keys.slice(0, 2));
+    });
+
+    it('does not retry a refusal of a parameter of the session’s own', async function () {
       const refusal = Object.assign(new Error('No such customer'), {
         type: 'StripeInvalidRequestError',
         param: 'customer',
@@ -460,7 +494,9 @@ describe('StripeAPI', function () {
       mockStripe.checkout.sessions.create.rejects(refusal);
 
       await assert.rejects(
-        configured(async () => ({ design })).createCheckoutSetupSession('priceId', {}),
+        api.createCheckoutSetupSession('priceId', {
+          checkout: { design, asks: NOTHING_COLLECTED },
+        }),
         refusal,
       );
       sinon.assert.calledOnce(mockStripe.checkout.sessions.create);
@@ -640,6 +676,49 @@ describe('StripeAPI', function () {
     });
   });
 
+  describe('updateSubscriptionItemPrice', function () {
+    beforeEach(function () {
+      mockStripe = {
+        subscriptions: {
+          update: sinon.stub().resolves({ id: 'sub_123' }),
+        },
+      };
+      sinon.stub(stripe, 'Stripe').returns(mockStripe);
+      api.configure({
+        secretKey: '',
+      });
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('reactivates a subscription that is set to cancel at period end', async function () {
+      await api.updateSubscriptionItemPrice('sub_123', 'si_123', 'price_new', {
+        cancellationReason: 'Changed plan',
+      });
+
+      sinon.assert.calledOnceWithExactly(mockStripe.subscriptions.update, 'sub_123', {
+        proration_behavior: 'always_invoice',
+        items: [{ id: 'si_123', price: 'price_new' }],
+        cancel_at_period_end: false,
+        metadata: { cancellation_reason: 'Changed plan' },
+      });
+    });
+
+    it('leaves a scheduled cancellation and its reason unchanged when preserveCancellation is set', async function () {
+      await api.updateSubscriptionItemPrice('sub_123', 'si_123', 'price_new', {
+        prorationBehavior: 'none',
+        preserveCancellation: true,
+      });
+
+      sinon.assert.calledOnceWithExactly(mockStripe.subscriptions.update, 'sub_123', {
+        proration_behavior: 'none',
+        items: [{ id: 'si_123', price: 'price_new' }],
+      });
+    });
+  });
+
   describe('createCheckoutSession automatic tax flag', function () {
     beforeEach(function () {
       mockStripe = {
@@ -770,7 +849,7 @@ describe('StripeAPI', function () {
           },
         },
       };
-      sinon.stub(mockLabs, 'isSet');
+      mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
       sinon.stub(stripe, 'Stripe').returns(mockStripe);
       api.configure({
         checkoutSessionSuccessUrl: '/success',
@@ -886,7 +965,10 @@ describe('StripeAPI', function () {
       });
 
       assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata);
-      assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
+      assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, {
+        ...metadata,
+        ghost_site_uuid: SITE_UUID,
+      });
     });
 
     it('passes custom fields correctly', async function () {
@@ -1073,7 +1155,7 @@ describe('StripeAPI', function () {
         args.line_items[0].price_data.product_data.name,
         'Gift subscription — Pro (1 year)',
       );
-      assert.deepEqual(args.metadata, { ghost_gift_id: 'gift_123' });
+      assert.deepEqual(args.metadata, { ghost_gift_id: 'gift_123', ghost_site_uuid: SITE_UUID });
       assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.args[1], {
         idempotencyKey: 'gift_123',
       });
@@ -1189,7 +1271,7 @@ describe('StripeAPI', function () {
 
       const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
-      assert.deepEqual(args.metadata, metadata);
+      assert.deepEqual(args.metadata, { ...metadata, ghost_site_uuid: SITE_UUID });
     });
 
     it('passes customer ID when customer is provided', async function () {

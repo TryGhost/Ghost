@@ -52,7 +52,9 @@ describe('Identity tokens root', function () {
   beforeEach(function () {
     originalModules = new Map(rootPaths.map((path) => [path, require.cache[path]]));
     rootPaths.forEach((path) => delete require.cache[path]);
-    getSigningKey = sandbox.stub().resolves({ privateKey: keys[0].privateKey, kid: 'first' });
+    getSigningKey = sandbox
+      .stub()
+      .resolves({ privateKey: keys[0].privateKey, kid: 'first', legacy: false });
     forPurpose = sandbox.stub(SigningKeyService.prototype, 'forPurpose').returns({
       getSigningKey,
       async getVerificationKey() {
@@ -124,7 +126,7 @@ describe('Identity tokens root', function () {
     assert.equal(kidOf(firstToken), 'first');
     urlUtils.urlFor.withArgs('admin', true).returns('https://changed.example/ghost/');
     assert.equal(urlUtils.urlFor('admin', true), 'https://changed.example/ghost/');
-    getSigningKey.resolves({ privateKey: keys[1].privateKey, kid: 'rotated' });
+    getSigningKey.resolves({ privateKey: keys[1].privateKey, kid: 'rotated', legacy: false });
     await root.init();
 
     const token = await retained.getTokenForUser('staff@example.com');

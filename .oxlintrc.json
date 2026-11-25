@@ -9,6 +9,7 @@
     "restriction": "off",
     "nursery": "off"
   },
+  "plugins": ["vitest"],
   "jsPlugins": [
     {
       "name": "ghost",
@@ -25,11 +26,41 @@
   ],
   "overrides": [
     {
+      "files": ["**/*.test.{js,jsx,ts,tsx}"],
+      "rules": {
+        "vitest/no-focused-tests": "error",
+        "vitest/no-identical-title": "error"
+      }
+    },
+    {
+      "files": ["apps/**/*.test.{js,jsx,ts,tsx}", "apps/*/test/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["assert", "assert/*", "node:assert", "node:assert/*"],
+                "message": "App tests assert with Vitest expect. A failing node:assert on a React DOM node inspects the whole fiber tree and can crash the worker."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["apps/admin/src/**/*.{ts,tsx}"],
       "rules": {
         "local/no-hardcoded-ghost-paths": "error"
       },
       "excludeFiles": ["apps/admin/src/**/*.test.*"]
+    },
+    {
+      "files": ["packages/app-sdk/**/*.ts", "contracts/app-contracts/**/*.ts"],
+      "plugins": ["unicorn"],
+      "rules": {
+        "unicorn/prefer-node-protocol": "error"
+      }
     },
     {
       "files": ["e2e/tests/**/*.ts"],
@@ -64,10 +95,12 @@
         "packages/admin-api-schema/src/**/*.ts",
         "packages/admin-api-schema/test/**/*.ts",
         "packages/api-framework/src/**/*.ts",
-        "packages/app-contracts/src/**/*.ts",
-        "packages/app-contracts/test/**/*.ts",
+        "contracts/app-contracts/src/**/*.ts",
+        "contracts/app-contracts/test/**/*.ts",
         "packages/checkout/src/**/*.ts",
         "packages/checkout/test/**/*.ts",
+        "packages/domain-events/src/**/*.ts",
+        "packages/domain-events/test/**/*.ts",
         "packages/i18n/src/**/*.ts",
         "packages/i18n/*.js",
         "packages/image-transform/src/**/*.ts",
@@ -75,8 +108,8 @@
         "packages/limit-service/src/**/*.ts",
         "packages/metafield-csv/src/**/*.ts",
         "packages/metafield-csv/test/**/*.ts",
-        "packages/metafield-types/src/**/*.ts",
-        "packages/metafield-types/test/**/*.ts",
+        "contracts/metafield-types/src/**/*.ts",
+        "contracts/metafield-types/test/**/*.ts",
         "packages/nql-string/src/**/*.ts",
         "packages/nql-string/test/**/*.ts",
         "packages/parse-email-address/src/**/*.ts",
@@ -160,6 +193,7 @@
         "packages/adapters/jobs-base/test/**/*.ts",
         "packages/adapters/storage-base/test/**/*.ts",
         "packages/api-framework/test/**/*.ts",
+        "packages/domain-events/test/**/*.ts",
         "packages/limit-service/test/**/*.ts",
         "tools/gx/cli.ts",
         "tools/gx/create-package.ts",
@@ -198,30 +232,48 @@
       }
     },
     {
-      "files": [
-        "ghost/core/server/services/app-installations/index.ts",
-        "ghost/core/server/services/donations/index.ts",
-        "ghost/core/server/services/export-requests/index.ts",
-        "ghost/core/server/services/indexnow-ping/index.ts",
-        "ghost/core/server/services/internal-keys/index.ts",
-        "ghost/core/server/services/posts-public/index.ts",
-        "ghost/core/server/services/signing-keys/index.ts",
-        "ghost/core/server/services/slack-ping/index.ts",
-        "ghost/core/server/services/upgrades/index.ts"
-      ],
+      "files": ["ghost/core/server/services/*/index.ts"],
       "rules": {
         "ghost/service-root-shape": [
           "error",
           {
             "helperImport": "../../../kernel/define-service"
           }
-        ]
+        ],
+        "ghost/no-injected-service-libraries": "error"
       }
     },
     {
-      "files": ["ghost/core/server/services/*/index.ts"],
+      "files": ["ghost/core/boot.js"],
       "rules": {
-        "ghost/no-injected-service-libraries": "error"
+        "ghost/boot-awaits-service-init": "error"
+      }
+    },
+    {
+      "files": ["ghost/core/server/services/**/*.{js,ts}"],
+      "plugins": ["import"],
+      "rules": {
+        "import/no-dynamic-require": ["error", { "esmodule": true }]
+      }
+    },
+    {
+      "files": ["ghost/core/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
+      "rules": {
+        "ghost/prefer-canonical-types": "error"
+      }
+    },
+    {
+      "files": ["ghost/core/server/services/**/*.ts"],
+      "rules": {
+        "ghost/no-any-in-exported-types": "error"
+      }
+    },
+    {
+      "files": ["ghost/test/**/*.{js,ts}"],
+      "rules": {
+        "ghost/no-assert-error-instance": "error",
+        "ghost/no-real-logger-injection": "error",
+        "ghost/stop-frontend-agents": "error"
       }
     }
   ],
@@ -277,13 +329,14 @@
     "packages/adapters/storage-base/build/**/*",
     "packages/admin-api-schema/build/**/*",
     "packages/api-framework/build/**/*",
-    "packages/app-contracts/build/**/*",
+    "contracts/app-contracts/build/**/*",
     "packages/checkout/build/**/*",
+    "packages/domain-events/build/**/*",
     "packages/i18n/build/**/*",
     "packages/image-transform/build/**/*",
     "packages/limit-service/build/**/*",
     "packages/metafield-csv/build/**/*",
-    "packages/metafield-types/build/**/*",
+    "contracts/metafield-types/build/**/*",
     "packages/nql-string/build/**/*",
     "packages/parse-email-address/build/**/*",
     "packages/testing/test-data/build/**/*",

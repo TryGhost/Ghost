@@ -5,11 +5,13 @@ starts with.
 
 ## Sources of truth
 
-- `schema.js` is the final table and index structure expected after every
+- `schema.ts` is the final table and index structure expected after every
   migration has run.
 - `fixtures/fixtures.json` contains durable records and relationships required
-  by a new site, including roles, permissions, the owner, starter content,
-  tiers, and a newsletter.
+  by a new site, including roles, the owner, starter content, tiers, and a
+  newsletter. Permissions are defined in
+  `core/server/auth/permissions/permissions-data.ts`; the permissions
+  tables in `schema.ts` are unused until they are dropped.
 - `default-settings/default-settings.json` defines the settings a site starts
   with, grouped by responsibility.
 
@@ -37,7 +39,7 @@ When changing fixtures:
 1. Update `fixtures/fixtures.json`.
 2. Add a database migration when existing installations need the same change.
 3. Update affected models, exporter lists, and tests.
-4. Run the schema integrity test documented in the
+4. Run the database integrity test documented in the
    [database migrations guide](../../../../../docs/practices/database-migrations.md).
 
 ## Default settings
@@ -73,7 +75,7 @@ When adding or changing a default setting:
    utilities rather than inserting a row by hand.
 3. Update validation, API serializers, and tests when the setting's behaviour
    requires it.
-4. Run the schema integrity test.
+4. Run the database integrity test.
 
 Do not put environment-specific configuration in default settings. Runtime
 configuration belongs in Ghost's configuration system; see the
@@ -81,7 +83,7 @@ configuration belongs in Ghost's configuration system; see the
 
 ## Schema changes
 
-Changing `schema.js` alone does not update an existing database. Every schema
+Changing `schema.ts` alone does not update an existing database. Every schema
 change needs a migration that moves an installed database to the new shape.
 Follow the [database migrations guide](../../../../../docs/practices/database-migrations.md)
 for generation, iteration, testing, and review requirements.

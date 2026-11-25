@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const { splitFilter } = require('@tryghost/mongo-utils');
@@ -229,20 +228,21 @@ module.exports = class CommentsController {
    * @param {Frame} frame
    */
   async replies(frame) {
-    return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
+    const { id, ...options } = frame.options;
+
+    return this.service.getReplies(id, options);
   }
 
   /**
    * @param {Frame} frame
    */
   async adminReplies(frame) {
-    let options = {
+    const { id, ...options } = await this.#withImpersonationContext({
       ...frame.options,
       order: 'created_at asc', // we always want to load replies from oldest to newest
-    };
-    options = await this.#withImpersonationContext(options);
+    });
 
-    return this.service.getAdminReplies(frame.options.id, _.omit(options, 'id'));
+    return this.service.getAdminReplies(id, options);
   }
 
   /**
@@ -334,7 +334,11 @@ module.exports = class CommentsController {
       return await this.stats.getAllCounts();
     }
 
-    const ids = frame?.options?.ids.split(',');
+    // `ids` is normally a comma-separated string, but a query like `?ids[0]=1&ids[1]=2`
+    // parses to an array. Handle both so unvalidated input can't reach `.split()` on a
+    // non-string and surface an internal error (with its context) to an anonymous caller.
+    const rawIds = frame.options.ids;
+    const ids = Array.isArray(rawIds) ? rawIds : String(rawIds).split(',');
 
     return await this.stats.getCountsByPost(ids);
   }

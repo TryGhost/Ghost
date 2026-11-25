@@ -7,14 +7,32 @@ const settingsService = require('../../services/settings/settings-service');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
+const auth = require('../../auth');
 
-async function getStripeConnectData(frame) {
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = auth.isBetterAuth;
+
+/**
+ * @param {Object} frame
+ * @param {{state?: string, prop?: string}} checked - Gets the state the token was checked against
+ */
+async function getStripeConnectData(frame, checked) {
   const stripeConnectIntegrationToken = frame.data.settings.find(
     (setting) => setting.key === 'stripe_connect_integration_token',
   );
 
   if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
-    const getSessionProp = (prop) => frame.original.session[prop];
+    // Better Auth has no session object
+    const getSessionProp = isBetterAuth
+      ? async () => {
+          checked.state = await auth.stripeConnectState.get(frame.options.context.user);
+          return checked.state;
+        }
+      : (prop) => {
+          checked.prop = prop;
+          checked.state = frame.original.session?.[prop];
+          return checked.state;
+        };
 
     return await settingsBREADService.getStripeConnectData(
       stripeConnectIntegrationToken,
@@ -22,6 +40,28 @@ async function getStripeConnectData(frame) {
       membersService.stripeConnect.getStripeConnectTokenData,
     );
   }
+}
+
+// Only a saved token uses up its state, so a failed save can be retried and
+// the state is good for one key, under either auth engine
+async function editSettings(frame) {
+  const checked = {};
+  const stripeConnectData = await getStripeConnectData(frame, checked);
+  const result = await settingsBREADService.edit(
+    frame.data.settings,
+    frame.options,
+    stripeConnectData,
+  );
+
+  if (stripeConnectData && checked.state) {
+    if (isBetterAuth) {
+      await auth.stripeConnectState.clear(frame.options.context.user, checked.state);
+    } else if (frame.original.session?.[checked.prop] === checked.state) {
+      // A connection started meanwhile keeps its own state
+      delete frame.original.session[checked.prop];
+    }
+  }
+  return result;
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -92,7 +132,7 @@ const controller = {
         limit: 0,
         filter: 'status:paid',
       });
-      if (_.get(paidMembers, 'meta.pagination.total') !== 0) {
+      if (paidMembers?.meta?.pagination?.total !== 0) {
         throw new BadRequestError({
           message: 'Cannot disconnect Stripe whilst you have active subscriptions.',
         });
@@ -146,13 +186,7 @@ const controller = {
       },
     },
     async query(frame) {
-      const stripeConnectData = await getStripeConnectData(frame);
-
-      const result = await settingsBREADService.edit(
-        frame.data.settings,
-        frame.options,
-        stripeConnectData,
-      );
+      const result = await editSettings(frame);
 
       if (!_.isEmpty(result)) {
         frame.setHeader('X-Cache-Invalidate', '/*');

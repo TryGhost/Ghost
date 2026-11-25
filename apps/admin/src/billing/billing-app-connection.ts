@@ -10,7 +10,7 @@ export interface BillingAppConnectionSnapshot {
   failed: boolean;
 }
 
-/** A visible load failure, in the shape Ember's billing monitor reports to Sentry. */
+/** A visible load failure, in the shape reported to Sentry. */
 export interface BillingAppLoadFailureReport {
   billingMonitor: Record<string, unknown>;
   tags: Record<string, string | null>;
@@ -60,7 +60,7 @@ function messageType(data: Record<string, unknown>): string {
  * The connection to the billing app iframe, which stays mounted (hidden) on
  * every Admin page so its subscription reports reach the whole admin. Owns
  * the iframe's src, the load monitor (a timeout, one retry, then a visible
- * failure, reported with Ember's diagnostics), and queued billing app routes.
+ * failure, reported with diagnostics), and queued billing app routes.
  */
 export class BillingAppConnection {
   private readonly billingUrl: string;

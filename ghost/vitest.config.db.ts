@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { availableParallelism } from 'node:os';
+import { testWorkerCount } from '@internal/cfg-test-workers';
 import { defineConfig } from 'vitest/config';
 import { coverageEnv } from './test/utils/strict-mode';
 
@@ -47,6 +47,13 @@ const sharedSsrConfig = {
   resolve: { conditions: ['source', 'node'] },
 };
 
+// See test/utils/domain-events-bridge.ts for why this one is aliased.
+const sharedResolveConfig = {
+  alias: {
+    '@tryghost/domain-events': path.resolve(__dirname, 'test/utils/domain-events-bridge.ts'),
+  },
+};
+
 /*
  * Vitest defaults maxWorkers to availableParallelism() - 1, which is 1 on a
  * 2-core runner — the whole DB suite then runs serially. Floor it at 2: a
@@ -54,7 +61,7 @@ const sharedSsrConfig = {
  * one purely on worker count. `legacy` runs on the threads pool, so the
  * "forks 2 hangs" wedge below is not in play here.
  */
-const getWorkerCount = () => Math.max(2, availableParallelism() - 1);
+const getWorkerCount = () => testWorkerCount({ memoryPerWorkerGB: 1, min: 2 });
 
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.
@@ -148,7 +155,7 @@ export default defineConfig({
         'core/frontend/public/**',
         'core/frontend/helpers/**',
         'core/server/data/migrations/**',
-        'core/server/data/schema/schema.js',
+        'core/server/data/schema/schema.ts',
         'core/server/services/koenig/**',
         // Type-only declarations: no runtime code, and the remapper's parser
         // rejects them ('Expected `from` but found `{`' on `import type`).
@@ -160,6 +167,7 @@ export default defineConfig({
     projects: [
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'e2e',
@@ -180,6 +188,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'integration',
@@ -200,6 +209,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'integration-migrations',
@@ -214,6 +224,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'legacy',
@@ -242,6 +253,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'e2e-api',
@@ -256,6 +268,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'e2e-isolated',

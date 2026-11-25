@@ -6,7 +6,7 @@ const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const config = require('../../../../../core/shared/config');
-const tiersService = require('../../../../../core/server/services/tiers/service');
+const tiersService = require('../../../../../core/server/services/tiers').default;
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const models = require('../../../../../core/server/models');
@@ -245,6 +245,51 @@ describe('Members Service Middleware', function () {
     }
   });
 
+  describe('loadIdentityTokenMember', function () {
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    const run = async (body, getByToken) => {
+      sinon.restore();
+      sinon.stub(membersService, 'api').get(() => ({ members: { getByToken } }));
+      const req = { body };
+      const next = sinon.stub();
+
+      await membersMiddleware.loadIdentityTokenMember(req, {}, next);
+
+      sinon.assert.calledOnceWithExactly(next);
+      return req.identityTokenMemberId;
+    };
+
+    it('sets the id of the member a verified token names', async function () {
+      const getByToken = sinon.stub().resolves({ id: 'member-id' });
+
+      assert.equal(await run({ identity: 'token' }, getByToken), 'member-id');
+      sinon.assert.calledOnceWithExactly(getByToken, 'token');
+    });
+
+    it('sets null when the token does not verify', async function () {
+      const getByToken = sinon.stub().rejects(new Error('invalid signature'));
+
+      assert.equal(await run({ identity: 'forged' }, getByToken), null);
+    });
+
+    it('sets null when the token names no member', async function () {
+      const getByToken = sinon.stub().resolves(null);
+
+      assert.equal(await run({ identity: 'token' }, getByToken), null);
+    });
+
+    it('sets null without a token', async function () {
+      const getByToken = sinon.stub();
+
+      assert.equal(await run({}, getByToken), null);
+      assert.equal(await run({ identity: { sub: 'member@example.com' } }, getByToken), null);
+      sinon.assert.notCalled(getByToken);
+    });
+  });
+
   describe('updateMemberNewsletters', function () {
     // let oldMembersService;
     let req;
@@ -359,8 +404,6 @@ describe('Members Service Middleware', function () {
     const hmacSecret = crypto.randomBytes(64).toString('base64');
     const freeTierId = '000000000000000000000001';
 
-    let originalTiersApi;
-
     beforeEach(function () {
       req = { headers: {}, member: null };
       res = {
@@ -373,13 +416,14 @@ describe('Members Service Middleware', function () {
       };
       next = sinon.stub();
 
-      // tiersService.api is null until init() runs; assign a mock directly
-      originalTiersApi = tiersService.api;
-      tiersService.api = /** @type {any} */ ({
-        browse: sinon.stub().resolves({
-          data: [{ id: freeTierId, type: 'free' }],
-        }),
-      });
+      // tiersService.service throws until init() runs; stub it directly
+      sinon.stub(tiersService, 'service').get(() => ({
+        api: {
+          browse: sinon.stub().resolves({
+            data: [{ id: freeTierId, type: 'free' }],
+          }),
+        },
+      }));
 
       sinon
         .stub(config, 'get')
@@ -390,7 +434,6 @@ describe('Members Service Middleware', function () {
     });
 
     afterEach(function () {
-      tiersService.api = originalTiersApi;
       sinon.restore();
     });
 

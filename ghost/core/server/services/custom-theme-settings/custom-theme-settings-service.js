@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const isEmpty = require('lodash/isEmpty');
 const BREAD = require('./custom-theme-settings-bread-service');
 const nql = require('@tryghost/nql');
 const tpl = require('@tryghost/tpl');
@@ -184,27 +184,27 @@ module.exports = class CustomThemeSettingsService {
    * @param {string} toThemeName
    */
   async copySettingsBetweenThemes(fromThemeName, toThemeName) {
-    const sourceCollection = await this._repository.browse({ filter: `theme:'${fromThemeName}'` });
+    const sourceSettings = await this._repository.browse({ filter: `theme:'${fromThemeName}'` });
 
     // single transaction so a failure part-way leaves no partial copy
     // behind that would make later attempts skip the copy. The
     // destination check locks inside the same transaction so concurrent
     // copies can't both see an empty destination and insert duplicates
     await this._repository.transaction(async (transacting) => {
-      const destinationCollection = await this._repository.browse({
+      const destinationSettings = await this._repository.browse({
         filter: `theme:'${toThemeName}'`,
         transacting,
         forUpdate: true,
       });
 
-      if (destinationCollection.toJSON().length > 0) {
+      if (destinationSettings.length > 0) {
         debug(
           `Skipping copy of custom theme settings from '${fromThemeName}' to '${toThemeName}' - destination already has settings`,
         );
         return;
       }
 
-      for (const setting of sourceCollection.toJSON()) {
+      for (const setting of sourceSettings) {
         debug(`Copying custom theme setting '${fromThemeName}.${setting.key}' to '${toThemeName}'`);
         await this._repository.add(
           {
@@ -229,16 +229,49 @@ module.exports = class CustomThemeSettingsService {
    */
   async _syncRepositoryWithTheme(name, theme) {
     const themeSettings = theme.customSettings || {};
+    const filter = `theme:'${name}'`;
 
-    const settingsCollection = await this._repository.browse({ filter: `theme:'${name}'` });
-    let knownSettings = settingsCollection.toJSON();
+    return this._repository.transaction(async (transacting) => {
+      // the lock comes first, a read before it could miss what a concurrent sync wrote
+      await this._repository.lockActiveTheme(transacting);
 
-    // exit early if there's nothing to sync for this theme
-    if (knownSettings.length === 0 && _.isEmpty(themeSettings)) {
-      return [];
-    }
+      const knownSettings = await this._repository.browse({ filter, transacting });
+      const changes = this._getChanges(name, themeSettings, knownSettings);
 
-    const removedIds = [];
+      // exit early if there's nothing to sync for this theme
+      if (!changes) {
+        return knownSettings;
+      }
+
+      if (changes.remove.length) {
+        await this._repository.destroyMany(changes.remove, { transacting });
+      }
+
+      for (const { id, value } of changes.reset) {
+        await this._repository.edit({ value }, { id, transacting });
+      }
+
+      for (const newSettingValues of changes.add) {
+        await this._repository.add(newSettingValues, { transacting });
+      }
+
+      return this._repository.browse({ filter, transacting });
+    });
+  }
+
+  /**
+   * Compares the stored records with the theme's settings
+   *
+   * @param {string} name - name of the theme
+   * @param {Object} themeSettings - custom settings defined by the theme
+   * @param {Array} knownSettings - stored theme record objects
+   * @returns {{remove: string[], reset: Object[], add: Object[]}|null} - records to write, null when they already match
+   * @private
+   */
+  _getChanges(name, themeSettings, knownSettings) {
+    const remove = [];
+    const reset = [];
+    const add = [];
 
     // sync any knownSettings that have changed in the theme
     for (const knownSetting of knownSettings) {
@@ -251,8 +284,7 @@ module.exports = class CustomThemeSettingsService {
         debug(
           `Removing custom theme setting '${name}.${knownSetting.key}' - ${hasBeenRemoved ? 'not found in theme' : 'type changed'}`,
         );
-        await this._repository.destroy({ id: knownSetting.id });
-        removedIds.push(knownSetting.id);
+        remove.push(knownSetting.id);
         continue;
       }
 
@@ -261,32 +293,28 @@ module.exports = class CustomThemeSettingsService {
         debug(
           `Resetting custom theme setting value '${name}.${themeSetting.key}' - "${knownSetting.value}" is not a valid option`,
         );
-        await this._repository.edit({ value: themeSetting.default }, { id: knownSetting.id });
+        reset.push({ id: knownSetting.id, value: themeSetting.default });
       }
     }
 
-    // clean up any removed knownSettings now that we've finished looping over them
-    knownSettings = knownSettings.filter((setting) => !removedIds.includes(setting.id));
-
     // add any new settings found in theme (or re-add settings that were removed due to type change)
-    const knownSettingsKeys = knownSettings.map((setting) => setting.key);
+    const knownSettingsKeys = knownSettings
+      .filter((setting) => !remove.includes(setting.id))
+      .map((setting) => setting.key);
 
     for (const [key, setting] of Object.entries(themeSettings)) {
       if (!knownSettingsKeys.includes(key)) {
-        const newSettingValues = {
+        debug(`Adding custom theme setting '${name}.${key}'`);
+        add.push({
           theme: name,
           key,
           type: setting.type,
           value: setting.default,
-        };
-
-        debug(`Adding custom theme setting '${name}.${key}'`);
-        await this._repository.add(newSettingValues);
+        });
       }
     }
 
-    const updatedSettingsCollection = await this._repository.browse({ filter: `theme:'${name}'` });
-    return updatedSettingsCollection.toJSON();
+    return remove.length || reset.length || add.length ? { remove, reset, add } : null;
   }
 
   /**
@@ -295,7 +323,7 @@ module.exports = class CustomThemeSettingsService {
    * @private
    */
   _populateValueCacheForTheme(theme, settings) {
-    if (_.isEmpty(theme.customSettings)) {
+    if (isEmpty(theme.customSettings)) {
       this._valueCache.populate([]);
       return;
     }
@@ -309,7 +337,7 @@ module.exports = class CustomThemeSettingsService {
    * @private
    */
   _populateInternalCacheForTheme(theme, settings) {
-    if (_.isEmpty(theme.customSettings)) {
+    if (isEmpty(theme.customSettings)) {
       this._activeThemeSettings = new Map();
       return;
     }

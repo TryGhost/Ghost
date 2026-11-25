@@ -129,4 +129,46 @@ describe('createAutomationsReplay', () => {
     expect(document.body.hasAttribute(MASK)).toBe(false);
     expect(replay.stop).not.toHaveBeenCalled();
   });
+
+  it('skips the mask and the recording while document.body is gone', async () => {
+    const replay = fakeReplay();
+    automationsReplay = createAutomationsReplay(replay, true, '/posts');
+    await vi.runAllTimersAsync();
+    const body = document.body;
+    body.remove();
+
+    try {
+      expect(() => automationsReplay?.update('/automations')).not.toThrow();
+      await vi.runAllTimersAsync();
+      expect(replay.stop).not.toHaveBeenCalled();
+
+      expect(() => automationsReplay?.update('/posts')).not.toThrow();
+      expect(() => automationsReplay?.dispose()).not.toThrow();
+    } finally {
+      document.documentElement.append(body);
+    }
+  });
+
+  it('masks a body that appears before the deferred recording starts', async () => {
+    const replay = fakeReplay();
+    // The full recording's first snapshot must already see the mask
+    let maskWhenRecordingStarted: string | null = null;
+    replay.start.mockImplementation(() => {
+      maskWhenRecordingStarted = document.body.getAttribute(MASK);
+    });
+    const body = document.body;
+    body.remove();
+
+    try {
+      automationsReplay = createAutomationsReplay(replay, true, '/automations');
+    } finally {
+      document.documentElement.append(body);
+    }
+    expect(document.body.hasAttribute(MASK)).toBe(false);
+
+    await vi.runAllTimersAsync();
+
+    expect(replay.start).toHaveBeenCalledTimes(1);
+    expect(maskWhenRecordingStarted).toBe('true');
+  });
 });

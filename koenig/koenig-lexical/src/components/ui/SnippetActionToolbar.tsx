@@ -6,12 +6,14 @@ import {SELECT_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
 import {SnippetInput} from './SnippetInput';
 import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useResetWhenReadOnly} from '../../hooks/useIsDocumentEditable';
 
 export function SnippetActionToolbar({onClose, ...props}) {
     const {cardConfig: {snippets, createSnippet}, darkMode} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
     const [value, setValue] = React.useState('');
+    useResetWhenReadOnly(() => onClose?.());
 
     const handleChange = (event) => {
         setValue(event.target.value);

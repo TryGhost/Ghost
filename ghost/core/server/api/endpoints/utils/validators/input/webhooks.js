@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const jsonSchema = require('../utils/json-schema');
@@ -11,10 +10,7 @@ const messages = {
 
 module.exports = {
   add(apiConfig, frame) {
-    if (
-      !_.get(frame, 'options.context.integration.id') &&
-      !_.get(frame.data, 'webhooks[0].integration_id')
-    ) {
+    if (!frame.options?.context?.integration?.id && !frame.data?.webhooks?.[0]?.integration_id) {
       return Promise.reject(
         new errors.ValidationError({
           message: tpl(messages.schemaValidationFailed, {

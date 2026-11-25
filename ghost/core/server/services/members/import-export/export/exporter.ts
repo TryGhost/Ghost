@@ -1,10 +1,12 @@
 import moment from 'moment';
-import { Transform, pipeline, type Readable } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
+import { finished, pipeline } from 'node:stream/promises';
 import type { Knex } from 'knex';
+import { csvCellsForFields, type CsvField } from '@tryghost/metafield-csv';
+import type { ImportExportTracking } from '../tracking';
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const { csvCellsForFields } = require('@tryghost/metafield-csv');
 
 // Options accepted by the export, forwarded to the members query for filtering.
 export interface ExportOptions {
@@ -14,29 +16,34 @@ export interface ExportOptions {
   [option: string]: unknown;
 }
 
-// A metafield definition, opaque to the exporter: it only counts the set and hands
-// it to the values codec, which decides the columns. Named for intent; its shape is
-// the metafields service's concern, not this one's.
-export type MetafieldDefinition = Record<string, unknown>;
+// A member's metafield values, by namespace and then key, as the columns are filled from.
+type MemberValues = Record<string, Record<string, unknown>>;
 
 // The metafields collaborator: the active column set for this export, and the
 // per-member values that fill those columns. Both resolve empty when the feature is
 // off, so the exporter carries no flag of its own.
 export interface MetafieldsService {
-  activeDefinitions(): Promise<MetafieldDefinition[]>;
-  valuesForMembers(memberIds: string[]): Promise<Map<string, Record<string, unknown>>>;
+  activeDefinitions(): Promise<CsvField[]>;
+  valuesForMembers(memberIds: string[], executor: Knex): Promise<Map<string, MemberValues>>;
 }
 
-// The members aggregate, narrowed to the one read the export makes: the ids matching
-// a filter, resolved without any of the related data the stream fetches itself.
+// The members aggregate applies the same filter and search rules as Admin browse.
 export interface MembersRepository {
+  canReadFilteredBatches(options: ExportOptions): boolean;
   findFilteredIds(options: ExportOptions): Promise<string[]>;
+  openFilteredBatchReader(
+    options: ExportOptions,
+    transacting: Knex.Transaction,
+  ): Promise<
+    (columns: Array<keyof MemberDbRow>, limit: number, afterId?: string) => Promise<MemberDbRow[]>
+  >;
 }
 
 export interface ExporterDeps {
   knex: Knex;
   members: MembersRepository;
   metafields: MetafieldsService;
+  tracking: ImportExportTracking;
 }
 
 interface BatchRelatedData {
@@ -45,14 +52,14 @@ interface BatchRelatedData {
   stripeCustomerMap: Map<string, string>;
   subscribedSet: Set<string>;
   giftIdMap: Map<string, string>;
-  metafieldValuesMap: Map<string, Record<string, unknown>>;
+  metafieldValuesMap: Map<string, MemberValues>;
 }
 
 // The reference data read once up front and shared across every batch.
 interface ReferenceData {
   allProducts: Record<string, string>;
   allLabels: Record<string, string>;
-  activeMetafields: MetafieldDefinition[];
+  activeMetafields: CsvField[];
 }
 
 // A member row as the export query selects it -- the shape the stream emits, and the
@@ -142,60 +149,140 @@ export default class MembersCSVExporter {
   private _knex: Knex;
   private _members: MembersRepository;
   private _metafields: MetafieldsService;
+  private _tracking: ImportExportTracking;
+  private snapshotExportRunning = false;
 
-  constructor({ knex, members, metafields }: ExporterDeps) {
+  constructor({ knex, members, metafields, tracking }: ExporterDeps) {
     this._knex = knex;
     this._members = members;
     this._metafields = metafields;
+    this._tracking = tracking;
   }
 
   async export(options: ExportOptions = {}): Promise<Readable> {
+    const filtered = Boolean(options.filter || options.search);
+    const batched = filtered && this._members.canReadFilteredBatches(options);
+    if (!batched) {
+      return this.startExport(options, filtered, false);
+    }
+
+    if (this.snapshotExportRunning) {
+      throw new errors.TooManyRequestsError({
+        message: 'A filtered member export is already running. Try again after it finishes.',
+      });
+    }
+    this.snapshotExportRunning = true;
+    try {
+      return await this.startExport(options, filtered, true);
+    } catch (error) {
+      this.snapshotExportRunning = false;
+      throw error;
+    }
+  }
+
+  private async startExport(options: ExportOptions, filtered: boolean, batched: boolean) {
     const start = Date.now();
-    const hasFilter = options.limit !== 'all' || options.filter || options.search;
-    const ids = hasFilter ? await this._members.findFilteredIds(options) : null;
-    if (ids) {
-      logging.info(
-        { event: { name: 'members-export.filtered' }, matched: ids.length },
-        'Found members matching the export filter',
-      );
-    }
-
     const reference = await this.fetchReferenceData();
-
-    const membersQuery = this._knex('members').select(...MEMBER_COLUMNS);
-    if (ids) {
-      membersQuery.whereIn('id', ids);
-    }
+    const ids = filtered && !batched ? await this._members.findFilteredIds(options) : null;
 
     logging.info(
       { event: { name: 'members-export.started' } },
       'Starting streaming export of members',
     );
-    const batchingTransform = this.createBatchingTransform();
-    const processingTransform = this.createProcessingTransform(reference);
+    const attempt = this._tracking.export(reference.activeMetafields);
+    let rowsWritten = 0;
+    let batchesWritten = 0;
+    const snapshot = batched ? await this.openFilteredSnapshot(options) : null;
+    let processingTransform: Transform;
+    try {
+      processingTransform = this.createProcessingTransform(
+        reference,
+        (rows) => {
+          rowsWritten += rows;
+          batchesWritten += 1;
+          attempt.wrote(rows);
+        },
+        snapshot?.transaction ?? this._knex,
+      );
+    } catch (error) {
+      await snapshot?.close();
+      throw error;
+    }
 
-    pipeline(membersQuery.stream(), batchingTransform, processingTransform, (err) => {
-      if (err) {
-        logging.error(
-          { event: { name: 'members-export.stream.error' }, err },
-          'Members export stream failed',
-        );
-      } else {
+    // Over once the reader has taken every row, not once the last one is buffered for it, so a
+    // small export that fits in the buffer still counts as broken off if its download is.
+    const streamed = (
+      snapshot
+        ? pipeline(Readable.from(snapshot.batches), processingTransform).finally(async () => {
+            try {
+              await snapshot.close();
+            } finally {
+              this.snapshotExportRunning = false;
+            }
+          })
+        : pipeline(
+            this._knex('members')
+              .select(...MEMBER_COLUMNS)
+              .modify((query) => {
+                if (ids) {
+                  query.whereIn('id', ids);
+                }
+              })
+              .stream(),
+            this.createBatchingTransform(),
+            processingTransform,
+          )
+    ).then(() => finished(processingTransform));
+    streamed.then(
+      () =>
         logging.info(
-          { event: { name: 'members-export.completed' }, durationMs: Date.now() - start },
+          {
+            event: { name: 'members-export.completed' },
+            durationMs: Date.now() - start,
+            rows: rowsWritten,
+            batches: batchesWritten,
+          },
           'Members export completed',
-        );
-      }
-    });
+        ),
+      // The export's span logs a failure.
+      () => {},
+    );
+    attempt.ended(streamed);
 
     return processingTransform;
   }
 
+  private async openFilteredSnapshot(options: ExportOptions) {
+    // Keep the matching set stable across the download. Related reads use the
+    // same connection so concurrent exports never wait for a second pool slot.
+    const transaction = await this._knex.transaction({ isolationLevel: 'repeatable read' });
+    const close = () => transaction.rollback();
+
+    try {
+      const read = await this._members.openFilteredBatchReader(options, transaction);
+      const firstBatch = await read(MEMBER_COLUMNS, BATCH_SIZE);
+      const batches = (async function* () {
+        let batch = firstBatch;
+        while (batch.length > 0) {
+          yield batch;
+          if (batch.length < BATCH_SIZE) {
+            return;
+          }
+          batch = await read(MEMBER_COLUMNS, BATCH_SIZE, batch[batch.length - 1].id);
+        }
+      })();
+      return { transaction, batches, close };
+    } catch (error) {
+      await close();
+      throw error;
+    }
+  }
+
   // products and labels are small, stable tables, read once up front as id->name
   // maps. Metafield definitions are read once too, which fixes the column set for
-  // the whole file: archiving a field mid-export cannot leave the header ragged. It
-  // can still leave that field's cells empty from the batch after the archive
-  // onwards, because the per-batch value read applies its own active filter.
+  // the whole file: archiving a field mid-export cannot leave the header ragged.
+  // For exports outside a snapshot, subsequent batches may have empty cells
+  // because each value read applies its own active filter.
   private async fetchReferenceData(): Promise<ReferenceData> {
     const start = Date.now();
 
@@ -254,21 +341,26 @@ export default class MembersCSVExporter {
   }
 
   // Each flattened row is pushed individually so a batch's rows do not pile up in memory.
-  private createProcessingTransform(reference: ReferenceData): Transform {
+  private createProcessingTransform(
+    reference: ReferenceData,
+    onWritten: (rows: number) => void,
+    executor: Knex,
+  ): Transform {
     const assembleRelatedData = (memberIds: string[]) =>
-      this.assembleRelatedData(memberIds, reference.activeMetafields);
+      this.assembleRelatedData(memberIds, reference.activeMetafields, executor);
     const flattenBatch = (members: MemberDbRow[], related: BatchRelatedData) =>
       this.flattenBatch(members, related, reference);
 
     return new Transform({
       objectMode: true,
-      highWaterMark: BATCH_SIZE,
+      writableHighWaterMark: 1,
       async transform(batch: MemberDbRow[], encoding, callback) {
         try {
           const memberIds = batch.map((member) => member.id);
           const related = await assembleRelatedData(memberIds);
           const rows = flattenBatch(batch, related);
           rows.forEach((row) => this.push(row));
+          onWritten(rows.length);
           callback();
         } catch (err) {
           callback(
@@ -283,10 +375,9 @@ export default class MembersCSVExporter {
   // values are read only when there are columns to fill.
   private async assembleRelatedData(
     memberIds: string[],
-    activeMetafields: MetafieldDefinition[],
+    activeMetafields: CsvField[],
+    knex: Knex,
   ): Promise<BatchRelatedData> {
-    const knex = this._knex;
-
     const [tiers, labels, stripeCustomers, subscriptions, gifts, metafieldValuesMap] =
       await Promise.all([
         knex('members_products')
@@ -312,8 +403,8 @@ export default class MembersCSVExporter {
           .whereIn('redeemer_member_id', memberIds),
 
         activeMetafields.length > 0
-          ? this._metafields.valuesForMembers(memberIds)
-          : new Map<string, Record<string, unknown>>(),
+          ? this._metafields.valuesForMembers(memberIds, knex)
+          : new Map<string, MemberValues>(),
       ]);
 
     return {

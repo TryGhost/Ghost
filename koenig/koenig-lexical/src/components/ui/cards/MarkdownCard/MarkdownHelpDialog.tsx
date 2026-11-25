@@ -1,3 +1,4 @@
+import React from 'react';
 import {Modal} from '../../Modal';
 
 function Th({value}) {
@@ -38,11 +39,13 @@ export function Td({value}) {
 }
 
 export default function MarkdownHelpDialog(props) {
+    const headingId = React.useId();
+
     return (
-        <Modal {...props}>
+        <Modal labelledBy={headingId} {...props}>
             <div className="p-8 text-left font-sans" data-testid="markdown-help-dialog">
                 <header>
-                    <h1 className="mr-6 text-2xl font-semibold leading-snug">
+                    <h1 className="mr-6 text-2xl font-semibold leading-snug" id={headingId}>
                         Markdown Help
                     </h1>
                 </header>

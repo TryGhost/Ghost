@@ -4,7 +4,7 @@ import { renderHookWithProviders } from '../../../src/test/test-utils';
 import {
   useAddAppInstallation,
   useApproveAppInstallation,
-  usePreviewAppInstallation,
+  useStartAppSession,
 } from '../../../src/api/app-installations';
 import { withMockFetch } from '../../utils/mock-fetch';
 
@@ -27,22 +27,6 @@ const requestOf = (mock: { calls: unknown[][] }) => {
 };
 
 describe('app installations api', () => {
-  it('previews a manifest by its URL', async () => {
-    await withMockFetch(okResponse({ app_installation_previews: [] }), async (mock) => {
-      const { result } = renderHookWithProviders(() => usePreviewAppInstallation());
-
-      await act(async () => {
-        await result.current.mutateAsync(MANIFEST_URL);
-      });
-
-      expect(requestOf(mock)).toEqual({
-        path: '/ghost/api/admin/apps/installations/preview/',
-        method: 'POST',
-        body: { app_installation_previews: [{ manifest_url: MANIFEST_URL }] },
-      });
-    });
-  });
-
   it('installs the manifest that was reviewed', async () => {
     await withMockFetch(okResponse({ app_installations: [] }), async (mock) => {
       const { result } = renderHookWithProviders(() => useAddAppInstallation());
@@ -77,6 +61,23 @@ describe('app installations api', () => {
         method: 'PUT',
         body: { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'abc', revision: 2 }] },
       });
+    });
+  });
+
+  it('starts a session of an installation, with nothing in the body', async () => {
+    await withMockFetch(okResponse({ app_sessions: [] }), async (mock) => {
+      const { result } = renderHookWithProviders(() => useStartAppSession());
+
+      await act(async () => {
+        await result.current.mutateAsync('installation-1');
+      });
+
+      const [url, options] = mock.calls[0] as [string, RequestInit];
+      expect(new URL(url).pathname).toBe(
+        '/ghost/api/admin/apps/installations/installation-1/sessions/',
+      );
+      expect(options.method).toBe('POST');
+      expect(options.body).toBeUndefined();
     });
   });
 });

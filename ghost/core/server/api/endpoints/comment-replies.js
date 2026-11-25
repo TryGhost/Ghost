@@ -1,6 +1,6 @@
 // This is a new endpoint for the admin API to return replies to a comment with pagination
 
-const commentsService = require('../../services/comments');
+const commentsService = require('../../services/comments').default;
 const ALLOWED_INCLUDES = [
   'member',
   'replies',
@@ -47,7 +47,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return commentsService.controller.adminReplies(frame);
+      return commentsService.service.controller.adminReplies(frame);
     },
   },
   read: {
@@ -63,7 +63,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return commentsService.controller.adminRead(frame);
+      return commentsService.service.controller.adminRead(frame);
     },
   },
 };

@@ -1,36 +1,51 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const {
   SIGNUP_CONTEXTS,
   canWelcomeEmailReplaceSignupPaidEmail,
 } = require('../../../../lib/member-signup-contexts');
-const { collectedShipping } = require('../checkout/completed-session');
+const { CHECKOUT_PORT } = require('@tryghost/checkout');
+const { collectedFrom } = require('../checkout/completed-session');
+const { COLLECTION_FLAG } = require('../../../stripe-checkout-config/models');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
+/** @typedef {import('../../tracking').CheckoutCompletionAttempt} CheckoutCompletionAttempt */
 
-function isStripeMetadataTrue(value) {
-  return value === true || value === 'true';
-}
-
-function hasStripeMetadataKey(metadata, key) {
-  return Object.hasOwn(metadata || {}, key);
-}
-
-function isGiftCheckoutSession(session) {
-  return (
-    hasStripeMetadataKey(session.metadata, 'ghost_gift_id') ||
-    isStripeMetadataTrue(session.metadata?.ghost_gift)
+/**
+ * The wallet the buyer paid for the checkout's subscription with, as Stripe names it, such as
+ * `apple_pay` or `google_pay`: `none` for a card or another method, and `unknown` when the
+ * customer's subscriptions don't include it, as Stripe lists only some. Read from the payment
+ * method the customer is fetched with, so it costs no request of its own.
+ *
+ * @param {import('stripe').Stripe.Customer} customer
+ * @param {import('stripe').Stripe.Checkout.Session} session
+ * @returns {import('../../tracking').CheckoutWallet}
+ */
+function walletOf(customer, session) {
+  const subscription = customer.subscriptions?.data.find(
+    ({ id }) => id === getStripeResourceId(session.subscription),
   );
+  if (!subscription) {
+    return 'unknown';
+  }
+  const method = subscription.default_payment_method;
+  return (typeof method === 'object' && method?.card?.wallet?.type) || 'none';
 }
 
-function isDonationCheckoutSession(session) {
-  return isStripeMetadataTrue(session.metadata?.ghost_donation);
-}
-
-// Matches the donation marker on key presence, not truthiness, so an ill-formed
-// donation marker alongside a true gift marker still counts as a conflict.
-function hasConflictingCheckoutFlowMetadata(session) {
-  return hasStripeMetadataKey(session.metadata, 'ghost_donation') && isGiftCheckoutSession(session);
+/**
+ * What became of the phone number a checkout collected, from what its bindings kept and refused,
+ * a refusal naming the phone's port or a part of its value.
+ *
+ * @param {Set<string>} kept
+ * @param {{property: string}[]} refused
+ * @returns {import('../../tracking').CollectedPhoneOutcome}
+ */
+function phoneOutcome(kept, refused) {
+  const port = CHECKOUT_PORT.phone;
+  if (!kept.has(port)) {
+    return 'no_destination';
+  }
+  const ofPhone = ({ property }) => property === port || property.startsWith(`${port}.`);
+  return refused.some(ofPhone) ? 'refused' : 'saved';
 }
 
 function getStripeResourceId(resource) {
@@ -81,6 +96,7 @@ module.exports = class CheckoutSessionEventService {
   /**
    * @param {object} deps
    * @param {import('../../stripe-api')} deps.api
+   * @param {Pick<import('../../tracking').StripeTracking, 'checkoutCompletion' | 'collectedPhone'>} deps.tracking
    * @param {object} deps.memberRepository
    * @param {object} deps.donationRepository
    * @param {object} deps.giftService
@@ -88,8 +104,7 @@ module.exports = class CheckoutSessionEventService {
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
    * @param {{isSet(flag: string): boolean}} deps.labs
-   * @param {typeof import('../../../stripe-checkout-config')} deps.stripeCheckoutConfig
-   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
+   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planThrough'>} deps.metafieldBindings
    * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
   constructor(deps) {
@@ -98,60 +113,56 @@ module.exports = class CheckoutSessionEventService {
   }
 
   /**
-   * Handles a `checkout.session.completed` event
-   * Delegates to the appropriate handler based on the session mode and metadata
-   * @param {import('stripe').Stripe.Checkout.Session} session
-   * @param {import('stripe').Stripe.Event.Type} [eventType]
-   */
-  async handleEvent(session, eventType = 'checkout.session.completed') {
-    if (eventType === 'checkout.session.async_payment_failed') {
-      return;
-    }
-
-    if (eventType === 'checkout.session.async_payment_succeeded') {
-      if (session.mode === 'payment' && isGiftCheckoutSession(session)) {
-        await this.handlePaymentEvent(session);
-      }
-      return;
-    }
-
-    if (session.mode === 'setup') {
-      await this.handleSetupEvent(session);
-    }
-
-    if (session.mode === 'subscription') {
-      await this.handleSubscriptionEvent(session);
-    }
-
-    if (session.mode === 'payment') {
-      await this.handlePaymentEvent(session);
-    }
-  }
-
-  /**
-   * Routes a `payment` mode session to the donation or gift handler. Gift purchases
-   * may complete asynchronously, so their handler only runs once Stripe reports the
-   * session as paid, whichever event carried it.
+   * Completes a paid signup or upgrade from a completed Checkout session in `subscription` mode:
+   * makes the buyer a paid member, or links the subscription to the member who bought it, and
+   * saves what the checkout collected. Records a `stripe_checkout.complete` span.
    *
    * @param {import('stripe').Stripe.Checkout.Session} session
    */
-  async handlePaymentEvent(session) {
-    if (hasConflictingCheckoutFlowMetadata(session)) {
-      logging.warn('Ignoring checkout session with conflicting payment flow metadata');
-      return;
-    }
+  async completeSubscriptionCheckout(session) {
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
+      attempt.completing('subscription');
+      await this.handleSubscriptionEvent(session, attempt);
+    });
+  }
 
-    if (isGiftCheckoutSession(session)) {
-      if (session.payment_status !== 'paid') {
-        return;
-      }
+  /**
+   * Saves the card a member added in a completed Checkout session in `setup` mode as the payment
+   * method of their subscriptions. Records a `stripe_checkout.complete` span.
+   *
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   */
+  async updateCard(session) {
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
+      attempt.completing('setup');
+      await this.handleSetupEvent(session);
+    });
+  }
+
+  /**
+   * Completes a gift purchase once Stripe has received the payment. Records a
+   * `stripe_checkout.complete` span.
+   *
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   */
+  async completeGiftPurchase(session) {
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
+      attempt.completing('gift');
       await this.handleGiftEvent(session);
-      return;
-    }
+    });
+  }
 
-    if (isDonationCheckoutSession(session)) {
+  /**
+   * Records a donation and tells the site's staff about it. Records a `stripe_checkout.complete`
+   * span.
+   *
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   */
+  async recordDonation(session) {
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
+      attempt.completing('donation');
       await this.handleDonationEvent(session);
-    }
+    });
   }
 
   /**
@@ -330,8 +341,9 @@ module.exports = class CheckoutSessionEventService {
   /**
    * Handles a `checkout.session.completed` event for a subscription
    * @param {import('stripe').Stripe.Checkout.Session} session
+   * @param {CheckoutCompletionAttempt} attempt
    */
-  async handleSubscriptionEvent(session) {
+  async handleSubscriptionEvent(session, attempt) {
     const customer = await this.api.getCustomer(session.customer, {
       expand: ['subscriptions.data.default_payment_method'],
     });
@@ -347,16 +359,18 @@ module.exports = class CheckoutSessionEventService {
     // still created by this checkout, so only one created before it started counts.
     const memberPreexisted =
       Boolean(member) && !(session.created && member.get('created_at') >= session.created * 1000);
-    const checkoutType = _.get(session, 'metadata.checkoutType');
-    // Typing an email address into a checkout doesn't prove owning it, so an unverified
-    // checkout can link a subscription to an existing member but not edit their details.
-    const canUpdateMember =
+    const checkoutType = session.metadata?.checkoutType;
+    // Typing an email address into a checkout doesn't prove owning it, so a checkout an existing
+    // member didn't start signed in links their subscription and saves what it collected into
+    // custom fields, but can't change their name.
+    const buyerVerified =
       !memberPreexisted ||
       session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
+    attempt.buying({ existing: memberPreexisted, verified: buyerVerified });
 
     if (!member) {
-      const metadataName = _.get(session, 'metadata.name');
-      const metadataNewsletters = _.get(session, 'metadata.newsletters');
+      const metadataName = session.metadata?.name;
+      const metadataNewsletters = session.metadata?.newsletters;
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
         url: session.metadata?.attribution_url ?? null,
@@ -366,18 +380,21 @@ module.exports = class CheckoutSessionEventService {
         referrerUrl: session.metadata?.referrer_url ?? null,
       };
 
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
+      const payerName =
+        customer.subscriptions?.data?.[0]?.default_payment_method?.billing_details?.name;
       const name = metadataName || payerName || null;
 
       const memberData = { email: customer.email, name, attribution };
       if (metadataNewsletters) {
         try {
           memberData.newsletters = JSON.parse(metadataNewsletters);
-        } catch (e) {
-          logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
+        } catch (err) {
+          logging.error({
+            event: { name: 'stripe_checkout.session.newsletters_unreadable' },
+            err,
+            newsletters: metadataNewsletters,
+            session_id: session.id,
+          });
         }
       }
 
@@ -389,10 +406,8 @@ module.exports = class CheckoutSessionEventService {
       };
       member = await memberRepository.create(memberDataWithStripeCustomer);
     } else {
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
+      const payerName =
+        customer.subscriptions?.data?.[0]?.default_payment_method?.billing_details?.name;
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
         url: session.metadata?.attribution_url ?? null,
@@ -402,7 +417,7 @@ module.exports = class CheckoutSessionEventService {
         referrerUrl: session.metadata?.referrer_url ?? null,
       };
 
-      if (canUpdateMember && payerName && !member.get('name')) {
+      if (buyerVerified && payerName && !member.get('name')) {
         await memberRepository.update({ name: payerName }, { id: member.get('id') });
       }
 
@@ -442,12 +457,20 @@ module.exports = class CheckoutSessionEventService {
 
     // After the subscription work and apart from it: a throw here would fail the webhook, and
     // Stripe's retry could repeat the payment work.
-    await this.saveShippingDetails(member.id, session, { canUpdateMember });
+    await this.saveCollected(member.id, session, {
+      wallet: walletOf(customer, session),
+      attempt,
+    });
 
-    if (checkoutType !== 'upgrade') {
-      const ghostSignupContext = /** @type {SignupContext | undefined} */ (
-        session.metadata?.ghostSignupContext
-      );
+    const ghostSignupContext = /** @type {SignupContext | undefined} */ (
+      session.metadata?.ghostSignupContext
+    );
+    // The client sets checkoutType; Ghost sets the signup context when it creates the session.
+    // When Ghost marked the buyer as having no guaranteed sign-in path, the signup email goes out
+    // even on an upgrade.
+    const buyerNeedsMagicLinkEmail = ghostSignupContext === SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
+
+    if (checkoutType !== 'upgrade' || buyerNeedsMagicLinkEmail) {
       const shouldSkipSignupEmailWhenWelcomeEmailActive =
         canWelcomeEmailReplaceSignupPaidEmail(ghostSignupContext);
 
@@ -464,67 +487,77 @@ module.exports = class CheckoutSessionEventService {
   }
 
   /**
-   * Saves the shipping address, and the recipient's name, a checkout collected into the custom
-   * fields the site's config names. Only a checkout that asked for an address is saved from:
-   * Stripe can return one it wasn't asked for, such as one saved with Link, and that isn't the
-   * publisher's to keep. What the checkout asked is read from the checkout itself, because the
-   * config can change while it is open.
+   * Saves what a checkout asked the buyer for into the custom fields the site's config names.
+   * They're saved for every buyer, including an existing member who checked out without signing
+   * in: what the checkout collected only ever goes into custom fields, and never changes the
+   * member's name or email.
    *
    * Never throws: a failed webhook makes Stripe retry it, which could repeat the payment work.
    *
    * @param {string} memberId
    * @param {import('stripe').Stripe.Checkout.Session} session
    * @param {object} options
-   * @param {boolean} options.canUpdateMember Whether this checkout may write to the member's record
+   * @param {import('../../tracking').CheckoutWallet} options.wallet The wallet the buyer paid with
+   * @param {CheckoutCompletionAttempt} options.attempt
    */
-  async saveShippingDetails(memberId, session, { canUpdateMember }) {
+  async saveCollected(memberId, session, { wallet, attempt }) {
     try {
-      const { SHIPPING_FLAG } = this.deps.stripeCheckoutConfig;
-      if (!session.shipping_address_collection || !this.deps.labs.isSet(SHIPPING_FLAG)) {
+      if (!this.deps.labs.isSet(COLLECTION_FLAG)) {
         return;
       }
-
-      if (!canUpdateMember) {
-        logging.warn(
-          {
-            event: { name: 'stripe_checkout.shipping.save_skipped' },
-            member_id: memberId,
-            session_id: session.id,
-          },
-          'Skipped saving the shipping details an unverified checkout collected for an existing member',
-        );
+      const { answers: collected, phone } = collectedFrom.parse(session);
+      if (collected.length === 0) {
         return;
       }
-
-      const { plans, failure } = await this.deps.metafieldBindings.planCollected(
-        collectedShipping.parse(session),
-      );
+      attempt.collecting(collected);
+      // Each value recorded against the binding that routed it, and what a field refuses is
+      // logged rather than thrown, as the money is already taken: the rest are still saved.
+      const { plans, refused, kept } = await this.deps.metafieldBindings.planThrough(collected, {
+        type: 'binding',
+      });
+      attempt.saving({ kept, refused });
       if (plans.length > 0) {
         // Through the members service, like any other edit, so the change reaches webhooks.
         await this.deps.memberBREADService.updateWithMetafields({}, { id: memberId }, plans);
-      } else if (!failure) {
-        // The checkout asked, but shipping was switched off or its fields deleted since.
+      }
+      if (kept.size === 0) {
+        // The checkout asked, but collection was switched off or its fields deleted since.
         logging.warn(
           {
-            event: { name: 'stripe_checkout.shipping.no_destination' },
+            event: { name: 'stripe_checkout.collection.no_destination' },
             member_id: memberId,
             session_id: session.id,
           },
-          'Dropped the shipping details a checkout collected, as no custom field takes them now',
+          'Dropped what a checkout collected, as no custom field takes it now',
         );
       }
-      if (failure) {
-        throw failure;
+      if (refused.length > 0) {
+        // Named by port and part, never with what was given, which is the member's.
+        logging.error(
+          {
+            event: { name: 'stripe_checkout.collection.refused' },
+            refused: refused.map(({ property }) => property),
+            member_id: memberId,
+            session_id: session.id,
+          },
+          'Saved what a checkout collected, apart from what its custom fields refused',
+        );
+      }
+      // Counted so how often a wallet's number needs a country to be read, and what then becomes
+      // of it, can be watched.
+      if (phone) {
+        this.deps.tracking.collectedPhone({ wallet, phone, outcome: phoneOutcome(kept, refused) });
       }
     } catch (err) {
+      attempt.failing();
       logging.error(
         {
-          event: { name: 'stripe_checkout.shipping.save_failed' },
+          event: { name: 'stripe_checkout.collection.save_failed' },
           err,
           member_id: memberId,
           session_id: session.id,
         },
-        'Failed to save the shipping details a checkout collected',
+        'Failed to save what a checkout collected',
       );
     }
   }

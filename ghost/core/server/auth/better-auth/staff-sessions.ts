@@ -1,0 +1,73 @@
+import type { GhostAuth } from './create-auth';
+import { sessionCookies } from './session-controller';
+
+export type StaffSessionsDeps = {
+  /** Read per call: the instance is built by boot */
+  getAuth(): Pick<
+    GhostAuth['api'],
+    'createVerifiedSession' | 'createSsoSession' | 'revokeUserSessions' | 'revokeAllSessions'
+  >;
+  /** Deletes the user's legacy `sessions` rows */
+  deleteLegacyUserSessions(userId: string): Promise<unknown>;
+  getAdminOrigin(): string;
+};
+
+/** Session changes on security events under `better-auth` (plan §5.4, Phase 2 steps 7–8). */
+export function createStaffSessions(deps: StaffSessionsDeps) {
+  return {
+    /** Also deletes legacy rows, so a rollback to `legacy` can't revive them (plan §8) */
+    async revokeUserSessions(userId: string) {
+      await deps.getAuth().revokeUserSessions({ body: { userId } });
+      await deps.deleteLegacyUserSessions(userId);
+    },
+
+    async revokeAllSessions() {
+      await deps.getAuth().revokeAllSessions();
+    },
+
+    /**
+     * A verified session for a user who just proved who they are; returns its
+     * `Set-Cookie`. Callers have passed the admin-origin check, and a session
+     * without an origin is anonymous.
+     */
+    async createVerifiedSession(
+      userId: string,
+      { ipAddress, userAgent }: { ipAddress?: string; userAgent?: string } = {},
+    ): Promise<string[]> {
+      const { headers } = await deps.getAuth().createVerifiedSession({
+        body: { userId, origin: deps.getAdminOrigin(), ipAddress, userAgent },
+        returnHeaders: true,
+      });
+      return sessionCookies(headers);
+    },
+
+    /** As `createVerifiedSession`, for a user the SSO adapter resolved; unlocks a locked user */
+    async createSsoSession(userId: string): Promise<string[]> {
+      const { headers } = await deps.getAuth().createSsoSession({
+        body: { userId, origin: deps.getAdminOrigin() },
+        returnHeaders: true,
+      });
+      return sessionCookies(headers);
+    },
+  };
+}
+
+export type StaffSessions = ReturnType<typeof createStaffSessions>;
+
+let staffSessions: StaffSessions | undefined;
+
+/** Better Auth loads only under its engine, so callers check it first */
+export default function getStaffSessions(): StaffSessions {
+  if (!staffSessions) {
+    const betterAuth = require('./index').default;
+    const { knex } = require('../../data/db');
+    const urlUtils = require('../../../shared/url-utils').default;
+
+    staffSessions = createStaffSessions({
+      getAuth: () => betterAuth.service.api,
+      deleteLegacyUserSessions: (userId) => knex('sessions').where({ user_id: userId }).del(),
+      getAdminOrigin: () => urlUtils.getAdminOrigin(),
+    });
+  }
+  return staffSessions;
+}

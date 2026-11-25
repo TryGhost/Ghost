@@ -17,7 +17,6 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { ListFilter } from 'lucide-react';
 import { PageHeaderLargeTitleContext } from './page-header-large-title';
-import { Slot } from '@radix-ui/react-slot';
 
 type PropsWithChildrenAndClassName = React.PropsWithChildren & {
   className?: string;
@@ -29,18 +28,14 @@ type PageHeaderProps = PropsWithChildrenAndClassName & {
 };
 
 /**
- * Header tooltips require Admin 7 and never belong on primary actions. A tooltip
- * without a label shows only the shortcut, for a control whose text already names it.
+ * Header tooltips never belong on primary actions. A tooltip without a label
+ * shows only the shortcut, for a control whose text already names it.
  */
 function PageHeaderTooltip({
   children,
   label,
   shortcut,
 }: React.PropsWithChildren<{ label?: string; shortcut?: string }>) {
-  const { isAdmin7 } = useShade();
-  if (!isAdmin7) {
-    return <>{children}</>;
-  }
   return (
     <Tooltip>
       {children}
@@ -54,36 +49,19 @@ function PageHeaderTooltip({
   );
 }
 
-const PageHeaderTooltipTrigger = React.forwardRef<
-  React.ElementRef<typeof TooltipTrigger>,
-  React.ComponentPropsWithoutRef<typeof TooltipTrigger>
->(({ children, asChild, ...props }, ref) => {
-  const { isAdmin7 } = useShade();
-  const PlainTrigger = asChild ? Slot : 'button';
-  return isAdmin7 ? (
-    <TooltipTrigger ref={ref} asChild={asChild} {...props}>
-      {children}
-    </TooltipTrigger>
-  ) : (
-    <PlainTrigger ref={ref} {...props}>
-      {children}
-    </PlainTrigger>
-  );
-});
-PageHeaderTooltipTrigger.displayName = 'PageHeaderTooltipTrigger';
-
 const PrimaryActionContext = React.createContext(false);
 
 type PageHeaderActionProps = ButtonProps & {
   label: string;
   iconOnly?: boolean;
   primary?: boolean;
+  /**
+   * A key the screen binds for this action. It shows in the tooltip and sets
+   * `aria-keyshortcuts`, so pass it only when the screen handles the key.
+   */
   shortcut?: string;
   /** Show an explanation for a changing value; static labels need no tooltip. */
   tooltip?: boolean;
-  /** Temporary compatibility for existing screens; new headers use the defaults. */
-  fallbackVariant?: ButtonProps['variant'];
-  fallbackSize?: ButtonProps['size'];
 };
 
 const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionProps>(
@@ -94,14 +72,11 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
       primary: primaryProp,
       shortcut,
       tooltip = iconOnly || Boolean(shortcut),
-      fallbackVariant = 'outline',
-      fallbackSize,
       className,
       ...props
     },
     ref,
   ) => {
-    const { isAdmin7 } = useShade();
     const primaryContext = React.useContext(PrimaryActionContext);
     const primary = primaryProp ?? primaryContext;
     const button = (
@@ -109,15 +84,15 @@ const PageHeaderAction = React.forwardRef<HTMLButtonElement, PageHeaderActionPro
         ref={ref}
         aria-keyshortcuts={shortcut}
         aria-label={label}
-        className={cn(isAdmin7 && '[&_svg]:stroke-2!', className)}
-        size={isAdmin7 ? (iconOnly ? 'icon' : undefined) : fallbackSize}
-        variant={isAdmin7 ? (primary ? 'default' : 'ghost') : fallbackVariant}
+        className={cn('[&_svg]:stroke-2!', className)}
+        size={iconOnly ? 'icon' : undefined}
+        variant={primary ? 'default' : 'ghost'}
         {...props}
       />
     );
     // A labelled action already shows its name, so its shortcut tooltip shows the keys alone.
     const tooltipLabel = iconOnly || !shortcut ? label : undefined;
-    return primary || !isAdmin7 || !tooltip ? (
+    return primary || !tooltip ? (
       button
     ) : (
       <PageHeaderTooltip label={tooltipLabel} shortcut={shortcut}>
@@ -150,26 +125,24 @@ const PageHeaderSelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectTrigger>,
   React.ComponentPropsWithoutRef<typeof SelectTrigger> & { label: string; tooltip?: boolean }
 >(({ label, tooltip = true, className, ...props }, ref) => {
-  const { controlShape, isAdmin7 } = useShade();
+  const { controlShape } = useShade();
   const trigger = (
     <SelectTrigger
       ref={ref}
       aria-label={label}
       className={cn(
-        'w-auto',
-        isAdmin7 &&
-          'gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2! [&>svg]:mr-0',
+        'w-auto gap-1.5 font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-2! [&>svg]:mr-0',
         className,
       )}
       shape={controlShape}
-      showChevron={!isAdmin7}
-      variant={isAdmin7 ? 'ghost' : 'default'}
+      showChevron={false}
+      variant="ghost"
       {...props}
     />
   );
   return tooltip ? (
     <PageHeaderTooltip label={label}>
-      <PageHeaderTooltipTrigger asChild>{trigger}</PageHeaderTooltipTrigger>
+      <TooltipTrigger asChild>{trigger}</TooltipTrigger>
     </PageHeaderTooltip>
   ) : (
     trigger
@@ -181,11 +154,18 @@ PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';
 // Title-block primitives
 // ---------------------------------------------------------------------------
 
+// Crumbs truncate rather than wrapping under the title or running under the
+// actions. They render as blocks, since a flex link can't show an ellipsis.
+// Earlier crumbs keep their width up to a cap, so a long one can't crowd out
+// the current page, which shrinks to fit the rest.
+const breadcrumbFitClassName =
+  'min-w-0 [&_nav]:min-w-0 [&_ol]:flex-nowrap [&_li]:shrink-0 [&_li>*]:block [&_li>*]:truncate [&_li:not(:last-child)>*]:max-w-40 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink';
+
 function PageHeaderBreadcrumb({ className, children }: PropsWithChildrenAndClassName) {
   return (
     <Inline
       align="center"
-      className={cn('pt-1 text-sm text-muted-foreground', className)}
+      className={cn('pt-1 text-sm text-muted-foreground', breadcrumbFitClassName, className)}
       data-page-header="breadcrumb"
       gap="sm"
     >
@@ -333,25 +313,18 @@ function PageHeaderLeft({ className, children }: PropsWithChildrenAndClassName) 
 
 type PageHeaderActionGroupPrimaryProps = PropsWithChildrenAndClassName;
 function PageHeaderActionGroupPrimary({ children, className }: PageHeaderActionGroupPrimaryProps) {
-  const { isAdmin7 } = useShade();
   if (React.Children.toArray(children).length === 0) {
     return null;
   }
   return (
     <PrimaryActionContext.Provider value={true}>
-      {isAdmin7 ? (
-        <Inline
-          className={cn('ms-3 shrink-0 first:ms-0', className)}
-          data-page-header="primary"
-          gap="none"
-        >
-          {children}
-        </Inline>
-      ) : className ? (
-        <Slot className={className}>{children}</Slot>
-      ) : (
-        children
-      )}
+      <Inline
+        className={cn('ms-3 shrink-0 first:ms-0', className)}
+        data-page-header="primary"
+        gap="none"
+      >
+        {children}
+      </Inline>
     </PrimaryActionContext.Provider>
   );
 }
@@ -434,7 +407,6 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
     children,
     mobileMenuBreakpoint = DEFAULT_MOBILE_MENU_BREAKPOINT,
   }: PageHeaderActionGroupProps) {
-    const { isAdmin7 } = useShade();
     const gap = 'sm';
     const childNodes = React.Children.toArray(children);
     const desktopChildren: React.ReactNode[] = [];
@@ -514,12 +486,7 @@ const PageHeaderActionGroup: PageHeaderActionGroupComponent = Object.assign(
             gap={gap}
           >
             {mobileMenu}
-            {primaryAction &&
-              (isAdmin7 ? (
-                primaryAction
-              ) : (
-                <div data-page-header="action-group-mobile-primary">{primaryAction}</div>
-              ))}
+            {primaryAction}
           </Inline>
         </Inline>
       </HeaderTooltipProvider>
@@ -565,7 +532,7 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
   FilterTrigger: typeof PageHeaderFilterTrigger;
   SelectTrigger: typeof PageHeaderSelectTrigger;
   Tooltip: typeof PageHeaderTooltip;
-  TooltipTrigger: typeof PageHeaderTooltipTrigger;
+  TooltipTrigger: typeof TooltipTrigger;
 };
 
 /**
@@ -574,7 +541,8 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
  * The main row contains `Left` (Breadcrumb + Title) and `Actions`.
  * Compose optional ViewBar and FilterBar rows beside it in ListPage.Header.
  * `Title` accepts an inline `Count` and stacked `Description`/`Meta` children.
- * See page-header.mdx for the action ordering and interaction contract.
+ * See the design contract for the action ordering and interaction rules:
+ * https://shade.ghost.org/docs/components/patterns/page-header.md (generated from page-header.mdx).
  */
 const PageHeader: PageHeaderComponent = Object.assign(
   function PageHeader({
@@ -613,7 +581,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
     FilterTrigger: PageHeaderFilterTrigger,
     SelectTrigger: PageHeaderSelectTrigger,
     Tooltip: PageHeaderTooltip,
-    TooltipTrigger: PageHeaderTooltipTrigger,
+    TooltipTrigger,
   },
 );
 

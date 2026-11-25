@@ -1,9 +1,10 @@
-const { isPlainObject, omit } = require('lodash');
+const { isPlainObject, omit, pick } = require('lodash');
 const config = require('../../../../../shared/config');
 const settingsCache = require('../../../../../shared/settings-cache');
 const labs = require('../../../../../shared/labs');
 const databaseInfo = require('../../../../data/db/info');
 const ghostVersion = require('@tryghost/version');
+const lexicalLib = require('../../../../lib/lexical');
 
 const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];
 
@@ -66,6 +67,9 @@ module.exports = function getConfigProperties() {
     pintura: config.get('pintura'),
     signupForm: config.get('signupForm'),
     security: config.get('security'),
+    // Allowlisted, unlike `security`, which is exposed verbatim
+    auth: pick(config.get('auth'), ['engine']),
+    cardVisibility: lexicalLib.cardVisibilityNodeTypes,
   };
 
   if (config.get('explore') && config.get('explore:testimonials_url')) {
@@ -83,13 +87,6 @@ module.exports = function getConfigProperties() {
     configProperties.featurebase = {
       enabled: config.get('featurebase:enabled'),
       organization: config.get('featurebase:organization'),
-    };
-  }
-
-  if (config.get('docsbot')) {
-    configProperties.docsbot = {
-      enabled: config.get('docsbot:enabled'),
-      id: config.get('docsbot:id'),
     };
   }
 

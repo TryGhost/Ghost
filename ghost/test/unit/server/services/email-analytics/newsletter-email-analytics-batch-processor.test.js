@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const configUtils = require('../../../../utils/config-utils');
 
 const {
@@ -690,6 +691,72 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
     });
   }
 
+  describe('batched processing failures', function () {
+    let emailEventProcessor;
+    let processor;
+
+    beforeEach(function () {
+      configUtils.set('emailAnalytics:batchProcessing', true);
+      emailEventProcessor = {
+        batchGetRecipients: sinon.stub().resolves(new Map()),
+        handlePermanentFailed: sinon.stub(),
+        flushBatchedUpdates: sinon.stub(),
+      };
+      processor = new NewsletterEmailAnalyticsBatchProcessor({
+        config: createMockConfig(),
+        emailEventProcessor,
+      });
+    });
+
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    it('flushes queued updates when a batched event fails before the flush', async function () {
+      emailEventProcessor.handleDelivered = sinon
+        .stub()
+        .resolves({ emailId: 'e-1', memberId: 'm-1', storedCount: 0 });
+      emailEventProcessor.handlePermanentFailed.rejects(new Error('failure not saved'));
+      emailEventProcessor.flushBatchedUpdates.resolves({
+        storedDelivered: 1,
+        storedOpened: 0,
+        storedPermanentFailed: 0,
+      });
+      const result = new EventProcessingResult();
+
+      await assert.rejects(
+        processor.processBatch(
+          [{ type: 'delivered' }, { type: 'failed', severity: 'permanent' }],
+          result,
+          {},
+        ),
+        /failure not saved/,
+      );
+
+      sinon.assert.calledOnce(emailEventProcessor.flushBatchedUpdates);
+      assert.equal(result.storedDelivered, 1);
+      assert.deepEqual(result.memberIds, ['m-1']);
+    });
+
+    it('rethrows the event error when the flush after it also fails', async function () {
+      const logError = sinon.stub(logging, 'error');
+      const flushError = new Error('flush failed');
+      emailEventProcessor.handlePermanentFailed.rejects(new Error('failure not saved'));
+      emailEventProcessor.flushBatchedUpdates.rejects(flushError);
+
+      await assert.rejects(
+        processor.processBatch(
+          [{ type: 'failed', severity: 'permanent' }],
+          new EventProcessingResult(),
+          {},
+        ),
+        /failure not saved/,
+      );
+
+      sinon.assert.calledWith(logError, flushError);
+    });
+  });
+
   describe('aggregate', function () {
     let queries;
 
@@ -711,6 +778,78 @@ describe('NewsletterEmailAnalyticsBatchProcessor', function () {
         queries,
       });
     }
+
+    it('skips email and member recounts for replayed events in the missing sweep', async function () {
+      const processor = createProcessor();
+      const processingResult = new EventProcessingResult({
+        opened: 100,
+        delivered: 50,
+        emailIds: ['e-1'],
+        memberIds: ['m-1'],
+      });
+
+      const timings = await processor.aggregate({
+        includeOpenedEvents: false,
+        skipUnchanged: true,
+        processingResult,
+        isFinal: true,
+      });
+
+      assert.equal(timings, null);
+      sinon.assert.notCalled(queries.aggregateEmailStats);
+      sinon.assert.notCalled(queries.aggregateMemberStats);
+      sinon.assert.notCalled(queries.aggregateMemberStatsBatch);
+      assert.deepEqual(processingResult, new EventProcessingResult());
+    });
+
+    for (const storedCount of ['storedDelivered', 'storedOpened', 'storedPermanentFailed']) {
+      it(`retains aggregation when the missing sweep has ${storedCount}`, async function () {
+        configUtils.set('emailAnalytics:batchProcessing', false);
+        const processor = createProcessor();
+        const processingResult = new EventProcessingResult({
+          [storedCount]: 1,
+          emailIds: ['e-1'],
+          memberIds: ['m-1'],
+        });
+
+        await processor.aggregate({
+          includeOpenedEvents: false,
+          skipUnchanged: true,
+          processingResult,
+          isFinal: true,
+        });
+
+        sinon.assert.calledOnceWithExactly(queries.aggregateEmailStats, 'e-1', false);
+        sinon.assert.calledOnceWithExactly(queries.aggregateMemberStats, 'm-1');
+      });
+    }
+
+    it('drops replayed ids mid-fetch and keeps a later stored window for the final aggregation', async function () {
+      configUtils.set('emailAnalytics:batchProcessing', false);
+      const processor = createProcessor();
+      const processingResult = new EventProcessingResult({
+        emailIds: ['e-1'],
+        memberIds: ['m-1'],
+      });
+      const aggregate = (isFinal) =>
+        processor.aggregate({
+          includeOpenedEvents: false,
+          skipUnchanged: true,
+          processingResult,
+          isFinal,
+        });
+
+      assert.equal(await aggregate(false), null);
+      assert.deepEqual(processingResult, new EventProcessingResult());
+
+      processingResult.merge({ storedDelivered: 1, emailIds: ['e-2'], memberIds: ['m-2'] });
+      assert.equal(await aggregate(false), null);
+      assert.deepEqual(processingResult.memberIds, ['m-2']);
+
+      assert.notEqual(await aggregate(true), null);
+      sinon.assert.calledOnceWithExactly(queries.aggregateEmailStats, 'e-2', false);
+      sinon.assert.calledOnceWithExactly(queries.aggregateMemberStats, 'm-2');
+    });
 
     describe('final aggregation', function () {
       it('aggregates stats from the processing result', async function () {

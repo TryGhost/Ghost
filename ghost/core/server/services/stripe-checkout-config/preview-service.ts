@@ -1,6 +1,8 @@
 import errors from '@tryghost/errors';
-import type { PreviewShipping, StripeCheckoutDesign } from './models';
-import { CheckoutPreviewInput, parseRequest } from './serializers';
+import type { CheckoutService } from './checkout-service';
+import type { CheckoutDefinition } from './models';
+import { parseRequest } from '../../lib/parse-request';
+import { CheckoutPreviewInput } from './serializers';
 
 // Stripe refuses a checkout that expires sooner than 30 minutes after it's created. The extra
 // minute keeps a server clock running a little behind Stripe's from going under that.
@@ -20,12 +22,11 @@ export interface PreviewableTier {
 export interface CheckoutPreviewDeps<Tier extends PreviewableTier> {
   stripeConnected: () => boolean;
   readTier: (id: string) => Promise<Tier | null>;
+  checkouts: Pick<CheckoutService, 'preview'>;
   createPreviewLink: (params: {
     tier: Tier;
     cadence: 'month' | 'year';
-    design: StripeCheckoutDesign | null;
-    /** Left out, the checkout asks for an address as the saved settings say. */
-    shipping?: PreviewShipping;
+    checkout: CheckoutDefinition;
     returnUrl: string;
     expiresInSeconds: number;
   }) => Promise<string | null>;
@@ -33,9 +34,9 @@ export interface CheckoutPreviewDeps<Tier extends PreviewableTier> {
 }
 
 /**
- * Opens real Stripe Checkout pages for previewing a design before it is saved. A preview is
- * an ordinary checkout for the tier, so it saves nothing in Ghost, but it can only be paid for
- * as long as Stripe allows the shortest checkout to last.
+ * Opens real Stripe Checkout pages for previewing settings before they are saved, checked as
+ * saving them would be. A preview is an ordinary checkout for the tier, so it saves nothing in
+ * Ghost, but it can only be paid for as long as Stripe allows the shortest checkout to last.
  */
 export class CheckoutPreviewService<Tier extends PreviewableTier> {
   private deps: CheckoutPreviewDeps<Tier>;
@@ -44,15 +45,19 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
     this.deps = deps;
   }
 
-  /** Creates a checkout for an active paid tier in the requested design, and returns its page. */
+  /** Opens a checkout for an active paid tier from the settings given, and returns its page. */
   async add(input: unknown): Promise<{ url: string }> {
-    const request = parseRequest(CheckoutPreviewInput, input, 'checkout_preview');
+    const { tierId, cadence, ...settings } = parseRequest(
+      CheckoutPreviewInput,
+      input,
+      'checkout_preview',
+    );
 
     if (!this.deps.stripeConnected()) {
       throw new errors.ValidationError({ message: 'Connect Stripe to preview checkout.' });
     }
 
-    const tier = await this.deps.readTier(request.tier_id);
+    const tier = await this.deps.readTier(tierId);
     if (!tier || tier.type !== 'paid' || tier.status !== 'active') {
       throw new errors.ValidationError({
         message: 'Choose an active paid tier to preview checkout for.',
@@ -60,17 +65,11 @@ export class CheckoutPreviewService<Tier extends PreviewableTier> {
       });
     }
 
-    const { shipping } = request;
+    const checkout = await this.deps.checkouts.preview(tierId, settings);
     const url = await this.deps.createPreviewLink({
       tier,
-      cadence: request.cadence,
-      design: request.design,
-      ...(shipping && {
-        shipping:
-          shipping.collect && (!shipping.tier_ids || shipping.tier_ids.includes(request.tier_id))
-            ? { allowedCountries: shipping.allowed_countries ?? null }
-            : null,
-      }),
+      cadence,
+      checkout,
       returnUrl: this.deps.siteUrl(),
       expiresInSeconds: PREVIEW_LIFETIME_SECONDS,
     });

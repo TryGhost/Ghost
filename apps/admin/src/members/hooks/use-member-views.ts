@@ -1,132 +1,62 @@
-import {
-  type MemberView,
-  type SharedViewsParseResult,
-  buildViewsForDelete,
-  buildViewsForSave,
-  parseSharedViewsJSON,
-} from '@/members/member-views';
-import {
-  type SettingsResponseType,
-  getSettingValue,
-  useBrowseSettings,
-  useEditSettings,
-} from '@tryghost/admin-x-framework/api/settings';
-import { parseAllSharedViewsJSON } from '@/members/shared-views';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { type Segment, useBrowseSegments } from '@tryghost/admin-x-framework/api/segments';
+import { canManageMembers, hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { useEffect, useMemo } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
-export {
-  buildViewsForDelete,
-  buildViewsForSave,
-  filterRecordToSearchParams,
-  isMemberViewSearchActive,
-  parseSharedViewsJSON,
-} from '../member-views';
-export type { MemberView, SharedViewsParseResult } from '../member-views';
+/**
+ * Saved member views, for the members screen and the sidebar. A saved member view is a segment:
+ * a named member filter that Admin lists, adds, renames and deletes through the segments API.
+ */
 
-const SHARED_VIEWS_INVALID_ERROR = 'Cannot modify saved views because shared_views is invalid';
+const NO_VIEWS: Segment[] = [];
 
-function getSharedViewsJSON(settingsData: SettingsResponseType | undefined): string {
-  return getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
-}
-
-export function useMemberViews(): MemberView[] {
-  const { data: settingsData } = useBrowseSettings();
+/**
+ * The saved member views in display order, for staff who are shown them. There are none until
+ * the segments list has loaded, and none when it can't be read. A failed list is reported
+ * without a toast, because the sidebar asks for it on every screen, and it is requested again
+ * the next time the members screen is opened.
+ */
+export function useMemberViews(): Segment[] {
+  const { data: currentUser } = useCurrentUser();
+  const { data, error } = useBrowseSegments({
+    defaultErrorHandler: false,
+    enabled: Boolean(currentUser && canManageMembers(currentUser)),
+  });
   const handleError = useHandleError();
-  const sharedViewsJson = getSharedViewsJSON(settingsData);
-  const lastReportedInvalidPayload = useRef<string | null>(null);
-
-  const parsedMemberViews = useMemo<SharedViewsParseResult>(() => {
-    return parseSharedViewsJSON(sharedViewsJson);
-  }, [sharedViewsJson]);
 
   useEffect(() => {
-    if (parsedMemberViews.ok || lastReportedInvalidPayload.current === sharedViewsJson) {
-      return;
+    if (error) {
+      handleError(error, { withToast: false });
     }
+  }, [error, handleError]);
 
-    lastReportedInvalidPayload.current = sharedViewsJson;
-    handleError(parsedMemberViews.error, { withToast: false });
-  }, [handleError, parsedMemberViews, sharedViewsJson]);
-
-  return parsedMemberViews.ok ? parsedMemberViews.views : [];
+  return data?.segments ?? NO_VIEWS;
 }
 
-export function useSaveMemberView() {
-  const { data: settingsData } = useBrowseSettings();
-  const { mutateAsync: editSettings } = useEditSettings();
-  const handleError = useHandleError();
-
-  return useCallback(
-    async (name: string, filter: string, originalView?: MemberView) => {
-      const parsedSharedViews = parseAllSharedViewsJSON(getSharedViewsJSON(settingsData));
-
-      if (!parsedSharedViews.ok) {
-        const error = new Error(SHARED_VIEWS_INVALID_ERROR, { cause: parsedSharedViews.error });
-        handleError(error, { withToast: false });
-        throw error;
-      }
-
-      const updatedViews = buildViewsForSave(parsedSharedViews.views, name, filter, originalView);
-
-      try {
-        await editSettings([
-          {
-            key: 'shared_views',
-            value: JSON.stringify(updatedViews),
-          },
-        ]);
-      } catch (error) {
-        handleError(error, { withToast: false });
-        throw error;
-      }
-    },
-    [settingsData, editSettings, handleError],
-  );
+/**
+ * Whether the signed-in staff user can save, rename and delete member views. Owners and
+ * Administrators can. A Super Editor is shown the views and can open them, but the server
+ * rejects a change to one, so the controls that change views are not offered.
+ */
+export function useCanChangeMemberViews(): boolean {
+  const { data: currentUser } = useCurrentUser();
+  return Boolean(currentUser && hasAdminAccess(currentUser));
 }
 
-export function useDeleteMemberView() {
-  const { data: settingsData } = useBrowseSettings();
-  const { mutateAsync: editSettings } = useEditSettings();
-  const handleError = useHandleError();
+/**
+ * The longest view name, in characters, that can be saved. It mirrors the segments API's limit,
+ * which rejects a longer name with an error the popover can only show as a generic failure.
+ */
+export const MEMBER_VIEW_NAME_MAX_LENGTH = 191;
 
-  return useCallback(
-    async (view: MemberView) => {
-      const parsedSharedViews = parseAllSharedViewsJSON(getSharedViewsJSON(settingsData));
-
-      if (!parsedSharedViews.ok) {
-        const error = new Error(SHARED_VIEWS_INVALID_ERROR, { cause: parsedSharedViews.error });
-        handleError(error, { withToast: false });
-        throw error;
-      }
-
-      const updatedViews = buildViewsForDelete(parsedSharedViews.views, view);
-
-      try {
-        await editSettings([
-          {
-            key: 'shared_views',
-            value: JSON.stringify(updatedViews),
-          },
-        ]);
-      } catch (error) {
-        handleError(error, { withToast: false });
-        throw error;
-      }
-    },
-    [settingsData, editSettings, handleError],
-  );
-}
-
-export function useActiveMemberView(
-  views: MemberView[],
-  nql: string | undefined,
-): MemberView | null {
+/** The saved view whose filter is the one applied, if there is one. */
+export function useActiveMemberView(views: Segment[], nql: string | undefined): Segment | null {
   return useMemo(() => {
     if (!nql || views.length === 0) {
       return null;
     }
 
-    return views.find((view) => view.filter.filter === nql) ?? null;
+    return views.find((view) => view.filter === nql) ?? null;
   }, [views, nql]);
 }

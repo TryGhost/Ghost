@@ -1241,6 +1241,8 @@ describe('Editor header actions', () => {
       expect(saveApi.requests).toHaveLength(0);
 
       await excerpt().fill('An excerpt the server keeps');
+      // Typing hid the chrome under the still pointer; moving it brings Publish back.
+      await userEvent.hover(editorScreen.titleInput());
       await editorScreen.publishButton().click();
       await expect.element(publishScreen.options()).toBeVisible();
     },

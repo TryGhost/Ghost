@@ -1,9 +1,9 @@
 const mappers = require('./mappers');
-const tiersService = require('../../../../../services/tiers');
+const tiersService = require('../../../../../services/tiers').default;
 
 module.exports = {
   async all(model, apiConfig, frame) {
-    const tiersPage = await tiersService.api.browse({});
+    const tiersPage = await tiersService.service.api.browse({});
     const tiers =
       tiersPage.data?.map((tierModel) => {
         const json = tierModel.toJSON();

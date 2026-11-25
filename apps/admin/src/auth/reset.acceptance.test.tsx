@@ -28,7 +28,7 @@ it('asks for a new password, focused', async () => {
 
 it.each([
   ['', '', 'Please enter a password.'],
-  ['correct horse battery', 'correct horse', "The two new passwords don't match."],
+  ['correct horse battery', 'correct horse', 'The two new passwords don’t match.'],
   ['short', 'short', 'Password must be at least 10 characters long.'],
   ['owner@example.com', 'owner@example.com', 'Sorry, you cannot use the email as your password.'],
 ])('checks %j before saving', async (newPassword, confirmation, message) => {

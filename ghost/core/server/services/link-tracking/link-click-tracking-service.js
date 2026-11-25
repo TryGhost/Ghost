@@ -59,8 +59,6 @@ class LinkClickTrackingService {
   /** @type DomainEvents */
   #DomainEvents;
   /** @type {Object} */
-  #LinkRedirect;
-  /** @type {Object} */
   #urlUtils;
   /** @type {object} */
   #automationsApi;

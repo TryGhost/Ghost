@@ -4,7 +4,6 @@ import { assertExists } from '../../../utils/assertions';
 import handlebarsService from '../../../../core/frontend/services/handlebars';
 // @ts-expect-error This module lacks type definitions.
 import proxy from '../../../../core/frontend/services/proxy';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import path from 'path';
 import { promisify } from 'node:util';
@@ -16,10 +15,13 @@ import t from '../../../../core/frontend/helpers/t';
 import { setupI18nTest, initLocale } from '../../../utils/i18n-test-utils';
 // @ts-expect-error This module lacks type definitions.
 import pagination from '../../../../core/frontend/helpers/pagination';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 const { hbs } = handlebarsService;
 
 describe('{{pagination}} helper', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(async function () {
     hbs.express4({ partialsDir: [configUtils.config.get('paths').helperTemplates] });
 
@@ -210,6 +212,8 @@ describe('{{pagination}} helper', function () {
 });
 
 describe('{{pagination}} helper with custom template', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(async function () {
     hbs.express4({ partialsDir: [path.resolve(__dirname, './test_tpl')] });
 

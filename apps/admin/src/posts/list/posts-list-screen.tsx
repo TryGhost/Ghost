@@ -3,8 +3,12 @@ import { LoadingIndicator } from '@tryghost/shade/components';
 import { ListPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { LoadMoreButton, useScrollRestoration } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
-import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
+import { FilterBar, PageHeader, useMobileFilters } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
+import { usePresence, usePresenceEnabled } from '@/shared/presence/use-presence';
+import { usePresenceByResource } from '@/shared/presence/use-presence-by-resource';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useVisibleResources } from '@/shared/presence/use-visible-resources';
 import { PostsEmptyState } from './components/posts-empty-state';
 import { PostsFilters } from './components/posts-filters';
 import { ManagePostViewPopover } from './components/manage-post-view-popover';
@@ -86,8 +90,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // Scheduled times read in the site's timezone, not the browser's.
   const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
   const isContributor = Boolean(currentUser && isContributorUser(currentUser));
-  // Ember's `isAdmin` — Owner or Administrator. Decides whether a row's
-  // trailing button offers Analytics, and whether views can be saved.
+  // Owner or Administrator. Decides whether a row's trailing button offers
+  // Analytics, and whether views can be saved.
   const isAdmin = Boolean(currentUser && hasAdminAccess(currentUser));
 
   const settings = settingsData?.settings ?? null;
@@ -140,7 +144,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const { largeTitles } = usePageChrome();
 
   // Authors and contributors only ever see their own posts, whatever the
-  // `author` param says — matching PostsRoute#model in the Ember app.
+  // `author` param says.
   const isRestrictedAuthor = Boolean(currentUser && isAuthorOrContributor(currentUser));
   const ownAuthorSlug = currentUser && isRestrictedAuthor ? currentUser.slug : null;
 
@@ -168,6 +172,15 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const revealRef = useRevealOnMount<HTMLDivElement>(mountedLoading);
 
   useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
+  const presenceEnabled = usePresenceEnabled();
+  const presenceResources = useVisibleResources(
+    listRef,
+    items.map((item) => ({ id: item.id, type: resource === 'pages' ? 'page' : 'post' })),
+    presenceEnabled,
+  );
+  const presence = usePresence(presenceResources);
+  const presenceForResource = usePresenceByResource(presence.active);
+  const showPresence = useFeatureFlag('editorPresence');
 
   // Snapshotted when the menu item is picked: Radix closes the menu at once,
   // which clears a transient selection before the modal could read it.
@@ -177,7 +190,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   } | null>(null);
 
   // Selection is a bulk-edit affordance, and authors and contributors have no
-  // bulk actions — Ember disables the whole SelectionList for them.
+  // bulk actions, so selection is disabled for them.
   const selection = usePostSelection({
     orderedIds: items.map((item) => item.id),
     // Bounds an inverted selection: after Cmd+A a bulk action sends this
@@ -187,8 +200,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     suspended: pendingBulkAction !== null,
   });
 
-  // The menu describes the selection, not the row under the cursor. Ember's
-  // `availableModels` — the selected rows that are actually loaded.
+  // The menu describes the selection, not the row under the cursor: the
+  // selected rows that are actually loaded.
   //
   // Depends on `selection.state` rather than `selection`, which is a fresh
   // object literal every render and would make this memo a no-op.
@@ -224,9 +237,9 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     [menuPosts, resource, isAdmin, membersEnabled],
   );
 
-  // Ember gates this on `isSingle` — one *selected* post — not on "one loaded
-  // post". After Cmd+A on a view with a single loaded row, everything is
-  // selected, and offering to gift-link it would be wrong.
+  // Gated on one *selected* post, not on "one loaded post". After Cmd+A on a
+  // view with a single loaded row, everything is selected, and offering to
+  // gift-link it would be wrong.
   const giftLinkPost = isSinglePostSelected(selectionState) ? menuPosts[0] : undefined;
   const menuGiftLinkPostId =
     giftLinkPost && canCopyGiftLink({ user: currentUser, post: giftLinkPost })
@@ -249,7 +262,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     onEdited: (remainingIds) => {
       setPendingBulkAction(null);
       // Not a full clear: the rows still on screen stay selected, so a
-      // second action can follow the first. Ember's clearUnavailableItems.
+      // second action can follow the first.
       selection.keepOnly(remainingIds);
     },
   });
@@ -269,8 +282,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     posts: menuPosts,
     onShareAsGift: setGiftLinkPostId,
     onBulkAction: (key, snapshot) => {
-      // Feature and unfeature apply straight away in Ember — no
-      // confirmation, because they are trivially reversible.
+      // Feature and unfeature apply straight away with no confirmation,
+      // because they are trivially reversible.
       if (key === 'feature' || key === 'unfeature') {
         void bulkActions.run(key, snapshot);
         return;
@@ -289,6 +302,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
 
   runPostActionRef.current = runPostAction;
 
+  const mobileFilters = useMobileFilters();
+  const [filterBarContainer, setFilterBarContainer] = useState<HTMLDivElement | null>(null);
   const { visitorCounts, memberCounts } = usePostAnalyticsCounts({
     items,
     webAnalyticsEnabled: metricsSettings.webAnalyticsEnabled,
@@ -312,13 +327,23 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                                 crowd the title. */}
               <PageHeader.Actions>
                 <PageHeader.ActionGroup>
-                  {!showFilterBar && (
+                  {(!showFilterBar || mobileFilters) && (
                     <PostsFilters
+                      barContainer={filterBarContainer}
                       currentUser={currentUser}
                       filters={filters}
                       iconOnly={true}
                       params={params}
                       resource={resource}
+                      viewActions={
+                        mobileFilters && canManageView ? (
+                          <ManagePostViewPopover
+                            activeView={activeView}
+                            params={params}
+                            resource={resource}
+                          />
+                        ) : undefined
+                      }
                       onFiltersChange={setFilters}
                     />
                   )}
@@ -332,12 +357,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                     />
                   )}
                   <PageHeader.ActionGroup.Primary>
-                    <PageHeader.Action
-                      fallbackVariant="default"
-                      label={copy.newLabel}
-                      asChild
-                      primary
-                    >
+                    <PageHeader.Action label={copy.newLabel} asChild primary>
                       <a aria-label={copy.newLabel} className="font-bold" href={copy.newHref}>
                         <LucideIcon.Plus className="size-4" />
                         <span className="hidden sm:inline">{copy.newLabel}</span>
@@ -347,7 +367,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 </PageHeader.ActionGroup>
               </PageHeader.Actions>
             </PageHeader>
-            {showFilterBar && (
+            {mobileFilters && showFilterBar && <div ref={setFilterBarContainer} />}
+            {showFilterBar && !mobileFilters && (
               <FilterBar>
                 <PostsFilters
                   currentUser={currentUser}
@@ -391,14 +412,14 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 <ul
                   // Held modifier: children take no pointer
                   // events, so clicks land on the row and not
-                  // the anchor inside it (Ember's
-                  // `[data-ctrl]` rules). `data-ignore-select`
+                  // the anchor inside it. `data-ignore-select`
                   // opts back out. Border here, not on the
                   // header: the header is full-bleed and a
                   // border there runs wider than the rows.
                   // Not under a large title, whose header has
                   // its own separator.
                   className={cn(
+                    'in-data-[admin7-mobile=true]:max-lg:border-t-0',
                     !largeTitles && 'border-t border-border-default',
                     selection.modifierHeld && [
                       'cursor-default',
@@ -428,6 +449,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       metricsSettings={metricsSettings}
                       paidMembersEnabled={paidMembersEnabled}
                       post={item}
+                      presenceActive={showPresence ? presenceForResource(item.id) : undefined}
                       resource={resource}
                       showGiftLink={menuGiftLinkPostId === item.id}
                       timezone={timezone}

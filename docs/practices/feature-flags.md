@@ -23,6 +23,12 @@ Core deploy independently, so a flag may be visible before the endpoint,
 setting, or response field needed by the UI exists. Admin must detect the
 backend capability and handle the older-server case separately.
 
+One exception: a new member custom field type is built behind a Labs flag that
+also decides when Admin offers it. That holds only because the flag is switched
+on after every Ghost(Pro) server has the type's code, and only creating a field
+of the type is gated. See
+[why a new field type starts behind a flag](../../contracts/metafield-types/docs/explanation/why-a-new-field-type-starts-behind-a-flag.md).
+
 ## Flag stages
 
 Flags are camelCase keys registered in
@@ -96,19 +102,44 @@ Admin 7 milestones use ordinary private Labs flags with stable, descriptive
 Follow the same registration and lifecycle as any other private flag.
 
 Read the current milestone's flag with `useFeatureFlag` at the boundary that
-owns the change, keeping any availability checks beside it. For shared design
-changes, pass the result to ShadeApp's `isAdmin7` prop. Components read
-`useShade().isAdmin7`; reuse this switch as milestones progress instead of
-adding a Shade prop for each milestone.
+owns the change, keeping any availability checks beside it. When a milestone
+changes shared design, Shade gets a switch named exactly after its flag: Admin
+passes `useFeatureFlag('admin7Design')` to ShadeApp's `admin7Design` prop,
+components read `useShade().admin7Design`, and tokens are scoped by the
+`data-admin7-design` attribute that ShadeApp and Shade's portals carry. Delete
+the switch together with its flag. Don't reuse one generic switch across
+milestones: a switch that outlives its flag no longer says what it controls.
 
 Keep shared appearance in Shade and page-specific structure in the page. Build
 the enabled design as the intended default so retiring a flag means removing
 compatibility branches, without changing ordinary component calls. Document
 milestone-specific scope and exclusions alongside the affected design.
 
+Content-list and table row behavior follows Shade's
+[Lists and tables contract](../../apps/shade/src/docs/list-rows.mdx#shared-defaults)
+in both the current and upcoming UI. Row alignment, feedback, primary actions
+and press behavior are shared defaults, independent of `admin7Design`.
+
 Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
+
+With `admin7Design` on, Shade's `Tabs` defaults to underline and respects
+explicit variants. Button tabs, including Settings previews, and route-based
+`PageMenu` use the previous inactive fill for selection, while inactive items
+have a transparent surface and an outline matching the header divider
+(`border-border`). The active fill stays unchanged on hover; pressed and
+expanded items use the ghost-button background. Compact button tabs keep their
+smaller size, and KPI tabs keep their chart-card layout. With the flag off,
+the default remains segmented and explicit underline tabs keep their previous
+styling. Only the enabled design uses a 1px indicator aligned with the divider
+and prevents vertical scrolling within the tab row. Underline tabs use 14px
+labels and 10px vertical padding, with regular inactive text and semibold
+selected text. Hidden semibold label copies reserve the selected width, so
+switching tabs does not move adjacent tabs. Copies are hidden from assistive
+technology, and count badges and icons are rendered only once. Shared field surfaces are
+flat; the enabled design no longer adds a resting shadow. Screens do not need
+their own flag branch for these shared appearances.
 
 The pill-controls milestone is generally available in Admin. Standalone
 ActivityPub uses Shade's current default.
@@ -128,12 +159,86 @@ site places, search and the site's numbers (Online, Members and MRR, for staff
 with admin access), so View site and search leave the sidebar. The frame closes
 around the editor and automation editor, and its sides retract on View site. Inside the frame, list pages show their title
 large above a sticky header that takes it over as the page scrolls: Admin's
-layout turns this on through Shade's `PageChromeProvider` rather than
-`isAdmin7`, which stays on for the generally available pill controls.
+layout turns this on through Shade's `PageChromeProvider`.
 Settings, the editor, the automation editor, mobile and pages without a
 `PageHeader.Title` keep the usual header. Settings shows its
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
+
+With `admin7Design` on, spacing separates the sidebar's navigation groups;
+Content, Audience and Apps keep their headings when apps are enabled.
+Ghost(Pro) and Settings follow the last group in the scrolling navigation.
+The active banner stays above the bottom account avatar, with a gradient upgrade
+banner and a flat What's New banner. The account trigger shows only the avatar. Private sites
+show a 14px title at the shared title weight above a compact purple badge,
+linking to Access settings, with 1px vertical and 5px horizontal padding and a
+2px gap below the title. Site icons are 32px for private and public sites. Settings'
+Access navigation uses the same borderless purple badge. The sidebar omits the member count
+already shown in the top bar. The Posts create action appears on sidebar hover
+or keyboard focus and stays visible on touch devices.
+
+The floating panel is 269px wide in both the main navigation and Settings.
+Main and Settings navigation use 12px side insets. Main navigation uses 4px
+item corners, 24px group gaps and an extra 8px above the first menu group;
+group labels use 10px medium text with 0.04em tracking. The Posts create action
+shares the pin control's hover intent and transition timing. Submenus retain
+their rows during collapse, immediately make them inert and hidden from
+assistive technology, and stagger their entrances like the Settings navigation.
+Reduced motion skips the submenu transitions and stagger.
+Submenu entries use variable-font weight 425. Their expansion follows the active
+navigation section automatically, with only one open at a time and no manual
+arrow controls. The flag-off sidebar keeps its saved expansion preferences.
+The account avatar uses the full sidebar accent fill on hover. The glass
+outline is slightly stronger in both themes; flag-off surfaces retain their
+previous border and shadow values.
+The footer overlaps scrolling navigation with a 24px background gradient; matching
+top padding keeps the banner and avatar in place, while navigation bottom padding
+lets its final item scroll clear of the fade.
+
+The `admin7Design` milestone also sets column headers in a small uppercase label
+style. Section headings on member details, tag details and Settings share one
+style, and member stats and list text follow the prototype. Settings sidebar
+group labels and content headings refine this through `settings-heading`:
+`--font-weight-settings-heading` is 540 and `--tracking-settings-heading` is
+-0.01em. These tokens apply only with the flag on, in both light and dark mode;
+member and tag headings keep their existing size and weight, with slightly
+looser letter spacing through `--tracking-section-heading` at -0.01em.
+
+The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
+text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
+
+The `admin7Design` milestone also makes colored banners a flat color with darker
+shades of it for text and no outline.
+
+The `admin7Design` milestone also gives cards 8px corners and makes large titles
+and the space above them follow the width of the page area.
+
+The `admin7Design` milestone also moves the member detail sidebar to the right with
+Engagement first, and sections sit under larger headings with a line across the
+top instead of a card.
+
+Tag details use the same larger section headings for Details, Meta data and
+Code injection, without horizontal rules beneath them. Code injection stays
+open without an expand/collapse control. Member Details and Engagement also
+omit their heading rules. Both detail screens have a vertical divider midway
+between their desktop columns, hidden when the columns stack.
+Meta data has no helper description under its heading. At desktop widths, the metadata
+column is 400px wide to accommodate previews, with the same 80px gap as member
+details. The columns stack below the sidebarlg breakpoint, with 32px between them.
+Metadata navigation uses underline tabs. Button and button-small tabs
+use a muted selected fill and outlined inactive items with foreground text,
+matching page navigation and Settings preview controls. Metadata fields and previews sit directly on the page without
+an inset background or padding. The flag-off design keeps its underline tabs and
+outlined cards; tag editing, uploads, previews and saving use the same behavior
+in both designs.
+
+With `admin7Design` on, empty tag image slots use Shade's default dashed Dropzone style. Metadata image
+slots use the same field surface as their inputs, giving them a white background
+in light mode. Shared Dropzones use a 1px border, muted prompts, and thin icons;
+ImageUpload leaves its outer surface unclipped. With the flag off, the previous
+2px Dropzone border, prompt/icon styling, ImageUpload clipping, Unsplash hover
+styling, and PageMenu fit calculation remain. The legacy code-injection
+accordion retains its original expand/collapse behavior without auto-scroll.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable
@@ -141,19 +246,34 @@ preview of the site, with its state in the URL (`/site?customize`). It needs
 `admin7Design` for the frame and is only for staff who can edit the design, on
 desktop. It has its own flag because it may ship apart from Admin 7.
 
-The `admin7EditorImprovements` milestone collects improvements to the post and
-page editor, independent of `admin7Design`. While the writer types in the title,
-excerpt or body, the editor's chrome fades out: the header, the settings toggle,
-the word count and email size warning, and the empty feature image bar. An
-existing feature image stays. Moving the pointer more than a few pixels,
-scrolling with a wheel or trackpad, focusing anything outside the writing area
-or an unused Esc brings it back.
-Nothing hides while the settings panel is open or moving, while the status line
-reports a failed save or newsletter, or on touch and small screens. The chrome
-keeps its place, stays focusable and takes no pointer input while hidden.
-The milestone also trims the chrome itself: the back link shows its arrow alone,
-the editor font and the guide to the editor leave the footer for the settings
-panel, and the meta data and social cards share one pane with a tab each.
+The editor improvements milestone is generally available in Admin. Core keeps
+`admin7EditorImprovements` in `GA_FEATURES` for older Admin builds. It improves
+the post and page editor, independent of `admin7Design`. While the writer types
+in the title, excerpt or body, the editor's chrome fades out: the header's status
+and actions, the settings toggle, the word count and email size warning, and the
+empty feature image bar. The back link and an existing feature image stay. Moving the pointer more than a few
+pixels, scrolling with a wheel or trackpad, focusing anything outside the
+writing area or an unused Esc brings it back. Nothing hides while the settings
+panel is open or moving, while the status line reports a failed save or
+newsletter, or on touch and small screens. The chrome keeps its place, stays
+focusable and takes no pointer input while hidden. The milestone also trims the
+chrome itself: the back link shows its arrow alone, the editor font and the
+guide to the editor leave the footer for the settings panel, and the meta data
+and social cards share one pane with a tab each.
+
+### Mobile hardening
+
+`admin7Mobile` is an opt-in private flag, independent of `admin7Design`.
+Admin passes it to ShadeApp; shared components read `useShade().admin7Mobile`,
+and ShadeApp and portal scopes carry `data-admin7-mobile`. It defaults off in
+standalone Shade consumers too. Available width selects the responsive layout;
+the flag only enables the improvements. Keep changes at their owning component
+or layout boundary and reuse data and interaction logic.
+
+Use [Admin session overrides](#admin-session-overrides) to preview the flag.
+Network, Automations/Apps, and the editor are outside this project's scope.
+Remove the old branches and this switch when the responsive behavior becomes
+the default.
 
 ## How values are resolved
 
@@ -186,9 +306,9 @@ or parse failure keeps the last known good overrides.
 ## Admin session overrides
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
-Admin hash route, for example `/ghost/#/members?labs=membersCustomFields`. Use
-comma-separated names (`?labs=membersCustomFields,apps`) or repeated
-parameters (`?labs=membersCustomFields&labs=apps`) to enable multiple flags.
+Admin hash route, for example `/ghost/#/members?labs=importMemberTier`. Use
+comma-separated names (`?labs=importMemberTier,apps`) or repeated
+parameters (`?labs=importMemberTier&labs=apps`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser
@@ -196,6 +316,11 @@ session. A URL without `labs` reuses the stored list; a URL with `labs` replaces
 the whole list rather than adding to it. Visit a route with an empty value,
 such as `/ghost/#/posts?labs=`, to clear the overrides. Simply removing the
 parameter does not clear them.
+
+On an installed app's page (`/ghost/#/apps/<installation id>/…`), the query
+belongs to the app, so Admin doesn't read `labs` from it. Overrides that are
+already set stay in effect. Admin's own screens under `/apps/`, such as
+`/apps/install`, read `labs` as usual.
 
 These overrides only force flags on. `useFeatureFlag` honors them even when the
 server-computed value is `false`. There is no force-off syntax; clearing an

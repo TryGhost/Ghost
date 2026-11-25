@@ -1,4 +1,10 @@
-import { type RefObject, useEffect, useReducer, useSyncExternalStore } from 'react';
+import {
+  type RefObject,
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+  useSyncExternalStore,
+} from 'react';
 import { CHROME_SHOWN, type WritingFocus, isWritingInput, nextWritingFocus } from './writing-focus';
 
 /** A mouse or trackpad on a screen at or above the small breakpoint. */
@@ -20,8 +26,6 @@ function isChrome(target: EventTarget | null) {
 }
 
 interface UseWritingFocusOptions {
-  /** The admin7EditorImprovements flag. */
-  enabled: boolean;
   /** Keeps the chrome shown: the settings panel is open or moving, or the status needs attention. */
   blocked: boolean;
   /** The title, excerpt and body, with the chrome that sits among them. */
@@ -31,16 +35,14 @@ interface UseWritingFocusOptions {
 /**
  * Hides the editor's chrome while the writer types and shows it again when the
  * pointer moves, the writer scrolls with a wheel or trackpad, focus leaves the
- * writing area or Esc goes unused. Returns
- * undefined where the behaviour is off (the flag, touch and small screens), so
- * the chrome carries no `data-writing-focus` there.
+ * writing area or Esc goes unused. Returns undefined where the behaviour is off
+ * (touch and small screens), so the chrome carries no `data-writing-focus` there.
  */
 export function useWritingFocus({
-  enabled,
   blocked,
   writingAreaRef,
 }: UseWritingFocusOptions): WritingFocus | undefined {
-  const active = usePointerScreen() && enabled;
+  const active = usePointerScreen();
   const [state, dispatch] = useReducer(nextWritingFocus, CHROME_SHOWN);
 
   useEffect(() => {
@@ -98,13 +100,18 @@ export function useWritingFocus({
 
   // The pointer and the wheel are only followed while the chrome is hidden. A
   // wheel event comes from the writer alone, unlike the scrolls Koenig makes to
-  // keep the caret in view while they type.
-  useEffect(() => {
+  // keep the caret in view while they type. Followed from the commit that hides
+  // the chrome, so no move is missed before the browser paints.
+  useLayoutEffect(() => {
     if (!state.hidden) {
       return;
     }
     const onMouseMove = (event: MouseEvent) =>
-      dispatch({ type: 'pointer-move', point: { x: event.clientX, y: event.clientY } });
+      dispatch({
+        type: 'pointer-move',
+        point: { x: event.clientX, y: event.clientY },
+        movement: { x: event.movementX, y: event.movementY },
+      });
     const onWheel = () => dispatch({ type: 'reveal' });
     document.addEventListener('mousemove', onMouseMove, { passive: true });
     document.addEventListener('wheel', onWheel, { passive: true });

@@ -1,5 +1,9 @@
 import assert from 'assert/strict';
 import crypto from 'crypto';
+import nock from 'nock';
+import sinon from 'sinon';
+import ghostRequest from '@tryghost/request';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 import { ExportRequestsService } from '../../../../../core/server/services/export-requests/export-requests-service';
 
 describe('ExportRequestsService', function () {
@@ -30,11 +34,7 @@ describe('ExportRequestsService', function () {
       config: {
         get: (key: string) => values[key],
       },
-      logging: {
-        info: () => {},
-        warn: () => {},
-        error: () => {},
-      },
+      logging: createLoggingFake(),
       request,
       ...overrides,
     };
@@ -64,16 +64,10 @@ describe('ExportRequestsService', function () {
   });
 
   it('throws an IncorrectUsageError when the secret is missing while the URL is configured', async function () {
-    let errorMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService(
       {
-        logging: {
-          info: () => {},
-          warn: () => {},
-          error: (message: string) => {
-            errorMessage = message;
-          },
-        },
+        logging,
       },
       {
         'hostSettings:export:webhookUrl': webhookUrl,
@@ -92,23 +86,17 @@ describe('ExportRequestsService', function () {
       },
     );
 
-    assert.equal(
-      errorMessage,
+    sinon.assert.calledOnceWithExactly(
+      logging.error,
       'Export request is misconfigured: hostSettings:export:webhookSecret is missing while hostSettings:export:webhookUrl is set.',
     );
   });
 
   it('throws an IncorrectUsageError when the site id is missing while the URL is configured', async function () {
-    let errorMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService(
       {
-        logging: {
-          info: () => {},
-          warn: () => {},
-          error: (message: string) => {
-            errorMessage = message;
-          },
-        },
+        logging,
       },
       {
         'hostSettings:export:webhookUrl': webhookUrl,
@@ -127,8 +115,8 @@ describe('ExportRequestsService', function () {
       },
     );
 
-    assert.equal(
-      errorMessage,
+    sinon.assert.calledOnceWithExactly(
+      logging.error,
       'Export request is misconfigured: hostSettings:siteId is missing while hostSettings:export:webhookUrl is set.',
     );
   });
@@ -160,15 +148,9 @@ describe('ExportRequestsService', function () {
   it('sends a POST request with the signed payload', async function () {
     let requestUrl: string | undefined;
     let requestOptions: any;
-    let infoMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService({
-      logging: {
-        info: (message: string) => {
-          infoMessage = message;
-        },
-        warn: () => {},
-        error: () => {},
-      },
+      logging,
       request: async (url: string, options: unknown) => {
         requestUrl = url;
         requestOptions = options;
@@ -183,8 +165,8 @@ describe('ExportRequestsService', function () {
 
     assert.equal(requestUrl, webhookUrl);
     assert.equal(requestOptions.method, 'POST');
-    assert.equal(
-      infoMessage,
+    sinon.assert.calledOnceWithExactly(
+      logging.info,
       'Requesting export generation from "https://export-generator.example.com"',
     );
 
@@ -216,9 +198,50 @@ describe('ExportRequestsService', function () {
       .digest('base64');
 
     assert.equal(requestOptions.headers['X-Ghost-Signature'], expectedSignature);
+  });
 
-    // The request must never retry: each delivery can schedule an export.
-    assert.deepEqual(requestOptions.retry, { limit: 0 });
+  it('sends a request once, even when it fails outside the test environment', async function () {
+    // Each delivery can schedule an export, so a failure must never be retried.
+    const generator = nock('https://export-generator.example.com')
+      .post('/api/generate/')
+      .reply(503)
+      .post('/api/generate/')
+      .reply(202);
+    const service = createService({ request: ghostRequest });
+    const environment = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      await assert.rejects(service.requestExport({ components: allComponents, requestedByUserId }));
+      // The 202 that a retry would have taken is still waiting.
+      assert.equal(generator.pendingMocks().length, 1);
+    } finally {
+      process.env.NODE_ENV = environment;
+      nock.cleanAll();
+    }
+  });
+
+  it('does not resend the request when a redirect leads to a failure', async function () {
+    // got may retry the GET that follows a 303, but never the POST itself.
+    const generator = nock('https://export-generator.example.com')
+      .post('/api/generate/')
+      .reply(303, '', { location: '/api/generate/status/' })
+      .get('/api/generate/status/')
+      .times(3)
+      .reply(503, '', { 'retry-after': '0' })
+      .post('/api/generate/')
+      .reply(202);
+    const service = createService({ request: ghostRequest });
+    const environment = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      await assert.rejects(service.requestExport({ components: allComponents, requestedByUserId }));
+      // The 202 that a second POST would have taken is still waiting.
+      const pendingPosts = generator.pendingMocks().filter((mock) => mock.startsWith('POST'));
+      assert.equal(pendingPosts.length, 1);
+    } finally {
+      process.env.NODE_ENV = environment;
+      nock.cleanAll();
+    }
   });
 
   it('computes the documented HMAC for a known secret, timestamp and body', async function () {
@@ -263,17 +286,16 @@ describe('ExportRequestsService', function () {
   });
 
   it('logs a sanitized URL and throws a generic 502 when the request fails', async function () {
-    let errorMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService({
-      logging: {
-        info: () => {},
-        warn: () => {},
-        error: (message: string) => {
-          errorMessage = message;
-        },
-      },
+      logging,
       request: async () => {
-        throw new Error('Response code 500 (Internal Server Error)');
+        throw Object.assign(
+          new Error(
+            'Request failed with status code 500 (Internal Server Error): POST https://export-generator.example.com/secret-path?token=abc',
+          ),
+          { code: 'ERR_NON_2XX_3XX_RESPONSE', response: { statusCode: 500 } },
+        );
       },
     });
 
@@ -289,9 +311,9 @@ describe('ExportRequestsService', function () {
       },
     );
 
-    assert.equal(
-      errorMessage,
-      'Failed to request export generation from "https://export-generator.example.com": Response code 500 (Internal Server Error)',
+    sinon.assert.calledOnceWithExactly(
+      logging.error,
+      'Failed to request export generation from "https://export-generator.example.com": HTTP 500',
     );
   });
 });

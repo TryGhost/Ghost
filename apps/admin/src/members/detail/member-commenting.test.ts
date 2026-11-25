@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { getMemberCommentingActionLabel, isMemberCommentingDisabled } from './member-commenting';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
 
-// The action menu label toggles based on `member.can_comment`. Ember's
-// `templates/member.hbs:77` uses `not-eq member.canComment false` — i.e. the
-// UI shows "Disable commenting" for anything BUT explicit false (including
+// The action menu label toggles based on `member.can_comment`: the UI shows
+// "Disable commenting" for anything BUT explicit false (including
 // undefined and legacy members without the property). Only when `can_comment`
 // is explicitly `false` does the UI flip to "Enable commenting".
 //
@@ -38,8 +37,8 @@ describe('isMemberCommentingDisabled', () => {
 
   it('returns false when can_comment is true even if commenting.disabled is truthy (expired disable)', () => {
     // The `commenting` metadata sticks around after a temporary disable
-    // expires; the server flips `can_comment` back to true. Ember-parity:
-    // trust `can_comment` and offer the "Disable" action even though a
+    // expires; the server flips `can_comment` back to true. Trust
+    // `can_comment` and offer the "Disable" action even though a
     // stale `commenting.disabled=true` remains on the object.
     const member = makeMember({
       can_comment: true,

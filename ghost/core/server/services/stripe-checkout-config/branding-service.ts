@@ -1,5 +1,5 @@
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import { camelKeys } from '../../lib/case-keys';
 import { SnakeDesign } from './codec';
@@ -18,6 +18,7 @@ export interface CheckoutBrandingDeps {
   stripeConnected: () => boolean;
   /** Stripe's `branding_settings`, as Stripe resolves them for a new session. */
   readBranding: () => Promise<unknown>;
+  logging: GhostLogger;
 }
 
 /**
@@ -49,7 +50,7 @@ export class CheckoutBrandingService {
 
     const design = SnakeDesign.safeParse(branding);
     if (!design.success) {
-      logging.warn(
+      this.deps.logging.warn(
         { event: { name: 'stripe_checkout.branding.design_unreadable' }, err: design.error },
         'Ignoring a Stripe Checkout design Ghost cannot show',
       );

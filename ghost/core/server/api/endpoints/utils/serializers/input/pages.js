@@ -4,6 +4,7 @@ const { ValidationError } = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
+const { forceGatingHtmlColumn } = require('./utils/gating');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
@@ -98,7 +99,7 @@ function defaultFormat(frame) {
 }
 
 function handlePostsMeta(frame) {
-  const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
+  const metaAttrs = Object.keys(_.omit(postsMetaSchema, ['id', 'post_id']));
   const meta = _.pick(frame.data.pages[0], metaAttrs);
   frame.data.pages[0].posts_meta = meta;
 }
@@ -141,6 +142,7 @@ module.exports = {
       frame.options.order = rejectPagesContentApiRestrictedOrderFields(frame.options.order);
       setDefaultOrder(frame);
       forceVisibilityColumn(frame);
+      forceGatingHtmlColumn(frame);
       url.forceUrlRelations(frame, 'pages');
     }
 
@@ -160,6 +162,7 @@ module.exports = {
       removeSourceFormats(frame);
       setDefaultOrder(frame);
       forceVisibilityColumn(frame);
+      forceGatingHtmlColumn(frame);
       url.forceUrlRelations(frame, 'pages');
     }
 
@@ -173,7 +176,7 @@ module.exports = {
   add(apiConfig, frame, options = { add: true }) {
     debug('add');
 
-    if (_.get(frame, 'options.source')) {
+    if (frame.options?.source) {
       const html = frame.data.pages[0].html;
 
       if (frame.options.source === 'html' && !_.isEmpty(html)) {
@@ -206,7 +209,7 @@ module.exports = {
     // CASE: Transform short to long format
     if (frame.data.pages[0].authors) {
       frame.data.pages[0].authors.forEach((author, index) => {
-        if (_.isString(author)) {
+        if (typeof author === 'string') {
           frame.data.pages[0].authors[index] = {
             email: author,
           };
@@ -216,7 +219,7 @@ module.exports = {
 
     if (frame.data.pages[0].tags) {
       frame.data.pages[0].tags.forEach((tag, index) => {
-        if (_.isString(tag)) {
+        if (typeof tag === 'string') {
           frame.data.pages[0].tags[index] = {
             name: tag,
           };

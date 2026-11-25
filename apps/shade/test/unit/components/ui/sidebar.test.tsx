@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { beforeAll, describe, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import {
   Sidebar,
@@ -42,24 +41,16 @@ describe('Sidebar', () => {
     renderSidebar({ defaultOpen: true });
 
     const trigger = screen.getByTestId('sidebar-trigger');
-    assert.equal(
-      trigger.getAttribute('aria-expanded'),
+    expect(trigger.getAttribute('aria-expanded'), 'trigger should be expanded initially').toBe(
       'true',
-      'trigger should be expanded initially',
     );
 
     fireEvent.click(trigger);
-    assert.equal(
-      trigger.getAttribute('aria-expanded'),
-      'false',
-      'trigger should collapse on click',
-    );
+    expect(trigger.getAttribute('aria-expanded'), 'trigger should collapse on click').toBe('false');
 
     fireEvent.click(trigger);
-    assert.equal(
-      trigger.getAttribute('aria-expanded'),
+    expect(trigger.getAttribute('aria-expanded'), 'trigger should expand again on click').toBe(
       'true',
-      'trigger should expand again on click',
     );
   });
 
@@ -67,11 +58,10 @@ describe('Sidebar', () => {
     renderSidebar({ open: false });
 
     const trigger = screen.getByTestId('sidebar-trigger');
-    assert.equal(
+    expect(
       trigger.getAttribute('aria-expanded'),
-      'false',
       'trigger should reflect the controlled state',
-    );
+    ).toBe('false');
   });
 
   it('SidebarTrigger aria-controls references the sidebar element', () => {
@@ -80,11 +70,9 @@ describe('Sidebar', () => {
     const trigger = screen.getByTestId('sidebar-trigger');
     const sidebar = screen.getByRole('navigation');
 
-    assert.ok(sidebar.id, 'sidebar should have an id');
-    assert.equal(
-      trigger.getAttribute('aria-controls'),
+    expect(sidebar.id, 'sidebar should have an id').toBeTruthy();
+    expect(trigger.getAttribute('aria-controls'), 'aria-controls should match the sidebar id').toBe(
       sidebar.id,
-      'aria-controls should match the sidebar id',
     );
   });
 });

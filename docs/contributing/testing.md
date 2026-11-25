@@ -24,7 +24,9 @@ end-to-end suite. Run them separately when your change affects that area.
 Put tests as close as possible to the code and behavior under test:
 
 - **Unit tests** cover a function, component, or package in isolation. Most
-  workspaces use Vitest and expose a `test` or `test:unit` target.
+  workspaces use Vitest and expose a `test` or `test:unit` target. App tests
+  under `apps/` assert with Vitest's `expect`; Ghost Core, the packages and
+  Koenig assert with `node:assert/strict`.
 - **Ghost Core integration tests** cover interactions between server modules
   and live against a test database. They live in `ghost/test/integration/`.
 - **Ghost Core server E2E tests** exercise the server, frontend rendering,
@@ -59,6 +61,14 @@ integration between layers is itself the behavior being protected.
   modified globals, timers, mocks, configuration, and singleton state.
 - Assert the result a user or caller depends on, including important side
   effects. Avoid assertions that merely repeat how the implementation works.
+
+For async ordering, hold a collaborator's promise pending and assert that the
+next operation cannot start until it settles. Do not assume a single
+`await Promise.resolve()` advances an async chain far enough: an additional
+harmless await can change the number of microtasks. Observe a readiness signal;
+in Node tests, yielding an event-loop turn with `setImmediate()` can let the chain
+reach the held promise without counting microtasks. Check that a missing required
+await fails the test and an extra harmless await still passes.
 
 Snapshot tests are useful for stable, structured output, but a generated
 snapshot is not proof that the output is correct. Review every changed snapshot
@@ -117,24 +127,57 @@ which targets it provides:
 pnpm nx show project <project-name>
 ```
 
-For Ghost Core, run its suites from `ghost/`:
+For Ghost Core, prefer its Nx targets from the repository root. They prepare
+workspace builds and Core assets before running the suite or selected files:
 
 ```bash
-cd ghost
+pnpm nx run ghost:test:unit
+pnpm nx run ghost:test:integration
+pnpm nx run ghost:test:e2e
 
-pnpm test:unit
-pnpm test:integration
-pnpm test:e2e
-pnpm test:all
+pnpm nx run ghost:test:unit test/unit/path/to/test.test.js
+pnpm nx run ghost:test:integration test/integration/path/to/test.test.js
+pnpm nx run ghost:test:e2e test/e2e-api/admin/integrations.test.js --maxWorkers=1
 ```
 
-`test:all` runs Ghost Core's unit, integration, server E2E, and lint targets. To
-run one Ghost Core test file, use:
+`pnpm bootstrap` installs dependencies but does not build workspace packages or
+Core's card assets. Direct Vitest and `pnpm test:single` commands from `ghost/`
+bypass Nx's prerequisites; use them once those outputs are prepared. Missing
+package `build/` files or `cards.manifest.json` indicate incomplete setup.
+Compiling Core with `build:tsc` is unnecessary for source tests and leaves
+adjacent JavaScript files that can shadow later TypeScript edits in CommonJS
+imports.
+
+### Unit test order
+
+Ghost Core's unit files share one module registry per worker, so state a file
+leaves behind, such as a stub, a config override, a registered Handlebars helper
+or an initialized service root, is still there for whichever file runs next. A
+test must also not rely on another test in its file having run first. CI runs
+the unit suite in a shuffled order, files and the tests inside them, to catch
+both.
+
+The shuffle uses one seed per CI run, which Vitest prints near the top of the
+unit test output:
+
+```text
+Running tests with seed "19283746501"
+```
+
+To rerun that order locally, pass the same seed. The seed isn't part of Nx's
+cache key, so skip the cache or Nx replays an earlier result:
 
 ```bash
-pnpm test:single test/unit/path/to/test.test.js
-pnpm test:single test/integration/path/to/test.test.js
+GHOST_UNIT_TEST_SEED=19283746501 pnpm nx run ghost:test:unit --skip-nx-cache
 ```
+
+Re-running the CI job keeps the seed, so it fails the same way until the order
+dependency is fixed. Fix it in the test that leaks or relies on state: restore
+what it changes in `afterEach` or `afterAll`, and set up what it needs in its
+own `beforeEach`.
+
+From `ghost/`, `pnpm test:all` runs Ghost Core's unit, integration, server E2E,
+type and lint commands after its prerequisites have been prepared.
 
 Watch mode at the repository root covers unit tests across the workspace:
 
@@ -158,6 +201,19 @@ those adapters.
 
 If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
 server with `pnpm dev`.
+
+## Limit Parallel Workers
+
+Ghost Core's database-backed suites boot a Ghost per worker, and the Admin
+acceptance and browser E2E suites drive a browser per worker. Each sizes its
+workers as if it had the machine to itself, so tests running in several
+worktrees at once can exhaust memory.
+
+Set `GHOST_TEST_MACHINE_SHARE` in your shell profile to the share of the
+machine one test run may use, such as `0.5` when two worktrees run tests at
+once. Each suite scales its workers to that share by what its workers cost, so
+the suites split the machine instead of each taking all of it.
+`TEST_WORKERS_COUNT` sets an exact worker count instead.
 
 ## Run Browser E2E Tests
 

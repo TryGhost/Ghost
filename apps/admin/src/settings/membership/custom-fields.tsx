@@ -1,12 +1,13 @@
 import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
-import CustomFieldModal from './custom-fields/custom-field-modal';
+import { AddCustomFieldModal } from './custom-fields/add-custom-field-modal';
+import { EditCustomFieldModal } from './custom-fields/edit-custom-field-modal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
   DragIndicator,
   NoValueLabel,
@@ -28,12 +29,14 @@ import {
   useReorderMemberCustomFields,
   userTypeForField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { useCustomFieldsAvailable } from '@/shared/member-custom-fields/use-availability';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { HostLimitGate } from '@/shared/gates/host-limit-gate';
+import { useHandleError, useHostLimits } from '@tryghost/admin-x-framework/hooks';
+import { CUSTOM_FIELDS_LIMIT } from '@/shared/member-custom-fields/availability';
 import { useQueryClient } from '@tryghost/admin-x-framework';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { DialogPortal } from '@/settings/providers/dialog-portal';
+import { UpgradeNotice } from '@/settings/components/upgrade-notice';
 
 // How many fields render before the list collapses behind "Show all" — the
 // recommendations list's preview size.
@@ -54,7 +57,7 @@ const FieldRow: React.FC<{
   const userType = userTypeForField(field);
   return (
     <>
-      <ActionListItemContent asChild>
+      <ListItemContent asChild>
         <button
           className="flex w-full items-center gap-3 py-3 text-left"
           type="button"
@@ -75,18 +78,18 @@ const FieldRow: React.FC<{
             </span>
           </span>
         </button>
-      </ActionListItemContent>
-      <ActionListItemActions>
+      </ListItemContent>
+      <ListItemActions>
         <Button size="sm" type="button" variant="ghost" onClick={() => openModal(field)}>
           Edit
         </Button>
-      </ActionListItemActions>
+      </ListItemActions>
     </>
   );
 };
 
 // The row a dragged field sits in. The drag overlay renders outside the list's wrapper,
-// so a row being dragged supplies its own ActionList to keep its styling.
+// so a row being dragged supplies its own List to keep its styling.
 const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
   id,
   setRef,
@@ -103,20 +106,20 @@ const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
 
   // The handle sits in a centred column because the row stretches its children.
   const row = (
-    <ActionListItem
+    <ListItem
       ref={setRef}
       className={isDragging ? 'opacity-75' : ''}
       data-testid="custom-field-list-item"
       style={style}
     >
-      <Inline align="center" className="w-10 shrink-0">
+      <Inline align="center" className="w-10 shrink-0" data-row-secondary>
         <DragIndicator className="h-10" isDragging={isDragging || false} {...props} />
       </Inline>
       {children}
-    </ActionListItem>
+    </ListItem>
   );
 
-  return isDragging ? <ActionList>{row}</ActionList> : row;
+  return isDragging ? <List>{row}</List> : row;
 };
 
 const FieldList: React.FC<{
@@ -160,17 +163,17 @@ const FieldList: React.FC<{
           getDragHandleLabel={(field) => `Reorder ${field.name}`}
           items={withRowIds(visibleFields)}
           renderItem={(field) => <FieldRow field={field} openModal={openModal} />}
-          wrapper={ActionList}
+          wrapper={List}
           onMove={(key, overKey) => onMove?.(key, overKey)}
         />
       ) : (
-        <ActionList>
+        <List>
           {visibleFields.map((field) => (
-            <ActionListItem key={field.key} data-testid="custom-field-list-item">
+            <ListItem key={field.key} data-testid="custom-field-list-item">
               <FieldRow field={field} openModal={openModal} />
-            </ActionListItem>
+            </ListItem>
           ))}
-        </ActionList>
+        </List>
       )}
       {isTruncated && (
         <div className="flex items-center gap-2 border-t border-border pt-2">
@@ -183,15 +186,11 @@ const FieldList: React.FC<{
   );
 };
 
-const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  // Nothing to fetch when the site cannot use custom fields at all, so keep the
-  // query in step with availability rather than firing it into a wall. Settings is
-  // the one place that manages archived fields too, so it uses the include-archived
-  // variant rather than the default active-only browse.
-  const hasCustomFields = useCustomFieldsAvailable();
-  const { data } = useBrowseMemberCustomFieldsIncludingArchived({
-    enabled: hasCustomFields,
-  });
+/** The publisher's fields in their order, split by status, with dragging to reorder them. */
+const FieldLists: React.FC<{ openModal: (field: MemberCustomField) => void }> = ({ openModal }) => {
+  // Settings is the one place that manages archived fields too, so it uses the
+  // include-archived variant rather than the default active-only browse.
+  const { data } = useBrowseMemberCustomFieldsIncludingArchived();
   const { mutateAsync: reorderFields } = useReorderMemberCustomFields();
   const queryClient = useQueryClient();
   const handleError = useHandleError();
@@ -234,9 +233,6 @@ const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     previousCounts.current = { active: activeFields.length, archived: archivedFields.length };
   }, [activeFields.length, archivedFields.length]);
 
-  const [editingField, setEditingField] = useState<{ field?: MemberCustomField } | null>(null);
-  const openModal = (field?: MemberCustomField) => setEditingField({ field });
-
   /**
    * Applied to the whole list rather than the active tab: a reorder names every
    * definition, and the archived ones keep their places around the move. Rendered
@@ -264,12 +260,60 @@ const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       .finally(() => setDrawnOrder(null));
   };
 
+  // Both tabs render (empty ones included, the newsletters pattern) once ANY field
+  // exists — but a site with no fields at all gets no tabs, just the group description;
+  // newsletters never faces that state (a site always has one), custom fields start there.
+  if (fields.length === 0) {
+    return null;
+  }
+  return (
+    <Tabs value={selectedTab} variant="underline" onValueChange={setSelectedTab}>
+      <TabsList>
+        <TabsTrigger value="active-fields">Active</TabsTrigger>
+        <TabsTrigger value="archived-fields">Archived</TabsTrigger>
+      </TabsList>
+      <TabsContent value="active-fields">
+        <FieldList
+          fields={activeFields}
+          openModal={openModal}
+          showAll={showAllActive}
+          onMove={onMove}
+          onShowAll={() => setShowAllActive(true)}
+        />
+      </TabsContent>
+      <TabsContent value="archived-fields">
+        <FieldList
+          fields={archivedFields}
+          openModal={openModal}
+          showAll={showAllArchived}
+          onShowAll={() => setShowAllArchived(true)}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+/**
+ * While the host switches custom fields off, the section keeps its title and description, so
+ * it still says what custom fields are, while the fields and the way to add one give way to
+ * the upgrade: the server reads every field as archived and refuses every change. The upgrade
+ * is offered in the host's own words where it gives some.
+ */
+const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
+  const [modal, setModal] = useState<
+    { readonly kind: 'add' } | { readonly kind: 'edit'; readonly field: MemberCustomField } | null
+  >(null);
+  const closeModal = () => setModal(null);
+  const hostMessage = useHostLimits()?.[CUSTOM_FIELDS_LIMIT]?.error;
+
   return (
     <TopLevelGroup
       customButtons={
-        <Button size="sm" type="button" variant="ghost" onClick={() => openModal()}>
-          Add custom field
-        </Button>
+        <HostLimitGate limit={CUSTOM_FIELDS_LIMIT}>
+          <Button size="sm" type="button" variant="ghost" onClick={() => setModal({ kind: 'add' })}>
+            Add custom field
+          </Button>
+        </HostLimitGate>
       }
       description="Create and manage custom fields to store extra information about your members"
       keywords={keywords}
@@ -277,40 +321,25 @@ const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       testId="custom-fields"
       title="Custom fields"
     >
-      {/* Both tabs render (empty ones included, the newsletters pattern)
-                once ANY field exists — but a site with no fields at all gets
-                no tabs, just the group description; newsletters never faces
-                that state (a site always has one), custom fields start there. */}
-      {fields.length > 0 && (
-        <Tabs value={selectedTab} variant="underline" onValueChange={setSelectedTab}>
-          <TabsList>
-            <TabsTrigger value="active-fields">Active</TabsTrigger>
-            <TabsTrigger value="archived-fields">Archived</TabsTrigger>
-          </TabsList>
-          <TabsContent value="active-fields">
-            <FieldList
-              fields={activeFields}
-              openModal={openModal}
-              showAll={showAllActive}
-              onMove={onMove}
-              onShowAll={() => setShowAllActive(true)}
-            />
-          </TabsContent>
-          <TabsContent value="archived-fields">
-            <FieldList
-              fields={archivedFields}
-              openModal={openModal}
-              showAll={showAllArchived}
-              onShowAll={() => setShowAllArchived(true)}
-            />
-          </TabsContent>
-        </Tabs>
-      )}
-      {editingField && (
-        <DialogPortal>
-          <CustomFieldModal field={editingField.field} onClose={() => setEditingField(null)} />
-        </DialogPortal>
-      )}
+      <HostLimitGate
+        limit={CUSTOM_FIELDS_LIMIT}
+        limited={
+          <UpgradeNotice>
+            {hostMessage || "Custom fields aren't available on this site."}
+          </UpgradeNotice>
+        }
+      >
+        <FieldLists openModal={(field) => setModal({ kind: 'edit', field })} />
+        {modal && (
+          <DialogPortal>
+            {modal.kind === 'add' ? (
+              <AddCustomFieldModal onClose={closeModal} />
+            ) : (
+              <EditCustomFieldModal field={modal.field} onClose={closeModal} />
+            )}
+          </DialogPortal>
+        )}
+      </HostLimitGate>
     </TopLevelGroup>
   );
 };

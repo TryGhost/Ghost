@@ -1,9 +1,13 @@
+const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
+const { afterCommit } = require('../lib/after-commit');
 const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
 const { chainTransformers } = require('@tryghost/mongo-utils');
 const { memberAvatarImage } = require('../services/members/member-avatar');
 const { MemberCommentingCodec } = require('../services/members/commenting');
+const { LabelAddedToMembersEvent } = require('../../shared/events/label-added-to-members-event');
 const {
   METAFIELDS_RELATION,
   createMetafieldsFilterTransformer,
@@ -75,6 +79,23 @@ function applyDeferredJoinForDeepOffset(qb) {
     .clear('limit')
     .clear('offset')
     .innerJoin(idSubquery.as('deep_page'), 'members.id', 'deep_page.deep_page_id');
+}
+
+const FREE_SUBSCRIBER_FILTER = '(subscribed:true+email_disabled:0)+status:free';
+const FREE_SUBSCRIBER_SQL =
+  'select * from `members` where ((`members`.`email_disabled` = ? and `members`.`id` in (' +
+  'select `members_newsletters`.`member_id` from `members_newsletters` ' +
+  'inner join `newsletters` on `newsletters`.`id` = `members_newsletters`.`newsletter_id` ' +
+  'where `newsletters`.`status` = ?)) and `members`.`status` = ?)';
+
+function isFreeSubscriberQuery(query) {
+  const { sql, bindings } = query.toSQL();
+  return (
+    sql === FREE_SUBSCRIBER_SQL &&
+    bindings[0] === 0 &&
+    bindings[1] === 'active' &&
+    bindings[2] === 'free'
+  );
 }
 
 const Member = ghostBookshelf.Model.extend(
@@ -499,7 +520,7 @@ const Member = ghostBookshelf.Model.extend(
     onSaving: function onSaving(model, attr, options) {
       const rawLabels = this.get('labels');
 
-      if (_.isUndefined(rawLabels)) {
+      if (rawLabels === undefined) {
         this.unset('labels');
         return;
       }
@@ -522,30 +543,26 @@ const Member = ghostBookshelf.Model.extend(
       this.set('labels', labelsToSave);
       this.handleAttachedModels(model);
 
+      if (labelsToSave.length === 0) {
+        return;
+      }
+
       // CASE: Detect existing labels with same case-insensitive name and replace
+      const names = labelsToSave.map((label) => label.name);
+
       return ghostBookshelf
         .model('Label')
-        .findAll(
-          Object.assign(
-            {
-              columns: ['id', 'name'],
-            },
-            _.pick(options, 'transacting'),
-          ),
-        )
-        .then((labels) => {
+        .findCandidatesByName(names, _.pick(options, 'transacting'))
+        .then((existingLabels) => {
           const existingByName = new Map();
-          for (const lab of labels.models) {
-            const name = lab.get('name');
-            if (name) {
-              existingByName.set(name.toLowerCase(), lab);
-            }
+          for (const existing of existingLabels) {
+            existingByName.set(existing.name.toLowerCase(), existing);
           }
 
           labelsToSave.forEach((label) => {
             const match = existingByName.get(label.name.toLowerCase());
             if (match) {
-              label.name = match.get('name');
+              label.name = match.name;
               label.id = match.id;
             }
           });
@@ -561,24 +578,27 @@ const Member = ghostBookshelf.Model.extend(
        * For the reason above, `detached` handler is using the scope of `detaching`
        * to access the models that are not present in `detached`.
        */
-      model.related('labels').once('detaching', function onDetaching(collection, label) {
-        model
-          .related('labels')
-          .once('detached', function onDetached(detachedCollection, response, options) {
-            label.emitChange('detached', options);
-            model.emitChange('label.detached', options);
-          });
+      model.related('labels').once('detaching', (collection, label) => {
+        model.related('labels').once('detached', (detachedCollection, response, options) => {
+          label.emitChange('detached', options);
+          model.emitChange('label.detached', options);
+        });
       });
 
-      model.related('labels').once('attaching', function onDetaching(collection, labels) {
-        model
-          .related('labels')
-          .once('attached', function onDetached(detachedCollection, response, options) {
-            labels.forEach((label) => {
-              label.emitChange('attached', options);
-              model.emitChange('label.attached', options);
-            });
+      model.related('labels').once('attaching', (collection, labels) => {
+        model.related('labels').once('attached', (detachedCollection, response, options) => {
+          labels.forEach((label) => {
+            label.emitChange('attached', options);
+            model.emitChange('label.attached', options);
+
+            const event = new LabelAddedToMembersEvent(label.id, [model.id]);
+            afterCommit(
+              options.transacting,
+              () => DomainEvents.dispatch(event),
+              (err) => logging.error(err),
+            );
           });
+        });
       });
     },
 
@@ -659,7 +679,83 @@ const Member = ghostBookshelf.Model.extend(
         options = options.concat(['search']);
       }
 
+      if (methodName === 'findPage') {
+        options.push('activeNewsletterIds');
+      }
+
       return options;
+    },
+
+    findPage(options = {}) {
+      if (options.skipPagination || options.limit === 'all') {
+        return ghostBookshelf.Model.findPage.call(this, options);
+      }
+
+      return this.withActiveNewsletterIds(options, (queryOptions) =>
+        ghostBookshelf.Model.findPage.call(this, queryOptions),
+      );
+    },
+
+    canOptimizeFreeSubscriberFilter(options) {
+      if (
+        options.filter !== FREE_SUBSCRIBER_FILTER ||
+        options.search ||
+        !['mysql', 'mysql2'].includes(ghostBookshelf.knex.client.config.client)
+      ) {
+        return false;
+      }
+
+      // The rewrite only applies to the exact query this filter compiles to today.
+      const collection = ghostBookshelf.Model.getFilteredCollection.call(
+        this,
+        this.filterOptions(options, 'findPage'),
+      );
+      return isFreeSubscriberQuery(collection.query());
+    },
+
+    async activeNewsletterIds(transacting) {
+      return transacting('newsletters').where({ status: 'active' }).pluck('id');
+    },
+
+    withActiveNewsletterIds(options, read) {
+      const knex = ghostBookshelf.knex;
+      if (options.transacting || !this.canOptimizeFreeSubscriberFilter(options)) {
+        return read(options);
+      }
+
+      // Newsletter status and membership must come from the same snapshot.
+      return knex.transaction(
+        async (transacting) => {
+          const activeNewsletterIds = await this.activeNewsletterIds(transacting);
+          return read({ ...options, transacting, activeNewsletterIds });
+        },
+        { isolationLevel: 'repeatable read' },
+      );
+    },
+
+    getFilteredCollection(options) {
+      const collection = ghostBookshelf.Model.getFilteredCollection.call(this, options);
+      if (!options.activeNewsletterIds) {
+        return collection;
+      }
+
+      const query = collection.query();
+      // Preserve the original filter if the compiler or an additional constraint
+      // produces any other query. The rewrite applies to the count and page.
+      if (isFreeSubscriberQuery(query)) {
+        const membership = ghostBookshelf
+          .knex('members_newsletters')
+          .select(ghostBookshelf.knex.raw('1'))
+          .whereColumn('members_newsletters.member_id', 'members.id')
+          .whereIn('members_newsletters.newsletter_id', options.activeNewsletterIds);
+        query
+          .clear('where')
+          .where('members.email_disabled', false)
+          .where('members.status', 'free')
+          .whereExists(membership);
+      }
+
+      return collection;
     },
 
     add(data, unfilteredOptions = {}) {
@@ -704,7 +800,7 @@ const Member = ghostBookshelf.Model.extend(
     getLabelRelations(data, unfilteredOptions = {}) {
       const query = ghostBookshelf
         .knex('members_labels')
-        .select('id')
+        .select('id', 'member_id')
         .where('label_id', data.labelId)
         .whereIn('member_id', data.memberIds);
 

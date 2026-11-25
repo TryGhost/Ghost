@@ -284,11 +284,7 @@ describe('Settings Helpers', function () {
 
     it('returns an empty array when both config and settings are empty', function () {
       fakeSettings.get.withArgs('blocked_email_domains').returns([]);
-      configUtils.set({
-        spam: {
-          blocked_email_domains: [],
-        },
-      });
+      configUtils.set('spam:blocked_email_domains', []);
 
       const settingsHelpers = new SettingsHelpers({
         settingsCache: fakeSettings,
@@ -304,15 +300,12 @@ describe('Settings Helpers', function () {
 
     it('returns an empty array when settings or config is malformed', function () {
       fakeSettings.get.withArgs('blocked_email_domains').returns('not an array');
-      configUtils.set({
-        spam: {
-          blocked_email_domains: 'not an array',
-        },
-      });
+      // the schema rejects this, but production falls back to the raw value
+      const config = { get: () => 'not an array' };
 
       const settingsHelpers = new SettingsHelpers({
         settingsCache: fakeSettings,
-        config: configUtils.config,
+        config,
         urlUtils,
         labs: {},
         limitService,
@@ -324,15 +317,12 @@ describe('Settings Helpers', function () {
 
     it('returns an empty array when settings or config are undefined', function () {
       fakeSettings.get.withArgs('blocked_email_domains').returns(undefined);
-      configUtils.set({
-        spam: {
-          blocked_email_domains: undefined,
-        },
-      });
+      // the schema rejects this, but production falls back to the raw value
+      const config = { get: () => undefined };
 
       const settingsHelpers = new SettingsHelpers({
         settingsCache: fakeSettings,
-        config: configUtils.config,
+        config,
         urlUtils,
         labs: {},
         limitService,
@@ -344,15 +334,12 @@ describe('Settings Helpers', function () {
 
     it('returns an empty array when settings or config are null', function () {
       fakeSettings.get.withArgs('blocked_email_domains').returns(null);
-      configUtils.set({
-        spam: {
-          blocked_email_domains: null,
-        },
-      });
+      // the schema rejects this, but production falls back to the raw value
+      const config = { get: () => null };
 
       const settingsHelpers = new SettingsHelpers({
         settingsCache: fakeSettings,
-        config: configUtils.config,
+        config,
         urlUtils,
         labs: {},
         limitService,
@@ -366,11 +353,7 @@ describe('Settings Helpers', function () {
       fakeSettings.get
         .withArgs('blocked_email_domains')
         .returns(['domain.com', 'settingsdomain.com']);
-      configUtils.set({
-        spam: {
-          blocked_email_domains: ['configdomain.com', '@domain.com'],
-        },
-      });
+      configUtils.set('spam:blocked_email_domains', ['configdomain.com', '@domain.com']);
 
       const settingsHelpers = new SettingsHelpers({
         settingsCache: fakeSettings,
@@ -388,11 +371,12 @@ describe('Settings Helpers', function () {
       fakeSettings.get
         .withArgs('blocked_email_domains')
         .returns(['Domain.com', '@example.com', 'hello@spam.xyz', 'bar', '']);
-      configUtils.set({
-        spam: {
-          blocked_email_domains: ['configDomain.com', '@configExample.com', 'foo', ''],
-        },
-      });
+      configUtils.set('spam:blocked_email_domains', [
+        'configDomain.com',
+        '@configExample.com',
+        'foo',
+        '',
+      ]);
 
       const settingsHelpers = new SettingsHelpers({
         settingsCache: fakeSettings,

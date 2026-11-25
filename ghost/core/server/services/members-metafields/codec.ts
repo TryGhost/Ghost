@@ -1,19 +1,20 @@
 import { z } from 'zod';
-import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { DbMetafield } from './schema';
 import { Metafield } from './models';
 
-export const metafieldCodec = z.codec(DbMetafield, Metafield, {
-  // DbMetafield validates `type` as the field-type enum, so the decoded row
-  // already carries a FieldType and camelKeys preserves it — no cast needed.
-  decode: ({ member_access: memberAccess, ...row }) => ({
-    ...camelKeys(row),
-    namespace: CUSTOM_NAMESPACE,
-    access: { member: memberAccess },
-  }),
-  encode: ({ namespace: _namespace, access, ...field }) => ({
-    ...snakeKeys(field),
-    member_access: access.member,
-  }),
+// DbMetafield reads the type and its settings against each other, so both pass through as they
+// are, and camelKeys keeps their types without a cast.
+export const metafieldCodec = z.codec(DbMetafield.asStored, Metafield, {
+  decode: (row) => ({ ...camelKeys(row), access: { member: row.member_access } }),
+  encode: (field) => ({ ...snakeKeys(field), member_access: field.access.member }),
+});
+
+/**
+ * The same codec, except that a field whose stored settings can't be read is read with its type's
+ * default settings.
+ */
+export const metafieldCodecWithDefaults = z.codec(DbMetafield.withDefaults, Metafield, {
+  decode: (row) => ({ ...camelKeys(row), access: { member: row.member_access } }),
+  encode: (field) => ({ ...snakeKeys(field), member_access: field.access.member }),
 });

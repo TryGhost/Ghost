@@ -61,7 +61,7 @@ const SiteFrame = forwardRef<HTMLIFrameElement, { pageUrl: string }>(function Si
  * Which site frame shows: a new one, on the homepage, per navigation to View
  * site, so clicking View site again returns to it; and a new one on the page
  * being customized after a save, so it shows the saved design. Opening or
- * closing Customize changes the URL too, but keeps the frame (and its page).
+ * closing Customize, or changing its tabs, keeps the frame (and its page).
  */
 function useSiteFrame(customizing: boolean) {
   const { key } = useLocation();
@@ -73,7 +73,7 @@ function useSiteFrame(customizing: boolean) {
   }>({ key, customizing, version: 0 });
 
   if (frame.key !== key) {
-    const revisited = frame.customizing === customizing;
+    const revisited = !frame.customizing && !customizing;
     setFrame(
       revisited ? { key, customizing, version: frame.version + 1 } : { ...frame, key, customizing },
     );

@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { DEFAULT_EMAIL_DESIGN } from '@/settings/email-design/types';
 import {
   buildAutomatedEmailDesignPayload,
@@ -22,15 +21,15 @@ describe('Welcome email design payload helpers', function () {
 
     const result = mapApiToDesignSettings(apiData) as unknown as typeof apiData;
 
-    assert.equal('id' in result, false);
-    assert.equal('slug' in result, false);
-    assert.equal('created_at' in result, false);
-    assert.equal('updated_at' in result, false);
-    assert.equal('header_image' in result, false);
-    assert.equal('show_header_icon' in result, false);
-    assert.equal('show_header_title' in result, false);
-    assert.equal('show_badge' in result, false);
-    assert.equal('footer_content' in result, false);
+    expect('id' in result).toBe(false);
+    expect('slug' in result).toBe(false);
+    expect('created_at' in result).toBe(false);
+    expect('updated_at' in result).toBe(false);
+    expect('header_image' in result).toBe(false);
+    expect('show_header_icon' in result).toBe(false);
+    expect('show_header_title' in result).toBe(false);
+    expect('show_badge' in result).toBe(false);
+    expect('footer_content' in result).toBe(false);
   });
 
   it('keeps only known welcome email design fields when mapping api data', function () {
@@ -41,7 +40,7 @@ describe('Welcome email design payload helpers', function () {
 
     const result = mapApiToDesignSettings(apiData) as unknown as typeof apiData;
 
-    assert.equal('custom_future_field' in result, false);
+    expect('custom_future_field' in result).toBe(false);
   });
 
   it('keeps only known welcome email design fields in the save payload while excluding non-design metadata fields', function () {
@@ -80,11 +79,11 @@ describe('Welcome email design payload helpers', function () {
       footer_content: string | null;
     };
 
-    assert.equal('custom_future_field' in payload, false);
-    assert.equal('id' in payload, false);
-    assert.equal('slug' in payload, false);
-    assert.equal('created_at' in payload, false);
-    assert.equal('updated_at' in payload, false);
-    assert.equal(payload.show_header_icon, true);
+    expect('custom_future_field' in payload).toBe(false);
+    expect('id' in payload).toBe(false);
+    expect('slug' in payload).toBe(false);
+    expect('created_at' in payload).toBe(false);
+    expect('updated_at' in payload).toBe(false);
+    expect(payload.show_header_icon).toBe(true);
   });
 });

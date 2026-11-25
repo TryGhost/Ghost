@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-const ghostVersion = require('@tryghost/version');
+import ghostVersion from '@tryghost/version';
 
 const REQUEST_TIMEOUT_MS = 30_000;
 
@@ -8,7 +8,6 @@ type SignedWebhookRequestOptions = {
   body: string;
   headers: Record<string, string | number>;
   timeout: { request: number };
-  retry: { limit: number };
 };
 
 /**
@@ -34,18 +33,44 @@ export function sanitizeWebhookUrl(webhookUrl: string): string {
 }
 
 /**
+ * Describes a failed delivery for logs without using the error's message,
+ * which the HTTP client fills with the full request URL.
+ */
+export function describeWebhookError(error: unknown): string {
+  if (typeof error !== 'object' || error === null) {
+    return 'unknown error';
+  }
+
+  const response = 'response' in error ? error.response : undefined;
+  if (
+    typeof response === 'object' &&
+    response !== null &&
+    'statusCode' in response &&
+    typeof response.statusCode === 'number'
+  ) {
+    return `HTTP ${response.statusCode}`;
+  }
+
+  if ('code' in error && typeof error.code === 'string') {
+    return error.code;
+  }
+
+  return 'unknown error';
+}
+
+/**
  * Builds the request options for a signed host webhook delivery. When no
  * secret is configured the payload is sent unsigned (the receiver decides
- * whether to accept that).
+ * whether to accept that). got never retries a POST, so each delivery is
+ * sent once. It may retry the GET that follows a 303 redirect, which doesn't
+ * resend the delivery.
  */
 export function buildSignedWebhookRequest({
   payload,
   secret,
-  retryLimit,
 }: {
   payload: unknown;
   secret?: string;
-  retryLimit: number;
 }): SignedWebhookRequestOptions {
   const body = JSON.stringify(payload);
   const timestamp = Date.now().toString();
@@ -67,9 +92,6 @@ export function buildSignedWebhookRequest({
     headers,
     timeout: {
       request: REQUEST_TIMEOUT_MS,
-    },
-    retry: {
-      limit: retryLimit,
     },
   };
 }

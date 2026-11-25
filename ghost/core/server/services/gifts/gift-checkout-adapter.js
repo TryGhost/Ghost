@@ -1,5 +1,7 @@
 const logging = require('@tryghost/logging');
 
+/** @import { CheckoutService } from '../stripe-checkout-config' */
+
 /**
  * Stripe and Bookshelf adapter used only by the gifts module.
  *
@@ -7,9 +9,14 @@ const logging = require('@tryghost/logging');
  * objects and Bookshelf models stay on this side of the seam.
  */
 module.exports = class GiftCheckoutAdapter {
-  constructor({ StripeCustomerModel, getStripeApi }) {
+  /**
+   * @param {object} deps
+   * @param {Pick<CheckoutService, 'read'>} deps.checkouts Decides the checkout a gift opens.
+   */
+  constructor({ StripeCustomerModel, getStripeApi, checkouts }) {
     this.StripeCustomerModel = StripeCustomerModel;
     this.getStripeApi = getStripeApi;
+    this.checkouts = checkouts;
   }
 
   async getCustomerId({ memberId, email, name }) {
@@ -55,6 +62,7 @@ module.exports = class GiftCheckoutAdapter {
       ...sessionData,
       customer: customerId ? { id: customerId } : null,
       idempotencyKey,
+      checkout: await this.checkouts.read(),
     });
 
     return { id: session.id, url: session.url };

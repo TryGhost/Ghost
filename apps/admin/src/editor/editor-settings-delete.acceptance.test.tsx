@@ -211,7 +211,7 @@ describe('Post settings delete', () => {
 
     await expect(editorScreen.settingsDelete()).toHaveCount(0);
     // The list ends at its last section: no empty wrapper is left for the button.
-    const lastSection = editorScreen.settingsSubviewRow(settingsKeyboardShortcutsRow).element();
+    const lastSection = editorScreen.settingsEditorHelp().element();
     expect(editorScreen.settingsScrollPane().lastElementChild?.contains(lastSection)).toBe(true);
 
     await typeIntoBody('First words');

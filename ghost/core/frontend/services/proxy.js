@@ -56,7 +56,23 @@ module.exports = {
         !(resource.feature_image_caption instanceof SafeString)
       ) {
         const sanitizedCaption = sanitizeHtml(resource.feature_image_caption, {
-          allowedTags: ['a', 'b', 'i', 'span'],
+          // Links and inline formatting. Admin's post history preview keeps the
+          // same list (apps/admin/src/editor/settings/sanitize-caption.ts).
+          allowedTags: [
+            'a',
+            'b',
+            'i',
+            'span',
+            'strong',
+            'em',
+            'u',
+            's',
+            'code',
+            'mark',
+            'sub',
+            'sup',
+            'br',
+          ],
           allowedAttributes: { '*': ['href', 'style'] },
         });
         resource.feature_image_caption = new SafeString(sanitizedCaption);

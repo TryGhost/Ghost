@@ -4,6 +4,7 @@ import { focusManager } from '@tanstack/react-query';
 
 import {
   currentRoute,
+  currentUserResponse,
   fakeAdminStats,
   fakeAdminEndpoint,
   fakeMembers,
@@ -16,6 +17,8 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleRequests,
+  staffRole,
   webAnalyticsBootOverrides,
   type TinybirdPipeCapture,
 } from '@test-utils/acceptance';
@@ -621,6 +624,9 @@ describe('Post analytics overview', () => {
     });
 
     await expect.poll(() => failedStatusApi.requests.length).toBe(1);
+    // Focus doesn't refetch a query that's still fetching, and the fake records
+    // the request before the app has its error, so let it finish first
+    await settleRequests();
 
     const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
       email_statuses: [
@@ -687,6 +693,18 @@ describe('Post analytics overview', () => {
     // Growth: totals from the post growth stats.
     await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('Free members');
     await expect.element(postAnalyticsScreen.growthCard()).toHaveTextContent('100');
+  });
+
+  it('renders for an administrator', async () => {
+    seedPostAnalyticsWorld();
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Administrator' })];
+    await renderAdminApp(`/posts/analytics/${POST_ID}`, {
+      boot: { ...webAnalyticsBootOverrides(), browseMe: { response: me } },
+    });
+
+    await expect.element(postAnalyticsScreen.postTitle('Attack of the Clones')).toBeVisible();
+    await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
   });
 
   it('keeps the post context when switching to the web tab', async () => {

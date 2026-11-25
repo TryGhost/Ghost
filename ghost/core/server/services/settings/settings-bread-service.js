@@ -352,7 +352,7 @@ class SettingsBREADService {
   }
 
   _formatBrowse(inputSettings, context) {
-    let settings = _.values(inputSettings);
+    let settings = Object.values(inputSettings);
     // CASE: no context passed (functional call)
     if (!context) {
       return Promise.resolve(
@@ -364,7 +364,7 @@ class SettingsBREADService {
 
     if (!context.internal) {
       // CASE: omit core settings unless internal request
-      settings = _.filter(settings, (setting) => {
+      settings = settings.filter((setting) => {
         const isCore = setting.group === 'core';
         return !isCore;
       });
@@ -480,7 +480,6 @@ class SettingsBREADService {
    * @private
    */
   async sendEmailVerificationMagicLink({ email, key }) {
-    const fromEmail = this.emailAddressService.service.defaultFromAddress;
     const { ghostMailer } = this;
 
     this.magicLinkService.transporter = {
@@ -490,7 +489,6 @@ class SettingsBREADService {
         }
         const msg = Object.assign(
           {
-            from: fromEmail,
             subject: 'Verify email address',
             forceTextContent: true,
           },

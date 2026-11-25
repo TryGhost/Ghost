@@ -4,6 +4,7 @@ const SubscriptionStatsService = require('./subscription-stats-service');
 const ReferrersStatsService = require('./referrers-stats-service');
 const PostsStatsService = require('./posts-stats-service');
 const ContentStatsService = require('./content-stats-service');
+const { CommentsAnalyticsService } = require('./comments-analytics');
 class StatsService {
   /**
    * @param {object} deps
@@ -13,6 +14,7 @@ class StatsService {
    * @param {ReferrersStatsService} deps.referrers
    * @param {PostsStatsService} deps.posts
    * @param {ContentStatsService} deps.content
+   * @param {import('./comments-analytics').CommentsAnalyticsService} deps.comments
    **/
   constructor(deps) {
     this.mrr = deps.mrr;
@@ -21,6 +23,28 @@ class StatsService {
     this.referrers = deps.referrers;
     this.posts = deps.posts;
     this.content = deps.content;
+    this.comments = deps.comments;
+  }
+
+  /**
+   * @param {unknown} options
+   */
+  async getCommentsOverview(options) {
+    return this.comments.getOverview(options);
+  }
+
+  /**
+   * @param {unknown} options
+   */
+  async getCommentsTopPosts(options) {
+    return this.comments.getTopPosts(options);
+  }
+
+  /**
+   * @param {unknown} options
+   */
+  async getCommentsTopCommenters(options) {
+    return this.comments.getTopCommenters(options);
   }
 
   async getMRRHistory(options = {}) {
@@ -206,6 +230,7 @@ class StatsService {
    * @param {Object} options
    * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
    * @param {string} [options.post_ids] - Comma-separated string of post IDs to get click data for
+   * @param {boolean|string} [options.fail_on_error] - Propagate database failures when true
    * @returns {Promise<{data: Object[]}>}
    */
   async getNewsletterClickStats(options = {}) {
@@ -218,7 +243,8 @@ class StatsService {
     }
 
     // Return newsletter click stats for the specific newsletter and posts
-    const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
+    const failOnError = options.fail_on_error === true || options.fail_on_error === 'true';
+    const result = await this.posts.getNewsletterClickStats(newsletterId, postIds, failOnError);
     return result;
   }
 
@@ -235,47 +261,26 @@ class StatsService {
   }
 
   /**
+   * Assembles the query services over one set of dependencies
    * @param {object} deps
+   * @param {import('knex').Knex} deps.knex
+   * @param {object} deps.urlService - URL service for resource lookups
+   * @param {object} deps.urlUtils - URL helpers for absolute image URLs
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
+   * @param {object|null} deps.tinybirdClient - Configured Tinybird client, when web analytics is enabled
+   * @param {import('../members/member-avatar').memberAvatarImage} deps.memberAvatarImage
    *
    * @returns {StatsService}
    **/
   static create(deps) {
-    // Create the Tinybird client if config exists
-    let tinybirdClient = null;
-    const config = deps.config || require('../../../shared/config');
-    const request = deps.request || require('../../lib/request-external');
-    const settingsCache = deps.settingsCache || require('../../../shared/settings-cache');
-
-    const webAnalyticsEnabled = settingsCache.get('web_analytics_enabled');
-    const TinybirdServiceWrapper = require('../tinybird');
-
-    if (webAnalyticsEnabled || config.get('tinybird:stats')) {
-      TinybirdServiceWrapper.init();
-    }
-
-    if (webAnalyticsEnabled) {
-      // TODO: move the tinybird client to the tinybird service
-      tinybirdClient = require('./utils/tinybird').create({
-        config,
-        request,
-        settingsCache,
-        tinybirdService: TinybirdServiceWrapper.instance,
-      });
-    }
-
-    // Add the Tinybird client to the dependencies
-    const depsWithTinybird = {
-      ...deps,
-      tinybirdClient,
-    };
-
     return new StatsService({
       mrr: new MRRService(deps),
       members: new MembersService(deps),
       subscriptions: new SubscriptionStatsService(deps),
       referrers: new ReferrersStatsService(deps),
-      posts: new PostsStatsService(depsWithTinybird),
-      content: new ContentStatsService(depsWithTinybird),
+      posts: new PostsStatsService(deps),
+      content: new ContentStatsService(deps),
+      comments: new CommentsAnalyticsService(deps),
     });
   }
 }

@@ -83,6 +83,18 @@ describe('member-filter-query', () => {
     );
   });
 
+  it('writes labels a member holds every one of as an NQL all-of list, and reads it back', () => {
+    const predicates: FilterPredicate[] = [
+      { id: '1', field: 'label', operator: 'is-all', values: ['vip', 'founder'] },
+    ];
+    const filter = serializeMemberFilters(predicates, 'UTC', memberFields);
+
+    expect(filter).toBe('label:[founder+vip]');
+    expect(stripIds(parseMemberFilter(filter, 'UTC', memberFields))).toEqual([
+      { field: 'label', operator: 'is-all', values: ['founder', 'vip'] },
+    ]);
+  });
+
   it('parses legacy scalar label filters into set predicates', () => {
     expect(stripIds(parseMemberFilter('label:vip', 'UTC', memberFields))).toEqual([
       { field: 'label', operator: 'is-any', values: ['vip'] },
@@ -125,7 +137,7 @@ describe('member-filter-query', () => {
     ).toEqual(['name']);
   });
 
-  it('parses unwrapped Ember compounds at the root', () => {
+  it('parses unwrapped compounds at the root', () => {
     expect(
       stripIds(parseMemberFilter('subscribed:true+email_disabled:0', 'UTC', memberFields)),
     ).toEqual([{ field: 'subscribed', operator: 'is', values: ['subscribed'] }]);
@@ -141,7 +153,7 @@ describe('member-filter-query', () => {
     ).toEqual([{ field: 'newsletter_feedback', operator: '1', values: ['post_123'] }]);
   });
 
-  it('serializes canonical Ember member filters', () => {
+  it('serializes canonical member filters', () => {
     const predicates: FilterPredicate[] = [
       { id: '2', field: 'status', operator: 'is', values: ['paid'] },
       { id: '1', field: 'emails.post_id', operator: 'is', values: ['post_123'] },
@@ -177,7 +189,7 @@ describe('member-filter-query', () => {
     );
   });
 
-  it('parses legacy Ember member date URLs without ISO timezone markers', () => {
+  it('parses legacy member date URLs without ISO timezone markers', () => {
     const parsed = parseMemberFilter(
       "subscriptions.start_date:<='2022-02-01 23:59:59'",
       'UTC',
@@ -189,7 +201,7 @@ describe('member-filter-query', () => {
     ]);
   });
 
-  it('parses legacy Ember UTC date URLs relative to the site timezone', () => {
+  it('parses legacy UTC date URLs relative to the site timezone', () => {
     const parsed = parseMemberFilter(
       "subscriptions.start_date:<='2022-02-01 23:59:59'",
       'Europe/Stockholm',
@@ -441,44 +453,52 @@ describe('member-filter-query - custom fields', () => {
   const cases: Array<{
     field: string;
     operator: string;
-    values: [subfield: string, ...values: string[]];
+    values: [part: string, ...values: string[]];
     nql: string;
   }> = [
     {
       field: 'metafields.custom.company',
       operator: 'is',
       values: ['', 'Ghost'],
-      nql: "(metafields.key:'custom.company'+metafields.value:'Ghost')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'is-not',
       values: ['', 'Ghost'],
-      nql: "(metafields.key:'custom.company'+metafields.value:-'Ghost')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:-'Ghost')",
+    },
+    // Every custom field value is text, and NQL reads an unquoted number as a number, so a value
+    // that looks like a number is still written quoted.
+    {
+      field: 'metafields.custom.company',
+      operator: 'is',
+      values: ['', '2025'],
+      nql: "(metafields.identity:'custom.company'+metafields.value:'2025')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'contains',
       values: ['', 'host'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~'host')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~'host')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'does-not-contain',
       values: ['', 'host'],
-      nql: "(metafields.key:'custom.company'+metafields.value:-~'host')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:-~'host')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'starts-with',
       values: ['', 'Gh'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~^'Gh')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~^'Gh')",
     },
     {
       field: 'metafields.custom.company',
       operator: 'ends-with',
       values: ['', 'st'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~$'st')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~$'st')",
     },
     // A value that ends with a literal `$` must survive as contains, not be
     // misread as ends-with when the regex source (`5\$`) is parsed back.
@@ -486,31 +506,31 @@ describe('member-filter-query - custom fields', () => {
       field: 'metafields.custom.company',
       operator: 'contains',
       values: ['', '5$'],
-      nql: "(metafields.key:'custom.company'+metafields.value:~'5$')",
+      nql: "(metafields.identity:'custom.company'+metafields.value:~'5$')",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is',
       values: ['country', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:'GB')",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:'GB')",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-not',
       values: ['country', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:-'GB')",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:-'GB')",
     },
     {
       field: 'metafields.custom.phone',
       operator: 'is-set',
       values: ['', ''],
-      nql: "metafields.key:'custom.phone'",
+      nql: "metafields.identity:'custom.phone'",
     },
     {
       field: 'metafields.custom.phone',
       operator: 'is-not-set',
       values: ['', ''],
-      nql: "metafields.key:-'custom.phone'",
+      nql: "metafields.identity:-'custom.phone'",
     },
     // A part picked from a list filters as a set, the way labels do: a list of codes,
     // even one, so it reads back as "is any of" rather than "is".
@@ -518,32 +538,39 @@ describe('member-filter-query - custom fields', () => {
       field: 'metafields.custom.shipping_address',
       operator: 'is-any',
       values: ['country', 'DE', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:['DE','GB'])",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-any',
       values: ['country', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:['GB'])",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:['GB'])",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-not-any',
       values: ['country', 'DE', 'GB'],
-      nql: "(metafields.key:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
+      nql: "(metafields.identity:'custom.shipping_address.country'+metafields.value:-['DE','GB'])",
     },
     // A part's set / not-set targets its presence via `path`, not the whole field.
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-set',
       values: ['country', ''],
-      nql: "metafields.key:'custom.shipping_address.country'",
+      nql: "metafields.identity:'custom.shipping_address.country'",
     },
     {
       field: 'metafields.custom.shipping_address',
       operator: 'is-not-set',
       values: ['country', ''],
-      nql: "metafields.key:-'custom.shipping_address.country'",
+      nql: "metafields.identity:-'custom.shipping_address.country'",
+    },
+    // A part of a part: no type has one yet, but an identity can name one.
+    {
+      field: 'metafields.custom.shipping_address',
+      operator: 'is-set',
+      values: ['country.code', ''],
+      nql: "metafields.identity:'custom.shipping_address.country.code'",
     },
   ];
 

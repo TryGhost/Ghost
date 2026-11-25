@@ -1,6 +1,8 @@
 'use client';
 
 import type React from 'react';
+import { SheetFilters } from '@/components/patterns/filters-sheet';
+import { useMobileFilters } from '@/components/patterns/use-mobile-filters';
 import {
   createContext,
   forwardRef,
@@ -11,6 +13,8 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/patterns/page-header';
 import { Calendar } from '@/components/ui/calendar';
 import { useFilterBarContext } from '@/components/patterns/filter-bar-context';
@@ -42,11 +46,10 @@ import { useShade } from '@/providers/shade-context';
 import { cva, type VariantProps } from 'class-variance-authority';
 import {
   AlertCircle,
+  ArrowLeft,
   Calendar as CalendarIcon,
   Check,
-  Funnel,
   FunnelPlus,
-  ListFilter,
   ListFilterPlus,
   Loader2,
   Plus,
@@ -58,6 +61,8 @@ import { cn } from '@/lib/utils';
 export interface FilterI18nConfig {
   // UI Labels
   addFilter: string;
+  back?: string;
+  removeFilter?: string;
   clearFilters: string;
   searchFields: string;
   noFieldsFound: string;
@@ -880,6 +885,7 @@ function FilterRemoveButton({ className, icon = <X />, ...props }: FilterRemoveB
 
   return (
     <button
+      aria-label={context.i18n.removeFilter ?? 'Remove filter'}
       className={cn(
         filterRemoveButtonVariants({
           variant: context.variant,
@@ -1030,6 +1036,10 @@ export interface FilterFieldConfig<T = unknown> {
   valueSource?: ValueSource<string>;
   // Default operator to use when creating a filter for this field
   defaultOperator?: string;
+  // Operators that take no value, such as one asking whether a field is set at all. While one is
+  // chosen the value input is hidden and the filter's values are cleared, as for `empty` and
+  // `not_empty`. A field that renders its operator inside its value decides that for itself.
+  valuelessOperators?: readonly string[];
   // Default value to use when creating a filter for this field
   defaultValue?: T;
   // Hide the operator dropdown and only show the operator as text
@@ -1073,6 +1083,21 @@ const flattenFields = <T = unknown,>(fields: FilterFieldsConfig<T>): FilterField
     return [...acc, item];
   }, []);
 };
+
+/**
+ * Whether a field's operator takes no value: `empty` and `not_empty` never do, nor do the
+ * operators a field lists as valueless, unless the field renders its operator inside its value.
+ */
+function takesNoValue<T>(field: FilterFieldConfig<T> | undefined, operator: string): boolean {
+  if (operator === 'empty' || operator === 'not_empty') {
+    return true;
+  }
+  return (
+    field !== undefined &&
+    !field.renderOperatorInValue &&
+    (field.valuelessOperators?.includes(operator) ?? false)
+  );
+}
 
 const getFieldsMap = <T = unknown,>(
   fields: FilterFieldsConfig<T>,
@@ -1913,6 +1938,27 @@ function ResolvedSelectOptionsPopover<T = unknown>({
   );
 }
 
+function useResolvedFilterField<T>(
+  field: FilterFieldConfig<T> & { valueSource: ValueSource<string> },
+  values: T[],
+  searchInput: string,
+) {
+  const effectiveValues = useMemo(() => field.value ?? values, [field.value, values]);
+  const sourceState = field.valueSource.useOptions({
+    query: searchInput,
+    selectedValues: effectiveValues as string[],
+  });
+  const resolvedField = useMemo(
+    () => ({
+      ...field,
+      options: sourceState.options as FilterOption<T>[],
+    }),
+    [field, sourceState.options],
+  );
+
+  return { resolvedField, sourceState };
+}
+
 function ValueSourceSelectOptionsPopover<T = unknown>({
   field,
   values,
@@ -1928,18 +1974,7 @@ function ValueSourceSelectOptionsPopover<T = unknown>({
     onSearchChange: (value: string) => void;
   }
 >) {
-  const effectiveValues = useMemo(() => field.value ?? values, [field.value, values]);
-  const sourceState = field.valueSource.useOptions({
-    query: searchInput,
-    selectedValues: effectiveValues as string[],
-  });
-  const resolvedField = useMemo(
-    () => ({
-      ...field,
-      options: sourceState.options as FilterOption<T>[],
-    }),
-    [field, sourceState.options],
-  );
+  const { resolvedField, sourceState } = useResolvedFilterField(field, values, searchInput);
 
   return (
     <ResolvedSelectOptionsPopover
@@ -2039,8 +2074,7 @@ function FilterValueSelector<T = unknown>({
     }
   }, [autoFocus]);
 
-  // Hide value input for empty/not empty operators
-  if (operator === 'empty' || operator === 'not_empty') {
+  if (takesNoValue(field, operator)) {
     return null;
   }
 
@@ -2553,8 +2587,10 @@ export const FiltersContent = <T = unknown,>({
         filters.map((filter) => {
           if (filter.id === filterId) {
             const updatedFilter = { ...filter, ...updates };
-            // Clear values for empty/not empty operators
-            if (updates.operator === 'empty' || updates.operator === 'not_empty') {
+            if (
+              updates.operator !== undefined &&
+              takesNoValue(fieldsMap[filter.field], updates.operator)
+            ) {
               updatedFilter.values = [] as T[];
             }
             return updatedFilter;
@@ -2563,7 +2599,7 @@ export const FiltersContent = <T = unknown,>({
         }),
       );
     },
-    [filters, onChange],
+    [filters, onChange, fieldsMap],
   );
 
   const removeFilter = useCallback(
@@ -2640,10 +2676,9 @@ const FilterAddButton = forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { label?: string; icon?: React.ReactNode }
 >(({ className, label, icon, ...props }, ref) => {
   const context = useFilterContext();
-  const { controlShape, isAdmin7 } = useShade();
+  const { controlShape } = useShade();
   const isInFilterBar = useFilterBarContext();
-  const isPillFilterBar = isInFilterBar && isAdmin7;
-  const iconOnly = isPillFilterBar && context.hasFilters;
+  const iconOnly = isInFilterBar && context.hasFilters;
   const buttonLabel = label ?? context.addButtonText ?? context.i18n.addFilter;
 
   return (
@@ -2657,14 +2692,13 @@ const FilterAddButton = forwardRef<
           cursorPointer: context.cursorPointer,
           radius: context.controlRadius,
         }),
-        isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
-        isAdmin7 && !isInFilterBar && 'font-medium',
-        isAdmin7 &&
-          (iconOnly
-            ? 'aspect-square border-0 !px-0 shadow-none'
-            : context.addButtonVariant === 'ghost' || context.addButtonVariant === 'secondary'
-              ? 'border-0 px-3 shadow-none active:shadow-none'
-              : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
+        isInFilterBar && 'h-7 text-sm! [&_svg]:size-3',
+        !isInFilterBar && 'font-medium',
+        iconOnly
+          ? 'aspect-square border-0 !px-0 shadow-none'
+          : context.addButtonVariant === 'ghost' || context.addButtonVariant === 'secondary'
+            ? 'border-0 px-3 shadow-none active:shadow-none'
+            : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed',
         context.addButtonClassName,
         className,
       )}
@@ -2682,22 +2716,15 @@ const FilterAddButton = forwardRef<
 FilterAddButton.displayName = 'FilterAddButton';
 
 type FiltersTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  /** Collapse the previous header label below lg; the accessible name remains. */
-  collapseLabel?: boolean;
-  /** Temporary appearance choices for existing screens while Admin 7 is disabled. */
+  /** Icon once filters are applied: `funnel-plus` keeps the funnel; others use the list icon. */
   fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
-  fallbackClassName?: string;
 };
 
 const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
-  (
-    { collapseLabel = false, fallbackStyle = 'list', fallbackClassName, className, ...props },
-    ref,
-  ) => {
+  ({ fallbackStyle = 'list', className, ...props }, ref) => {
     const { hasFilters, keyboardShortcut } = useFilterContext();
-    const { isAdmin7 } = useShade();
 
-    if (isAdmin7 && !hasFilters) {
+    if (!hasFilters) {
       return (
         <PageHeader.FilterTrigger
           ref={ref}
@@ -2708,32 +2735,15 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
       );
     }
 
-    const iconStyle = isAdmin7 && fallbackStyle === 'funnel' ? 'list' : fallbackStyle;
-    const Icon =
-      iconStyle === 'list'
-        ? hasFilters
-          ? ListFilterPlus
-          : ListFilter
-        : hasFilters || fallbackStyle === 'funnel-plus'
-          ? FunnelPlus
-          : Funnel;
+    const iconStyle = fallbackStyle === 'funnel-plus' ? 'funnel-plus' : 'list';
+    const Icon = iconStyle === 'list' ? ListFilterPlus : FunnelPlus;
 
     return (
       <FilterAddButton
         ref={ref}
-        className={cn(
-          !isAdmin7 &&
-            cn(
-              collapseLabel &&
-                !hasFilters &&
-                'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
-              hasFilters && (fallbackStyle === 'list' ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
-              fallbackClassName,
-            ),
-          className,
-        )}
+        className={className}
         icon={<Icon className={iconStyle === 'list' ? 'size-4' : undefined} />}
-        label={hasFilters ? 'Add filter' : 'Filter'}
+        label="Add filter"
         {...props}
       />
     );
@@ -2741,11 +2751,13 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
 );
 FiltersTrigger.displayName = 'Filters.Trigger';
 
-interface FiltersProps<T = unknown> {
+export interface FiltersProps<T = unknown> {
   filters: Filter<T>[];
   fields: FilterFieldsConfig<T>;
   onChange: (filters: Filter<T>[]) => void;
   className?: string;
+  /** Optional location for the active-filter summary outside the trigger. */
+  barContainer?: HTMLElement | null;
   showAddButton?: boolean;
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
@@ -2768,11 +2780,16 @@ interface FiltersProps<T = unknown> {
   allowMultiple?: boolean;
   popoverContentClassName?: string;
   popoverAlign?: 'start' | 'center' | 'end';
+  /** Keep field selection inside an enclosing panel instead of opening a popover. */
+  inlinePicker?: boolean;
+  /** Additional actions beside Add filter when using the inline picker. */
+  inlineActions?: React.ReactNode;
+  renderPickerBack?: (onBack: () => void) => React.ReactNode;
   keyboardShortcut?: string;
   onActiveFieldChange?: (fieldKey: string | null) => void;
 }
 
-export function Filters<T = unknown>({
+function InlineFilters<T = unknown>({
   filters,
   fields,
   onChange,
@@ -2799,11 +2816,16 @@ export function Filters<T = unknown>({
   allowMultiple = true,
   popoverContentClassName,
   popoverAlign = 'start',
+  inlinePicker = false,
+  inlineActions,
+  renderPickerBack,
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
-  const { controlShape, isAdmin7 } = useShade();
+  const { controlShape } = useShade();
   const [addFilterOpen, setAddFilterOpen] = useState(false);
+  const pickerOpen = addFilterOpen || (inlinePicker && filters.length === 0);
+  const [previousFilterCount, setPreviousFilterCount] = useState(filters.length);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
   // The filter added most recently, so its input can take focus once it renders.
@@ -2816,7 +2838,7 @@ export function Filters<T = unknown>({
   const [fieldSearch, setFieldSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const filterRadius = radius ?? 'md';
-  const controlRadius = radius ?? (isAdmin7 ? 'full' : 'md');
+  const controlRadius = radius ?? 'full';
 
   // Notify parent when active field changes
   useEffect(() => {
@@ -2903,8 +2925,10 @@ export function Filters<T = unknown>({
         filters.map((filter) => {
           if (filter.id === filterId) {
             const updatedFilter = { ...filter, ...updates };
-            // Clear values for empty/not empty operators
-            if (updates.operator === 'empty' || updates.operator === 'not_empty') {
+            if (
+              updates.operator !== undefined &&
+              takesNoValue(fieldsMap[filter.field], updates.operator)
+            ) {
               updatedFilter.values = [] as T[];
             }
             return updatedFilter;
@@ -2913,7 +2937,7 @@ export function Filters<T = unknown>({
         }),
       );
     },
-    [filters, onChange],
+    [filters, onChange, fieldsMap],
   );
 
   const removeFilter = useCallback(
@@ -2930,6 +2954,13 @@ export function Filters<T = unknown>({
     setFieldSearch('');
     setExpandedGroups(new Set());
   }, []);
+
+  if (previousFilterCount !== filters.length) {
+    setPreviousFilterCount(filters.length);
+    if (inlinePicker && filters.length === 0) {
+      closeFilterPopover();
+    }
+  }
 
   const addFilter = useCallback(
     (fieldKey: string) => {
@@ -3088,6 +3119,107 @@ export function Filters<T = unknown>({
     );
   };
 
+  const pickerContent = (
+    <>
+      {selectedFieldForOptions ? (
+        // The inline "add filter" picker always commits one filter per
+        // pick and closes — for both `select` and `multiselect` fields.
+        // We override `multiselect` → `select` so SelectOptionsPopover
+        // renders the single-pick UI (one click → onChange + onClose).
+        // Multi-value editing of an existing filter happens through the
+        // filter row's own picker, not here.
+        <SelectOptionsPopover<T>
+          field={
+            selectedFieldForOptions.type === 'multiselect'
+              ? { ...selectedFieldForOptions, type: 'select' }
+              : selectedFieldForOptions
+          }
+          inline={true}
+          values={tempSelectedValues as T[]}
+          onChange={(values) => addFilterWithOption(selectedFieldForOptions, values as unknown[])}
+          onClose={closeFilterPopover}
+        />
+      ) : (
+        // Show field selection - needs Command wrapper for search/list
+        <Command className="outline-hidden" tabIndex={showSearchInput ? undefined : 0}>
+          {showSearchInput && (
+            <CommandInput
+              className="h-(--control-height)"
+              placeholder={mergedI18n.searchFields}
+              value={fieldSearch}
+              onValueChange={setFieldSearch}
+            />
+          )}
+          <CommandList className="outline-hidden">
+            <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
+            {fields.map((item, index) => {
+              // Handle grouped fields (FilterFieldGroup structure)
+              if (isFieldGroup(item)) {
+                const groupFields = item.fields.filter((field) => {
+                  // Include separators and labels for display
+                  if (field.type === 'separator') {
+                    return true;
+                  }
+                  return isOfferable(field);
+                });
+
+                return renderPickerGroup(
+                  item.group || `group-${index}`,
+                  item.group || 'Fields',
+                  groupFields,
+                  item.previewLimit,
+                );
+              }
+
+              // Handle group-level fields (new FilterFieldConfig structure with group property)
+              if (isGroupLevelField(item)) {
+                const groupFields = item.fields!.filter((field) => {
+                  // Include separators and labels for display
+                  if (field.type === 'separator') {
+                    return true;
+                  }
+                  return isOfferable(field);
+                });
+
+                return renderPickerGroup(
+                  item.group || `group-${index}`,
+                  item.group || 'Fields',
+                  groupFields,
+                  item.previewLimit,
+                );
+              }
+
+              // Handle flat field configuration (backward compatibility)
+              const field = item as FilterFieldConfig<T>;
+
+              // Handle separator - use field.key if available
+              if (field.type === 'separator') {
+                const sepKey = field.key || `flat-separator-${field.label || index}`;
+                return <CommandSeparator key={sepKey} />;
+              }
+
+              if (!isOfferable(field)) {
+                return null;
+              }
+
+              // Regular field
+              return (
+                <CommandItem
+                  key={field.key}
+                  className="min-w-0"
+                  onSelect={() => field.key && addFilter(field.key)}
+                >
+                  {field.icon}
+                  <span className="truncate">{field.label}</span>
+                </CommandItem>
+              );
+            })}
+          </CommandList>
+        </Command>
+      )}
+    </>
+  );
+
   return (
     <FilterContext.Provider
       value={{
@@ -3119,66 +3251,67 @@ export function Filters<T = unknown>({
           className,
         )}
       >
-        {filters.map((filter) => {
-          const field = fieldsMap[filter.field];
-          if (!field) {
-            return null;
-          }
+        {(!inlinePicker || !pickerOpen) &&
+          filters.map((filter) => {
+            const field = fieldsMap[filter.field];
+            if (!field) {
+              return null;
+            }
 
-          return (
-            <div
-              key={filter.id}
-              className={cn(
-                filterItemVariants({ variant }),
-                isAdmin7 && 'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
-              )}
-              data-slot="filter-item"
-            >
-              {/* Field Label */}
+            return (
               <div
-                className={filterFieldLabelVariants({
-                  variant: variant,
-                  size: size,
-                  radius: filterRadius,
-                })}
+                key={filter.id}
+                className={cn(
+                  filterItemVariants({ variant }),
+                  'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
+                )}
+                data-slot="filter-item"
               >
-                {field.icon}
-                {field.pillLabel ?? field.label}
-              </div>
+                {/* Field Label */}
+                <div
+                  className={filterFieldLabelVariants({
+                    variant: variant,
+                    size: size,
+                    radius: filterRadius,
+                  })}
+                >
+                  {field.icon}
+                  {field.pillLabel ?? field.label}
+                </div>
 
-              {/* Operator Dropdown */}
-              {!field.renderOperatorInValue && (
-                <FilterOperatorDropdown<T>
-                  field={field}
-                  operator={filter.operator}
-                  values={filter.values}
-                  onChange={(operator) => updateFilter(filter.id, { operator })}
-                />
-              )}
+                {/* Operator Dropdown */}
+                {!field.renderOperatorInValue && (
+                  <FilterOperatorDropdown<T>
+                    field={field}
+                    operator={filter.operator}
+                    values={filter.values}
+                    onChange={(operator) => updateFilter(filter.id, { operator })}
+                  />
+                )}
 
-              {/* Value Selector. A read-only field (e.g. an archived
+                {/* Value Selector. A read-only field (e.g. an archived
                                 source) still renders its operator and value, but as
                                 static segments, so the filter stays legible while only
                                 the remove control acts. */}
-              <FilterValueSelector<T>
-                autoFocus={filter.id === autoFocusFilterId}
-                field={field}
-                operator={filter.operator}
-                readOnly={field.readOnly}
-                values={filter.values}
-                onChange={(values) => updateFilter(filter.id, { values })}
-                onOperatorChange={(operator) => updateFilter(filter.id, { operator })}
-              />
+                <FilterValueSelector<T>
+                  autoFocus={filter.id === autoFocusFilterId}
+                  field={field}
+                  operator={filter.operator}
+                  readOnly={field.readOnly}
+                  values={filter.values}
+                  onChange={(values) => updateFilter(filter.id, { values })}
+                  onOperatorChange={(operator) => updateFilter(filter.id, { operator })}
+                />
 
-              {/* Remove Button */}
-              <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
-            </div>
-          );
-        })}
+                {/* Remove Button */}
+                <FilterRemoveButton onClick={() => removeFilter(filter.id)} />
+              </div>
+            );
+          })}
 
         {showAddButton && selectableFields.length > 0 && (
           <Popover
-            open={addFilterOpen}
+            open={pickerOpen}
             onOpenChange={(open) => {
               setAddFilterOpen(open);
               if (!open) {
@@ -3189,113 +3322,53 @@ export function Filters<T = unknown>({
               }
             }}
           >
-            <PopoverTrigger asChild>{addButton ?? <FilterAddButton />}</PopoverTrigger>
-            <PopoverContent
-              align={popoverAlign}
-              className={cn(
-                'data-[state=closed]:animation-none! p-0 data-[state=closed]:duration-0!',
-                selectedFieldForOptions?.className || popoverContentClassName || 'w-[220px]',
-              )}
-            >
-              {selectedFieldForOptions ? (
-                // The inline "add filter" picker always commits one filter per
-                // pick and closes — for both `select` and `multiselect` fields.
-                // We override `multiselect` → `select` so SelectOptionsPopover
-                // renders the single-pick UI (one click → onChange + onClose).
-                // Multi-value editing of an existing filter happens through the
-                // filter row's own picker, not here.
-                <SelectOptionsPopover<T>
-                  field={
-                    selectedFieldForOptions.type === 'multiselect'
-                      ? { ...selectedFieldForOptions, type: 'select' }
-                      : selectedFieldForOptions
-                  }
-                  inline={true}
-                  values={tempSelectedValues as T[]}
-                  onChange={(values) =>
-                    addFilterWithOption(selectedFieldForOptions, values as unknown[])
-                  }
-                  onClose={closeFilterPopover}
-                />
+            {(!inlinePicker || !pickerOpen) &&
+              (inlinePicker ? (
+                <div className="mt-1 flex w-full items-center justify-between gap-3">
+                  <PopoverTrigger asChild>{addButton ?? <FilterAddButton />}</PopoverTrigger>
+                  {inlineActions}
+                </div>
               ) : (
-                // Show field selection - needs Command wrapper for search/list
-                <Command className="outline-hidden" tabIndex={showSearchInput ? undefined : 0}>
-                  {showSearchInput && (
-                    <CommandInput
-                      className="h-(--control-height)"
-                      placeholder={mergedI18n.searchFields}
-                      value={fieldSearch}
-                      onValueChange={setFieldSearch}
-                    />
-                  )}
-                  <CommandList className="outline-hidden">
-                    <CommandEmpty>{mergedI18n.noFieldsFound}</CommandEmpty>
-                    {fields.map((item, index) => {
-                      // Handle grouped fields (FilterFieldGroup structure)
-                      if (isFieldGroup(item)) {
-                        const groupFields = item.fields.filter((field) => {
-                          // Include separators and labels for display
-                          if (field.type === 'separator') {
-                            return true;
-                          }
-                          return isOfferable(field);
-                        });
-
-                        return renderPickerGroup(
-                          item.group || `group-${index}`,
-                          item.group || 'Fields',
-                          groupFields,
-                          item.previewLimit,
-                        );
-                      }
-
-                      // Handle group-level fields (new FilterFieldConfig structure with group property)
-                      if (isGroupLevelField(item)) {
-                        const groupFields = item.fields!.filter((field) => {
-                          // Include separators and labels for display
-                          if (field.type === 'separator') {
-                            return true;
-                          }
-                          return isOfferable(field);
-                        });
-
-                        return renderPickerGroup(
-                          item.group || `group-${index}`,
-                          item.group || 'Fields',
-                          groupFields,
-                          item.previewLimit,
-                        );
-                      }
-
-                      // Handle flat field configuration (backward compatibility)
-                      const field = item as FilterFieldConfig<T>;
-
-                      // Handle separator - use field.key if available
-                      if (field.type === 'separator') {
-                        const sepKey = field.key || `flat-separator-${field.label || index}`;
-                        return <CommandSeparator key={sepKey} />;
-                      }
-
-                      if (!isOfferable(field)) {
-                        return null;
-                      }
-
-                      // Regular field
-                      return (
-                        <CommandItem
-                          key={field.key}
-                          className="min-w-0"
-                          onSelect={() => field.key && addFilter(field.key)}
-                        >
-                          {field.icon}
-                          <span className="truncate">{field.label}</span>
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandList>
-                </Command>
-              )}
-            </PopoverContent>
+                <PopoverTrigger asChild>{addButton ?? <FilterAddButton />}</PopoverTrigger>
+              ))}
+            {inlinePicker ? (
+              pickerOpen && (
+                <div className="w-full min-w-0">
+                  {(filters.length > 0 || selectedFieldForOptions) &&
+                    (renderPickerBack ? (
+                      renderPickerBack(() =>
+                        selectedFieldForOptions
+                          ? setSelectedFieldKeyForOptions(null)
+                          : closeFilterPopover(),
+                      )
+                    ) : (
+                      <Button
+                        className="mb-3 px-0 [@media(hover:none)]:hover:bg-transparent"
+                        variant="ghost"
+                        onClick={() =>
+                          selectedFieldForOptions
+                            ? setSelectedFieldKeyForOptions(null)
+                            : closeFilterPopover()
+                        }
+                      >
+                        <ArrowLeft />
+                        {mergedI18n.back ?? 'Back'}
+                      </Button>
+                    ))}
+                  {pickerContent}
+                </div>
+              )
+            ) : (
+              <PopoverContent
+                align={popoverAlign}
+                className={cn(
+                  'data-[state=closed]:animation-none! p-0 data-[state=closed]:duration-0!',
+                  selectedFieldForOptions?.className || popoverContentClassName || 'w-[220px]',
+                )}
+              >
+                {pickerContent}
+              </PopoverContent>
+            )}
           </Popover>
         )}
 
@@ -3313,9 +3386,9 @@ export function Filters<T = unknown>({
                   cursorPointer: cursorPointer,
                   radius: controlRadius,
                 }),
-                isAdmin7 && 'h-7 text-sm! [&_svg]:size-3',
+                'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
-                isAdmin7 && 'px-3 shadow-control-outline active:shadow-control-outline-pressed',
+                'px-3 shadow-control-outline active:shadow-control-outline-pressed',
                 'sm:absolute sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}
@@ -3336,6 +3409,80 @@ export function Filters<T = unknown>({
       </div>
     </FilterContext.Provider>
   );
+}
+
+function FilterSummaryChip<T>({
+  field,
+  filter,
+}: {
+  field?: FilterFieldConfig<T>;
+  filter: Filter<T>;
+}) {
+  const label = field?.pillLabel ?? field?.label ?? 'Filter';
+  const values = (field?.value ?? filter.values).map((value) => {
+    const option = field?.options?.find((candidate) => candidate.value === value);
+    return (
+      option?.label ??
+      (['text', 'email', 'url', 'tel', 'date', 'datetime', 'time'].includes(field?.type ?? '') &&
+      typeof value === 'string'
+        ? value.trim()
+        : '')
+    );
+  });
+  const operator = field?.operators?.find(
+    (candidate) => candidate.value === filter.operator,
+  )?.label;
+  const text =
+    values.length && values.every(Boolean)
+      ? `${label}${operator ? ` ${operator}` : ':'} ${values.join(', ')}`
+      : label;
+  const valueText = values.length && values.every(Boolean) ? values.join(', ') : '';
+  const qualifier = !['is', 'contains', 'is-any'].includes(filter.operator) ? operator : '';
+
+  const chipLabel = valueText ? `${qualifier ? `${qualifier} ` : ''}${valueText}` : label;
+  return (
+    <Badge size="md" variant="outline" asChild>
+      <span className="shrink-0 gap-1.5 bg-background whitespace-nowrap" title={text}>
+        <span className="sr-only">{text}</span>
+        <span aria-hidden="true" className="flex items-center gap-1.5 [&_svg]:size-3.5">
+          {field?.icon}
+          {chipLabel}
+        </span>
+      </span>
+    </Badge>
+  );
+}
+
+function ValueSourceFilterSummaryChip<T>({
+  field,
+  filter,
+}: {
+  field: FilterFieldConfig<T> & { valueSource: ValueSource<string> };
+  filter: Filter<T>;
+}) {
+  const { resolvedField } = useResolvedFilterField(field, filter.values, '');
+  return <FilterSummaryChip field={resolvedField} filter={filter} />;
+}
+
+export function Filters<T = unknown>(props: FiltersProps<T>) {
+  const mobile = useMobileFilters();
+  const fields = useMemo(() => getFieldsMap(props.fields), [props.fields]);
+  if (mobile) {
+    const chips = props.filters.map((filter) => {
+      const field = fields[filter.field];
+      return field?.valueSource ? (
+        <ValueSourceFilterSummaryChip
+          key={`${filter.id}:${field.valueSource.id}`}
+          field={field as FilterFieldConfig<T> & { valueSource: ValueSource<string> }}
+          filter={filter}
+        />
+      ) : (
+        <FilterSummaryChip key={filter.id} field={field} filter={filter} />
+      );
+    });
+    return <SheetFilters {...props} chips={chips} controls={InlineFilters} />;
+  }
+  return <InlineFilters {...props} />;
 }
 
 Filters.Trigger = FiltersTrigger;

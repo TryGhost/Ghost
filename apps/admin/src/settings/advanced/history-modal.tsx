@@ -8,9 +8,9 @@ import {
   useBrowseActions,
 } from '@tryghost/admin-x-framework/api/actions';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemContent,
   Avatar,
   Button,
   Field,
@@ -34,7 +34,6 @@ import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation'
 import { SettingsModal } from '@tryghost/shade/patterns';
 import { type User } from '@tryghost/admin-x-framework/api/users';
 import { cn, formatNumber } from '@tryghost/shade/utils';
-import { useShade } from '@tryghost/shade/app';
 import { keepPreviousData } from '@tanstack/react-query';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useFilterableApi } from '@tryghost/admin-x-framework/hooks';
@@ -98,7 +97,6 @@ const HistoryFilter: React.FC<{
   toggleEventType: (event: string, included: boolean) => void;
   toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({ userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType }) => {
-  const { isAdmin7 } = useShade();
   const { updateRoute } = useSettingsNavigation();
   const usersApi = useFilterableApi<User, 'users', 'name'>({
     path: '/users/',
@@ -263,7 +261,7 @@ const HistoryFilter: React.FC<{
           className={cn(
             inputSurface('within'),
             'relative h-(--control-height) overflow-hidden',
-            isAdmin7 && 'rounded-full',
+            'rounded-full',
           )}
           gap="none"
         >
@@ -426,7 +424,7 @@ const formatDateForFilter = (date: Date) => {
   return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
 };
 
-const PAGE_SIZE = 200;
+const PAGE_SIZE = 100;
 
 function HistoryModal() {
   const { userId } = useParams();
@@ -505,7 +503,7 @@ function HistoryModal() {
       }}
     >
       <div className="relative mt-6">
-        <ActionList>
+        <List>
           {data?.actions ? (
             data.actions.length > 0 ? (
               <>
@@ -513,8 +511,8 @@ function HistoryModal() {
                 {data.actions.map(
                   (action) =>
                     !action.skip && (
-                      <ActionListItem key={action.id}>
-                        <ActionListItemContent className="flex items-center gap-3 py-3">
+                      <ListItem key={action.id}>
+                        <ListItemContent className="flex items-center gap-3 py-3">
                           <HistoryAvatar action={action} />
                           <div className="min-w-0 grow">
                             <div>
@@ -541,8 +539,8 @@ function HistoryModal() {
                               ].join(' | ')}
                             </div>
                           </div>
-                        </ActionListItemContent>
-                      </ActionListItem>
+                        </ListItemContent>
+                      </ListItem>
                     ),
                 )}
                 {isFetchingNextPage && (
@@ -575,7 +573,7 @@ function HistoryModal() {
               End of history log
             </div>
           )}
-        </ActionList>
+        </List>
       </div>
     </SettingsModal>
   );

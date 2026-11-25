@@ -19,6 +19,7 @@ const {
   preparationPages,
   waitForPreparationRetry,
 } = require('./recipient-preparation');
+const { isRequestTooOld, isSendablePostStatus } = require('./send-eligibility');
 const messages = {
   emailErrorPartialFailure:
     'An error occurred, and your newsletter was only partially sent. Please retry sending the remaining emails.',
@@ -53,6 +54,7 @@ class BatchSendingService {
   #db;
   #sentry;
   #getRequiredUrlRelations;
+  #resumeMaxAgeMs;
   #batchCreationConcurrency;
   #shuttingDown = false;
   #inFlight = new Set();
@@ -99,6 +101,7 @@ class BatchSendingService {
     db,
     sentry,
     getRequiredUrlRelations = () => [],
+    resumeMaxAgeMs,
     batchCreationConcurrency = 2,
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
@@ -113,6 +116,7 @@ class BatchSendingService {
     this.#db = db;
     this.#sentry = sentry;
     this.#getRequiredUrlRelations = getRequiredUrlRelations;
+    this.#resumeMaxAgeMs = resumeMaxAgeMs;
     this.#batchCreationConcurrency = validateMaxConcurrency(
       batchCreationConcurrency,
       'bulkEmail:batchCreationConcurrency',
@@ -223,42 +227,112 @@ class BatchSendingService {
 
   /**
    * Dispatches the job that sends the email; the job itself only proceeds if the email
-   * is pending or failed.
+   * is pending.
    * Resolves when dispatch completes, not when the email is sent.
    * @param {Email} email
+   * @param {{requestedAt?: Date}} [options] When the publisher asked for the send; now, unless
+   *   recovery reschedules an earlier request
    * @returns {Promise<void>}
    */
-  async scheduleEmail(email) {
-    await this.#jobsService.dispatch(new SendEmailJob({ emailId: email.id }));
+  async scheduleEmail(email, { requestedAt = new Date() } = {}) {
+    await this.#jobsService.dispatch(
+      new SendEmailJob({ emailId: email.id, requestedAt: requestedAt.toISOString() }),
+    );
     logging.info(`[Background Job] batch-sending-service-job queued for email ${email.id}`);
   }
 
   /**
    * Sends an email after refetching it and acquiring its status lock.
-   * @param {{emailId: string}} data Identifier of the email to refetch and lock.
+   * @param {{emailId: string, requestedAt?: string}} data Identifier of the email to refetch and
+   *   lock, and when its send was requested.
+   * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
    */
-  async emailJob({ emailId }) {
+  async emailJob(data) {
+    // Tracked at the job boundary so onShutdown waits for the terminal status write,
+    // not just the send.
+    const work = this.#emailJobInner(data);
+    this.#inFlight.add(work);
+    try {
+      return await work;
+    } finally {
+      this.#inFlight.delete(work);
+    }
+  }
+
+  // A send stopped by shutdown goes back to `pending`, so whatever runs the
+  // send next takes it through the normal status lock. If the write fails the
+  // email stays `submitting`, as it would after a crash.
+  async #releaseInterruptedEmail(emailId) {
+    try {
+      const released = await this.updateStatusLock(this.#models.Email, emailId, 'pending', [
+        'submitting',
+      ]);
+      logging.info(
+        `[Background Job] batch-sending-service-job send stopped because the container is shutting down — ${released ? `returned email ${emailId} to pending so it can resume` : `email ${emailId} was no longer submitting`}`,
+      );
+    } catch (err) {
+      logging.error(
+        err,
+        `[Background Job] batch-sending-service-job send stopped because the container is shutting down — could not return email ${emailId} to pending`,
+      );
+    }
+  }
+
+  // Decides under the email's row lock what this job does with it, so no other job
+  // can change the email between the check and the status write. Only a `pending`
+  // email is taken: retries move a failed email back to `pending` first, so a job
+  // finding `failed` is a duplicate of one that already settled it. A pending email
+  // whose post was unpublished since it was queued, or whose send was requested
+  // longer ago than the resume limit, is marked failed instead of sent.
+  async #claimEmail(emailId, requestedAt) {
+    return this.#models.Email.transaction(async (transacting) => {
+      const email = await this.#models.Email.findOne(
+        { id: emailId },
+        { transacting, forUpdate: true },
+      );
+      if (email?.get('status') !== 'pending') {
+        return { outcome: 'skipped', email };
+      }
+      const reason = await this.#unsendableReason(email, requestedAt, transacting);
+      const outcome = reason ? 'failed' : 'submitting';
+      await email.save({ status: outcome }, { patch: true, transacting, autoRefresh: false });
+      return { outcome, email, reason };
+    });
+  }
+
+  async #unsendableReason(email, requestedAt, transacting) {
+    const post = await email.getLazyRelation('post', { transacting });
+    const postStatus = post ? post.get('status') : null;
+    if (!isSendablePostStatus(postStatus)) {
+      return `its post status=${postStatus} is not sendable`;
+    }
+    const maxAgeMs = this.#resumeMaxAgeMs;
+    if (
+      isRequestTooOld({
+        requestedAt: requestedAt ? new Date(requestedAt) : null,
+        maxAgeMs,
+        now: new Date(),
+      })
+    ) {
+      return `its send was requested at ${requestedAt}, longer ago than the max age of ${maxAgeMs}ms`;
+    }
+    return null;
+  }
+
+  async #emailJobInner({ emailId, requestedAt }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
     const startTime = Date.now();
 
-    // Check if email is 'pending' only + change status to submitting in one transaction.
-    // This allows us to have a lock around the email job that makes sure an email can only have one active job.
-    // Also stamps updated_at, which SendingStatusService reads as the attempt start; do not save the Email once batches submit.
-    let email;
+    // Taking the email to `submitting` is the lock that gives an email one active job.
+    // It also stamps updated_at, which SendingStatusService reads as the attempt start;
+    // do not save the Email once batches submit.
+    let claim;
     try {
-      email = await this.retryDb(
-        async () => {
-          return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', [
-            'pending',
-            'failed',
-          ]);
-        },
-        {
-          ...this.#getBeforeRetryConfig(),
-          description: `updateStatusLock email ${emailId} -> submitting`,
-        },
-      );
+      claim = await this.retryDb(() => this.#claimEmail(emailId, requestedAt), {
+        ...this.#getBeforeRetryConfig(),
+        description: `claim email ${emailId}`,
+      });
     } catch (err) {
       logging.error(
         err,
@@ -266,12 +340,29 @@ class BatchSendingService {
       );
       throw err;
     }
-    if (!email) {
+    if (claim.outcome === 'skipped') {
+      // A job that finds its email `submitting` either duplicates a live send or
+      // was replayed after a crash cut the send short. It never takes over a
+      // send, so `email_status` lets an alert pick out the ones to check by hand.
       logging.error(
+        {
+          system: {
+            event: 'send_email.skipped',
+            email_id: emailId,
+            email_status: claim.email?.get('status') ?? null,
+          },
+        },
         `[Background Job] batch-sending-service-job skipped because email ${emailId} is not pending or failed`,
       );
       return;
     }
+    if (claim.outcome === 'failed') {
+      logging.warn(
+        `[Background Job] batch-sending-service-job marked email ${emailId} as failed instead of sending it: ${claim.reason}`,
+      );
+      return;
+    }
+    const { email } = claim;
 
     // We'll stop all automatic DB retries after this date
     const expectedBatchCount = Math.ceil(email.get('email_count') / 1000);
@@ -308,15 +399,13 @@ class BatchSendingService {
     } catch (e) {
       // Any failure while shutting down counts as interrupted, not failed:
       // collapsed budgets surface transient errors as hard failures, and `failed`
-      // drops the email out of the boot resume scan.
-      if ((e && e.code === SHUTDOWN_CODE) || this.#shuttingDown) {
-        if (e?.retryable === false) {
-          this.#sentry?.captureException(e);
-        }
-        logging.info(
-          `[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`,
-        );
-        return;
+      // drops the email out of the boot resume scan. An integrity failure
+      // (retryable: false) comes from persisted data rather than the shortened
+      // budget, so it still fails the email for an operator to check.
+      const stoppedByShutdown = (e && e.code === SHUTDOWN_CODE) || this.#shuttingDown;
+      if (stoppedByShutdown && e?.retryable !== false) {
+        await this.#releaseInterruptedEmail(email.id);
+        return 'interrupted';
       }
       const ghostError = new errors.EmailError({
         err: e,
@@ -355,24 +444,6 @@ class BatchSendingService {
    * @throws {errors.EmailError} If one of the batches fails
    */
   async sendEmail(email) {
-    // Track the whole operation (batch creation + sending) so onShutdown awaits it
-    // before ghost-server schedules process.exit. Covers both creating batches and the
-    // Mailgun POST + EmailBatch status write, so neither is killed mid-flight.
-    const work = this.#sendEmailInner(email);
-    this.#inFlight.add(work);
-    try {
-      return await work;
-    } finally {
-      this.#inFlight.delete(work);
-    }
-  }
-
-  /**
-   * @private
-   * @param {Email} email
-   * @throws {errors.EmailError} If one of the batches fails
-   */
-  async #sendEmailInner(email) {
     logging.info(`Sending email ${email.id}`);
 
     // Load required relations
@@ -390,9 +461,14 @@ class BatchSendingService {
     const postRelations = [
       ...new Set(['posts_meta', 'authors', 'tiers', ...this.#getRequiredUrlRelations()]),
     ];
+    // forceRefresh: the status claim already cached the post without these relations.
     const post = await this.retryDb(
       async () => {
-        return await email.getLazyRelation('post', { require: true, withRelated: postRelations });
+        return await email.getLazyRelation('post', {
+          require: true,
+          withRelated: postRelations,
+          forceRefresh: true,
+        });
       },
       {
         ...this.#getBeforeRetryConfig(email),

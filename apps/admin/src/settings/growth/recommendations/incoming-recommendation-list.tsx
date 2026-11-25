@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import RecommendationIcon from './recommendation-icon';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   LoadingIndicator,
   NoValueLabel,
 } from '@tryghost/shade/components';
@@ -71,8 +71,8 @@ const IncomingRecommendationItem: React.FC<{
   const freeMembersLabel = signups === 1 ? 'free member' : 'free members';
 
   return (
-    <ActionListItem data-testid="incoming-recommendation-list-item">
-      <ActionListItemContent asChild>
+    <ListItem data-testid="incoming-recommendation-list-item">
+      <ListItemContent asChild>
         <button className="flex w-full text-left" type="button" onClick={showDetails}>
           <Inline className="w-full" gap="none">
             <div className="grow py-3 pr-6">
@@ -126,17 +126,17 @@ const IncomingRecommendationItem: React.FC<{
             )}
           </Inline>
         </button>
-      </ActionListItemContent>
+      </ListItemContent>
       {!incomingRecommendation.recommending_back && (
-        <ActionListItemActions visibility="hover">
+        <ListItemActions visibility="hover">
           <div className="flex items-center justify-end">
             <Button size="sm" type="button" variant="ghost" onClick={recommendBack}>
               Recommend back
             </Button>
           </div>
-        </ActionListItemActions>
+        </ListItemActions>
       )}
-    </ActionListItem>
+    </ListItem>
   );
 };
 
@@ -157,11 +157,11 @@ const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({
   if (incomingRecommendations.length) {
     return (
       <>
-        <ActionList>
+        <List>
           {incomingRecommendations.map((rec) => (
             <IncomingRecommendationItem key={rec.id} incomingRecommendation={rec} stats={stats} />
           ))}
-        </ActionList>
+        </List>
         {showMore?.hasMore && (
           <div className="border-t border-border pt-2">
             <Button size="sm" type="button" variant="outline" onClick={showMore.loadMore}>

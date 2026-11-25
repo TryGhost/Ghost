@@ -93,6 +93,34 @@ describe('Portal settings', () => {
     ]);
   });
 
+  it('hides the gift options and gift link on invite-only sites', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier]);
+    const settings = settingsResponse({ settings: { members_signup_access: 'invite' } });
+    await renderAdminApp('/settings', { boot: { browseSettings: { response: settings } } });
+
+    const modal = await openPortal();
+    await expect.element(modal.getByText('Available tiers')).toBeVisible();
+    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
+
+    await modal.getByRole('tab', { name: 'Account page' }).last().click();
+    await expect.element(modal.getByLabelText('Support email address')).toBeVisible();
+    await expect(modal.getByLabelText('Display option to purchase gift')).toHaveCount(0);
+
+    await modal.getByRole('tab', { name: 'Links' }).click();
+    await expect.element(modal.getByText('Sign up', { exact: true })).toBeVisible();
+    await expect(modal.getByText('Gift subscriptions', { exact: true })).toHaveCount(0);
+  });
+
+  it('lists the gift link on sites that take payments', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings');
+
+    const modal = await openPortal();
+    await modal.getByRole('tab', { name: 'Links' }).click();
+    await expect.element(modal.getByText('Gift subscriptions', { exact: true })).toBeVisible();
+  });
+
   it('shows the free tier option when Stripe is disconnected', async () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
@@ -113,6 +141,17 @@ describe('Portal settings', () => {
 
     const modal = await openPortal();
     await expect(modal.getByTestId('free-tier-checkbox')).toHaveCount(0);
+  });
+
+  it('explains why Portal is disabled when subscription access is set to nobody', async () => {
+    fakeSettingsScreens();
+    const settings = settingsResponse({ settings: { members_signup_access: 'none' } });
+    await renderAdminApp('/settings', { boot: { browseSettings: { response: settings } } });
+
+    const portal = settingsScreen.portal();
+    await expect.element(portal.getByRole('button', { name: 'Customize' })).toBeDisabled();
+    await expect.element(portal.getByText(/is set to ‘Nobody’/)).toBeVisible();
+    await expect.element(portal.getByRole('button', { name: 'Subscription access' })).toBeVisible();
   });
 
   it('saves Look & Feel settings', async () => {

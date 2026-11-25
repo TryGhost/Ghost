@@ -2,7 +2,6 @@
 import { start } from 'node:repl';
 import chalk from 'chalk';
 import { z } from 'zod';
-// @ts-expect-error This module lacks type definitions.
 import prettyCli from '@tryghost/pretty-cli';
 
 const logging = prettyCli.ui.log;

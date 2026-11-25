@@ -5,8 +5,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 const ghostBookshelf = require('../../../../core/server/models/base');
-const permissions = require('../../../../core/server/services/permissions');
-const schema = require('../../../../core/server/data/schema');
+const permissions = require('../../../../core/server/auth/permissions');
 const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
 
@@ -192,6 +191,57 @@ describe('Unit: models/user', function () {
       assert.equal(add.firstCall.args[0].accessibility, undefined);
     });
 
+    describe('owner role', function () {
+      const ownerRoleId = '5951f5fca366002ebd5dbef7';
+
+      function stubRoles() {
+        const ownerRole = {
+          id: ownerRoleId,
+          get: (key) => (key === 'name' ? 'Owner' : undefined),
+        };
+
+        return sinon.stub(models.Role, 'findOne').callsFake(async (data) => {
+          if (data.name === 'Owner' || data.id === ownerRoleId) {
+            return ownerRole;
+          }
+          return null;
+        });
+      }
+
+      const ownerRoleInputs = {
+        'by name': 'Owner',
+        'by id': ownerRoleId,
+        'by object with id': { id: ownerRoleId },
+        'by object with name': { name: 'Owner' },
+      };
+
+      for (const [description, role] of Object.entries(ownerRoleInputs)) {
+        it(`refuses the Owner role given ${description}`, async function () {
+          stubRoles();
+          const add = sinon.stub(ghostBookshelf.Model, 'add').resolves({ id: 'user-id' });
+
+          await assert.rejects(
+            models.User.add(
+              {
+                name: 'Second Owner',
+                email: 'owner2@example.com',
+                roles: [role],
+              },
+              { context: { internal: true } },
+            ),
+            (err) => {
+              assert.equal(err instanceof errors.ValidationError, true);
+              assert.equal(err.message, 'This method does not support assigning the owner role');
+              return true;
+            },
+          );
+
+          // The guard runs before the user is inserted
+          assert.equal(add.called, false);
+        });
+      }
+    });
+
     it('preserves an explicit accessibility preference for new users', async function () {
       const add = stubParentAdd();
 
@@ -331,14 +381,20 @@ describe('Unit: models/user', function () {
       sinon
         .stub(security.password, 'hash')
         .resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+
+      // A Knex stand-in for the credential row check() reads the hash from
+      const query = {
+        where: () => query,
+        first: () => query,
+        then: (resolve) => resolve({ password: '$2a$10$hash' }),
+      };
+      sinon.stub(ghostBookshelf, 'knex').value(() => query);
     });
 
     it('user status is warn', function () {
       sinon.stub(security.password, 'compare').resolves(true);
 
       // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
-      sinon.stub(schema, 'validate').resolves();
-
       const user = models.User.forge(
         testUtils.DataGenerator.forKnex.createUser({
           status: 'warn-1',
@@ -1184,6 +1240,15 @@ describe('Unit: models/user', function () {
   });
 
   describe('ownerIdCache', function () {
+    // The cache lives on the shared User model, so start and end each test empty
+    beforeEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
+    afterEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
     it('should return null initially', function () {
       assert.equal(models.User.ownerIdCache.get(), null);
     });

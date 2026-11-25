@@ -18,7 +18,7 @@ interface ConfirmBulkActionModalProps {
   count: number;
   /** Only used when exactly one post is selected. */
   title?: string;
-  /** Ember's `isSingle` — one id selected and not inverted. */
+  /** One id selected and not inverted. */
   isSingle?: boolean;
   isRunning: boolean;
   onConfirm: () => void;
@@ -27,7 +27,7 @@ interface ConfirmBulkActionModalProps {
 
 /**
  * The confirmation shared by Delete, Unpublish and Unschedule. All three have
- * the same shape in Ember and differ only in wording, which lives in
+ * the same shape and differ only in wording, which lives in
  * `post-bulk-modal-copy.ts`.
  *
  * All three are destructive in the sense that matters here: they cannot be

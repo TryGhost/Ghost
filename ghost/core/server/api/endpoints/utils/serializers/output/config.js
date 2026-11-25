@@ -23,9 +23,10 @@ module.exports = {
       'signupForm',
       'stats',
       'security',
+      'auth',
       'exploreTestimonialsUrl',
       'featurebase',
-      'docsbot',
+      'cardVisibility',
     ];
 
     frame.response = {

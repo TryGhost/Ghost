@@ -1,6 +1,5 @@
 import sinon from 'sinon';
 
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import { mockManager } from '../../../utils/e2e-framework';
 
@@ -14,8 +13,11 @@ const { settingsCache } = proxy;
 
 // @ts-expect-error This module lacks type definitions.
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 describe('{{comment_count}} helper', function () {
+  restoreHandlebarsAfterSuite();
+
   let internalKeys: InternalKeys;
 
   beforeAll(async function () {

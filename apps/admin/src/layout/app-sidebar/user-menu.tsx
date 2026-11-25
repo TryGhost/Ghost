@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useDeleteSession } from '@tryghost/admin-x-framework/api/session';
@@ -47,7 +47,7 @@ function UserMenuProfile() {
 }
 
 /** Help and Feedback, which Admin 7 moves here from the sidebar. */
-function UserMenuHelp() {
+function UserMenuHelp({ closeMenu }: { closeMenu: () => void }) {
   const { data: currentUser } = useCurrentUser();
   const {
     isAvailable: featurebaseAvailable,
@@ -56,6 +56,8 @@ function UserMenuHelp() {
   } = useFeaturebase();
   const { isMobile, setOpenMobile } = useSidebar();
   const showFeedback = currentUser && featurebaseAvailable && !isContributorUser(currentUser);
+  // On desktop, the frame's top bar has Help instead (see AdminFrameTopBar)
+  const helpInTopBar = !isMobile;
 
   // Leaving the menu for another tab or the feedback widget also closes the mobile sheet
   const closeMobileSidebar = () => {
@@ -66,16 +68,25 @@ function UserMenuHelp() {
 
   return (
     <>
-      <UserMenuItem onSelect={closeMobileSidebar}>
-        <a
-          href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          <LucideIcon.HelpCircle />
-          <UserMenuItem.Label>Help</UserMenuItem.Label>
-        </a>
-      </UserMenuItem>
+      {!helpInTopBar && (
+        <UserMenuItem onSelect={closeMobileSidebar}>
+          <a
+            data-ghost-help=""
+            href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+            rel="noopener noreferrer"
+            target="_blank"
+            onClick={(event) => {
+              // Radix doesn't close the menu when a host script cancels the click
+              if (event.defaultPrevented) {
+                closeMenu();
+              }
+            }}
+          >
+            <LucideIcon.HelpCircle />
+            <UserMenuItem.Label>Help</UserMenuItem.Label>
+          </a>
+        </UserMenuItem>
+      )}
       {showFeedback && (
         <UserMenuItem
           asChild={false}
@@ -109,10 +120,7 @@ function UserMenuAppearance() {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger
-        className="cursor-pointer gap-2 text-base [&>svg:last-child]:-ml-1.5 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-muted-foreground"
-        data-test-nav="appearance"
-      >
+      <DropdownMenuSubTrigger className="cursor-pointer gap-2 text-base [&>svg:last-child]:-ml-1.5 [&>svg:last-child]:size-3.5 [&>svg:last-child]:text-muted-foreground">
         <LucideIcon.Palette />
         <UserMenuItem.Label>Appearance</UserMenuItem.Label>
         <span className="text-sm text-muted-foreground">{THEME_LABELS[theme]}</span>
@@ -122,7 +130,6 @@ function UserMenuAppearance() {
           <DropdownMenuItem
             key={value}
             aria-label={`${label} appearance`}
-            data-test-theme-option={value}
             disabled={isSettingTheme}
             onSelect={() => {
               void setTheme(value);
@@ -175,13 +182,18 @@ function UserMenu(props: UserMenuProps) {
   const { hasNew } = useWhatsNew();
   const { showUpgradeBanner } = useUpgradeStatus();
   const admin7Design = useFeatureFlag('admin7Design');
+  const [open, setOpen] = useState(false);
 
   return (
-    <DropdownMenu {...props}>
+    <DropdownMenu {...props} open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton
           aria-label="User menu"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          className={cn(
+            'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+            admin7Design &&
+              'size-11 justify-center overflow-visible rounded-full p-1.5 hover:bg-sidebar-accent!',
+          )}
           size="lg"
         >
           <div className="relative">
@@ -197,21 +209,28 @@ function UserMenu(props: UserMenuProps) {
               </span>
             )}
           </div>
-          <div className="grid flex-1 text-left text-base leading-tight">
-            <span className="truncate font-semibold">{currentUser.data?.name}</span>
-            <span className="-mt-px truncate text-sm text-muted-foreground dark:text-gray-800">
-              {currentUser.data?.email}
-            </span>
-          </div>
-          <LucideIcon.ChevronsUpDown
-            className="ml-auto size-4 text-gray-700"
-            data-test-nav="arrow-down"
-          />
+          {!admin7Design && (
+            <>
+              <div className="grid flex-1 text-left text-base leading-tight">
+                <span className="truncate font-semibold">{currentUser.data?.name}</span>
+                <span className="-mt-px truncate text-sm text-muted-foreground dark:text-gray-800">
+                  {currentUser.data?.email}
+                </span>
+              </div>
+              <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-gray-700" />
+            </>
+          )}
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className={`w-[var(--radix-dropdown-menu-trigger-width)] dark:bg-surface-elevated-2 ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
+        className={cn(
+          admin7Design
+            ? 'w-64 max-w-[calc(100vw-2rem)]'
+            : 'w-[var(--radix-dropdown-menu-trigger-width)] dark:bg-surface-elevated-2',
+          showUpgradeBanner &&
+            'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]',
+        )}
         sideOffset={10}
       >
         <UserMenuHeader email={currentUser.data?.email} name={currentUser.data?.name}>
@@ -220,7 +239,6 @@ function UserMenu(props: UserMenuProps) {
         <DropdownMenuSeparator />
         <UserMenuItem
           asChild={false}
-          data-test-nav="whatsnew"
           onSelect={() => {
             props.onOpenWhatsNew?.();
           }}
@@ -240,7 +258,7 @@ function UserMenu(props: UserMenuProps) {
         </UserMenuItem>
         <UserMenuProfile />
         <DropdownMenuSeparator />
-        {admin7Design && <UserMenuHelp />}
+        {admin7Design && <UserMenuHelp closeMenu={() => setOpen(false)} />}
         <UserMenuItem>
           <a
             href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"
@@ -263,7 +281,7 @@ function UserMenu(props: UserMenuProps) {
  * Floating profile menu for contributor users
  * Positioned in top-right corner, minimal menu with essential actions only
  *
- * Mirrors Ember behavior where contributors have a simplified menu with:
+ * Contributors get a simplified menu with:
  * - Posts (navigate to posts list)
  * - View site (open site in new tab)
  * - Your profile (navigate to profile settings)

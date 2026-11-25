@@ -21,7 +21,7 @@ export type AuthScreen = keyof typeof screens;
 const SignedOutContext = createContext(false);
 
 const SIGNED_IN_WARNINGS: Partial<Record<AuthScreen, string>> = {
-  reset: "You can't reset your password while you're signed in.",
+  reset: 'You can’t reset your password while you’re signed in.',
   signup: 'You need to sign out to register as a new user.',
 };
 

@@ -1,6 +1,6 @@
 import { BookshelfRepository, ModelClass, ModelInstance } from './bookshelf-repository';
-import logger from '@tryghost/logging';
 import { ClickEvent } from './click-event';
+import type { GhostLogger } from '@tryghost/logging';
 
 type Sentry = {
   captureException(err: unknown): void;
@@ -8,10 +8,15 @@ type Sentry = {
 
 export class BookshelfClickEventRepository extends BookshelfRepository<string, ClickEvent> {
   sentry?: Sentry;
+  logging: Pick<GhostLogger, 'error'>;
 
-  constructor(Model: ModelClass<string>, deps: { sentry?: Sentry } = {}) {
+  constructor(
+    Model: ModelClass<string>,
+    deps: { sentry?: Sentry; logging: Pick<GhostLogger, 'error'> },
+  ) {
     super(Model);
     this.sentry = deps.sentry;
+    this.logging = deps.logging;
   }
 
   toPrimitive(entity: ClickEvent): object {
@@ -32,7 +37,7 @@ export class BookshelfClickEventRepository extends BookshelfRepository<string, C
         createdAt: model.get('created_at') as Date,
       });
     } catch (err) {
-      logger.error(err);
+      this.logging.error(err);
       this.sentry?.captureException(err);
       return null;
     }

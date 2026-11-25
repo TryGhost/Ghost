@@ -58,7 +58,8 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
     parsedUrl.pathname && parsedUrl.pathname.indexOf(parsedBaseUrl.pathname) === 0;
 
   // if our path is only missing a trailing / mark it as relative
-  if (`${parsedUrl.pathname}/` === parsedBaseUrl.pathname) {
+  const isMissingTrailingSlash = parsedUrl.pathname + '/' === parsedBaseUrl.pathname;
+  if (isMissingTrailingSlash) {
     isRelativeToBasePath = true;
   }
 
@@ -69,14 +70,22 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
     url = url.replace(/^[a-zA-Z0-9-]+:/, '');
     url = url.replace(/^\/\//, '');
     url = url.replace(parsedBaseUrl.host, '');
-    url = url.replace(parsedBaseUrl.pathname, '');
+    if (isMissingTrailingSlash) {
+      url = '/' + parsedUrl.search + parsedUrl.hash;
+    } else {
+      url = url.replace(parsedBaseUrl.pathname, '');
+    }
 
     if (!url.match(/^\//)) {
       url = `/${url}`;
     }
   }
 
-  if (!url.match(/\/$/) && !url.match(/[.#?]/)) {
+  if (
+    ['http:', 'https:'].includes(parsedUrl.protocol) &&
+    !url.match(/\/$/) &&
+    !url.match(/[.#?]/)
+  ) {
     url = `${url}/`;
   }
 

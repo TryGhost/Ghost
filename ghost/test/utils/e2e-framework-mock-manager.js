@@ -31,6 +31,7 @@ const { limitService } = require('../../core/server/services/limits');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
+const ghostMetrics = require('@tryghost/metrics');
 
 let fakedLabsFlags = {};
 let allowedNetworkDomains = [];
@@ -408,6 +409,21 @@ const emittedEvent = (name) => {
 };
 
 /**
+ * Metrics Mocks
+ */
+
+const mockMetrics = () => {
+  const shipped = [];
+  mocks.metrics = sinon.stub(ghostMetrics, 'metric').callsFake((_name, value) => {
+    shipped.push(value);
+    return Promise.resolve(null);
+  });
+  return {
+    tracked: (name) => shipped.filter((value) => value.event?.name === name),
+  };
+};
+
+/**
  * Settings Mocks
  */
 
@@ -574,14 +590,16 @@ const restore = () => {
 
   mailService.GhostMailer.prototype.sendMail = originalMailServiceSendMail;
 
-  // Disable network again after restoring sinon
+  // Disable network again after restoring sinon. The webmention discovery
+  // mocks are left to the DB lane's setup, which re-registers them after every
+  // test: unit files call restore() too, and must not inherit them.
   disableNetwork();
-  mockWebmentionDiscoveryDomains();
 };
 
 module.exports = {
   mockEvents,
   mockMail,
+  mockMetrics,
   disableStripe,
   mockStripe,
   mockSlack,

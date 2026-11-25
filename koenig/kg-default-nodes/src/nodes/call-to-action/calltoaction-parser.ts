@@ -15,8 +15,9 @@ export function parseCallToActionNode(CallToActionNode: new (data: Record<string
                         const textValueElement = domNode.querySelector('.kg-cta-text');
                         const buttonElement = domNode.querySelector('.kg-cta-button') as HTMLElement | null;
                         const buttonStyles = buttonElement?.style || {} as CSSStyleDeclaration;
-                        const buttonColor = buttonStyles.backgroundColor || '#000000';
-                        const buttonTextColor = buttonStyles.color || '#ffffff';
+                        const isAccentButton = buttonElement?.classList.contains('kg-style-accent') ?? false;
+                        const buttonColor = isAccentButton ? 'accent' : (rgbToHex(buttonStyles.backgroundColor) || '#000000');
+                        const buttonTextColor = rgbToHex(buttonStyles.color) || '#ffffff';
                         const sponsorLabelElement = domNode.querySelector('.kg-cta-sponsor-label');
 
                         const bgMatch = div.className.match(/kg-cta-bg-(\w+)/);
@@ -52,8 +53,8 @@ export function parseCallToActionNode(CallToActionNode: new (data: Record<string
                             showDividers: showDividers,
                             buttonText: buttonElement?.textContent?.trim() || '',
                             buttonUrl: buttonElement?.getAttribute('href'),
-                            buttonColor: rgbToHex(buttonColor),
-                            buttonTextColor: rgbToHex(buttonTextColor),
+                            buttonColor: buttonColor,
+                            buttonTextColor: buttonTextColor,
                             hasSponsorLabel: sponsorLabelElement ? true : false,
                             sponsorLabel: sponsorLabelElement?.innerHTML || '',
                             backgroundColor: backgroundColor,

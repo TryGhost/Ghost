@@ -4,6 +4,9 @@ const sinon = require('sinon');
 
 // module under test
 const MailgunClient = require('../../../../../core/server/lib/mailgun/mailgun-client');
+const {
+  buildRecipientMessageId,
+} = require('../../../../../core/server/lib/mailgun/mailgun-recipient-message-id');
 
 // Some sample Mailgun API options we might want to use
 const MAILGUN_OPTIONS = {
@@ -66,6 +69,8 @@ describe('MailgunClient', function () {
 
   afterEach(function () {
     sinon.restore();
+    // Interceptors a test registered but never hit would answer the next test's requests
+    nock.cleanAll();
   });
 
   describe('getBatchSize', function () {
@@ -706,6 +711,9 @@ describe('MailgunClient', function () {
 
     describe('per-recipient Message-Id', function () {
       const EMAIL_ID = '64f0c7a5e2b3a1d4c5b6a7f8';
+      // the builder the newsletter provider passes
+      const newsletterMessageId = ({ recipientEmail, domain }) =>
+        buildRecipientMessageId({ emailId: EMAIL_ID, recipientEmail, domain });
 
       // value of one multipart/form-data field: between the blank line after its header and the next boundary
       const getFormField = (body, name) => {
@@ -763,7 +771,7 @@ describe('MailgunClient', function () {
           html: '<p>Test Content</p>',
           plaintext: 'Test Content',
           id: EMAIL_ID,
-          perRecipientMessageId: true,
+          buildRecipientMessageId: newsletterMessageId,
         };
         const { captured, sendMock } = captureSend();
 
@@ -799,7 +807,7 @@ describe('MailgunClient', function () {
           plaintext: 'Test Content',
           id: EMAIL_ID,
           domainOverride: 'fallback.example.net',
-          perRecipientMessageId: true,
+          buildRecipientMessageId: newsletterMessageId,
         };
         const { captured, sendMock } = captureSend('fallback.example.net');
 
@@ -839,33 +847,6 @@ describe('MailgunClient', function () {
         );
       });
 
-      it('ignores a non-boolean opt-in', async function () {
-        stubMailgunConfig();
-        const recipientData = createRecipientData();
-        const { captured, sendMock } = captureSend();
-
-        const mailgunClient = new MailgunClient({ config, settings });
-        await mailgunClient.send(
-          {
-            subject: 'Test Subject',
-            from: 'from@example.com',
-            html: '<p>Test Content</p>',
-            plaintext: 'Test Content',
-            id: EMAIL_ID,
-            perRecipientMessageId: 'true',
-          },
-          recipientData,
-          [],
-        );
-
-        assert(sendMock.isDone());
-        assert.ok(!captured.body.includes('name="h:Message-Id"'));
-        assert.equal(
-          getFormField(captured.body, 'recipient-variables'),
-          JSON.stringify(recipientData),
-        );
-      });
-
       it('reports no provider id when Mailgun echoes the header template', async function () {
         stubMailgunConfig();
         const message = {
@@ -874,7 +855,7 @@ describe('MailgunClient', function () {
           html: '<p>Test Content</p>',
           plaintext: 'Test Content',
           id: EMAIL_ID,
-          perRecipientMessageId: true,
+          buildRecipientMessageId: newsletterMessageId,
         };
         // Mailgun returns the Message-Id it was given, so a per-recipient template comes back
         // unsubstituted and identifies nothing
@@ -897,7 +878,7 @@ describe('MailgunClient', function () {
           html: '<p>Test Content</p>',
           plaintext: 'Test Content',
           id: EMAIL_ID,
-          perRecipientMessageId: true,
+          buildRecipientMessageId: newsletterMessageId,
         };
         const sendMock = nock('https://api.mailgun.net')
           .post('/v3/domain.com/messages')
@@ -910,6 +891,79 @@ describe('MailgunClient', function () {
         assert.equal(response.id, '<20260916041835.abc@domain.com>');
       });
 
+      it('uses the Message-Ids the sender builds', async function () {
+        stubMailgunConfig();
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+          // shaped like the automation sender's ids: the run step id, then the sending domain
+          buildRecipientMessageId: ({ recipientEmail, domain }) =>
+            `${recipientEmail === 'first@example.com' ? 'step-1' : 'step-2'}.aaa@${domain}`,
+        };
+        // Mailgun echoes the header template, as the NY-1811 spike confirmed
+        let capturedBody;
+        const sendMock = nock('https://api.mailgun.net')
+          .post('/v3/domain.com/messages', function (body) {
+            capturedBody = body;
+            return true;
+          })
+          .reply(200, { id: '<%recipient.message_id%>', message: 'Queued. Thank you.' });
+
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, createRecipientData(), []);
+
+        assert(sendMock.isDone());
+        assert.equal(response.id, null);
+        assert.equal(getFormField(capturedBody, 'h:Message-Id'), '<%recipient.message_id%>');
+        const recipientVariables = JSON.parse(getFormField(capturedBody, 'recipient-variables'));
+        assert.deepEqual(recipientVariables, {
+          'first@example.com': {
+            name: 'First',
+            list_unsubscribe: 'https://example.com/unsub/1',
+            message_id: 'step-1.aaa@domain.com',
+          },
+          'second@example.com': {
+            name: 'Second',
+            list_unsubscribe: 'https://example.com/unsub/2',
+            message_id: 'step-2.aaa@domain.com',
+          },
+        });
+      });
+
+      for (const [description, secondId] of [
+        ['has no Message-Id', undefined],
+        ['has an empty Message-Id', ''],
+        ['has a Message-Id in angle brackets', '<two@domain.com>'],
+        ['has a Message-Id with whitespace', 'two @domain.com'],
+      ]) {
+        it(`refuses to send when the builder gives a recipient ${description}`, async function () {
+          stubMailgunConfig();
+          const sendMock = nock('https://api.mailgun.net')
+            .post('/v3/domain.com/messages')
+            .reply(200);
+
+          const mailgunClient = new MailgunClient({ config, settings });
+          await assert.rejects(
+            mailgunClient.send(
+              {
+                subject: 'Test Subject',
+                from: 'from@example.com',
+                html: '<p>Test Content</p>',
+                plaintext: 'Test Content',
+                buildRecipientMessageId: ({ recipientEmail }) =>
+                  recipientEmail === 'first@example.com' ? 'one@domain.com' : secondId,
+              },
+              createRecipientData(),
+              [],
+            ),
+            { errorType: 'IncorrectUsageError' },
+          );
+          assert(!sendMock.isDone());
+        });
+      }
+
       it('does not mutate the recipient data passed in', async function () {
         stubMailgunConfig();
         const message = {
@@ -918,7 +972,7 @@ describe('MailgunClient', function () {
           html: '<p>Test Content</p>',
           plaintext: 'Test Content',
           id: EMAIL_ID,
-          perRecipientMessageId: true,
+          buildRecipientMessageId: newsletterMessageId,
         };
         const recipientData = createRecipientData();
         const snapshot = JSON.stringify(recipientData);

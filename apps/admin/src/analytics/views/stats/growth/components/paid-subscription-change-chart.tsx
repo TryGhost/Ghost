@@ -31,8 +31,10 @@ import {
   resolveEffectiveRangeDays,
   sanitizeChartData,
 } from '@/shared/analytics/chart-helpers';
+import { useShade } from '@tryghost/shade/app';
 
 type PaidMembersChangeChartProps = {
+  dateFrom: string;
   subscriptionData?: { date: string; signups: number; cancellations: number }[];
   memberData: {
     date: string;
@@ -157,7 +159,7 @@ const getAvailableResolutions = (range: number): ResolutionOption[] => {
 
   if (actualSpan < 30) {
     return ['daily']; // No dropdown for < 30 days
-  } else if (actualSpan >= 91) {
+  } else if (actualSpan >= 90) {
     return ['weekly', 'monthly'];
   } else {
     return ['daily', 'weekly'];
@@ -170,7 +172,7 @@ const getDefaultResolution = (range: number): ResolutionOption => {
 
   if (actualSpan < 30) {
     return 'daily';
-  } else if (actualSpan >= 91) {
+  } else if (actualSpan >= 90) {
     return 'monthly';
   } else {
     return 'weekly';
@@ -178,11 +180,14 @@ const getDefaultResolution = (range: number): ResolutionOption => {
 };
 
 const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
+  dateFrom,
   subscriptionData,
   memberData,
   range,
   isLoading,
 }) => {
+  // admin7Design charts are flat: solid fills, no gradients.
+  const { admin7Design } = useShade();
   // State for user-selected resolution
   const [selectedResolution, setSelectedResolution] = useState<ResolutionOption>(() =>
     getDefaultResolution(range),
@@ -215,17 +220,16 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
   }, [range, aggregationStrategy]);
 
   const paidChangeChartData = useMemo(() => {
-    // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
+    // Use subscription data if available, otherwise fall back to member data
     if (subscriptionData && subscriptionData.length > 0) {
       // For "Today" range, show just the change for today
       if (range === 1) {
-        const today = moment().format('YYYY-MM-DD');
-        const todayData = subscriptionData.find((item) => item.date === today);
+        const todayData = subscriptionData.find((item) => item.date === dateFrom);
 
         return [
           {
-            date: formatDisplayDateWithRange(today, range),
-            rawDate: today, // Keep raw date for dynamic tooltip formatting
+            date: formatDisplayDateWithRange(dateFrom, range),
+            rawDate: dateFrom, // Keep raw date for dynamic tooltip formatting
             new: todayData?.signups || 0,
             cancelled: -(todayData?.cancellations || 0), // Negative for the stacked bar chart
           },
@@ -291,15 +295,14 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         return [];
       }
 
-      // For "Today" range, show just today's change
+      // For Today, memberData contains the original daily history rows.
       if (range === 1) {
-        const today = moment().format('YYYY-MM-DD');
-        const todayData = memberData.find((item) => item.date === today);
+        const todayData = memberData.find((item) => item.date === dateFrom);
 
         return [
           {
-            date: formatDisplayDateWithRange(today, range),
-            rawDate: today, // Keep raw date for dynamic tooltip formatting
+            date: formatDisplayDateWithRange(dateFrom, range),
+            rawDate: dateFrom, // Keep raw date for dynamic tooltip formatting
             new: todayData?.paid_subscribed || 0,
             cancelled: -(todayData?.paid_canceled || 0), // Negative for the stacked bar chart
           },
@@ -357,7 +360,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         };
       });
     }
-  }, [memberData, subscriptionData, range, aggregationStrategy, displayRange]);
+  }, [dateFrom, memberData, subscriptionData, range, aggregationStrategy, displayRange]);
 
   const paidChangeChartConfig = {
     new: {
@@ -433,14 +436,30 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
               <Recharts.BarChart data={paidChangeChartData} stackOffset="sign">
                 <defs>
                   <linearGradient id="tealGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor={'var(--color-new)'} stopOpacity={0.8} />
-                    <stop offset="100%" stopColor={'var(--color-new)'} stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor={'var(--color-new)'}
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={'var(--color-new)'}
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                 </defs>
                 <defs>
                   <linearGradient id="roseGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor={'var(--color-cancelled)'} stopOpacity={0.6} />
-                    <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
+                    <stop
+                      offset="0%"
+                      stopColor={'var(--color-cancelled)'}
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={'var(--color-cancelled)'}
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
                   </linearGradient>
                 </defs>
                 <Recharts.CartesianGrid stroke="var(--border)" vertical={false} />

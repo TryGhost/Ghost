@@ -12,10 +12,18 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Stack } from '@/components/primitives';
-import ShadeApp from '@/shade-app';
 import { useShade } from '@/providers/shade-context';
 import { formatNumber } from '@/utils';
 import { FilterBar } from '@/components/patterns/filter-bar';
+import { Box } from '@/components/primitives/box';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 const meta = {
   title: 'Patterns / Page Header',
@@ -164,7 +172,7 @@ function MembersHeader({
               </PageHeader.ActionGroup.MobileMenu>
             )}
             <PageHeader.ActionGroup.Primary>
-              <PageHeader.Action fallbackVariant="default" label="New member">
+              <PageHeader.Action label="New member">
                 <Plus />
                 <span className="hidden sm:inline">New member</span>
               </PageHeader.Action>
@@ -369,29 +377,72 @@ export const DisabledActions: Story = {
     </PageHeader.ActionGroup>
   ),
 };
-export const Admin7Disabled: Story = {
+
+function BreadcrumbExample({ parent, current }: { parent: string; current: string }) {
+  return (
+    <Box className="max-w-2xl" padding="xl">
+      <PageHeader blurredBackground={false} sticky={false}>
+        <PageHeader.Left>
+          <PageHeader.Breadcrumb>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="#">{parent}</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{current}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </PageHeader.Breadcrumb>
+          <PageHeader.Title>Edit newsletter</PageHeader.Title>
+        </PageHeader.Left>
+        <PageHeader.Actions>
+          <PageHeader.ActionGroup>
+            <PageHeader.ActionGroup.Primary>
+              <PageHeader.Action label="Save">
+                <Save />
+                Save
+              </PageHeader.Action>
+            </PageHeader.ActionGroup.Primary>
+          </PageHeader.ActionGroup>
+        </PageHeader.Actions>
+      </PageHeader>
+    </Box>
+  );
+}
+
+export const LongBreadcrumb: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'The provider with Admin 7 disabled preserves the old control appearance and disables new header tooltips. Existing pages retain their historical action order locally.',
+          'Use for a long current-page breadcrumb: it should ellipsize on one line without pushing the Save action out of view.',
       },
     },
   },
   render: () => (
-    <ShadeApp darkMode={false} isAdmin7={false}>
-      <PageHeader.ActionGroup>
-        <PageHeader.Action label="Sort" tooltip>
-          <ArrowUpDown />
-          Newest first
-        </PageHeader.Action>
-        <PageHeader.ActionGroup.Primary>
-          <PageHeader.Action fallbackVariant="default" label="New post">
-            <Plus />
-            New post
-          </PageHeader.Action>
-        </PageHeader.ActionGroup.Primary>
-      </PageHeader.ActionGroup>
-    </ShadeApp>
+    <BreadcrumbExample
+      current="A very long newsletter name with publication updates, interviews, announcements and stories from our community"
+      parent="Newsletters"
+    />
+  ),
+};
+
+export const LongParentBreadcrumb: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use when parent and current breadcrumbs are both long: the parent is capped so the current page retains space. Resize to check both labels.',
+      },
+    },
+  },
+  render: () => (
+    <BreadcrumbExample
+      current="The weekly digest of community stories and upcoming events"
+      parent="Publication newsletters and special editions for all our readers"
+    />
   ),
 };

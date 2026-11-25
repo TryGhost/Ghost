@@ -135,7 +135,8 @@ type ListPageComponent = React.FC<ListPageProps> & {
  * Composition:
  *  - `<ListPage.Header>` — sticky, blurred, full-bleed chrome band. Place
  *    `PageHeader`, `ViewBar`, and/or `FilterBar` directly inside as siblings.
- *    `FilterBar` auto-collapses when it has no active filters.
+ *    `FilterBar` hides itself only when it has no children, so mount it
+ *    while filters are active (`hasFilters && <FilterBar>…</FilterBar>`).
  *  - `<ListPage.Body>` — grows to fill remaining space. Use `flex-1 flex items-center justify-center`
  *    on the immediate child to vertically center empty/loading states.
  *

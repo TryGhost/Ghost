@@ -1,4 +1,9 @@
-import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
+import type { GhostLogger } from '@tryghost/logging';
+import {
+  buildSignedWebhookRequest,
+  describeWebhookError,
+  sanitizeWebhookUrl,
+} from '../../lib/signed-webhook';
 import type { ASYNC_EXPORT_COMPONENTS } from '../../data/exporter/export-components';
 
 type AsyncExportComponents = Record<(typeof ASYNC_EXPORT_COMPONENTS)[number], boolean>;
@@ -15,11 +20,7 @@ type ExportRequestsServiceDependencies = {
   config: {
     get: (key: string) => unknown;
   };
-  logging: {
-    info: (message: string) => void;
-    warn: (message: string) => void;
-    error: (message: string) => void;
-  };
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: (url: string, options: unknown) => Promise<unknown>;
 };
 
@@ -98,12 +99,11 @@ export class ExportRequestsService {
       requestedByUserId,
     };
 
+    // Sent once, as each delivery can schedule an export: got never retries a
+    // POST, only the GET that may follow a 303.
     const requestOptions = buildSignedWebhookRequest({
       payload,
       secret: webhookSecret,
-      // No retries: the request is not idempotent (each delivery can
-      // schedule an export)
-      retryLimit: 0,
     });
 
     const sanitizedUrl = sanitizeWebhookUrl(webhookUrl);
@@ -112,7 +112,7 @@ export class ExportRequestsService {
     try {
       await this.#request(webhookUrl, requestOptions);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = describeWebhookError(error);
       this.#logging.error(`Failed to request export generation from "${sanitizedUrl}": ${message}`);
       throw new errors.InternalServerError({
         statusCode: 502,

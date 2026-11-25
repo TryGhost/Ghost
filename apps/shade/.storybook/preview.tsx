@@ -48,9 +48,13 @@ const customViewports = {
 const StorybookSchemeDecorator = ({
   Story,
   scheme,
+  admin7Design,
+  admin7Mobile,
 }: {
   Story: React.ComponentType;
   scheme: string;
+  admin7Design: boolean;
+  admin7Mobile: boolean;
 }) => {
   React.useEffect(() => {
     const isDark = scheme === 'dark';
@@ -74,9 +78,15 @@ const StorybookSchemeDecorator = ({
         // overflow: 'unset',
         background: scheme === 'dark' ? '#131416' : '',
       }}
+      data-admin7-design={admin7Design}
+      data-admin7-mobile={admin7Mobile}
     >
       {/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
-      <ShadeProvider darkMode={scheme === 'dark'}>
+      <ShadeProvider
+        admin7Design={admin7Design}
+        admin7Mobile={admin7Mobile}
+        darkMode={scheme === 'dark'}
+      >
         <Story />
       </ShadeProvider>
     </div>
@@ -97,7 +107,7 @@ const preview: Preview = {
         method: 'alphabetical',
         order: [
           'Overview',
-          ['Introduction', 'Layers', 'Design System Landscape', 'Contributing'],
+          ['Introduction', 'Ghost Apps'],
           'Tokens',
           [
             'Tokens Guide',
@@ -112,7 +122,7 @@ const preview: Preview = {
           'Primitives',
           ['Primitives Guide', '*'],
           'Components',
-          ['Components Guide', '*'],
+          ['Components Guide', 'Lists and Tables', '*'],
           'Patterns',
           ['Patterns Guide', '*'],
           'Page Templates',
@@ -135,9 +145,16 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      let { scheme } = context.globals;
+      let { scheme, admin7Design, admin7Mobile } = context.globals;
 
-      return <StorybookSchemeDecorator Story={Story} scheme={scheme} />;
+      return (
+        <StorybookSchemeDecorator
+          admin7Design={admin7Design !== 'off'}
+          admin7Mobile={admin7Mobile === 'on'}
+          Story={Story}
+          scheme={scheme}
+        />
+      );
     },
   ],
   globalTypes: {
@@ -148,6 +165,34 @@ const preview: Preview = {
       toolbar: {
         icon: 'mirror',
         items: ['light', 'dark'],
+        dynamicTitle: true,
+      },
+    },
+    admin7Mobile: {
+      name: 'admin7Mobile',
+      description: "Preview Admin's mobile-hardening flag on or off",
+      defaultValue: 'off',
+      toolbar: {
+        title: 'admin7Mobile',
+        icon: 'flag',
+        items: [
+          { value: 'off', title: 'admin7Mobile off' },
+          { value: 'on', title: 'admin7Mobile on' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+    admin7Design: {
+      name: 'admin7Design',
+      description: "Preview Admin's admin7Design Labs flag on or off",
+      defaultValue: 'on',
+      toolbar: {
+        title: 'admin7Design',
+        icon: 'flag',
+        items: [
+          { value: 'on', title: 'admin7Design on' },
+          { value: 'off', title: 'admin7Design off' },
+        ],
         dynamicTitle: true,
       },
     },

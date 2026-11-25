@@ -5,7 +5,6 @@ import type { SinonStub } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import testUtils from '../../../utils';
 
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import { markdownToLexical } from '../../../utils/fixtures/data-generator';

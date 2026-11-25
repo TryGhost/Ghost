@@ -32,6 +32,10 @@ printf -v project_args_string '%q ' "${project_args[@]}"
 # A planned test list (tools/scripts/ci/e2e-shards.ts) replaces Playwright's count-based --shard.
 if [[ -n "${E2E_TEST_LIST:-}" ]]; then
     printf -v selection_args '%q ' "--test-list=${E2E_TEST_LIST}" --pass-with-no-tests
+elif [[ -n "${E2E_TEST_FILES:-}" ]]; then
+    # A fixed, space-separated set of test files, run as one shard
+    read -ra test_files <<< "$E2E_TEST_FILES"
+    printf -v selection_args '%q ' "${test_files[@]}"
 else
     selection_args="--shard=${SHARD_INDEX}/${SHARD_TOTAL} "
 fi
@@ -41,6 +45,7 @@ fi
 # steps converge on the same tag.
 ensure_playwright_image
 
+# The upstream fallback image runs Node 25+, which no longer bundles corepack.
 docker run --rm --network host --ipc host \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "${WORKSPACE_PATH}:${WORKSPACE_PATH}" \
@@ -53,5 +58,6 @@ docker run --rm --network host --ipc host \
   -e GHOST_E2E_IMAGE="${GHOST_E2E_IMAGE:-ghost-e2e:local}" \
   -e GHOST_E2E_GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}" \
   -e GHOST_E2E_ANALYTICS="${GHOST_E2E_ANALYTICS:-true}" \
+  -e GHOST_E2E_AUTH_ENGINE="${GHOST_E2E_AUTH_ENGINE:-}" \
   "$PLAYWRIGHT_IMAGE" \
-  bash -c "corepack enable && bash ./scripts/run-playwright-host.sh pnpm exec playwright test ${project_args_string}${selection_args}--retries=${RETRIES}"
+  bash -c "{ command -v corepack >/dev/null && corepack enable || npx --yes corepack@0.36.0 enable --install-directory /usr/local/bin pnpm; } && bash ./scripts/run-playwright-host.sh pnpm exec playwright test ${project_args_string}${selection_args}--retries=${RETRIES}"

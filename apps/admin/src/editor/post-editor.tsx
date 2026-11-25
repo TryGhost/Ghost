@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import {
-  Button,
   FieldError,
   Tooltip,
   TooltipContent,
@@ -39,7 +38,6 @@ import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 import type { WritingFocus } from './writing-focus';
 import type { EditorFont } from './editor-font';
-import { EDITOR_HELP_URL } from './editor-help';
 
 export interface PostEditorProps {
   postType: PostType;
@@ -78,8 +76,8 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
-  /** The footer's help link, which moves to the settings panel under admin7EditorImprovements. */
-  showHelpLink?: boolean;
+  /** Another tab holds the document: it can be read, selected and scrolled, and nothing in it can be changed. */
+  readOnly?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -88,6 +86,13 @@ export interface PostEditorHandle {
 }
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+
+type LexicalEditable = { setEditable: (editable: boolean) => void };
+
+/** Lexical's own flag: the body can still be read, selected and copied. */
+function setBodyEditable(api: KoenigInstance | null, editable: boolean): void {
+  (api?.editorInstance as LexicalEditable | undefined)?.setEditable(editable);
+}
 
 // Admin's element styles give textareas a min-height and a 250–500px width; the
 // fields opt out of both so they span the writing column and grow from one line.
@@ -173,7 +178,7 @@ function TkIndicator({
   return (
     <button
       className={cn(
-        'absolute rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground',
+        'absolute rounded-sm bg-state-warning-fill px-1.5 py-0.5 text-2xs font-bold text-foreground',
         className,
       )}
       data-testid={testId}
@@ -212,19 +217,31 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
-  showHelpLink = true,
+  readOnly = false,
 }: PostEditorProps) {
-  const { darkMode, isAdmin7 } = useFocusContext();
+  const { darkMode } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
   const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
+  const featureImageRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const titleErrorId = useId();
   const excerptErrorId = useId();
   const editorApiRef = useRef<KoenigInstance | null>(null);
+  const readOnlyRef = useRef(readOnly);
+  // The feature image's controls have no read-only state of their own. Through a ref
+  // because React 18 has no inert prop.
+  useEffect(() => {
+    readOnlyRef.current = readOnly;
+    setBodyEditable(editorApiRef.current, !readOnly);
+    if (featureImageRef.current) {
+      featureImageRef.current.inert = readOnly;
+    }
+  }, [readOnly]);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
+  const [selectionWordCount, setSelectionWordCount] = useState<number | null>(null);
   const chromeEntrance = useScreenEntrance();
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
@@ -326,6 +343,8 @@ export function PostEditor({
   const registerApi = useCallback(
     (api: KoenigInstance | null) => {
       editorApiRef.current = api;
+      // A reload mounts a new instance, which starts out editable.
+      setBodyEditable(api, !readOnlyRef.current);
       registerEditorApi?.(api);
     },
     [registerEditorApi],
@@ -445,21 +464,28 @@ export function PostEditor({
         {/* Beside the settings panel, the breakout adjustment adds the panel and the
             margin before it at their resting values; while the panel moves, the
             cards are sized from the layout instead (above). */}
+        {/* The header keeps 12px below its buttons, so sticky card indicators stop
+            8px below the back button. */}
         <Stack
           ref={writingAreaRef}
           className={cn(
-            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
+            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] [--kg-indicator-sticky-top:calc(var(--editor-overlap,0px)-4px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
+            // Not every Koenig build closes its cards to input with Lexical's flag.
+            readOnly && '[&_[data-kg-card]]:pointer-events-none',
           )}
           gap="none"
           onDragOver={(event) => event.preventDefault()}
-          onDrop={onPaneDrop}
+          onDrop={readOnly ? undefined : onPaneDrop}
           onMouseDown={trackMouseDown}
-          onMouseUp={focusEditorOnPaneClick}
+          onMouseUp={readOnly ? undefined : focusEditorOnPaneClick}
         >
           <div className="relative mx-auto w-full max-w-[740px]">
             {/* Only the bar offering an image is chrome; an image is the post's own. */}
-            <div data-writing-focus={hasFeatureImage ? undefined : writingFocus}>
+            <div
+              ref={featureImageRef}
+              data-writing-focus={hasFeatureImage ? undefined : writingFocus}
+            >
               <FeatureImage
                 alt={featureImage.featureImageAlt}
                 caption={featureImage.featureImageCaption}
@@ -513,12 +539,13 @@ export function PostEditor({
                 )}
                 data-testid={editorTitleInput}
                 placeholder={`${capitalize(postType)} title`}
+                readOnly={readOnly}
                 rows={1}
                 value={title}
                 onBlur={onTitleBlur}
                 onChange={(event) => onTitleChange(event.target.value)}
-                onKeyDown={onTitleKeyDown}
-                onPaste={cleanPastedTitle}
+                onKeyDown={readOnly ? undefined : onTitleKeyDown}
+                onPaste={readOnly ? undefined : cleanPastedTitle}
               />
             </div>
             {titleError ? (
@@ -546,11 +573,12 @@ export function PostEditor({
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
+                  readOnly={readOnly}
                   rows={1}
                   value={excerpt}
                   onBlur={onExcerptBlur}
                   onChange={(event) => onExcerptChange(event.target.value)}
-                  onKeyDown={onExcerptKeyDown}
+                  onKeyDown={readOnly ? undefined : onExcerptKeyDown}
                 />
                 <hr
                   className={cn(
@@ -576,14 +604,15 @@ export function PostEditor({
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
             onSecondaryError={onSecondaryError}
+            onSelectionWordCountChange={setSelectionWordCount}
             onTkCountChange={setBodyTkCount}
             onWordCountChange={setWordCount}
           />
         </Stack>
       </div>
       {/* Below the small breakpoint the footer spans the screen: the word count at
-          the left, the header's actions at the right, and no help link. Only its
-          controls take pointer input, so the document between them stays reachable.
+          the left and the header's actions at the right. Only its controls take
+          pointer input, so the document between them stays reachable.
           Actions that wrap grow upward, leaving the word count in the corner. The
           footer moves with the settings panel and its contents fade while the
           writer types, each on a transition of its own. */}
@@ -605,9 +634,8 @@ export function PostEditor({
               as="span"
               className={buttonVariants({
                 variant: null,
-                size: isAdmin7 ? 'default' : 'sm',
+                size: 'default',
                 shape: 'pill',
-                isAdmin7,
                 className:
                   'bg-background/80 px-3 text-(length:--text-control) text-text-secondary backdrop-blur-sm',
               })}
@@ -615,6 +643,7 @@ export function PostEditor({
               tone="secondary"
               weight="medium"
             >
+              {selectionWordCount === null ? null : `${formatNumber(selectionWordCount)} of `}
               {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
             </Text>
           )}
@@ -625,27 +654,6 @@ export function PostEditor({
             className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
             justify="end"
           />
-          {showHelpLink && (
-            <Button
-              className={cn(
-                'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
-                isAdmin7 && '[&_svg]:stroke-2!',
-              )}
-              shape="pill"
-              size={isAdmin7 ? 'icon' : 'icon-sm'}
-              variant="ghost"
-              asChild
-            >
-              <a
-                aria-label="Editor help"
-                href={EDITOR_HELP_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <LucideIcon.CircleHelp />
-              </a>
-            </Button>
-          )}
         </Inline>
       </Inline>
     </div>

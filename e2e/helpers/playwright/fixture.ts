@@ -19,10 +19,12 @@ import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { FakeMailgunServer, MailgunTestService } from '@/helpers/services/mailgun';
 import { FakeStripeServer, StripeTestService, WebhookClient } from '@/helpers/services/stripe';
 import { FakeUpgradeHost } from '@/helpers/services/upgrade';
+import { FixtureApp } from '@/helpers/services/apps';
 import { GHOST_OWNER } from '@/helpers/environment/constants';
-import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
+import { GhostInstance, getEnvironmentManager, isAllowedBrowserUrl } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { extractInviteLink } from '@/helpers/services/email/utils';
+import { revealHiddenEditorChromeIn } from './editor-writing-focus';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
@@ -78,8 +80,10 @@ let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null =
 
 // External hosts requested by the browser, accumulated across a worker so the
 // worker teardown can print them (the server-side equivalent comes from the DNS
-// sidecar). Worker-scoped, like the caches above.
-const workerBrowserEgressHosts = new Set<string>();
+// sidecar). Worker-scoped, like the caches above. Each host keeps the first few
+// requests (URL and test) so a CI failure names its source.
+const workerBrowserEgressHosts = new Map<string, Set<string>>();
+const EGRESS_REQUESTS_PER_HOST = 5;
 
 export interface User {
   name: string;
@@ -116,6 +120,9 @@ export interface GhostInstanceFixture {
   // Forces per-test isolation because Ghost boots against a per-test fake upgrade host.
   upgradeHostEnabled?: boolean;
   upgradeHost?: FakeUpgradeHost;
+  // An app the test can install. Its ID is unique to the test, so it never meets another test's
+  // installation in a shared per-file environment.
+  fixtureApp: FixtureApp;
   emailClient: EmailClient;
   ghostAccountOwner: User;
   ghostAccountAuthor: StaffAccount;
@@ -157,6 +164,15 @@ function getResolvedIsolation(testInfo: TestInfo, isolation?: 'per-test'): Resol
   return 'per-file';
 }
 
+// Service worker requests have no frame, and frame() throws for them.
+function frameUrl(request: Request): string {
+  try {
+    return request.frame().url();
+  } catch {
+    return 'no frame';
+  }
+}
+
 async function setupNewAuthenticatedPage(
   browser: Browser,
   baseURL: string,
@@ -171,6 +187,7 @@ async function setupNewAuthenticatedPage(
       Origin: baseURL,
     },
   });
+  revealHiddenEditorChromeIn(context);
   const page = await context.newPage();
 
   // Sign in through the session API rather than the sign-in form. A UI sign-in
@@ -216,6 +233,7 @@ async function setupAuthenticatedPageFromStorageState(
     },
     storageState: authenticatedSession.storageState,
   });
+  revealHiddenEditorChromeIn(context);
   const page = await context.newPage();
   await page.goto('/ghost/#/');
   await waitForAdminHome(page);
@@ -315,14 +333,19 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         return;
       }
 
-      const print = (label: string, hosts: string[]) => {
+      const print = (label: string, hosts: string[], details?: Map<string, Set<string>>) => {
         if (hosts.length === 0) {
           return;
         }
         // eslint-disable-next-line no-console
         console.log(
           `\n[egress] external hosts ${label} (worker ${workerInfo.workerIndex}):\n` +
-            hosts.map((host) => `  - ${host}`).join('\n') +
+            hosts
+              .flatMap((host) => [
+                `  - ${host}`,
+                ...[...(details?.get(host) ?? [])].map((request) => `      ${request}`),
+              ])
+              .join('\n') +
             '\n',
         );
       };
@@ -336,10 +359,10 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       } catch {
         // Best-effort: never fail teardown over a monitor read error.
       }
-      const browserHosts = [...workerBrowserEgressHosts].sort();
+      const browserHosts = [...workerBrowserEgressHosts.keys()].sort();
 
       print('resolved by Ghost', serverHosts);
-      print('requested by the browser', browserHosts);
+      print('requested by the browser', browserHosts, workerBrowserEgressHosts);
 
       const unexpected = [...new Set([...serverHosts, ...browserHosts])].sort();
       if (EGRESS_ENFORCE && unexpected.length > 0) {
@@ -580,6 +603,18 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     await use(service);
   },
 
+  fixtureApp: async ({}, use, testInfo) => {
+    // Playwright's test ID already differs for each --repeat-each run; a retry keeps it, so the
+    // retry count is added for a retry that reuses the per-file environment.
+    const app = new FixtureApp({ appId: `org.ghost.e2e.app-${testInfo.testId}-${testInfo.retry}` });
+    await app.start();
+    debug('Fixture app started on port', app.port);
+
+    await use(app);
+
+    await app.stop();
+  },
+
   emailClient: async ({}, use) => {
     await use(new MailPit());
   },
@@ -702,7 +737,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   },
 
   // Extract the page from pageWithAuthenticatedUser and apply labs/stripe settings
-  page: async ({ pageWithAuthenticatedUser, labs, _testEnvironmentContext }, use) => {
+  page: async ({ pageWithAuthenticatedUser, labs, _testEnvironmentContext }, use, testInfo) => {
     _testEnvironmentContext.markResetEnvironmentBlocker('page');
 
     const page = pageWithAuthenticatedUser.page;
@@ -711,20 +746,22 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     // the Ghost container's resolver can't see requests the browser makes itself
     // (changelog.json, embeds, avatar services, …), so we watch them here and
     // hand off-allowlist hosts to the worker-level sweep (_egressSummary).
-    const browserEgressRequests = new Map<Request, string>();
+    const browserEgressRequests = new Map<Request, { host: string; detail: string }>();
     const onRequest = (request: Request) => {
-      let host: string;
+      let url: URL;
       try {
-        const url = new URL(request.url());
-        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-          return;
-        }
-        host = url.hostname;
+        url = new URL(request.url());
       } catch {
         return;
       }
-      if (!isAllowedHost(host)) {
-        browserEgressRequests.set(request, host);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return;
+      }
+      if (!isAllowedBrowserUrl(url)) {
+        browserEgressRequests.set(request, {
+          host: url.hostname,
+          detail: `${request.url()} (from ${frameUrl(request)}, in "${testInfo.titlePath.join(' > ')}")`,
+        });
       }
     };
     const onResponse = (response: Response) => {
@@ -755,8 +792,12 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     if (EGRESS_MONITOR_ENABLED) {
       page.off('request', onRequest);
       page.off('response', onResponse);
-      for (const host of browserEgressRequests.values()) {
-        workerBrowserEgressHosts.add(host);
+      for (const { host, detail } of browserEgressRequests.values()) {
+        const requests = workerBrowserEgressHosts.get(host) ?? new Set<string>();
+        if (requests.size < EGRESS_REQUESTS_PER_HOST) {
+          requests.add(detail);
+        }
+        workerBrowserEgressHosts.set(host, requests);
       }
     }
   },

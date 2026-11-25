@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
 import {
   Field,
@@ -23,18 +23,21 @@ export default function SigninVerify() {
   const [codeError, setCodeError] = useState('');
   const [flowError, setFlowError] = useState('');
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
+  const verifying = useRef(false);
 
   const failWith = (message: string, setMessage: (message: string) => void) => {
     setMessage(message);
     setSubmitState('failed');
   };
 
-  const verify = async (event: FormEvent) => {
-    event.preventDefault();
+  const verify = async (value: string) => {
+    if (verifying.current) {
+      return;
+    }
     setFlowError('');
     setCodeError('');
 
-    const trimmed = code.trim();
+    const trimmed = value.trim();
     if (!trimmed) {
       return failWith('Verification code is required', setCodeError);
     }
@@ -42,6 +45,7 @@ export default function SigninVerify() {
       return failWith('Verification code must be 6 numbers', setCodeError);
     }
 
+    verifying.current = true;
     setSubmitState('running');
     try {
       const { error } = await authClient.twoFactor.verifyOtp({ code: trimmed });
@@ -57,14 +61,22 @@ export default function SigninVerify() {
         describeUnexpectedError(error, 'There was a problem verifying the code. Please try again.'),
         setFlowError,
       );
+    } finally {
+      verifying.current = false;
     }
   };
 
   return (
     <AuthLayout>
-      <form noValidate onSubmit={(event) => void verify(event)}>
+      <form
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          void verify(code);
+        }}
+      >
         <Stack gap="lg">
-          <AuthHeader title={twoFactorRequired ? '2FA confirmation' : "Verify it's really you"}>
+          <AuthHeader title={twoFactorRequired ? '2FA confirmation' : 'Verify it’s really you'}>
             <p className="text-lg text-muted-foreground">
               {twoFactorRequired ? (
                 <>
@@ -73,7 +85,7 @@ export default function SigninVerify() {
                 </>
               ) : (
                 <>
-                  It looks like you&apos;re signing in from a new device. A{' '}
+                  It looks like you’re signing in from a new device. A{' '}
                   <span className="whitespace-nowrap">6-digit</span>{' '}
                   <span className="whitespace-nowrap">sign-in</span> verification code has been sent
                   to your email to keep your account safe.
@@ -88,6 +100,7 @@ export default function SigninVerify() {
                 aria-invalid={Boolean(codeError) || undefined}
                 autoComplete="one-time-code"
                 data-test-input="token"
+                disabled={submitState === 'running'}
                 id="token"
                 inputMode="numeric"
                 name="token"
@@ -97,10 +110,16 @@ export default function SigninVerify() {
                 value={code}
                 data-1p-ignore
                 onChange={(event) => {
-                  setCode(event.target.value);
+                  const value = event.target.value;
+                  setCode(value);
                   setCodeError('');
                   setFlowError('');
-                  setSubmitState('idle');
+                  if (!verifying.current) {
+                    setSubmitState('idle');
+                  }
+                  if (/^\d{6}$/.test(value.trim())) {
+                    void verify(value);
+                  }
                 }}
               />
               <InputGroupAddon align="inline-end">

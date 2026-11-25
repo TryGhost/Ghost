@@ -13,6 +13,7 @@ the repository's merge-commit setting, enables it only when needed, restores it
 on every exit path, and verifies that SOURCE_SPLIT_TIP remains reachable.
 
 --dry-run  Agent preflight; no settings are changed and no merge is performed.
+           Like --confirm, it rejects a PR that is still a draft.
 --confirm  Human administrator checkpoint; require the head validated by the
            dry run, temporarily enable merge commits, merge the PR, restore the
            setting, and verify the imported history.
@@ -72,7 +73,8 @@ if [[ $mode == --confirm && $head_sha != "$expected_head" ]]; then
 fi
 
 [[ $state == OPEN ]] || fail "PR is not open (state: $state)"
-[[ $is_draft == false ]] || fail "PR is still a draft"
+[[ $is_draft == false ]] ||
+    fail "PR is still a draft; mark it ready for review, then rerun (--dry-run and --confirm both require a non-draft PR)"
 [[ $mergeable == MERGEABLE ]] ||
     fail "PR is not currently mergeable (mergeable: $mergeable)"
 [[ $is_stacked == false ]] ||

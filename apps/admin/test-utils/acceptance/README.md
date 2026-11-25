@@ -56,7 +56,9 @@ Don't guess the app's network graph — run the test, the 418 names what's missi
 
 **Embedded apps.** MSW cannot see iframe navigations, so an external frame gets a 418 page (no network) unless the spec declares `fakeFrameOrigin(origin, html)`. The stand-in HTML can script an embedding protocol with `window.parent.postMessage`; see `src/migrate/migrate.acceptance.test.tsx`.
 
-**Code that fails to load.** `failModuleLoads(pathEnd)` fails the browser's requests for a module as a dropped connection would, so its dynamic import rejects. The browser keeps that module failed for the rest of the spec file, and every signed-in render preloads some modules (the search modal, the editor), so a spec that fails one of those needs a file of its own.
+**Installed apps' pages.** An app's page uses the bridge, so `appFramePage(flags)` builds one for `fakeFrameOrigin` on the real app SDK (`app-frame-stand-in.ts`). The `bundleFrameScript` command bundles that script, because the frame can't load anything from the test server. The page loads the SDK's built bundle, the same one apps load. The `bundleAppSdk` command builds it with the SDK's own build config, as `pnpm build` writes it to `packages/app-sdk/dist/`, so the specs always run the SDK as built from the checkout, without waiting for a separate build. A spec acts as the app through the page's hooks with `callAppFrame(origin, hook, ...args)`, and reads what Admin sent it with the `state` hook. The SDK refuses a bad path or place before Admin sees it, so specs of Admin's own checks frame `appFramePage(flags, 'raw')` instead (`app-frame-raw.ts`, which uses the bridge without the SDK) and send Admin anything with `callHostRaw(origin, name, ...args)`. `fakeAppPage(installation)` in `src/apps/apps.test-utils.ts` fakes the Ghost requests that opening an app makes: the session start, which returns the installation, and the installation read, which only runs when the tab becomes visible again, to check whether the session has ended. See `src/apps/apps.acceptance.test.tsx`. `reloadFrame(origin)` and `postFrameForm(origin, action)` give the frame a new document, as the page's own reload or form would. The frame's lifecycle alone (how long a page gets to start, retries, new documents started in place, reloads, the limit on short-lived documents, and which changes are sent to the app but never echoed back) is unit-tested against a fake frame in `src/apps/lib/app-frame-session.test.ts`.
+
+**Code that fails to load.** `failModuleLoads(pathEnd)` fails the browser's requests for a module as a dropped connection would, so its dynamic import rejects. The browser keeps that module failed for the rest of the spec file, and every signed-in render preloads some modules (the search modal, the editor), so a spec that fails one of those needs a file of its own. `holdModuleLoads(pathEnd)` holds a module back instead, as a slow connection would. A navigation to a route the module serves stays pending until the spec calls the release function it returns. It can only hold a module that no earlier spec in the file loaded.
 
 **Cross-app navigation.** When a spec asserts only the shell's behavior and a navigation mounts another app (settings, ActivityPub), don't fake that app's boot graph: `allowUnhandledRequests()` with a one-line constraint comment ("the settings app owns its request graph") is the sanctioned pattern.
 
@@ -66,12 +68,13 @@ When your area calls a new external origin, add it to `EXTERNAL_URL_BLOCKLIST` i
 
 ## The boot table
 
-The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseMemberCustomFieldDefinitions`, `browseNotifications`, `browseActiveTheme`, `browseThemes`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
+The shell requests handled by default (`boot.ts`): `browseSettings`, `browseSegments`, `browseConfig`, `browseSite`, `browseMe`, `browseMembersCount`, `browseMemberCustomFieldDefinitions`, `browseNotifications`, `browseActiveTheme`, `browseThemes`, `editUserPreferences`. A **boot override** replaces the response of one named entry for one test (the entry's method/path stay fixed):
 
 ```ts
 // Labs flags (sugar for lockstep settings + config overrides; merges into
 // any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
+await renderInApp(<MyComponent />, {labs: {admin7Mobile: true}});
 
 // The editor's autosave debounce, injected as a test-only `/config/` key, so a
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
@@ -88,7 +91,9 @@ me.users[0].accessibility = JSON.stringify({whatsNew: {lastSeenDate: "2025-01-01
 await renderAdminApp("/tags", {boot: {browseMe: {response: me}}});
 ```
 
-Boot responses are STATELESS — a canned reply per request, nothing is stored — with one exception: `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write).
+Boot responses are STATELESS — a canned reply per request, nothing is stored — with two exceptions. `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write). Saved views are stored, as described next.
+
+The fake stores saved views in `shared-views.ts`, in the two places Ghost keeps them. The views of the posts and pages lists are entries of the `shared_views` setting, which `/settings/` serves: a `shared_views` saved through `fakeEditSettings` replaces that value for the rest of the test, in later `GET /settings/` responses and the PUT's own echo too. The saved member views are segments, which `/segments/` serves from a store of their own, each with the id it was given when it was added, which it keeps. Ghost doesn't read the setting for member views, and neither does the fake. Seed saved views of every kind with `withSavedViews(...)`: the fake stores the member views among them as segments and the rest in the setting.
 
 ## Faking a resource that has no fake yet
 
@@ -128,7 +133,7 @@ Adding a new screen:
 
 Reach for it when the behaviour under test is a component's own — a modal's steps, a hook's loading boundary — and going through the app would only add route setup. A component spec **must not boot the app or depend on a route**: no `renderAdminApp`, no URL assertions, no navigation between screens. Behaviour that needs the shell, a route, or a second screen is an acceptance spec.
 
-Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Boot overrides and labs flags have no seam in this tier; a component that needs one belongs in an acceptance spec.
+Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Pass Labs flags through `renderInApp(subject, {labs: {admin7Design: false}})` when a component needs a particular presentation. Without an override, Shade keeps its standalone defaults. Row contract tests cover both presentations. Test Admin's routing and Labs wiring through `renderAdminApp` with an explicit `labs` override.
 
 ## Running
 

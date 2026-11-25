@@ -1,7 +1,7 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
-import { ActionList } from '@tryghost/shade/components';
+import { List } from '@tryghost/shade/components';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 
@@ -20,9 +20,9 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
-    title: 'Automations lifecycle triggers',
-    description: 'Triggers for upgrades and downgrades.',
-    flag: 'automationsLifecycleTriggers',
+    title: 'Automations lead magnets',
+    description: '"Label added" automation trigger.',
+    flag: 'automationsLeadMagnets',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -45,16 +45,15 @@ const features: Feature[] = [
     flag: 'admin7Design',
   },
   {
+    title: 'Admin 7 · Mobile hardening',
+    description: 'Preview responsive Admin improvements, independently of Admin 7 · Design.',
+    flag: 'admin7Mobile',
+  },
+  {
     title: 'Admin 7 · Customize from View site',
     description:
       'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
     flag: 'admin7CustomizeFromViewSite',
-  },
-  {
-    title: 'Admin 7 · Editor improvements',
-    description:
-      'Hide the editor’s controls while you write; move the mouse or scroll to bring them back.',
-    flag: 'admin7EditorImprovements',
   },
   {
     title: 'Email Unique ID',
@@ -80,24 +79,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Member custom fields',
-    description:
-      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
-    flag: 'membersCustomFields',
-  },
-  {
-    title: 'Stripe checkout collection',
-    description:
-      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
-    flag: 'stripeCheckoutCollection',
-  },
-  {
-    title: 'Stripe checkout design',
-    description:
-      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
-    flag: 'stripeCheckoutDesign',
-  },
-  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -113,6 +94,35 @@ const features: Feature[] = [
     description:
       'Install and manage third-party apps that run on their own servers. Early and incomplete.',
     flag: 'apps',
+  },
+  {
+    title: 'Editor presence polling',
+    description:
+      'Record which staff have a post open in the editor and poll for it. Shows nothing yet.',
+    flag: 'editorPresencePolling',
+  },
+  {
+    title: 'Editor presence indicators',
+    description:
+      'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
+    flag: 'editorPresence',
+  },
+  {
+    title: 'Editor lease',
+    description:
+      'Let one editor tab at a time edit a post or page. Others open it read-only and can take over. Needs editor presence polling.',
+    flag: 'editorLease',
+  },
+  {
+    title: 'Comments analytics',
+    description: 'Show comment volume, top posts and top commenters beside the comments list.',
+    flag: 'commentsAnalytics',
+  },
+  {
+    title: 'OAuth bridge',
+    description:
+      'Connect Stripe through account.ghost.org, which sends the connection back to Admin, instead of pasting a secure key.',
+    flag: 'oauthBridge',
   },
 ];
 
@@ -144,7 +154,7 @@ const AlphaFeatures: React.FC = () => {
   }, [limiter]);
 
   return (
-    <ActionList>
+    <List>
       {allowedFeatures.map((feature) => (
         <LabItem
           key={feature.flag}
@@ -153,7 +163,7 @@ const AlphaFeatures: React.FC = () => {
           title={feature.title}
         />
       ))}
-    </ActionList>
+    </List>
   );
 };
 

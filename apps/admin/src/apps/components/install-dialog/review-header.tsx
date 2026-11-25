@@ -7,31 +7,23 @@ import {
   DialogTitle,
   Separator,
 } from '@tryghost/shade/components';
-import { Inline, Text } from '@tryghost/shade/primitives';
-import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
-import { AppBanner, AppIcon } from '@/apps/components/app-icon';
-import { isDevelopmentApp } from '@/apps/lib/served-from';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
+import { AppBanner, AppIcon, type AppIconSource } from '@/apps/components/app-icon';
+import { AppAuthor, UnverifiedDeveloperBadge } from '@/apps/components/app-author';
 
 /**
- * Who made the app: the same for installing and approving. Where it runs is listed with
- * what it can access, as a place it sends data to.
+ * Who made the app: the same for installing and approving, with a badge while Ghost hasn’t
+ * verified them. Where it runs is listed with what it can access, as a place it sends data to.
  */
-const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview }) => {
-  const { manifest } = preview;
+const AppIdentity: React.FC<{ manifest: AppManifest }> = ({ manifest }) => {
   return (
-    <Inline gap="xs">
+    <Inline gap="xs" wrap>
       <Text as="span" size="sm" tone="secondary">
-        By{' '}
-        <a
-          className="text-foreground hover:underline"
-          href={manifest.author.url}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          {manifest.author.name}
-        </a>
+        By <AppAuthor manifest={manifest} emphasised />
       </Text>
-      {isDevelopmentApp(manifest) && (
+      <UnverifiedDeveloperBadge manifest={manifest} />
+      {manifest.development && (
         <Badge data-testid="app-development-badge" variant="secondary">
           Development
         </Badge>
@@ -42,25 +34,31 @@ const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview })
 
 /**
  * The top of a review, for installing and approving alike: the app's color as a band its
- * icon sits into, like a profile picture, then who the app is and what's being asked.
+ * icon sits into, like a profile picture, then who the app is.
+ *
+ * `app` is the app as it stands: the manifest being installed, or for an installed app, the one
+ * it was approved with, until its changes are approved. `children` follow it a section step
+ * apart, closer than the dialog's own gap, as part of the app as it stands.
  */
-export const ReviewHeader: React.FC<{
-  preview: AppInstallationPreview;
-  title: string;
-  description: string;
-}> = ({ preview, title, description }) => {
-  const { manifest } = preview;
+export const ReviewHeader: React.FC<{ app: AppIconSource; children?: React.ReactNode }> = ({
+  app,
+  children,
+}) => {
+  const { manifest } = app;
   return (
     <>
       <AppBanner className="-mx-6 -mt-6 h-28 shrink-0" color={manifest.accent_color} />
-      {/* -mt-14 pulls the 64px icon up past the dialog's 24px gap, so half of it
-          overlaps the band; its ring matches the dialog to cut out the band. */}
-      <DialogHeader className="-mt-14 items-start">
-        <AppIcon className="ring-4 ring-surface-elevated-2" manifest={manifest} size="xl" />
-        <DialogTitle className="mt-3">{title}</DialogTitle>
-        <AppIdentity preview={preview} />
-        <DialogDescription className="mt-2">{description}</DialogDescription>
-      </DialogHeader>
+      <Stack gap="lg">
+        {/* -mt-14 pulls the 64px icon up past the dialog's 24px gap, so half of it
+            overlaps the band; its ring matches the dialog to cut out the band. */}
+        <DialogHeader className="-mt-14 items-start">
+          <AppIcon app={app} className="ring-4 ring-surface-elevated-2" size="xl" />
+          <DialogTitle className="mt-3">{manifest.name}</DialogTitle>
+          <AppIdentity manifest={manifest} />
+          <DialogDescription>{manifest.description}</DialogDescription>
+        </DialogHeader>
+        {children}
+      </Stack>
     </>
   );
 };

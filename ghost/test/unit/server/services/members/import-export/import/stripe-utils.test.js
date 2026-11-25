@@ -340,7 +340,7 @@ describe('MembersCSVImporterStripeUtils', function () {
           stripeCustomer.subscriptions.data[0].id,
           stripeCustomerSubscriptionItem.id,
           GHOST_PRODUCT_STRIPE_PRICE_ID,
-          { prorationBehavior: 'none' },
+          { prorationBehavior: 'none', preserveCancellation: true },
         ),
         true,
       );
@@ -391,7 +391,7 @@ describe('MembersCSVImporterStripeUtils', function () {
           stripeCustomer.subscriptions.data[0].id,
           stripeCustomerSubscriptionItem.id,
           NEW_STRIPE_PRICE_ID,
-          { prorationBehavior: 'none' },
+          { prorationBehavior: 'none', preserveCancellation: true },
         ),
         true,
       );

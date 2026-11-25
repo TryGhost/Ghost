@@ -13,7 +13,7 @@ import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
-import type { ImportFileStager, StagedImportFile } from './staged-file';
+import type { DownloadedImportFile, ImportFileStager, StagedImportFile } from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
 
 export type { ImportRequest } from './schema';
@@ -147,48 +147,28 @@ class ContentCSVImporter {
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
     const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
-    let stagedFile: StagedImportFile;
-    try {
-      stagedFile = await this._fileStager.stage(request);
-    } catch (error) {
-      throw new errors.ValidationError({
-        message: tpl(messages.unreadableFile),
-        err: error,
-      });
-    }
+    const { source, preparedRows } = await this.readPreparedRows(request);
+    await this.cleanupSource(source.cleanup);
+
+    this.assertWithinPostLimit(preparedRows.rows);
+
+    const stagedFile = await this._fileStager.stage(request);
     let handedOff = false;
 
     try {
-      const stagedRequest = {
-        filePath: stagedFile.path,
-        fileName: stagedFile.name,
-        mapping: request.mapping,
-        requestUserEmail: request.requestUserEmail,
-      };
-      const { source, preparedRows } = await this.readPreparedRows(stagedRequest);
-      await this.cleanupSource(source.cleanup);
-
-      this.assertWithinPostLimit(preparedRows.rows);
-
       const runId = this._newRunId();
       const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
-      this._store.create(runId, preparedRows.rows.length, preparedRows.columns);
       const job = new ContentCSVImportJob({
         importId: runId,
         file: stagedFile,
         mapping: request.mapping,
         importTagNames,
         emailRecipient,
+        total: preparedRows.rows.length,
       });
 
       logLifecycle('queued');
-      try {
-        await this._dispatchJob(job);
-      } catch (error) {
-        this._store.fail(runId, messageOf(error));
-        this._store.release(runId);
-        throw error;
-      }
+      await this._dispatchJob(job);
 
       handedOff = true;
       return { importId: runId, total: preparedRows.rows.length };
@@ -200,15 +180,19 @@ class ContentCSVImporter {
   }
 
   async handle(job: ContentCSVImportJob): Promise<void> {
+    let download: DownloadedImportFile | undefined;
     let source: PreparedImportSource | undefined;
 
     try {
+      const run = this._store.create(job.importId, job.total);
+      download = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
-        filePath: job.file.path,
+        filePath: download.path,
         fileName: job.file.name,
         mapping: job.mapping,
       });
       source = prepared.source;
+      run.sourceColumns = prepared.preparedRows.columns;
       this.assertWithinPostLimit(prepared.preparedRows.rows);
       await this.processRows(
         job.importId,
@@ -223,6 +207,9 @@ class ContentCSVImporter {
       if (source) {
         await this.cleanupSource(source.cleanup);
       }
+      if (download) {
+        await this.cleanupSource(download.cleanup);
+      }
       const run = this._store.get(job.importId);
       if (run) {
         await this.settle(() => this._email.send(run, job.emailRecipient));
@@ -230,10 +217,6 @@ class ContentCSVImporter {
       this._store.release(job.importId);
       await this.cleanupStagedFile(job.file);
     }
-  }
-
-  allSettled(): Promise<void> {
-    return this._store.allSettled();
   }
 
   private async processRows(

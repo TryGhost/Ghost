@@ -3,18 +3,26 @@ import { promisify } from 'node:util';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import * as errors from '@tryghost/errors';
+import type { GhostLogger } from '@tryghost/logging';
 import {
   getPublicKeyInfo,
   getPublicKeyInfoFromPublicKey,
   type PublicKeyInfo,
 } from '../../lib/public-jwk';
 import { DbDate } from '../../lib/db-types/date';
+import type { Settings as SettingsModel } from '../../models/settings';
 
 export type SigningKeyPurpose = 'members' | 'staff';
 
 export interface SigningKey {
   privateKey: string;
   kid: string;
+  /**
+   * A pre-2048-bit key still signing until its rotation completes; pass as
+   * jsonwebtoken's `allowInsecureKeySizes`.
+   * @TODO: Ghost 7.0 - drop once every site has rotated off 1024-bit keys
+   */
+  legacy: boolean;
 }
 
 export interface Jwks {
@@ -35,24 +43,8 @@ interface Keypair {
   privateKey: string;
 }
 
-interface Logger {
-  info(message: string): void;
-  warn(message: string): void;
-}
-
 interface SettingsCache {
   get(key: string, options: { resolve: false }): unknown;
-}
-
-interface SettingsModel {
-  findOne(
-    data: { key: string },
-    options: { transacting: Knex.Transaction; forUpdate: true },
-  ): Promise<{ toJSON(): unknown } | null>;
-  edit(
-    data: { key: string; value: string | null }[],
-    options: { transacting: Knex.Transaction; context: { internal: true } },
-  ): Promise<unknown>;
 }
 
 type Transaction = <T>(fn: (transacting: Knex.Transaction) => Promise<T>) => Promise<T>;
@@ -145,9 +137,9 @@ function modulusLength(privateKey: string): number {
  */
 export class SigningKeyService {
   private settingsCache: SettingsCache;
-  private Settings: SettingsModel;
+  private Settings: Pick<typeof SettingsModel, 'findOne' | 'edit'>;
   private transaction: Transaction;
-  private logging: Logger;
+  private logging: Pick<GhostLogger, 'info' | 'warn'>;
   private generateKeypair: () => Promise<Keypair>;
   private onRotationStarted?: () => Promise<void>;
 
@@ -160,9 +152,9 @@ export class SigningKeyService {
     onRotationStarted,
   }: {
     settingsCache: SettingsCache;
-    Settings: SettingsModel;
+    Settings: Pick<typeof SettingsModel, 'findOne' | 'edit'>;
     transaction: Transaction;
-    logging: Logger;
+    logging: Pick<GhostLogger, 'info' | 'warn'>;
     generateKeypair?: () => Promise<Keypair>;
     /** Called after rotate() publishes a new key, so something advances it. */
     onRotationStarted?: () => Promise<void>;
@@ -229,7 +221,7 @@ export class SigningKeyService {
       throw new errors.IncorrectUsageError({ message: `No ${purpose} signing key` });
     }
     const { kid } = await getPublicKeyInfo(privateKey);
-    return { privateKey, kid };
+    return { privateKey, kid, legacy: modulusLength(privateKey) < MIN_MODULUS_LENGTH };
   }
 
   private async getVerificationKey(purpose: SigningKeyPurpose, kid?: string): Promise<string> {

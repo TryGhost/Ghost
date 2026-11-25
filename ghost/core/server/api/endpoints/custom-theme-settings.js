@@ -1,4 +1,4 @@
-const customThemeSettingsService = require('../../services/custom-theme-settings');
+const customThemeSettingsService = require('../../services/custom-theme-settings').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -10,7 +10,7 @@ const controller = {
     },
     permissions: true,
     query() {
-      return customThemeSettingsService.api.listSettings();
+      return customThemeSettingsService.service.listSettings();
     },
   },
 
@@ -20,7 +20,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return customThemeSettingsService.api.updateSettings(frame.data.custom_theme_settings);
+      return customThemeSettingsService.service.updateSettings(frame.data.custom_theme_settings);
     },
   },
 };

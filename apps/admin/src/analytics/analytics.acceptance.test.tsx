@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
+import { describe, expect, it, onTestFinished } from 'vitest';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -27,6 +28,13 @@ function daysAgo(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return date.toISOString().slice(0, 10);
+}
+
+function localDaysAgo(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /**
@@ -135,30 +143,41 @@ describe('Analytics overview', () => {
     await expect.element(analyticsScreen.mrrValue()).toHaveTextContent(/^\$0$/);
   });
 
-  it('renders the seeded KPIs, latest post and top posts', async () => {
-    const { postsApi } = seedAnalyticsWorld();
-    seedTopPostsViews();
-    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+  it.each([false, true])(
+    'renders the seeded KPIs and top posts with admin7Design %s',
+    async (admin7Design) => {
+      const { postsApi } = seedAnalyticsWorld();
+      seedTopPostsViews();
+      await renderAdminApp('/analytics', {
+        labs: { admin7Design },
+        boot: webAnalyticsBootOverrides(),
+      });
 
-    // Headline KPIs: visitors summed from the Tinybird rows, members from
-    // the member-count totals, MRR from the mrr history.
-    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
-    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
-    await expect.element(analyticsScreen.mrrValue()).toHaveTextContent('$500');
+      // Headline KPIs: visitors summed from the Tinybird rows, members from
+      // the member-count totals, MRR from the mrr history.
+      await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+      await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
+      await expect.element(analyticsScreen.mrrValue()).toHaveTextContent('$500');
 
-    // Chart region inside the visitors KPI card.
-    await expect
-      .poll(() => analyticsScreen.uniqueVisitorsCard().element().querySelector('svg'))
-      .not.toBeNull();
+      // Chart region inside the visitors KPI card.
+      await expect
+        .poll(() => analyticsScreen.uniqueVisitorsCard().element().querySelector('svg'))
+        .not.toBeNull();
 
-    await expect.element(analyticsScreen.latestPost()).toHaveTextContent('Attack of the Clones');
-    await expect(postsApi).toHaveSentFilter('status:[published,sent]');
-    expect(postsApi.lastRequest).toMatchObject({ order: 'published_at DESC', limit: 1 });
-    await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('A Popular Post');
+      await expect.element(analyticsScreen.latestPost()).toHaveTextContent('Attack of the Clones');
+      await expect(postsApi).toHaveSentFilter('status:[published,sent]');
+      expect(postsApi.lastRequest).toMatchObject({ order: 'published_at DESC', limit: 1 });
+      await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('A Popular Post');
+      await expect(
+        analyticsScreen.topPostsCard().getByRole('button', { name: /^A Popular Post/ }),
+      ).toHaveCount(1);
 
-    // The header's active-visitors probe (Tinybird) resolved.
-    await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
-  });
+      // The header's active-visitors probe (Tinybird) resolved.
+      if (!admin7Design) {
+        await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
+      }
+    },
+  );
 
   it('re-queries Tinybird when the date range changes', async () => {
     const { kpisApi } = seedAnalyticsWorld();
@@ -401,10 +420,12 @@ describe('Analytics growth', () => {
 });
 
 describe('Analytics newsletters', () => {
-  it('renders the seeded subscriber KPIs and top newsletters', async () => {
+  it('keeps subscriber and open statistics visible and retries failed click statistics', async () => {
     seedAnalyticsWorld();
+    const newsletterId = '64d623b64676110001e897d2';
     fakeNewsletters([
       newsletter({
+        id: newsletterId,
         name: 'Weekly Digest',
         status: 'active',
         sort_order: 0,
@@ -413,34 +434,128 @@ describe('Analytics newsletters', () => {
     ]);
     fakeAdminStats.newsletterSubscribers({
       total: 543,
-      values: [
-        { date: daysAgo(2), value: 520 },
-        { date: daysAgo(1), value: 543 },
-      ],
+      values: [{ date: daysAgo(1), value: 543 }],
     });
-    const basicStats = {
-      post_id: LATEST_POST_ID,
-      post_title: 'Weekly Digest Issue #1',
-      send_date: `${daysAgo(3)}T10:00:00.000Z`,
-      sent_to: 1000,
-      total_opens: 300,
-    };
-    fakeAdminStats.newsletterBasic([basicStats]);
-    fakeAdminStats.newsletterClicks([
+    const basicRequests = fakeAdminStats.newsletterBasic([
       {
         post_id: LATEST_POST_ID,
-        total_clicks: 50,
-        email_count: 1000,
+        post_title: 'Weekly Digest Issue #1',
+        send_date: `${localDaysAgo(3)}T10:00:00.000Z`,
+        sent_to: 100,
+        total_opens: 50,
       },
     ]);
-    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+    let clicksUnavailable = true;
+    const loadingClicks = deferred<void>();
+    onTestFinished(() => loadingClicks.resolve());
+    const clickRequests = fakeAdminEndpoint(
+      'GET',
+      /^\/stats\/newsletter-click-stats\//,
+      async ({ url }) => {
+        if (new URL(url).searchParams.get('fail_on_error') !== 'true') {
+          return { stats: [], meta: {} };
+        }
+        if (clicksUnavailable) {
+          await loadingClicks.promise;
+          return Response.json(
+            { errors: [{ message: 'Unavailable', type: 'InternalServerError' }] },
+            { status: 500 },
+          );
+        }
+        return {
+          stats: [{ post_id: LATEST_POST_ID, total_clicks: 10, click_rate: 0.1, email_count: 100 }],
+          meta: {},
+        };
+      },
+    );
 
-    await expect.element(analyticsScreen.newslettersCard()).toBeVisible();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
     await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
     await expect
-      .element(analyticsScreen.topNewslettersCard())
-      .toHaveTextContent('Weekly Digest Issue #1');
+      .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
+      .toHaveTextContent('50%');
+    const row = analyticsScreen
+      .topNewslettersCard()
+      .getByRole('row')
+      .filter({ hasText: 'Weekly Digest Issue #1' });
+    await expect.element(row).toHaveTextContent('50%');
+    await analyticsScreen.newslettersCardTab('Avg. open rate').click();
+    await expect
+      .poll(
+        () =>
+          analyticsScreen.newslettersCard().element().querySelectorAll('.recharts-bar-rectangle')
+            .length,
+      )
+      .toBe(1);
+    loadingClicks.resolve();
+    await analyticsScreen.newslettersCardTab('Avg. click rate').click();
+    const card = analyticsScreen.newslettersCard();
+    await expect.element(card).toHaveTextContent('Unable to load click statistics');
+
+    await expect.poll(() => clickRequests.requests.length).toBeGreaterThanOrEqual(2);
+    const basicCount = basicRequests.requests.length;
+    const clickCount = clickRequests.requests.length;
+    clicksUnavailable = false;
+    await card.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
+      .toHaveTextContent('10%');
+    await expect.element(row).toHaveTextContent('50%');
+    expect(clickRequests.requests.length).toBeGreaterThan(clickCount);
+    expect(basicRequests.requests.length).toBe(basicCount);
   });
+
+  it('uses every send for averages and charts while limiting top newsletters', async () => {
+    seedAnalyticsWorld();
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers();
+    const sends = Array.from({ length: 121 }, (_, index) => ({
+      post_id: String(index).padStart(24, '0'),
+      post_title: 'Issue ' + index,
+      send_date: localDaysAgo(Math.floor(index / 6)) + 'T10:00:00.000Z',
+      sent_to: 100,
+      total_opens: (120 - index) / 2,
+      open_rate: (120 - index) / 200,
+    }));
+    const basicRequests = fakeAdminStats.newsletterBasic(sends);
+    const sendsById = new Map(sends.map((send) => [send.post_id, send]));
+    fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
+      const ids = new URL(url).searchParams.get('post_ids')?.split(',') ?? [];
+      return {
+        stats: ids.map((postId) => ({
+          post_id: postId,
+          total_clicks: sendsById.get(postId)!.total_opens,
+          click_rate: sendsById.get(postId)!.open_rate,
+          email_count: 100,
+        })),
+        meta: {},
+      };
+    });
+
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
+      .toHaveTextContent('30%');
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
+      .toHaveTextContent('30%');
+    expect(
+      basicRequests.requests.some(({ url }) => new URL(url).searchParams.get('page') === '3'),
+    ).toBe(true);
+
+    await analyticsScreen.newslettersCardTab('Avg. open rate').click();
+    const bars = () =>
+      analyticsScreen.newslettersCard().element().querySelectorAll('.recharts-bar-rectangle');
+    await expect.poll(() => bars().length).toBe(121);
+    const heights = [...bars()].map((bar) => bar.getBoundingClientRect().height);
+    expect(heights).toEqual([...heights].sort((a, b) => a - b));
+    expect(heights[0]).toBeLessThan(heights[120]);
+    await expect
+      .poll(
+        () => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length,
+      )
+      .toBe(20);
+  }, 30_000);
 
   it('shows the empty state on every newsletter card when none were sent', async () => {
     seedEmptyAnalyticsWorld();
@@ -465,4 +580,49 @@ describe('Analytics newsletters', () => {
       .element(analyticsScreen.newslettersCard())
       .toHaveTextContent('No newsletters in the last 30 days');
   });
+
+  it('does not show incomplete averages on a backend without pagination', async () => {
+    seedAnalyticsWorld();
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers({ total: 543 });
+    fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, { stats: [], meta: {} });
+    fakeAdminStats.newsletterClicks();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
+      .toHaveTextContent('—');
+    await analyticsScreen.newslettersCardTab('Avg. open rate').click();
+    await expect
+      .element(analyticsScreen.newslettersCard())
+      .toHaveTextContent('Update Ghost to see newsletter statistics for the whole period.');
+  });
+});
+
+it('uses the shared mobile sheet and summary for analytics filters', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(async () => {
+    await page.viewport(1280, 800);
+  });
+  seedEmptyAnalyticsWorld();
+  seedEmptyWebTraffic();
+  await renderAdminApp('/analytics/web', {
+    boot: webAnalyticsBootOverrides(),
+    labs: { admin7Mobile: true, admin7Design: false },
+  });
+  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  await page.getByRole('option', { name: 'Audience', exact: true }).click();
+  await page.getByRole('option', { name: 'Free members', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Filters', exact: true });
+  await expect.element(sheet).toBeVisible();
+  expect(sheet.element().scrollWidth).toBe(sheet.element().clientWidth);
+  await sheet.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect
+    .element(page.getByRole('button', { name: 'Edit active filters', exact: true }))
+    .toBeVisible();
+  await page.getByRole('button', { name: 'Clear', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Edit active filters', exact: true })).toHaveCount(
+    0,
+  );
 });

@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
+import type { GhostLogger } from '@tryghost/logging';
 import {
   getIngestConfig,
   type GetIngestConfigDependencies,
@@ -17,14 +18,9 @@ const MAX_PAYLOAD_BYTES = 9 * 1024 * 1024;
 const MAX_PAYLOAD_MESSAGES = 1000;
 const REQUEST_TIMEOUT_MS = 5 * 60 * 1000;
 
-type Logger = {
-  error(error: unknown, message?: string): void;
-  info(...args: unknown[]): void;
-};
-
 type TinybirdSyncDependencies = GetIngestConfigDependencies & {
   knex: Knex;
-  logging: Logger;
+  logging: Pick<GhostLogger, 'error' | 'info'>;
   random: () => number;
   now: () => Date;
   fetch: typeof globalThis.fetch;

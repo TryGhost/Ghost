@@ -191,8 +191,8 @@ test('counts maintained fixture modules and classifies test support without hidi
     ['apps/admin/src/editor/engine/__fixtures__/after-load.test.tsx', 'tests'],
     ['apps/admin/src/editor/engine/__fixtures__/index.ts', 'tests'],
     ['apps/admin/test-utils/fixtures/query-client.tsx', 'tests'],
-    ['ghost/core/server/data/schema/fixtures/fixture-manager.js', 'backend'],
-    ['ghost/core/server/data/schema/fixtures/index.js', 'backend'],
+    ['ghost/core/server/data/schema/fixtures/fixture-manager.ts', 'backend'],
+    ['ghost/core/server/data/schema/fixtures/index.ts', 'backend'],
     ['ghost/test/unit/server/data/schema/fixtures/fixture-manager.test.js', 'tests'],
     ['ghost/test/utils/fixtures/email-service/malformed-css.js', 'tests'],
     ['packages/image-transform/test/integration/fixtures/index.ts', 'tests'],
@@ -233,8 +233,8 @@ test('counts maintained fixture modules and classifies test support without hidi
   const report = inventory(root);
   assert.equal(report.measurementVersion, 2);
   assert.equal(report.files.length, included.length);
-  assert.equal(report.summary.javascript, 4);
-  assert.equal(report.summary.typescript, 6);
+  assert.equal(report.summary.javascript, 2);
+  assert.equal(report.summary.typescript, 8);
   assert.deepEqual(report.excluded.sort(), excluded.sort());
   for (const [file, expected] of included) {
     assert.equal(report.files.find((entry) => entry.path === file)?.category, expected, file);

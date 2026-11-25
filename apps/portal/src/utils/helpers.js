@@ -75,6 +75,7 @@ export function isPaidMember({ member = {} }) {
   return member && member.paid;
 }
 
+/** @param {{member?: {status?: string} | null | undefined}} options */
 export function isGiftMember({ member = {} }) {
   return member?.status === 'gift';
 }
@@ -274,6 +275,7 @@ export function hasRecommendations({ site }) {
   return site?.recommendations_enabled === true;
 }
 
+/** @param {{site?: {paid_members_enabled?: boolean} | null}} options */
 export function arePaidMembersEnabled({ site }) {
   return site?.paid_members_enabled === true;
 }
@@ -308,6 +310,12 @@ export function getRefDomain() {
   return referrerSource;
 }
 
+/**
+ * Whether the site's Ghost has custom fields switched on, so Portal may ask it for them. They
+ * are released, but Portal is served to older Ghost versions too, which report the flag off.
+ * This goes in the same change that deletes the flag from Ghost: with the flag gone, it would
+ * read off everywhere and hide every member's fields.
+ */
 export function hasCustomFieldsEnabled({ site }) {
   return !!site?.labs?.membersCustomFields;
 }
@@ -414,6 +422,13 @@ export function getFreeProduct({ site }) {
   return products.find((product) => product.type === 'free');
 }
 
+/**
+ * @template {{
+ *   monthlyPrice?: {amount?: number, currency?: string} | null,
+ *   yearlyPrice?: {amount?: number, currency?: string} | null
+ * }} Product
+ * @param {{site?: {products?: (Product | null | undefined)[], portal_plans?: string[]} | null}} options
+ */
 export function getAllProductsForSite({ site }) {
   const { products = [], portal_plans: portalPlans = [] } = site || {};
 

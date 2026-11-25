@@ -4,8 +4,8 @@ import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { truncateText } from './tag-detail-edit';
 
 /**
- * Static mock previews for the metadata sections, porting the Ember tag form's
- * search/X/Facebook cards including their placeholder copy and decoration.
+ * Static mock previews for the metadata sections: the search/X/Facebook cards
+ * including their placeholder copy and decoration.
  */
 
 const SEO_DESCRIPTION_FALLBACK =
@@ -21,7 +21,7 @@ export const SeoPreview: React.FC<{ url: string; title: string; description: str
     data-testid="seo-preview"
   >
     <div className="mb-6 flex items-center gap-4">
-      <GoogleLogo className="h-6" />
+      <GoogleLogo className="h-6" title="Google" />
       <div className="flex h-9 flex-1 items-center justify-end rounded-full border border-border px-3">
         <LucideIcon.Search className="size-4 text-muted-foreground" />
       </div>

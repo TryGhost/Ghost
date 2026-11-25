@@ -55,18 +55,22 @@ const ShareModal = () => {
       }
     };
 
-    const onDocumentKeyDown = (event) => {
-      if (event.key === 'Escape') {
+    // Captured, so it runs before the listener on this document that closes Portal's popup, and
+    // marked handled by preventing its default, since the popup closes only on an Escape nothing
+    // has handled. Escape closes the menu and leaves the popup open.
+    const onDocumentKeyDownCapture = (event) => {
+      if (event.key === 'Escape' && !event.isComposing) {
+        event.preventDefault();
         setIsMoreMenuOpen(false);
       }
     };
 
     doc.addEventListener('click', onDocumentClickCapture, true);
-    doc.addEventListener('keydown', onDocumentKeyDown);
+    doc.addEventListener('keydown', onDocumentKeyDownCapture, true);
 
     return () => {
       doc.removeEventListener('click', onDocumentClickCapture, true);
-      doc.removeEventListener('keydown', onDocumentKeyDown);
+      doc.removeEventListener('keydown', onDocumentKeyDownCapture, true);
     };
   }, [isMoreMenuOpen]);
 

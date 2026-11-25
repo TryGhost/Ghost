@@ -1,5 +1,7 @@
 const DomainEvents = require('@tryghost/domain-events');
 const nock = require('nock');
+const stripe = require('stripe');
+const { z } = require('zod');
 let members = {};
 let stripeService = {};
 let tiers = {};
@@ -11,12 +13,115 @@ const crypto = require('crypto');
  * @typedef {"customers" | "checkout" | "subscriptions" | "coupons" | "payment_methods" | "prices" | "setup_intents" | "products"} resource
  */
 
+/** What Stripe decides an existing customer's tax rules from, as it decodes a session: flags as strings. */
+const CustomerTaxSession = z.object({
+  customer: z.string().optional(),
+  customer_update: z.record(z.string(), z.unknown()).optional(),
+  tax_id_collection: z.object({ enabled: z.unknown() }).partial().optional(),
+  automatic_tax: z.object({ enabled: z.unknown() }).partial().optional(),
+  shipping_address_collection: z.object({ allowed_countries: z.unknown() }).partial().optional(),
+});
+
+/**
+ * Why Stripe refuses a checkout session for an existing customer, measured against test mode at
+ * Ghost's pinned API version with `pnpm --filter @tryghost/e2e stripe:probe`, or null when it
+ * would accept it. Stripe checks a tax ID and works out tax against what the customer holds, so
+ * the checkout must be allowed to save what those depend on. Messages are Stripe's own, and the
+ * browser tests' fake Stripe server refuses the same sessions.
+ *
+ * @param {unknown} body The session as Stripe decodes it.
+ * @param {{address?: unknown} | undefined} customer
+ * @returns {string | null}
+ */
+function customerSessionRefusal(body, customer) {
+  const parsed = CustomerTaxSession.safeParse(body);
+  if (!parsed.success) {
+    return null;
+  }
+  const session = parsed.data;
+  const update = session.customer_update ?? {};
+  if (!session.customer) {
+    return session.customer_update ? '`customer_update` can only be used with `customer`.' : null;
+  }
+  const mayUpdate = (/** @type {string} */ field) => update[field] === 'auto';
+  const hasAddress = Boolean(customer?.address) || mayUpdate('address');
+  // A shipping address is only collected with countries to ship to, as measured.
+  const countries = session.shipping_address_collection?.allowed_countries;
+  const collectsShipping =
+    typeof countries === 'object' && countries !== null && Object.values(countries).length > 0;
+  if (session.tax_id_collection?.enabled === 'true') {
+    if (!mayUpdate('name')) {
+      return (
+        'Tax ID collection requires updating business name on the customer. To enable tax ID ' +
+        'collection for an existing customer, please set `customer_update[name]` to `auto`.'
+      );
+    }
+    if (!hasAddress) {
+      return (
+        'We could not find a valid address on the provided customer. To enable tax ID ' +
+        'collection, please set `customer_update[address]` to `auto`.'
+      );
+    }
+    if (collectsShipping && !mayUpdate('shipping')) {
+      return (
+        'Tax ID collection requires updating the shipping address on the provided customer. ' +
+        'To enable tax ID collection, please set `customer_update[shipping]` to `auto`.'
+      );
+    }
+  }
+  if (session.automatic_tax?.enabled === 'true') {
+    if (!hasAddress) {
+      return (
+        'Automatic tax calculation in Checkout requires a valid address on the Customer. Add a ' +
+        "valid address to the Customer or set `customer_update[address]` to 'auto' to save the " +
+        'billing address entered in Checkout to the Customer.'
+      );
+    }
+    if (collectsShipping && !mayUpdate('shipping')) {
+      return (
+        'Automatic tax calculation uses fields saved on the Customer. To collect a shipping ' +
+        "address with `automatic_tax` enabled, set `customer_update[shipping]` to 'auto' to " +
+        'save the shipping address back to the Customer.'
+      );
+    }
+  }
+  return null;
+}
+
 /**
  * The Stripe Mocker mimics an in memory version of the Stripe API. We can use it to quickly create new subscriptions and get a close to real world test environment with working webhooks etc.
  *
  * If you create a new subscription, it will by default send the checkout.session.completed webhook.
  * If you update a subscription, it will by default send the customer.subscription.updated webhook.
  */
+/**
+ * The parts of a Stripe API path: its collection, such as `customers` or `checkout/sessions`, the
+ * object it names, if any, and an action on that object, such as `attach` or `expire`.
+ *
+ * @param {string} uri
+ * @returns {{resource?: string, id?: string, action?: string}}
+ */
+function partsOf(uri) {
+  const [, resource, id, action] =
+    uri.match(/^\/?v1\/(checkout\/sessions|\w+)(?:\/(\w+))?(?:\/(\w+))?/) || [];
+  return { resource, id, action };
+}
+
+/** Stripe's answer for an object it doesn't hold. */
+function resourceMissing(param, id) {
+  return [
+    404,
+    {
+      error: {
+        type: 'invalid_request_error',
+        code: 'resource_missing',
+        param,
+        message: `No such ${param}: '${id}'`,
+      },
+    },
+  ];
+}
+
 class StripeMocker {
   customers = [];
   subscriptions = [];
@@ -34,6 +139,27 @@ class StripeMocker {
   checkoutBranding = StripeMocker.defaultCheckoutBranding();
   /** Makes Stripe refuse to expire checkout sessions. */
   failCheckoutExpiry = false;
+  /** Makes Stripe refuse checkout sessions sent with a design. */
+  refuseCheckoutDesign = false;
+  /**
+   * Makes Stripe refuse any checkout session sent with `param`, answering with `error` in Stripe's
+   * API shape, and accept the session once `param` is left out. Stripe's answer names a parameter
+   * only if `error` includes one, so a test can make Stripe refuse without naming the parameter.
+   * @type {{param: string, error: object} | null}
+   */
+  checkoutParamRefusal = null;
+  /** Makes Stripe fail every new checkout session with this error, in Stripe's API shape. */
+  checkoutSessionError = null;
+
+  /**
+   * Requests Stripe fails, as it does when a key is revoked, an object is locked or Stripe can't be
+   * reached. Each failure answers every request, or only those for one `resource` (such as
+   * `customers` or `checkout/sessions`) and optionally one object `id`, with `reply`: a status and a
+   * body in Stripe's API shape, or an error that fails the request before Stripe responds.
+   *
+   * @type {{resource?: string, id?: string, reply: [number, object] | Error}[]}
+   */
+  failures = [];
 
   nockInterceptors = [];
 
@@ -68,13 +194,17 @@ class StripeMocker {
     this.prices = [];
     this.products = [];
     this.checkoutSessions = [];
+    this.failures = [];
     this.checkoutBranding = StripeMocker.defaultCheckoutBranding();
     this.failCheckoutExpiry = false;
+    this.refuseCheckoutDesign = false;
+    this.checkoutParamRefusal = null;
+    this.checkoutSessionError = null;
 
     // Fix for now, because of importing order breaking some things when they are not initialized
     members = require('../../core/server/services/members');
     stripeService = require('../../core/server/services/stripe');
-    tiers = require('../../core/server/services/tiers');
+    tiers = require('../../core/server/services/tiers').default;
     models = require('../../core/server/models');
   }
 
@@ -120,7 +250,7 @@ class StripeMocker {
     if (!product) {
       throw new Error('Product not found with slug ' + tierSlug);
     }
-    const tier = await tiers.api.read(product.id);
+    const tier = await tiers.service.api.read(product.id);
     const payments = members.api.paymentsService;
     const { id } = await payments.createPriceForTierCadence(tier, cadence);
     return this.#getData(this.prices, id)[1];
@@ -136,7 +266,7 @@ class StripeMocker {
    * @returns {Promise<object>} - The created product object.
    */
   async createTier({ name, currency, monthly_price, yearly_price }) {
-    const result = await tiers.api.add({
+    const result = await tiers.service.api.add({
       name: name ?? 'Tier ' + this.#generateRandomId(),
       type: 'paid',
       currency: currency.toUpperCase(),
@@ -404,6 +534,24 @@ class StripeMocker {
   }
 
   /**
+   * Answers a request with the failure that matches it, if any, and otherwise with `answer`.
+   *
+   * @param {string} uri
+   * @param {(err: Error | null, result?: any) => void} callback
+   * @param {(parts: {resource?: string, id?: string, action?: string}) => any} answer
+   */
+  #reply(uri, callback, answer) {
+    const parts = partsOf(uri);
+    const failure = this.failures.find(
+      (f) => (!f.resource || f.resource === parts.resource) && (!f.id || f.id === parts.id),
+    );
+    if (failure?.reply instanceof Error) {
+      return callback(failure.reply);
+    }
+    callback(null, failure ? failure.reply : answer(parts));
+  }
+
+  /**
    * Removes all the registered nock interceptors.
    */
   remove() {
@@ -424,121 +572,174 @@ class StripeMocker {
       .persist()
       .get(/v1\/.*/);
     this.nockInterceptors.push(interceptor);
-    interceptor.reply((uri) => {
-      const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
-
-      if (!match) {
-        return [500];
-      }
-
-      if (resource === 'setup_intents') {
-        return this.#getData(this.setupIntents, id);
-      }
-
-      if (resource === 'customers') {
-        return this.#getData(this.customers, id);
-      }
-
-      if (resource === 'subscriptions') {
-        return this.#getData(this.subscriptions, id);
-      }
-
-      if (resource === 'coupons') {
-        return this.#getData(this.coupons, id);
-      }
-
-      if (resource === 'payment_methods') {
-        return this.#getData(this.paymentMethods, id);
-      }
-
-      if (resource === 'prices') {
-        return this.#getData(this.prices, id);
-      }
-
-      if (resource === 'products') {
-        return this.#getData(this.products, id);
-      }
-
-      return [500];
-    });
+    interceptor.reply((uri, _body, callback) =>
+      this.#reply(uri, callback, (parts) => this.#get(parts)),
+    );
 
     interceptor = nock('https://api.stripe.com')
       .persist()
       .post(/v1\/.*/);
+
     this.nockInterceptors.push(interceptor);
-    interceptor.reply((uri, body) => {
-      const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
 
-      if (!match) {
-        return [500];
-      }
-
-      if (resource === 'payment_methods') {
-        return this.#postData(this.paymentMethods, id, body, resource);
-      }
-
-      if (resource === 'subscriptions') {
-        return this.#postData(this.subscriptions, id, body, resource);
-      }
-
-      if (resource === 'customers') {
-        return this.#postData(this.customers, id, body, resource);
-      }
-
-      if (resource === 'coupons') {
-        return this.#postData(this.coupons, id, body, resource);
-      }
-
-      if (resource === 'prices') {
-        return this.#postData(this.prices, id, body, resource);
-      }
-
-      if (resource === 'products') {
-        return this.#postData(this.products, id, body, resource);
-      }
-
-      if (resource === 'checkout' && id === 'sessions') {
-        return this.#postData(this.checkoutSessions, null, body, resource);
-      }
-
-      if (resource === 'checkout' && uri.endsWith('/expire')) {
-        if (this.failCheckoutExpiry) {
-          return [500, { error: { type: 'api_error', message: 'Stripe is down' } }];
-        }
-        return this.#postData(this.checkoutSessions, id, 'status=expired', resource);
-      }
-
-      return [500];
-    });
+    interceptor.reply((uri, body, callback) =>
+      this.#reply(uri, callback, (parts) => this.#post(parts, body)),
+    );
 
     interceptor = nock('https://api.stripe.com')
       .persist()
       .delete(/v1\/.*/);
+
     this.nockInterceptors.push(interceptor);
-    interceptor.reply((uri) => {
-      const [match, resource, id] = uri.match(/\/?v1\/(\w+)(?:\/?(\w+)){0,2}/) || [null];
 
-      if (!match) {
-        return [500];
-      }
+    interceptor.reply((uri, _body, callback) =>
+      this.#reply(uri, callback, (parts) => this.#delete(parts)),
+    );
+  }
 
-      if (resource === 'subscriptions') {
-        return this.#postData(this.subscriptions, id, 'status=canceled', resource);
-      }
-
+  /** What Stripe answers a GET with, from the objects it holds. Lists aren't faked. */
+  #get({ resource, id }) {
+    const collections = {
+      setup_intents: this.setupIntents,
+      customers: this.customers,
+      subscriptions: this.subscriptions,
+      coupons: this.coupons,
+      payment_methods: this.paymentMethods,
+      prices: this.prices,
+      products: this.products,
+    };
+    if (!id || !collections[resource]) {
       return [500];
-    });
+    }
+    return this.#getData(collections[resource], id);
+  }
+
+  /** What Stripe answers a POST with, creating or updating the objects it holds. */
+  #post({ resource, id, action }, body) {
+    if (resource === 'payment_methods' && action === 'attach') {
+      return this.#attach(id, require('qs').parse(body).customer);
+    }
+
+    const collections = {
+      payment_methods: this.paymentMethods,
+      subscriptions: this.subscriptions,
+      customers: this.customers,
+      coupons: this.coupons,
+      prices: this.prices,
+      products: this.products,
+    };
+    if (collections[resource] && !action) {
+      return this.#postData(collections[resource], id, body, resource);
+    }
+
+    if (resource === 'checkout/sessions' && !id) {
+      if (this.checkoutSessionError) {
+        return [400, { error: this.checkoutSessionError }];
+      }
+      const session = require('qs').parse(body);
+      const refusal = customerSessionRefusal(
+        session,
+        this.customers.find((customer) => customer.id === session.customer),
+      );
+      if (refusal) {
+        return [400, { error: { type: 'invalid_request_error', message: refusal } }];
+      }
+      if (this.checkoutParamRefusal && this.checkoutParamRefusal.param in session) {
+        return [400, { error: this.checkoutParamRefusal.error }];
+      }
+      if (this.refuseCheckoutDesign && session.branding_settings) {
+        return [
+          400,
+          {
+            error: {
+              type: 'invalid_request_error',
+              param: 'branding_settings[font_family]',
+              message: 'Invalid branding_settings[font_family]',
+            },
+          },
+        ];
+      }
+      return this.#postData(this.checkoutSessions, null, body, 'checkout');
+    }
+
+    if (resource === 'checkout/sessions' && action === 'expire') {
+      if (this.failCheckoutExpiry) {
+        return [500, { error: { type: 'api_error', message: 'Stripe is down' } }];
+      }
+      return this.#postData(this.checkoutSessions, id, 'status=expired', 'checkout');
+    }
+
+    return [500];
+  }
+
+  /** Attaches a payment method to a customer, as Stripe does, refusing either if Stripe lacks it. */
+  #attach(paymentMethodId, customerId) {
+    const paymentMethod = this.paymentMethods.find((method) => method.id === paymentMethodId);
+    if (!paymentMethod) {
+      return resourceMissing('payment_method', paymentMethodId);
+    }
+    if (!this.customers.some((customer) => customer.id === customerId)) {
+      return resourceMissing('customer', customerId);
+    }
+    paymentMethod.customer = customerId;
+    return [200, paymentMethod];
+  }
+
+  /** What Stripe answers a DELETE with. */
+  #delete({ resource, id }) {
+    if (resource === 'subscriptions' && id) {
+      return this.#postData(this.subscriptions, id, 'status=canceled', resource);
+    }
+    return [500];
   }
 
   /**
-   * Sends a webhook event to the Stripe webhook controller.
+   * Sends a webhook event to the Stripe webhook controller, signed with the site's webhook secret,
+   * as Stripe would send it. Rejects when the webhook doesn't respond with 200, with the error Ghost
+   * logged while handling it as the cause.
    *
    * @param {any} event - The webhook event to send.
    * @returns {Promise<void>} - A promise that resolves when the webhook event is handled.
    */
   async sendWebhook(event) {
-    const webhookController = stripeService.webhookController;
-    await webhookController.handleEvent(event);
+    // Stripe sends every event at the webhook's API version. An event that names none is sent at
+    // Ghost's, so only an event that names another version reaches Ghost as a mismatch.
+    const { API_VERSION } = require('../../core/server/services/stripe/stripe-api');
+    const payload = JSON.stringify({ api_version: API_VERSION, ...event });
+    const req = {
+      body: payload,
+      headers: {
+        'stripe-signature': stripe.webhooks.generateTestHeaderString({
+          payload,
+          secret: stripeService.webhookManager.webhookSecret,
+        }),
+      },
+    };
+    let status;
+    const res = {
+      writeHead(code) {
+        status = code;
+      },
+      end() {},
+    };
+    // The webhook logs why it failed rather than throwing, so keep the first error it logs.
+    const logging = require('@tryghost/logging');
+    const logError = logging.error;
+    let cause;
+    logging.error = function (...args) {
+      cause ??= args
+        .map((arg) => (arg instanceof Error ? arg : arg?.err))
+        .find((err) => err instanceof Error);
+      return logError.apply(this, args);
+    };
+    try {
+      await stripeService.webhookController.handle(req, res);
+    } finally {
+      logging.error = logError;
+    }
+    if (status !== 200) {
+      throw new Error(`The Stripe webhook responded with ${status} to ${event.type}`, { cause });
+    }
   }
 }
 

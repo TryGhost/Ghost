@@ -9,7 +9,7 @@ const MemoryCache = require('../../../../core/server/adapters/cache/MemoryCache'
 
 function loadServices() {
   return {
-    tags: require('../../../../core/server/services/tags-public'),
+    tags: require('../../../../core/server/services/tags-public').default,
     posts: require('../../../../core/server/services/posts-public').default,
   };
 }
@@ -39,7 +39,6 @@ describe('Public response caches', function () {
     const paths = [
       ...Object.values(endpointPaths),
       require.resolve('../../../../core/server/services/tags-public'),
-      require.resolve('../../../../core/server/services/tags-public/service'),
       require.resolve('../../../../core/server/services/posts-public'),
     ];
     previousModules = new Map(paths.map((path) => [path, require.cache[path]]));
@@ -77,7 +76,7 @@ describe('Public response caches', function () {
   }
 
   function cacheFor(resource: Resource) {
-    return resource === 'posts' ? services.posts.service.cache : services.tags.api.cache;
+    return services[resource].service.cache;
   }
 
   for (const resource of resources) {

@@ -1,3 +1,5 @@
+/** @import { ComponentType } from 'react' */
+
 import AppContext from '../../app-context';
 import CloseButton from './close-button';
 import BackButton from './back-button';
@@ -85,7 +87,6 @@ function CommentsSection({
   isCommentsEnabled,
   enableCommentNotifications,
 }) {
-  const { doAction } = useContext(AppContext);
   const isChecked = !!enableCommentNotifications;
   // Ref-based guard so rapid synchronous clicks see the in-flight state
   // immediately — state updates wouldn't be visible until the next render.
@@ -104,10 +105,6 @@ function CommentsSection({
     isUpdatingRef.current = true;
     try {
       await updateCommentNotifications(!isChecked);
-      doAction('showPopupNotification', {
-        action: 'updated:success',
-        message: t('Comment preferences updated.'),
-      });
     } finally {
       isUpdatingRef.current = false;
     }
@@ -154,7 +151,7 @@ function UpdatesAndAnnouncementsSection({
   canChangeUpdatesAndAnnouncements,
   enableUpdatesAndAnnouncements,
 }) {
-  const { doAction, site } = useContext(AppContext);
+  const { site } = useContext(AppContext);
   // Ref-based guard so rapid synchronous clicks see the in-flight state
   // immediately — state updates wouldn't be visible until the next render.
   const isUpdatingRef = useRef(false);
@@ -172,10 +169,6 @@ function UpdatesAndAnnouncementsSection({
     isUpdatingRef.current = true;
     try {
       await updateUpdatesAndAnnouncements(!enableUpdatesAndAnnouncements);
-      doAction('showPopupNotification', {
-        action: 'updated:success',
-        message: t('Email preferences updated.'),
-      });
     } finally {
       isUpdatingRef.current = false;
     }
@@ -269,6 +262,20 @@ function ShowPaidMemberMessage({ site, isPaid }) {
   return null;
 }
 
+/** @param {{
+ *   hasNewslettersEnabled: boolean,
+ *   notification?: ComponentType,
+ *   subscribedNewsletters: { id: string }[],
+ *   updateSubscribedNewsletters: (newsletters: { id: string }[], enableUpdatesAndAnnouncements?: boolean) => unknown,
+ *   updateCommentNotifications: (enabled: boolean) => unknown,
+ *   updateUpdatesAndAnnouncements: (enabled: boolean) => unknown,
+ *   unsubscribeAll: () => unknown,
+ *   isPaidMember: boolean,
+ *   isCommentsEnabled: boolean,
+ *   enableCommentNotifications: boolean,
+ *   canChangeUpdatesAndAnnouncements: boolean,
+ *   enableUpdatesAndAnnouncements: boolean | null,
+ * }} props */
 export default function NewsletterManagement({
   hasNewslettersEnabled,
   notification,

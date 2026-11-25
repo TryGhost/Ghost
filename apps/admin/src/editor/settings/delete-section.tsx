@@ -15,7 +15,6 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { getErrorMessage, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { pagesDataType, useDeletePage } from '@tryghost/admin-x-framework/api/pages';
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useQueryClient } from '@tanstack/react-query';
@@ -37,25 +36,28 @@ const SESSION_EXPIRED = 'Your session expired. Delete again to sign in.';
 export interface DeleteSectionProps {
   session: EditorSettingsPort;
   postType: PostType;
+  /** Another tab holds the document, so nothing is deleted from this one. */
+  locked?: boolean;
 }
 
 /**
  * Deletes the post the editor is open on. There is nothing to delete until the
  * first save has given the post an ID, so the button appears only then.
  */
-export function DeleteSection({ session, postType }: DeleteSectionProps) {
+export function DeleteSection({ session, postType, locked = false }: DeleteSectionProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { mutateAsync: deletePost } = useDeletePost();
   const { mutateAsync: deletePage } = useDeletePage();
   const { data: currentUser } = useCurrentUser({ requestOptions: EDITOR_REQUEST_OPTIONS });
-  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The confirmation is outside the panel the lock makes inert.
+  if (locked && isOpen) {
+    setIsOpen(false);
+  }
 
   const postId = session.loadedRecord?.id ?? session.createdId;
   const noun = postType === 'page' ? 'page' : 'post';
@@ -95,7 +97,7 @@ export function DeleteSection({ session, postType }: DeleteSectionProps) {
     // the save in flight and drops every later one, including the leave guard's.
     session.dispose();
     // A deleted draft's remembered newsletter would otherwise wait for the cap to drop it.
-    writeDraftNewsletter(draftNewsletterStorage(editorImprovements), postId, null);
+    writeDraftNewsletter(draftNewsletterStorage(), postId, null);
 
     // The list would otherwise serve its cached page, deleted row and all.
     // `refetchType: 'none'`: the editor's own read of this post is still mounted.

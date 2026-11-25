@@ -70,7 +70,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
       },
 
       onFetchedCollection: function (collection, attrs, options) {
-        _.each(collection.models, (model) => {
+        collection.models.forEach((model) => {
           model._originalOptions = collection._originalOptions;
         });
 
@@ -269,15 +269,25 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
               .select('roles_users.user_id');
             const ownerId = ownerUser[0].user_id;
 
+            const authorsPostIds = await this.lockLinkedForUpdate(
+              'posts_authors',
+              'post_id',
+              { author_id: authorId },
+              { transacting: trx },
+            );
+
             const authorsPosts = await knex('posts_authors')
               .transacting(trx)
               .where('author_id', authorId)
-              .select('post_id', 'sort_order');
+              .select('post_id', 'sort_order')
+              .forUpdate();
 
             const ownersPosts = await knex('posts_authors')
               .transacting(trx)
+              .whereIn('post_id', authorsPostIds)
               .where('author_id', ownerId)
-              .select('post_id');
+              .select('post_id')
+              .forUpdate();
 
             const authorsPrimaryPosts = authorsPosts.filter((ap) => ap.sort_order === 0);
             const primaryPostsWithOwnerCoauthor = _.intersectionBy(
@@ -323,12 +333,16 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             // remove author as secondary author from any other posts
             await knex('posts_authors').transacting(trx).where('author_id', authorId).del();
           } catch (err) {
+            // Lets `transactionLockingLinked` start again when posts gain the author meanwhile
+            if (err.code === 'LINKED_RECORDS_CHANGED') {
+              throw err;
+            }
             throw new errors.InternalServerError({ err: err });
           }
         };
 
         if (!options.transacting) {
-          return ghostBookshelf.transaction((transacting) => {
+          return this.transactionLockingLinked((transacting) => {
             options.transacting = transacting;
             return reassignPost();
           });
@@ -353,7 +367,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         // If we passed in an id instead of a model, get the model
         // then check the permissions
-        if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
+        if (typeof postModelOrId === 'number' || typeof postModelOrId === 'string') {
           // Grab the original args without the first one
           origArgs = _.toArray(arguments).slice(1);
 

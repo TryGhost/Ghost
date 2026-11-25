@@ -23,11 +23,9 @@ interface TagColorFieldProps {
 const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{6}$/;
 
 /**
- * The tag accent colour control, arranged like Ember's `.input-color`: one
- * bordered control with the colour-picker trigger on the
- * left, a static `#` prefix, and the hex text input. Ports `tag-form.js`
- * `updateAccentColor` — immediate normalization keeps the form draft in sync
- * before keyboard saves, with the same error copy for a malformed hex value.
+ * The tag accent colour control: one bordered control with the colour-picker
+ * trigger on the left, a static `#` prefix, and the hex text input. Immediate
+ * normalization keeps the form draft in sync before keyboard saves.
  */
 const TagColorField: React.FC<TagColorFieldProps> = ({
   value,
@@ -81,7 +79,10 @@ const TagColorField: React.FC<TagColorFieldProps> = ({
     <Popover onOpenChange={() => (allowPickerChanges.current = false)}>
       <Stack gap="sm">
         <Label htmlFor="tag-accent-color">Color</Label>
-        <InputGroup className="w-28" data-disabled={disabled ? 'true' : undefined}>
+        <InputGroup
+          className="w-28 in-data-[admin7-design=true]:w-30"
+          data-disabled={disabled ? 'true' : undefined}
+        >
           <InputGroupAddon align="inline-start">
             <PopoverTrigger asChild>
               <ColorPickerTrigger

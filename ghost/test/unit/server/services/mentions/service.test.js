@@ -2,9 +2,15 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const urlService = require('../../../../../core/server/services/url');
 const outputSerializerUrlUtil = require('../../../../../core/server/api/endpoints/utils/serializers/output/utils/url');
-const { getPostData, getPostUrl } = require('../../../../../core/server/services/mentions/service');
+const { createPostUrlHelpers } = require('../../../../../core/server/services/mentions/post-urls');
 
 describe('Mentions service post url helpers', function () {
+  // Forward to the modules so the stubs below apply.
+  const { getPostData, getPostUrl } = createPostUrlHelpers({
+    urlService,
+    forPost: (...args) => outputSerializerUrlUtil.forPost(...args),
+  });
+
   afterEach(function () {
     sinon.restore();
   });

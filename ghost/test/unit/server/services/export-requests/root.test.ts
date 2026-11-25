@@ -87,7 +87,6 @@ describe('Export requests root with its endpoint', function () {
       const [url, options] = request.lastCall.args as [string, RequestOptions];
       assert.equal(url, host);
       assert.equal(options.method, 'POST');
-      assert.deepEqual(options.retry, { limit: 0 });
       assert.deepEqual(options.timeout, { request: 30000 });
       assert.deepEqual(JSON.parse(options.body), {
         type: 'export',

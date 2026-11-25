@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getStoredFeatureFlagOverrides,
+  isAppPagePath,
   syncFeatureFlagOverrides,
 } from '../../../src/utils/feature-flag-overrides';
 
@@ -48,5 +49,24 @@ describe('feature flag overrides', () => {
     sessionStorage.setItem('ghost-admin:labs-overrides', '{invalid');
 
     expect(getStoredFeatureFlagOverrides()).toEqual([]);
+  });
+});
+
+describe('isAppPagePath', () => {
+  const id = '6a1b2c3d4e5f60718293a4b5';
+
+  it.each([`/apps/${id}`, `/apps/${id}/`, `/apps/${id}/episodes/12`])('is true for %s', (path) => {
+    expect(isAppPagePath(path)).toBe(true);
+  });
+
+  it.each([
+    '/apps',
+    '/apps/',
+    '/apps/install',
+    `/apps/details/${id}`,
+    `/apps/${id}x`,
+    `/posts/${id}`,
+  ])('is false for %s', (path) => {
+    expect(isAppPagePath(path)).toBe(false);
   });
 });

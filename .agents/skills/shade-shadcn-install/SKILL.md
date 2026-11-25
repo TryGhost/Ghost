@@ -58,5 +58,6 @@ Raw ShadCN output is not Shade-quality yet. Do all of these:
 
 ## Source of truth
 
-Storybook → Overview / Contributing. This skill adds the agent-specific safety
-steps for running the destructive ShadCN CLI.
+[ShadCN](../../../apps/shade/CONTRIBUTING.md#shadcn) in Shade's
+`CONTRIBUTING.md`. This skill adds the agent-specific safety steps for running
+the destructive ShadCN CLI.

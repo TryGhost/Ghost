@@ -408,6 +408,70 @@ test.describe('Gallery card', async () => {
     //     `, {ignoreCardContents: true});
     // });
 
+    test.describe('dragging image cards onto a gallery with visibility', function () {
+        const paidOnly = {web: {nonMember: false, memberSegment: 'status:-free'}, email: {memberSegment: 'status:-free'}};
+
+        async function loadGalleryAndImage(galleryVisibility, imageVisibility) {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'gallery'});
+            await page.keyboard.press('Enter');
+            await insertCard(page, {cardName: 'image'});
+
+            const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+            const [fileChooser] = await Promise.all([
+                page.waitForEvent('filechooser'),
+                await page.click('[data-kg-card="image"] button[name="placeholder-button"]')
+            ]);
+            await fileChooser.setFiles([filePath]);
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                const imageNode = state.root.children.find(c => c.type === 'image');
+                return imageNode && imageNode.src;
+            }, {timeout: 5000});
+
+            // set the audiences directly in the editor state
+            await page.evaluate(({galleryVis, imageVis}) => {
+                const editor = window.lexicalEditor;
+                const json = editor.getEditorState().toJSON();
+                for (const node of json.root.children) {
+                    if (node.type === 'gallery' && galleryVis) {
+                        node.visibility = galleryVis;
+                    }
+                    if (node.type === 'image' && imageVis) {
+                        node.visibility = imageVis;
+                    }
+                }
+                editor.setEditorState(editor.parseEditorState(json));
+            }, {galleryVis: galleryVisibility, imageVis: imageVisibility});
+
+            await page.click('p:not(figure p)');
+
+            const imageBBox = await page.locator('[data-kg-card="image"]').boundingBox();
+            const galleryBBox = await page.locator('[data-kg-card="gallery"]').boundingBox();
+            await dragMouse(page, imageBBox, galleryBBox, 'middle', 'middle', true, 100, 100);
+        }
+
+        test('does not add a restricted image to a public gallery', async function () {
+            await loadGalleryAndImage(null, paidOnly);
+
+            await expect(page.locator('[data-kg-card="gallery"] [data-image]')).toHaveCount(0);
+            await expect(page.locator('[data-kg-card="image"]')).toHaveCount(1);
+        });
+
+        test('adds an image to a gallery with the same audience', async function () {
+            await loadGalleryAndImage(paidOnly, paidOnly);
+
+            await expect(page.locator('[data-kg-card="gallery"] [data-image]')).toHaveCount(1);
+            await expect(page.locator('[data-kg-card="image"]')).toHaveCount(0);
+
+            const state = await getEditorState(page);
+            const gallery = state.root.children.find(c => c.type === 'gallery');
+            expect(gallery.visibility).toEqual(paidOnly);
+            expect(gallery.images[0].visibility).toBeUndefined();
+        });
+    });
+
     test('can drag populated image card onto empty gallery card', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'gallery'});
@@ -468,6 +532,116 @@ test.describe('Gallery card', async () => {
             </div>
             <p><br /></p>
         `, {ignoreCardContents: false});
+    });
+
+    test.describe('dragging images between galleries', function () {
+        const galleryImages = numbers => numbers.map(n => ({
+            row: 0,
+            fileName: `retreat-${n}.jpg`,
+            src: `/content/images/2023/04/retreat-${n}.jpg`,
+            width: 3840,
+            height: 2160
+        }));
+
+        const fileNames = gallery => gallery.images.map(image => image.fileName);
+
+        const rightHalf = bbox => ({...bbox, x: bbox.x + bbox.width / 2, width: bbox.width / 2});
+
+        // selects the first gallery and drags one of its images onto the right half of `target`
+        async function dragFromFirstGallery(imageIndex, target) {
+            const firstGallery = page.locator('[data-kg-card="gallery"]').nth(0);
+            await firstGallery.click();
+            await expect(firstGallery).toHaveAttribute('data-kg-card-selected', 'true');
+
+            const imageBBox = await firstGallery.locator('[data-image]').nth(imageIndex).boundingBox();
+            const targetBBox = await target.boundingBox();
+
+            await dragMouse(page, imageBBox, rightHalf(targetBBox), 'middle', 'middle', true, 100, 100);
+        }
+
+        async function initializeContent(children) {
+            const contentParam = encodeURIComponent(JSON.stringify({
+                root: {
+                    children,
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            await initialize({page, uri: `/#/?content=${contentParam}`});
+        }
+
+        async function initializeGalleries(...galleries) {
+            await initializeContent(galleries.map(numbers => ({type: 'gallery', version: 1, images: galleryImages(numbers)})));
+        }
+
+        test('reordering does not remove the image from another gallery with the same image', async function () {
+            await initializeGalleries([1, 2], [1, 2]);
+
+            const firstGallery = page.locator('[data-kg-card="gallery"]').nth(0);
+            await dragFromFirstGallery(0, firstGallery.locator('[data-image]').nth(1));
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                return state.root.children[0].images[0].fileName === 'retreat-2.jpg';
+            }, {timeout: 5000});
+
+            const editorState = await getEditorState(page);
+
+            expect(fileNames(editorState.root.children[0])).toEqual(['retreat-2.jpg', 'retreat-1.jpg']);
+            expect(fileNames(editorState.root.children[1])).toEqual(['retreat-1.jpg', 'retreat-2.jpg']);
+        });
+
+        test('moving an image to another gallery removes it from the original', async function () {
+            await initializeGalleries([1, 2], [3]);
+
+            const secondGallery = page.locator('[data-kg-card="gallery"]').nth(1);
+            await dragFromFirstGallery(0, secondGallery.locator('[data-image]').nth(0));
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                return state.root.children[1].images.length === 2;
+            }, {timeout: 5000});
+
+            const editorState = await getEditorState(page);
+
+            expect(fileNames(editorState.root.children[0])).toEqual(['retreat-2.jpg']);
+            expect(fileNames(editorState.root.children[1])).toEqual(['retreat-3.jpg', 'retreat-1.jpg']);
+        });
+
+        test('dropping an image card into a gallery does not remove the image from another gallery', async function () {
+            // image cards size from the loaded image and gallery drops need an absolute src, so use a served file
+            const src = new URL('/Koenig-editor-1.png', page.url()).href;
+            const sharedImage = {row: 0, fileName: 'Koenig-editor-1.png', src, width: 2560, height: 840};
+
+            await initializeContent([
+                {type: 'image', version: 1, src, width: sharedImage.width, height: sharedImage.height},
+                {type: 'gallery', version: 1, images: galleryImages([1, 2])},
+                {type: 'gallery', version: 1, images: [sharedImage]}
+            ]);
+
+            const imageCard = page.locator('[data-kg-card="image"]');
+            await expect(imageCard.locator('img')).toHaveJSProperty('naturalWidth', sharedImage.width);
+
+            const imageCardBBox = await imageCard.boundingBox();
+            const targetBBox = await page.locator('[data-kg-card="gallery"]').nth(0).locator('[data-image]').nth(0).boundingBox();
+
+            await dragMouse(page, imageCardBBox, rightHalf(targetBBox), 'middle', 'middle', true, 100, 100);
+
+            await page.waitForFunction(() => {
+                const state = window.lexicalEditor.getEditorState().toJSON();
+                return !state.root.children.some(node => node.type === 'image');
+            }, {timeout: 5000});
+
+            const editorState = await getEditorState(page);
+
+            expect(editorState.root.children.map(node => node.type)).toEqual(['gallery', 'gallery']);
+            expect(fileNames(editorState.root.children[0])).toEqual(['retreat-1.jpg', 'Koenig-editor-1.png', 'retreat-2.jpg']);
+            expect(fileNames(editorState.root.children[1])).toEqual(['Koenig-editor-1.png']);
+        });
     });
 
     test('exports all 9 images', async function () {

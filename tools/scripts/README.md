@@ -28,26 +28,30 @@ Checks, affected/shard selection and report generation. Classify by purpose:
 `release/build-publish-matrix.ts` belongs to release, although CI calls it; TypeScript
 inventory is a reporting tool, although contributors can run it locally.
 
-| Current file                                                        | Purpose                                                                 | Caller                                                    |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
-| [assert-boot-skips-modules.ts](./ci/assert-boot-skips-modules.ts)   | Fail boot smoke checks if deferred native modules load eagerly          | CI Node --import preload                                  |
-| [change-check.ts](./ci/change-check.ts)                             | Require changesets for changed publishable workspace packages           | CI and pre-commit hook                                    |
-| [check-agent-guidance.ts](./ci/check-agent-guidance.ts)             | Check tracked AGENTS.md line limits                                     | pnpm lint:agent-guidance                                  |
-| [check-agent-skill-links.ts](./ci/check-agent-skill-links.ts)       | Validate repository skill discovery and Claude symlinks                 | pnpm lint:agent-skills                                    |
-| [check-app-version-bump.ts](./ci/check-app-version-bump.ts)         | Check CDN app version lines against Core defaults                       | PR CI                                                     |
-| [check-internal-packages.ts](./ci/check-internal-packages.ts)       | Validate internal package layout, exports and template conventions      | pnpm lint:packages                                        |
-| [check-migration-integrity.ts](./ci/check-migration-integrity.ts)   | Reject invalid changes to released or incorrectly versioned migrations  | PR CI                                                     |
-| [check-versioning-ignore.ts](./ci/check-versioning-ignore.ts)       | Check workspace versioning exclusions and externally versioned packages | pnpm lint:versioning                                      |
-| [compare-image-report.ts](./ci/compare-image-report.ts)             | Compare production image file/size reports for CI summaries             | Image-report CI step                                      |
-| [e2e-shards.ts](./ci/e2e-shards.ts)                                 | Plan browser-test shards and update recorded execution timings          | Browser-test CI: plan / record; sparse checkout supported |
-| [nx-set-shas.ts](./ci/nx-set-shas.ts)                               | Select affected CI commit ranges from successful workflow history       | CI job setup                                              |
-| [summarize-admin-acceptance.ts](./ci/summarize-admin-acceptance.ts) | Render Admin acceptance-test results into a CI summary                  | Acceptance CI after test shards                           |
-| [typescript-inventory.ts](./ci/typescript-inventory.ts)             | Measure tracked JS/TS adoption, dependencies and historical counts      | pnpm inventory:typescript; TypeScript inventory workflow  |
+| Current file                                                            | Purpose                                                                 | Caller                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| [assert-boot-skips-modules.ts](./ci/assert-boot-skips-modules.ts)       | Fail boot smoke checks if deferred native modules load eagerly          | CI Node --import preload                                  |
+| [change-check.ts](./ci/change-check.ts)                                 | Require changesets for changed publishable workspace packages           | CI and pre-commit hook                                    |
+| [check-agent-guidance.ts](./ci/check-agent-guidance.ts)                 | Check tracked AGENTS.md line limits                                     | pnpm lint:agent-guidance                                  |
+| [check-agent-skill-links.ts](./ci/check-agent-skill-links.ts)           | Validate repository skill discovery and Claude symlinks                 | pnpm lint:agent-skills                                    |
+| [check-app-version-bump.ts](./ci/check-app-version-bump.ts)             | Check CDN app version lines against Core defaults                       | PR CI                                                     |
+| [check-internal-packages.ts](./ci/check-internal-packages.ts)           | Validate internal package layout, exports and template conventions      | pnpm lint:packages                                        |
+| [check-legacy-services.ts](./ci/check-legacy-services.ts)               | Reject new legacy services and new dependency-check deferrals           | pnpm lint:legacy-services / PR CI                         |
+| [check-migration-integrity.ts](./ci/check-migration-integrity.ts)       | Reject invalid changes to released or incorrectly versioned migrations  | PR CI                                                     |
+| [check-versioning-ignore.ts](./ci/check-versioning-ignore.ts)           | Check workspace versioning exclusions and externally versioned packages | pnpm lint:versioning                                      |
+| [compare-image-report.ts](./ci/compare-image-report.ts)                 | Compare production image file/size reports for CI summaries             | Image-report CI step                                      |
+| [e2e-shards.ts](./ci/e2e-shards.ts)                                     | Plan browser-test shards and update recorded execution timings          | Browser-test CI: plan / record; sparse checkout supported |
+| [nx-set-shas.ts](./ci/nx-set-shas.ts)                                   | Select affected CI commit ranges from successful workflow history       | CI job setup                                              |
+| [check-boundaries.ts](./ci/check-boundaries.ts)                         | Enforce dependency boundaries and reject stale known violations         | pnpm lint:boundaries / CI                                 |
+| [service-dependency-resolver.mjs](./ci/service-dependency-resolver.mjs) | Resolve authored Core source for Dependency Cruiser                     | Boundary lint and gx service dependency reports           |
+| [summarize-admin-acceptance.ts](./ci/summarize-admin-acceptance.ts)     | Render Admin acceptance-test results into a CI summary                  | Acceptance CI after test shards                           |
+| [typescript-inventory.ts](./ci/typescript-inventory.ts)                 | Measure tracked JS/TS adoption, dependencies and historical counts      | pnpm inventory:typescript; TypeScript inventory workflow  |
 
 ### Build support — build/
 
 Cross-workspace asset assembly, build-cache inputs and post-build artifacts.
-Ghost-owned browser asset builds stay in [ghost/scripts](../../ghost/scripts/README.md).
+Build steps for the `ghost/` server workspace's own browser assets stay in
+[ghost/scripts](../../ghost/scripts/README.md).
 
 | Current file                                                       | Purpose                                                      | Caller                                        |
 | ------------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
@@ -68,15 +72,16 @@ for Nx caches.
 Publishing policy, version selection and release preparation. The publishing
 manifest is release-owned data, shared with validation through `lib/publish-manifest.ts`.
 
-| Current file                                                 | Purpose                                                                | Caller                                                                         |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [build-publish-matrix.ts](./release/build-publish-matrix.ts) | Select affected continuous-publishing packages and CDN purge paths     | CI setup: `node tools/scripts/release/build-publish-matrix.ts <affected-json>` |
-| [compare-published.ts](./release/compare-published.ts)       | Compare locally packed output with the live registry version           | Continuous-publishing CI gate                                                  |
-| [generate-changeset.ts](./release/generate-changeset.ts)     | Create changesets for automated dependency updates                     | Renovate post-upgrade task                                                     |
-| [next-version.ts](./release/next-version.ts)                 | Compute the next continuous-publishing version from registry state     | Publishing CI; --latest prints the comparison version                          |
-| [publish-packages.ts](./release/publish-packages.ts)         | Publish eligible workspace packages in dependency order                | Tagged-release / manual publishing workflow                                    |
-| [release-apps.ts](./release/release-apps.ts)                 | Prepare intentional CDN-app minor/major releases and matching defaults | App-local pnpm ship                                                            |
-| [release.ts](./release/release.ts)                           | Prepare Ghost and package release versions, commits and tags           | pnpm release; release workflow                                                 |
+| Current file                                                 | Purpose                                                                       | Caller                                                                                             |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [build-publish-matrix.ts](./release/build-publish-matrix.ts) | Select affected continuous-publishing packages; list the CDN aliases to purge | CI setup: `node tools/scripts/release/build-publish-matrix.ts <affected-json>`, or `--cdn-aliases` |
+| [compare-published.ts](./release/compare-published.ts)       | Compare locally packed output with the live registry version                  | Continuous-publishing CI gate                                                                      |
+| [generate-changeset.ts](./release/generate-changeset.ts)     | Create changesets for automated dependency updates                            | Renovate post-upgrade task                                                                         |
+| [next-version.ts](./release/next-version.ts)                 | Compute the next continuous-publishing version from registry state            | Publishing CI; --latest prints the comparison version                                              |
+| [publish-packages.ts](./release/publish-packages.ts)         | Publish eligible workspace packages in dependency order                       | Tagged-release / manual publishing workflow                                                        |
+| [release-apps.ts](./release/release-apps.ts)                 | Prepare intentional CDN-app minor/major releases and matching defaults        | App-local pnpm ship                                                                                |
+| [release-notes.ts](./release/release-notes.ts)               | Generate release notes from tagged commit ranges                              | Release CI                                                                                         |
+| [release.ts](./release/release.ts)                           | Prepare Ghost and package release versions, commits and tags                  | pnpm release; release workflow                                                                     |
 
 ### Root setup and maintenance
 
@@ -88,11 +93,13 @@ and gx; it is not another contributor command family.
 | -------------------------------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | [clean.ts](clean.ts)                                     | Repair a broken checkout by clearing dependencies, Nx state and build artifacts | pnpm fix; plain Node entrypoint before reinstall               |
 | [dev-infra-up.ts](dev-infra-up.ts)                       | Start shared Compose services and provision the checkout database               | Nx development-infrastructure prerequisite                     |
+| [dev-wait-for-ghost.ts](dev-wait-for-ghost.ts)           | Wait for the first Ghost to answer before starting the second                   | Nx `dev:host:multi` task                                       |
 | [enforce-package-manager.ts](enforce-package-manager.ts) | Require pnpm without needing installed dependencies                             | Root preinstall; selectively copied by development Dockerfiles |
 | [format.ts](format.ts)                                   | Run the repository formatter and stabilize its output                           | pnpm format; pre-commit hook                                   |
 | [ghost-dev-env.ts](ghost-dev-env.ts)                     | Prepare checkout configuration, theme submodules and development assets         | Nx setup prerequisite; Stripe wrapper                          |
 | [init-submodules.sh](init-submodules.sh)                 | Initialize theme submodules, reusing local repositories in worktrees            | pnpm bootstrap; direct Bash helper                             |
 | [with-ghost-dev-env.ts](with-ghost-dev-env.ts)           | Run commands with shared checkout and Compose environment settings              | Nx dev tasks, database aliases, analytics tasks and gx         |
+| [with-second-ghost.ts](with-second-ghost.ts)             | Run commands with a second Ghost's port and shared Redis caches                 | pnpm dev:multi                                                 |
 
 ## Shared support and tests
 
@@ -104,9 +111,9 @@ cross-workspace build, lint, packaging and CI contracts; they are repository
 validation, even when the implementation they exercise lives elsewhere.
 
 Private helpers such as Admin asset assembly, boot-module checks, PR-base
-resolution, release-note generation and inventory types live with their owning
-group. `release/release-notes.ts` is also a direct workflow
-entrypoint, so its path is a caller contract rather than just an internal import.
+resolution, release base-tag resolution and inventory types live with their owning
+group. Direct entrypoint paths are caller contracts; check their workflows and
+package aliases before changing them.
 
 ## Language and adding a script
 
@@ -149,13 +156,38 @@ boundary; see [its README](../../.github/scripts/i18n-review/README.md).
 
 ## Service dependency audit
 
-`pnpm audit:services` uses Dependency Cruiser's native reports. Pass
-`--output-type markdown` or `--output-type json` for saved output;
-`pnpm --silent audit:services:summary` uses local `jq` to summarise implementation
-violations. Rules and the allowlist live in `.dependency-cruiser.cjs`; the
+Contributor reports live in [gx](../gx/README.md#service-migration-reports):
+`pnpm gx services audit` provides Dependency Cruiser's native reports and
+`pnpm gx services dependencies` summarises disallowed dependencies. Rules and
+the allowlist remain in `.dependency-cruiser.cjs`. The shared runner in
+`lib/dependency-boundaries.ts` reads `.dependency-cruiser-known-violations.json`
+and scans Core and apps once for both reports and `ci/check-boundaries.ts`.
+The checker rejects new violations and stale entries; reports retain all findings.
+The runner reads from the scan's report which TypeScript compiler Dependency
+Cruiser loaded and fails if it had none: without it the scan skips TypeScript
+files or reads type-only imports as ordinary ones, and reports different
+violations without an error.
+With pnpm's shared store, Dependency Cruiser finds the `typescript` package only
+through the environment pnpm sets for what it runs, so run the scan through pnpm,
+as `pnpm lint:boundaries`, the commit hook and CI do.
+It also rejects a tracked JavaScript file beside a TypeScript file of the same
+name in Core: the scan skips that file as build output, but Node would load it.
+The resolver adapter in `ci/` keeps authored source resolution consistent. The
 [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
-defines their meaning. The resolver adapter in `ci/` supports that analysis;
-it does not implement a separate service CLI.
+defines the policy.
+
+[`legacy-services.ts`](../configs/oxlint/legacy-services.ts) in the Oxlint
+configuration reads the legacy service inventory. Boundary lint, the
+`ghost/service-root-shape` and `ghost/boot-awaits-service-init` Oxlint rules, the
+service generator and the reports all use it, so there is one definition of a
+legacy service.
+
+`ci/check-legacy-services.ts` (`pnpm lint:legacy-services`) fails when the
+checkout lists a legacy service, or defers dependency checks for one, that the
+commit it forked from `origin/main` does not. CI runs it on pull requests that
+change the inventory. It fails rather than skips when the base branch has not
+been fetched, so `pnpm lint` does not include it. Its comparison with the fork
+point is private to the check, in `ci/legacy-services-base.ts`.
 
 ## TypeScript inventory
 

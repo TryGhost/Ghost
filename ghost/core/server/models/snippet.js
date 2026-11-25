@@ -1,8 +1,7 @@
 const ghostBookshelf = require('./base');
 const urlUtils = require('../../shared/url-utils').default;
-const mobiledocLib = require('../lib/mobiledoc');
+const { mobiledoc: mobiledocLib } = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
-const _ = require('lodash');
 
 const Snippet = ghostBookshelf.Model.extend(
   {
@@ -47,7 +46,7 @@ const Snippet = ghostBookshelf.Model.extend(
       const formatsToKeep = options.formats || defaultFormats;
 
       // Iterate over all known formats, and if they are not in the keep list, remove them
-      _.each(Snippet.allowedFormats, function (format) {
+      Snippet.allowedFormats.forEach(function (format) {
         if (formatsToKeep.indexOf(format) === -1) {
           delete attrs[format];
         }

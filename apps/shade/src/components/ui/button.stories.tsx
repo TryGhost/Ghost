@@ -345,27 +345,36 @@ export const Disabled: Story = {
   },
 };
 
+export const Loading: Story = {
+  args: {
+    loading: true,
+    children: 'Delete member',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use while an action is running. The spinner sits over the label, so the button keeps its width and nothing beside it moves.',
+      },
+    },
+  },
+};
+
 export const DisabledPrimaryComparison: Story = {
   render: function Render() {
     const { darkMode } = useShade();
     return (
-      <Stack gap="lg">
-        {[true, false].map((isAdmin7) => (
-          <ShadeApp key={`${darkMode}-${isAdmin7}`} darkMode={darkMode} isAdmin7={isAdmin7}>
-            <Stack className="rounded-lg bg-background p-5" gap="sm">
-              <Text size="sm" tone="secondary">
-                {darkMode ? 'Dark' : 'Light'} · {isAdmin7 ? 'Default controls' : 'Legacy controls'}
-              </Text>
-              <Inline gap="sm" wrap>
-                <Button>Continue</Button>
-                <Button disabled>Continue</Button>
-                <Button aria-label="Move up" size="icon" disabled>
-                  <ArrowUp />
-                </Button>
-              </Inline>
-            </Stack>
-          </ShadeApp>
-        ))}
+      <Stack className="rounded-lg bg-background p-5" gap="sm">
+        <Text size="sm" tone="secondary">
+          {darkMode ? 'Dark' : 'Light'}
+        </Text>
+        <Inline gap="sm" wrap>
+          <Button>Continue</Button>
+          <Button disabled>Continue</Button>
+          <Button aria-label="Move up" size="icon" disabled>
+            <ArrowUp />
+          </Button>
+        </Inline>
       </Stack>
     );
   },
@@ -373,7 +382,7 @@ export const DisabledPrimaryComparison: Story = {
     docs: {
       description: {
         story:
-          'Compare enabled and disabled primary actions in both host modes; use the theme toolbar to check light and dark. The disabled neutral background, muted label and full opacity apply without a feature flag. Hover or Tab to compare enabled states; disabled controls stay inactive and outside the tab order.',
+          'Compare enabled and disabled primary actions; use the theme toolbar to check light and dark. Disabled actions use a neutral background, a muted label and full opacity. Hover or Tab to compare enabled states; disabled controls stay inactive and outside the tab order.',
       },
     },
   },
@@ -430,28 +439,6 @@ export const PillDropdowns: Story = {
       description: {
         story:
           'Open a menu and move the pointer away: its trigger stays pressed until selection, Escape or dismissal. Hovering the tooltip alone does not press the trigger.',
-      },
-    },
-  },
-};
-
-export const Admin7Disabled: Story = {
-  render: () => (
-    <ShadeApp darkMode={false} isAdmin7={false}>
-      <Inline gap="sm">
-        <Button>Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="ghost">Ghost</Button>
-        <Button variant="destructive-ghost">Delete item</Button>
-        <Button variant="subtle">Subtle</Button>
-      </Inline>
-    </ShadeApp>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Temporary host-level compatibility restores the previous controls. New screens use ordinary Button defaults; they do not select a pill shape.',
       },
     },
   },

@@ -1,6 +1,7 @@
 import { createQuery, createQueryWithId } from '../utils/api/hooks';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
 
 // Types
 
@@ -224,6 +225,58 @@ export type SubscriptionStatsResponseType = {
 
 // Requests
 
+const commentsStatsTotalsSchema = z.object({
+  comments: z.number(),
+  commenters: z.number(),
+  reported: z.number(),
+});
+const commentsStatsIntervalSchema = z.enum(['day', 'week', 'month']);
+const commentsStatsMetaSchema = z.object({ filters: z.boolean().optional() }).optional();
+const commentsOverviewStatsSchema = z.object({
+  totals: commentsStatsTotalsSchema,
+  previous_totals: commentsStatsTotalsSchema,
+  interval: commentsStatsIntervalSchema,
+  series: z.array(commentsStatsTotalsSchema.extend({ date: z.string() })),
+});
+const commentsOverviewResponseSchema = z.object({
+  stats: z.array(commentsOverviewStatsSchema),
+  meta: commentsStatsMetaSchema,
+});
+const commentsTopPostSchema = z.object({
+  post_id: z.string(),
+  title: z.string(),
+  comments: z.number(),
+});
+const commentsTopPostsResponseSchema = z.object({
+  stats: z.array(commentsTopPostSchema),
+  meta: commentsStatsMetaSchema,
+});
+const commentsTopCommenterSchema = z.object({
+  member_id: z.string(),
+  name: z.string().nullable(),
+  avatar_image: z.string().nullable().optional(),
+  comments: z.number(),
+});
+const commentsTopCommentersResponseSchema = z.object({
+  stats: z.array(commentsTopCommenterSchema),
+  meta: commentsStatsMetaSchema,
+});
+
+export type CommentsStatsTotals = z.infer<typeof commentsStatsTotalsSchema>;
+export type CommentsStatsInterval = z.infer<typeof commentsStatsIntervalSchema>;
+export type CommentsOverviewStats = z.infer<typeof commentsOverviewStatsSchema>;
+export type CommentsOverviewResponseType = z.infer<typeof commentsOverviewResponseSchema>;
+export type CommentsTopPostItem = z.infer<typeof commentsTopPostSchema>;
+export type CommentsTopPostsResponseType = z.infer<typeof commentsTopPostsResponseSchema>;
+export type CommentsTopCommenterItem = z.infer<typeof commentsTopCommenterSchema>;
+export type CommentsTopCommentersResponseType = z.infer<typeof commentsTopCommentersResponseSchema>;
+
+export const commentsStatsDataTypes = [
+  'CommentsOverviewResponseType',
+  'CommentsTopPostsResponseType',
+  'CommentsTopCommentersResponseType',
+];
+
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
@@ -330,8 +383,7 @@ export interface PostMemberCounts {
  * Visitor counts for a batch of posts, keyed by post uuid.
  *
  * The uuid list is part of the query key, so changing the filter starts a new
- * query rather than writing a stale response over the new one — which is what
- * the Ember service's manual generation counter existed to prevent.
+ * query rather than writing a stale response over the new one.
  */
 export const usePostVisitorCounts = (postUuids: string[], { enabled = true } = {}) => {
   const fetchApi = useFetchApi();
@@ -390,3 +442,21 @@ export const usePostMemberCounts = (postIds: string[], { enabled = true } = {}) 
     },
   });
 };
+
+export const useCommentsOverview = createQuery<CommentsOverviewResponseType>({
+  dataType: 'CommentsOverviewResponseType',
+  path: '/stats/comments/',
+  parseResponse: (data) => commentsOverviewResponseSchema.parse(data),
+});
+
+export const useCommentsTopPosts = createQuery<CommentsTopPostsResponseType>({
+  dataType: 'CommentsTopPostsResponseType',
+  path: '/stats/comments/top-posts/',
+  parseResponse: (data) => commentsTopPostsResponseSchema.parse(data),
+});
+
+export const useCommentsTopCommenters = createQuery<CommentsTopCommentersResponseType>({
+  dataType: 'CommentsTopCommentersResponseType',
+  path: '/stats/comments/top-commenters/',
+  parseResponse: (data) => commentsTopCommentersResponseSchema.parse(data),
+});

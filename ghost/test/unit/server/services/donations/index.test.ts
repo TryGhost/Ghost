@@ -7,6 +7,9 @@ import type { DonationPaymentEvent } from '../../../../../core/server/services/d
 // Keep the real CommonJS identities used by the factory and Stripe's composition.
 const models = require('../../../../../core/server/models');
 const StripeService = require('../../../../../core/server/services/stripe/stripe-service');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
 const labs = require('../../../../../core/shared/labs');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const ROOT_PATH = require.resolve('../../../../../core/server/services/donations');
@@ -48,14 +51,19 @@ describe('donations root with its Stripe consumer', function () {
 
     // Boot constructs Stripe before initializing donations. The consumer must
     // look up the repository later, when the checkout webhook arrives.
+    const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
     stripe = new StripeService({
       labs,
+      tracking: stripeTracking({
+        tracer: createTracer(shipNothing),
+        meter: createMeter(shipNothing),
+      }),
       settingsCache,
       models,
       donationService: root,
       membersService: { api: { members: {} } },
       giftService: {},
-      staffService: { api: { emails: { notifyDonationReceived } } },
+      staffService: { service: { emails: { notifyDonationReceived } } },
       StripeWebhook: {},
     });
   });
@@ -91,8 +99,7 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
     const save = sandbox.spy(root.service, 'save');
 
-    const result =
-      await stripe.webhookController.checkoutSessionEventService.handleEvent(donationSession());
+    const result = await stripe.checkoutSessionEventService.recordDonation(donationSession());
 
     assert.equal(result, undefined);
     sinon.assert.calledOnce(save);
@@ -131,8 +138,8 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
 
     let completed = false;
-    const handling: Promise<void> = stripe.webhookController.checkoutSessionEventService
-      .handleEvent(donationSession())
+    const handling: Promise<void> = stripe.checkoutSessionEventService
+      .recordDonation(donationSession())
       .then(() => {
         completed = true;
       });
@@ -161,7 +168,7 @@ describe('donations root with its Stripe consumer', function () {
     await root.init();
 
     await assert.rejects(
-      stripe.webhookController.checkoutSessionEventService.handleEvent(donationSession()),
+      stripe.checkoutSessionEventService.recordDonation(donationSession()),
       (error: unknown) => error === failure,
     );
 

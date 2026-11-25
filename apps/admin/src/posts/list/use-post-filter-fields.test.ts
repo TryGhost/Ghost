@@ -54,7 +54,7 @@ describe('buildPostFilterFields', () => {
     expect(values(build({ resource: 'pages' }))).not.toContain('sent');
   });
 
-  // Ember hides visibility, author and tag for contributors, and author for
+  // Visibility, author and tag are hidden for contributors, and author for
   // authors too — they only ever see their own posts.
   it('hides visibility, author and tag from contributors', () => {
     expect(keysOf(build({ isContributor: true }))).toEqual(['type', 'featured']);

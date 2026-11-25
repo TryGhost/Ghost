@@ -1,7 +1,7 @@
 import moment from 'moment';
 import createDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import errors, { type GhostError } from '@tryghost/errors';
+import errors from '@tryghost/errors';
 import request from '@tryghost/request';
 import {
   SchedulingBase,
@@ -11,6 +11,8 @@ import {
 type SchedulerJob = BaseSchedulerJob & {
   tries?: number;
   extra?: BaseSchedulerJob['extra'] & {
+    // Forwarded to got as the request method.
+    httpMethod: request.Method;
     timeoutInMS?: number;
   };
 };
@@ -42,7 +44,7 @@ export default class SchedulingDefault extends SchedulingBase {
   // under nock + shared workers — into the unit-test path.
   request = request;
 
-  _addJob(job: SchedulerJob) {
+  schedule(job: SchedulerJob) {
     const timestamp = moment(job.time).valueOf();
     let keys: string[] = [];
     const sortedJobs: Record<string, SchedulerJob[]> = {};
@@ -76,7 +78,11 @@ export default class SchedulingDefault extends SchedulingBase {
     this.allJobs = sortedJobs;
   }
 
-  _deleteJob(job: SchedulerJob) {
+  unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }) {
+    if (opts?.bootstrap) {
+      return;
+    }
+
     const { url, time } = job;
 
     if (!time) {
@@ -155,8 +161,7 @@ export default class SchedulingDefault extends SchedulingBase {
     const requestTimeout = job.extra && job.extra.timeoutInMS ? job.extra.timeoutInMS : 1000 * 5;
     const maxTries = 30;
 
-    // TODO: fix this typing once @tryghost/request has types
-    const options: any = {
+    const options: request.RequestOptions = {
       timeout: {
         request: requestTimeout,
       },
@@ -175,7 +180,7 @@ export default class SchedulingDefault extends SchedulingBase {
       }
     }
 
-    return this.request(url, options).catch((err: GhostError) => {
+    return this.request(url, options).catch((err: request.RequestError) => {
       const { statusCode } = err;
 
       // CASE: post/page was deleted already
@@ -245,15 +250,5 @@ export default class SchedulingDefault extends SchedulingBase {
     };
 
     recursiveRun();
-  }
-
-  schedule(job: SchedulerJob) {
-    this._addJob(job);
-  }
-
-  unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }) {
-    if (!opts?.bootstrap) {
-      this._deleteJob(job);
-    }
   }
 }

@@ -1,6 +1,9 @@
 const _ = require('lodash');
 const StripeService = require('./stripe-service');
 const logging = require('@tryghost/logging');
+const { tracer, meter } = require('../../lib/tracing');
+const { stripeTracking } = require('./tracking');
+const sentry = require('../../../shared/sentry');
 const membersService = require('../members');
 const config = require('../../../shared/config');
 const settings = require('../../../shared/settings-cache');
@@ -11,7 +14,7 @@ const { getConfig } = require('./config');
 const settingsHelpers = require('../settings-helpers');
 const donationService = require('../donations').default;
 const giftService = require('../gifts');
-const staffService = require('../staff');
+const staffService = require('../staff').default;
 const labs = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
@@ -39,6 +42,8 @@ const debouncedConfigureApi = _.debounce(() => {
 
 module.exports = new StripeService({
   labs,
+  tracking: stripeTracking({ tracer, meter }),
+  sentry,
   membersService,
   models: _.pick(models, [
     'Product',
@@ -72,6 +77,8 @@ module.exports = new StripeService({
   giftService,
   staffService,
   settingsCache,
+  // Read each time it's used, as the site's uuid is a site fact (see docs/practices/dependencies.md).
+  siteUuid: () => settingsCache.get('site_uuid'),
 });
 
 function stripeSettingsChanged(model) {

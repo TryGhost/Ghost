@@ -62,35 +62,25 @@ describe('writeSettingsOpen', () => {
 
 describe('settingsOpenAtStart', () => {
   it('opens the panel the writer left open, where it sits beside the editor', () => {
-    expect(settingsOpenAtStart({ enabled: true, overlay: false, stored: true })).toBe(true);
+    expect(settingsOpenAtStart({ overlay: false, stored: true })).toBe(true);
   });
 
   it('keeps the panel closed when the writer left it closed', () => {
-    expect(settingsOpenAtStart({ enabled: true, overlay: false, stored: false })).toBe(false);
+    expect(settingsOpenAtStart({ overlay: false, stored: false })).toBe(false);
   });
 
   it('keeps the panel closed where it would cover the editor, whatever was stored', () => {
-    expect(settingsOpenAtStart({ enabled: true, overlay: true, stored: true })).toBe(false);
-    expect(settingsOpenAtStart({ enabled: true, overlay: true, stored: false })).toBe(false);
-  });
-
-  it('keeps the panel closed with the flag off, whatever was stored', () => {
-    expect(settingsOpenAtStart({ enabled: false, overlay: false, stored: true })).toBe(false);
-    expect(settingsOpenAtStart({ enabled: false, overlay: true, stored: true })).toBe(false);
+    expect(settingsOpenAtStart({ overlay: true, stored: true })).toBe(false);
+    expect(settingsOpenAtStart({ overlay: true, stored: false })).toBe(false);
   });
 });
 
 describe('remembersSettingsToggle', () => {
   it('remembers a toggle where the panel sits beside the editor', () => {
-    expect(remembersSettingsToggle({ enabled: true, overlay: false })).toBe(true);
+    expect(remembersSettingsToggle({ overlay: false })).toBe(true);
   });
 
   it('forgets a toggle where the panel covers the editor', () => {
-    expect(remembersSettingsToggle({ enabled: true, overlay: true })).toBe(false);
-  });
-
-  it('forgets every toggle with the flag off', () => {
-    expect(remembersSettingsToggle({ enabled: false, overlay: false })).toBe(false);
-    expect(remembersSettingsToggle({ enabled: false, overlay: true })).toBe(false);
+    expect(remembersSettingsToggle({ overlay: true })).toBe(false);
   });
 });

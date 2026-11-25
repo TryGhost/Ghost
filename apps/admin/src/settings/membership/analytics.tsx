@@ -14,9 +14,8 @@ import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { getSettingValues, isSettingReadOnly } from '@tryghost/admin-x-framework/api/settings';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
-import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { UpgradeNotice } from '@/settings/components/upgrade-notice';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
-import { navigateTo } from '@/utils/navigation';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const {
@@ -48,7 +47,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
 
   const [isWebAnalyticsLimited, setIsWebAnalyticsLimited] = useState(false);
   const limiter = useLimiter();
-  const upgradeRoute = useUpgradeRoute();
 
   useEffect(() => {
     if (limiter?.isLimited('limitAnalytics')) {
@@ -99,20 +97,11 @@ const Analytics: React.FC<{ keywords: string[] }> = ({ keywords }) => {
         />
       </Field>
       {isWebAnalyticsLimited ? (
-        <div className="mb-5 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-900 dark:bg-gray-900">
-          <span className="flex items-start gap-2">
-            <span>
-              Web analytics is available on the Publisher plan and above.{' '}
-              <Link asChild>
-                <button type="button" onClick={() => navigateTo(upgradeRoute)}>
-                  Upgrade now
-                </button>
-              </Link>
-            </span>
-          </span>
-        </div>
+        <UpgradeNotice className="mb-5">
+          Web analytics is available on the Publisher plan and above.
+        </UpgradeNotice>
       ) : !isWebAnalyticsConfigured ? (
-        <div className="mb-5 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-900 dark:bg-gray-900">
+        <div className="mb-5 rounded-md border border-border-default bg-muted px-4 py-2.5">
           <span className="flex items-start gap-2">
             <span>
               Web analytics in Ghost is powered by{' '}

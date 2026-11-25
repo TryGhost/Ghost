@@ -18,7 +18,7 @@ import { keepPreviousData } from '@tanstack/react-query';
  * whose tag isn't in the first page of results, where the chip would otherwise
  * show a bare slug.
  *
- * Search matches Ember's `tags.name:~<term>` (`controllers/posts.js:131`).
+ * Search matches `tags.name:~<term>`.
  */
 const TAG_PAGE_LIMIT = '100';
 
@@ -51,7 +51,7 @@ const usePostTagBrowseValueSource = createGhostBrowseValueSource<Tag, TagsRespon
   }),
   // Without this, a slug that resolves to nothing leaves the chip reading
   // "Select…" — the value vanishes from the UI while staying in the URL, so
-  // the list looks empty for no visible reason. Ember shows "Unknown tag".
+  // the list looks empty for no visible reason.
   getMissingSelectedOption: (value) => ({
     value,
     label: 'Unknown tag',

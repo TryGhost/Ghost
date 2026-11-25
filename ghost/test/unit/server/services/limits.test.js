@@ -30,6 +30,22 @@ describe('Limit Service Init', function () {
     sinon.restore();
   });
 
+  it('only uses the billing help link when billing is explicitly enabled', function () {
+    for (const enabled of [undefined, false, 'true', true]) {
+      configUtils.set({
+        hostSettings: { billing: { enabled, url: 'https://billing.example.com' } },
+      });
+      initLimits();
+      assert.equal(
+        limitServiceStub.lastCall.args[0].helpLink,
+        enabled === true ? 'https://billing.example.com' : 'https://ghost.org/help/',
+      );
+    }
+    configUtils.set({ hostSettings: { billing: { enabled: true } } });
+    initLimits();
+    assert.equal(limitServiceStub.lastCall.args[0].helpLink, 'https://ghost.org/help/');
+  });
+
   it('initiates and loads limits - minimal setup', async function () {
     limitServiceStub.returns(Promise.resolve());
     await initLimits();

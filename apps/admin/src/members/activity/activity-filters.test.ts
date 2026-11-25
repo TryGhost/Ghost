@@ -55,23 +55,6 @@ describe('activity filters', () => {
     );
   });
 
-  it('offers custom field changes only where the site has custom fields', () => {
-    const events = (settings: Parameters<typeof availableActivityTypes>[0]) =>
-      availableActivityTypes(settings, 'abc').map(({ event }) => event);
-    expect(events({ customFieldsAvailable: true })).toContain('metafield_change_event');
-    expect(events({})).not.toContain('metafield_change_event');
-    expect(
-      activityQueryOptions({ settings: {}, excluded: null, memberId: 'abc' }).excludedEvents,
-    ).toContain('metafield_change_event');
-    expect(
-      activityQueryOptions({
-        settings: { customFieldsAvailable: true },
-        excluded: null,
-        memberId: 'abc',
-      }).excludedEvents,
-    ).not.toContain('metafield_change_event');
-  });
-
   it.each([
     ['subscription_event', 'gift_redemption_event', 'gift_ended_event'],
     ['payment_event', 'donation_event', 'gift_purchase_event'],

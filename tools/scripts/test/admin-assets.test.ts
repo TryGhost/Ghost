@@ -46,7 +46,6 @@ beforeEach(() => {
   write('koenig/koenig-lexical/dist/koenig.js', 'koenig');
   write('koenig/koenig-lexical/dist/embed-renderer/index.html', 'isolated renderer');
   write('koenig/koenig-lexical/dist/embed-renderer/assets/renderer.js', 'isolated script');
-  write('apps/activitypub/dist/activitypub.js', 'activitypub');
   write(
     'apps/admin/dist/index.html',
     '<script type="module" src="https://cdn.example/assets/react.js"></script>',
@@ -115,14 +114,6 @@ describe('Admin asset assembly', () => {
       { recursive: true },
     );
     assert.throws(() => assembleAdminAssets(root), /must not be served with Admin assets/);
-    assert.equal(read('ghost/core/built/admin/index.html'), 'previous build');
-  });
-
-  it('rejects Admin output still holding bundles from the hybrid assembler', () => {
-    write('ghost/core/built/admin/index.html', 'previous build');
-    write('apps/admin/dist/assets/koenig-lexical/koenig-lexical.umd.js', 'koenig');
-    write('apps/admin/dist/assets/activitypub/activitypub.js', 'activitypub');
-    assert.throws(() => assembleAdminAssets(root), /still holds hybrid assets/);
     assert.equal(read('ghost/core/built/admin/index.html'), 'previous build');
   });
 

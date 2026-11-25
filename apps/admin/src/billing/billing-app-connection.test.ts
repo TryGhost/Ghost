@@ -215,7 +215,7 @@ describe('BillingAppConnection', () => {
     expect(connection.isFromBillingApp(message({ data: null }))).toBe(false);
   });
 
-  it("reports a visible failure with Ember's diagnostics", () => {
+  it('reports a visible failure with its load diagnostics', () => {
     const { connection, onLoadFailure } = connect();
     connection.setVisible(true);
     connection.recordPreReadyMessage({ request: 'token' });

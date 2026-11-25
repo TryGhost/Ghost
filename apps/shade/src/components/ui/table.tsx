@@ -3,6 +3,8 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
 import { cva, VariantProps } from 'class-variance-authority';
+import { rowSurface } from '@/components/ui/row-surface';
+import { useRowBehavior } from '@/hooks/use-row-behavior';
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
@@ -16,9 +18,7 @@ Table.displayName = 'Table';
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn('[&_tr:hover:before]:bg-transparent', className)} {...props} />
-));
+>(({ className, ...props }, ref) => <thead ref={ref} className={className} {...props} />);
 TableHeader.displayName = 'TableHeader';
 
 const TableBody = React.forwardRef<
@@ -39,14 +39,28 @@ const TableFooter = React.forwardRef<
 ));
 TableFooter.displayName = 'TableFooter';
 
-const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
-  ({ className, ...props }, ref) => (
-    <tr
-      ref={ref}
-      className={cn('group relative border-b data-[state=selected]:bg-muted', className)}
-      {...props}
-    />
-  ),
+interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  interactive?: boolean;
+}
+
+const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
+  ({ className, interactive, onClick, ...props }, ref) => {
+    const isInteractive = interactive ?? (onClick ? true : undefined);
+    const behavior = useRowBehavior({ ...props, onClick }, isInteractive);
+    return (
+      <tr
+        ref={ref}
+        className={cn(
+          'group relative border-b',
+          rowSurface(isInteractive === false ? 'static' : isInteractive ? 'interactive' : 'auto'),
+          className,
+        )}
+        onClick={onClick}
+        {...props}
+        {...behavior}
+      />
+    );
+  },
 );
 TableRow.displayName = 'TableRow';
 
@@ -54,7 +68,7 @@ const headVariants = cva('relative align-middle', {
   variants: {
     variant: {
       default:
-        'h-(--control-height) px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        'column-label h-(--control-height) px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
       cardhead: 'text-base font-normal [&>div]:px-0',
     },
   },
@@ -79,7 +93,7 @@ type TableHeadButtonProps = React.ComponentProps<typeof Button>;
 
 const TableHeadButton: React.FC<TableHeadButtonProps> = ({ className, children, ...props }) => {
   const buttonClassName = cn(
-    'gap-1 px-0 text-right text-sm leading-4 tracking-wide text-text-secondary uppercase hover:bg-transparent [&_svg]:size-4',
+    'column-label gap-1 px-0 text-right text-sm leading-4 tracking-wide text-text-secondary uppercase hover:bg-transparent [&_svg]:size-4',
     className,
   );
   return (
@@ -97,7 +111,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      'relative p-2.5 align-middle group-hover:bg-table-row-hover [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+      'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
       className,
     )}
     {...props}

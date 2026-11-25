@@ -27,14 +27,15 @@ const messages = {
 };
 
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
-// Admin no longer reads selfServeArchives; it stays enabled for older Admin builds
-// during independent deployments.
+// Admin no longer reads selfServeArchives or admin7EditorImprovements; they stay
+// enabled for older Admin builds during independent deployments.
 const GA_FEATURES = [
-  'automationsArchive',
-  'automationsPerTier',
   'selfServeArchives',
-  'editorReact',
-  'billingReact',
+  'admin7EditorImprovements',
+  'membersCustomFields',
+  'stripeCheckoutCollection',
+  'customFieldTypePhone',
+  'inAppSupport',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -49,23 +50,25 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
   'automations',
-  'automationsLifecycleTriggers',
+  'automationsLeadMagnets',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
   'admin7Design',
+  'admin7Mobile',
   'admin7CustomizeFromViewSite',
-  'admin7EditorImprovements',
   'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
-  'membersCustomFields',
-  'stripeCheckoutCollection',
-  'stripeCheckoutDesign',
   'paywallImprovements',
   'machinePayments',
   'apps',
+  'editorPresencePolling',
+  'editorPresence',
+  'editorLease',
+  'commentsAnalytics',
+  'oauthBridge',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -148,7 +151,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
 
   const { SafeString } = require('express-hbs');
   const errString = new SafeString(
-    `<script>console.error("${_.values(errDetails).join(' ')}");</script>`,
+    `<script>console.error("${Object.values(errDetails).join(' ')}");</script>`,
   );
 
   return errString;

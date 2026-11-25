@@ -24,7 +24,7 @@ type FilterBarProps = React.PropsWithChildren & {
  *   </FilterBar>
  */
 function FilterBarRoot({ className, children }: FilterBarProps) {
-  const { controlShape, isAdmin7 } = useShade();
+  const { controlShape } = useShade();
 
   if (React.Children.count(children) === 0) {
     return null;
@@ -36,8 +36,7 @@ function FilterBarRoot({ className, children }: FilterBarProps) {
         align="start"
         className={cn(
           'relative w-full [&>[data-slot=filter-bar-actions]]:static',
-          isAdmin7 &&
-            '-mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-tab-active!',
+          '-mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-tab-active!',
           className,
         )}
         data-control-shape={controlShape}
@@ -67,20 +66,18 @@ FilterBarActions.displayName = 'FilterBar.Actions';
 const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, size, variant, ...props }, ref) => {
     const isInFilterBar = useFilterBarContext();
-    const { isAdmin7 } = useShade();
-    const usePillFilterBarStyle = isInFilterBar && isAdmin7;
 
     return (
       <Button
         ref={ref}
         className={cn(
-          usePillFilterBarStyle && variant === 'outline' && 'bg-background',
-          usePillFilterBarStyle &&
+          isInFilterBar && variant === 'outline' && 'bg-background',
+          isInFilterBar &&
             variant === 'ghost' &&
             'hover:bg-tab-active enabled:active:bg-tab-active',
           className,
         )}
-        size={size ?? (usePillFilterBarStyle ? 'sm' : undefined)}
+        size={size ?? (isInFilterBar ? 'sm' : undefined)}
         variant={variant}
         {...props}
       />

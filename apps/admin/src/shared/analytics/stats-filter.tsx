@@ -1,9 +1,13 @@
-import { Button } from '@tryghost/shade/components';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import { type Filter, type FilterFieldConfig, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { useShade } from '@tryghost/shade/app';
+import {
+  type Filter,
+  type FilterFieldConfig,
+  FilterBar,
+  Filters,
+  useMobileFilters,
+} from '@tryghost/shade/patterns';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES } from './constants';
 import { formatQueryDate, getRangeDates } from './chart-helpers';
@@ -343,8 +347,9 @@ function StatsFilter({
   showPostField = false,
   ...props
 }: StatsFilterProps) {
-  const { isAdmin7 } = useShade();
   const paidMembersEnabled = usePaidMembersEnabled();
+  const mobileFilters = useMobileFilters();
+  const [filterBarContainer, setFilterBarContainer] = useState<HTMLDivElement | null>(null);
 
   // Track which filter field is currently being selected (lazy loading)
   const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -681,44 +686,11 @@ function StatsFilter({
     }
   }, [onChange]);
 
-  if (!isAdmin7) {
-    return (
-      <div
-        className="mt-3 flex w-full justify-between gap-2 lg:mt-0"
-        data-testid="stats-filter-container"
-      >
-        <Filters
-          addButton={<Filters.Trigger fallbackStyle="funnel-plus" />}
-          allowMultiple={false}
-          className="[&>button]:order-last"
-          fields={groupedFields}
-          filters={filters}
-          keyboardShortcut="f"
-          popoverAlign={isMobile ? 'start' : hasFilters ? 'start' : 'end'}
-          showSearchInput={false}
-          onActiveFieldChange={setActiveFilterField}
-          onChange={onChange || (() => {})}
-          {...props}
-        />
-        {hasFilters && (
-          <Button
-            className="hidden font-normal text-muted-foreground lg:flex"
-            data-testid="stats-filter-clear-button"
-            variant="ghost"
-            onClick={handleClearFilters}
-          >
-            <LucideIcon.FunnelX />
-            Clear
-          </Button>
-        )}
-      </div>
-    );
-  }
-
   const filtersElement = (
     <Filters
       addButton={<Filters.Trigger fallbackStyle="funnel-plus" />}
       allowMultiple={false}
+      barContainer={filterBarContainer}
       className="[&>button]:order-last"
       clearButton={
         hasFilters ? (
@@ -745,6 +717,15 @@ function StatsFilter({
       {...props}
     />
   );
+
+  if (mobileFilters) {
+    return (
+      <div className="flex w-full flex-col items-start gap-3" data-testid="stats-filter-container">
+        {filtersElement}
+        <div ref={setFilterBarContainer} className="w-full" />
+      </div>
+    );
+  }
 
   return hasFilters ? (
     <div className="w-full" data-testid="stats-filter-container">

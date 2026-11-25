@@ -1,12 +1,14 @@
 import clsx from 'clsx';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
+import {escapeHtml} from '../escape-html.js';
+import {sanitizeColor} from '../sanitize-color.js';
 import {html} from '../tagged-template-fns.js';
 import {stylex} from '../stylex.js';
 
 export interface EmailButtonOptions {
-    /** The URL the button links to */
+    /** The URL the button links to, as stored; it's encoded for the attribute here */
     url?: string;
-    /** The text displayed on the button */
+    /** The text displayed on the button, written as text rather than HTML */
     text?: string;
     /** The alignment of the button */
     alignment?: string;
@@ -40,7 +42,10 @@ function _getOptions(buttonOptions: EmailButtonOptions = {}): Required<EmailButt
 
 export function renderEmailButton(buttonOptions: EmailButtonOptions = {}) {
     const options = _getOptions(buttonOptions);
-    const {url, text, alignment, buttonWidth} = options;
+    options.color = sanitizeColor(options.color);
+    const {url, text} = options;
+    const alignment = escapeHtml(options.alignment);
+    const buttonWidth = escapeHtml(options.buttonWidth);
 
     const buttonClasses = _getButtonClasses(options);
     const buttonStyle = _getButtonStyle(options);
@@ -51,7 +56,7 @@ export function renderEmailButton(buttonOptions: EmailButtonOptions = {}) {
             <tbody>
                 <tr>
                     <td align="center"${buttonWidth ? ` width="${buttonWidth}"` : ''}${buttonStyle ? ` style="${buttonStyle}"` : ''}>
-                        <a href="${url}"${linkStyle ? ` style="${linkStyle}"` : ''}>${text}</a>
+                        <a href="${escapeHtml(url)}"${linkStyle ? ` style="${linkStyle}"` : ''}>${escapeHtml(text)}</a>
                     </td>
                 </tr>
             </tbody>

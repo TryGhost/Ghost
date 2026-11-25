@@ -1,4 +1,4 @@
-import type { AppManifest } from '@tryghost/app-contracts';
+import type { AppManifest, ManifestChange } from '@tryghost/app-contracts';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
@@ -11,8 +11,11 @@ export interface AppInstallation {
   id: string;
   app_id: string;
   status: AppInstallationStatus;
+  /** Increments with every change to the installation, so a session can tell it has ended. */
+  revision: number;
   manifest_url: string;
   manifest: AppManifest;
+  icon_data_url: string | null;
   created_at: string;
   updated_at: string | null;
   /** Newest first. Only included when read with `include=history`. */
@@ -22,21 +25,22 @@ export interface AppInstallation {
 /**
  * `actor` is null when Ghost made the change itself.
  * It's also null when there's no record of who installed the app.
+ *
+ * `resumed` means a suspended app reverted to its approved manifest, so the changes that were
+ * waiting for approval are no longer pending.
  */
 export interface AppInstallationHistoryEntry {
   id: string;
-  event: 'installed' | 'updated' | 'suspended' | 'changes_approved' | 'uninstalled';
+  event: 'installed' | 'updated' | 'suspended' | 'resumed' | 'changes_approved' | 'uninstalled';
   actor: { id: string; name: string | null } | null;
   created_at: string;
   /** The host the app moved to. Only set when an approval moved the app. */
   moved_to?: string;
-}
-
-/** One field that differs from what was approved before. */
-export interface AppManifestChange {
-  /** A path in the manifest, such as `surfaces[0].url`, or `manifest_url` when the app moved. */
-  path: string;
-  requires_approval: boolean;
+  /**
+   * What the entry changed, as Ghost stored it with the manifest: fields, then scopes. A
+   * suspension lists what waits for approval. Left out when nothing changed.
+   */
+  changes?: ManifestChange[];
 }
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
@@ -45,6 +49,12 @@ export interface AppInstallationPreview {
   manifest: AppManifest;
   /** Sent back when confirming, so only the manifest that was reviewed gets installed. */
   digest: string;
+  icon_data_url: string | null;
+  /**
+   * The app's origin, if the site's configuration trusts it, so Ghost didn't ask it to prove it
+   * holds the app's key. Empty when it proved it. An app is one origin, so there's at most one.
+   */
+  trusted_origins: string[];
   /**
    * The site's installation of the same app, if it has one: the manifest it was approved
    * with and where that was read from, and what would change.
@@ -56,12 +66,30 @@ export interface AppInstallationPreview {
     revision: number;
     manifest_url: string;
     manifest: AppManifest;
-    changes: AppManifestChange[];
+    icon_data_url: string | null;
+    /**
+     * Field changes by path, such as `surfaces[0].url`, or `manifest_url` when the app moved,
+     * then scope changes in the registry's order.
+     */
+    changes: ManifestChange[];
   } | null;
 }
 
 export interface AppInstallationsResponseType {
   app_installations: AppInstallation[];
+}
+
+/**
+ * One session of an installed app: the installation as Ghost returned it after re-checking the
+ * app's manifest. The session is pinned to that installation's revision, and ends once the
+ * revision changes.
+ */
+export interface AppSession {
+  installation: AppInstallation;
+}
+
+export interface AppSessionsResponseType {
+  app_sessions: AppSession[];
 }
 
 export interface AppInstallationPreviewsResponseType {
@@ -94,14 +122,17 @@ export const useReadAppInstallation = createQueryWithId<AppInstallationsResponse
   defaultSearchParams: { include: 'history' },
 });
 
-/** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */
-export const usePreviewAppInstallation = createMutation<
-  AppInstallationPreviewsResponseType,
-  string
->({
+/**
+ * Starts a session of an installed app. Opening the app's page does this. Ghost first re-checks the
+ * app's manifest: a change that needs no approval is applied, and one that needs approval suspends
+ * the app. Ghost then returns the current installation, and only that response decides whether the
+ * app loads. The session ends when the installation's revision changes from the one in the
+ * response. For an app that isn't installed, Ghost returns 404 with the code `APP_NOT_INSTALLED`.
+ */
+export const useStartAppSession = createMutation<AppSessionsResponseType, string>({
   method: 'POST',
-  path: () => '/apps/installations/preview/',
-  body: (manifestUrl) => ({ app_installation_previews: [{ manifest_url: manifestUrl }] }),
+  path: (id) => `/apps/installations/${id}/sessions/`,
+  invalidateQueries: { dataType },
 });
 
 export const useAddAppInstallation = createMutation<

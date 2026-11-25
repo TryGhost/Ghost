@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import * as sinon from 'sinon';
-// @ts-expect-error This module lacks type definitions.
 import * as security from '@tryghost/security';
 import { generatePassword } from '../../../core/server/lib/generate-password';
 

@@ -1,28 +1,49 @@
 import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import boundaries from '../../../../.dependency-cruiser.cjs';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
-// Reuse the native boundary rule: $1 denotes internal service files, not libraries.
-const boundary = Array.isArray(boundaries?.forbidden)
-  ? boundaries.forbidden.find((rule) => rule?.name === 'service-dependencies')
-  : undefined;
+type ServiceRule = { name: string; from: { path: string } };
+
+// The config is read as untyped data: its rules have different shapes.
+function isServiceRule(rule: unknown): rule is ServiceRule {
+  const { name, from } = (rule ?? {}) as Record<string, unknown>;
+  const { path: fromPath } = (from ?? {}) as Record<string, unknown>;
+  return name === 'service-dependencies' && typeof fromPath === 'string';
+}
+
+// Reuse the native boundary rule's service scope and its allowlist. Specialist
+// dependencies are also exempt from that rule, but only their owners may import
+// them, so a root that owns one may still pass it in.
+const config = (boundaries ?? {}) as { forbidden?: unknown; serviceDependencyAllowlist?: unknown };
+const boundary = Array.isArray(config.forbidden) ? config.forbidden.find(isServiceRule) : undefined;
+const allowlist = config.serviceDependencyAllowlist;
 if (
-  typeof boundary?.from?.path !== 'string' ||
-  !Array.isArray(boundary.to?.pathNot) ||
-  !boundary.to.pathNot.every((pattern) => typeof pattern === 'string')
+  !boundary ||
+  !Array.isArray(allowlist) ||
+  !allowlist.every((pattern) => typeof pattern === 'string')
 ) {
   throw new Error(
     'ghost/no-injected-service-libraries: .dependency-cruiser.cjs must define ' +
-      'service-dependencies with a string from.path and a string array to.pathNot',
+      'service-dependencies with a string from.path and expose serviceDependencyAllowlist',
   );
 }
 const services = new RegExp(boundary.from.path);
-const libraries = boundary.to.pathNot
-  .filter((pattern) => !pattern.includes('$1'))
-  .map((pattern) => new RegExp(pattern));
+const libraries = allowlist.map((pattern: string) => new RegExp(pattern));
+
+// The allowlist admits contracts whole by their folder. Map each contract's
+// package name to that folder so a package import matches the same entry.
+const contractsDirectory = path.join(root, 'contracts');
+const contractFolders = new Map<string, string>();
+for (const entry of existsSync(contractsDirectory) ? readdirSync(contractsDirectory) : []) {
+  const manifest = path.join(contractsDirectory, entry, 'package.json');
+  if (!existsSync(manifest)) continue;
+  const { name } = JSON.parse(readFileSync(manifest, 'utf8')) as { name?: unknown };
+  if (typeof name === 'string') contractFolders.set(name, `contracts/${entry}`);
+}
 
 function unwrap(node: ESTree.Node | null | undefined) {
   while (
@@ -135,8 +156,16 @@ export const noInjectedServiceLibraries: CreateRule = {
         ? path.posix.normalize(path.posix.join(directory, specifier))
         : specifier;
       const candidates = specifier.startsWith('.')
-        ? [target, `${target}.ts`, target.replace(/\.js$/, '.ts')]
-        : [target, `node_modules/${target}/`];
+        ? [target, `${target}.ts`, `${target}.js`, target.replace(/\.js$/, '.ts')]
+        : [
+            target,
+            `node_modules/${target}/`,
+            `node_modules/${target}`,
+            `node_modules/${target}.js`,
+          ];
+      const name = specifier.split('/', specifier.startsWith('@') ? 2 : 1).join('/');
+      const contract = contractFolders.get(name);
+      if (contract) candidates.push(`${contract}${specifier.slice(name.length)}`);
       return libraries.some((pattern) => candidates.some((candidate) => pattern.test(candidate)));
     }
 

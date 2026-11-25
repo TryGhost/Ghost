@@ -1,6 +1,7 @@
 import * as membersSel from '@tryghost/test-data/selectors/members';
 import { AdminPage } from '@/admin-pages';
-import { Download, Locator, Page } from '@playwright/test';
+import { Download, JSHandle, Locator, Page } from '@playwright/test';
+import { MemberViewPopover } from './member-view-popover';
 import { readFileSync } from 'node:fs';
 
 export interface ExportedFile {
@@ -13,6 +14,8 @@ const OPEN_MEMBER_TIMEOUT_MS = 5_000;
 
 export class MembersListPage extends AdminPage {
   readonly memberRows: Locator;
+  /** The name link of every listed member, one per row, in the order the list shows them. */
+  readonly memberNames: Locator;
   readonly searchInput: Locator;
   readonly actionsButton: Locator;
   readonly newMemberButton: Locator;
@@ -23,6 +26,13 @@ export class MembersListPage extends AdminPage {
   readonly importCsvLink: Locator;
   readonly noResults: Locator;
   readonly showAllButton: Locator;
+  readonly loadMoreButton: Locator;
+  readonly membersListScrollRoot: Locator;
+  // One trigger beside Clear, named "Edit view" when the current filter exactly
+  // matches a saved view and "Save view" otherwise.
+  readonly saveViewButton: Locator;
+  readonly editViewButton: Locator;
+  readonly viewPopover: MemberViewPopover;
   // Not part of this screen: openMemberByName reads it to tell a row click that landed
   // on the detail route from one the list navigated back out of.
   readonly memberDetailScreen: Locator;
@@ -32,6 +42,7 @@ export class MembersListPage extends AdminPage {
     this.pageUrl = '/ghost/#/members';
 
     this.memberRows = page.getByTestId(membersSel.membersListItem);
+    this.memberNames = this.memberRows.getByRole('link');
     this.searchInput = page.getByTestId(membersSel.membersSearchInput);
     this.actionsButton = page.getByTestId(membersSel.membersActions);
     this.newMemberButton = page.getByRole('link', { name: membersSel.newMemberLink });
@@ -44,6 +55,11 @@ export class MembersListPage extends AdminPage {
     this.importCsvLink = page.getByRole('link', { name: membersSel.importCsvLink });
     this.noResults = page.getByText(membersSel.noResultsText);
     this.showAllButton = page.getByRole('button', { name: membersSel.showAllButton });
+    this.loadMoreButton = page.getByRole('button', { name: membersSel.loadMoreButton });
+    this.membersListScrollRoot = page.getByTestId(membersSel.membersListScrollRoot);
+    this.saveViewButton = page.getByRole('button', { name: 'Save view', exact: true });
+    this.editViewButton = page.getByRole('button', { name: 'Edit view', exact: true });
+    this.viewPopover = new MemberViewPopover(page);
     this.memberDetailScreen = page.getByTestId(membersSel.memberDetail);
   }
 
@@ -55,6 +71,10 @@ export class MembersListPage extends AdminPage {
 
   getMemberLinkByName(name: string): Locator {
     return this.getMemberByName(name).getByRole('link', { name, exact: true });
+  }
+
+  async clickMemberByEmail(email: string): Promise<void> {
+    await this.memberRows.filter({ hasText: email }).click();
   }
 
   /**
@@ -109,23 +129,23 @@ export class MembersListPage extends AdminPage {
     field,
     value,
     values,
-    subfield,
+    part,
     operator,
   }: {
     field: string;
     value?: string;
     // For a part picked from a list (a country): the names to pick, any of.
     values?: string[];
-    subfield?: string;
+    part?: string;
     operator?: string;
   }): Promise<void> {
     await this.filterButton.click();
     await this.page.getByRole('option', { name: field, exact: true }).click();
 
-    if (subfield) {
+    if (part) {
       // The cascade segments are dropdown menus, so their choices are menuitems.
-      await this.page.getByTestId('custom-field-filter-subfield').click();
-      await this.page.getByRole('menuitem', { name: subfield, exact: true }).click();
+      await this.page.getByTestId('custom-field-filter-part').click();
+      await this.page.getByRole('menuitem', { name: part, exact: true }).click();
     }
 
     if (operator) {
@@ -175,13 +195,103 @@ export class MembersListPage extends AdminPage {
     return await this.memberRows.count();
   }
 
+  async getMaxRenderedIndex(): Promise<number> {
+    return await this.memberRows.evaluateAll((rows) => {
+      return rows.reduce((maxIndex, row) => {
+        return Math.max(maxIndex, Number(row.getAttribute('data-index') || '-1'));
+      }, -1);
+    });
+  }
+
+  private async getMembersScrollParentHandle(): Promise<JSHandle<HTMLElement>> {
+    return (await this.membersListScrollRoot.evaluateHandle((element) => {
+      let node: Node | null = element;
+
+      while (node) {
+        if (node instanceof HTMLElement) {
+          const overflowY = window.getComputedStyle(node).overflowY;
+          const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+
+          if (isScrollable && node.scrollHeight >= node.clientHeight) {
+            return node;
+          }
+        }
+
+        node = node.parentNode;
+      }
+
+      return document.body;
+    })) as JSHandle<HTMLElement>;
+  }
+
+  async getScrollParentScrollTop(): Promise<number> {
+    const scrollParent = await this.getMembersScrollParentHandle();
+
+    try {
+      return await scrollParent.evaluate((element) => element.scrollTop);
+    } finally {
+      await scrollParent.dispose();
+    }
+  }
+
+  async scrollScrollParentBy(deltaY: number): Promise<void> {
+    const scrollParent = await this.getMembersScrollParentHandle();
+
+    try {
+      await scrollParent.evaluate((element, pixels) => {
+        element.scrollBy(0, pixels);
+      }, deltaY);
+    } finally {
+      await scrollParent.dispose();
+    }
+  }
+
+  async scrollUntilMaxRenderedIndexAtLeast(targetIndex: number): Promise<number> {
+    let maxRenderedIndex = await this.getMaxRenderedIndex();
+
+    for (let i = 0; i < 30 && maxRenderedIndex < targetIndex; i += 1) {
+      await this.scrollScrollParentBy(4000);
+      await this.page.waitForFunction(
+        ({ previousMaxIndex, listItemTestId }) => {
+          const rows = Array.from(document.querySelectorAll(`[data-testid="${listItemTestId}"]`));
+
+          return rows.some(
+            (row) => Number(row.getAttribute('data-index') || '-1') > previousMaxIndex,
+          );
+        },
+        { previousMaxIndex: maxRenderedIndex, listItemTestId: membersSel.membersListItem },
+      );
+      maxRenderedIndex = await this.getMaxRenderedIndex();
+    }
+
+    return maxRenderedIndex;
+  }
+
   async saveCurrentView(name: string): Promise<void> {
-    await this.page.getByRole('button', { name: 'Save view' }).click();
-    const dialog = this.page.getByRole('dialog');
-    await dialog.waitFor({ state: 'visible' });
-    await dialog.getByRole('textbox', { name: 'View name' }).fill(name);
-    await dialog.getByRole('button', { name: 'Save' }).click();
-    await dialog.waitFor({ state: 'hidden' });
+    await this.saveViewButton.click();
+    await this.viewPopover.waitForPopover();
+    await this.viewPopover.enterName(name);
+    await this.viewPopover.save();
+  }
+
+  /** Renames the saved view that the current filter matches. */
+  async renameCurrentView(name: string): Promise<void> {
+    await this.editViewButton.click();
+    await this.viewPopover.waitForPopover();
+    await this.viewPopover.enterName(name);
+    await this.viewPopover.save();
+  }
+
+  /** Deletes the saved view that the current filter matches, confirming when asked. */
+  async deleteCurrentView(): Promise<void> {
+    await this.editViewButton.click();
+    await this.viewPopover.waitForPopover();
+    await this.viewPopover.delete();
+  }
+
+  /** The NQL filter in the list's URL, or null when the list is unfiltered. */
+  getUrlFilter(): string | null {
+    return this.getHashRoute().params.filter ?? null;
   }
 
   getMenuItem(name: string | RegExp): Locator {
@@ -257,8 +367,13 @@ export class MembersListPage extends AdminPage {
     return this.page.locator('[data-edit-row] input');
   }
 
+  /** Every filter pill in the filter bar, one per filter applied to the list. */
+  get filterItems(): Locator {
+    return this.page.locator('[data-slot="filter-item"]');
+  }
+
   getFilterItem(fieldName: string): Locator {
-    return this.page.locator('[data-slot="filter-item"]').filter({ hasText: fieldName });
+    return this.filterItems.filter({ hasText: fieldName });
   }
 
   async openFilterValue(fieldName: string): Promise<void> {

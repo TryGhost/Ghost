@@ -8,7 +8,6 @@ const { SafeString } = require('../services/handlebars');
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const get = require('lodash/get');
 const { getAssetUrl } = metaData;
 
 const messages = {
@@ -16,7 +15,7 @@ const messages = {
 };
 
 module.exports = function asset(path, options) {
-  const hasMinFile = get(options, 'hash.hasMinFile');
+  const hasMinFile = options?.hash?.hasMinFile;
 
   if (!path) {
     throw new errors.IncorrectUsageError({

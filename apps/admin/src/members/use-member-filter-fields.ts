@@ -10,6 +10,9 @@ import {
 import type { FieldIcon } from '@/shared/filters';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { metafieldFieldId } from './custom-fields/addressing';
+import { listFieldValueSource } from './custom-fields/list-value-source';
+import { matchField } from '@tryghost/metafield-types/structure';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { keyIsUnder } from '@/shared/filters';
 import type { StaticMemberFieldKey } from '@/members/member-fields';
 import {
@@ -24,7 +27,6 @@ import { LabelFilterRenderer } from '@/members/label-picker';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD } from './multiple-active-subscriptions';
 import { buildMemberFields } from './member-filter-catalog';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Offer } from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
@@ -42,27 +44,28 @@ interface UseMemberFilterFieldsOptions {
   membersTrackSources?: boolean;
   emailTrackOpens?: boolean;
   emailTrackClicks?: boolean;
-  customFields?: Array<{
-    namespace: string;
-    key: string;
-    name: string;
-    type: MemberCustomField['type'];
-  }>;
+  customFields?: MemberCustomField[];
   // Archived fields still referenced by the current filter. Rendered as disabled,
   // removable-only pills so a saved segment stays visible and undoable even though
   // the field is no longer offered in the picker. The type still decides how the
   // pill reads: a country picked from a list is not text.
-  archivedCustomFields?: Array<{
-    namespace: string;
-    key: string;
-    name: string;
-    type: MemberCustomField['type'];
-  }>;
+  archivedCustomFields?: MemberCustomField[];
   siteTimezone?: string;
 }
 
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'valueSource'>;
+
+// A custom field whose type decides its parts and operators draws its own operator, after any part
+// is chosen, and its own value.
+const CUSTOM_FIELD_RENDERER: Partial<FilterFieldConfig> = {
+  renderOperatorInValue: true,
+  customRenderer: (props) =>
+    React.createElement(
+      CustomFieldFilterRenderer,
+      props as React.ComponentProps<typeof CustomFieldFilterRenderer>,
+    ),
+};
 
 type PickerKey = StaticMemberFieldKey | `newsletters.${string}` | `metafields.${string}`;
 
@@ -122,6 +125,7 @@ const CUSTOM_FIELDS_PREVIEW_LIMIT = 5;
 
 const MEMBER_OPERATOR_LABELS: Partial<Record<string, string>> = {
   'is-any': 'is any of',
+  'is-all': 'is all of',
   'is-not-any': 'is none of',
   'does-not-contain': 'does not contain',
   ...RELATIVE_DATE_OPERATOR_LABELS,
@@ -410,6 +414,15 @@ export function useMemberFilterFields({
 
     groups.push({ group: 'Basic', fields: basicFields });
 
+    // How a custom field's pill is drawn, by the field's shape. A list's options are picked the
+    // way labels are; a field with text or parts draws its own operator and value.
+    const customFieldControl = (field: MemberCustomField): Partial<FilterFieldConfig> =>
+      matchField<MemberCustomField, Partial<FilterFieldConfig>>(field, {
+        scalar: () => CUSTOM_FIELD_RENDERER,
+        record: () => CUSTOM_FIELD_RENDERER,
+        set: (list) => createSearchableFieldOverrides([], listFieldValueSource(list)),
+      });
+
     // Each defined custom field is its own named entry, so a publisher can search
     // for "Shipping address" directly rather than reaching it through a generic
     // "Custom field" door. A simple field filters on its value; a composite field's
@@ -420,14 +433,7 @@ export function useMemberFilterFields({
         // The dropdown entry and the added filter show the field type's own icon
         // rather than a generic custom-field mark.
         icon: React.createElement(CustomFieldIcon, { type: field.type, className: 'size-4' }),
-        // The field's type decides its parts and operators, so the operator
-        // control lives in the renderer, after any part is chosen.
-        renderOperatorInValue: true,
-        customRenderer: (props) =>
-          React.createElement(
-            CustomFieldFilterRenderer,
-            props as React.ComponentProps<typeof CustomFieldFilterRenderer>,
-          ),
+        ...customFieldControl(field),
       }),
     );
 
@@ -443,12 +449,7 @@ export function useMemberFilterFields({
         // clearly, but the field is gone from the picker, so the pill can only
         // be removed, never re-edited.
         readOnly: true,
-        renderOperatorInValue: true,
-        customRenderer: (props) =>
-          React.createElement(
-            CustomFieldFilterRenderer,
-            props as React.ComponentProps<typeof CustomFieldFilterRenderer>,
-          ),
+        ...customFieldControl(field),
       }),
     );
 

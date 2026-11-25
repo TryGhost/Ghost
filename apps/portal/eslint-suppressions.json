@@ -1,0 +1,68 @@
+{
+  "src/components/common/gift-email-preview.jsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/common/list-picker.tsx": {
+    "react-hooks/purity": {
+      "count": 2
+    }
+  },
+  "src/components/common/newsletter-management.jsx": {
+    "react-hooks/refs": {
+      "count": 14
+    },
+    "react-hooks/static-components": {
+      "count": 1
+    }
+  },
+  "src/components/common/products-section.jsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/components/common/switch.jsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/pages/AccountHomePage/components/paid-account-actions.jsx": {
+    "react-hooks/static-components": {
+      "count": 3
+    }
+  },
+  "src/components/pages/AccountHomePage/components/use-integrations.js": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/pages/account-email-page.jsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/pages/gift-page.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/components/pages/gift-redemption-page.jsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/pages/gift-success-page.jsx": {
+    "react-hooks/purity": {
+      "count": 1
+    }
+  },
+  "src/components/pages/support-page.jsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  }
+}

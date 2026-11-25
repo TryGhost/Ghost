@@ -6,7 +6,6 @@ interface ChangelogEntryProps {
 
 /**
  * Format date as "DD MMMM YYYY" (e.g., "29 October 2024")
- * Matches the format used in Ember: {{moment-format entry.published_at "DD MMMM YYYY"}}
  */
 function formatPublishedDate(date: Date): string {
   return date.toLocaleDateString('en-GB', {

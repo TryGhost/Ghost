@@ -30,6 +30,9 @@ import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation'
 import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/use-scroll-section';
 import { useSearch } from '@/settings/providers/settings-app-context';
 import ExitSettingsButton from '@/settings/components/exit-settings-button';
+import { ADMIN7_NAV_ICON_CLASS_NAME } from '@/layout/app-sidebar/nav-icon-class';
+import { NavHelpItem } from '@/layout/app-sidebar/nav-help-item';
+import { PrivateSiteBadge } from '@/shared/private-site-badge';
 
 interface NavItemProps {
   icon?: React.ReactNode;
@@ -80,7 +83,13 @@ const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) =
 
   return (
     <>
-      <Text as="h2" className="mb-4 ml-2 tracking-normal" size="md" weight="semibold" data-nav-row>
+      <Text
+        as="h2"
+        className="section-heading settings-heading mb-4 ml-2 tracking-normal"
+        size="md"
+        weight="semibold"
+        data-nav-row
+      >
         {title}
       </Text>
       {children && <SidebarMenu className="-mt-1 mb-7 gap-0">{children}</SidebarMenu>}
@@ -321,6 +330,8 @@ const Sidebar: React.FC = () => {
   const visibility = useSettingsSectionVisibility();
   // With admin7Design, the navigation sits in the floating sidebar's glass
   const floatingSidebar = useFeatureFlag('admin7Design');
+  // Admin 7 has Help in its top bar instead
+  const showHelp = !floatingSidebar;
   const scrollFade = useScrollFade(scrollerRef, floatingSidebar);
   const {
     visibleMembershipSearchKeywords,
@@ -380,14 +391,21 @@ const Sidebar: React.FC = () => {
   return (
     <Stack className="min-h-0 flex-1" data-testid="sidebar" gap="none">
       {/* data-nav-row marks the rows that cascade in when the shell swaps to this nav. */}
-      <Box className={cn('shrink-0 px-5 pb-2', !floatingSidebar && 'bg-sidebar')} data-nav-row>
+      <Box
+        className={cn('shrink-0 pb-2', floatingSidebar ? 'px-3' : 'bg-sidebar px-5')}
+        data-nav-row
+      >
         <SettingsHeader inputRef={searchInputRef} />
       </Box>
       <nav
         ref={scrollerRef}
         // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
         // bottom edge as the search row sits from the top.
-        className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0"
+        className={cn(
+          'min-h-0 flex-1 overflow-y-auto pt-4 pb-5 [&>:last-child]:mb-0',
+          floatingSidebar ? 'px-3' : 'px-5',
+          floatingSidebar && ADMIN7_NAV_ICON_CLASS_NAME,
+        )}
         id="settings-sidebar-scroller"
         style={scrollFade}
       >
@@ -496,7 +514,7 @@ const Sidebar: React.FC = () => {
             title={
               <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
                 <span className="min-w-0 truncate">Access</span>
-                {isPrivate && <PrivateBadge />}
+                {isPrivate && (floatingSidebar ? <PrivateSiteBadge /> : <PrivateBadge />)}
               </span>
             }
             onClick={handleSectionClick}
@@ -673,6 +691,7 @@ const Sidebar: React.FC = () => {
                 <span
                   aria-hidden="true"
                   className="size-4 shrink-0 bg-current"
+                  data-slot="nav-icon"
                   style={{
                     maskImage: `url(${GhostLogo})`,
                     maskPosition: 'center',
@@ -683,6 +702,7 @@ const Sidebar: React.FC = () => {
                 About Ghost
               </SidebarMenuButton>
             </SidebarMenuItem>
+            {showHelp && <NavHelpItem />}
           </SidebarMenu>
         )}
       </nav>

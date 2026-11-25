@@ -44,16 +44,15 @@ describe('Email Event Processor', function () {
   });
 
   describe('getEmailId', function () {
-    let reuseProcessor;
-
     it('Fetches from database', async function () {
       const emailId = await eventProcessor.getEmailId('provider-id');
       assert.equal(emailId, 'fetched-email-id');
-      reuseProcessor = eventProcessor;
     });
     it('Returns from memory', async function () {
+      await eventProcessor.getEmailId('provider-id');
+
       sinon.stub(db, 'first').rejects('Should not be called');
-      const emailId = await reuseProcessor.getEmailId('provider-id');
+      const emailId = await eventProcessor.getEmailId('provider-id');
       assert.equal(emailId, 'fetched-email-id');
     });
   });

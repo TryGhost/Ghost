@@ -9,8 +9,9 @@ describe('Backup', function () {
   let filenameStub;
   let fsStub;
 
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore();
+    await configUtils.restore();
   });
 
   beforeEach(function () {

@@ -9,6 +9,9 @@
     "redirects": true,
     "sessionMaxAgeMs": 15552000000
   },
+  "auth": {
+    "engine": "legacy"
+  },
   "externalRequest": {
     "keepAlive": true,
     "keepAliveMsecs": 60000,
@@ -128,7 +131,19 @@
       "lifetime": 3600,
       "freeRetries": 4
     },
+    "user_verification_challenge": {
+      "minWait": 300000,
+      "maxWait": 300000,
+      "lifetime": 300,
+      "freeRetries": 4
+    },
     "send_verification_code": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "send_verification_code_user": {
       "minWait": 3600000,
       "maxWait": 3600000,
       "lifetime": 3600,
@@ -193,6 +208,24 @@
       "minWait": 60000,
       "maxWait": 60000,
       "lifetime": 60
+    },
+    "staff_invite_block": {
+      "freeRetries": 2,
+      "minWait": 60000,
+      "maxWait": 60000,
+      "lifetime": 60
+    },
+    "member_email_update": {
+      "freeRetries": 4,
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600
+    },
+    "presence_block": {
+      "freeRetries": 11,
+      "minWait": 10000,
+      "maxWait": 10000,
+      "lifetime": 10
     },
     "email_preview_block": {
       "minWait": 360000,
@@ -270,6 +303,7 @@
   "optimization": {
     "maxLimit": 100,
     "allowLimitAll": false,
+    "capListingLimit": false,
     "getHelper": {
       "timeout": {
         "threshold": 5000,
@@ -384,6 +418,7 @@
   "bulkEmail": {
     "batchSize": 1000,
     "batchCreationConcurrency": 2,
+    "resumeMaxAgeMs": 86400000,
     "captureLinkClickBadMemberUuid": false
   },
   "disableJSBackups": false,

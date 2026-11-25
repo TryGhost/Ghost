@@ -1,8 +1,18 @@
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  ListItem,
+  RowPrimaryAction,
+} from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import type { ActivePresence } from '@/shared/presence/presence-api';
 import { AdminLink } from '@/shared/admin-link';
+import { FadingText } from '@/shared/fading-text';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
 import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
@@ -25,10 +35,11 @@ import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
-import { useShade } from '@tryghost/shade/app';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
+  /** Other staff with this post open; absent while presence indicators are off. */
+  presenceActive?: ActivePresence[];
   resource: PostResource;
   timezone?: string;
   /**
@@ -36,7 +47,7 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
    * published posts they can no longer edit.
    */
   isContributor?: boolean;
-  /** Owner or Administrator — the roles Ember's `isAdmin` covers. */
+  /** Owner or Administrator. */
   hasAdminAccess?: boolean;
   paidMembersEnabled?: boolean;
   isSelected?: boolean;
@@ -67,17 +78,12 @@ interface PostListRowComponentProps extends PostListRowProps {
 }
 
 /**
- * Status colour, following `app/styles/layouts/content.css`. Only three states
- * are coloured there — `.draft` pink (985), `.scheduled` green (992), `.error`
- * red (1017). Published and sent have **no** rule, so they inherit the muted
- * grey of `.gh-content-entry-status` (#99a3ad, ≈ `muted-foreground`). That is
- * most rows on a real site, so colouring them would change the whole feel of
- * the screen.
+ * Status colour. Only draft (pink), scheduled (green) and failed (red) are
+ * coloured; published and sent, most rows on a real site, stay muted.
  *
  * Red uses Shade's semantic danger token; pink and green have no semantic
  * equivalent (a draft is not a warning, a schedule is not a success) so they
- * use the aliases that resolve to the same values Ember's `var(--pink)` and
- * `var(--green)` do.
+ * use the palette aliases.
  */
 function statusTone(post: PostListItem, isFailed: boolean): string {
   if (isFailed) {
@@ -96,8 +102,7 @@ function statusTone(post: PostListItem, isFailed: boolean): string {
 
 /**
  * The thumbnail, matched to the analytics dashboard's: a 16/10 landscape
- * thumbnail rather than the square this list used to draw, at the same widths
- * and corner radius, as Ember's list drew it.
+ * thumbnail at the same widths and corner radius.
  *
  * The empty state is analytics' shared placeholder component rather than a
  * restyle of it, so the two lists cannot drift apart.
@@ -142,6 +147,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
   function PostListRowComponent(
     {
       post,
+      presenceActive,
       resource,
       timezone,
       isContributor,
@@ -165,7 +171,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     },
     ref,
   ) {
-    const { isAdmin7 } = useShade();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -183,8 +188,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ? getPostStatusLabel(displayedPost, resource)
         : statusLabel;
 
-    // Strictly `published`, matching Ember's `isPublished`. An email-only
-    // `sent` post still opens in the editor for a contributor.
+    // Strictly `published`: an email-only `sent` post still opens in the
+    // editor for a contributor.
     const isPublished = post.status === 'published';
     const editorType = resource === 'pages' ? 'page' : 'post';
     const linksOffsite = Boolean(isContributor && isPublished);
@@ -204,8 +209,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           Icon: LucideIcon.ChartNoAxesColumn,
         }
       : linksOffsite
-        ? // "View post" on both resources, as Ember hardcodes it. Only ever
-          // reached by a contributor, who has no page access anyway.
+        ? // "View post" on both resources. Only ever reached by a
+          // contributor, who has no page access anyway.
           { to: post.url, label: 'View post', offsite: true, Icon: LucideIcon.ArrowUpRight }
         : { to: editorPath, label: 'Edit', offsite: false, Icon: LucideIcon.Pen };
 
@@ -214,20 +219,20 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ref={ref}
         {...rest}
         className={cn(
-          'group border-b border-border-default',
+          'group border-b border-border-default in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent]',
           // A light blue rather than a grey: selection is a different
           // kind of state from hover, and two greys a step apart read as
-          // degrees of the same thing. Ember paints a 10% indigo overlay
-          // for the same reason.
+          // degrees of the same thing.
           //
-          // `select-none` matches Ember: a modifier-drag across rows
-          // shouldn't leave text highlighted behind the selection.
+          // `select-none`: a modifier-drag across rows shouldn't leave
+          // text highlighted behind the selection.
           //
           // Hover applies only when the row is *not* selected — a hover
           // rule would otherwise outrank the selected background and make
           // the row under the cursor look deselected.
           isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
         )}
+        data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
@@ -241,78 +246,87 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           setIsHovered(false);
         }}
       >
-        {/* `center`, not `start`: Ember centres everything on the right
-                against the feature image.
-
-                Padding is even on all four sides. It lives on the children
-                rather than the row because the link and the trailing button
-                each need to fill the row's full height to stay clickable —
-                so the row's own box has to stay flush. */}
-        <Inline align="center" className="pr-4" gap="md">
-          <RowLink
-            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
-            data-testid="post-list-item-link"
-            offsite={linksOffsite}
-            to={linksOffsite ? post.url : editorPath}
-          >
-            <FeatureImage post={post} />
-            <Stack className="min-w-0 flex-1" gap="xs">
-              <Inline align="center" gap="xs">
-                {post.featured && (
-                  <LucideIcon.Star
-                    aria-label="Featured"
-                    className="size-4 shrink-0 fill-state-warning text-state-warning"
-                    data-testid="post-featured"
-                  />
-                )}
-                <Text as="h3" className="truncate tracking-normal" weight="semibold">
-                  {post.title}
-                </Text>
-              </Inline>
-
-              {metaParts.length > 0 && (
-                // Joined from parts so a missing piece takes its
-                // separator with it — no dangling " – date".
-                //
-                // Truncated like the title above it. Left to wrap,
-                // a long author-and-tag line runs to three lines on
-                // a narrow window and drives the row's height,
-                // which reads as the metrics squashing it.
-                <Text className="truncate" size="sm" title={dateTooltip} tone="secondary">
-                  {metaParts.join(' - ')}
-                </Text>
-              )}
-
-              {emailSendingState.status === 'sending' ? (
-                <EmailSendingStatusLine
-                  announce={false}
-                  className="text-sm"
-                  line={emailSendingState.line}
-                />
-              ) : (
-                <Text
-                  className={statusTone(displayedPost, displayedIsFailed)}
-                  size="sm"
-                  weight={
-                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
-                      ? 'medium'
-                      : 'regular'
-                  }
-                >
-                  {displayedStatusLabel}
-                  {/* Mounted only while hovered, as Ember does. A CSS
-                                  opacity fade would keep it in the DOM, so a screen
-                                  reader would read every scheduled row's full
-                                  dispatch details aloud, always. */}
-                  {emailSendingState.status !== 'failed' && isHovered && statusDetail && (
-                    <span> {statusDetail}</span>
+        {/* Keep the right-hand controls centered against the feature image. */}
+        <Inline align="center" gap="md">
+          <RowPrimaryAction asChild>
+            <RowLink
+              className="flex min-w-0 flex-1 items-start gap-4 py-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
+              data-testid="post-list-item-link"
+              offsite={linksOffsite}
+              to={linksOffsite ? post.url : editorPath}
+            >
+              <FeatureImage post={post} />
+              <Stack className="min-w-0 flex-1" gap="xs">
+                <Inline align="center" gap="xs">
+                  {post.featured && (
+                    <LucideIcon.Star
+                      aria-label="Featured"
+                      className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
+                      data-testid="post-featured"
+                    />
                   )}
-                </Text>
-              )}
-            </Stack>
-          </RowLink>
+                  <Text as="h3" className="truncate tracking-normal" weight="semibold">
+                    {post.title}
+                  </Text>
+                </Inline>
+
+                {metaParts.length > 0 && (
+                  // Joined from parts so a missing piece takes its
+                  // separator with it — no dangling " – date".
+                  //
+                  // Truncated like the title above it. Left to wrap,
+                  // a long author-and-tag line runs to three lines on
+                  // a narrow window and drives the row's height,
+                  // which reads as the metrics squashing it.
+                  <Text
+                    className="relative z-10 truncate"
+                    size="sm"
+                    title={dateTooltip}
+                    tone="secondary"
+                  >
+                    {metaParts.join(' - ')}
+                  </Text>
+                )}
+
+                {emailSendingState.status === 'sending' ? (
+                  <EmailSendingStatusLine
+                    announce={false}
+                    className="text-sm"
+                    line={emailSendingState.line}
+                  />
+                ) : (
+                  <Text
+                    className={statusTone(displayedPost, displayedIsFailed)}
+                    size="sm"
+                    weight={
+                      displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                        ? 'medium'
+                        : 'regular'
+                    }
+                  >
+                    {displayedStatusLabel}
+                    {/* Mounted only while hovered, fading in and out. A CSS
+                                  opacity fade alone would keep it in the DOM, so a screen
+                                  reader would read every row's full dispatch details
+                                  aloud, always. */}
+                    {emailSendingState.status !== 'failed' && statusDetail && (
+                      <FadingText show={isHovered}> {statusDetail}</FadingText>
+                    )}
+                  </Text>
+                )}
+              </Stack>
+            </RowLink>
+          </RowPrimaryAction>
+          {presenceActive && presenceActive.length > 0 ? (
+            <PresenceAvatars
+              active={presenceActive}
+              // Under 360px the title has no room left to give.
+              className="relative z-10 max-[359px]:hidden"
+              resourceType={editorType}
+            />
+          ) : null}
           <PostMetricsCells
-            className="py-4"
+            className="relative z-10 py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
             memberCounts={memberCounts}
             paidMembersEnabled={paidMembersEnabled}
@@ -334,14 +348,16 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 // title away from the metrics too.
                 className={cn(
                   'my-4 shrink-0',
-                  isAdmin7 ? 'ms-8' : 'ms-2',
-                  isAdmin7
-                    ? 'text-muted-foreground hover:bg-background hover:text-foreground'
-                    : 'bg-control-surface px-4',
-                  isAdmin7 && isHovered && 'bg-background',
+                  'relative z-10',
+                  'ms-8',
+                  // Below 1200px the metrics are hidden, so with avatars beside it the
+                  // action needs no extra separation and the title keeps the room.
+                  presenceActive && presenceActive.length > 0 && 'max-[1200px]:ms-2',
+                  'text-muted-foreground hover:bg-background hover:text-foreground',
+                  isHovered && 'bg-background',
                 )}
-                size={isAdmin7 ? 'icon' : undefined}
-                variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+                size="icon"
+                variant={isHovered ? 'outline' : 'ghost'}
                 asChild
               >
                 <RowLink
@@ -369,7 +385,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         onAction={menuOnAction ?? (() => {})}
         onOpenChange={menuOnOpenChange ?? (() => {})}
       >
-        {row}
+        <ListItem asChild>{row}</ListItem>
       </PostsContextMenu>
     );
   },

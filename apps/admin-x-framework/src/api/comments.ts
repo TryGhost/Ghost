@@ -1,6 +1,7 @@
 import { InfiniteData } from '@tanstack/react-query';
 import { Meta, createInfiniteQuery, createMutation, createQueryWithId } from '../utils/api/hooks';
 import { Member } from './members';
+import { commentsStatsDataTypes } from './stats';
 
 export type Comment = {
   id: string;
@@ -71,6 +72,9 @@ export interface CommentsResponseType {
 }
 
 const dataType = 'CommentsResponseType';
+// The analytics queries are only mounted behind commentsAnalytics. Moderation
+// can change their shared Status scope as well as the list's contents.
+const moderationDataTypes = [dataType, ...commentsStatsDataTypes];
 const commentDislikeIncludes = 'count.dislikes';
 const commentDislikeMemberIncludes = 'count.dislikes,disliked';
 
@@ -158,7 +162,7 @@ export const useHideComment = createMutation<CommentsResponseType, { id: string 
     ],
   }),
   invalidateQueries: {
-    dataType,
+    dataType: moderationDataTypes,
   },
 });
 
@@ -174,7 +178,7 @@ export const useShowComment = createMutation<CommentsResponseType, { id: string 
     ],
   }),
   invalidateQueries: {
-    dataType,
+    dataType: moderationDataTypes,
   },
 });
 

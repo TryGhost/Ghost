@@ -96,7 +96,7 @@ describe('Posts list context menu', () => {
   });
 
   // The rule belongs to the gift link, not to Unpublish: a single published
-  // *public* post offers no gift link, and Ember draws no rule there.
+  // *public* post offers no gift link, and so no rule.
   it('separates Unpublish from the gift link only when the gift link is shown', async () => {
     fakePosts([post({ title: 'Public post', status: 'published', visibility: 'public' })]);
     await renderAdminApp('/posts?type=published');
@@ -135,10 +135,8 @@ describe('Posts list context menu', () => {
   });
 
   /**
-   * Ember's "Copy preview link" copies `post.url` — the public permalink,
-   * which for a draft points at a page that does not exist yet. It is the
-   * same string its "Copy link to post" action copies, so the two menu items
-   * are indistinguishable. Fixed here rather than ported.
+   * The public permalink for a draft points at a page that does not exist
+   * yet, and is the same string "Copy link to post" copies.
    */
   it('copies the preview link, not the public permalink', async () => {
     const draft = post({ title: 'A draft', status: 'draft', url: 'https://example.com/a-draft/' });
@@ -307,12 +305,11 @@ describe('Posts list context menu', () => {
   });
 
   /**
-   * Ember surfaces API failures through `notifications.showAPIError`. Here the
-   * framework's global handler does it, so the message is generic rather than
-   * action-specific — but the failure is visible, which is the contract that
-   * matters. `usePostActions` also wraps the switch in a try/catch, which
-   * covers the paths the framework doesn't see at all: `clipboard.writeText`
-   * rejects whenever the document isn't focused.
+   * The framework's global handler surfaces API failures, so the message is
+   * generic rather than action-specific — but the failure is visible, which is
+   * the contract that matters. `usePostActions` also wraps the switch in a
+   * try/catch, which covers the paths the framework doesn't see at all:
+   * `clipboard.writeText` rejects whenever the document isn't focused.
    */
   it('reports a failed duplicate instead of failing silently', async () => {
     const original = post({ title: 'Original', status: 'published' });

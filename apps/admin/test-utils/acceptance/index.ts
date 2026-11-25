@@ -16,7 +16,21 @@ export {
   withoutUnsplash,
 } from './editor';
 export type { FakePintura } from './editor';
-export { failModuleLoads } from './module-loads';
+export { failModuleLoads, holdModuleLoads } from './module-loads';
+export {
+  fakeSegmentWrites,
+  holdSegmentsList,
+  replaceSavedViewsElsewhere,
+  segmentsBodyError,
+  withSavedViews,
+} from './shared-views';
+export type {
+  FakeSegmentWritesOptions,
+  SegmentBodyIssue,
+  SegmentWrite,
+  SegmentWritesCapture,
+  StoredView,
+} from './shared-views';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export { InAppProviders, renderInApp } from './render-in-app';
@@ -50,6 +64,7 @@ export {
 export type {
   BrowseQuery,
   EditSettingsCapture,
+  FakeEditSettingsOptions,
   FakeMembersOptions,
   ResourceCapture,
   ResourceOptions,
@@ -62,7 +77,6 @@ export {
   allowUnhandledRequests,
   fakeAdminEndpoint,
   fakeEndpoint,
-  fakeOriginRequests,
   fakeSitePreview,
   settleRequests,
 } from './worker';
@@ -82,7 +96,22 @@ export {
 } from './tinybird';
 export type { TinybirdPipeCapture, TinybirdPipeQuery } from './tinybird';
 export { fakeAdminStats } from './stats';
-export { failFrameOrigin, fakeFrameOrigin } from './frames';
+export {
+  type AppFramePageKind,
+  appFramePage,
+  callAppFrame,
+  callHostRaw,
+  failFrameOrigin,
+  fakeFrameOrigin,
+  postFrameForm,
+  reloadFrame,
+} from './frames';
+export type {
+  AppFrameFlags,
+  AppFrameReceived,
+  AppFrameResult,
+  AppFrameState,
+} from './app-frame-stand-in';
 export { unsavedChangesGuarded } from './unsaved-changes-guard';
 export { dragByPointer, settleTransitions, settleAnimations } from './pointer';
 

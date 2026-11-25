@@ -70,5 +70,7 @@ Each layer can use anything **below** it. The reverse is forbidden.
 
 ## Source of truth
 
-Storybook → Overview / Layers owns the layer model and promotion rules.
-Overview / Contributing owns the implementation requirements.
+[Layers](../../../apps/shade/CONTRIBUTING.md#layers) in Shade's
+`CONTRIBUTING.md` owns the layer model and promotion rules. The rest of
+[`CONTRIBUTING.md`](../../../apps/shade/CONTRIBUTING.md) owns the
+implementation requirements.

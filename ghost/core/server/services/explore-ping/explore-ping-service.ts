@@ -1,18 +1,12 @@
+import type { GhostLogger } from '@tryghost/logging';
+import ghostVersion from '@tryghost/version';
+
 type SettingsCache = {
   get(key: string): unknown;
 };
 
 type Config = {
   get(key: string): unknown;
-};
-
-type Logging = {
-  info(...args: unknown[]): void;
-  warn(...args: unknown[]): void;
-};
-
-type GhostVersion = {
-  full: string;
 };
 
 type RequestFn = (
@@ -64,8 +58,7 @@ type ExplorePayload = {
 export type ExplorePingServiceDeps = {
   settingsCache: SettingsCache;
   config: Config;
-  logging: Logging;
-  ghostVersion: GhostVersion;
+  logging: Pick<GhostLogger, 'info' | 'warn'>;
   request: RequestFn;
   posts: PostsService;
   members: MembersService;
@@ -75,8 +68,7 @@ export type ExplorePingServiceDeps = {
 export class ExplorePingService {
   settingsCache: SettingsCache;
   config: Config;
-  logging: Logging;
-  ghostVersion: GhostVersion;
+  logging: Pick<GhostLogger, 'info' | 'warn'>;
   request: RequestFn;
   posts: PostsService;
   members: MembersService;
@@ -86,7 +78,6 @@ export class ExplorePingService {
     settingsCache,
     config,
     logging,
-    ghostVersion,
     request,
     posts,
     members,
@@ -95,7 +86,6 @@ export class ExplorePingService {
     this.settingsCache = settingsCache;
     this.config = config;
     this.logging = logging;
-    this.ghostVersion = ghostVersion;
     this.request = request;
     this.posts = posts;
     this.members = members;
@@ -104,7 +94,7 @@ export class ExplorePingService {
 
   async constructPayload(): Promise<ExplorePayload> {
     const payload: ExplorePayload = {
-      ghost: this.ghostVersion.full,
+      ghost: ghostVersion.full,
       site_uuid: this.settingsCache.get('site_uuid'),
       url: this.config.get('url'),
       theme: this.settingsCache.get('active_theme'),

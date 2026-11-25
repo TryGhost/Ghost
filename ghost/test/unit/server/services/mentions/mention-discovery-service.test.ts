@@ -2,7 +2,7 @@ import sinon from 'sinon';
 
 import assert from 'node:assert/strict';
 import nock from 'nock';
-import logging from '@tryghost/logging';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 // non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
 // @ts-expect-error This module lacks type definitions.
@@ -12,9 +12,12 @@ import externalRequest from '../../../../../core/server/lib/request-external.js'
 import MentionDiscoveryService from '../../../../../core/server/services/mentions/mention-discovery-service';
 
 describe('MentionDiscoveryService', function () {
-  const service = new MentionDiscoveryService({ externalRequest });
+  let logging: ReturnType<typeof createLoggingFake>;
+  let service: any;
 
   beforeEach(function () {
+    logging = createLoggingFake();
+    service = new MentionDiscoveryService({ externalRequest, logging });
     nock.disableNetConnect();
   });
 
@@ -37,15 +40,13 @@ describe('MentionDiscoveryService', function () {
   });
 
   it('Logs a warning, not an error, when the page cannot be fetched', async function () {
-    const warnStub = sinon.stub(logging, 'warn');
-    const errorStub = sinon.stub(logging, 'error');
     const url = new URL('http://www.notarealsite.com/');
     nock(url.href).get('/').reply(404);
 
     await service.getEndpoint(url);
 
-    sinon.assert.calledOnce(warnStub);
-    sinon.assert.notCalled(errorStub);
+    sinon.assert.calledOnce(logging.warn);
+    sinon.assert.notCalled(logging.error);
   });
 
   it('Follows redirects', async function () {
@@ -75,13 +76,12 @@ describe('MentionDiscoveryService', function () {
     });
 
     it('Returns null for a site without a content type', async function () {
-      const warnStub = sinon.stub(logging, 'warn');
       const url = new URL('http://testpage.com/');
       nock(url.href).get('/').reply(200, 'Some content');
       const endpoint = await service.getEndpoint(url);
 
       assert.equal(endpoint, null);
-      sinon.assert.notCalled(warnStub);
+      sinon.assert.notCalled(logging.warn);
     });
 
     it('Returns null when the endpoint in the Link header is not a valid URL', async function () {

@@ -24,9 +24,12 @@ const Settings: React.FC = () => {
     </>
   );
 
-  // Sections sit 64px apart, matching the page's top and bottom padding.
+  // Mobile hardening tightens the page padding and spacing between sections.
   return (
-    <Stack className="mx-auto max-w-[760px] gap-16 px-8 py-16 tablet:px-(--page-gutter)" gap="none">
+    <Stack
+      className="mx-auto max-w-[760px] gap-16 px-8 py-16 in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:gap-12 in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter) in-data-[admin7-mobile=true]:max-lg:pt-10 tablet:px-(--page-gutter)"
+      gap="none"
+    >
       {sections}
     </Stack>
   );

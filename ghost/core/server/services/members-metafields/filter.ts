@@ -3,28 +3,29 @@
 // addressed as `namespace.key`, and a composite value such as an address names
 // one of its parts by appending it: `namespace.key.part`.
 //
-//   (metafields.key:'custom.company'+metafields.value:'Ghost')
-//   (metafields.key:'custom.shipping_address.country'+metafields.value:'GB')
-//   metafields.key:'custom.company'                     // has a value
-//   metafields.key:-'custom.shipping_address.country'   // that part is not set
+//   (metafields.identity:'custom.company'+metafields.value:'Ghost')
+//   (metafields.identity:'custom.shipping_address.country'+metafields.value:'GB')
+//   metafields.identity:'custom.company'                     // has a value
+//   metafields.identity:-'custom.shipping_address.country'   // that part is not set
 //
-// The values table holds one row per stored value: `metafield_key`, `path`
-// (empty for a plain field, the part's name for one part of a composite) and
-// `value_text`. A filter addresses those columns directly, so each one becomes a
-// single $elemMatch over them — positive asserts a matching row exists, $not
-// asserts none does — with no lookup against the field definitions.
+// The values table holds one row per stored value: `metafield_namespace`,
+// `metafield_key`, `path` (empty for a plain field, the part's name for one part of a
+// composite) and the value, in the column its kind of value is kept in. A comparison against one
+// value is made in the column of that value's kind, as NQL types it, so a field matches only a
+// value of its own kind; a comparison against a list of values is made in the text column. A
+// filter addresses those columns directly, so each one
+// becomes an $elemMatch over them: positive asserts a matching row exists, and $not
+// asserts none does, with no lookup against the field definitions. Which path holds a
+// field's whole value is the storage layouts' to say, for every type at once.
 import errors from '@tryghost/errors';
-import {
-  CUSTOM_NAMESPACE,
-  formatIdentity,
-  parseIdentity,
-} from '@tryghost/metafield-types/identity';
+import { z } from 'zod';
+import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
+import { ROOT_PATH, pathOf, pathsHolding, valueColumnFor } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
-const KEY_ATTRIBUTE = `${PREFIX}key`;
+const IDENTITY_ATTRIBUTE = `${PREFIX}identity`;
 const VALUE_ATTRIBUTE = `${PREFIX}value`;
-const ROOT_PATH = '';
 
 type QueryNode = Record<string, unknown>;
 
@@ -48,17 +49,17 @@ function isMetafieldClause(node: unknown): node is QueryNode {
 }
 
 // A grouped compound: an $and whose clauses all target the relation and name exactly one
-// `key`. Its clauses describe one leaf row.
+// `identity`. Its clauses describe one value row.
 //
 // Exactly one, not at least one: two whole-field filters ANDed together arrive as a flat
-// `key:'a'+key:'b'`, since a bare key clause needs no group of its own. That is two
-// filters — a member with a value for both — not one leaf that is somehow both fields, so
+// `identity:'a'+identity:'b'`, since a bare identity clause needs no group of its own. That is two
+// filters — a member with a value for both — not one row that is somehow both fields, so
 // it has to fall through and be transformed a clause at a time.
 function isMetafieldCompound(clauses: unknown): clauses is QueryNode[] {
   if (!Array.isArray(clauses) || clauses.length < 2 || !clauses.every(isMetafieldClause)) {
     return false;
   }
-  return clauses.filter((clause) => Object.keys(clause)[0] === KEY_ATTRIBUTE).length === 1;
+  return clauses.filter((clause) => Object.keys(clause)[0] === IDENTITY_ATTRIBUTE).length === 1;
 }
 
 // NQL compiles every negation in this grammar to `{$ne: <string>}`, so a negated clause
@@ -69,66 +70,112 @@ function negatedString(value: unknown): string | null {
 
 const ANY_PATH = null;
 
-interface LeafTarget {
-  key: string;
+interface Target {
+  namespace: Namespace;
+  key: Key;
   path: string | typeof ANY_PATH;
 }
 
-// A stored key never contains a dot, so a full dotted identity is a key no stored
-// row can equal.
-function unmatchableLeaf(identity: {
-  namespace: string;
-  key: string;
-  partPath: string | null;
-}): LeafTarget {
-  return { key: formatIdentity(identity), path: identity.partPath };
-}
-
-function parseLeafAddress(raw: unknown): LeafTarget {
-  const identity = typeof raw === 'string' ? parseIdentity(raw) : null;
-  if (!identity) {
+function targetOf(raw: unknown): Target {
+  const identity = typeof raw === 'string' ? z.safeDecode(IdentityTextSchema, raw) : null;
+  if (!identity?.success) {
     throw new errors.BadRequestError({
-      message: `A metafield filter names a field as namespace.key, for example (${KEY_ATTRIBUTE}:'custom.company'+${VALUE_ATTRIBUTE}:'Ghost').`,
+      message: `A metafield filter names a field as namespace.key, for example (${IDENTITY_ATTRIBUTE}:'custom.company'+${VALUE_ATTRIBUTE}:'Ghost').`,
     });
   }
-  if (identity.namespace !== CUSTOM_NAMESPACE) {
-    return unmatchableLeaf(identity);
-  }
-  return { key: identity.key, path: identity.partPath };
+  const { namespace, key, parts } = identity.data;
+  return { namespace, key, path: parts.length > 0 ? pathOf(parts) : ANY_PATH };
 }
 
+const Texts = z.array(z.string());
+
+// The texts a list names, as NQL compiles it: any of them (`value:['a','b']`) for `$in`, every one
+// of them (`value:['a'+'b']`) for `$all`, or none of them (`value:-['a','b']`) for `$nin`. Null
+// for anything else.
+function listed(value: unknown, operator: '$in' | '$all' | '$nin'): string[] | null {
+  if (!isPlainObject(value)) {
+    return null;
+  }
+  const texts = Texts.safeParse(value[operator]);
+  return texts.success ? texts.data : null;
+}
+
+// One value, or any of several, as a match on one column takes them.
+const oneOf = (values: readonly string[]): unknown =>
+  values.length === 1 ? values[0] : { $in: values };
+
 export function createMetafieldsFilterTransformer() {
-  // One (maybe-negated) $elemMatch over the leaf columns: positive is "a leaf pinned
-  // by these matches", `$not` is "no leaf does".
-  function buildElemMatch(target: LeafTarget, value: unknown, negate: boolean): QueryNode {
-    const match: QueryNode = { metafield_key: target.key };
-    if (value !== undefined) {
-      match.path = target.path ?? ROOT_PATH;
-      match.value_text = value;
-    } else if (target.path !== ANY_PATH) {
+  function rowsOf(target: Target): QueryNode {
+    const match: QueryNode = { metafield_namespace: target.namespace, metafield_key: target.key };
+    if (target.path !== ANY_PATH) {
       match.path = target.path;
     }
-    if (negate) {
-      return { [RELATION]: { $not: { $elemMatch: match } } };
+    return match;
+  }
+
+  // The rows that hold one of `texts` as the target's value: at its part, or wherever a field's
+  // whole value can be kept.
+  function rowsHolding(target: Target, texts: readonly string[]): QueryNode {
+    return {
+      ...rowsOf(target),
+      path: oneOf(target.path === ANY_PATH ? pathsHolding(texts) : [target.path]),
+      value_text: oneOf(texts),
+    };
+  }
+
+  const some = (match: QueryNode): QueryNode => ({ [RELATION]: { $elemMatch: match } });
+  const none = (match: QueryNode): QueryNode => ({ [RELATION]: { $not: { $elemMatch: match } } });
+
+  function buildElemMatch(target: Target, value: unknown, negate: boolean): QueryNode {
+    if (value === undefined) {
+      return negate ? none(rowsOf(target)) : some(rowsOf(target));
     }
-    return { [RELATION]: { $elemMatch: match } };
+
+    // A list is looked for wherever a value can be kept, so a set, which keeps a row per option,
+    // is filtered by the options it holds. A list field is always filtered with a list.
+    const anyOf = listed(value, '$in');
+    if (anyOf) {
+      return some(rowsHolding(target, anyOf));
+    }
+
+    // "All of" asks for a row holding each text in turn, since each row holds a single option.
+    const allOf = listed(value, '$all');
+    if (allOf) {
+      return { $and: allOf.map((text) => some(rowsHolding(target, [text]))) };
+    }
+
+    // "None of" is asked of a value that is there: the target holds something, and none of what
+    // it holds is one of these. A member holding nothing has no value to compare.
+    const noneOf = listed(value, '$nin');
+    if (noneOf) {
+      return { $and: [some(rowsOf(target)), none(rowsHolding(target, noneOf))] };
+    }
+
+    // Any other comparison, such as one value or a match on part of the text, is made against one
+    // row: the target's part, or the root a single-row value is kept at, in the column the compared
+    // value's kind is kept in.
+    return some({
+      ...rowsOf(target),
+      path: target.path ?? ROOT_PATH,
+      [valueColumnFor(value)]: value,
+    });
   }
 
   function toElemMatch(clauses: QueryNode[]): QueryNode {
-    let target: LeafTarget | undefined;
+    let target: Target | undefined;
     let value: unknown;
     let hasValue = false;
 
     for (const clause of clauses) {
       const [attribute, clauseValue] = Object.entries(clause)[0];
 
-      if (attribute === KEY_ATTRIBUTE) {
+      if (attribute === IDENTITY_ATTRIBUTE) {
         if (negatedString(clauseValue) !== null) {
           throw new errors.BadRequestError({
-            message: `A negated "${KEY_ATTRIBUTE}" stands alone; it cannot be grouped with a value.`,
+            message: `A negated "${IDENTITY_ATTRIBUTE}" stands alone; it cannot be grouped with a value.`,
           });
         }
-        target = parseLeafAddress(clauseValue);
+        target = targetOf(clauseValue);
       } else if (attribute === VALUE_ATTRIBUTE) {
         if (hasValue) {
           throw new errors.BadRequestError({
@@ -146,18 +193,18 @@ export function createMetafieldsFilterTransformer() {
 
     if (!target) {
       throw new errors.BadRequestError({
-        message: `A metafield filter needs a "${KEY_ATTRIBUTE}" clause.`,
+        message: `A metafield filter needs a "${IDENTITY_ATTRIBUTE}" clause.`,
       });
     }
     return buildElemMatch(target, hasValue ? value : undefined, false);
   }
 
-  function fromKeyClause(value: unknown): QueryNode {
-    const negatedKey = negatedString(value);
-    if (negatedKey !== null) {
-      return buildElemMatch(parseLeafAddress(negatedKey), undefined, true);
+  function fromIdentityClause(value: unknown): QueryNode {
+    const negated = negatedString(value);
+    if (negated !== null) {
+      return buildElemMatch(targetOf(negated), undefined, true);
     }
-    return buildElemMatch(parseLeafAddress(value), undefined, false);
+    return buildElemMatch(targetOf(value), undefined, false);
   }
 
   function transform(node: unknown): unknown {
@@ -174,11 +221,11 @@ export function createMetafieldsFilterTransformer() {
 
     const out: QueryNode = {};
     for (const [key, value] of Object.entries(node)) {
-      if (key === KEY_ATTRIBUTE) {
-        Object.assign(out, fromKeyClause(value));
+      if (key === IDENTITY_ATTRIBUTE) {
+        Object.assign(out, fromIdentityClause(value));
       } else if (key.startsWith(PREFIX)) {
         throw new errors.BadRequestError({
-          message: `A "${key}" filter must be grouped with its "${KEY_ATTRIBUTE}" clause, for example (${KEY_ATTRIBUTE}:'custom.a_field'+${VALUE_ATTRIBUTE}:'a value').`,
+          message: `A "${key}" filter must be grouped with its "${IDENTITY_ATTRIBUTE}" clause, for example (${IDENTITY_ATTRIBUTE}:'custom.a_field'+${VALUE_ATTRIBUTE}:'a value').`,
         });
       } else {
         out[key] = transform(value);
@@ -191,7 +238,7 @@ export function createMetafieldsFilterTransformer() {
 }
 
 /**
- * The Member filter relation that exposes metafield values. A member has many leaf
+ * The Member filter relation that exposes metafield values. A member has many value
  * rows (one per field, or per part of a composite field), and a predicate asks whether
  * one of them matches, so this joins the values table on member_id and mongo-knex emits
  * it as a correlated `members.id IN (…)` subquery — composing with every other member

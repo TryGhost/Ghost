@@ -1,6 +1,6 @@
+import AutomationNameField from './automation-name-field';
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import { useShade } from '@tryghost/shade/app';
 import {
   Button,
   type ButtonProps,
@@ -38,6 +38,8 @@ interface AutomationHeaderProps {
   onSave: () => void;
   onPublish: () => void;
   onTurnOff: () => void;
+  // Makes the title editable when provided
+  onNameChange?: (name: string) => void;
 }
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
@@ -55,8 +57,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   onSave,
   onPublish,
   onTurnOff,
+  onNameChange,
 }) => {
-  const { isAdmin7 } = useShade();
   const entering = useScreenEntrance();
   const name = automation?.name;
   const status = automation?.status;
@@ -99,11 +101,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     case 'active':
       statusAction = withValidationFeedback(
         'unpublish',
-        <Button
-          disabled={!isTurnOffButtonEnabled}
-          variant={isAdmin7 ? 'ghost' : 'outline'}
-          onClick={onTurnOff}
-        >
+        <Button disabled={!isTurnOffButtonEnabled} variant="ghost" onClick={onTurnOff}>
           Turn off
         </Button>,
       );
@@ -114,7 +112,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         'save',
         <Button
           disabled={!isSaveButtonEnabled}
-          variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
+          variant={saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
           onClick={onSave}
         >
           {saveButtonChildren}
@@ -135,7 +133,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
       )}
     >
       <Inline className="min-w-0" gap="sm">
-        <Button size={isAdmin7 ? 'icon' : undefined} variant="ghost" asChild>
+        <Button size="icon" variant="ghost" asChild>
           <Link aria-label="Back to automations" to="/automations">
             <LucideIcon.ArrowLeft strokeWidth={2} />
           </Link>
@@ -144,7 +142,11 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
           <Skeleton className="h-5 w-40" />
         ) : (
           <>
-            <span className="truncate text-lg font-semibold">{name}</span>
+            {onNameChange && name !== undefined ? (
+              <AutomationNameField value={name} onChange={onNameChange} />
+            ) : (
+              <span className="truncate text-control font-medium">{name}</span>
+            )}
             {status && <AutomationStatusBadge status={status} />}
           </>
         )}

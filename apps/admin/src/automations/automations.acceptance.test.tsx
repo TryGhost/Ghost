@@ -1,7 +1,13 @@
-import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { describe, expect, it, vi } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 
-import { automation, fakeAutomations, renderAdminApp } from '@test-utils/acceptance';
+import {
+  automation,
+  currentRoute,
+  fakeAdminStats,
+  fakeAutomations,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 import { automationsScreen } from './automations.screen';
 
 // Automations ships behind the `automations` beta labs flag.
@@ -87,7 +93,7 @@ describe('Automations list', () => {
     ]);
 
     await renderAdminApp('/automations', {
-      labs: { automations: true, automationsPerTier: true },
+      labs: { automations: true },
     });
     const filter = () => page.getByRole('combobox', { name: 'Automations to show' });
 
@@ -120,3 +126,73 @@ describe('Automations list', () => {
     await expect(page.getByRole('combobox', { name: 'Automations to show' })).toHaveCount(0);
   });
 });
+
+it.each([false, true])(
+  'preserves modified clicks on automation row space with admin7Design %s',
+  async (admin7Design) => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    fakeAutomations([
+      automation({
+        name: 'Native flow',
+        slug: 'member-welcome-email-free',
+        status: 'active',
+        stats: { last_run_created_at: null, total_run_count: 4, in_progress_run_count: 0 },
+      }),
+    ]);
+    await renderAdminApp('/automations', { labs: { automations: true, admin7Design } });
+    const link = automationsScreen.link('Native flow');
+    await expect.element(link).toBeVisible();
+    const anchor = link.element();
+    const modified = vi.fn<(value: boolean) => void>();
+    const capture = (event: Event) => {
+      if (event instanceof MouseEvent) {
+        modified(event.metaKey || event.ctrlKey);
+        event.preventDefault();
+      }
+    };
+    anchor.addEventListener('click', capture);
+    try {
+      const cell = automationsScreen.rows().getByRole('cell').nth(1);
+      const bounds = cell.element().getBoundingClientRect();
+      expect(
+        document
+          .elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)
+          ?.closest('a'),
+      ).toBe(anchor);
+      await automationsScreen
+        .rows()
+        .getByRole('cell')
+        .nth(1)
+        .click({ force: true, modifiers: ['ControlOrMeta'] });
+      expect(modified).toHaveBeenCalledExactlyOnceWith(true);
+      const actions = automationsScreen.rows().getByRole('cell').last();
+      const actionsBounds = actions.element().getBoundingClientRect();
+      expect(
+        document.elementFromPoint(actionsBounds.x + 2, actionsBounds.y + 2)?.closest('a'),
+      ).toBe(anchor);
+      await actions.click({ force: true, position: { x: 2, y: 2 }, modifiers: ['ControlOrMeta'] });
+      expect(modified).toHaveBeenCalledTimes(2);
+      expect(modified.mock.calls[1][0]).toBe(true);
+      const row = automationsScreen.rows();
+      const rowBounds = row.element().getBoundingClientRect();
+      expect(document.elementFromPoint(rowBounds.right + 8, rowBounds.y + 12)?.closest('a')).toBe(
+        anchor,
+      );
+      await row.click({
+        force: true,
+        position: { x: rowBounds.width + 8, y: 12 },
+        modifiers: ['ControlOrMeta'],
+      });
+      expect(modified).toHaveBeenCalledTimes(3);
+      expect(modified.mock.calls[2][0]).toBe(true);
+      await page.getByRole('button', { name: 'Actions for Native flow' }).click();
+      await expect.element(page.getByRole('menu')).toBeVisible();
+      expect(modified).toHaveBeenCalledTimes(3);
+      await userEvent.keyboard('{Escape}');
+      await expect.poll(currentRoute).toBe('/automations');
+    } finally {
+      anchor.removeEventListener('click', capture);
+    }
+  },
+);

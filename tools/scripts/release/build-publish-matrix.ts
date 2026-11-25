@@ -7,36 +7,60 @@
 // (mirroring the affected_playwright_matrix dynamic matrix) and the job skips
 // itself when the result is `[]`.
 //
-// The URLs to purge for a CDN package come from defaults.json itself — see
-// cdnPathsFor.
+// With `--cdn-aliases` it prints instead every package Ghost serves from
+// jsDelivr and the alias URLs it is served from, for the job that purges them.
 
 import {
+  CDN_PACKAGES,
   CONTINUOUS_PACKAGES,
   readDefaults,
-  type DefaultsEntry,
+  type ContinuousPackage,
+  type Defaults,
   type VersioningPolicy,
 } from '../lib/publish-manifest.ts';
 
 const DEFAULTS = await readDefaults();
 
-// defaults.json pins each app to a major.minor and interpolates it into the
-// URLs as {version}. The publish job knows the version it just released, so we
-// hand back CURRENT_MINOR for it to substitute.
-const VERSION_PLACEHOLDER = '{version}';
+/** A package Ghost serves from jsDelivr: the `major.minor` line its alias follows, and the alias URLs. */
+export interface CdnAlias {
+  /** The package's defaults.json key, which also names the release its publish job records. */
+  cdn: string;
+  package: string;
+  line: string;
+  urls: string[];
+}
 
 /**
- * The jsDelivr URLs to purge for one app, read off its defaults.json entry.
+ * The alias of one CDN package, read off its defaults.json entry.
  *
  * defaults.json is what Ghost core resolves at render time, so it is by
  * definition the set of assets visitors fetch. Deriving from it means the purge
  * list cannot silently fall behind: an app that starts shipping a stylesheet
- * has to be declared here or the feature breaks visibly. Every string field
+ * has to be declared there or the feature breaks visibly. Every string field
  * holding a URL counts — `url` for all of them, plus `styles` for sodo-search.
  */
-export function cdnPathsFor(configEntry: DefaultsEntry): string[] {
-  return Object.values(configEntry)
-    .filter((value) => typeof value === 'string' && value.startsWith('https://'))
-    .map((url) => url.replaceAll(VERSION_PLACEHOLDER, 'CURRENT_MINOR'));
+export function cdnAlias(pkg: ContinuousPackage, defaults: Defaults): CdnAlias {
+  const entry = pkg.cdn ? defaults[pkg.cdn] : undefined;
+
+  // Both of these would otherwise degrade into an empty purge list, which
+  // reads as success and leaves jsDelivr serving the old bundle.
+  if (!pkg.cdn || !entry) {
+    throw new Error(
+      `publish-manifest.json maps ${pkg.name} to cdn key "${pkg.cdn}", which defaults.json does not define`,
+    );
+  }
+  const line = entry.version;
+  const urls = Object.values(entry).filter((value) => value.startsWith('https://'));
+  if (!line || urls.length === 0) {
+    throw new Error(`defaults.json entry "${pkg.cdn}" (${pkg.name}) has no CDN URLs to purge`);
+  }
+
+  return {
+    cdn: pkg.cdn,
+    package: pkg.name,
+    line,
+    urls: urls.map((url) => url.replaceAll('{version}', line)),
+  };
 }
 
 export interface MatrixEntry {
@@ -44,8 +68,8 @@ export interface MatrixEntry {
   package_path: string;
   versioning: VersioningPolicy;
   dist_tag: string;
-  /** Newline-delimited URLs to purge; empty for a package Ghost doesn't serve from a CDN. */
-  cdn_paths: string;
+  /** The package's defaults.json key; empty for a package Ghost doesn't serve from a CDN. */
+  cdn: string;
   install_args: string;
 }
 
@@ -53,23 +77,9 @@ export interface MatrixEntry {
 export function buildMatrix(affectedProjects: string[]): MatrixEntry[] {
   const affected = new Set(affectedProjects);
   return CONTINUOUS_PACKAGES.filter((pkg) => affected.has(pkg.name)).map((pkg) => {
-    let cdnPaths: string[] = [];
-
     if (pkg.cdn) {
-      const configEntry = DEFAULTS[pkg.cdn];
-
-      // Both of these would otherwise degrade into an empty purge list,
-      // which reads as success and leaves jsDelivr serving the old bundle.
-      if (!configEntry) {
-        throw new Error(
-          `publish-manifest.json maps ${pkg.name} to cdn key "${pkg.cdn}", which defaults.json does not define`,
-        );
-      }
-
-      cdnPaths = cdnPathsFor(configEntry);
-      if (!cdnPaths.length) {
-        throw new Error(`defaults.json entry "${pkg.cdn}" (${pkg.name}) has no CDN URLs to purge`);
-      }
+      // Refuses a package whose alias couldn't be purged, before it is published.
+      cdnAlias(pkg, DEFAULTS);
     }
 
     return {
@@ -77,13 +87,19 @@ export function buildMatrix(affectedProjects: string[]): MatrixEntry[] {
       package_path: pkg.path,
       versioning: pkg.versioning,
       dist_tag: pkg.distTag,
-      cdn_paths: cdnPaths.join('\n'),
+      cdn: pkg.cdn ?? '',
       install_args: pkg.installArgs ?? '',
     };
   });
 }
 
 function main(): void {
+  // Stdout is the contract for both forms — the workflow captures it into a job output.
+  if (process.argv[2] === '--cdn-aliases') {
+    process.stdout.write(JSON.stringify(CDN_PACKAGES.map((pkg) => cdnAlias(pkg, DEFAULTS))));
+    return;
+  }
+
   const raw = process.argv[2] || '[]';
 
   let affectedProjects: unknown;
@@ -97,7 +113,6 @@ function main(): void {
     throw new Error('affected-projects argument must be a JSON array');
   }
 
-  // Stdout is the contract — the workflow captures this into a job output.
   process.stdout.write(JSON.stringify(buildMatrix(affectedProjects as string[])));
 }
 

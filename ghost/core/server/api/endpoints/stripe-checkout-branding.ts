@@ -1,5 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { brandingService } from '../../services/stripe-checkout-config';
+import stripeCheckoutConfig from '../../services/stripe-checkout-config';
 import type { StripeCheckoutBranding } from '../../services/stripe-checkout-config';
 
 /**
@@ -13,7 +13,7 @@ const controller = {
     headers: { cacheInvalidate: false },
     permissions: { docName: 'products', method: 'read' },
     query(): Promise<StripeCheckoutBranding> {
-      return brandingService!.read();
+      return stripeCheckoutConfig.service.branding.read();
     },
   },
 } satisfies Controller<{ read: Frame }>;

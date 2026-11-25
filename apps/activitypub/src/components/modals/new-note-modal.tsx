@@ -462,7 +462,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
           className={`${isSticky ? 'sticky' : 'static'} bottom-0 flex-row bg-background py-6 dark:bg-surface-elevated-2`}
         >
           <Button
-            className="mr-auto w-[34px] min-w-0!"
+            className="mr-auto w-[34px]"
             variant="outline"
             onClick={() => imageInputRef.current?.click()}
           >
@@ -475,12 +475,12 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
               {content.length}/{MAX_CONTENT_LENGTH}
             </div>
             <Button
-              className="min-w-16"
               data-testid="post-button"
               disabled={isDisabled || isImageUploading}
+              loading={isPosting}
               onClick={handlePost}
             >
-              {isPosting ? <LoadingIndicator color="light" size="sm" /> : 'Post'}
+              Post
             </Button>
           </div>
         </DialogFooter>

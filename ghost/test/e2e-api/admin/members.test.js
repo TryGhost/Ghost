@@ -42,7 +42,8 @@ const Papa = require('papaparse');
 const models = require('../../../core/server/models');
 const { knex } = require('../../../core/server/data/db');
 const membersService = require('../../../core/server/services/members');
-const memberAttributionService = require('../../../core/server/services/member-attribution');
+const memberAttributionService =
+  require('../../../core/server/services/member-attribution').default;
 const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -369,7 +370,7 @@ describe('Members API - member attribution', function () {
       const created = await membersService.api.members.create(
         {
           email: 'member-attributed-in-transaction@test.com',
-          attribution: memberAttributionService.attributionBuilder.build({
+          attribution: memberAttributionService.service.attributionBuilder.build({
             id,
             url: '/out-of-date/',
             type: 'post',
@@ -429,7 +430,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-post@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'post',
@@ -472,7 +473,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-page@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'page',
@@ -515,7 +516,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-tag@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'tag',
@@ -558,7 +559,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-author@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'author',
@@ -598,7 +599,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-url@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id: null,
         url: '/a-static-page/',
         type: 'url',
@@ -1558,6 +1559,19 @@ describe('Members API', function () {
     });
   });
 
+  it('Refuses a name longer than Ghost stores', async function () {
+    // Only names from Stripe are shortened to fit, when a buyer has already paid.
+    await agent
+      .post(`/members/`)
+      .body({ members: [{ email: 'member-with-long-name@test.com', name: 'x'.repeat(192) }] })
+      .expectStatus(422)
+      .expect(({ body }) => {
+        assert.equal(body.errors[0].type, 'ValidationError');
+      });
+
+    assert.equal(await models.Member.findOne({ email: 'member-with-long-name@test.com' }), null);
+  });
+
   it('Can add and send a signup confirmation email', async function () {
     const member = {
       name: 'Send Me Confirmation',
@@ -2313,6 +2327,29 @@ describe('Members API', function () {
         },
       ],
     });
+  });
+
+  it('Links a Stripe customer whose name is longer than Ghost stores, with the name shortened to fit', async function () {
+    // The name comes from Stripe, so the staff user adding the member can't shorten it.
+    const customer = {
+      id: 'cus_long_name',
+      name: `${'x'.repeat(190)}${'🙂'.repeat(10)}`,
+      email: 'member-with-long-stripe-name@test.com',
+      subscriptions: { type: 'list', data: [] },
+    };
+    stripeMocker.customers.push(customer);
+
+    const { body } = await agent
+      .post(`/members/`)
+      .body({ members: [{ email: customer.email, stripe_customer_id: customer.id }] })
+      .expectStatus(201);
+
+    const linked = await models.MemberStripeCustomer.findOne({ member_id: body.members[0].id });
+    // Later tests count the members, and expect only those they name.
+    await agent.delete(`/members/${body.members[0].id}/`).expectStatus(204);
+
+    assert.equal(linked.get('customer_id'), customer.id);
+    assert.equal(linked.get('name'), `${'x'.repeat(190)}🙂`);
   });
 
   let memberWithPaidSubscription;

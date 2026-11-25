@@ -3,10 +3,9 @@ import type { Tag, TagEditableData } from '@tryghost/admin-x-framework/api/tags'
 
 /**
  * The editable slice of a tag, used for dirty detection (draft vs server) and
- * the save payload. camelCase mirrors the Ember model attribute names; the
- * snake_case mapping to the API happens in `getTagEditableSlice` /
- * `buildTagSavePayload`. Missing fields normalize to '' so a tag with a null
- * field and a draft with '' don't read as dirty.
+ * the save payload, in camelCase; the snake_case mapping to the API happens in
+ * `getTagEditableSlice` / `buildTagSavePayload`. Missing fields normalize to ''
+ * so a tag with a null field and a draft with '' don't read as dirty.
  */
 export interface TagEditableFields {
   name: string;
@@ -29,14 +28,14 @@ export interface TagEditableFields {
 
 export type TagFieldName = keyof TagEditableFields;
 
-// Character limits from Ember's tag validator (`validators/tag-settings.js`).
+// Maximum lengths, enforced by validation.
 export const NAME_MAX_LENGTH = 191;
 export const SLUG_MAX_LENGTH = 191;
 export const DESCRIPTION_MAX_LENGTH = 500;
 export const META_TITLE_MAX_LENGTH = 300;
 export const META_DESCRIPTION_MAX_LENGTH = 500;
 
-// Recommended lengths shown as character countdowns (`tag-form.hbs`).
+// Recommended lengths shown as character countdowns.
 export const META_TITLE_RECOMMENDED_LENGTH = 70;
 export const META_DESCRIPTION_RECOMMENDED_LENGTH = 156;
 export const X_TITLE_RECOMMENDED_LENGTH = 70;
@@ -66,9 +65,8 @@ export function getTagEditableSlice(tag: Partial<Tag>): TagEditableFields {
 }
 
 /**
- * Normalize a draft for dirty comparison and saving. Ember trims every edited
- * value (`tag-form.js` `setTagProperty`), code injection included; we trim only
- * touched ordinary fields and deliberately keep code injection verbatim.
+ * Normalize a draft for dirty comparison and saving. Trims only touched
+ * ordinary fields and deliberately keeps code injection verbatim.
  */
 export function normalizeTagDraft(
   draft: TagEditableFields,
@@ -85,15 +83,15 @@ export function normalizeTagDraft(
   return normalized;
 }
 
-/** Ember `models/tag.js` `updateVisibility()`: a leading `#` makes a tag internal. */
+/** A leading `#` makes a tag internal. */
 export function deriveTagVisibility(name: string): 'public' | 'internal' {
   return /^#/.test(name) ? 'internal' : 'public';
 }
 
 /**
- * Client-side slug preview for new tags, matching Ember `tag-form.js`
- * `setTagProperty`: slugified name, with internal tags (leading `#`) prefixed
- * `hash-`. The server re-runs its own slug generator on save for uniqueness.
+ * Client-side slug preview for new tags: slugified name, with internal tags
+ * (leading `#`) prefixed `hash-`. The server re-runs its own slug generator on
+ * save for uniqueness.
  */
 export function generateSlugFromName(name: string): string {
   let slug = slugify(name);
@@ -103,14 +101,14 @@ export function generateSlugFromName(name: string): string {
   return slug;
 }
 
-/** Unicode-code-point length, matching Ember's validator and countdown helper. */
+/** Unicode-code-point length, as validation and the countdowns count it. */
 export function charLength(value: string): number {
   return Array.from(value).length;
 }
 
 /**
- * Per-field validation, porting `validators/tag-settings.js` verbatim
- * (messages included). Fields without validator rules return null.
+ * Per-field validation with its error messages. Fields without validator
+ * rules return null.
  */
 export function validateTagField(field: TagFieldName, draft: TagEditableFields): string | null {
   const value = draft[field].trim();
@@ -149,7 +147,7 @@ export function validateTagField(field: TagFieldName, draft: TagEditableFields):
   }
 }
 
-/** Ember `tag-form.js` `validateCanonicalUrl`: empty is fine, otherwise must parse as a URL. */
+/** Empty is fine, otherwise must parse as a URL. */
 export function validateCanonicalUrl(value: string): string | null {
   if (value === '') {
     return null;
@@ -171,7 +169,7 @@ const VALIDATED_FIELDS: TagFieldName[] = [
   'canonicalUrl',
 ];
 
-/** Validate the whole draft, as Ember does on save. Empty object means valid. */
+/** Validate the whole draft, as on save. Empty object means valid. */
 export function validateTagDraft(draft: TagEditableFields): Partial<Record<TagFieldName, string>> {
   const errors: Partial<Record<TagFieldName, string>> = {};
   for (const field of VALIDATED_FIELDS) {
@@ -184,11 +182,10 @@ export function validateTagDraft(draft: TagEditableFields): Partial<Record<TagFi
 }
 
 /**
- * The save payload for a tag. All editable fields are sent, matching Ember's
- * whole-model serialization. `visibility` is included only when the name
- * changed (or the tag is new) — Ember's `models/tag.js` `save()` recomputes it
- * from the name in exactly that case, and the server only ever forces
- * internal, never back to public, so the client value matters on renames.
+ * The save payload for a tag. All editable fields are sent. `visibility` is
+ * recomputed from the name and included only when the name changed (or the
+ * tag is new); the server only ever forces internal, never back to public, so
+ * the client value matters on renames.
  */
 export function buildTagSavePayload(
   draft: TagEditableFields,
@@ -222,7 +219,7 @@ export function buildTagSavePayload(
 
 /**
  * The tag's public URL: canonical URL when set, `{blogUrl}/tag/{slug}` otherwise,
- * always with a trailing slash (`controllers/tag.js` `tagURL`).
+ * always with a trailing slash.
  */
 export function getTagUrl(
   draft: Pick<TagEditableFields, 'canonicalUrl' | 'slug'>,
@@ -235,14 +232,14 @@ export function getTagUrl(
   return url;
 }
 
-/** Scheme-stripped URL preview shown under the slug field (`gh-url-preview`). */
+/** Scheme-stripped URL preview shown under the slug field. */
 export function getSlugUrlPreview(slug: string, blogUrl: string): string {
   const schemeIndex = blogUrl.indexOf('://');
   const host = schemeIndex === -1 ? blogUrl : blogUrl.slice(schemeIndex + 3);
   return `${host}/tag/${slug ? `${slug}/` : ''}`;
 }
 
-/** `ember-cli-string-helpers` `truncate` with `useEllipsis` — ellipsis counts toward the limit. */
+/** Truncates with an ellipsis that counts toward the limit. */
 export function truncateText(value: string, characterLimit = 140): string {
   const limit = characterLimit - 3;
   if (value.length > limit) {
@@ -257,7 +254,7 @@ export interface TagSeoContext {
   blogUrl: string;
 }
 
-/** `tag-form.js` `seoTitle`: meta title, else "{name} - {site title}", capped at 70 chars. */
+/** Meta title, else "{name} - {site title}", capped at 70 chars. */
 export function getSeoTitle(
   draft: Pick<TagEditableFields, 'name' | 'metaTitle'>,
   siteTitle: string,
@@ -270,7 +267,7 @@ export function getSeoTitle(
   return title;
 }
 
-/** `tag-form.js` `seoDescription`: meta description, else the tag description, capped at 156 chars. */
+/** Meta description, else the tag description, capped at 156 chars. */
 export function getSeoDescription(
   draft: Pick<TagEditableFields, 'description' | 'metaDescription'>,
 ): string {
@@ -281,7 +278,7 @@ export function getSeoDescription(
   return description;
 }
 
-/** `tag-form.js` `seoURL`: the tag URL capped at 70 chars. */
+/** The tag URL capped at 70 chars. */
 export function getSeoUrl(
   draft: Pick<TagEditableFields, 'canonicalUrl' | 'slug'>,
   blogUrl: string,

@@ -335,6 +335,60 @@ describe('Settings API', function () {
       }
     });
 
+    it('stores shared_views exactly as sent and returns it on the next read', async function () {
+      // Admin keeps saved member views and saved posts views in this one setting.
+      // `sort` is a key Admin does not write. The value is indented so that a server
+      // which parsed and re-serialised it would return a different string.
+      const sharedViews = JSON.stringify(
+        [
+          { name: 'VIP readers', route: 'members', filter: { filter: 'label:[vip]' } },
+          {
+            name: 'Newsroom drafts',
+            route: 'posts',
+            color: 'blue',
+            filter: { type: 'draft', tag: 'newsroom' },
+          },
+          {
+            name: 'Paid readers',
+            route: 'members',
+            filter: { filter: 'status:paid' },
+            sort: 'created_at desc',
+          },
+        ],
+        null,
+        2,
+      );
+      const findSharedViews = (body) =>
+        body.settings.find((setting) => setting.key === 'shared_views');
+
+      try {
+        await agent
+          .put('settings/')
+          .body({ settings: [{ key: 'shared_views', value: sharedViews }] })
+          .expectStatus(200)
+          .expect(({ body }) => {
+            assert.equal(findSharedViews(body).value, sharedViews);
+          });
+
+        await agent
+          .get('settings/')
+          .expectStatus(200)
+          .expect(({ body }) => {
+            assert.equal(findSharedViews(body).value, sharedViews);
+          });
+
+        // The PUT response and the GET both return the settings cache, so read the
+        // stored row as well.
+        const storedRow = await models.Base.knex('settings')
+          .where({ key: 'shared_views' })
+          .first('value');
+        assert.equal(storedRow.value, sharedViews);
+      } finally {
+        // Restore so later tests see the default value
+        await models.Settings.edit({ key: 'shared_views', value: '[]' });
+      }
+    });
+
     it('does not trigger email verification flow if members_support_address remains the same', async function () {
       await models.Settings.edit({
         key: 'members_support_address',
@@ -708,6 +762,7 @@ describe('Settings API', function () {
     });
 
     it('editing members_support_address triggers email verification flow', async function () {
+      configUtils.set('mail:from', '"Support Verification" <default@email.com>');
       const currentSetting = settingsCache.get('members_support_address');
       assert(
         currentSetting !== 'othersupport@example.com',
@@ -741,10 +796,13 @@ describe('Settings API', function () {
         });
 
       emailMockReceiver.assertSentEmailCount(1);
-      mockManager.assert.sentEmail({
+      const verificationEmail = mockManager.assert.sentEmail({
         subject: 'Verify email address',
         to: 'othersupport@example.com',
+        from: '"Support Verification" <default@email.com>',
+        replyTo: null,
       });
+      assert.equal(verificationEmail.headers.Sender, '"Support Verification" <default@email.com>');
     });
 
     it('editing members_support_address equaling default does not trigger verification flow', async function () {
@@ -776,6 +834,7 @@ describe('Settings API', function () {
     });
 
     it('editing members_support_address without matching domain triggers email verification flow', async function () {
+      configUtils.set('mail:from', '"Support Verification" <default@email.com>');
       const currentSetting = settingsCache.get('members_support_address');
       assert(
         currentSetting !== 'othersupport@example.com',
@@ -809,10 +868,13 @@ describe('Settings API', function () {
         });
 
       emailMockReceiver.assertSentEmailCount(1);
-      mockManager.assert.sentEmail({
+      const verificationEmail = mockManager.assert.sentEmail({
         subject: 'Verify email address',
         to: 'othersupport@example.com',
+        from: '"Support Verification" <default@email.com>',
+        replyTo: null,
       });
+      assert.equal(verificationEmail.headers.Sender, '"Support Verification" <default@email.com>');
     });
 
     it('editing members_support_address with matching domain does not trigger email verification flow', async function () {

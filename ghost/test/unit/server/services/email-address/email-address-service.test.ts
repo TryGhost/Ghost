@@ -20,6 +20,125 @@ describe('EmailAddressService', function () {
     return new EmailAddressService(createConfig(configOverrides));
   };
 
+  describe('existing policy contracts', function () {
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('returns the preferred object and removes its invalid reply-to in place', function () {
+      sinon.stub(logging, 'error');
+      const service = createService({
+        getManagedEmailEnabled: () => false,
+        isValidEmailAddress: (email: string) => email !== 'invalid',
+      });
+      const preferred = {
+        from: { address: 'editor@example.com' },
+        replyTo: { address: 'invalid' },
+      };
+
+      assert.equal(service.getAddress(preferred), preferred);
+      assert.equal(preferred.replyTo, undefined);
+      sinon.assert.calledOnceWithExactly(
+        logging.error as sinon.SinonStub,
+        '[EmailAddresses] Invalid replyTo address: invalid',
+      );
+    });
+
+    it('retains the requested sender as reply-to when falling back to the default', function () {
+      const preferredFrom = { address: 'editor@other.example', name: 'Editor' };
+      const service = createService({
+        getSendingDomain: () => null,
+        // Production builds a new default sender object on every call.
+        getDefaultEmail: () => ({ address: 'noreply@ghost.org', name: 'Ghost' }),
+      });
+
+      const result = service.getAddress({ from: preferredFrom });
+
+      assert.deepEqual(result, {
+        from: { address: 'noreply@ghost.org', name: 'Editor' },
+        replyTo: preferredFrom,
+      });
+    });
+
+    it('keeps mailbox parsing distinct from validation of a configured fallback', function () {
+      const service = createService({
+        getFallbackEmail: () => 'invalid',
+        // Reject the fallback's parsed address so applying validation would change the result.
+        isValidEmailAddress: (email: string) => email !== '',
+      });
+      const preferred = { from: { address: 'editor@example.com' } };
+
+      assert.deepEqual(service.getAddress(preferred, { useFallbackAddress: true }), {
+        from: { address: '', name: 'invalid' },
+        replyTo: preferred.from,
+      });
+    });
+
+    it('propagates a live dependency failure synchronously', function () {
+      const failure = new Error('settings unavailable');
+      const service = createService({
+        getDefaultEmail: () => {
+          throw failure;
+        },
+      });
+
+      assert.throws(
+        () => service.getAddressFromString(''),
+        (error) => error === failure,
+      );
+      assert.throws(
+        () => service.validate('editor@example.com', 'from'),
+        (error) => error === failure,
+      );
+    });
+
+    it('preserves case-sensitive sender restrictions and reply-to verification', function () {
+      const service = createService();
+      const cases = [
+        ['editor@custom.example.com', 'from', { allowed: true, verificationEmailRequired: false }],
+        [
+          'editor@CUSTOM.example.com',
+          'from',
+          { allowed: false, verificationEmailRequired: false, reason: 'not allowed' },
+        ],
+        [
+          'noreply@ghost.org',
+          'from',
+          { allowed: true, verificationEmailRequired: false, reason: 'not allowed' },
+        ],
+        [
+          'NOREPLY@ghost.org',
+          'from',
+          { allowed: false, verificationEmailRequired: false, reason: 'not allowed' },
+        ],
+        ['editor@other.example', 'replyTo', { allowed: true, verificationEmailRequired: true }],
+        ['noreply@ghost.org', 'replyTo', { allowed: true, verificationEmailRequired: false }],
+      ] as const;
+
+      for (const [email, type, expected] of cases) {
+        assert.deepEqual(service.validate(email, type), expected, `${type}: ${email}`);
+      }
+    });
+
+    it('allows the invalid default verbatim without allowing a case variant', function () {
+      const service = createService({
+        getDefaultEmail: () => ({ address: 'noreply@LOCALHOST' }),
+        isValidEmailAddress: () => false,
+      });
+
+      assert.deepEqual(service.validate('noreply@LOCALHOST', 'from'), {
+        allowed: true,
+        verificationEmailRequired: false,
+        reason: 'invalid',
+      });
+      assert.deepEqual(service.validate('noreply@localhost', 'from'), {
+        allowed: false,
+        verificationEmailRequired: false,
+        reason: 'invalid',
+      });
+    });
+  });
+
   describe('getMembersSupportAddress', function () {
     it('uses the current default address until the support domain is allowed', function () {
       let sendingDomain = 'other.example.com';

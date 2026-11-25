@@ -135,10 +135,11 @@ test.describe('Toggle card', async () => {
                             </div>
                         </div>
                     </div>
+                    <div><div data-kg-settings-panel="true" draggable="true"></div></div>
                 </div>
             </div>
             <p><br /></p>
-        `, {ignoreInnerSVG: true});
+        `, {ignoreInnerSVG: true, ignoreCardSettings: true});
     });
 
     test('focuses on the heading input when rendered', async function () {

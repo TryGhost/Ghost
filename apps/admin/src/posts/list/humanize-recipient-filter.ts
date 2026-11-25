@@ -2,10 +2,8 @@
  * Turns an email segment NQL filter into the phrase Ghost shows a user, e.g.
  * "All subscribers", "Paid subscribers", "Labels: VIP, Founder".
  *
- * Ported from `apps/ember-admin/app/helpers/humanize-recipient-filter.js`.
- * Like the original, this only understands the limited set of filters the
- * publishing UI can produce, and falls back to the raw filter for anything
- * else rather than guessing.
+ * Only understands the limited set of filters the publishing UI can produce,
+ * and falls back to the raw filter for anything else rather than guessing.
  */
 
 function capitalize(value: string): string {

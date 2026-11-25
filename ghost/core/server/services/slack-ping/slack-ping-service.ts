@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import type { GhostLogger } from '@tryghost/logging';
 import { getUnixTime } from '../../../kernel/clock';
 
 import { messages, defaultPostSlugs } from './constants';
@@ -21,12 +22,6 @@ type UrlUtils = {
 
 type BlogIcon = {
   getIconUrl(options: { absolute: boolean }): string;
-};
-
-type Logging = {
-  info(...args: unknown[]): void;
-  warn(...args: unknown[]): void;
-  error(...args: unknown[]): void;
 };
 
 type RequestFn = (url: string, options: Record<string, unknown>) => Promise<unknown>;
@@ -67,7 +62,7 @@ type SlackPingPayload = {
 export type SlackPingServiceDeps = {
   blogIcon: BlogIcon;
   events: ModelEvents;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: RequestFn;
   settingsCache: SettingsCache;
   urlService: UrlService;
@@ -84,7 +79,7 @@ function hasPostProperties(data: Record<string, unknown>): boolean {
 export class SlackPingService {
   blogIcon: BlogIcon;
   events: ModelEvents;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: RequestFn;
   settingsCache: SettingsCache;
   urlService: UrlService;
@@ -181,10 +176,8 @@ export class SlackPingService {
         return;
       }
 
-      // Don't ping for the default posts.
-      // This also handles the case where during Ghost's first run
-      // model loading inserts this post but permissions.init() hasn't
-      // (can't) run yet.
+      // Don't ping for the default posts, which are inserted during
+      // Ghost's first run before services are initialised.
       if (post.slug && defaultPostSlugs.indexOf(post.slug) > -1) {
         return;
       }

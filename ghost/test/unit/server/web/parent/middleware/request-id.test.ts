@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import express from 'express';
 import request from 'supertest';
-// @ts-expect-error This module lacks type definitions.
 import validator from '@tryghost/validator';
 import { requestId } from '../../../../../../core/server/web/parent/middleware/request-id';
 

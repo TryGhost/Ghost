@@ -28,7 +28,6 @@ import {
   serpDescription,
   serpTitle,
 } from './meta-data-fields';
-import { SettingsSubview } from './settings-subview';
 import { useSettingsField } from './use-settings-field';
 
 function Countdown({ id, value, recommended }: { id: string; value: string; recommended: number }) {
@@ -38,7 +37,10 @@ function Countdown({ id, value, recommended }: { id: string; value: string; reco
     <Text id={id} size="sm" tone="secondary">
       Recommended: <b>{formatNumber(recommended)}</b> characters. You&apos;ve used{' '}
       <span
-        className={cn('font-bold', used > recommended ? 'text-destructive' : 'text-state-success')}
+        className={cn(
+          'font-bold',
+          used > recommended ? 'text-destructive' : 'text-character-count',
+        )}
       >
         {formatNumber(used)}
       </span>
@@ -62,7 +64,7 @@ function SearchPreview({
       gap="xs"
     >
       <Inline className="mb-5" gap="lg">
-        <GoogleLogo aria-hidden="true" className="h-5 w-auto shrink-0" />
+        <GoogleLogo className="h-5 w-auto shrink-0" title="Google" />
         <Inline className="h-7 min-w-0 flex-1 rounded-full bg-muted px-3" justify="end">
           <LucideIcon.Search className="size-4 text-muted-foreground" />
         </Inline>
@@ -84,7 +86,7 @@ function SearchPreview({
   );
 }
 
-export interface MetaDataSectionProps {
+export interface MetaDataFieldsProps {
   session: EditorSettingsPort;
   siteUrl: string;
 }
@@ -93,22 +95,7 @@ export interface MetaDataSectionProps {
  * The post's search-engine metadata: a meta title and description that stand in
  * for the post's own, and the result they produce.
  */
-export function MetaDataSection(props: MetaDataSectionProps) {
-  return (
-    <SettingsSubview
-      closeLabel="Close meta data panel"
-      icon={<LucideIcon.Search />}
-      id="meta-data"
-      label="Meta data"
-      title="Meta data"
-    >
-      <MetaDataFields {...props} />
-    </SettingsSubview>
-  );
-}
-
-/** The search-engine fields and preview, without the pane around them. */
-export function MetaDataFields({ session, siteUrl }: MetaDataSectionProps) {
+export function MetaDataFields({ session, siteUrl }: MetaDataFieldsProps) {
   const titleHintId = useId();
   const descriptionHintId = useId();
 

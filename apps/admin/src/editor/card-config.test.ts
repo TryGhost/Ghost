@@ -6,6 +6,7 @@ import {
   type PostCardConfigPorts,
   type PostCardConfigSources,
   buildCardConfigPost,
+  LEGACY_VISIBILITY_CARD_TYPES,
   buildPostCardConfig,
   getCardVisibilitySettings,
   withLiveSettings,
@@ -118,6 +119,39 @@ describe('buildPostCardConfig', () => {
     expect(cardConfig.createSnippet).toBe(ports.createSnippet);
     expect(cardConfig.deleteSnippet).toBe(ports.deleteSnippet);
   });
+
+  it('offers visibility only for the cards an older server supports', () => {
+    const cardConfig = buildPostCardConfig(sources(), ports);
+
+    expect(cardConfig.visibilityCardTypes).toEqual(LEGACY_VISIBILITY_CARD_TYPES);
+    expect(cardConfig.visibilityCardTypes).not.toContain('image');
+  });
+
+  it('offers visibility for the cards the server lists', () => {
+    const cardVisibility = ['html', 'call-to-action', 'transistor', 'image', 'gallery'];
+    const cardConfig = buildPostCardConfig(
+      sources({ config: { ...config, cardVisibility } }),
+      ports,
+    );
+
+    expect(cardConfig.visibilityCardTypes).toEqual(cardVisibility);
+  });
+
+  it.each([
+    ['a list with a non-string entry', ['html', 42]],
+    ['a string', 'image'],
+    ['null', null],
+  ])(
+    'offers visibility only for the older-server cards when the server sends %s',
+    (_, cardVisibility) => {
+      const cardConfig = buildPostCardConfig(
+        sources({ config: { ...config, cardVisibility: cardVisibility as unknown as string[] } }),
+        ports,
+      );
+
+      expect(cardConfig.visibilityCardTypes).toEqual(LEGACY_VISIBILITY_CARD_TYPES);
+    },
+  );
 
   it('carries the site images the social cards fall back to', () => {
     const cardConfig = buildPostCardConfig(

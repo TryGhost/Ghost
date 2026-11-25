@@ -1,5 +1,4 @@
 import * as errors from '@tryghost/errors';
-// @ts-expect-error This module lacks type definitions.
 import * as security from '@tryghost/security';
 import { validatePassword } from './validate-password';
 

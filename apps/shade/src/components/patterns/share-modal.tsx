@@ -1,4 +1,3 @@
-import { useShade } from '@/providers/shade-context';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Check, Copy, Link, X } from 'lucide-react';
 import React, { useState } from 'react';
@@ -73,7 +72,10 @@ const Content = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogContent
     ref={ref}
-    className={cn('max-h-[calc(100vh-16vmin)] max-w-[540px] overflow-y-auto p-8', className)}
+    className={cn(
+      'max-h-[calc(100vh-16vmin)] max-w-[540px] grid-cols-[minmax(0,1fr)] overflow-y-auto p-8',
+      className,
+    )}
     {...props}
   />
 ));
@@ -122,13 +124,11 @@ CloseButton.displayName = 'ShareModal.CloseButton';
 
 const Preview = React.forwardRef<HTMLAnchorElement, ShareModalPreviewProps>(
   ({ className, href, rel = 'noopener noreferrer', target = '_blank', ...props }, ref) => {
-    const { isAdmin7 } = useShade();
     return (
       <a
         ref={ref}
         className={cn(
-          'flex flex-col items-stretch overflow-hidden border transition-all hover:border-muted-foreground/40',
-          isAdmin7 && 'rounded-xl',
+          'flex flex-col items-stretch overflow-hidden rounded-xl border transition-all hover:border-muted-foreground/40',
           className,
         )}
         href={href}
@@ -237,7 +237,6 @@ function SocialLinks({
   variant,
   ...props
 }: SocialLinksProps) {
-  const { isAdmin7 } = useShade();
   if (layout === 'stacked') {
     return (
       <div className={cn('flex gap-2', className)} {...props}>
@@ -268,40 +267,26 @@ function SocialLinks({
 
   return (
     <div className={cn('flex items-center gap-2', className)} {...props}>
-      {links.map((link) =>
-        isAdmin7 || shape || variant ? (
-          <Button
-            key={link.id ?? link.href}
-            className="w-12 flex-none px-3"
-            shape={shape}
-            variant={variant ?? 'ghost'}
-            asChild
-          >
-            <a
-              aria-label={link.label}
-              href={link.href}
-              id={link.id}
-              rel="noopener noreferrer"
-              target="_blank"
-              title={link.title || link.label}
-            >
-              <SocialIcon service={link.service} />
-            </a>
-          </Button>
-        ) : (
+      {links.map((link) => (
+        <Button
+          key={link.id ?? link.href}
+          className="w-12 flex-none px-3"
+          shape={shape}
+          variant={variant ?? 'ghost'}
+          asChild
+        >
           <a
-            key={link.id ?? link.href}
             aria-label={link.label}
-            className="flex h-(--control-height) flex-1 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 sm:w-14 sm:flex-none [&_svg]:h-4"
             href={link.href}
+            id={link.id}
             rel="noopener noreferrer"
             target="_blank"
             title={link.title || link.label}
           >
             <SocialIcon service={link.service} />
           </a>
-        ),
-      )}
+        </Button>
+      ))}
     </div>
   );
 }
@@ -368,20 +353,14 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
       className={cn('flex items-center gap-2 rounded-md border bg-muted p-2', className)}
       {...props}
     >
-      <span className="min-w-0 flex-1 truncate px-2 text-sm">{copyURL}</span>
+      <span className="min-w-0 flex-1 truncate px-2 text-(length:--text-field)">{copyURL}</span>
       {children}
     </div>
   );
 }
 
 function Footer({ className, ...props }: React.ComponentPropsWithoutRef<typeof DialogFooter>) {
-  const { isAdmin7 } = useShade();
-  return (
-    <DialogFooter
-      className={cn('justify-between gap-6', isAdmin7 && 'gap-8 sm:gap-8', className)}
-      {...props}
-    />
-  );
+  return <DialogFooter className={cn('justify-between gap-8 sm:gap-8', className)} {...props} />;
 }
 
 const ShareModal = {

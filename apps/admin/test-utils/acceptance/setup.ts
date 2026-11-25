@@ -1,4 +1,5 @@
-import { afterEach, beforeAll } from 'vitest';
+import { afterEach, beforeAll, beforeEach } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 import { cleanup } from 'vitest-browser-react';
 import { toast } from 'sonner';
 
@@ -12,8 +13,9 @@ import {
   verifyNoUnhandledRequests,
 } from './worker';
 import { resetDeclaredResources } from './resources';
+import { resetSharedViews } from './shared-views';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
-import { resetFailedModuleLoads } from './module-loads';
+import { resetModuleRoutes } from './module-loads';
 
 // At import, before the spec module (and the app) loads.
 trackIssuedRequests();
@@ -56,6 +58,21 @@ beforeAll(async () => {
   await guardFrameNavigations();
 });
 
+beforeEach(async () => {
+  // The editor hides its chrome while the writer types and brings it back once the
+  // pointer travels. A writer's pointer always comes from somewhere, but Chromium
+  // reports no travel for a page's first pointer event or for a click where the
+  // pointer already rests, so each test starts with it parked in the corner.
+  const corner = document.createElement('div');
+  corner.style.cssText = 'position:fixed;top:0;left:0;width:20px;height:20px;z-index:2147483647';
+  document.body.appendChild(corner);
+  try {
+    await userEvent.hover(page.elementLocator(corner));
+  } finally {
+    corner.remove();
+  }
+});
+
 afterEach(async () => {
   // Order is load-bearing: unmount first (a live app refetches against a
   // reset worker); drain before the reset (stragglers must hit their
@@ -83,6 +100,7 @@ afterEach(async () => {
     } finally {
       resetFakeApi();
       resetDeclaredResources();
+      resetSharedViews();
       // A journey can end mid screen transition; its markers would hide the next app's content.
       delete document.documentElement.dataset.screenExit;
       delete document.documentElement.dataset.screenTransition;
@@ -93,13 +111,13 @@ afterEach(async () => {
           localStorage.removeItem(key);
         }
       }
-      // Where the writer last left the editor's settings panel (admin7EditorImprovements).
+      // Where the writer last left the editor's settings panel.
       localStorage.removeItem('ghost-editor-settings-open');
-      // Each draft's remembered newsletter (admin7EditorImprovements).
+      // Each draft's remembered newsletter.
       localStorage.removeItem('ghost-editor-draft-newsletters');
       window.location.hash = '';
       try {
-        await Promise.all([resetFakeFrameOrigins(), resetFailedModuleLoads()]);
+        await Promise.all([resetFakeFrameOrigins(), resetModuleRoutes()]);
       } finally {
         verifyNoUnhandledRequests();
       }

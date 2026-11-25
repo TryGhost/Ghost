@@ -3,11 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const hbs = require('../../../../../../core/frontend/services/theme-engine/engine');
-
-// Stuff we are testing
-const helpers = require('../../../../../../core/frontend/services/helpers');
+const {
+  freshHelperServiceForSuite,
+  restoreHandlebarsAfterSuite,
+} = require('../../../../../utils/handlebars-state');
 
 describe('Helpers', function () {
+  restoreHandlebarsAfterSuite();
+  // Stuff we are testing: a fresh helper service, so init registers every helper
+  const helpers = freshHelperServiceForSuite();
+
   const hbsHelpers = [
     'each',
     'if',
@@ -79,7 +84,7 @@ describe('Helpers', function () {
   describe('Load Core Helpers', function () {
     beforeAll(function () {
       hbs.express4();
-      helpers.init();
+      helpers().init();
     });
 
     // This will work when we finish refactoring
@@ -99,6 +104,9 @@ describe('Helpers', function () {
       'collection', // experimental, not yet stable for themes
     ];
 
+    // Matches any JavaScript or TypeScript source extension: .js, .cjs, .mjs, .ts, .cts, .mts
+    const sourceExtension = /\.[cm]?[jt]s$/;
+
     it('all theme-facing helpers should be known to gscan', function () {
       const gscanSpec = require('gscan/lib/specs/v6');
       const gscanKnownHelpers = new Set(gscanSpec.knownHelpers);
@@ -106,8 +114,18 @@ describe('Helpers', function () {
       const helpersDir = path.join(__dirname, '../../../../../../core/frontend/helpers');
       const globalHelperFiles = fs
         .readdirSync(helpersDir)
-        .filter((f) => f.endsWith('.js') && f !== 'index.js' && f !== 'register.js')
-        .map((f) => f.replace('.js', ''));
+        .filter((f) => sourceExtension.test(f) && !f.endsWith('.d.ts'))
+        .filter((f) => f !== 'index.js' && f !== 'register.js')
+        .map((f) => f.replace(sourceExtension, ''));
+
+      assert.ok(
+        globalHelperFiles.includes('color_to_rgba'),
+        'TypeScript helper color_to_rgba must be discovered',
+      );
+      assert.ok(
+        globalHelperFiles.includes('facebook_url'),
+        'TypeScript helper facebook_url must be discovered',
+      );
 
       const missing = globalHelperFiles
         .filter((h) => !internalHelpers.includes(h))

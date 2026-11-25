@@ -7,7 +7,6 @@ For example, a migration may:
 
 - Add a table.
 - Add a column to a table.
-- Add user permissions.
 - Manipulate existing data.
 
 > Migrations are dangerous and need to be treated with a great deal of care.
@@ -48,13 +47,14 @@ these version and placement checks with
 
 ### Writing the migration
 
-1. Open the generated migration file in
+1. Open the generated TypeScript migration file in
    `core/server/data/migrations/versions/`.
 2. Add the database changes, using similar existing migrations as examples.
+   Older migrations are JavaScript; leave them unchanged and write new ones in
+   TypeScript so the migration helpers' types check them.
 3. Run the migration with `pnpm knex-migrator migrate` from the repository
    root while following the iteration guidance below.
-4. For schema changes, update `core/server/data/schema/schema.js` to match.
-5. Update the schema integrity tests and any other affected tests.
+4. For schema changes, update `core/server/data/schema/schema.ts` to match.
 
 #### Types of migration
 
@@ -62,8 +62,7 @@ Migration pull requests generally contain one of two types of change:
 
 - **DDL (data definition language)** migrations change the database schema.
   They require a migration for existing databases and a matching update to
-  `schema.js`. New tables must also be added to the export list, and the schema
-  integrity hash must be updated.
+  `schema.ts`. New tables must also be added to the export list.
 - **DML (data manipulation language)** migrations change data already stored in
   the tables. They generally require only the migration itself and focused
   tests.
@@ -92,7 +91,7 @@ A new table's shape often changes several times before its feature is ready.
 Rather than writing a migration for each change, list the table in
 `IN_DEVELOPMENT_TABLES` in
 [`core/server/data/schema/in-development.ts`](../../ghost/core/server/data/schema/in-development.ts)
-and define its schema in `schema.js` without adding a versioned migration. It
+and define its schema in `schema.ts` without adding a versioned migration. It
 is only created in development and testing databases.
 
 To apply a changed definition to your local database, rebuild the listed
@@ -107,8 +106,8 @@ created, for example behind a [feature flag](feature-flags.md).
 The table still needs a classification in the exporter table lists.
 
 When the definition is final, remove the table from `IN_DEVELOPMENT_TABLES`,
-add the versioned migration that creates it, and update the schema integrity
-hash. Create the table with
+add the versioned migration that creates it.
+Create the table with
 `addTable(name, tableSpec, {replaceDevelopmentCopy: true})`: development and
 testing databases already have a copy built from an earlier definition, and the
 option replaces it with the final one. This discards its data and drops the
@@ -121,13 +120,20 @@ The database-backed migration suites run against MySQL, Ghost's supported
 production database. Changes to retained SQLite compatibility paths should add
 focused unit coverage for that dialect.
 
-Run the schema integrity test after changing `schema.js`, fixtures, default
-settings, or default routes. Update only the expected hash for the change you
-made:
+Run the schema-sync test after changing `schema.ts` or schema migrations. It
+compares the migrated MySQL database structure with `schema.ts`:
 
 ```bash
 cd ghost
-pnpm test:single test/unit/server/data/schema/integrity.test.js
+pnpm test:single test/integration/migrations/schema-sync.test.ts
+```
+
+Run the database integrity test after changing fixtures, default settings, or
+default routes. Update only the expected hash for the change you made:
+
+```bash
+cd ghost
+pnpm test:single test/unit/server/data/schema/integrity.test.ts
 ```
 
 Run the migration integration test to exercise initialization, rollback,

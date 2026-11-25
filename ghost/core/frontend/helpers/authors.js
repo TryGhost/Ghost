@@ -8,7 +8,6 @@
 // Note that the standard {{#each authors}} implementation is unaffected by this helper.
 const { urlService } = require('../services/proxy');
 const { SafeString, escapeExpression, templates } = require('../services/handlebars');
-const isString = require('lodash/isString');
 const { utils } = require('@tryghost/helpers');
 
 module.exports = function authors(options = {}) {
@@ -26,7 +25,7 @@ module.exports = function authors(options = {}) {
   } = options.hash;
   let output = '';
 
-  autolink = !(isString(autolink) && autolink === 'false');
+  autolink = !(typeof autolink === 'string' && autolink === 'false');
   limit = limit ? parseInt(limit, 10) : limit;
   from = from ? parseInt(from, 10) : from;
   to = to ? parseInt(to, 10) : to;

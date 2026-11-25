@@ -4,6 +4,7 @@ import {
   DEV_ENVIRONMENT,
   E2E_CONTAINER_PREFIX,
   EGRESS_ALLOWLIST,
+  EGRESS_BROWSER_URL_ALLOWLIST,
   EGRESS_COREFILE_PATH,
   EGRESS_DNS_IMAGE,
   TEST_ENVIRONMENT,
@@ -279,4 +280,12 @@ export function isAllowedHost(host: string): boolean {
     return true;
   }
   return EGRESS_ALLOWLIST.some((allowed) => name === allowed || name.endsWith(`.${allowed}`));
+}
+
+/** Whether a URL the browser requested is allowed, by host or by URL prefix. */
+export function isAllowedBrowserUrl(url: URL): boolean {
+  return (
+    isAllowedHost(url.hostname) ||
+    EGRESS_BROWSER_URL_ALLOWLIST.some((prefix) => url.href.startsWith(prefix))
+  );
 }

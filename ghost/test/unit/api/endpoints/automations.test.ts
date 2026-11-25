@@ -1,31 +1,53 @@
+import type {
+  AddAutomationData,
+  EditAutomationData,
+} from '../../../../core/server/services/automations/automations-schemas';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { vi } from 'vitest';
 import { Frame } from '@tryghost/api-framework';
 
-// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import domainEvents from '@tryghost/domain-events';
-import { controller as automationsController } from '../../../../core/server/api/endpoints/automations';
-import { StartAutomationsPollEvent } from '../../../../core/server/services/automations/events/start-automations-poll-event';
-import * as automationsApi from '../../../../core/server/services/automations/automations-api';
-// @ts-expect-error This module lacks type definitions.
-import labs from '../../../../core/shared/labs';
+
+type AutomationsApi = typeof import('../../../../core/server/services/automations/automations-api');
 
 vi.mock('../../../../core/server/services/automations/automations-api', async (importOriginal) => {
-  const actual = await importOriginal<typeof automationsApi>();
+  const actual = await importOriginal<AutomationsApi>();
   return {
     ...actual,
     browse: vi.fn(),
     read: vi.fn(),
     add: vi.fn(),
+    edit: vi.fn(),
     getNumberOfAutomations: vi.fn(),
   };
 });
 
 describe('Automations controller', function () {
-  // The edit endpoint is tested in E2E tests.
-
   let dispatchStub: sinon.SinonStub;
+  let automationsController: (typeof import('../../../../core/server/api/endpoints/automations'))['controller'];
+  let StartAutomationsPollEvent: (typeof import('../../../../core/server/services/automations/events/start-automations-poll-event'))['StartAutomationsPollEvent'];
+  let automationsApi: AutomationsApi;
+  let labs: { isSet: (flag: string) => boolean };
+
+  beforeAll(async function () {
+    // vi.mock only reaches modules loaded after it, and another file in this
+    // worker may already have loaded the controller with the real API
+    vi.resetModules();
+    ({ controller: automationsController } =
+      await import('../../../../core/server/api/endpoints/automations'));
+    ({ StartAutomationsPollEvent } =
+      await import('../../../../core/server/services/automations/events/start-automations-poll-event'));
+    automationsApi = await import('../../../../core/server/services/automations/automations-api');
+    // @ts-expect-error This module lacks type definitions.
+    labs = (await import('../../../../core/shared/labs')).default;
+  });
+
+  afterAll(function () {
+    // Don't leave modules loaded against the mocked API for later files
+    vi.doUnmock('../../../../core/server/services/automations/automations-api');
+    vi.resetModules();
+  });
 
   beforeEach(function () {
     dispatchStub = sinon.stub(domainEvents, 'dispatch');
@@ -75,7 +97,7 @@ describe('Automations controller', function () {
   });
 
   describe('read', function () {
-    it('returns the automation trigger tier scope and IDs', async function () {
+    it('returns the automation with trigger rules', async function () {
       const automation = {
         id: '64b6f7b7c8f1a2b3c4d5e6f7',
         slug: null,
@@ -84,8 +106,14 @@ describe('Automations controller', function () {
         status: 'inactive' as const,
         created_at: '2026-10-01T00:00:00.000Z',
         updated_at: '2026-10-01T00:00:00.000Z',
-        trigger_tier_scope: 'selected_paid' as const,
-        trigger_tier_ids: ['64b6f7b7c8f1a2b3c4d5e6f8'],
+        trigger_rules: [
+          {
+            trigger_type: 'paid_subscription_started' as const,
+            scope: 'specific_paid_tier' as const,
+            product_id: '64b6f7b7c8f1a2b3c4d5e6f8',
+            direction: null,
+          },
+        ],
         actions: [],
         edges: [],
       };
@@ -104,12 +132,17 @@ describe('Automations controller', function () {
     const payload = {
       name: 'Test',
       description: 'Test description',
-      trigger_tier_scope: 'free' as const,
+      trigger_rules: [
+        { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+      ],
+      status: 'inactive' as const,
+      actions: [],
+      edges: [],
     };
-    const frame = new Frame<{ data: { automations: unknown[] } }>({
+    const frame = new Frame<{ data: AddAutomationData }>({
       body: { automations: [payload] },
     });
-    frame.configure({});
+    frame.data = payload;
 
     let labsIsSetStub: sinon.SinonStub;
 
@@ -125,7 +158,6 @@ describe('Automations controller', function () {
         status: 'inactive' as const,
         created_at: '2026-10-01T00:00:00.000Z',
         updated_at: '2026-10-01T00:00:00.000Z',
-        trigger_tier_ids: null,
         actions: [],
         edges: [],
       };
@@ -139,20 +171,25 @@ describe('Automations controller', function () {
       assert.equal(automationsController.add.statusCode, 201);
     });
 
-    for (const flag of ['automations', 'automationsPerTier']) {
-      it(`returns 404 when ${flag} labs flag is disabled`, async function () {
-        labsIsSetStub.withArgs(flag).returns(false);
+    it('returns 404 when automations labs flag is disabled', async function () {
+      labsIsSetStub.withArgs('automations').returns(false);
 
-        await assert.rejects(automationsController.add.query(frame), {
-          errorType: 'NotFoundError',
-          statusCode: 404,
-        });
+      await assert.rejects(automationsController.add.query(frame), {
+        errorType: 'NotFoundError',
+        statusCode: 404,
       });
-    }
+    });
 
     for (const count of [0, 49]) {
       it(`creates with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
+        vi.mocked(automationsApi.add).mockResolvedValue({
+          ...payload,
+          id: 'id',
+          slug: null,
+          created_at: '',
+          updated_at: '',
+        });
         await automationsController.add.query(frame);
         expect(automationsApi.add).toHaveBeenCalledExactlyOnceWith(payload);
       });
@@ -161,6 +198,13 @@ describe('Automations controller', function () {
     for (const count of [50, 51]) {
       it(`rejects creation with ${count} automations`, async function () {
         vi.mocked(automationsApi.getNumberOfAutomations).mockResolvedValue(count);
+        vi.mocked(automationsApi.add).mockResolvedValue({
+          ...payload,
+          id: 'id',
+          slug: null,
+          created_at: '',
+          updated_at: '',
+        });
         await assert.rejects(automationsController.add.query(frame), {
           errorType: 'HostLimitError',
           statusCode: 403,
@@ -169,6 +213,52 @@ describe('Automations controller', function () {
         expect(automationsApi.add).not.toHaveBeenCalled();
       });
     }
+  });
+
+  describe('edit', function () {
+    it('passes trigger rules to the service and returns its result', async function () {
+      const trigger_rules = [
+        {
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'any_paid_tier' as const,
+          product_id: null,
+          direction: null,
+        },
+      ];
+      const payload = {
+        status: 'inactive' as const,
+        actions: [],
+        edges: [],
+        trigger_rules,
+      };
+      const automation = {
+        id: 'automation-id',
+        slug: null,
+        name: 'Edited',
+        description: '',
+        status: 'inactive' as const,
+        actions: [],
+        edges: [],
+        trigger_rules,
+        created_at: '',
+        updated_at: '',
+      };
+      vi.mocked(automationsApi.edit).mockResolvedValue(automation);
+      const frame = new Frame<{ options: { id: string }; data: EditAutomationData }>({
+        params: { id: automation.id },
+        body: { automations: [payload] },
+      });
+      frame.configure(automationsController.edit);
+      frame.data = payload;
+      const result = await automationsController.edit.query(frame);
+      expect(automationsApi.edit).toHaveBeenCalledExactlyOnceWith(automation.id, {
+        status: 'inactive',
+        actions: [],
+        edges: [],
+        trigger_rules,
+      });
+      assert.strictEqual(result, automation);
+    });
   });
 
   describe('poll', function () {

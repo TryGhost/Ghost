@@ -3,6 +3,15 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 
 const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
+const { createTracer } = require('../../../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../../../core/server/services/stripe/tracking');
+
+const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+const tracking = stripeTracking({
+  tracer: createTracer(shipNothing),
+  meter: createMeter(shipNothing),
+});
 
 describe('CheckoutSessionEventService', function () {
   let api,
@@ -52,6 +61,7 @@ describe('CheckoutSessionEventService', function () {
   function createService(deps = {}) {
     return new CheckoutSessionEventService({
       api,
+      tracking,
       memberRepository,
       donationRepository,
       giftService,
@@ -61,193 +71,6 @@ describe('CheckoutSessionEventService', function () {
       ...deps,
     });
   }
-
-  describe('handleEvent', function () {
-    it('should call handleSetupEvent if session mode is setup', async function () {
-      const service = createService();
-      const session = { mode: 'setup' };
-      const handleSetupEventStub = sinon.stub(service, 'handleSetupEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.calledWith(handleSetupEventStub, session);
-    });
-
-    it('should call handleSubscriptionEvent if session mode is subscription', async function () {
-      const service = createService();
-      const session = { mode: 'subscription' };
-      const handleSubscriptionEventStub = sinon.stub(service, 'handleSubscriptionEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.calledWith(handleSubscriptionEventStub, session);
-    });
-
-    it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is present', async function () {
-      const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: true } };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.calledWith(handleDonationEventStub, session);
-    });
-
-    it('should call handleDonationEvent if session mode is payment and session metadata ghost_donation is string true', async function () {
-      const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: 'true' } };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.calledWith(handleDonationEventStub, session);
-    });
-
-    it('should ignore false donation metadata flags', async function () {
-      const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: 'false' } };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.notCalled(handleDonationEventStub);
-    });
-
-    it('should call handleGiftEvent if session mode is payment and session metadata ghost_gift is present', async function () {
-      const service = createService();
-      const session = { mode: 'payment', payment_status: 'paid', metadata: { ghost_gift: 'true' } };
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.calledWith(handleGiftEventStub, session);
-    });
-
-    it('waits for async payment success when a gift checkout is still unpaid', async function () {
-      const service = createService();
-      const session = {
-        mode: 'payment',
-        payment_status: 'unpaid',
-        metadata: { ghost_gift: 'true' },
-      };
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session);
-      sinon.assert.notCalled(handleGiftEventStub);
-
-      await service.handleEvent(
-        { ...session, payment_status: 'paid' },
-        'checkout.session.async_payment_succeeded',
-      );
-      sinon.assert.calledOnce(handleGiftEventStub);
-    });
-
-    it('ignores async payment success for a gift that Stripe still reports as unpaid', async function () {
-      const service = createService();
-      const session = {
-        mode: 'payment',
-        payment_status: 'unpaid',
-        metadata: { ghost_gift: 'true' },
-      };
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session, 'checkout.session.async_payment_succeeded');
-
-      sinon.assert.notCalled(handleGiftEventStub);
-    });
-
-    it('ignores async payment success with conflicting donation and gift markers', async function () {
-      const service = createService();
-      const session = {
-        mode: 'payment',
-        payment_status: 'paid',
-        metadata: { ghost_donation: 'true', ghost_gift: 'true' },
-      };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session, 'checkout.session.async_payment_succeeded');
-
-      sinon.assert.notCalled(handleDonationEventStub);
-      sinon.assert.notCalled(handleGiftEventStub);
-    });
-
-    it('does not handle donations on async payment success', async function () {
-      const service = createService();
-      const session = {
-        mode: 'payment',
-        payment_status: 'paid',
-        metadata: { ghost_donation: 'true' },
-      };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-
-      await service.handleEvent(session, 'checkout.session.async_payment_succeeded');
-
-      sinon.assert.notCalled(handleDonationEventStub);
-    });
-
-    it('ignores failed async gift payments', async function () {
-      const service = createService();
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(
-        { mode: 'payment', metadata: { ghost_gift: 'true' } },
-        'checkout.session.async_payment_failed',
-      );
-
-      sinon.assert.notCalled(handleGiftEventStub);
-    });
-
-    it('should ignore false gift metadata flags', async function () {
-      const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_gift: 'false' } };
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.notCalled(handleGiftEventStub);
-    });
-
-    it('should ignore payment sessions with conflicting donation and gift markers', async function () {
-      const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: '', ghost_gift: 'true' } };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.notCalled(handleDonationEventStub);
-      sinon.assert.notCalled(handleGiftEventStub);
-    });
-
-    it('should ignore payment sessions when both donation and gift markers are true', async function () {
-      const service = createService();
-      const session = { mode: 'payment', metadata: { ghost_donation: true, ghost_gift: 'true' } };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.notCalled(handleDonationEventStub);
-      sinon.assert.notCalled(handleGiftEventStub);
-    });
-
-    it('should do nothing if session mode is unsupported', async function () {
-      const service = createService();
-      const session = { mode: 'unsupported_mode' };
-      const handleSetupEventStub = sinon.stub(service, 'handleSetupEvent');
-      const handleSubscriptionEventStub = sinon.stub(service, 'handleSubscriptionEvent');
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-      const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
-
-      await service.handleEvent(session);
-
-      sinon.assert.notCalled(handleSetupEventStub);
-      sinon.assert.notCalled(handleSubscriptionEventStub);
-      sinon.assert.notCalled(handleDonationEventStub);
-      sinon.assert.notCalled(handleGiftEventStub);
-    });
-  });
 
   describe('handleDonationEvent', function () {
     it('can handle donation event', async function () {
@@ -404,6 +227,29 @@ describe('CheckoutSessionEventService', function () {
       const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
       assert.equal(savedDonationEvent.amount, 1000);
+    });
+
+    it('rejects with the staff notification failure after saving the donation', async function () {
+      const service = createService();
+      const failure = new Error('staff email failed');
+      staffServiceEmails.notifyDonationReceived.rejects(failure);
+      memberRepository.get.resolves(null);
+
+      await assert.rejects(
+        service.handleDonationEvent({
+          amount_total: 1000,
+          currency: 'usd',
+          customer: null,
+          customer_details: { name: 'Test Name', email: 'donor@example.com' },
+          metadata: {},
+        }),
+        (error) => error === failure,
+      );
+
+      sinon.assert.callOrder(donationRepository.save, staffServiceEmails.notifyDonationReceived);
+      sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyDonationReceived, {
+        donationPaymentEvent: donationRepository.save.firstCall.args[0],
+      });
     });
   });
 
@@ -922,7 +768,7 @@ describe('CheckoutSessionEventService', function () {
     });
   });
 
-  describe('handleSubscriptionEvent', function () {
+  describe('completeSubscriptionCheckout', function () {
     let service;
     let session;
     let customer;
@@ -931,6 +777,7 @@ describe('CheckoutSessionEventService', function () {
     beforeEach(function () {
       service = createService();
       session = {
+        mode: 'subscription',
         customer: 'cust_123',
         metadata: {
           name: 'Metadata Name',
@@ -970,7 +817,7 @@ describe('CheckoutSessionEventService', function () {
       api.getCustomer.resolves(customer);
       memberRepository.get.resolves(member);
 
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.calledWith(api.getCustomer, 'cust_123', {
         expand: ['subscriptions.data.default_payment_method'],
@@ -982,7 +829,7 @@ describe('CheckoutSessionEventService', function () {
       api.getCustomer.resolves(customer);
       memberRepository.get.resolves(null);
 
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.calledOnce(memberRepository.create);
       const memberData = memberRepository.create.getCall(0).args[0];
@@ -1006,7 +853,7 @@ describe('CheckoutSessionEventService', function () {
       memberRepository.get.resolves(null);
       session.metadata.name = 'Session Name';
 
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.calledOnce(memberRepository.create);
       const memberData = memberRepository.create.getCall(0).args[0];
@@ -1023,7 +870,7 @@ describe('CheckoutSessionEventService', function () {
       memberRepository.get.resolves(null);
       session.metadata.newsletters = 'invalid';
 
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       const memberData = memberRepository.create.getCall(0).args[0];
       assert.equal(memberData.email, 'customer@example.com');
@@ -1038,7 +885,7 @@ describe('CheckoutSessionEventService', function () {
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
         'New Customer Name';
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.calledOnce(memberRepository.update);
       const memberData = memberRepository.update.getCall(0).args[0];
@@ -1053,7 +900,7 @@ describe('CheckoutSessionEventService', function () {
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
         'New Customer Name';
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.calledOnce(memberRepository.update);
       const memberData = memberRepository.update.getCall(0).args[0];
@@ -1068,7 +915,7 @@ describe('CheckoutSessionEventService', function () {
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
         'New Customer Name';
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.calledOnce(memberRepository.update);
       const memberData = memberRepository.update.getCall(0).args[0];
@@ -1080,7 +927,7 @@ describe('CheckoutSessionEventService', function () {
       memberRepository.get.resolves(member);
       session.metadata.ghostSignupContext = 'needs_magic_link_email';
 
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.notCalled(memberRepository.update);
       sinon.assert.calledOnce(memberRepository.linkSubscription);
@@ -1094,7 +941,7 @@ describe('CheckoutSessionEventService', function () {
       member.get.withArgs('id').returns('member_123');
       memberRepository.get.resolves(member);
 
-      await service.handleSubscriptionEvent(session);
+      await service.completeSubscriptionCheckout(session);
 
       sinon.assert.calledOnceWithExactly(
         memberRepository.update,
@@ -1110,7 +957,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'needs_magic_link_email';
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.completeSubscriptionCheckout(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
@@ -1123,7 +970,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
         isPaidWelcomeEmailActive.resolves(false);
 
-        await service.handleSubscriptionEvent(session);
+        await service.completeSubscriptionCheckout(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
@@ -1135,7 +982,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.completeSubscriptionCheckout(session);
 
         sinon.assert.notCalled(sendSignupEmail);
       });
@@ -1146,7 +993,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'already_authenticated';
         isPaidWelcomeEmailActive.resolves(false);
 
-        await service.handleSubscriptionEvent(session);
+        await service.completeSubscriptionCheckout(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
@@ -1158,7 +1005,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'already_authenticated';
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.completeSubscriptionCheckout(session);
 
         sinon.assert.notCalled(sendSignupEmail);
       });
@@ -1169,21 +1016,57 @@ describe('CheckoutSessionEventService', function () {
         delete session.metadata.ghostSignupContext;
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.completeSubscriptionCheckout(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
         sinon.assert.notCalled(isPaidWelcomeEmailActive);
       });
 
-      it('should NOT send signup email on upgrade regardless of flow or welcome email', async function () {
+      it('should NOT send signup email on upgrade after a pre-checkout magic link', async function () {
         api.getCustomer.resolves(customer);
         memberRepository.get.resolves(member);
         session.metadata.checkoutType = 'upgrade';
         session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
         isPaidWelcomeEmailActive.resolves(false);
 
-        await service.handleSubscriptionEvent(session);
+        await service.completeSubscriptionCheckout(session);
+
+        sinon.assert.notCalled(sendSignupEmail);
+      });
+
+      it('should send signup email on upgrade when the buyer has no sign-in path', async function () {
+        api.getCustomer.resolves(customer);
+        memberRepository.get.resolves(member);
+        session.metadata.checkoutType = 'upgrade';
+        session.metadata.ghostSignupContext = 'needs_magic_link_email';
+        isPaidWelcomeEmailActive.resolves(true);
+
+        await service.completeSubscriptionCheckout(session);
+
+        sinon.assert.calledOnceWithExactly(sendSignupEmail, 'customer@example.com');
+        sinon.assert.notCalled(isPaidWelcomeEmailActive);
+      });
+
+      it('should NOT send signup email on upgrade by a signed-in member', async function () {
+        api.getCustomer.resolves(customer);
+        memberRepository.get.resolves(member);
+        session.metadata.checkoutType = 'upgrade';
+        session.metadata.ghostSignupContext = 'already_authenticated';
+        isPaidWelcomeEmailActive.resolves(false);
+
+        await service.completeSubscriptionCheckout(session);
+
+        sinon.assert.notCalled(sendSignupEmail);
+      });
+
+      it('should NOT send signup email on upgrade without a signup context', async function () {
+        api.getCustomer.resolves(customer);
+        memberRepository.get.resolves(member);
+        session.metadata.checkoutType = 'upgrade';
+        delete session.metadata.ghostSignupContext;
+
+        await service.completeSubscriptionCheckout(session);
 
         sinon.assert.notCalled(sendSignupEmail);
       });

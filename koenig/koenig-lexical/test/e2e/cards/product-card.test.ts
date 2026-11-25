@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, createSnippet, focusEditor, getEditorStateJSON, html, initialize, insertCard, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -54,7 +54,7 @@ test.describe('Product card', async () => {
                     <div>
                         <div>
                             <img
-                                alt="Product thumbnail"
+                                alt=""
                                 src="/content/images/2022/11/koenig-lexical.jpg" />
                         </div>
                         <div>
@@ -192,6 +192,129 @@ test.describe('Product card', async () => {
         await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
     });
 
+    test('can set image alt text', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        // Keep the default viewport: the settings panel must not block the Alt toggle.
+        // The input stays hidden until toggled.
+        const altToggle = page.getByTestId('product-image-alt-toggle');
+        const altInput = page.getByTestId('product-image-alt-input');
+        await expect(altToggle).toBeVisible();
+        await expect(altInput).toBeHidden();
+
+        await altToggle.click();
+        await expect(altInput).toBeVisible();
+        await altInput.fill('A camera on a wooden table');
+
+        // preview image and serialized node both carry the alt text
+        await expect(page.getByTestId('product-card-image')).toHaveAttribute('alt', 'A camera on a wooden table');
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+        expect(editorState.root.children[0].productImageAlt).toEqual('A camera on a wooden table');
+
+        // toggling again hides the input but keeps the value
+        await altToggle.click();
+        await expect(altInput).toBeHidden();
+        await expect(page.getByTestId('product-card-image')).toHaveAttribute('alt', 'A camera on a wooden table');
+    });
+
+    test('hides alt input when leaving edit mode', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        await page.getByTestId('product-image-alt-toggle').click();
+        await page.getByTestId('product-image-alt-input').fill('A camera on a wooden table');
+
+        await page.keyboard.press('Escape');
+        await expect(page.locator('[data-kg-card="product"]')).toHaveAttribute('data-kg-card-editing', 'false');
+        await expect(page.getByTestId('product-image-alt-input')).toBeHidden();
+        await expect(page.getByTestId('product-image-alt-toggle')).toBeHidden();
+
+        // re-entering edit mode shows the toggle but not the input
+        await page.getByTestId('edit-product-card').click();
+        await expect(page.getByTestId('product-image-alt-toggle')).toBeVisible();
+        await expect(page.getByTestId('product-image-alt-input')).toBeHidden();
+    });
+
+    test('clears alt text when image is removed', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        await page.getByTestId('product-image-alt-toggle').click();
+        await page.getByTestId('product-image-alt-input').fill('A camera on a wooden table');
+
+        await page.getByTestId('replace-product-image').click();
+        await expect(page.getByTestId('media-placeholder')).toBeVisible();
+        await expect(page.getByTestId('product-image-alt-input')).toBeHidden();
+
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+        expect(editorState.root.children[0].productImageSrc).toEqual('');
+        expect(editorState.root.children[0].productImageAlt).toEqual('');
+    });
+
+    test('keeps the caret position while editing alt text', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        await page.getByTestId('product-image-alt-toggle').click();
+        const altInput = page.getByTestId('product-image-alt-input');
+        await altInput.fill('camera on a table');
+
+        // move the caret to the start and type: each character must land at the caret
+        await page.keyboard.press('Home');
+        await page.keyboard.type('A ');
+
+        await expect(altInput).toHaveValue('A camera on a table');
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+        expect(editorState.root.children[0].productImageAlt).toEqual('A camera on a table');
+    });
+
+    test('can toggle and change the rating on an existing product without leaving edit mode', async function () {
+        const state = {root: {children: [
+            {type: 'paragraph', version: 1, children: [{type: 'text', version: 1, text: 'Introduction', format: 0, detail: 0, mode: 'normal', style: ''}], format: '', indent: 0, direction: null},
+            {type: 'product', version: 1, productTitle: 'Existing product', productRatingEnabled: false, productStarRating: 5}
+        ], type: 'root', version: 1, format: '', indent: 0, direction: null}};
+        await initialize({page, uri: `/#/?content=${encodeURIComponent(JSON.stringify(state))}`});
+        // Some host SVGs include global class rules; rating stars must not inherit them.
+        await page.addStyleTag({content: '.a { fill: none; stroke: currentColor; }'});
+        const card = page.locator('[data-kg-card="product"]');
+        await card.click();
+        await page.getByTestId('edit-product-card').click();
+        await page.getByTestId('tab-visibility').click();
+        await page.getByTestId('tab-content').click();
+        const toggle = page.getByTestId('product-rating-toggle');
+        await toggle.click();
+        await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+        await expect(toggle).toBeChecked();
+        const stars = page.getByTestId('product-stars').getByRole('button');
+        await stars.nth(2).click();
+        await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+        await expect.poll(async () => JSON.parse(await getEditorStateJSON(page)).root.children[1].productStarRating).toBe(3);
+        const activeFill = await stars.nth(2).locator('path').evaluate(path => getComputedStyle(path).fill);
+        const inactiveFill = await stars.nth(3).locator('path').evaluate(path => getComputedStyle(path).fill);
+        expect(activeFill).not.toBe('none');
+        expect(activeFill).not.toBe(inactiveFill);
+        await stars.nth(0).click();
+        await expect.poll(async () => JSON.parse(await getEditorStateJSON(page)).root.children[1].productStarRating).toBe(1);
+        await toggle.click();
+        await expect(page.getByTestId('product-stars')).toBeHidden();
+        await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+        await toggle.click();
+        const saved = await getEditorStateJSON(page);
+        await initialize({page, uri: `/#/?content=${encodeURIComponent(saved)}`});
+        const restored = JSON.parse(await getEditorStateJSON(page)).root.children[1];
+        expect(restored.productRatingEnabled).toBe(true);
+        expect(restored.productStarRating).toBe(1);
+    });
+
     test('can show/hide rating starts if rating enabled/disabled', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'product'});
@@ -305,24 +428,30 @@ test.describe('Product card', async () => {
                     </div>
                     <div>
                         <div data-kg-settings-panel="true" draggable="true">
-                            <label>
-                                <div><div>Rating</div></div>
-                                <div>
-                                    <label id="product-rating-toggle">
-                                        <input type="checkbox" />
-                                        <div></div>
-                                    </label>
-                                </div>
-                            </label>
-                            <label>
-                                <div><div>Button</div></div>
-                                <div>
-                                    <label id="product-button-toggle">
-                                        <input type="checkbox" />
-                                        <div></div>
-                                    </label>
-                                </div>
-                            </label>
+                            <div>
+                                <button type="button">Content</button>
+                                <button type="button">Visibility</button>
+                            </div>
+                            <div>
+                                <label>
+                                    <div><div>Rating</div></div>
+                                    <div>
+                                        <label id="product-rating-toggle">
+                                            <input type="checkbox" />
+                                            <div></div>
+                                        </label>
+                                    </div>
+                                </label>
+                                <label>
+                                    <div><div>Button</div></div>
+                                    <div>
+                                        <label id="product-button-toggle">
+                                            <input type="checkbox" />
+                                            <div></div>
+                                        </label>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -445,7 +574,7 @@ test.describe('Product card', async () => {
                     <div>
                         <div>
                             <img
-                                alt="Product thumbnail"
+                                alt=""
                                 src="/content/images/2022/11/koenig-lexical.jpg" />
                         </div>
                         <div>
@@ -538,7 +667,7 @@ test.describe('Product card', async () => {
                     <div>
                         <div>
                             <img
-                                alt="Product thumbnail"
+                                alt=""
                                 src="/content/images/2022/11/koenig-lexical.jpg" />
                         </div>
                         <div>
@@ -674,24 +803,30 @@ test.describe('Product card', async () => {
                     </div>
                     <div>
                         <div data-kg-settings-panel="true" draggable="true">
-                            <label>
-                                <div><div>Rating</div></div>
-                                <div>
-                                    <label id="product-rating-toggle">
-                                        <input type="checkbox" />
-                                        <div></div>
-                                    </label>
-                                </div>
-                            </label>
-                            <label>
-                                <div><div>Button</div></div>
-                                <div>
-                                    <label id="product-button-toggle">
-                                        <input type="checkbox" />
-                                        <div></div>
-                                    </label>
-                                </div>
-                            </label>
+                            <div>
+                                <button type="button">Content</button>
+                                <button type="button">Visibility</button>
+                            </div>
+                            <div>
+                                <label>
+                                    <div><div>Rating</div></div>
+                                    <div>
+                                        <label id="product-rating-toggle">
+                                            <input type="checkbox" />
+                                            <div></div>
+                                        </label>
+                                    </div>
+                                </label>
+                                <label>
+                                    <div><div>Button</div></div>
+                                    <div>
+                                        <label id="product-button-toggle">
+                                            <input type="checkbox" />
+                                            <div></div>
+                                        </label>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

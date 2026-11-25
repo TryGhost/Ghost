@@ -2,7 +2,6 @@
 import chalk from 'chalk';
 import { DateTime } from 'luxon';
 import { z } from 'zod';
-// @ts-expect-error This module lacks type definitions.
 import prettyCli from '@tryghost/pretty-cli';
 // @ts-expect-error This module lacks type definitions.
 import inquirer from 'inquirer';
@@ -49,9 +48,7 @@ async function main() {
   const { default: db } = await import('../../ghost/core/server/data/db/index.js');
   const knex = db.knex;
   try {
-    const { default: schema } =
-      // @ts-expect-error Core's JavaScript schema has no type declarations.
-      await import('../../ghost/core/server/data/schema/index.js');
+    const schema = await import('../../ghost/core/server/data/schema/index.ts');
     if (!argv.offset) {
       const point = await knex(datum.table)
         .max(datum.column, { as: datum.column })
@@ -61,7 +58,7 @@ async function main() {
         return;
       }
       argv.offset = Math.floor(
-        DateTime.utc().diff(DateTime.fromJSDate(point.created_at), 'days').days,
+        DateTime.utc().diff(DateTime.fromJSDate(point.created_at, { zone: 'utc' }), 'days').days,
       );
     }
     const dateOffset = argv.offset;

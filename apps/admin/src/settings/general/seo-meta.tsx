@@ -51,12 +51,12 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
 
   return (
     <div>
-      <div className="-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-gray-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-gray-950">
+      <div className="-mx-5 -mb-5 overflow-hidden rounded-b-card bg-gray-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-gray-950">
         <div className="-mt-4 mb-2 text-sm text-gray-500 uppercase dark:text-gray-800">Preview</div>
         <div className="rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-gray-950">
           <div className="mt-3 flex items-center">
             <div>
-              <GoogleLogo className="mr-7 h-7" />
+              <GoogleLogo className="mr-7 h-7" title="Google" />
             </div>
             <div className="grow">
               <div className="flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-gray-900">

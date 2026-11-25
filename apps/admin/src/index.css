@@ -33,6 +33,47 @@ body {
   margin: 0;
 }
 
+/* A single diagonal reflection on interaction. Paint only the decoration inside
+   the rounded card; clipping the banner itself would crop its outer glow. */
+.sidebar-whats-new-banner::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    135deg,
+    transparent 35%,
+    color-mix(in oklab, var(--color-white) 18%, transparent) 50%,
+    transparent 65%
+  );
+  background-size: 300% 300%;
+  background-position: 100% 100%;
+  opacity: 0;
+  pointer-events: none;
+  content: '';
+}
+
+@keyframes sidebar-banner-shine {
+  0% {
+    background-position: 100% 100%;
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 0% 0%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-whats-new-banner:is(:hover, :focus-within)::after {
+    animation: sidebar-banner-shine 900ms var(--ease-standard) both;
+  }
+}
+
 /* The editor settings panel's motion. `--editor-settings-progress` on the editor
    shell is only ever 0 or 1; each element that moves with the panel transitions
    its own property, named in brackets (`editor-settings-motion-[width]`), on this
@@ -48,7 +89,7 @@ body {
   }
 }
 
-/* The editor's chrome while the writer types (admin7EditorImprovements): each
+/* The editor's chrome while the writer types: each
    piece carries `data-writing-focus` and fades out, keeping its place so the
    document never moves. Hidden controls take no pointer input but stay
    focusable; focusing one brings the chrome back. */
@@ -207,7 +248,7 @@ body {
   font-variation-settings: normal;
 }
 
-/* The writer's editor font (admin7EditorImprovements), set as `data-editor-font`
+/* The writer's editor font, set as `data-editor-font`
    on the editor. Koenig reads the --kg-font-* variables for the body and its
    headings; the title and excerpt read the --editor-display-* ones. Serif sets
    nothing, so the editor keeps its own typography. Sans sets the body in Inter,
@@ -247,7 +288,7 @@ body {
   --editor-display-tracking-scale: 0;
 }
 
-/* Shared Koenig wrappers must retain their layout without Ember styles. */
+/* Koenig's shared editor wrapper ships no layout of its own, so Admin sets it here. */
 .koenig-react-editor {
   max-width: 740px;
   margin: 0 auto;
@@ -265,15 +306,6 @@ body {
 
 .dark .shade .gh-loading-orb {
   filter: invert(100%);
-}
-
-/* Legacy utility compatibility (Spirit/Tachyons-style percentages). */
-.w-100 {
-  width: 100%;
-}
-
-.h-100 {
-  height: 100%;
 }
 
 /* Settings' raw h1-h5 still expect the 1.25em admin-x heading line-height; Shade's base gives 1.5.
@@ -683,5 +715,12 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
 @keyframes screen-transition-mobile-nav-in {
   from {
     transform: translateY(100%);
+  }
+}
+
+/* Mobile hardening shares the page gutter without changing excluded surfaces. */
+@media (width < 1024px) {
+  [data-admin7-mobile='true'] .mobile-page-spacing {
+    --page-gutter: 16px;
   }
 }

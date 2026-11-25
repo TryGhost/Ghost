@@ -1,6 +1,7 @@
 import ObjectID from 'bson-objectid';
-import { Knex } from 'knex';
-import { IdentityTokenService } from '../identity-tokens/identity-token-service';
+import type { Knex } from 'knex';
+import type { GhostLogger } from '@tryghost/logging';
+import type { IdentityTokenService } from '../identity-tokens/identity-token-service';
 
 type ExpectedWebhook = {
   event: string;
@@ -9,22 +10,16 @@ type ExpectedWebhook = {
   secret: string;
 };
 
-interface Logger {
-  info(message: string): void;
-  warn(message: string): void;
-  error(message: string): void;
-}
-
 export class ActivityPubService {
   private knex: Knex;
   private siteUrl: URL;
-  private logging: Logger;
+  private logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   private identityTokenService: IdentityTokenService;
 
   constructor(
     knex: Knex,
     siteUrl: URL,
-    logging: Logger,
+    logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>,
     identityTokenService: IdentityTokenService,
   ) {
     this.knex = knex;
@@ -62,10 +57,14 @@ export class ActivityPubService {
     ];
   }
 
-  async checkWebhookState(expectedWebhooks: ExpectedWebhook[], integration: { id: string }) {
+  async checkWebhookState(
+    expectedWebhooks: ExpectedWebhook[],
+    integration: { id: string },
+    knex: Knex = this.knex,
+  ) {
     this.logging.info(`Checking ActivityPub Webhook state`);
 
-    const webhooks = await this.knex
+    const webhooks = await knex
       .select('*')
       .from('webhooks')
       .where('integration_id', '=', integration.id);
@@ -174,32 +173,37 @@ export class ActivityPubService {
     }
 
     const expectedWebhooks = this.getExpectedWebhooks(secret);
-    const isInCorrectState = await this.checkWebhookState(expectedWebhooks, integration);
+    // Lock the integration's row so concurrent runs can't both replace the webhooks
+    await this.knex.transaction(async (trx) => {
+      await trx('integrations').where('id', '=', integration.id).forUpdate().first('id');
 
-    if (isInCorrectState) {
-      this.logging.info(`ActivityPub webhooks in correct state`);
-      return;
-    }
+      const isInCorrectState = await this.checkWebhookState(expectedWebhooks, integration, trx);
 
-    this.logging.info(
-      `ActivityPub webhooks in incorrect state, deleting all of them and starting fresh`,
-    );
-    await this.knex.del().from('webhooks').where('integration_id', '=', integration.id);
+      if (isInCorrectState) {
+        this.logging.info(`ActivityPub webhooks in correct state`);
+        return;
+      }
 
-    const webhooksToInsert = expectedWebhooks.map((expectedWebhook) => {
-      return {
-        id: new ObjectID().toHexString(),
-        event: expectedWebhook.event,
-        target_url: expectedWebhook.target_url.href,
-        api_version: expectedWebhook.api_version,
-        name: `ActivityPub ${expectedWebhook.event} Webhook`,
-        secret: secret,
-        integration_id: integration.id,
-        created_at: this.knex.raw('current_timestamp'),
-      };
+      this.logging.info(
+        `ActivityPub webhooks in incorrect state, deleting all of them and starting fresh`,
+      );
+      await trx.del().from('webhooks').where('integration_id', '=', integration.id);
+
+      const webhooksToInsert = expectedWebhooks.map((expectedWebhook) => {
+        return {
+          id: new ObjectID().toHexString(),
+          event: expectedWebhook.event,
+          target_url: expectedWebhook.target_url.href,
+          api_version: expectedWebhook.api_version,
+          name: `ActivityPub ${expectedWebhook.event} Webhook`,
+          secret: secret,
+          integration_id: integration.id,
+          created_at: trx.raw('current_timestamp'),
+        };
+      });
+
+      await trx.insert(webhooksToInsert).into('webhooks');
     });
-
-    await this.knex.insert(webhooksToInsert).into('webhooks');
   }
 
   async disableSite() {

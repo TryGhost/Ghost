@@ -4,7 +4,6 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { inputGroupVariants } from '@/components/ui/input-group-variants';
-import { useShade } from '@/providers/shade-context';
 
 export interface InputGroupProps
   extends React.ComponentProps<'div'>, VariantProps<typeof inputGroupVariants> {}
@@ -47,16 +46,13 @@ function InputGroupAddon({
   align = 'inline-start',
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
-  const { isAdmin7 } = useShade();
   return (
     <div
       className={cn(
         inputGroupAddonVariants({ align }),
-        isAdmin7 &&
-          align === 'inline-end' &&
+        align === 'inline-end' &&
           'has-[>button[data-size$=xs]]:mr-0 has-[>button[data-size$=xs]]:pr-[calc((var(--control-height)-24px)/2-1px)]',
-        isAdmin7 &&
-          align === 'inline-start' &&
+        align === 'inline-start' &&
           'has-[>button[data-size$=xs]]:ml-0 has-[>button[data-size$=xs]]:pl-[calc((var(--control-height)-24px)/2-1px)]',
         className,
       )}
@@ -96,15 +92,13 @@ const InputGroupButton = React.forwardRef<
   HTMLButtonElement,
   Omit<React.ComponentProps<typeof Button>, 'size'> & VariantProps<typeof inputGroupButtonVariants>
 >(({ className, type = 'button', variant = 'ghost', size = 'xs', ...props }, ref) => {
-  const { isAdmin7 } = useShade();
   return (
     <Button
       ref={ref}
       className={cn(
         inputGroupButtonVariants({ size }),
-        isAdmin7 ? (size === 'xs' ? 'text-sm!' : 'text-(length:--text-control)') : 'text-control',
-        isAdmin7 &&
-          (size === 'xs' || size === 'icon-xs') &&
+        size === 'xs' ? 'text-sm!' : 'text-(length:--text-control)',
+        (size === 'xs' || size === 'icon-xs') &&
           'data-[control-shape=rounded]:rounded-[calc(var(--radius-control)-(var(--control-height)-24px)/2)]',
         className,
       )}
@@ -134,7 +128,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<
     <input
       ref={ref}
       className={cn(
-        'flex h-(--control-height) w-full flex-1 border-0 bg-transparent px-3 py-1 text-control outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
+        'flex h-(--control-height) w-full flex-1 border-0 bg-transparent px-3 py-1 text-(length:--text-field) outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
         className,
       )}
       data-slot="input-group-control"
@@ -149,7 +143,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
     <textarea
       ref={ref}
       className={cn(
-        'min-h-[80px] w-full flex-1 resize-none border-0 bg-transparent p-3 text-base outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
+        'min-h-[80px] w-full flex-1 resize-none border-0 bg-transparent p-3 text-(length:--text-field) outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
         className,
       )}
       data-slot="input-group-control"

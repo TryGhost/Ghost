@@ -13,13 +13,19 @@ export const appsScreen = {
   notAllowedDialog: () => page.getByTestId(sel.appInstallNotAllowedDialog),
   developmentBadge: () =>
     page.getByTestId(sel.appInstallDialog).getByTestId(sel.appDevelopmentBadge),
+  unverifiedDeveloperBadge: () => page.getByTestId(sel.appUnverifiedDeveloperBadge),
   accessIndicator: () => page.getByTestId(sel.accessIndicator),
   accessItems: () => page.getByTestId(sel.accessItem),
+  noAccess: () => page.getByTestId(sel.appNoAccess),
+  // An update's new scopes, marked where the review lists them, and what it no longer requires.
+  newAccess: () => page.getByTestId(sel.accessNew),
+  removedAccess: () => page.getByTestId(sel.appAccessRemoved),
   capabilities: () => page.getByTestId(sel.appCapability),
+  dataAccessedBy: () => page.getByTestId(sel.appDataAccessedBy),
   notice: () => page.getByTestId(sel.appInstallNotice),
-  moveWarning: () => page.getByTestId(sel.appInstallMoveWarning),
   problems: () => page.getByTestId(sel.appInstallProblems),
   unreachable: () => page.getByTestId(sel.appInstallUnreachable),
+  unconfirmed: () => page.getByTestId(sel.appInstallUnconfirmed),
   changes: () => page.getByTestId(sel.appManifestChange),
 
   sidebarLink: () =>
@@ -35,13 +41,23 @@ export const appsScreen = {
   menuItem: (name: string) => page.getByRole('menuitem', { name }),
   detailsMenuItem: () => page.getByRole('menuitem', { name: sel.detailsMenuItem }),
   details: () => page.getByTestId(sel.appDetails),
+  detailsActions: () => button(sel.detailsActionsButton),
+  detailsTitle: () => page.getByTestId('app-details-title'),
   appPage: () => page.getByTestId(sel.appPage),
   frame: () => page.getByTestId(sel.appFrame),
+  footer: () => page.getByTestId(sel.appFooter),
+  content: () => page.getByTestId(sel.appContent),
+  footerDevelopmentBadge: () =>
+    page.getByTestId(sel.appFooter).getByTestId(sel.appDevelopmentBadge),
   notResponding: () => page.getByTestId(sel.appNotResponding),
+  unavailable: () => page.getByTestId(sel.appUnavailable),
   notInstalled: () => page.getByTestId(sel.appNotInstalled),
   notFramed: () => page.getByTestId(sel.appNotFramed),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),
   historyEntries: () => page.getByTestId(sel.appHistoryEntry),
+  /** Opens a history entry to show what it changed in the app's access. */
+  openHistoryEntry: (index: number) =>
+    page.getByTestId(sel.appHistoryEntry).nth(index).getByRole('button').click(),
   uninstallDialog: () => page.getByTestId(sel.appUninstallDialog),
   integrationKeyNote: () => page.getByTestId(sel.appUninstallIntegrationKeyNote),
 

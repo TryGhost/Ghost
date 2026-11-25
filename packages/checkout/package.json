@@ -21,6 +21,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./field-ports": {
+      "source": "./src/field-ports.ts",
+      "types": "./build/field-ports.d.ts",
+      "default": "./build/field-ports.js"
     }
   },
   "scripts": {
@@ -33,7 +38,8 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@tryghost/metafield-types": "workspace:*"
+    "@tryghost/metafield-types": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",

@@ -1,5 +1,4 @@
 import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
-import assert from 'node:assert/strict';
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 
@@ -22,16 +21,16 @@ describe('SettingsBreadcrumbs', () => {
     const back = screen.getByRole('button', { name: 'Back' });
     const ancestor = screen.getByRole('button', { name: 'Offers' });
 
-    assert.equal(back.getAttribute('type'), 'button');
-    assert.ok(back.classList.contains('md:hidden'));
-    assert.equal(ancestor.getAttribute('type'), 'button');
-    assert.equal(screen.getByText('Black Friday').getAttribute('aria-current'), 'page');
-    assert.ok(container.querySelector('.custom-class'));
+    expect(back.getAttribute('type')).toBe('button');
+    expect(back.classList.contains('md:hidden')).toBeTruthy();
+    expect(ancestor.getAttribute('type')).toBe('button');
+    expect(screen.getByText('Black Friday').getAttribute('aria-current')).toBe('page');
+    expect(container.querySelector('.custom-class')).toBeTruthy();
 
     fireEvent.click(back);
     fireEvent.click(ancestor);
 
-    assert.equal(handleBack.mock.calls.length, 2);
-    assert.equal(handleSubmit.mock.calls.length, 0);
+    expect(handleBack.mock.calls.length).toBe(2);
+    expect(handleSubmit.mock.calls.length).toBe(0);
   });
 });

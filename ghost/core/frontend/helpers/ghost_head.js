@@ -27,6 +27,7 @@ const debug = require('@tryghost/debug')('ghost_head');
 const { styles: templateStyles } = require('./tpl/styles');
 const { getFrontendAppConfig, getDataAttributes } = require('../utils/frontend-apps');
 const labs = require('../../shared/labs');
+const { memoize } = require('../../shared/memoize');
 const { getMarkdownUrl } = require('../services/llms/markdown');
 const { isPurchasableEntry, isMachinePaymentsEnabled } = require('../../shared/machine-payments');
 
@@ -35,6 +36,46 @@ const { isPurchasableEntry, isMachinePaymentsEnabled } = require('../../shared/m
  */
 
 const { get: getMetaData, getAssetUrl } = metaData;
+
+// Parse one declaration and render only its serialized form. This preserves
+// CSS expressions without allowing extra declarations or unfinished syntax to
+// consume the surrounding style block. Cache successes and failures by value.
+const serializeAccentColor = memoize(
+  (value) => {
+    if (typeof value !== 'string' || !value || value.includes('<')) {
+      return null;
+    }
+
+    // Hex is the common case and safe verbatim; skip loading css-tree for it.
+    if (/^#[0-9a-f]{3,8}$/i.test(value)) {
+      return `--ghost-accent-color:${value}`;
+    }
+
+    try {
+      // Lazy: css-tree is heavy and only needed for non-hex values.
+      const cssParser = require('css-tree');
+      const declaration = cssParser.parse(`--ghost-accent-color:${value}`, {
+        context: 'declaration',
+        parseCustomProperty: true,
+        onParseError(error) {
+          throw error;
+        },
+      });
+      if (cssParser.find(declaration, (node) => node.type === 'Raw')) {
+        return null;
+      }
+
+      const css = cssParser.generate(declaration);
+      // Serialization can decode CSS escapes into HTML delimiters. Style
+      // elements are HTML raw text, so CSS parsing alone cannot protect them.
+      return css.includes('<') ? null : css;
+    } catch {
+      return null;
+    }
+  },
+  (value) => (typeof value === 'string' ? value : ''),
+  { max: 32 },
+);
 
 function isMachinePaymentsFeatureEnabled() {
   return isMachinePaymentsEnabled({
@@ -301,21 +342,20 @@ function getTinybirdTrackerScript(dataRoot) {
   const token = localEnabled ? localConfig.token : statsConfig.token;
   const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
-  const tbParams = _.map(
-    {
-      site_uuid: settingsCache.get('site_uuid'),
-      post_uuid: dataRoot.post?.uuid,
-      post_type: dataRoot.context?.includes('post')
-        ? 'post'
-        : dataRoot.context?.includes('page')
-          ? 'page'
-          : null,
-      member_uuid: dataRoot.member?.uuid,
-      member_status: dataRoot.member?.status,
-      gift_link: dataRoot._giftLink || '',
-    },
-    (value, key) => `tb_${key}="${value}"`,
-  ).join(' ');
+  const tbParams = Object.entries({
+    site_uuid: settingsCache.get('site_uuid'),
+    post_uuid: dataRoot.post?.uuid,
+    post_type: dataRoot.context?.includes('post')
+      ? 'post'
+      : dataRoot.context?.includes('page')
+        ? 'page'
+        : null,
+    member_uuid: dataRoot.member?.uuid,
+    member_status: dataRoot.member?.status,
+    gift_link: dataRoot._giftLink || '',
+  })
+    .map(([key, value]) => `tb_${key}="${value}"`)
+    .join(' ');
 
   return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" ${token && env !== 'production' ? `data-token="${token}"` : ''} ${tbParams}></script>`;
 }
@@ -424,6 +464,7 @@ module.exports = async function ghost_head(options) {
           head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
           head.push(writeMetaTag('referrer', 'same-origin', 'name'));
         } else {
+          head.push(writeMetaTag('robots', 'max-image-preview:large', 'name'));
           head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
         }
       }
@@ -510,9 +551,9 @@ module.exports = async function ghost_head(options) {
       }
     }
 
-    if (options.data.site.accent_color) {
-      const accentColor = escapeExpression(options.data.site.accent_color);
-      const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
+    const accentDeclaration = serializeAccentColor(options.data.site.accent_color);
+    if (accentDeclaration) {
+      const styleTag = `<style>:root {${accentDeclaration};}</style>`;
       const existingScriptIndex = _.findLastIndex(
         head,
         (str) => typeof str === 'string' && /<\/(style|script)>/.test(str),

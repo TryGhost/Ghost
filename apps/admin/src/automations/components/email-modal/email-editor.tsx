@@ -15,7 +15,7 @@ import { useEmailLinkSuggestions } from './use-link-suggestions';
 import { useFocusContext } from '@tryghost/shade/app';
 
 export interface EmailEditorProps {
-  value?: string;
+  initialLexical: string;
   placeholder?: string;
   className?: string;
   onChange?: (value: string) => void;
@@ -108,10 +108,17 @@ const baseEditorStyles = cn(
   '[&_.koenig-lexical-cta-label_p]:!text-[12.5px]',
 );
 
-const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className, onChange }) => {
+const EmailEditor: React.FC<EmailEditorProps> = ({
+  initialLexical,
+  placeholder,
+  className,
+  onChange,
+}) => {
   const editorAPIRef = useRef<KoenigAPI | null>(null);
   // Capture the initial value once — the editor owns its own state after mount
-  const initialEditorState = useRef(value);
+  const initialEditorState = useRef(initialLexical);
+  const normalizedLexical = useRef(initialLexical);
+  const hasBeenFocused = useRef(false);
   const { darkMode } = useFocusContext();
   const { unsplashConfig } = useFramework();
   const pinturaConfig = usePinturaConfig();
@@ -159,13 +166,20 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
     editorAPIRef.current = api as KoenigAPI | null;
   }, []);
 
-  // Koenig's onChange passes the Lexical state as a plain object,
-  // but the API expects a JSON string
+  // Koenig normalizes the initial document before it can be focused. Keep that
+  // baseline local: opening the editor or undoing back to it must not dirty the
+  // automation. Only user edits cross this adapter's onChange boundary.
   const handleChange = useCallback(
     (data: unknown) => {
-      if (onChange && data && typeof data === 'object') {
-        onChange(JSON.stringify(data));
+      if (!data || typeof data !== 'object') {
+        return;
       }
+      const lexical = JSON.stringify(data);
+      if (!hasBeenFocused.current) {
+        normalizedLexical.current = lexical;
+        return;
+      }
+      onChange?.(lexical === normalizedLexical.current ? initialEditorState.current : lexical);
     },
     [onChange],
   );
@@ -185,7 +199,14 @@ const EmailEditor: React.FC<EmailEditorProps> = ({ value, placeholder, className
   };
 
   return (
-    <div className="h-full" onKeyDown={handleKeyDown} onMouseDown={handleEditorMouseDown}>
+    <div
+      className="h-full"
+      onFocus={() => {
+        hasBeenFocused.current = true;
+      }}
+      onKeyDown={handleKeyDown}
+      onMouseDown={handleEditorMouseDown}
+    >
       <EditorErrorBoundary>
         <Suspense fallback={<LoadingIndicator size="lg" />}>
           <div className={cn('koenig-react-editor w-full', baseEditorStyles, className)}>

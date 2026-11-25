@@ -13,18 +13,8 @@ const Role = ghostBookshelf.Model.extend(
   {
     tableName: 'roles',
 
-    relationships: ['permissions'],
-
-    relationshipBelongsTo: {
-      permissions: 'permissions',
-    },
-
     users: function users() {
       return this.belongsToMany('User');
-    },
-
-    permissions: function permissions() {
-      return this.belongsToMany('Permission');
     },
 
     api_keys: function apiKeys() {
@@ -65,7 +55,7 @@ const Role = ghostBookshelf.Model.extend(
     ) {
       // If we passed in an id instead of a model, get the model
       // then check the permissions
-      if (_.isNumber(roleModelOrId) || _.isString(roleModelOrId)) {
+      if (typeof roleModelOrId === 'number' || typeof roleModelOrId === 'string') {
         // Get the actual role model
         return this.findOne({ id: roleModelOrId, status: 'all' }).then((foundRoleModel) => {
           if (!foundRoleModel) {

@@ -7,8 +7,11 @@ import foreach from '../../../../core/frontend/helpers/foreach';
 import { assertExists, assertObjectMatches } from '../../../utils/assertions';
 // @ts-expect-error This module lacks type definitions.
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 describe('{{#foreach}} helper', function () {
+  restoreHandlebarsAfterSuite();
+
   type IterationData = {
     key: string | number;
     index: number;

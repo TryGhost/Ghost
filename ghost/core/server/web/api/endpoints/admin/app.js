@@ -5,6 +5,7 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const { checkVersionMatch } = require('../../middleware/check-version-match');
 const { parseQueryBooleans } = require('../../middleware/parse-query-booleans');
 const shared = require('../../../shared');
+const auth = require('../../../../auth');
 const express = require('../../../../../shared/express');
 const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
@@ -18,6 +19,15 @@ module.exports = function setupApiApp() {
 
   // API middleware
 
+  // Admin API shouldn't be cached
+  apiApp.use(shared.middleware.cacheControl('private'));
+
+  // Before body parsing: Better Auth's routes read the body with their own limit
+  if (auth.isBetterAuth) {
+    const { betterAuthRouter } = require('./better-auth');
+    apiApp.use(betterAuthRouter(auth.betterAuth.service));
+  }
+
   // Body parsing
   apiApp.use(bodyParser.json({ limit: '50mb' }));
   apiApp.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
@@ -28,9 +38,6 @@ module.exports = function setupApiApp() {
   // Check version matches for API requests, depends on res.locals.safeVersion being set
   // Therefore must come after themeHandler.ghostLocals, for now
   apiApp.use(checkVersionMatch);
-
-  // Admin API shouldn't be cached
-  apiApp.use(shared.middleware.cacheControl('private'));
 
   // Routing
   apiApp.use(routes());

@@ -8,16 +8,9 @@ import { useBrowseUsers } from '../api/users';
 import { useBrowseAutomations } from '../api/automations';
 import type { EmailsResponseType } from '../api/emails';
 import { apiUrl, useFetchApi, type RequestOptions } from '../utils/api/fetch-api';
-import { HostLimitError } from '../utils/errors';
+import { LIMIT_SERVICE_ERRORS } from '../utils/limit-service-errors';
 
 import { LimitService, type LimitConfig } from '@tryghost/limit-service';
-
-// limit-service constructs its misconfiguration error with a single options object
-class IncorrectUsageError extends Error {
-  constructor({ message }: { message: string }) {
-    super(message);
-  }
-}
 
 export interface Limiter {
   isLimited: (limitName: string) => boolean;
@@ -30,7 +23,7 @@ export interface Limiter {
 export interface UseLimiterOptions {
   /**
    * The limits this caller checks. Others are not loaded, and the staff lists are only read
-   * when `staff` is named. Pass a referentially stable array: it is a memo dependency.
+   * when `staff` or `allStaff` is named. Pass a referentially stable array: it is a memo dependency.
    */
   limits?: readonly string[];
   /** Applied to the count reads the limiter makes itself. */
@@ -45,11 +38,12 @@ function countEmailRecipients(emails: EmailsResponseType['emails']): number {
 export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions = {}): Limiter => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
-  const wantsStaff = !wanted || wanted.includes('staff');
-  const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers({
+  const wantsStaff = !wanted || wanted.includes('staff') || wanted.includes('allStaff');
+  // Empty array defaults would recreate the limiter on every render for disabled queries.
+  const { data: { users } = {}, isLoading: usersLoading } = useBrowseUsers({
     enabled: wantsStaff,
   });
-  const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites({
+  const { data: { invites } = {}, isLoading: invitesLoading } = useBrowseInvites({
     enabled: wantsStaff,
   });
   const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles({
@@ -106,6 +100,10 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     // limit that throws, so without one they're skipped to keep the rest working
     const limits = Object.fromEntries(
       Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
+        // Invitation email usage is authoritative on the server, not the pending-invite list.
+        if (name === 'inviteEmails') {
+          return false;
+        }
         if (wanted && !wanted.includes(name)) {
           return false;
         }
@@ -122,11 +120,11 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       limits.staff.currentCountQuery = () => {
         // Keep the existing first-page behavior for this move. Full pagination is tracked in
         // PLA-369 because excluded users/invites can push countable staff onto later pages.
-        const staffUsers = users.filter(
+        const staffUsers = (users ?? []).filter(
           (user) =>
             user.status !== 'inactive' && !user.roles.some((role) => role.name === 'Contributor'),
         );
-        const staffInvites = invites.filter((invite) => {
+        const staffInvites = (invites ?? []).filter((invite) => {
           const role = roles?.find(({ id }) => id === invite.role_id);
           return role?.name !== 'Contributor';
         });
@@ -177,14 +175,16 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       };
     }
 
+    if (limits.allStaff) {
+      limits.allStaff.currentCountQuery = () =>
+        Promise.resolve((users?.length ?? 0) + (invites?.length ?? 0));
+    }
+
     limiter.loadLimits({
       limits,
       subscription,
       helpLink,
-      errors: {
-        HostLimitError,
-        IncorrectUsageError,
-      },
+      errors: LIMIT_SERVICE_ERRORS,
     });
 
     return {

@@ -94,6 +94,8 @@ export interface ChipPickerProps<TOption, TChip> {
   inputId?: string;
   describedBy?: string;
   invalid?: boolean;
+  /** Takes nothing while it holds: the list doesn't open, and no chip can be added or removed. */
+  disabled?: boolean;
   maxLength?: number;
   testIds?: ChipPickerTestIds;
 }
@@ -167,6 +169,7 @@ export function ChipPicker<TOption, TChip>({
   inputId,
   describedBy,
   invalid,
+  disabled = false,
   maxLength,
   testIds,
 }: ChipPickerProps<TOption, TChip>) {
@@ -241,6 +244,9 @@ export function ChipPicker<TOption, TChip>({
   };
 
   const reveal = () => {
+    if (disabled) {
+      return;
+    }
     setOpen(true);
     onOpenChange?.(true);
   };
@@ -423,7 +429,7 @@ export function ChipPicker<TOption, TChip>({
     >
       <div
         ref={refs.setReference}
-        className={cn(tokenFieldClasses.field, 'pr-8')}
+        className={cn(tokenFieldClasses.field, 'pr-8', disabled && 'cursor-not-allowed opacity-50')}
         data-testid={testIds?.field}
         onClick={() => {
           input.current?.focus();
@@ -444,6 +450,7 @@ export function ChipPicker<TOption, TChip>({
               <SortableChip
                 key={getKey(chip)}
                 className={chipClassName?.(chip)}
+                disabled={disabled}
                 id={getKey(chip)}
                 label={getLabel(chip)}
                 testId={testIds?.chip}
@@ -458,6 +465,7 @@ export function ChipPicker<TOption, TChip>({
             <Chip
               key={getKey(chip)}
               className={chipClassName?.(chip)}
+              disabled={disabled}
               label={getLabel(chip)}
               testId={testIds?.chip}
               title={getChipTitle?.(chip)}
@@ -482,6 +490,7 @@ export function ChipPicker<TOption, TChip>({
           aria-label={inputId ? undefined : inputLabel}
           className={tokenFieldClasses.input}
           data-testid={testIds?.input}
+          disabled={disabled}
           id={inputId}
           maxLength={maxLength}
           placeholder={selected.length === 0 ? placeholder : ''}
@@ -590,6 +599,7 @@ interface ChipProps {
   label: string;
   variant: BadgeProps['variant'];
   testId?: string;
+  disabled?: boolean;
   onRemove: () => void;
   setRef?: (element: HTMLElement | null) => void;
   listeners?: DraggableSyntheticListeners;
@@ -602,6 +612,7 @@ function Chip({
   label,
   variant,
   testId,
+  disabled,
   onRemove,
   setRef,
   listeners,
@@ -610,23 +621,12 @@ function Chip({
   title,
 }: ChipProps) {
   return (
-    // Wraps rather than truncates, so a long name stays whole once it is picked.
-    // The fixed radius is half a one-line chip's height: one line still reads as
-    // a pill, and a taller chip keeps soft corners rather than turning oval. The
-    // fixed leading is what levels the × with the first line.
-    <Badge
-      className={cn(
-        tokenFieldClasses.chip,
-        'h-auto rounded-[12px] bg-secondary py-1 text-left leading-4 whitespace-normal',
-        className,
-      )}
-      variant={variant}
-      asChild
-    >
+    <Badge className={cn(tokenFieldClasses.chip, className)} variant={variant} asChild>
       <button
         ref={setRef}
         aria-label={`Remove ${label}`}
         data-testid={testId}
+        disabled={disabled}
         style={style}
         title={title}
         type="button"

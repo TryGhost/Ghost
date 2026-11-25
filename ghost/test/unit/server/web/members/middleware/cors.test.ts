@@ -1,6 +1,5 @@
 import express from 'express';
 import request from 'supertest';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import cors from '../../../../../../core/server/web/members/middleware/cors';

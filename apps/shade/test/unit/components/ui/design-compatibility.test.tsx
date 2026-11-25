@@ -1,29 +1,42 @@
 import { expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ShadeApp } from '../../../../src/app';
+import { ShadeApp, useShade } from '../../../../src/app';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../../src/components/ui/popover';
 
-it('keeps each portaled menu in its owning design scope without changing the document', () => {
-  render(
-    <ShadeApp darkMode={false}>
-      <Popover open>
-        <PopoverTrigger>Admin 7 menu</PopoverTrigger>
-        <PopoverContent>Admin 7 content</PopoverContent>
-      </Popover>
-      <ShadeApp darkMode={false} isAdmin7={false}>
-        <Popover open>
-          <PopoverTrigger>Previous menu</PopoverTrigger>
-          <PopoverContent>Previous content</PopoverContent>
-        </Popover>
-      </ShadeApp>
-    </ShadeApp>,
-  );
+function FlagState() {
+  const { admin7Design, admin7Mobile } = useShade();
+  return <span>{`design:${admin7Design} mobile:${admin7Mobile}`}</span>;
+}
 
-  expect(screen.getByText('Admin 7 content').closest('.shade')?.getAttribute('data-admin7')).toBe(
-    'true',
-  );
-  expect(screen.getByText('Previous content').closest('.shade')?.getAttribute('data-admin7')).toBe(
-    'false',
-  );
-  expect(document.body.hasAttribute('data-admin7')).toBe(false);
-});
+it.each([false, true])(
+  'keeps independent design/mobile flags in their owning portal scopes (mobile: %s)',
+  (admin7Mobile) => {
+    render(
+      <ShadeApp admin7Mobile={admin7Mobile} darkMode={false}>
+        <Popover open>
+          <PopoverTrigger>Admin 7 menu</PopoverTrigger>
+          <PopoverContent>
+            <FlagState />
+          </PopoverContent>
+        </Popover>
+        <ShadeApp admin7Design={false} darkMode={false}>
+          <Popover open>
+            <PopoverTrigger>Previous menu</PopoverTrigger>
+            <PopoverContent>
+              <FlagState />
+            </PopoverContent>
+          </Popover>
+        </ShadeApp>
+      </ShadeApp>,
+    );
+
+    const outer = screen.getByText(`design:true mobile:${admin7Mobile}`).closest('.shade');
+    const inner = screen.getByText('design:false mobile:false').closest('.shade');
+    expect(outer?.getAttribute('data-admin7-design')).toBe('true');
+    expect(outer?.getAttribute('data-admin7-mobile')).toBe(String(admin7Mobile));
+    expect(inner?.getAttribute('data-admin7-design')).toBe('false');
+    expect(inner?.getAttribute('data-admin7-mobile')).toBe('false');
+    expect(document.body.hasAttribute('data-admin7-design')).toBe(false);
+    expect(document.body.hasAttribute('data-admin7-mobile')).toBe(false);
+  },
+);

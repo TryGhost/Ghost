@@ -1,5 +1,4 @@
-import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { useShade } from '@tryghost/shade/app';
+import { type Filter, FilterBar, Filters, useMobileFilters } from '@tryghost/shade/patterns';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
 import { cn } from '@tryghost/shade/utils';
@@ -8,6 +7,7 @@ import type { PostResource } from '@/posts/list/post-resource';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 
 interface PostsFiltersProps {
+  barContainer?: HTMLElement | null;
   resource: PostResource;
   filters: Filter<string>[];
   params?: Parameters<typeof usePostFilterFields>[2];
@@ -37,6 +37,7 @@ interface PostsFiltersProps {
  */
 export function PostsFilters({
   resource,
+  barContainer,
   filters,
   params,
   currentUser,
@@ -44,8 +45,8 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
-  const { isAdmin7 } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
+  const mobile = useMobileFilters();
   const hasFilters = filters.length > 0;
 
   // Pinned right: inline it would read as another chip's own X, and wrapping
@@ -53,12 +54,9 @@ export function PostsFilters({
   const trailingActions = hasFilters ? (
     <FilterBar.Actions>
       <FilterBar.Action
-        className={cn(
-          'hidden items-center lg:inline-flex',
-          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
-        )}
+        className="hidden items-center lg:inline-flex"
         type="button"
-        variant={isAdmin7 ? 'ghost' : 'outline'}
+        variant="ghost"
         onClick={() => onFiltersChange([])}
       >
         Clear
@@ -76,20 +74,22 @@ export function PostsFilters({
       gap="sm"
     >
       <Filters
-        addButton={<Filters.Trigger collapseLabel={iconOnly} />}
+        addButton={<Filters.Trigger />}
         // Each field maps to one URL param; a second chip per field
         // would sit there without being in the URL.
         allowMultiple={false}
+        barContainer={barContainer}
         // `order-last` keeps the trailing buttons after the chips;
         // `pr-40` reserves the lane the pinned actions occupy.
-        className={cn(
-          '[&>button]:order-last',
-          iconOnly ? 'w-auto' : 'w-full',
-          hasFilters && 'sm:!pr-40',
-        )}
+        className={
+          mobile
+            ? undefined
+            : cn('[&>button]:order-last', iconOnly ? 'w-auto' : 'w-full', hasFilters && 'sm:!pr-40')
+        }
         clearButton={trailingActions}
         fields={fields}
         filters={filters}
+        inlineActions={viewActions}
         keyboardShortcut="f"
         popoverAlign="start"
         showClearButton={hasFilters}

@@ -489,6 +489,60 @@ describe('Publish flow', () => {
     });
   });
 
+  it('schedules a time typed over the field', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T05:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleTime().tripleClick();
+    await userEvent.keyboard('9:30');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleTime()).toHaveValue('09:30');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T09:30:00.000Z' },
+    });
+  });
+
+  it('stays on the options while a typed time is refused', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleTime().tripleClick();
+    await userEvent.keyboard('2754');
+    // Left first: the message's row moves Continue, so a click from the field misses it here.
+    await userEvent.tab();
+
+    await expect
+      .element(publishScreen.scheduleTime())
+      .toHaveAccessibleDescription('Must be in format: "15:00"');
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.scheduleTime()).toHaveFocus();
+    await expect(publishScreen.confirm()).toHaveCount(0);
+
+    // An emptied field puts back the time held, which Continue then reviews.
+    await publishScreen.scheduleTime().fill('');
+    await userEvent.tab();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T20:10:00.000Z' },
+    });
+  });
+
   it('moves a typed past date up to the earliest time a post can be scheduled', async () => {
     await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
 
@@ -501,7 +555,7 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.scheduleTime()).toHaveValue('20:00');
   });
 
-  it('keeps the scheduled date while a typed one is refused', async () => {
+  it('stays on the options while a typed date is refused', async () => {
     const { dispatch } = await renderPublishFlow({
       now: () => new Date('2026-09-03T20:00:00.000Z'),
     });
@@ -529,6 +583,13 @@ describe('Publish flow', () => {
     expect(fields().top - radio().top).toBe(level);
     expect(message.getBoundingClientRect().left).toBe(fields().left);
 
+    // Continue takes the writer back to the date rather than past it.
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.scheduleDate()).toHaveFocus();
+    await expect(publishScreen.confirm()).toHaveCount(0);
+
+    await publishScreen.scheduleDate().fill('');
+    await userEvent.tab();
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 
@@ -654,7 +715,7 @@ describe('Publish flow', () => {
     expect(section.element().getBoundingClientRect().height).toBe(before);
   });
 
-  it('loads every page before exposing tier and label recipients', async () => {
+  it('loads every page of tiers before offering them as recipients', async () => {
     const pagination = (pageNumber: number) => ({
       page: pageNumber,
       limit: 100,
@@ -675,32 +736,230 @@ describe('Publish flow', () => {
         meta: { pagination: pagination(pageNumber) },
       };
     });
-    const labelsApi = fakeAdminEndpoint('GET', /^\/labels\/\?/, ({ url }) => {
-      const pageNumber = Number(new URL(url).searchParams.get('page') ?? '1');
-
-      return {
-        labels: [
-          pageNumber === 1
-            ? { slug: 'first-label', name: 'First label' }
-            : { slug: 'last-label', name: 'Last label' },
-        ],
-        meta: { pagination: pagination(pageNumber) },
-      };
-    });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [] });
 
     await renderPublishFlow();
     await publishScreen.setting('email-recipients').click();
     await expect.poll(() => tiersApi.requests.length).toBe(2);
-    await expect.poll(() => labelsApi.requests.length).toBe(2);
     await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
     await page.getByLabelText('Specific people').click();
     await page.getByPlaceholder('Search labels and tiers...').click();
     await expect.element(page.getByRole('option', { name: 'First tier' })).toBeInTheDocument();
     await expect.element(page.getByRole('option', { name: 'Last tier' })).toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: 'First label' })).toBeInTheDocument();
-    await expect.element(page.getByRole('option', { name: 'Last label' })).toBeInTheDocument();
     expect(new URL(tiersApi.requests[1].url).searchParams.get('page')).toBe('2');
-    expect(new URL(labelsApi.requests[1].url).searchParams.get('page')).toBe('2');
+  });
+
+  describe('with more labels than one page', () => {
+    const PAGE_SIZE = 100;
+    const allLabels = Array.from({ length: 150 }, (_, index) => ({
+      slug: `label-${index + 1}`,
+      name: `Label ${index + 1}`,
+    }));
+    const unquote = (value: string) => value.trim().replace(/^'(.*)'$/, '$1');
+
+    /**
+     * Pages labels the way Core does, honoring a name search or a slug lookup.
+     * `failPagesOnce` answers the first request for each listed page with a 500.
+     */
+    function fakePagedLabels({ failPagesOnce = [] }: { failPagesOnce?: number[] } = {}) {
+      const pagesToFail = new Set(failPagesOnce);
+
+      return fakeAdminEndpoint('GET', /^\/labels\/\?/, ({ url }) => {
+        const params = new URL(url).searchParams;
+        const pageNumber = Number(params.get('page') ?? '1');
+        if (pagesToFail.delete(pageNumber)) {
+          return new Response(JSON.stringify({ errors: [{ message: 'Labels unavailable' }] }), {
+            status: 500,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        const filter = params.get('filter') ?? '';
+        const nameSearch = filter.match(/^name:~(.*)$/);
+        const slugLookup = filter.match(/^slug:\[(.*)\]$/);
+        let matching = allLabels;
+        if (nameSearch) {
+          const term = unquote(nameSearch[1]).toLowerCase();
+          matching = allLabels.filter((label) => label.name.toLowerCase().includes(term));
+        } else if (slugLookup) {
+          const slugs = slugLookup[1].split(',').map(unquote);
+          matching = allLabels.filter((label) => slugs.includes(label.slug));
+        }
+        const pages = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
+
+        return {
+          labels: matching.slice((pageNumber - 1) * PAGE_SIZE, pageNumber * PAGE_SIZE),
+          meta: {
+            pagination: {
+              page: pageNumber,
+              limit: PAGE_SIZE,
+              pages,
+              total: matching.length,
+              next: pageNumber < pages ? pageNumber + 1 : null,
+              prev: pageNumber > 1 ? pageNumber - 1 : null,
+            },
+          },
+        };
+      });
+    }
+
+    const filtersRequested = (labelsApi: EndpointCapture) =>
+      labelsApi.requests.map((request) => new URL(request.url).searchParams.get('filter'));
+    const pagesRequested = (labelsApi: EndpointCapture) =>
+      labelsApi.requests.map((request) => new URL(request.url).searchParams.get('page'));
+
+    beforeEach(() => {
+      // A single tier is hidden, so labels are the only segments.
+      fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
+        tiers: [{ id: 'only-id', slug: 'only', name: 'Only tier', active: true }],
+      });
+    });
+
+    it('offers specific people after the first page and loads more as the list scrolls', async () => {
+      const labelsApi = fakePagedLabels();
+
+      await renderPublishFlow();
+      await publishScreen.setting('email-recipients').click();
+      await expect.element(page.getByLabelText('Specific people')).toBeInTheDocument();
+      expect(pagesRequested(labelsApi)).toEqual([null]);
+
+      await page.getByLabelText('Specific people').click();
+      await page.getByPlaceholder('Search labels and tiers...').click();
+      await expect
+        .element(page.getByRole('option', { name: 'Label 1', exact: true }))
+        .toBeInTheDocument();
+      await expect(page.getByRole('option', { name: 'Label 150' })).toHaveCount(0);
+
+      const list = page.getByRole('listbox').element();
+      list.scrollTop = list.scrollHeight;
+
+      await expect.element(page.getByRole('option', { name: 'Label 150' })).toBeInTheDocument();
+      const lastRequest = labelsApi.requests[labelsApi.requests.length - 1];
+      expect(new URL(lastRequest.url).searchParams.get('page')).toBe('2');
+    });
+
+    it('searches labels on the server as the author types', async () => {
+      const labelsApi = fakePagedLabels();
+
+      await renderPublishFlow();
+      await publishScreen.setting('email-recipients').click();
+      await page.getByLabelText('Specific people').click();
+      await page.getByPlaceholder('Search labels and tiers...').fill('Label 150');
+
+      await expect.element(page.getByRole('option', { name: 'Label 150' })).toBeInTheDocument();
+      await expect(page.getByRole('option', { name: 'Label 1', exact: true })).toHaveCount(0);
+      const search = filtersRequested(labelsApi).find((filter) => filter?.startsWith('name:~'));
+      expect(search).toContain('Label 150');
+      // The stale list stayed on screen while the search ran, so it never asked for its next page.
+      expect(pagesRequested(labelsApi)).not.toContain('2');
+    });
+
+    it('offers a retry instead of asking again when the next page fails', async () => {
+      const labelsApi = fakePagedLabels({ failPagesOnce: [2] });
+
+      await renderPublishFlow();
+      await publishScreen.setting('email-recipients').click();
+      await page.getByLabelText('Specific people').click();
+      await page.getByPlaceholder('Search labels and tiers...').click();
+      await expect
+        .element(page.getByRole('option', { name: 'Label 1', exact: true }))
+        .toBeInTheDocument();
+
+      const list = page.getByRole('listbox').element();
+      list.scrollTop = list.scrollHeight;
+
+      await expect.element(page.getByText("Couldn't load more labels.")).toBeVisible();
+      const retry = page.getByRole('button', { name: 'Retry', exact: true });
+      await expect.element(retry).toBeVisible();
+      // The sentinel is still in view, yet the failed page was asked for once.
+      expect(pagesRequested(labelsApi).filter((pageNumber) => pageNumber === '2')).toHaveLength(1);
+
+      await retry.click();
+
+      await expect.element(page.getByRole('option', { name: 'Label 150' })).toBeInTheDocument();
+      expect(pagesRequested(labelsApi).filter((pageNumber) => pageNumber === '2')).toHaveLength(2);
+      await expect(retry).toHaveCount(0);
+    });
+
+    it('starts from an empty search when specific people is checked again', async () => {
+      fakePagedLabels();
+
+      await renderPublishFlow();
+      await publishScreen.setting('email-recipients').click();
+      await page.getByLabelText('Specific people').click();
+      await page.getByPlaceholder('Search labels and tiers...').fill('Label 150');
+      await expect.element(page.getByRole('option', { name: 'Label 150' })).toBeInTheDocument();
+
+      await page.getByLabelText('Specific people').click();
+      await expect(page.getByTestId(publishRecipientSegments)).toHaveCount(0);
+      await page.getByLabelText('Specific people').click();
+
+      const search = page.getByPlaceholder('Search labels and tiers...');
+      await expect.element(search).toHaveValue('');
+      await search.click();
+      await expect
+        .element(page.getByRole('option', { name: 'Label 1', exact: true }))
+        .toBeInTheDocument();
+    });
+
+    it('waits for the tiers before offering them or naming a persisted tier', async () => {
+      fakePagedLabels();
+      let releaseTiers = () => {};
+      const tiersReleased = new Promise<void>((resolve) => {
+        releaseTiers = resolve;
+      });
+      fakeAdminEndpoint('GET', /^\/tiers\/\?/, async () => {
+        await tiersReleased;
+        return {
+          tiers: [
+            { id: 'gold-id', slug: 'gold', name: 'Gold', active: true },
+            { id: 'silver-id', slug: 'silver', name: 'Silver', active: true },
+          ],
+        };
+      });
+
+      await renderPublishFlow({
+        site: {
+          ...SITE,
+          editorDefaultEmailRecipients: 'filter',
+          editorDefaultEmailRecipientsFilter: 'tier_id:gold-id,label:label-150',
+        },
+      });
+      await publishScreen.setting('email-recipients').click();
+
+      const picker = page.getByTestId(publishRecipientSegments);
+      await expect.element(picker.getByRole('button', { name: 'Remove Label 150' })).toBeVisible();
+      // Neither the raw id nor the checkbox shows while the tiers load.
+      await expect(picker.getByRole('button', { name: /tier_id/ })).toHaveCount(0);
+      await expect(page.getByLabelText('Specific people')).toHaveCount(0);
+
+      releaseTiers();
+
+      await expect.element(picker.getByRole('button', { name: 'Remove Gold' })).toBeVisible();
+      await expect.element(page.getByLabelText('Specific people')).toBeChecked();
+    });
+
+    it('names a persisted label that is not on the first page', async () => {
+      const labelsApi = fakePagedLabels();
+
+      await renderPublishFlow({
+        site: {
+          ...SITE,
+          editorDefaultEmailRecipients: 'filter',
+          editorDefaultEmailRecipientsFilter: 'label:label-150',
+        },
+      });
+      await publishScreen.setting('email-recipients').click();
+
+      const picker = page.getByTestId(publishRecipientSegments);
+      await expect.element(picker.getByRole('button', { name: 'Remove Label 150' })).toBeVisible();
+      const lookup = filtersRequested(labelsApi).find((filter) => filter?.startsWith('slug:'));
+      expect(lookup).toContain('label-150');
+
+      // The pill keeps its name under a search that doesn't match it.
+      await picker.getByRole('combobox').fill('nothing like it');
+      await expect.element(page.getByText('No labels found')).toBeVisible();
+      await expect.element(picker.getByRole('button', { name: 'Remove Label 150' })).toBeVisible();
+    });
   });
 
   it('groups specific recipients into active tiers, archived tiers, and labels', async () => {
@@ -750,6 +1009,7 @@ describe('Publish flow', () => {
     await expect(page.getByRole('group', { name: 'Labels' })).toHaveCount(0);
     await userEvent.keyboard('{Enter}');
     await expect.element(page.getByRole('button', { name: 'Remove Legacy tier' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
 
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();

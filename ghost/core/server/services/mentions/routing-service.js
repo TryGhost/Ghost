@@ -1,5 +1,3 @@
-const logging = require('@tryghost/logging');
-
 /**
  * @typedef {import('./mentions-api').IRoutingService} IRoutingService
  * @typedef {import('./mentions-api').IResourceService} IResourceService
@@ -24,16 +22,21 @@ module.exports = class RoutingService {
   /** @typedef {import('got')} */
   #externalRequest;
 
+  /** @type {import('@tryghost/logging').GhostLogger} */
+  #logging;
+
   /**
    * @param {object} deps
    * @param {URL} deps.siteUrl
    * @param {IResourceService} deps.resourceService
    * @param {import('got')} deps.externalRequest;
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor(deps) {
     this.#siteUrl = deps.siteUrl;
     this.#resourceService = deps.resourceService;
     this.#externalRequest = deps.externalRequest;
+    this.#logging = deps.logging;
   }
 
   /**
@@ -65,7 +68,7 @@ module.exports = class RoutingService {
         return false;
       }
     } catch (err) {
-      logging.error(err);
+      this.#logging.error(err);
       return false;
     }
   }

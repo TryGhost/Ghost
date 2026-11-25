@@ -1,6 +1,7 @@
 import { getListReturnNavigationState } from '@/shared/virtual-list';
 import {
   type CSSProperties,
+  type MouseEvent,
   type ReactNode,
   useCallback,
   useEffect,
@@ -10,7 +11,12 @@ import {
   useState,
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { AdminLink } from '@/shared/admin-link';
+import { usePresence } from '@/shared/presence/use-presence';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import { LeaseAvatar, LeaseOutdatedNotice } from './lease/lease-notice';
+import { useEditLease } from './lease/use-edit-lease';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -45,18 +51,20 @@ import {
   withLiveSettings,
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
-import { readEditorReturn } from './editor-return';
+import { type EditorReturn, readEditorReturn } from './editor-return';
 import { EditorLoading } from './editor-loading';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
+import { RefusedEntryContext, useRefusedEntry } from './refused-entry';
 import { useEditorFont } from './use-editor-font';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
 import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
+import { bannerSaveError } from './session/error-mapping';
 import { SessionBanners } from './session/session-banners';
 import { type InvalidField, settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
@@ -78,6 +86,11 @@ import { useSettingsOpen } from './use-settings-open';
 import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
 
+/** Said once the latest version has replaced what a tab typed onto an older one. */
+function notifyReloadedOverTyping() {
+  toast.info('A newer version was saved elsewhere, so it was loaded here.');
+}
+
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <Stack align="center" className="h-full" data-testid={editorLoadError} justify="center">
@@ -91,20 +104,22 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 
 function EditorHeader({
   postType,
-  analyticsReturn,
-  iconOnlyBack,
+  editorReturn,
   children,
+  onBack,
 }: {
   postType: PostType;
-  analyticsReturn?: string;
-  /** The back link shows its arrow alone, its destination named only to assistive tech. */
-  iconOnlyBack: boolean;
+  editorReturn?: EditorReturn;
   children?: ReactNode;
+  onBack?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
   const resource = postType === 'page' ? 'pages' : 'posts';
   const listUrl = getPostListReturnUrl(resource);
-  const backLabel = analyticsReturn ? 'Analytics' : listLabel;
+  let backLabel = listLabel;
+  if (editorReturn) {
+    backLabel = editorReturn.kind === 'analytics' ? 'Analytics' : 'Back';
+  }
 
   return (
     <Grid
@@ -112,24 +127,21 @@ function EditorHeader({
       className="grid-cols-[auto_minmax(0,1fr)_auto] pt-[calc(var(--spacing)*5+1px)] pr-[calc(var(--spacing)*(4+2*var(--editor-settings-progress,0)))] pb-3 pl-4 editor-settings-motion-[padding-right] max-[500px]:pt-3 max-[500px]:pr-[calc(var(--spacing)*(1+2*var(--editor-settings-progress,0))-1px)] max-[500px]:pl-3 [&_a]:pointer-events-auto [&_button]:pointer-events-auto"
       gap="sm"
     >
+      {/* The back link shows its arrow alone, its destination named only to assistive tech. */}
       <PageHeader.Action
         className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
-        fallbackSize={iconOnlyBack ? 'icon-sm' : 'sm'}
-        fallbackVariant="ghost"
-        iconOnly={iconOnlyBack}
         label={backLabel}
         tooltip={false}
         asChild
+        iconOnly
       >
-        {analyticsReturn ? (
-          <AdminLink to={analyticsReturn}>
+        {editorReturn ? (
+          <AdminLink to={editorReturn.to} onClick={onBack}>
             <LucideIcon.ArrowLeft />
-            {!iconOnlyBack && <span className="max-[500px]:sr-only">{backLabel}</span>}
           </AdminLink>
         ) : (
-          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
+          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl} onClick={onBack}>
             <LucideIcon.ArrowLeft />
-            {!iconOnlyBack && <span className="max-[500px]:sr-only">{backLabel}</span>}
           </AdminLink>
         )}
       </PageHeader.Action>
@@ -190,11 +202,66 @@ function EditorContent({
     siteUrl: cardConfig.siteUrl,
     currentUserId: currentUser?.id,
   });
+  const presenceResource = session.persistedId
+    ? { id: session.persistedId, type: postType }
+    : undefined;
+  const leaseEnabled = useFeatureFlag('editorLease');
+  // Opening a post does not take it from anyone; the first unsaved edit does.
+  const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource, {
+    lease: leaseEnabled,
+    wantsLease: session.isDirty(),
+  });
+  const showPresence = useFeatureFlag('editorPresence');
+  const editLease = useEditLease({
+    lease: presence.lease,
+    active: presence.active,
+    currentUserId: currentUser?.id,
+    isDirty: session.isDirty,
+    flush: session.commitField,
+    reload: session.reload,
+    hasNewerVersion: session.hasNewerVersion,
+    revert: session.revert,
+    onBehind: notifyReloadedOverTyping,
+  });
+  const leaseHolderId =
+    editLease.locked && editLease.reason === 'held' && !editLease.ownTab ? editLease.userId : null;
+  // The holder is shown once, in the lease pill, which the takeover hangs on.
+  const otherPresence = useMemo(
+    () =>
+      leaseHolderId
+        ? presence.active.filter((entry) => entry.userId !== leaseHolderId)
+        : presence.active,
+    [presence.active, leaseHolderId],
+  );
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
-  const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
-  const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
+  // A publish date or time the panel refused keeps the writer on it: no flow
+  // opens, the panel does not close, and the back link does not leave past it.
+  const refusedEntry = useRefusedEntry();
+  const changeOpenFlow = useCallback(
+    (flow: OpenFlow) => {
+      if (flow === 'none' || !refusedEntry.hold()) {
+        setOpenFlow(flow);
+      }
+    },
+    [refusedEntry],
+  );
+  // A flow left open when another tab takes the document would still write: its
+  // buttons are not the header's, which the lock disables.
+  if (editLease.locked && openFlow !== 'none') {
+    setOpenFlow('none');
+  }
+  const openPublishFlow = useCallback(() => changeOpenFlow('publish'), [changeOpenFlow]);
+  const openUpdateFlow = useCallback(() => changeOpenFlow('update'), [changeOpenFlow]);
+  const holdBack = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      if (refusedEntry.hold()) {
+        event.preventDefault();
+      }
+    },
+    [refusedEntry],
+  );
   // Only reads what the sidebar's tier picker loaded, which names a tier picked before its save lands.
   const { data: tiersData } = useBrowseTiers({
     defaultErrorHandler: false,
@@ -221,18 +288,14 @@ function EditorContent({
   // The update flow is mounted with the publish controls, which Contributors never get.
   const canPublish = !!currentUser && !isContributorUser(currentUser);
   const location = useLocation();
-  const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
+  const editorReturn = record ? readEditorReturn(location.state) : undefined;
   const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
   const didEmailFail =
     postType === 'post' &&
     (statusRecord?.status === 'published' || statusRecord?.status === 'sent') &&
     statusRecord.emailStatus === 'failed';
-  const editorImprovements = useFeatureFlag('admin7EditorImprovements', {
-    requestOptions: EDITOR_REQUEST_OPTIONS,
-  });
-  // Closed on every editor entry, as the menu it replaces was, unless the flag
-  // restores it as the writer left it: then it is open, in place, from the first paint.
-  const settingsMemory = useSettingsOpen(editorImprovements);
+  // The panel opens as the writer last left it; restored open, it is in place from the first paint.
+  const settingsMemory = useSettingsOpen();
   const [settingsOpen, setSettingsOpen] = useState(settingsMemory.openAtStart);
   const [settingsPresent, setSettingsPresent] = useState(settingsMemory.openAtStart);
   const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
@@ -241,6 +304,13 @@ function EditorContent({
   const [settingsMoving, setSettingsMoving] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
   const settingsFrameRef = useRef<HTMLDivElement>(null);
+  // The settings panel saves each edit as it is made, so a tab without the lease gets none.
+  const settingsLocked = editLease.locked;
+  useEffect(() => {
+    if (settingsFrameRef.current) {
+      settingsFrameRef.current.inert = settingsLocked;
+    }
+  });
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
   useLayoutEffect(() => {
@@ -317,6 +387,9 @@ function EditorContent({
   }, []);
   const { toggled: settingsToggled } = settingsMemory;
   const flipSettings = useCallback(() => {
+    if (settingsOpen && refusedEntry.hold()) {
+      return;
+    }
     // A manual toggle ends the reveal, so reopening starts on the section list.
     setSettingsReveal(null);
     setSettingsMoving(true);
@@ -324,7 +397,7 @@ function EditorContent({
     // Only the writer's own toggle is remembered, never a reveal's open.
     settingsToggled(!settingsOpen);
     setSettingsOpen((open) => !open);
-  }, [settingsOpen, settingsToggled]);
+  }, [refusedEntry, settingsOpen, settingsToggled]);
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
     flipSettings();
@@ -342,7 +415,7 @@ function EditorContent({
       }
       flipSettings();
     }, [flipSettings, settingsOpen]),
-    editorImprovements && openFlow === 'none',
+    openFlow === 'none',
   );
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.
@@ -375,11 +448,10 @@ function EditorContent({
   }, [session, settingsOpen, showExcerpt]);
   const featureImage = useFeatureImageBinding(session, session.loadedRecord, session.contentKey);
   const writingAreaRef = useRef<HTMLDivElement>(null);
-  const editorFont = useEditorFont(editorImprovements);
+  const editorFont = useEditorFont();
   // The chrome stays while the settings panel is out, or the status line reports
   // a failed save or a failed newsletter.
   const writingFocus = useWritingFocus({
-    enabled: editorImprovements,
     blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
     writingAreaRef,
   });
@@ -405,8 +477,6 @@ function EditorContent({
           : 'bg-background/80 backdrop-blur-sm'
       }
       data-testid={settingsMenuToggle}
-      fallbackSize="sm"
-      fallbackVariant="ghost"
       label="Settings"
       tooltip={false}
       iconOnly
@@ -429,6 +499,15 @@ function EditorContent({
           state={session.state}
           onReload={session.reload}
         />
+        {/* A save that already collided has the session's banner, which offers the same reload. */}
+        {bannerSaveError(session.state, session.pendingSave) ? null : (
+          <LeaseOutdatedNotice
+            contentText={session.contentText}
+            lease={editLease}
+            resourceType={postType}
+            onReload={session.reload}
+          />
+        )}
         <ReauthDialog
           email={currentUser?.email ?? ''}
           open={session.reauthOpen}
@@ -461,43 +540,64 @@ function EditorContent({
               'screen-exit-chrome-top pointer-events-none relative z-20 shrink-0',
               chromeEntrance && 'screen-enter-from-top',
             )}
-            data-writing-focus={writingFocus}
           >
-            <EditorHeader
-              analyticsReturn={analyticsReturn}
-              iconOnlyBack={editorImprovements}
-              postType={postType}
-            >
-              {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
-                <EditorStatus
-                  isDirty={session.isDirty()}
-                  pendingSave={session.pendingSave}
-                  record={statusRecord}
-                  state={session.state}
-                  onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                  onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
-                  onRetrySave={session.retrySave}
-                />
+            {/* The back link stays while the writer types, so the way out is always in view. */}
+            <EditorHeader editorReturn={editorReturn} postType={postType} onBack={holdBack}>
+              {editorReturn?.kind !== 'analytics' ||
+              didEmailFail ||
+              session.state.kind === 'error' ? (
+                <Box className="min-w-0" data-writing-focus={writingFocus}>
+                  <EditorStatus
+                    isDirty={session.isDirty()}
+                    pendingSave={session.pendingSave}
+                    record={statusRecord}
+                    state={session.state}
+                    onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                    onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                    onRetrySave={session.retrySave}
+                  />
+                </Box>
               ) : null}
-              <PageHeader.ActionGroup className="col-start-3 ml-auto gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                <EditorHeaderActions
-                  bottomBar={bottomBar}
-                  currentUser={currentUser}
-                  offersEmailRetry={offersEmailRetry}
-                  openFlow={openFlow}
-                  post={publishPost}
-                  postType={postType}
-                  revealInvalidField={revealInvalidField}
-                  session={session}
-                  siteUrl={cardConfig.siteUrl}
-                  tkCount={tkCount}
-                  onOpenFlow={setOpenFlow}
-                />
-                <Box
-                  aria-hidden="true"
-                  className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
-                />
-              </PageHeader.ActionGroup>
+              {/* A tab that was typing when it was locked must see why at once, not once the chrome fades back in. */}
+              <Box
+                className="col-start-3 ml-auto"
+                data-writing-focus={editLease.locked ? undefined : writingFocus}
+              >
+                <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
+                  <Inline align="center" gap="xs">
+                    <LeaseAvatar
+                      contentText={session.contentText}
+                      currentUser={currentUser}
+                      hasUnsavedContent={session.hasUnsavedContent}
+                      lease={editLease}
+                      resourceId={session.persistedId}
+                      resourceType={postType}
+                      onTakeOver={presence.takeOver}
+                    />
+                    {showPresence ? (
+                      <PresenceAvatars active={otherPresence} resourceType={postType} />
+                    ) : null}
+                  </Inline>
+                  <EditorHeaderActions
+                    bottomBar={bottomBar}
+                    currentUser={currentUser}
+                    locked={editLease.locked}
+                    offersEmailRetry={offersEmailRetry}
+                    openFlow={openFlow}
+                    post={publishPost}
+                    postType={postType}
+                    revealInvalidField={revealInvalidField}
+                    session={session}
+                    siteUrl={cardConfig.siteUrl}
+                    tkCount={tkCount}
+                    onOpenFlow={changeOpenFlow}
+                  />
+                  <Box
+                    aria-hidden="true"
+                    className="w-[calc((var(--editor-settings-toggle-width)+var(--spacing)*2+1px)*(1-var(--editor-settings-progress)))] shrink-0 editor-settings-motion-[width]"
+                  />
+                </PageHeader.ActionGroup>
+              </Box>
             </EditorHeader>
           </Box>
           {/* The document reaches up behind the floating header. Isolated so a
@@ -515,9 +615,9 @@ function EditorContent({
                 font={editorFont.font}
                 handleRef={postEditorRef}
                 postType={postType}
+                readOnly={editLease.locked}
                 settingsMoving={settingsMoving}
                 showExcerpt={showExcerpt}
-                showHelpLink={!editorImprovements}
                 titleAndFeatureImageHidden={
                   postType === 'page' && liveShowTitleAndFeatureImage === false
                 }
@@ -540,20 +640,22 @@ function EditorContent({
           {settingsToggle}
         </Box>
         {settingsPresent ? (
-          <PostSettingsSidebar
-            cardConfig={currentCardConfig}
-            currentUser={currentUser}
-            editorFont={editorImprovements ? editorFont : undefined}
-            editorImprovements={editorImprovements}
-            featureImage={featureImage.featureImage}
-            frameRef={settingsFrameRef}
-            hasInlineExcerpt={showExcerpt}
-            opensInPlace={settingsMemory.restored}
-            postType={postType}
-            reveal={settingsReveal}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-          />
+          <RefusedEntryContext.Provider value={refusedEntry.report}>
+            <PostSettingsSidebar
+              cardConfig={currentCardConfig}
+              currentUser={currentUser}
+              editorFont={editorFont}
+              featureImage={featureImage.featureImage}
+              frameRef={settingsFrameRef}
+              hasInlineExcerpt={showExcerpt}
+              locked={settingsLocked}
+              opensInPlace={settingsMemory.restored}
+              postType={postType}
+              reveal={settingsReveal}
+              session={session}
+              siteUrl={cardConfig.siteUrl}
+            />
+          </RefusedEntryContext.Provider>
         ) : null}
         {snippetDialog}
         <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />

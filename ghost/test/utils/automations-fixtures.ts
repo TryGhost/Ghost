@@ -1,3 +1,4 @@
+import { fromDatabaseDate } from '../../core/server/lib/db-types/date';
 import ObjectId from 'bson-objectid';
 import moment from 'moment';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../core/server/services/member-welcome-emails/constants';
@@ -56,7 +57,6 @@ export async function setupAutomationsFixture(): Promise<void> {
       created_at: timestamp(0),
       updated_at: timestamp(0),
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-      trigger_tier_scope: 'free',
       name: 'Free member welcome flow',
       description: 'Welcome new free members after they sign up.',
       status: 'active',
@@ -66,7 +66,6 @@ export async function setupAutomationsFixture(): Promise<void> {
       created_at: timestamp(1),
       updated_at: timestamp(1),
       slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
-      trigger_tier_scope: 'all_paid',
       name: 'Paid member welcome flow',
       description: 'Welcome new paid members after they start their subscription.',
       status: 'active',
@@ -77,6 +76,26 @@ export async function setupAutomationsFixture(): Promise<void> {
   const paidActions = buildAutomationActions(paidAutomationId, 20);
 
   await db.knex('automations').insert(automationRows);
+  await db.knex('automation_trigger_rules').insert([
+    {
+      id: ObjectId().toHexString(),
+      automation_id: freeAutomationId,
+      created_at: fromDatabaseDate(timestamp(0)),
+      trigger_type: 'free_signup',
+      scope: null,
+      product_id: null,
+      direction: null,
+    },
+    {
+      id: ObjectId().toHexString(),
+      automation_id: paidAutomationId,
+      created_at: fromDatabaseDate(timestamp(1)),
+      trigger_type: 'paid_subscription_started',
+      scope: 'any_paid_tier',
+      product_id: null,
+      direction: null,
+    },
+  ]);
 
   await db.knex('automation_actions').insert(
     [...freeActions, ...paidActions].map(({ id, automation_id, type, created_at }) => ({

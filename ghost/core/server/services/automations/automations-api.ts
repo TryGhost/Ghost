@@ -1,9 +1,8 @@
-// @ts-expect-error This module lacks type definitions.
 import domainEvents from '@tryghost/domain-events';
+import type { Knex } from 'knex';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
-import ObjectId from 'bson-objectid';
 import { z } from 'zod';
 import config from '../../../shared/config';
 // @ts-expect-error This module lacks type definitions.
@@ -14,7 +13,6 @@ import { knex } from '../../data/db';
 import lexicalLib from '../../lib/lexical';
 // @ts-expect-error This module lacks type definitions.
 import requestExternal from '../../lib/request-external';
-// @ts-expect-error This module lacks type definitions.
 import { create as createTinybirdClient } from '../stats/utils/tinybird';
 // @ts-expect-error This module lacks type definitions.
 import TinybirdServiceWrapper from '../tinybird';
@@ -25,11 +23,8 @@ import {
   searchCursorScope,
 } from './automation-member-search';
 import { decodeRunCursor, encodeRunCursor, type RunCursorScope } from './automation-run-cursor';
-import type {
-  Automation,
-  AutomationsRepository,
-  EditAutomationData,
-} from './automations-repository';
+import type { Automation, AutomationsRepository } from './automations-repository';
+import type { AddAutomationData, EditAutomationData } from './automations-schemas';
 import { createDatabaseAutomationsRepository } from './database-automations-repository';
 import { parseFakeWaitHoursMultiplier } from './fake-wait-hours-multiplier';
 import {
@@ -38,12 +33,11 @@ import {
   fetchAutomationRuns,
   fetchAutomationStats,
 } from './tinybird-automation-stats';
+import type { TrackEmailClickedOptions } from './automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 import { createAutomationsApi2 } from './automations-api-2';
 
-const MAX_AUTOMATION_ACTIONS = 50;
 const RUN_PAGE_SIZE = 50;
-const MAX_WAIT_HOURS = 720; // 30 days
 
 const messages = {
   invalidRunOrder: 'Automation run order must be one of: created_at desc, created_at asc.',
@@ -55,11 +49,6 @@ const messages = {
   automationNotFound: 'Automation not found.',
   runNotFound: 'Automation run not found.',
   automationActionNotFound: 'Automation action not found.',
-  invalidAutomationCreationPayload: 'Invalid automation payload.',
-  invalidAutomationEditPayload: 'Invalid automation edit payload.',
-  invalidAutomationStatus: 'Automation status must be one of: active, inactive, archived.',
-  invalidStatusOnlyEdit:
-    'Status-only automation edits can only set status to inactive or archived.',
   duplicateAutomationActionIdentity: 'Automation action identifiers must be unique.',
   invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
   duplicateAutomationEdge: 'Automation edges must be unique.',
@@ -71,84 +60,6 @@ const messages = {
   emptyEmailBodyWhenActive: 'Active automations require a body for every email.',
   invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.',
 };
-
-const objectIdSchema = z.string().refine((value) => ObjectId.isValid(value));
-
-const waitActionSchema = z.object({
-  id: objectIdSchema,
-  type: z.literal('wait'),
-  data: z.object({
-    wait_hours: z.number().int().positive().max(MAX_WAIT_HOURS),
-  }),
-});
-
-const sendEmailActionSchema = z.object({
-  id: objectIdSchema,
-  type: z.literal('send_email'),
-  data: z.object({
-    email_subject: z.string(),
-    email_lexical: z.string(),
-    email_design_setting_id: z.string().min(1),
-  }),
-});
-
-const edgeSchema = z.object({
-  source_action_id: objectIdSchema,
-  target_action_id: objectIdSchema,
-});
-
-const automationShape = {
-  name: z.string().trim().min(1).max(191),
-  description: z.string().trim().max(2000),
-  status: z.enum(['active', 'inactive', 'archived']),
-  actions: z
-    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
-    .max(MAX_AUTOMATION_ACTIONS),
-  edges: z.array(edgeSchema),
-};
-
-const defaultTriggerShape = {
-  trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
-  trigger_tier_ids: z.null().optional(),
-};
-const selectedPaidTriggerShape = {
-  trigger_tier_scope: z.literal('selected_paid'),
-  trigger_tier_ids: z
-    .array(objectIdSchema)
-    .min(1)
-    .transform((ids) => [...new Set(ids)]),
-};
-
-const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
-  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
-  z.strictObject({
-    ...automationShape,
-    ...selectedPaidTriggerShape,
-  }),
-]);
-
-export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
-
-const editAutomationDataSchema = z
-  .object({
-    ...automationShape,
-    name: automationShape.name.optional(),
-    description: automationShape.description.optional(),
-  })
-  .and(
-    z.discriminatedUnion('trigger_tier_scope', [
-      z.object(defaultTriggerShape),
-      z.object(selectedPaidTriggerShape),
-    ]),
-  );
-
-const editAutomationStatusOnlySchema = z.strictObject({
-  // We disallow status-only activations because they could allow activations to
-  // happen with an invalid graph (e.g,. an email without a subject). If we
-  // change this, we should validate the graph on status-only activations as
-  // well.
-  status: z.enum(['inactive', 'archived']),
-});
 
 const fakeWaitHoursMultiplier = parseFakeWaitHoursMultiplier(
   config.get('automations:fakeWaitHoursMultiplier'),
@@ -180,10 +91,10 @@ function getTinybirdClient() {
     }
     return createTinybirdClient({
       config,
-      // Fall back to MySQL after the first failed attempt.
       request: requestExternal.extend({ retry: { limit: 0 } }),
       settingsCache,
       tinybirdService,
+      logging,
     });
   } catch (error) {
     logging.error('Error preparing Tinybird automation stats client:', error);
@@ -193,16 +104,12 @@ function getTinybirdClient() {
 
 export async function browse() {
   const tinybirdClient = getTinybirdClient();
-  if (!tinybirdClient) {
-    return await repository.browse({ includeStats: true });
-  }
-
   const [browseResult, stats] = await Promise.all([
-    repository.browse({ includeStats: false }),
-    fetchAutomationStats(tinybirdClient),
+    repository.browse(),
+    tinybirdClient ? fetchAutomationStats(tinybirdClient) : null,
   ]);
   if (stats === null) {
-    return await repository.browse({ includeStats: true });
+    return browseResult;
   }
 
   return {
@@ -377,65 +284,22 @@ export async function browseActionLinks(automationId: string, actionId: string) 
   return links;
 }
 
-export async function add(data: unknown) {
-  const result = addAutomationDataSchema.safeParse(data);
-  if (!result.success) {
-    const issue = result.error.issues[0];
-    throwValidationError(
-      buildInvalidAutomationPayloadMessage(
-        result.error.issues,
-        messages.invalidAutomationCreationPayload,
-      ),
-      String(issue.path[0] ?? 'automations'),
-    );
-  }
-  await validateAutomationData(result.data);
-  return await repository.add(result.data);
+export async function add(data: AddAutomationData) {
+  await validateAutomationData(data);
+  return await repository.add(data);
 }
 
-export async function edit(automationId: string, data: unknown) {
-  const parsedData = await validateEditData(data);
-
-  const automation = await repository.edit(automationId, parsedData);
-
+export async function edit(automationId: string, data: EditAutomationData) {
+  if ('actions' in data && data.actions !== undefined) {
+    await validateAutomationData(data);
+  }
+  const automation = await repository.edit(automationId, data);
   if (!automation) {
     throw new errors.NotFoundError({
       message: tpl(messages.automationNotFound),
     });
   }
-
   return automation;
-}
-
-async function validateEditData(data: unknown): Promise<EditAutomationData> {
-  // We use two separate schemas to preserve field-level errors, which Zod loses
-  // if we use its union types.
-  const hasGraphField =
-    typeof data === 'object' && data !== null && ('actions' in data || 'edges' in data);
-  const schema = hasGraphField ? editAutomationDataSchema : editAutomationStatusOnlySchema;
-  const result = schema.safeParse(data);
-
-  if (!result.success) {
-    if (result.error.issues.some((issue) => issue.path[0] === 'status')) {
-      throwValidationError(
-        hasGraphField ? messages.invalidAutomationStatus : messages.invalidStatusOnlyEdit,
-        'status',
-      );
-    }
-
-    throwValidationError(
-      buildInvalidAutomationPayloadMessage(
-        result.error.issues,
-        messages.invalidAutomationEditPayload,
-      ),
-    );
-  }
-
-  const parsedData: EditAutomationData = result.data;
-  if (parsedData.actions !== undefined) {
-    await validateAutomationData(parsedData);
-  }
-  return parsedData;
 }
 
 async function validateAutomationData(data: Pick<Automation, 'status' | 'actions' | 'edges'>) {
@@ -458,12 +322,8 @@ async function validateEmailLexical(actions: Automation['actions']) {
 
       // Empty editor documents are valid draft state and are classified by
       // active-body validation below. Invalid JSON is not skipped here.
-      if (isValidEmptyLexical(lexical)) {
+      if (isEmptyLexical(lexical)) {
         return;
-      }
-
-      if (isMalformedEmptyLexical(lexical)) {
-        throwValidationError(messages.invalidEmailLexical, 'actions');
       }
 
       if (!(await lexicalLib.validate(lexical))) {
@@ -497,39 +357,13 @@ function validateActiveEmailSteps(status: Automation['status'], actions: Automat
 }
 
 function isEmptyLexical(lexical: string): boolean {
+  let parsed;
   try {
-    const parsed = JSON.parse(lexical);
-    return isEmptyParsedLexical(parsed);
-  } catch {
-    return true;
-  }
-}
-
-function isValidEmptyLexical(lexical: string): boolean {
-  try {
-    return isEmptyParsedLexical(JSON.parse(lexical));
+    parsed = JSON.parse(lexical);
   } catch {
     return false;
   }
-}
 
-function isMalformedEmptyLexical(lexical: string): boolean {
-  try {
-    const children = JSON.parse(lexical)?.root?.children;
-
-    if (!Array.isArray(children) || children.length !== 1 || children[0].type !== 'paragraph') {
-      return false;
-    }
-
-    return !Array.isArray(children[0].children);
-  } catch {
-    return false;
-  }
-}
-
-function isEmptyParsedLexical(parsed: {
-  root?: { children?: Array<{ type?: string; children?: unknown }> };
-}): boolean {
   const children = parsed?.root?.children;
 
   if (!Array.isArray(children)) {
@@ -540,24 +374,17 @@ function isEmptyParsedLexical(parsed: {
     return true;
   }
 
-  if (children.length !== 1 || children[0].type !== 'paragraph') {
+  if (children.length !== 1 || children[0]?.type !== 'paragraph') {
     return false;
   }
 
-  return Array.isArray(children[0].children) && children[0].children.length === 0;
-}
-
-function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[], message: string) {
-  if (!issues.length) {
-    return message;
+  // Lexical's renderer accepts paragraphs without children, but these are
+  // malformed documents rather than valid empty drafts.
+  if (!Array.isArray(children[0].children)) {
+    throwValidationError(messages.invalidEmailLexical, 'actions');
   }
 
-  const issueSummaries = issues.slice(0, 3).map((issue) => {
-    const path = issue.path.length ? issue.path.join('.') : 'payload';
-    return `${path}: ${issue.message}`;
-  });
-
-  return `${message} ${issueSummaries.join('; ')}.`;
+  return children[0].children.length === 0;
 }
 
 function validateGraph(actions: Automation['actions'], edges: Automation['edges']) {
@@ -663,7 +490,7 @@ function throwValidationError(message: string, property?: string): never {
 
 export const requestPoll = automationsApi2.requestPoll.bind(automationsApi2);
 
-export const trigger = automationsApi2.trigger.bind(automationsApi2);
+export const notify = automationsApi2.notify.bind(automationsApi2);
 
 export async function fetchAndLockSteps(
   ...args: Parameters<AutomationsRepository['fetchAndLockSteps']>
@@ -687,11 +514,7 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
   return await repository.retryStep(...args);
 }
 
-export async function recordEmailSent(
-  ...args: Parameters<AutomationsRepository['recordEmailSent']>
-) {
-  return await repository.recordEmailSent(...args);
-}
+export const recordEmailSent = automationsApi2.recordEmailSent.bind(automationsApi2);
 
 export async function getAutomatedEmailRecipientsByMailgunIds(
   ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>
@@ -699,14 +522,10 @@ export async function getAutomatedEmailRecipientsByMailgunIds(
   return await repository.getAutomatedEmailRecipientsByMailgunIds(...args);
 }
 
-export async function trackEmailDeliveredAndOpened(
-  ...args: Parameters<AutomationsRepository['trackEmailDeliveredAndOpened']>
-) {
-  return await repository.trackEmailDeliveredAndOpened(...args);
-}
+export const trackEmailDeliveredAndOpened =
+  automationsApi2.trackEmailDeliveredAndOpened.bind(automationsApi2);
 
-export async function trackEmailClicked(
-  ...args: Parameters<AutomationsRepository['trackEmailClicked']>
-) {
-  await repository.trackEmailClicked(...args);
-}
+export const trackEmailClicked = async (
+  options: TrackEmailClickedOptions,
+  connectionOptions: { transacting: Knex.Transaction },
+) => automationsApi2.trackEmailClicked(options, { connection: connectionOptions.transacting });

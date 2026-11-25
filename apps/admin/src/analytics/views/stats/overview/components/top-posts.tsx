@@ -8,6 +8,8 @@ import {
   CardTitle,
   EmptyIndicator,
   SkeletonTable,
+  ListItem,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   LucideIcon,
@@ -20,7 +22,7 @@ import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getPostStatusText } from '@tryghost/admin-x-framework/utils/post-utils';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { Link, useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { editorReturnState } from '@/editor/api';
 import {
   useEmailTrackClicks,
@@ -108,61 +110,63 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
         ) : (
           <>
             {topPostsData?.stats?.map((post: TopPostViewsStats) => {
-              return (
-                <div
-                  key={post.post_id}
-                  className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-table-row-hover before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent'
-                >
-                  <div
-                    className="z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]"
-                    onClick={() => {
-                      const destination = getPostDestination({
-                        postId: post.post_id,
-                        hasEmailData: post.sent_count !== null,
-                        analytics: {
-                          webAnalytics: showWebAnalytics,
-                          membersTrackSources,
-                        },
-                      });
-                      const opensEditor = destination.startsWith('/editor/');
-                      navigate(destination, {
-                        state: opensEditor ? editorReturnState(location) : undefined,
-                      });
-                    }}
-                  >
-                    {post.feature_image ? (
-                      <div
-                        className="hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:visible! sm:block! lg:w-[100px]"
-                        style={{
-                          backgroundImage: `url(${post.feature_image})`,
-                        }}
-                      ></div>
-                    ) : (
-                      <FeatureImagePlaceholder className="hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]" />
-                    )}
-                    <div className="flex flex-col gap-0.5">
-                      {/* wrap-anywhere, not break-words: a title can be one unbroken
+              const row = (
+                <div className="group flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 first:border-border md:items-center">
+                  <RowPrimaryAction asChild>
+                    <div
+                      className="z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]"
+                      onClick={() => {
+                        const destination = getPostDestination({
+                          postId: post.post_id,
+                          hasEmailData: post.sent_count !== null,
+                          analytics: {
+                            webAnalytics: showWebAnalytics,
+                            membersTrackSources,
+                          },
+                        });
+                        const opensEditor = destination.startsWith('/editor/');
+                        navigate(destination, {
+                          state: opensEditor
+                            ? editorReturnState(`${location.pathname}${location.search}`)
+                            : undefined,
+                        });
+                      }}
+                    >
+                      {post.feature_image ? (
+                        <div
+                          className="hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:visible! sm:block! lg:w-[100px]"
+                          style={{
+                            backgroundImage: `url(${post.feature_image})`,
+                          }}
+                        ></div>
+                      ) : (
+                        <FeatureImagePlaceholder className="hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]" />
+                      )}
+                      <div className="flex flex-col gap-0.5">
+                        {/* wrap-anywhere, not break-words: a title can be one unbroken
                           word wider than the column, and only `anywhere` also shrinks
                           the intrinsic width the layout reserves for it. */}
-                      <span className="line-clamp-2 text-md font-semibold wrap-anywhere">
-                        {post.title}
-                      </span>
-                      <span className="text text-muted-foreground">
-                        By {post.authors} &ndash;{' '}
-                        {formatDisplayDate(post.published_at, siteTimezone)}
-                      </span>
-                      <span className="text text-muted-foreground">{getPostStatusText(post)}</span>
+                        <span className="line-clamp-2 text-md font-semibold wrap-anywhere">
+                          {post.title}
+                        </span>
+                        <span className="text text-muted-foreground">
+                          By {post.authors} &ndash;{' '}
+                          {formatDisplayDate(post.published_at, siteTimezone)}
+                        </span>
+                        <span className="text text-muted-foreground">
+                          {getPostStatusText(post)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3">
+                  </RowPrimaryAction>
+                  <div className="flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3">
                     {showWebAnalytics && (
-                      <div
-                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
+                      <Link
+                        aria-describedby={`top-post-${post.post_id}-web-value`}
+                        aria-label="Web traffic"
+                        className="group/tooltip relative z-10 flex w-[66px] rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring lg:w-[92px]"
                         data-testid="statistics-visitors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/posts/analytics/${post.post_id}/web`);
-                        }}
+                        to={`/posts/analytics/${post.post_id}/web`}
                       >
                         <PostListTooltip
                           metrics={[
@@ -180,7 +184,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           ]}
                           title="Web traffic"
                         />
-                        <div className={metricClass}>
+                        <div className={metricClass} id={`top-post-${post.post_id}-web-value`}>
                           <LucideIcon.Globe
                             className="text-muted-foreground group-hover:text-foreground"
                             size={16}
@@ -188,15 +192,14 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           />
                           {abbreviateNumber(post.views)}
                         </div>
-                      </div>
+                      </Link>
                     )}
                     {post.sent_count !== null && (
-                      <div
-                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/posts/analytics/${post.post_id}/newsletter`);
-                        }}
+                      <Link
+                        aria-describedby={`top-post-${post.post_id}-newsletter-value`}
+                        aria-label="Newsletter performance"
+                        className="group/tooltip relative z-10 flex w-[66px] rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring lg:w-[92px]"
+                        to={`/posts/analytics/${post.post_id}/newsletter`}
                       >
                         <PostListTooltip
                           metrics={[
@@ -247,7 +250,10 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           ]}
                           title="Newsletter performance"
                         />
-                        <div className={metricClass}>
+                        <div
+                          className={metricClass}
+                          id={`top-post-${post.post_id}-newsletter-value`}
+                        >
                           {(() => {
                             // If clicks and opens are enabled, show open rate %
                             // If clicks are disabled but opens enabled, show open rate %
@@ -289,16 +295,15 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                             }
                           })()}
                         </div>
-                      </div>
+                      </Link>
                     )}
                     {membersTrackSources && (
-                      <div
-                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
+                      <Link
+                        aria-describedby={`top-post-${post.post_id}-growth-value`}
+                        aria-label="New members"
+                        className="group/tooltip relative z-10 flex w-[66px] rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring lg:w-[92px]"
                         data-testid="statistics-members"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/posts/analytics/${post.post_id}/growth`);
-                        }}
+                        to={`/posts/analytics/${post.post_id}/growth`}
                       >
                         <PostListTooltip
                           metrics={[
@@ -336,7 +341,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           ]}
                           title="New members"
                         />
-                        <div className={metricClass}>
+                        <div className={metricClass} id={`top-post-${post.post_id}-growth-value`}>
                           <LucideIcon.UserPlus
                             className="text-muted-foreground group-hover:text-foreground"
                             size={16}
@@ -344,10 +349,15 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           />
                           {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
                         </div>
-                      </div>
+                      </Link>
                     )}
                   </div>
                 </div>
+              );
+              return (
+                <ListItem key={post.post_id} asChild>
+                  {row}
+                </ListItem>
               );
             })}
             {(!topPostsData?.stats || topPostsData.stats.length === 0) && (

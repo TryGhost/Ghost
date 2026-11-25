@@ -44,6 +44,26 @@ describe('nextWritingFocus', () => {
     expect(state.hidden).toBe(true);
   });
 
+  it('shows the chrome on a first move that already travelled past the threshold', () => {
+    const jump: WritingFocusEvent = {
+      type: 'pointer-move',
+      point: { x: 400, y: 20 },
+      movement: { x: 300, y: -80 },
+    };
+
+    expect(run([{ type: 'edit' }, jump])).toEqual(CHROME_SHOWN);
+  });
+
+  it('marks a first move that travelled no further than the threshold', () => {
+    const nudge: WritingFocusEvent = {
+      type: 'pointer-move',
+      point: { x: 100, y: 100 },
+      movement: { x: 0, y: 0 },
+    };
+
+    expect(run([{ type: 'edit' }, nudge])).toEqual({ hidden: true, anchor: { x: 100, y: 100 } });
+  });
+
   it('stays hidden on moves at the same position, as a scroll under a still pointer sends', () => {
     expect(run([{ type: 'edit' }, at(100, 100), at(100, 100), at(100, 100)]).hidden).toBe(true);
   });

@@ -5,7 +5,7 @@ import sinon from 'sinon';
 // reaches the gift-links singleton through its own require chain, which is a
 // separate module instance from an ESM import's — stubs must target the
 // instance the code under test actually uses.
-const giftLinksService = require('../../../../../core/server/services/gift-links');
+const giftLinksService = require('../../../../../core/server/services/gift-links').default;
 const {
   generateGiftKeyData,
   applyGiftAccess,
@@ -24,11 +24,11 @@ describe('Gift link access', function () {
 
   let getPostByTokenStub: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     // The service singleton is normally wired at boot; the stub replaces
     // its only query so no DB is touched.
-    giftLinksService.init();
-    getPostByTokenStub = sinon.stub(giftLinksService.service!, 'getPostByToken');
+    await giftLinksService.init();
+    getPostByTokenStub = sinon.stub(giftLinksService.service, 'getPostByToken');
 
     sinon.stub(Product, 'findAll').resolves([
       {

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { Inline, Stack, Text } from '@/components/primitives';
+import { Inline, Stack } from '@/components/primitives';
 import { FilterBar } from '@/components/patterns/filter-bar';
 import { PageHeader } from '@/components/patterns/page-header';
 import { useShade } from '@/providers/shade-context';
@@ -1128,22 +1128,12 @@ export const GroupPreviewLimit: Story = {
   },
 };
 
-function HeaderTriggerExample({
-  isAdmin7 = true,
-  fallbackStyle = 'list',
-  disabled = false,
-}: {
-  isAdmin7?: boolean;
-  fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
-  disabled?: boolean;
-}) {
+function HeaderTriggerExample({ disabled = false }: { disabled?: boolean }) {
   const { darkMode } = useShade();
   const [filters, setFilters] = useState<Filter[]>([]);
   const control = (
     <Filters
-      addButton={
-        <Filters.Trigger disabled={disabled} fallbackStyle={fallbackStyle} collapseLabel />
-      }
+      addButton={<Filters.Trigger disabled={disabled} />}
       fields={basicFields}
       filters={filters}
       keyboardShortcut={disabled ? undefined : 'f'}
@@ -1151,7 +1141,7 @@ function HeaderTriggerExample({
     />
   );
   return (
-    <ShadeApp className="h-auto!" darkMode={darkMode} isAdmin7={isAdmin7}>
+    <ShadeApp className="h-auto!" darkMode={darkMode}>
       <PageHeader.ActionGroup>
         {filters.length ? <FilterBar>{control}</FilterBar> : control}
       </PageHeader.ActionGroup>
@@ -1176,23 +1166,14 @@ export const HeaderTrigger: Story = {
   ),
 };
 
-export const HeaderTriggerCompatibility: Story = {
+export const InlineFieldPicker: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'Previous list, funnel and analytics triggers while Admin 7 is off. Resize below lg to check collapsed labels; add a filter to check each previous add-button treatment.',
+          'Keep field selection inside an enclosing panel or sheet, with a back action to return to active filters.',
       },
     },
   },
-  render: () => (
-    <Stack gap="md">
-      {(['list', 'funnel', 'funnel-plus'] as const).map((fallbackStyle) => (
-        <Stack key={fallbackStyle} gap="sm">
-          <Text>{fallbackStyle}</Text>
-          <HeaderTriggerExample fallbackStyle={fallbackStyle} isAdmin7={false} />
-        </Stack>
-      ))}
-    </Stack>
-  ),
+  render: () => <FilterDemo fields={basicFields} inlinePicker />,
 };

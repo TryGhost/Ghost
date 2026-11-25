@@ -8,10 +8,9 @@ const COMPLIMENTARY_NICKNAME = 'complimentary';
 const GIFT_NICKNAME = 'gift subscription';
 
 /**
- * Classify a subscription for display. Ember's `subscription-data.js` uses the
- * pair (`!sub.id`, `plan.nickname`) to distinguish comp/gift from paid — because
- * comps and gifts are synthesised locally from the member's tier with no Stripe
- * subscription id (empty string), while paid subs always carry one.
+ * Classify a subscription for display. Comps and gifts are synthesised from the
+ * member's tier with an empty Stripe subscription id, so the plan nickname tells
+ * them apart; paid subs always carry an id.
  */
 export function classifyMemberSubscription(sub: MemberSubscription): SubscriptionKind {
   if (sub.id) {
@@ -29,11 +28,10 @@ export function classifyMemberSubscription(sub: MemberSubscription): Subscriptio
 
 /**
  * Format a price amount (stored in the smallest currency unit, e.g. cents) with
- * the correct symbol AND locale thousands separators. Matches the Ember helper
- * `gh-price-amount` via `toLocaleString(undefined, options)`. Whole amounts show
- * no decimals; fractional amounts show two.
+ * the correct symbol AND locale thousands separators. Whole amounts show no
+ * decimals; fractional amounts show two.
  *
- * The runtime locale comes from the user's browser, matching Ember. Tests should
+ * The runtime locale comes from the user's browser. Tests should
  * therefore assert loosely (e.g. accepting either `,` or `.` as the thousands
  * separator) rather than pinning en-US.
  */
@@ -55,12 +53,11 @@ export function formatSubscriptionInterval(
 }
 
 /**
- * The bold label that sits in front of the validity line — Ember's `priceLabel`.
+ * The bold label that sits in front of the validity line.
  * Returns "Free trial" while a paid subscription's `trial_end_at` is in the future,
  * otherwise falls back to any `price.nickname` that isn't the plain "Monthly"/
- * "Yearly" interval label — that's how Ember surfaces "Complimentary" for comps
- * and "Gift Subscription" for gifts (their price nicknames). Matches
- * `subscription-data.js:priceLabel`.
+ * "Yearly" interval label — that's how comps show "Complimentary" and gifts
+ * show "Gift Subscription" (their price nicknames).
  */
 export function getSubscriptionPriceLabel(sub: MemberSubscription): string | null {
   const isTrial = !!sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day');
@@ -76,7 +73,7 @@ export function getSubscriptionPriceLabel(sub: MemberSubscription): string | nul
 
 /**
  * A subscription reads as "Canceled" when it is already canceled or set to cancel
- * at period end; otherwise "Active" — matching the Ember status badge.
+ * at period end; otherwise "Active".
  */
 export function getSubscriptionStatusLabel(sub: MemberSubscription): string {
   if (sub.status === 'canceled' || sub.cancel_at_period_end) {
@@ -93,13 +90,11 @@ const formatDateUtc = (value: string | null | undefined) =>
 /**
  * The line of copy that appears under a subscription describing its lifecycle:
  * for paid — Renews / Has access until / Ended; for comp/gift — Expires or empty
- * for a forever comp; for paid trials — Ends. Copy and branch order mirror Ember
- * `validityDetails` (`subscription-data.js:117-150`): hard-cancel first, then
- * soft-cancel (cancel_at_period_end), then trial, then default renewal.
+ * for a forever comp; for paid trials — Ends. Branch order: hard-cancel first,
+ * then soft-cancel (cancel_at_period_end), then trial, then default renewal.
  *
- * Dates: paid `current_period_end` renders in local time (Ember does the same
- * via `moment(sub.current_period_end)`); comp/gift `tier.expiry_at` renders in
- * UTC (Ember `compExpiry`/`giftExpiry` explicitly call `.utc()`).
+ * Dates: paid `current_period_end` renders in local time; comp/gift
+ * `tier.expiry_at` renders in UTC.
  */
 export function getSubscriptionValidityLabel(sub: MemberSubscription): string {
   const kind = classifyMemberSubscription(sub);
@@ -108,7 +103,7 @@ export function getSubscriptionValidityLabel(sub: MemberSubscription): string {
     return tierExpiry ? `Expires ${tierExpiry}` : '';
   }
 
-  // Ember blanks validUntil for a hard cancel to avoid showing a stale period end.
+  // A hard cancel shows no date rather than a stale period end.
   const validUntil =
     sub.status === 'canceled' && !sub.cancel_at_period_end
       ? ''
@@ -135,10 +130,8 @@ export interface SubscriptionGroup {
 
 /**
  * Group a member's subscriptions by tier (deduping so a member with two subs to
- * the same tier renders under one heading, matching Ember's tier accumulator).
- * Drops subs without a tier or without a price — Ember filters both defensively
- * (`gh-member-settings-form.js:57,63`), so we do the same rather than crash the
- * row on `sub.price.amount`.
+ * the same tier renders under one heading). Drops subs without a tier or without
+ * a price rather than crash the row on `sub.price.amount`.
  */
 export function groupSubscriptionsByTier(subs: MemberSubscription[]): SubscriptionGroup[] {
   const groups: SubscriptionGroup[] = [];
@@ -147,7 +140,6 @@ export function groupSubscriptionsByTier(subs: MemberSubscription[]): Subscripti
     if (!sub.price) {
       continue;
     }
-    // Ember falls back to `sub.price.tier` when `sub.tier` is missing.
     const tier = sub.tier ?? (sub.price as { tier?: MemberTier }).tier;
     if (!tier?.id) {
       continue;

@@ -2,6 +2,7 @@ import { HumanReadableError } from './errors';
 import { fetchWithEdgeChallenge } from './edge-challenge';
 import { transformApiSiteData, transformApiTiersData, getUrlHistory } from './helpers';
 
+/** @param {{siteUrl?: string, apiUrl?: string, apiKey?: string}} options */
 function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
   const apiPath = 'members/api';
 
@@ -78,7 +79,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     tiers() {
       const url = contentEndpointFor({
         resource: 'tiers',
-        params: { limit: 100, include: 'monthly_price,yearly_price,benefits' },
+        params: { limit: 100, include: 'monthly_price,yearly_price,benefits,requirements' },
       });
       return makeRequest({
         url,
@@ -277,10 +278,8 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     /**
-     * The custom fields the publisher has opened to members, in the publisher's order.
-     *
-     * Portal reaches older Ghost sites indefinitely, so a site without the endpoint — or
-     * a field that does not say what the member may do with it — reads as no fields.
+     * The custom fields the publisher has opened to members, in the publisher's order. A site
+     * without the endpoint reads as no fields.
      */
     customFields() {
       const url = endpointFor({ type: 'members', resource: 'member/metafields/custom' });
@@ -291,34 +290,21 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         if (!res.ok) {
           return [];
         }
-        // Read defensively: Portal and the site it talks to are deployed apart, so this
-        // endpoint may be missing, or answered by a version that shapes it differently.
-        // Anything unrecognisable reads as no fields, which is what a site with none
-        // gives, rather than breaking the page these are drawn on.
         return res
           .json()
-          .then((data) => {
-            const fields = data?.members_metafields;
-            if (!Array.isArray(fields)) {
-              return [];
-            }
-            // Every part a field is drawn from, not just enough to recognise one: a name
-            // that is not text is rendered as a child and takes the page down with it,
-            // and a type nothing can draw is no more useful than a field that is absent.
-            return fields.filter(
-              (field) =>
-                field &&
-                typeof field.key === 'string' &&
-                field.key.length > 0 &&
-                typeof field.name === 'string' &&
-                typeof field.type === 'string' &&
-                ['read', 'write'].includes(field.access?.member),
-            );
-          })
+          .then((data) => data.members_metafields)
           .catch(() => []);
       });
     },
 
+    /** @param {{
+     *   name?: string,
+     *   subscribed?: boolean,
+     *   newsletters?: { id: string }[],
+     *   enableCommentNotifications?: boolean,
+     *   enableUpdatesAndAnnouncements?: boolean,
+     *   metafields?: Record<string, Record<string, unknown>>,
+     * }} props */
     update({
       name,
       subscribed,
@@ -395,14 +381,31 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     /**
-     * @returns {{
+     * @param {{
+     *   email: string,
+     *   emailType?: string,
+     *   labels?: string[],
+     *   name?: string,
+     *   oldEmail?: string,
+     *   newsletters?: string[],
+     *   redirect?: string,
+     *   integrityToken?: string,
+     *   phonenumber?: string,
+     *   customUrlHistory?: string,
+     *   token?: string,
+     *   giftToken?: string,
+     *   autoRedirect?: boolean,
+     *   includeOTC?: boolean
+     * }} options
+     * @returns {Promise<{
+     *     success?: boolean;
      *     inboxLinks?: {
      *         desktop: string;
      *         android: string;
      *         provider: 'gmail' | 'yahoo' | 'outlook' | 'proton' | 'icloud' | 'hey' | 'aol' | 'mailru';
      *     };
      *     otc_ref?: string;
-     * }}
+     * }>}
      */
     async sendMagicLink({
       email,
@@ -600,6 +603,18 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
     },
 
+    /** @param {{
+     *   plan?: string,
+     *   tierId?: string,
+     *   cadence?: string,
+     *   cancelUrl?: string,
+     *   successUrl?: string,
+     *   email?: string,
+     *   name?: string,
+     *   offerId?: string,
+     *   newsletters?: string[],
+     *   metadata?: object
+     * }} options */
     async checkoutPlan({
       plan,
       tierId,
@@ -969,6 +984,16 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         });
     },
 
+    /** @param {{
+     *   subscriptionId: string,
+     *   tierId?: string,
+     *   cadence?: string,
+     *   planId?: string,
+     *   smartCancel?: boolean,
+     *   cancelAtPeriodEnd?: boolean,
+     *   cancellationReason?: string,
+     *   answers?: object
+     * }} options */
     async updateSubscription({
       subscriptionId,
       tierId,
@@ -977,6 +1002,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       smartCancel,
       cancelAtPeriodEnd,
       cancellationReason,
+      answers,
     }) {
       const identity = await api.member.identity();
       const url =
@@ -987,6 +1013,8 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         cancellation_reason: cancellationReason,
         identity: identity,
         priceId: planId,
+        // The member's answers to what the new tier requires, by port, saved with the change.
+        answers: answers && Object.keys(answers).length > 0 ? answers : undefined,
       };
 
       if (tierId && cadence) {
@@ -1008,7 +1036,11 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to update subscription');
+        // A refused answer comes back naming its port, which is how the page places it.
+        throw (
+          (await HumanReadableError.fromApiResponse(res)) ??
+          new Error('Failed to update subscription')
+        );
       }
 
       return res;

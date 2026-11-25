@@ -1,3 +1,4 @@
+import { useMobileFilters } from '@tryghost/shade/patterns';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
@@ -21,8 +22,8 @@ import {
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useShade } from '@tryghost/shade/app';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
+import { memberCustomFieldIdentity } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
   useEmailPostValueSource,
@@ -30,16 +31,16 @@ import {
   usePostResourceValueSource,
   useTierValueSource,
 } from '@/shared/filter-sources';
-import type { MemberView } from '@/members/hooks/use-member-views';
+import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 
 interface MembersFiltersProps {
+  mobileBarContainer?: HTMLElement | null;
   filters: Filter[];
   multipleActiveSubscriptionsCount: number;
   nql?: string;
   onFiltersChange: (filters: Filter[]) => void;
-  savedViews?: MemberView[];
-  activeView?: MemberView | null;
-  iconOnly?: boolean;
+  savedViews?: Segment[];
+  activeView?: Segment | null;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
@@ -85,12 +86,12 @@ function mapOfferRedemptionFilters(filters: Filter[], mapValues: (values: string
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
   filters,
+  mobileBarContainer,
   multipleActiveSubscriptionsCount,
   nql,
   onFiltersChange,
   savedViews = [],
   activeView,
-  iconOnly = false,
 }) => {
   const { data: offersData } = useBrowseOffers({});
   const { data: newslettersData } = useBrowseNewsletters({ searchParams: { limit: '100' } });
@@ -149,25 +150,17 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     [catalogCustomFields],
   );
   const referencedCustomFieldIdentities = useReferencedKeys(filters, METAFIELDS_FIELD_PREFIX);
-  const referencedCustomFieldKeys = useMemo(
+  const referencedIdentities = useMemo(
     () => new Set(referencedCustomFieldIdentities),
     [referencedCustomFieldIdentities],
   );
   const archivedCustomFields = useMemo(
     () =>
-      catalogCustomFields
-        .filter(
-          (field) =>
-            field.status === 'archived' &&
-            referencedCustomFieldKeys.has(`${field.namespace}.${field.key}`),
-        )
-        .map((field) => ({
-          namespace: field.namespace,
-          key: field.key,
-          name: field.name,
-          type: field.type,
-        })),
-    [catalogCustomFields, referencedCustomFieldKeys],
+      catalogCustomFields.filter(
+        (field) =>
+          field.status === 'archived' && referencedIdentities.has(memberCustomFieldIdentity(field)),
+      ),
+    [catalogCustomFields, referencedIdentities],
   );
 
   const filterFields = useMemberFilterFields({
@@ -190,18 +183,15 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     archivedCustomFields,
   });
 
+  const mobile = useMobileFilters();
   const hasFilters = filters.length > 0;
-  const { isAdmin7 } = useShade();
 
   const clearAndSaveButtons = hasFilters ? (
     <FilterBar.Actions data-testid="members-filter-actions" gap="sm">
       <FilterBar.Action
-        className={cn(
-          'hidden items-center lg:inline-flex',
-          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
-        )}
+        className="hidden items-center lg:inline-flex"
         type="button"
-        variant={isAdmin7 ? 'ghost' : 'outline'}
+        variant="ghost"
         onClick={() => onFiltersChange([])}
       >
         Clear
@@ -217,24 +207,36 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     </FilterBar.Actions>
   ) : undefined;
 
-  const filterControls = (
+  return (
     <Filters
-      addButton={<Filters.Trigger collapseLabel={iconOnly} fallbackClassName="bg-background" />}
-      allowMultiple={true}
-      className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
+      addButton={<Filters.Trigger />}
+      barContainer={mobileBarContainer}
+      className={
+        mobile ? undefined : cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')
+      }
+
       clearButton={clearAndSaveButtons}
       fields={filterFields}
       filters={displayFilters}
+      inlineActions={
+        nql ? (
+          <ManageViewPopover
+            activeView={activeView}
+            existingViews={savedViews}
+            filter={nql}
+            onDeleted={() => onFiltersChange([])}
+          />
+        ) : undefined
+      }
       keyboardShortcut="f"
-      popoverAlign={'start'}
+      popoverAlign="start"
       popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
       showClearButton={hasFilters}
-      showSearchInput={true}
+      allowMultiple
+      showSearchInput
       onChange={handleFiltersChange}
     />
   );
-
-  return filterControls;
 };
 
 export default MembersFilters;

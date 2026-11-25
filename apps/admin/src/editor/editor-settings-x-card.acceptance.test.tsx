@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { settingsXCardBackButton, settingsXCardRow } from '@tryghost/test-data/selectors/editor';
+import {
+  settingsMetaDataBackButton,
+  settingsMetaDataRow,
+} from '@tryghost/test-data/selectors/editor';
 
 import {
   UNSPLASH_PICKED,
@@ -84,12 +87,14 @@ function fakeMembersTotal() {
   });
 }
 
+/** Opens the Meta data pane on its X card tab. */
 async function openXCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
   await settleTransitions();
-  await editorScreen.settingsSubviewRow(settingsXCardRow).click();
+  await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+  await editorScreen.settingsMetaDataTab('X card').click();
 }
 
 /**
@@ -124,10 +129,11 @@ describe('Post settings X card', () => {
         );
         await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
         await expect.element(editorScreen.settingsXImageInput()).toBeDisabled();
-        await editorScreen.settingsSubviewBack(settingsXCardBackButton).click();
+        await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
         await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-        await editorScreen.settingsSubviewRow(settingsXCardRow).click();
+        await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
         await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+        await editorScreen.settingsMetaDataTab('X card').click();
         await expect.element(editorScreen.settingsXImageInput()).toBeDisabled();
         await expect.element(editorScreen.settingsXImageUnsplashButton()).toBeDisabled();
         expect(saveApi.requests).toHaveLength(0);
@@ -145,7 +151,7 @@ describe('Post settings X card', () => {
     },
   );
 
-  it('opens the pane over the section list and comes back from it', async () => {
+  it('opens under the Meta data pane over the section list and comes back from it', async () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openXCard();
@@ -156,11 +162,11 @@ describe('Post settings X card', () => {
     await expect.element(editorScreen.settingsXDescription()).toBeVisible();
     await expect.element(editorScreen.settingsXImage()).toBeVisible();
 
-    await editorScreen.settingsSubviewBack(settingsXCardBackButton).click();
+    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow(settingsXCardRow)).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
   });
 
   it('saves an uploaded X image as soon as it lands', async () => {

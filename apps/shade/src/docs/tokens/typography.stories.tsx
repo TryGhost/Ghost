@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Stack } from '@/components/primitives';
 import { FontFamilies, LeadingScale, TypeScale } from '../showcase/type-scale';
 
 const meta = {
@@ -41,6 +42,26 @@ export const SizeScale: Story = {
       description: {
         story:
           'Body copy uses `--text-base`. Larger sizes ship with baked-in line-heights for headings.',
+      },
+    },
+  },
+};
+
+export const DetailSectionHeadings: Story = {
+  render: () => (
+    <Stack className="[--text-section-heading:var(--text-section-heading-lg)]" gap="lg">
+      {['Details', 'Meta data', 'Engagement'].map((title) => (
+        <h3 key={title} className="section-heading text-base font-semibold">
+          {title}
+        </h3>
+      ))}
+    </Stack>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Member and tag section headings use the section-heading tracking token at -0.01em in Admin 7, keeping their 21px size and medium weight.',
       },
     },
   },

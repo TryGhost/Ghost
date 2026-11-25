@@ -107,7 +107,7 @@ export function CommentHeader({
       {isHidden && <Badge variant="secondary">Hidden</Badge>}
       {isPinned &&
         (onUnpinClick ? (
-          <Badge className="group gap-1 hover:bg-state-warning/30" variant="warning" asChild>
+          <Badge className="group gap-1 hover:bg-badge-warning-hover" variant="warning" asChild>
             <button aria-label="Unpin comment" type="button" onClick={handleUnpinClick}>
               <span className="grid size-3 shrink-0">
                 <LucideIcon.Pin className="col-start-1 row-start-1 size-3 group-hover:opacity-0 group-focus-visible:opacity-0" />

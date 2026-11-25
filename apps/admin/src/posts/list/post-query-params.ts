@@ -1,8 +1,7 @@
 /**
  * Turns the posts/pages URL params into the API queries that back the list.
  *
- * Ported from `apps/ember-admin/app/routes/posts.js`. Two things here are
- * load-bearing beyond "it fetches posts":
+ * Two things here are load-bearing beyond "it fetches posts":
  *
  * - The list is not one query but three, drained in order (scheduled, then
  *   drafts, then published/sent), each with its own default sort. Drafts have
@@ -21,7 +20,7 @@ export const BUCKET_ORDER: readonly PostBucket[] = ['scheduled', 'draft', 'publi
 
 const ALL_STATUSES: readonly PostStatus[] = ['draft', 'scheduled', 'published', 'sent'];
 
-/** Rows per request. Matches Ember; also decides when a bucket "opens". */
+/** Rows per request; also decides when a bucket "opens". */
 export const POSTS_PER_PAGE = 30;
 
 /**
@@ -88,7 +87,7 @@ function statusClause(statuses: PostStatus[]): string {
  * verbatim - `visibility=[paid,tiers]` is an opaque option value, not
  * structure to be parsed.
  *
- * "Blank" matches Ember's `isBlank`, which counts whitespace-only strings, so
+ * "Blank" includes whitespace-only strings, so
  * `?tag=%20%20` produces no clause. These strings are
  * compared against saved views and run server-side by bulk delete, so they have
  * to agree exactly.
@@ -182,9 +181,7 @@ export function getBucketOrder(bucket: PostBucket, order?: string | null): strin
  * *disable* that, so don't.
  *
  * `formats` is omitted because it makes no difference: `defaultFormat` fills
- * in `mobiledoc,lexical` server-side when the client leaves it out, so this
- * matches Ember byte for byte. Trimming the post bodies out of a 30-row list
- * would need an explicit narrower `formats`, which is a separate change.
+ * in `mobiledoc,lexical` server-side when the client leaves it out.
  */
 export function getBucketSearchParams(
   bucket: PostBucket,

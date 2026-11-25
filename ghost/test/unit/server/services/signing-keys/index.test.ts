@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import type { Knex } from 'knex';
 import sinon from 'sinon';
-import { afterEach, beforeEach, describe, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 import type { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 
 // Use the same CommonJS modules as boot. Restore the original root after each
@@ -46,12 +46,10 @@ describe('signing-keys root', function () {
     jobs = { scheduleRecurring } as unknown as JobsService;
     root = require(ROOT_PATH).default;
     scheduleCheckJob = root.extras.scheduleCheckJob;
-    vi.stubEnv('NODE_ENV', 'production');
   });
 
   afterEach(function () {
     sandbox.restore();
-    vi.unstubAllEnvs();
     if (originalModule) {
       require.cache[ROOT_PATH] = originalModule;
     } else {
@@ -177,17 +175,6 @@ describe('signing-keys root', function () {
     sinon.assert.calledTwice(scheduleRecurring);
   });
 
-  for (const environment of ['test', 'testing', 'testing-mysql']) {
-    it(`does not register recurring checks in ${environment}`, async function () {
-      vi.stubEnv('NODE_ENV', environment);
-      markRotating();
-      await root.init();
-      await scheduleCheckJob(jobs);
-
-      sinon.assert.notCalled(scheduleRecurring);
-    });
-  }
-
   // Keep the real rotate() and its callback into the root. These doubles stand
   // in for the database; transaction semantics have separate integration tests.
   function stubRotationStorage() {
@@ -196,7 +183,7 @@ describe('signing-keys root', function () {
     sandbox
       .stub(models.Settings, 'findOne')
       .callsFake(async ({ key }: { key: string }) =>
-        entries[key] ? { toJSON: () => entries[key] } : null,
+        entries[key] ? { get: () => entries[key].value, toJSON: () => entries[key] } : null,
       );
     return sandbox
       .stub(models.Settings, 'edit')

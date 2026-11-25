@@ -314,25 +314,12 @@ describe('SubscriptionStatsService', function () {
       const result = await stats.getSubscriptionHistory();
 
       // Check totals
-      assert(
-        (result.meta.totals.find(
-          (item) => item.tier === 'basic' && item.cadence === 'month',
-        ).count = 1),
-      );
-      assert(
-        (result.meta.totals.find((item) => item.tier === 'basic' && item.cadence === 'year').count =
-          1),
-      );
-      assert(
-        (result.meta.totals.find(
-          (item) => item.tier === 'beyond' && item.cadence === 'month',
-        ).count = 1),
-      );
-      assert(
-        (result.meta.totals.find(
-          (item) => item.tier === 'beyond' && item.cadence === 'year',
-        ).count = 3),
-      );
+      const total = (tier, cadence) =>
+        result.meta.totals.find((item) => item.tier === tier && item.cadence === cadence).count;
+      assert.equal(total('basic', 'month'), 1);
+      assert.equal(total('basic', 'year'), 1);
+      assert.equal(total('beyond', 'month'), 1);
+      assert.equal(total('beyond', 'year'), 3);
 
       /**
        * @param {string} tier

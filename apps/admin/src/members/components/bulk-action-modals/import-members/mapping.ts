@@ -1,6 +1,10 @@
 import validator from 'validator';
+import { SEPARATOR } from '@tryghost/metafield-types/identity';
+import { MAX_OPTIONS, optionKey, optionText } from '@tryghost/metafield-types/structure';
+import type { ListSuggestion } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
   isMetafieldColumn,
+  splitListCell,
   type MemberCustomFieldCsvColumn,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -262,8 +266,47 @@ export function formatImportError(error: string): string {
 export function suggestedFieldName(column: string): string {
   // A custom field column is `metafields.<namespace>.<key>[.<part>]`. The name being
   // suggested is the field's, so only the key segment is kept: the part is asked for
-  // separately.
-  const key = isMetafieldColumn(column) ? column.split('.')[2] : column;
+  // separately. Read as text rather than as an identity: a column someone typed need not
+  // follow the key rule, and its key segment is still the best name on offer.
+  const [, , key] = isMetafieldColumn(column) ? column.split(SEPARATOR) : [];
   const words = (key ?? column).replace(/[._-]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * What a column's cells say about a list made from it. Its options are every different answer
+ * once, in the order they first appear, split where a cell holds several the way the import reads
+ * them. Several answers are allowed when any cell holds more than one, and such a column starts
+ * out as a list. A column that can't be made a list says why: one with more different answers
+ * than a list can offer, or with two answers that differ only by case, which a list can't both
+ * offer. Either way the import would refuse rows for answers the list couldn't hold, since an
+ * answer has to match an option exactly.
+ */
+export function listSuggestionFor(cells: readonly string[]): ListSuggestion {
+  const found = new Set<string>();
+  // Each option a list could offer, by the text two options are compared by, as first written.
+  const spellings = new Map<string, string>();
+  let multiple = false;
+  for (const cell of cells) {
+    const answers = splitListCell(cell).map(optionText);
+    multiple ||= answers.length > 1;
+    for (const answer of answers) {
+      const spelled = spellings.get(optionKey(answer));
+      if (spelled !== undefined && spelled !== answer) {
+        return {
+          kind: 'refused',
+          reason: `A list can’t offer both “${spelled}” and “${answer}”, and this column holds both.`,
+        };
+      }
+      spellings.set(optionKey(answer), answer);
+      found.add(answer);
+      if (found.size > MAX_OPTIONS) {
+        return {
+          kind: 'refused',
+          reason: `A list offers at most ${MAX_OPTIONS} options, and this column holds more different answers than that.`,
+        };
+      }
+    }
+  }
+  return { kind: 'list', settings: { options: [...found], multiple }, startAsList: multiple };
 }

@@ -41,7 +41,7 @@ TypeScript and validate runtime boundaries with Zod.
 | Editor content       | Remove Mobiledoc support in Ghost 7.0                | Planned          |
 | Self-hosting         | Deprecate Ghost-CLI in favour of Docker in Ghost 7.0 | Active migration |
 | Node.js runtime      | Keep pace with Node Current                          | Planned          |
-| Authentication       | Standards-based auth built on Better Auth            | Exploring        |
+| Authentication       | Standards-based auth built on Better Auth            | Active migration |
 | Linting              | ESLint to Oxlint                                     | Planned          |
 
 ## Architectural direction
@@ -54,7 +54,8 @@ that every migration path is settled:
   process-local state, and boot-time snapshots.
 - **Dependency injection:** modules should be handed the stateful things they
   use. Wiring moves toward the edge; this does not require a DI framework or
-  prohibit ordinary imports.
+  prohibit ordinary imports. The [dependency rules](../practices/dependencies.md)
+  say which imports are allowed.
 - **Type safety:** TypeScript is the language direction and Zod is the runtime
   boundary direction. Exact schema ownership and sharing patterns still need
   golden paths where the codebase has no established answer.
@@ -66,7 +67,9 @@ that every migration path is settled:
   protocols and credential lifecycles, with Better Auth as the intended
   foundation. Existing staff, member, integration, and Content API mechanisms
   remain the current contract until replacements are implemented and migrated.
-  Follow the [authentication guide](authentication.md) for current behavior.
+  Follow the [authentication guide](authentication.md) for current behavior
+  and the [Better Auth migration plan](../plans/better-auth-migration.md) for
+  the phases.
 
 ## Guidance for new work
 
