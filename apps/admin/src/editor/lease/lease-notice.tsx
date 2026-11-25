@@ -386,8 +386,17 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
         className="w-max max-w-64 p-4"
         data-testid={editorLeaseCard}
         sideOffset={8}
-        // The card explains; it must not pull focus out of whatever the writer was reading.
-        onOpenAutoFocus={(event) => event.preventDefault()}
+        onFocusOutside={(event) => {
+          // Koenig restores the writing selection after takeover. Keep the brief
+          // success acknowledgement visible while focus returns to the document.
+          if (takeoverSucceeded) {
+            event.preventDefault();
+          }
+        }}
+        onOpenAutoFocus={(event) => {
+          // The card explains; it must not pull focus out of whatever the writer was reading.
+          event.preventDefault();
+        }}
         onPointerEnter={takeoverSucceeded ? undefined : enter}
         onPointerLeave={takeoverSucceeded ? undefined : leave}
       >

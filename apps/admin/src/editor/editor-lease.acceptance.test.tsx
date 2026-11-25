@@ -386,6 +386,12 @@ describe('Post editor lease', () => {
       // Reloading the editor can return focus to its new writing surface.
       editorScreen.titleInput().element().focus();
       await expect.element(editorScreen.titleInput()).toHaveFocus();
+      editorScreen.body().element().focus();
+      await expect.element(editorScreen.body()).toHaveFocus();
+      // Outside-focus dismissal is deferred; check after that event has been handled.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
       await expect
         .element(card().getByRole('status'))
         .toHaveTextContent('You’re now editing this post.');
