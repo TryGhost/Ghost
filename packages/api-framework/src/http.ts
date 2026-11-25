@@ -11,6 +11,8 @@ const routed = new WeakMap<HttpHandler, ControllerMethod>();
 
 /** The controller method an `http()` handler runs */
 export interface RoutedMethod {
+  /** The method itself, which two routes mounting it share */
+  controller: ControllerMethod;
   docName?: string;
   method?: string;
   /** As the controller declares it; undefined for a method outside the pipeline */
@@ -26,7 +28,7 @@ export function routedMethod(handler: unknown): RoutedMethod | undefined {
   if (!apiImpl) {
     return undefined;
   }
-  return { ...apiConfigOf(apiImpl), permissions: apiImpl.permissions };
+  return { controller: apiImpl, ...apiConfigOf(apiImpl), permissions: apiImpl.permissions };
 }
 
 export interface GhostRequest {

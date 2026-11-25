@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
 import errors from '@tryghost/errors';
 
 const permissions = require('../../../../../../core/server/api/endpoints/utils/permissions');
-const api = require('../../../../../../core/server/api/endpoints');
+const routes = require('../../../../../../core/server/web/api/endpoints/admin/routes');
+// Required, not imported, so it is the copy the routes registered their handlers with
+const { routedMethod } = require('@tryghost/api-framework');
 
 /**
  * Admin API methods whose permission check is their own or none, which refuse apps, by their
@@ -47,34 +47,32 @@ const REFUSED_FOR_APPS = [
   'users.transferOwnership',
 ];
 
-/** Controllers outside the API pipeline, so its permission stage never sees them */
+/**
+ * Routes ending in a controller outside the API pipeline, whose permission stage never sees them,
+ * by method and path
+ */
 const OUTSIDE_PIPELINE = [
   // Only DELETE /session authenticates, and its route refuses apps
-  'session.add',
-  'session.delete',
-  'session.sendVerification',
-  'session.verify',
+  'DELETE /session',
+  'POST /session',
+  'POST /session/verify',
+  'PUT /session/verify',
 ];
 
-const ENDPOINTS_DIR = path.join(__dirname, '../../../../../../core/server/api/endpoints');
-
 /**
- * The `docName` of the controller behind an export of the API, read from the controller its
- * getter requires, since the pipeline doesn't pass `docName` on
+ * Routes that end in no controller: each authenticates the requests to a router mounted after
+ * it, whose routes run nothing before their controller
  */
-function docNameOf(controller: string): string {
-  const getter = Object.getOwnPropertyDescriptor(api, controller)?.get?.toString() ?? '';
-  // Outside the pipeline, which is all that reads a docName, the export's name will do
-  if (!getter.includes('pipeline(')) {
-    return controller;
-  }
-  const [, file, member] = getter.match(/require\('(\.\/[^']+)'\)(?:\.(\w+))?/) ?? [];
-  assert.ok(file, `api.${controller} requires its controller`);
-  const exported = require(path.join(ENDPOINTS_DIR, file));
-  const { docName } = member ? exported[member] : exported;
-  assert.ok(docName, `api.${controller} has a docName`);
-  return docName;
-}
+const AUTHENTICATING_MOUNTS = [
+  'ALL /apps,/apps/*',
+  'ALL /members/metafields,/members/metafields/*',
+];
+
+/** Routes whose `http()` wraps a method the API doesn't have, so they answer only errors */
+const MOUNTING_NOTHING = ['GET /config/featurebase'];
+
+/** Middleware the routers run on every request, which acts for no one */
+const ROUTER_MIDDLEWARE = ['corsCaching', 'corsMiddleware', 'expressNoop', 'labsEnabledMw'];
 
 type AdminApiMethod = {
   /** By its controller's `docName`, as the permission stage and the allowlist name it */
@@ -82,24 +80,75 @@ type AdminApiMethod = {
   impl: { permissions?: unknown };
 };
 
+type MountedRoutes = {
+  /** Every pipeline method a route ends in, once per method */
+  methods: AdminApiMethod[];
+  /** Routes ending in a controller outside the pipeline */
+  outside: string[];
+  /** Routes ending in no controller */
+  unrouted: string[];
+  /** Routes ending in `http()` of a method that doesn't exist */
+  empty: string[];
+  /** Routes in a mounted router that run anything before their controller */
+  guardedLate: string[];
+  /** Other middleware the routers run, by name */
+  middleware: string[];
+};
+
 /**
- * Every method the Admin API routes mount, read from its routes file. Kept apart by export, as
- * two controllers can share a `docName`.
+ * Everything the Admin API router mounts, walked from the router itself rather than read from
+ * the routes file, so a route mounted in any form is found
  */
-function adminApiMethods(): AdminApiMethod[] {
-  const routes = fs.readFileSync(
-    path.join(__dirname, '../../../../../../core/server/web/api/endpoints/admin/routes.js'),
-    'utf8',
-  );
-  const methods = new Map<string, AdminApiMethod>();
-  for (const [, controller, method] of routes.matchAll(/http\(api\.(\w+)\.(\w+)\)/g)) {
-    const impl = api[controller][method];
-    // A route mounting a method that doesn't exist runs nothing
-    if (impl) {
-      methods.set(`${controller}.${method}`, { name: `${docNameOf(controller)}.${method}`, impl });
+function mountedRoutes(): MountedRoutes {
+  const found: MountedRoutes = {
+    methods: [],
+    outside: [],
+    unrouted: [],
+    empty: [],
+    guardedLate: [],
+    middleware: [],
+  };
+  const methods = new Map<unknown, AdminApiMethod>();
+
+  const walk = (router: { stack: any[] }, mounted: boolean) => {
+    for (const layer of router.stack) {
+      if (!layer.route) {
+        if (layer.handle.stack) {
+          walk(layer.handle, true);
+        } else {
+          found.middleware.push(layer.handle.name);
+        }
+        continue;
+      }
+      const verbs = Object.keys(layer.route.methods).map((verb) =>
+        verb === '_all' ? 'ALL' : verb.toUpperCase(),
+      );
+      const route = `${verbs.join(',')} ${[layer.route.path].flat().join(',')}`;
+      const handlers = layer.route.stack.map((l: { handle: unknown }) => l.handle);
+      const routed = routedMethod(handlers.at(-1));
+      if (!routed) {
+        // A handler from http() whose method is undefined
+        found[handlers.at(-1).name === 'Http' ? 'empty' : 'unrouted'].push(route);
+        continue;
+      }
+      // Authenticated by the route the router is mounted after, whose refusal can't see the method
+      if (mounted && handlers.length > 1) {
+        found.guardedLate.push(route);
+      }
+      if (!routed.docName) {
+        found.outside.push(route);
+        continue;
+      }
+      methods.set(routed.controller, {
+        name: `${routed.docName}.${routed.method}`,
+        impl: { permissions: routed.permissions },
+      });
     }
-  }
-  return [...methods.values()];
+  };
+  walk(routes(), false);
+
+  found.methods = [...methods.values()];
+  return found;
 }
 
 const isUnchecked = ({ impl }: AdminApiMethod) =>
@@ -107,31 +156,34 @@ const isUnchecked = ({ impl }: AdminApiMethod) =>
 
 describe('API permissions for apps', function () {
   const app = { kind: 'app' };
-  const unchecked = () => {
-    const found: string[] = [];
-    const outside: string[] = [];
-    for (const method of adminApiMethods()) {
-      if (!Object.prototype.hasOwnProperty.call(method.impl, 'permissions')) {
-        outside.push(method.name);
-        continue;
-      }
-      if (isUnchecked(method)) {
-        found.push(method.name);
-      }
-    }
-    return { found: [...new Set(found)].sort(), outside: outside.sort() };
-  };
+  const unchecked = () =>
+    [
+      ...new Set(
+        mountedRoutes()
+          .methods.filter(isUnchecked)
+          .map(({ name }) => name),
+      ),
+    ].sort();
 
   it('knows every Admin API method that checks no standard permission', function () {
-    const { found, outside } = unchecked();
     const allowlisted = [...permissions.APP_UNCHECKED_ALLOWLIST];
 
-    assert.deepEqual(found, [...REFUSED_FOR_APPS, ...allowlisted].sort());
-    assert.deepEqual(outside, OUTSIDE_PIPELINE);
+    assert.deepEqual(unchecked(), [...REFUSED_FOR_APPS, ...allowlisted].sort());
+  });
+
+  it('can classify everything the Admin API mounts', function () {
+    const { outside, unrouted, empty, guardedLate, middleware } = mountedRoutes();
+
+    assert.deepEqual(outside.sort(), [...OUTSIDE_PIPELINE].sort());
+    assert.deepEqual(unrouted.sort(), [...AUTHENTICATING_MOUNTS].sort());
+    assert.deepEqual(empty, MOUNTING_NOTHING);
+    // Refusing an app before a route's own middleware needs the route to name its method
+    assert.deepEqual(guardedLate, []);
+    assert.deepEqual([...new Set(middleware)].sort(), ROUTER_MIDDLEWARE);
   });
 
   it('finds no unchecked method sharing its name with another', function () {
-    const byName = Map.groupBy(adminApiMethods(), ({ name }) => name);
+    const byName = Map.groupBy(mountedRoutes().methods, ({ name }) => name);
     const shared = [...byName]
       .filter(([, methods]) => methods.length > 1 && methods.some(isUnchecked))
       .map(([name]) => name);

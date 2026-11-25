@@ -339,6 +339,7 @@ describe('HTTP', function () {
       );
 
       assert.deepEqual(shared.routedMethod(shared.http(controller.browse)), {
+        controller: controller.browse,
         docName: 'posts',
         method: 'browse',
         permissions: true,
@@ -353,6 +354,7 @@ describe('HTTP', function () {
     it('knows no method for a controller outside the pipeline', function () {
       const outside = Object.assign(() => Promise.resolve(), {});
       assert.deepEqual(shared.routedMethod(shared.http(outside)), {
+        controller: outside,
         permissions: undefined,
       });
     });
