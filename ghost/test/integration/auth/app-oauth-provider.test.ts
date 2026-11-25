@@ -18,6 +18,7 @@ import {
   generateGhostId,
   ghostJwtSchema,
   ghostModelOptions,
+  ghostOAuthProviderSchema,
 } from '../../../core/server/auth/better-auth/ghost-models';
 import { appProviderOptions } from '../../../core/server/auth/better-auth/plugins/apps';
 import {
@@ -592,7 +593,7 @@ describe("Better Auth's OAuth provider for apps", function () {
       assert.ok(new Date(row.expires_at).getTime() <= sessionExpiresAt.getTime());
     });
 
-    it('refuses a token once its session is gone or its client is disabled or gone', async function () {
+    it('refuses a token once its session is gone or its client is disabled', async function () {
       const auth = build({ apps: true });
       const id = installationId();
       await auth.api.reconcileAppClient({
@@ -619,15 +620,48 @@ describe("Better Auth's OAuth provider for apps", function () {
       });
       assert.equal(await validate(auth, deactivated.accessToken), null);
       assert.equal((await knex('oauth_access_tokens').count({ count: '*' }))[0].count, 0);
+    });
 
+    it('deletes the tokens of a client that is deleted', async function () {
+      const auth = build({ apps: true });
+      const id = installationId();
       await auth.api.reconcileAppClient({
         body: { installationId: id, active: true, scopes: ['post:browse'] },
       });
-      const deleted = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+      const token = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+
       await knex('oauth_clients')
         .where({ client_id: userClientId(id) })
         .del();
-      assert.equal(await validate(auth, deleted.accessToken), null);
+
+      assert.equal(await tokenCount(), 0);
+      assert.equal(await validate(auth, token.accessToken), null);
+    });
+
+    it('refuses a token whose client is gone once the provider has accepted it', async function () {
+      const auth = build({ apps: true });
+      const id = installationId();
+      await auth.api.reconcileAppClient({
+        body: { installationId: id, active: true, scopes: ['post:browse'] },
+      });
+      const token = await issue(auth, { id, sessionId: (await staffSession(auth)).id });
+
+      // The provider looks the client up first; a store without a foreign key may lose it after
+      const { adapter } = await auth.$context;
+      const findOne = adapter.findOne.bind(adapter);
+      let clientLookups = 0;
+      sinon.stub(adapter, 'findOne').callsFake(async (query: Parameters<typeof findOne>[0]) => {
+        const row = await findOne(query);
+        if (query.model !== ghostOAuthProviderSchema.oauthClient.modelName) {
+          return row;
+        }
+        clientLookups += 1;
+        return clientLookups > 1 ? null : row;
+      });
+
+      assert.equal(await validate(auth, token.accessToken), null);
+      assert.equal(clientLookups, 2);
+      assert.equal(await tokenCount(), 1);
     });
 
     it('refuses a token once its staff session is unverified or has expired', async function () {
