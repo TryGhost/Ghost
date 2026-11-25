@@ -115,6 +115,11 @@ export const routes: CustomRouteObject[] = [
         showBackButton: true,
       },
       {
+        path: 'preferences/relay-sharing',
+        lazy: lazyComponent(() => import('./views/preferences/components/relay-sharing')),
+        showBackButton: true,
+      },
+      {
         path: accountMigrationPath,
         lazy: lazyComponent(() => import('./views/preferences/components/account-migration')),
         pageTitle: 'Account migration',

@@ -29,6 +29,8 @@ export interface Account {
   blueskyEnabled?: boolean;
   blueskyHandleConfirmed?: boolean;
   blueskyHandle?: string | null;
+  relaySharingEnabled?: boolean;
+  relayHosts?: string[];
 }
 
 export type AccountSearchResult = Pick<
@@ -953,6 +955,18 @@ export class ActivityPubAPI {
 
   async disableBluesky() {
     const url = new URL('.ghost/activitypub/v2/actions/bluesky/disable', this.apiUrl);
+
+    await this.fetchJSON(url, 'POST');
+  }
+
+  async enableRelaySharing() {
+    const url = new URL('.ghost/activitypub/v2/actions/relay/enable', this.apiUrl);
+
+    await this.fetchJSON(url, 'POST');
+  }
+
+  async disableRelaySharing() {
+    const url = new URL('.ghost/activitypub/v2/actions/relay/disable', this.apiUrl);
 
     await this.fetchJSON(url, 'POST');
   }

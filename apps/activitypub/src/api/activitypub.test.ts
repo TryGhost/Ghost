@@ -2344,6 +2344,68 @@ describe('ActivityPubAPI', function () {
     });
   });
 
+  describe('enableRelaySharing', function () {
+    test('It enables relay sharing', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v2/actions/relay/enable`]: {
+          async assert(_resource, init) {
+            expect(init?.method).toEqual('POST');
+          },
+          response: JSONResponse(null),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      await api.enableRelaySharing();
+    });
+  });
+
+  describe('disableRelaySharing', function () {
+    test('It disables relay sharing', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v2/actions/relay/disable`]: {
+          async assert(_resource, init) {
+            expect(init?.method).toEqual('POST');
+          },
+          response: JSONResponse(null),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      await api.disableRelaySharing();
+    });
+  });
+
   describe('confirmBlueskyHandle', function () {
     test('It confirms the bluesky handle', async function () {
       const fakeFetch = Fetch({

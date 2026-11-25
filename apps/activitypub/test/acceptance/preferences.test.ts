@@ -763,3 +763,53 @@ test.describe('Preferences', async () => {
     await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
 });
+
+test.describe('Relay sharing', async () => {
+  test.beforeEach(async ({ page }) => {
+    await mockInitialApiRequests(page);
+  });
+
+  test('The setting is hidden when the service has no relays', async ({ page }) => {
+    await mockApi({
+      page,
+      requests: { getMyAccount },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/preferences');
+
+    await expect(page.getByText('Bluesky sharing')).toBeVisible();
+    await expect(page.getByText('Relay sharing')).toHaveCount(0);
+  });
+
+  test('I can turn on relay sharing', async ({ page }) => {
+    const { lastApiRequests } = await mockApi({
+      page,
+      requests: {
+        getMyAccount: {
+          ...getMyAccount,
+          response: { ...account, relaySharingEnabled: false, relayHosts: ['tags.pub'] },
+        },
+        enableRelaySharing: {
+          method: 'POST',
+          path: '/v2/actions/relay/enable',
+          response: null,
+          responseStatus: 204,
+        },
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/preferences');
+    await page.getByText('Relay sharing').click();
+
+    await expect(page.getByText(/sends your public posts, but not your replies, to tags\.pub/)).toBeVisible();
+    await page.getByRole('button', { name: 'Enable relay sharing' }).click();
+
+    await expect.poll(() => lastApiRequests.enableRelaySharing).toBeTruthy();
+    await expect(page.getByRole('button', { name: /Enabled/ })).toBeVisible();
+
+    await page.goBack();
+    await expect(page.getByText('On', { exact: true })).toBeVisible();
+  });
+});

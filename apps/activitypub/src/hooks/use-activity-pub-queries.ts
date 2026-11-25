@@ -3003,6 +3003,63 @@ export function useDisableBlueskyMutationForUser(handle: string) {
   });
 }
 
+function updateAccountRelaySharingCache(queryClient: QueryClient, relaySharingEnabled: boolean) {
+  const profileQueryKey = QUERY_KEYS.account('index');
+
+  queryClient.setQueryData(profileQueryKey, (currentProfile?: object) => {
+    if (!currentProfile) {
+      return currentProfile;
+    }
+
+    return {
+      ...currentProfile,
+      relaySharingEnabled,
+    };
+  });
+}
+
+export function useEnableRelaySharingMutationForUser(handle: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    async mutationFn() {
+      const siteUrl = await getSiteUrl();
+      const api = createActivityPubAPI(handle, siteUrl);
+
+      return api.enableRelaySharing();
+    },
+    onSuccess() {
+      updateAccountRelaySharingCache(queryClient, true);
+    },
+    onError(error: { message: string; statusCode: number }) {
+      if (error.statusCode === 429) {
+        renderRateLimitError();
+      }
+    },
+  });
+}
+
+export function useDisableRelaySharingMutationForUser(handle: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    async mutationFn() {
+      const siteUrl = await getSiteUrl();
+      const api = createActivityPubAPI(handle, siteUrl);
+
+      return api.disableRelaySharing();
+    },
+    onSuccess() {
+      updateAccountRelaySharingCache(queryClient, false);
+    },
+    onError(error: { message: string; statusCode: number }) {
+      if (error.statusCode === 429) {
+        renderRateLimitError();
+      }
+    },
+  });
+}
+
 export function useConfirmBlueskyHandleMutationForUser(handle: string) {
   const queryClient = useQueryClient();
 
