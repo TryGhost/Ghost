@@ -1,8 +1,13 @@
+/* global vi */
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const FormData = require('form-data');
+const { compress } = require('@tryghost/zip');
+const fsExtra = require('fs-extra');
+const sinon = require('sinon');
+const models = require('../../../core/server/models');
 const {
   agentProvider,
   fixtureManager,
@@ -69,6 +74,55 @@ describe('CSV import inspection', function () {
     await agent.delete(`posts/upload/inspect/${meta.upload_id}/`).expectStatus(204);
   });
 
+  for (const scenario of ['multiple CSVs', 'malformed CSV', 'corrupt ZIP']) {
+    it(`cleans the uploaded ZIP and all extraction directories after rejecting ${scenario}`, async function () {
+      await agent.loginAsOwner();
+      const zip = path.join(directory, 'rejected.zip');
+      if (scenario === 'corrupt ZIP') {
+        await fs.writeFile(zip, 'not a ZIP');
+      } else {
+        const source = await fs.mkdtemp(path.join(directory, 'rejected-'));
+        await fs.writeFile(
+          path.join(source, 'posts.csv'),
+          scenario === 'malformed CSV' ? 'title\n"Unclosed' : 'title\nOne',
+        );
+        if (scenario === 'multiple CSVs') {
+          await fs.writeFile(path.join(source, 'second.csv'), 'title\nTwo');
+        }
+        await compress(source, zip);
+      }
+      const sandbox = sinon.createSandbox();
+      const mkdir = sandbox.spy(fs, 'mkdir');
+      const unlink = sandbox.spy(fsExtra, 'unlink');
+      try {
+        await agent
+          .post('posts/upload/inspect/')
+          .attach('postsfile', zip)
+          .expectStatus(scenario === 'corrupt ZIP' ? 415 : 422);
+
+        // Both ZIP classification and CSV inspection extract privately. The
+        // original request spool is separately owned by the upload middleware.
+        const extracted = mkdir
+          .getCalls()
+          .filter(
+            ({ args: [target, options] }) =>
+              options?.mode === 0o700 && path.dirname(target) === os.tmpdir(),
+          )
+          .map(({ args: [target] }) => target);
+        assert.equal(extracted.length, scenario === 'corrupt ZIP' ? 1 : 2);
+        for (const target of extracted) {
+          assert.equal(await fsExtra.pathExists(target), false);
+        }
+        await vi.waitFor(async () => {
+          sinon.assert.calledOnce(unlink);
+          assert.equal(await fsExtra.pathExists(unlink.firstCall.args[0]), false);
+        });
+      } finally {
+        sandbox.restore();
+      }
+    });
+  }
+
   it('keeps import permission and Labs checks in front of inspection', async function () {
     await agent.loginAsEditor();
     await agent.post('posts/upload/inspect/').attach('postsfile', file).expectStatus(403);
@@ -108,5 +162,40 @@ describe('CSV import inspection', function () {
     assert.match(email.html, /Created:<\/strong> 22/);
     mockManager.assert.sentEmailCount(1);
     await agent.delete(`posts/upload/inspect/${meta.upload_id}/`).expectStatus(409);
+  });
+
+  it('hands a JSON ZIP to the legacy controller using the same upload', async function () {
+    mockManager.mockMail();
+    await agent.loginAsOwner();
+    const source = path.join(directory, 'legacy');
+    await fs.mkdir(source);
+    const slug = 'inspected-json-post';
+    await fs.writeFile(
+      path.join(source, 'content.json'),
+      JSON.stringify({
+        db: [
+          {
+            meta: { version: '5.0.0' },
+            data: {
+              posts: [
+                { slug, title: 'Inspected JSON post', status: 'draft', html: '<p>Legacy</p>' },
+              ],
+            },
+          },
+        ],
+      }),
+    );
+    const zip = path.join(directory, 'legacy.zip');
+    await compress(source, zip);
+    const { body, headers } = await agent
+      .post('posts/upload/inspect/')
+      .attach('postsfile', zip)
+      .expectStatus(200);
+    assert.equal(body.meta?.upload_id, undefined);
+    assert.equal(headers['x-cache-invalidate'], '/*');
+    const post = await models.Post.findOne({ slug }, { context: { internal: true } });
+    assert.equal(post.get('title'), 'Inspected JSON post');
+    const config = await agent.get('config/').expectStatus(200);
+    assert.equal(config.body.config.contentImport.stagedInspection, true);
   });
 });

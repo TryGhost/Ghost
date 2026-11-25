@@ -139,6 +139,29 @@ function extensionOf(fileName: string): string {
   return path.posix.extname(fileName).toLowerCase();
 }
 
+export async function isLegacyImportZip(
+  files: ArchiveFiles,
+  filePath: string,
+  fileName: string,
+): Promise<boolean> {
+  if (extensionOf(fileName) !== '.zip') {
+    return false;
+  }
+  try {
+    const entries = await readBoundedArchive(files, filePath);
+    return !entries.some((file) => isDataFile(file) && extensionOf(file) === '.csv');
+  } catch (error) {
+    if (error instanceof errors.UnsupportedMediaTypeError) {
+      throw error;
+    }
+    throw new errors.UnsupportedMediaTypeError({
+      message: 'The uploaded zip could not be read',
+      code: 'INVALID_ZIP_FILE',
+      err: error,
+    });
+  }
+}
+
 function isUnsupportedCompetingDataFile(fileName: string): boolean {
   const extension = extensionOf(fileName);
   if (extension === '.csv' || !DATA_EXTENSIONS.has(extension)) {

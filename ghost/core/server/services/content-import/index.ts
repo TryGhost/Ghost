@@ -17,7 +17,7 @@ import { BookshelfPostsRepository } from './import/post-repository';
 import readPostRows from './import/reader';
 import { confirmImportSchema, importRequestSchema, type ImportRequest } from './import/schema';
 import { ImportRunStore } from './import/store';
-import { prepareImportSource } from './import/source';
+import { prepareImportSource, isLegacyImportZip as inspectLegacyImportZip } from './import/source';
 import type { ImportFiles } from './import/files';
 import { PostMediaInliner } from './import/media';
 import { isLocalMediaUrl } from './import/local-media-url';
@@ -40,6 +40,10 @@ const files: ImportFiles = {
   },
   extractArchive: extract,
 };
+
+export function isLegacyImportZip(filePath: string, fileName: string): Promise<boolean> {
+  return inspectLegacyImportZip(files, filePath, fileName);
+}
 
 // The request is built from HTTP upload metadata, so it is validated at the
 // service boundary rather than trusted.

@@ -15,6 +15,7 @@ const allowedKeys = [
   'mail',
   'useGravatar',
   'labs',
+  'contentImport',
   'clientExtensions',
   'enableDeveloperExperiments',
   'stripeDirect',
@@ -46,6 +47,7 @@ describe('Public-config response builders', function () {
       const configProperties = getConfigProperties();
 
       assert.deepEqual(Object.keys(configProperties), allowedKeys);
+      assert.deepEqual(configProperties.contentImport, { stagedInspection: true });
     });
 
     it('should list the cards whose visibility this server supports', function () {

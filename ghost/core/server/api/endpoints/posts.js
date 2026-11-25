@@ -4,6 +4,7 @@ const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const contentImportService = require('../../services/content-import');
 const errors = require('@tryghost/errors');
+const { http, pipeline } = require('@tryghost/api-framework');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const allowedIncludes = [
   'tags',
@@ -160,6 +161,12 @@ const controller = {
     headers: { cacheInvalidate: false },
     permissions: importPermissions,
     async query(frame) {
+      if (await contentImportService.isLegacyImportZip(frame.file.path, frame.file.name)) {
+        // Run the original HTTP controller on the same spooled multipart file.
+        // It still owns legacy permissions, headers, staging and import behavior.
+        const legacy = pipeline(require('./db'), require('./utils'));
+        return http(legacy.importContent);
+      }
       return {
         meta: await contentImportService.inspectCSV({
           filePath: frame.file.path,
