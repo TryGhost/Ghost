@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { SubscriptionCheckout } from '../../../../../core/server/services/stripe/webhook/webhook-event';
 
 const logging = require('@tryghost/logging');
 const i18nLib = require('@tryghost/i18n').default;
@@ -13,6 +14,9 @@ const lexicalLib = require('../../../../../core/server/lib/lexical');
 const emailAddressService = require('../../../../../core/server/services/email-address');
 const linkTracking = require('../../../../../core/server/services/link-tracking');
 const StripeService = require('../../../../../core/server/services/stripe/stripe-service');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
 const automatedEmails = require('../../../../../core/server/api/endpoints/automated-emails');
 const automationEmailPreviews = require('../../../../../core/server/api/endpoints/automation-email-previews');
 const constants = require('../../../../../core/server/services/member-welcome-emails/constants');
@@ -237,10 +241,20 @@ describe('Member welcome emails root', function () {
     });
 
     it('lets Stripe ask the ready service whether the paid welcome email is active', async function () {
+      const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+      const sendEmailWithMagicLink = sinon.stub().resolves();
       const stripe = new StripeService({
-        labs: {},
-        tracking: {},
-        membersService: {},
+        labs: { isSet: () => false },
+        tracking: stripeTracking({
+          tracer: createTracer(shipNothing),
+          meter: createMeter(shipNothing),
+        }),
+        membersService: {
+          api: {
+            members: { get: async () => null, create: async () => ({ id: 'member_1' }) },
+            sendEmailWithMagicLink,
+          },
+        },
         donationService: {},
         giftService: {},
         staffService: {},
@@ -248,11 +262,43 @@ describe('Member welcome emails root', function () {
         settingsCache: {},
         models: { Settings: {} },
       });
+      sinon.stub(stripe.api, 'getCustomer').resolves({
+        id: 'cus_1',
+        email: 'reader@example.com',
+        subscriptions: { data: [] },
+      });
+      // A Portal signup, whose buyer signs in with the magic link Portal sent before the checkout,
+      // so the paid welcome email greets them in place of the signup email.
+      const signup: SubscriptionCheckout = {
+        sessionId: 'cs_1',
+        customerId: 'cus_1',
+        subscriptionId: null,
+        createdAt: Math.floor(Date.now() / 1000),
+        upgrade: false,
+        signupContext: 'has_precheckout_magic_link',
+        name: undefined,
+        newsletters: { state: 'absent' },
+        attribution: {
+          attributionId: null,
+          attributionUrl: null,
+          attributionType: null,
+          referrerSource: null,
+          referrerMedium: null,
+          referrerUrl: null,
+          utmSource: null,
+          utmMedium: null,
+          utmCampaign: null,
+          utmTerm: null,
+          utmContent: null,
+        },
+        offerId: undefined,
+        collected: {},
+      };
 
-      const active = await stripe.checkoutSessionEventService.deps.isPaidWelcomeEmailActive();
+      await stripe.webhookCommands.subscription_checkout(signup);
 
-      assert.equal(active, true);
       sinon.assert.calledOnceWithExactly(api.isMemberWelcomeEmailActive, 'paid');
+      sinon.assert.notCalled(sendEmailWithMagicLink);
     });
 
     const frame = {

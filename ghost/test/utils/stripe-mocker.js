@@ -393,8 +393,12 @@ class StripeMocker {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: `cs_${this.#generateRandomId()}`,
+            object: 'checkout.session',
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
+            subscription: subscriptionId,
             metadata: {
               checkoutType: 'signup',
             },

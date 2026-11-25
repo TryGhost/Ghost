@@ -24,9 +24,10 @@ export const FAILURES = {
   stripe_unavailable: { owner: 'dependency', sentry: true },
   no_member_for_customer: { owner: 'site', sentry: true },
   unsupported_subscription: { owner: 'site', sentry: true },
-  // A checkout whose buyer Ghost can't record anything under, such as a donation without the
-  // donor's email. It's the site's Stripe data, and Ghost can't fix it, so the failure is counted
-  // by its reason and owner on the webhook's span rather than reported.
+  // A checkout whose buyer Ghost can't record anything under: a Stripe customer deleted, or left
+  // without an email address, since the buyer paid, or a donation without the donor's email. It's
+  // the site's Stripe data, and Ghost can't fix it, so the failure is counted by its reason and
+  // owner on the webhook's span rather than reported.
   unusable_customer: { owner: 'site', sentry: false },
   unreadable_stripe_response: { owner: 'ghost', sentry: true },
   unreadable_stripe_event: { owner: 'ghost', sentry: true },

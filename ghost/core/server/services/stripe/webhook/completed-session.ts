@@ -16,7 +16,8 @@ const ShippingDetails = z
   .catch(null);
 
 /**
- * What a completed session asked for and what came back.
+ * The fields of a completed Checkout session that say what it asked the buyer for and what came
+ * back, as the webhook reads them from a paid signup or upgrade (see `SubscriptionCheckout`).
  *
  * Where the shipping details are depends on the API version the event was rendered at:
  * `shipping` at Ghost's pinned version, `shipping_details` from 2022-08-01, and
@@ -25,9 +26,9 @@ const ShippingDetails = z
  * so all three are read.
  *
  * Each part is read on its own: one in a shape Ghost doesn't expect reads as missing, rather
- * than costing the answers the others carry.
+ * than costing the answers the others carry, so reading a session never fails here.
  */
-const CompletedSession = z
+export const CompletedSession = z
   .object({
     shipping_address_collection: z.object({}).loose().nullish().catch(null),
     phone_number_collection: z.object({ enabled: z.boolean() }).nullish().catch(null),
@@ -43,7 +44,7 @@ const CompletedSession = z
       .catch(null),
   })
   .loose();
-type CompletedSession = z.output<typeof CompletedSession>;
+export type CompletedSession = z.output<typeof CompletedSession>;
 
 const ADDRESS_PARTS = keysOf(FIELD_STRUCTURES.address.parts);
 
@@ -156,6 +157,12 @@ export interface CollectedByPort {
   value: unknown;
 }
 
+/** What a completed checkout collected: its answers by port, and how its phone number came back. */
+interface CheckoutCollection {
+  answers: CollectedByPort[];
+  phone: CollectedPhone | undefined;
+}
+
 /**
  * What a completed checkout asked the buyer for and got back, each under the port it is saved
  * through, and how its phone number came back. Only what the checkout asked for counts: Stripe
@@ -163,11 +170,11 @@ export interface CollectedByPort {
  * publisher's to keep. What was asked is read from the checkout itself, because the config can
  * change while it is open.
  */
-export const collectedFrom = CompletedSession.transform(
-  (session): { answers: CollectedByPort[]; phone: CollectedPhone | undefined } => ({
+export function collectedOf(session: CompletedSession): CheckoutCollection {
+  return {
     answers: CHECKOUT_PORTS.map((port) => ({ port, value: ANSWERS[port](session) })).filter(
       (entry) => entry.value !== undefined,
     ),
     phone: phoneCollected(session),
-  }),
-);
+  };
+}

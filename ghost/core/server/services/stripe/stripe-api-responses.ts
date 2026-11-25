@@ -37,6 +37,14 @@ export function readResponse<Schema extends z.ZodType>(
 }
 
 /**
+ * The wallet a card was used through, as Stripe names it, such as `apple_pay` or `google_pay`.
+ * Read as Stripe sends it, so a wallet Stripe adds reads as its own name.
+ */
+const StripeWallet = z.string().brand<'StripeWallet'>();
+
+export type StripeWallet = z.output<typeof StripeWallet>;
+
+/**
  * A payment method a request expanded: the cardholder's name, and the wallet the card was used
  * through, such as Apple Pay.
  */
@@ -44,7 +52,7 @@ const ExpandedPaymentMethod = z
   .object({
     billing_details: z.object({ name: StripeName.nullish() }).loose(),
     card: z
-      .object({ wallet: z.object({ type: z.string() }).loose().nullish() })
+      .object({ wallet: z.object({ type: StripeWallet }).loose().nullish() })
       .loose()
       .nullish(),
   })
