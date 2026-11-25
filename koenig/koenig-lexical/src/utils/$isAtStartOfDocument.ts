@@ -13,7 +13,7 @@ export function $isAtStartOfDocument(selection: BaseSelection | null): boolean {
     }
 
     if ($isTextNode(selectedNode)) {
-        selectedNode = selectedNode.getParent()!;
+        selectedNode = selectedNode.getParentOrThrow();
     }
 
     const selectedTopLevelElement = selectedNode.getTopLevelElement();
