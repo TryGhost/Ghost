@@ -322,6 +322,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       <SegmentSwitcher
                         current={viewedSegment}
                         segments={savedViews}
+                        onManageSegments={() => setManagingSegments(true)}
                         onNewSegment={canChangeSegments ? startNewSegment : undefined}
                       />
                       {/* The count sits as far from the title as it does on main. There the

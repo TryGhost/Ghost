@@ -45,6 +45,8 @@ interface SegmentListProps {
   onNewSegment?: () => void;
   /** Rows set closer to the list's edges, for a list hung from a form field. */
   dense?: boolean;
+  /** A small control at the end of the search row, such as a way to manage the segments. */
+  searchAction?: React.ReactNode;
 }
 
 /**
@@ -64,12 +66,24 @@ export function SegmentList({
   leading,
   onNewSegment,
   dense = false,
+  searchAction,
 }: SegmentListProps) {
   const group = dense ? 'p-0' : undefined;
 
   return (
     <Command>
-      <CommandInput aria-label="Search segments" placeholder="Search segments..." />
+      {searchAction ? (
+        <div className="relative">
+          <CommandInput
+            aria-label="Search segments"
+            className="pr-8"
+            placeholder="Search segments..."
+          />
+          <div className="absolute inset-y-0 right-1.5 flex items-center">{searchAction}</div>
+        </div>
+      ) : (
+        <CommandInput aria-label="Search segments" placeholder="Search segments..." />
+      )}
       <CommandList>
         {leading && (
           <CommandGroup className={group}>

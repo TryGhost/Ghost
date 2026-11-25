@@ -1,7 +1,15 @@
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
-import { Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useRef, useState } from 'react';
 import { SegmentList } from './segment-list';
@@ -13,6 +21,8 @@ interface SegmentSwitcherProps {
   current: Segment | null;
   /** Starts a new segment. Left out for staff who can't change segments. */
   onNewSegment?: () => void;
+  /** Opens the overview of every segment. */
+  onManageSegments?: () => void;
 }
 
 /**
@@ -20,7 +30,12 @@ interface SegmentSwitcherProps {
  * and opens the list of segments to switch to, so moving from one to another never leaves the
  * page. The list is the one the segment picker opens, with every member as its first choice.
  */
-export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwitcherProps) {
+export function SegmentSwitcher({
+  segments,
+  current,
+  onNewSegment,
+  onManageSegments,
+}: SegmentSwitcherProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const allMembers = useMemberCount();
@@ -69,6 +84,32 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
             selected: !current,
             onSelect: () => go('/members'),
           }}
+          searchAction={
+            // POC (poc/segments-ui): a mock of managing the segments from beside their search,
+            // to compare with the members menu.
+            onManageSegments &&
+            segments.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label="Manage segments"
+                    className="size-7 text-muted-foreground"
+                    size="icon"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      keepFocusWhereItGoes.current = true;
+                      setOpen(false);
+                      onManageSegments();
+                    }}
+                  >
+                    <LucideIcon.Settings2 className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Manage segments</TooltipContent>
+              </Tooltip>
+            )
+          }
           segments={segments}
           selectedId={current?.id}
           onNewSegment={
