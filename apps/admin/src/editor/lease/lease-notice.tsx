@@ -89,10 +89,11 @@ function LeaseCard({
   hasUnsavedContent,
   contentText,
   onTakeOver,
+  showTakeoverNotice = true,
 }: Pick<
   LeaseAvatarProps,
   'lease' | 'resourceType' | 'hasUnsavedContent' | 'contentText' | 'onTakeOver'
-> & { holder: PresentUser | undefined }) {
+> & { holder: PresentUser | undefined; showTakeoverNotice?: boolean }) {
   const held = heldBy(lease);
   const unsaved = held !== null && hasUnsavedContent();
   const who = holder?.name ?? 'Someone else';
@@ -103,7 +104,7 @@ function LeaseCard({
   if (held) {
     title = held.ownTab
       ? `This ${resourceType} is being edited in another of your tabs.`
-      : held.lost
+      : held.lost && showTakeoverNotice
         ? `${who} took over editing this ${resourceType}.`
         : `${who} is editing this ${resourceType}.`;
     if (unsaved) {
@@ -232,9 +233,11 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   const taking = lease.locked && lease.reason === 'taking';
   const shown = held !== null || taking || editingHere;
   const urgent = (held?.lost ?? false) || (held?.raced ?? false);
+  const [showTakeoverNotice, setShowTakeoverNotice] = useState(false);
   const [wasUrgent, setWasUrgent] = useState(false);
   if (urgent !== wasUrgent) {
     setWasUrgent(urgent);
+    setShowTakeoverNotice(urgent);
     if (urgent) {
       setOpen(true);
     }
@@ -266,6 +269,13 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     return null;
   }
 
+  const changeOpen = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setShowTakeoverNotice(false);
+    }
+  };
+
   const enter = () => {
     clearTimeout(closing.current);
     hovered.current = true;
@@ -277,7 +287,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
       // Only a card the pointer opened closes when the pointer goes.
       if (hovered.current) {
         hovered.current = false;
-        setOpen(false);
+        changeOpen(false);
       }
     }, HOVER_CLOSE_MS);
   };
@@ -348,7 +358,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={changeOpen}>
       <PopoverAnchor asChild>{trigger}</PopoverAnchor>
       <PopoverContent
         align="center"
@@ -360,7 +370,7 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
         onPointerEnter={enter}
         onPointerLeave={leave}
       >
-        <LeaseCard {...props} holder={holder} />
+        <LeaseCard {...props} holder={holder} showTakeoverNotice={showTakeoverNotice} />
       </PopoverContent>
     </Popover>
   );

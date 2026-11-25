@@ -324,6 +324,8 @@ settings fields. The card opens by itself when the writer needs
 to know without asking: the lease was just taken from them, what they typed
 was put back, or they typed into the read-only document. While a takeover
 waits, the avatar carries a spinner.
+After the takeover notification is dismissed, reopening the avatar shows the
+normal editing status. Any unsaved-content message and Copy content action remain.
 
 Take over and Edit here open a confirmation dialog before changing editing
 access. The warning about stopping the previous editor and possibly losing

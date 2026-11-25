@@ -594,6 +594,19 @@ describe('Post editor lease', () => {
       await expect.poll(() => copied.join('')).toContain('My unsaved title');
     });
 
+    it('shows the normal editing status when the takeover notice is dismissed and reopened', async () => {
+      await loseLeaseWithUnsavedTitle();
+      await editorScreen.titleInput().click();
+      await expect.element(card()).not.toBeInTheDocument();
+
+      await userEvent.hover(avatar());
+
+      await expect.element(card()).toHaveTextContent('Alex Smith is editing this post.');
+      await expect.element(card()).not.toHaveTextContent('Alex Smith took over editing this post.');
+      await expect.element(card()).toHaveTextContent('Your unsaved changes are still here.');
+      await expect.element(card().getByRole('button', { name: 'Copy content' })).toBeVisible();
+    });
+
     it('opens as it is on taking the lease back when nothing was saved meanwhile', async () => {
       await loseLeaseWithUnsavedTitle();
 
