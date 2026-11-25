@@ -43,7 +43,7 @@
   font-variation-settings:
     'opsz' 28,
     'wght' var(--font-weight-medium);
-  font-feature-settings: 'dlig', 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
+  font-feature-settings: 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
 }
 
 /* Settings headings share weight and tracking without changing headings on
