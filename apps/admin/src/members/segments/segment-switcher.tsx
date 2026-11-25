@@ -96,7 +96,7 @@ export function SegmentSwitcher({
                     className="size-7"
                     size="icon"
                     type="button"
-                    variant="ghost"
+                    variant="secondary"
                     onClick={() => {
                       keepFocusWhereItGoes.current = true;
                       setOpen(false);
