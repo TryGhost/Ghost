@@ -43,6 +43,7 @@ import {
 } from './changes';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
+import type { ResourceKind } from './resource';
 
 const MAX_KEY_ITERATIONS = 1000;
 
@@ -146,11 +147,11 @@ export interface EditedDefinition {
  * its limits allow, and reports the change it made, inside its transaction, to the function it
  * is given. Who may run a command is the owner's to decide, before calling it.
  */
-export class MetafieldDefinitionsService<Caller> {
+export class MetafieldDefinitionsService<R extends ResourceKind> {
   private knex: Knex;
-  private fields: FieldSource<Caller>;
+  private fields: FieldSource<R>;
   private onDefinitionUpdated: OnDefinitionUpdated;
-  private namespaces: Namespaces<Caller>;
+  private namespaces: Namespaces<R>;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
   private inputs: ReturnType<typeof definitionInputs>;
@@ -164,10 +165,10 @@ export class MetafieldDefinitionsService<Caller> {
     labs,
   }: {
     knex: Knex;
-    fields: FieldSource<Caller>;
+    fields: FieldSource<R>;
     /** Called with each change a command makes, inside the command's transaction. */
     onDefinitionUpdated: OnDefinitionUpdated;
-    namespaces: Namespaces<Caller>;
+    namespaces: Namespaces<R>;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
     labs: { isSet(flag: string): boolean };
@@ -183,7 +184,7 @@ export class MetafieldDefinitionsService<Caller> {
 
   async browse(
     options: { namespace: Namespace; filter?: string },
-    caller: Caller,
+    caller: R['Caller'],
     executor: Knex = this.knex,
   ): Promise<Definition[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
@@ -224,7 +225,7 @@ export class MetafieldDefinitionsService<Caller> {
   async read(
     namespace: Namespace,
     key: Key,
-    caller: Caller,
+    caller: R['Caller'],
     executor: Knex = this.knex,
   ): Promise<Definition> {
     const [field] = await this.list(

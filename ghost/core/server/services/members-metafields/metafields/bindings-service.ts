@@ -12,7 +12,7 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import type { MetafieldResource } from './resource';
+import type { MetafieldResource, ResourceKind } from './resource';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS, type MetafieldBindingRow } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
@@ -53,12 +53,12 @@ export interface RoutedPlans {
  * thing, and the binding resolves it to one of the publisher's fields on one resource. The
  * source declares its ports; this only records which field each one writes into.
  */
-export class MetafieldBindingsService<Caller> {
+export class MetafieldBindingsService<R extends ResourceKind> {
   private knex: Knex;
   private table: string;
-  private fields: FieldSource<Caller>;
-  private values: Pick<MetafieldValuesService<Caller>, 'planOrRefuse'>;
-  private internal: Caller;
+  private fields: FieldSource<R>;
+  private values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
+  private internal: R['Caller'];
 
   constructor({
     knex,
@@ -69,13 +69,13 @@ export class MetafieldBindingsService<Caller> {
   }: {
     knex: Knex;
     resource: MetafieldResource;
-    fields: FieldSource<Caller>;
-    values: Pick<MetafieldValuesService<Caller>, 'planOrRefuse'>;
+    fields: FieldSource<R>;
+    values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
     /**
      * The caller Ghost itself writes as. A port's values are planned as Ghost's, since the
      * binding, not whoever sent them, is what admits them.
      */
-    internal: Caller;
+    internal: R['Caller'];
   }) {
     this.knex = knex;
     this.table = resource.tables.bindings;
@@ -133,7 +133,7 @@ export class MetafieldBindingsService<Caller> {
    */
   async boundPorts(
     ports: readonly string[],
-    caller: Caller,
+    caller: R['Caller'],
     executor: Knex = this.knex,
   ): Promise<Map<string, string | null>> {
     if (!ports.length) {

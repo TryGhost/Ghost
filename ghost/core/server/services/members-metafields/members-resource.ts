@@ -6,7 +6,7 @@ import type { EditedDefinition } from './metafields/definitions-service';
 import { metafieldsRelation } from './metafields/filter';
 import type { Definition } from './metafields/models';
 import type { Namespaces } from './metafields/namespaces';
-import type { MetafieldResource } from './metafields/resource';
+import type { MetafieldResource, ResourceKind } from './metafields/resource';
 import {
   FIELD_STATUS,
   DbMetafieldBinding,
@@ -19,8 +19,19 @@ import {
   type MetafieldValueRow,
 } from './metafields/schema';
 
+/**
+ * What members bring to metafields: the APIs a request for a member's fields can come through,
+ * and the permission staff manage the custom fields with.
+ */
+export interface Members extends ResourceKind {
+  Name: 'members';
+  Caller: Caller;
+  StaffPermission: 'member_custom_field';
+}
+
 /** Members, the one resource that holds metafields so far. */
-export const MEMBERS_RESOURCE: MetafieldResource = {
+export const MEMBERS_RESOURCE: MetafieldResource<Members> = {
+  name: 'members',
   tables: {
     fields: 'members_metafields',
     values: 'members_metafield_values',
@@ -41,13 +52,13 @@ export const METAFIELDS_RELATION = metafieldsRelation(MEMBERS_RESOURCE);
  * available, so availability can't differ between the two.
  */
 export function changedForMembers(
-  namespaces: Pick<Namespaces<Caller>, 'canRead'>,
+  namespaces: Pick<Namespaces<Members>, 'canRead'>,
   { previous, next }: EditedDefinition,
 ): boolean {
   return readByMembers(namespaces, previous) !== readByMembers(namespaces, next);
 }
 
-function readByMembers(namespaces: Pick<Namespaces<Caller>, 'canRead'>, definition: Definition) {
+function readByMembers(namespaces: Pick<Namespaces<Members>, 'canRead'>, definition: Definition) {
   return (
     definition.status === FIELD_STATUS.active &&
     namespaces.canRead('members', {
