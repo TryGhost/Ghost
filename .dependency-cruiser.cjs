@@ -69,6 +69,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/db-errors\\.ts$', // Recognises the errors a database rejects a write with.
   '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
   '^ghost/core/server/lib/db-types/text\\.ts$', // Byte-length check for text columns.
+  '^ghost/core/server/adapters/storage/import-storage\\.ts$', // Import metadata bounds and cleanup over caller-supplied streams/storage; no adapter lookup or application state.
   '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
   '^ghost/core/server/lib/db-types/object-id\\.ts$', // Database ObjectId codec.
   '^ghost/core/server/lib/mailgun/mailgun-message-id\\.ts$', // Mailgun message ID normalisation; no client.
