@@ -3,7 +3,12 @@ import { ActivityPubAPI, isApiError } from '../api/activitypub';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useDeleteMutationForUser, useReplyChainForUser } from './use-activity-pub-queries';
+import {
+  useClaimBlueskyDomainHandleMutationForUser,
+  useConfirmBlueskyHandleMutationForUser,
+  useDeleteMutationForUser,
+  useReplyChainForUser,
+} from './use-activity-pub-queries';
 
 globalThis.fetch = vi.fn().mockResolvedValue({
   json: vi.fn().mockResolvedValue({
@@ -36,6 +41,8 @@ const createWrapper = (queryClient = createQueryClient()) => {
 };
 
 let mockApi: {
+  claimBlueskyDomainHandle: ReturnType<typeof vi.fn>;
+  confirmBlueskyHandle: ReturnType<typeof vi.fn>;
   delete: ReturnType<typeof vi.fn>;
   getReplies: ReturnType<typeof vi.fn>;
   getPost: ReturnType<typeof vi.fn>;
@@ -51,6 +58,8 @@ beforeEach(() => {
   });
 
   mockApi = {
+    claimBlueskyDomainHandle: vi.fn(),
+    confirmBlueskyHandle: vi.fn(),
     delete: vi.fn(),
     getReplies: vi.fn(),
     getPost: vi.fn(),
@@ -116,5 +125,67 @@ describe('useDeleteMutationForUser', () => {
 
     expect(queryClient.getQueryData(firstQueryKey)).toEqual(firstData);
     expect(queryClient.getQueryData(secondQueryKey)).toEqual(secondData);
+  });
+});
+
+describe.each([
+  [
+    'useConfirmBlueskyHandleMutationForUser',
+    useConfirmBlueskyHandleMutationForUser,
+    'confirmBlueskyHandle',
+  ],
+  [
+    'useClaimBlueskyDomainHandleMutationForUser',
+    useClaimBlueskyDomainHandleMutationForUser,
+    'claimBlueskyDomainHandle',
+  ],
+] as const)('%s', (_name, useMutationForUser, apiMethod) => {
+  const accountQueryKey = ['account', 'index'];
+  const details = { handle: 'site.com', domainHandle: null };
+
+  async function respondWithDetails(queryClient: QueryClient) {
+    mockApi[apiMethod].mockResolvedValue(details);
+
+    const { result } = renderHook(() => useMutationForUser('index'), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync();
+    });
+  }
+
+  it('stores the confirmed handle while Bluesky sharing is enabled', async () => {
+    const queryClient = createQueryClient();
+
+    queryClient.setQueryData(accountQueryKey, {
+      blueskyEnabled: true,
+      blueskyHandleConfirmed: false,
+      blueskyHandle: null,
+    });
+
+    await respondWithDetails(queryClient);
+
+    expect(queryClient.getQueryData(accountQueryKey)).toEqual({
+      blueskyEnabled: true,
+      blueskyHandleConfirmed: true,
+      blueskyHandle: 'site.com',
+      blueskyDomainHandle: null,
+    });
+  });
+
+  it('leaves Bluesky sharing disabled when the response arrives after disabling it', async () => {
+    const queryClient = createQueryClient();
+    const disabled = {
+      blueskyEnabled: false,
+      blueskyHandleConfirmed: false,
+      blueskyHandle: null,
+    };
+
+    queryClient.setQueryData(accountQueryKey, disabled);
+
+    await respondWithDetails(queryClient);
+
+    expect(queryClient.getQueryData(accountQueryKey)).toEqual(disabled);
   });
 });

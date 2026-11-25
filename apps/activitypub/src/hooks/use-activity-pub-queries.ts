@@ -3035,6 +3035,13 @@ export function useConfirmBlueskyHandleMutationForUser(handle: string) {
 }
 
 function updateConfirmedBlueskyCache(queryClient: QueryClient, details: BlueskyHandleDetails) {
+  const account = queryClient.getQueryData<BlueskyDetails>(QUERY_KEYS.account('index'));
+
+  // A response that arrives after sharing was disabled must not enable it again
+  if (account && !account.blueskyEnabled) {
+    return;
+  }
+
   updateAccountBlueskyCache(queryClient, {
     blueskyEnabled: true,
     blueskyHandleConfirmed: true,
