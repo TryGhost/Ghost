@@ -188,22 +188,33 @@ describe('Pipeline', function () {
         });
       });
 
-      it('runs the unchecked handler before a method that checks for itself', async function () {
-        const order: string[] = [];
+      it('waits for the unchecked handler before a method that checks for itself', async function () {
+        let finishUnchecked = () => {};
+        const unchecked = new Promise<void>((resolve) => {
+          finishUnchecked = resolve;
+        });
         const utils = {
           permissions: {
             handle: sinon.stub().resolves(),
-            handleUnchecked: sinon.stub().callsFake(async () => order.push('unchecked')),
+            handleUnchecked: sinon.stub().returns(unchecked),
           },
         };
         const apiConfig = { docName: 'posts', method: 'browse' };
-        const apiImpl = { permissions: sinon.stub().callsFake(async () => order.push('own')) };
+        const apiImpl = { permissions: sinon.stub().resolves() };
         const frame = new shared.Frame();
 
-        await shared.pipeline.STAGES.permissions(utils, apiConfig, apiImpl, frame);
+        const stage = shared.pipeline.STAGES.permissions(utils, apiConfig, apiImpl, frame);
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
 
-        assert.deepEqual(order, ['unchecked', 'own']);
         assert.equal(utils.permissions.handleUnchecked.calledWith(apiConfig, frame), true);
+        assert.equal(apiImpl.permissions.called, false);
+
+        finishUnchecked();
+        await stage;
+
+        assert.equal(apiImpl.permissions.calledOnceWith(frame), true);
       });
 
       it('runs the unchecked handler for a method with no permission check', async function () {
