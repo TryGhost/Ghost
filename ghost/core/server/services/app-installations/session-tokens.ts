@@ -101,13 +101,18 @@ export class AppSessionTokens {
 
   /**
    * A user token for an installation that was active when read, holding the scopes of its
-   * approved manifest. Null when it was suspended meanwhile; throws when it was uninstalled.
+   * approved manifest. Null when it was suspended meanwhile, or given `atRevision`, moved to
+   * another revision; throws when it was uninstalled.
    *
    * Its client follows the installation, so a suspension or uninstall that lands while issuing
    * either refuses the token or deletes it before it's stored. The installation is read again
    * after issuing so neither is answered with a token, or with an error of Ghost's.
    */
-  async issue(installation: Installation, staff: StaffSession): Promise<AppSessionToken | null> {
+  async issue(
+    installation: Installation,
+    staff: StaffSession,
+    { atRevision }: { atRevision?: number } = {},
+  ): Promise<AppSessionToken | null> {
     // The provider checks no scopes, so they come from the approved manifest
     const issued = await this.appTokens.issue({
       installationId: installation.id,
@@ -116,31 +121,33 @@ export class AppSessionTokens {
       scopes: installation.manifest.scopes,
     });
     if ('refused' in issued) {
-      if (issued.refused === 'client_unavailable' && !(await this.isStillActive(installation))) {
+      if (issued.refused === 'client_unavailable' && !(await this.stillActive(installation))) {
         return null;
       }
       throw notIssued(issued.refused);
     }
-    if (!(await this.isStillActive(installation))) {
+    const current = await this.stillActive(installation);
+    if (!current || (atRevision !== undefined && current.revision !== atRevision)) {
       return null;
     }
     return { access_token: issued.accessToken, expires_in: issued.expiresIn };
   }
 
   /**
-   * Whether the installation is still active. When it isn't, its client is brought in step
-   * again, which deletes any token issued meanwhile; when it's been uninstalled, throws.
+   * The installation as it is now, or null when it's no longer active. Then its client is
+   * brought in step again, which deletes any token issued meanwhile; when it's been
+   * uninstalled, throws.
    */
-  private async isStillActive(installation: Installation): Promise<boolean> {
+  private async stillActive(installation: Installation): Promise<Installation | null> {
     const current = await this.findInstallation(installation.id);
     if (current?.status === 'active') {
-      return true;
+      return current;
     }
     await this.keepClientInStep(current ?? { ...installation, status: 'uninstalled' });
     if (!current) {
       throw notInstalled();
     }
-    return false;
+    return null;
   }
 
   /**
@@ -157,7 +164,7 @@ export class AppSessionTokens {
     if (installation.status !== 'active' || installation.revision !== revision) {
       throw sessionEnded();
     }
-    const token = await this.issue(installation, staff);
+    const token = await this.issue(installation, staff, { atRevision: revision });
     if (!token) {
       throw sessionEnded();
     }

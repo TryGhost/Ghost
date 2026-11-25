@@ -23,8 +23,13 @@ const principal: Principal = {
   },
 };
 
-const installationAt = (status: Installation['status'], id = 'installation-id') =>
-  ({ id, status, revision: 2, manifest: { scopes: ['post:browse'] } }) as Installation;
+const installationAt = (status: Installation['status'], id = 'installation-id', revision = 2) =>
+  ({ id, status, revision, manifest: { scopes: ['post:browse'] } }) as Installation;
+
+type Read =
+  | Installation['status']
+  | { status: Installation['status']; revision: number }
+  | undefined;
 
 /**
  * Session tokens whose provider answers `issued`, reading the installation as each of `reads`
@@ -33,7 +38,7 @@ const installationAt = (status: Installation['status'], id = 'installation-id') 
 function tokensIssuing(
   issued: Awaited<ReturnType<AppTokens['issue']>>,
   availability: ReturnType<AppTokens['availability']> = 'ready',
-  reads: Array<Installation['status'] | undefined> = [],
+  reads: Read[] = [],
 ) {
   const reconciled: Array<{ id: string; active: boolean }> = [];
   const tokens = new AppSessionTokens({
@@ -46,8 +51,13 @@ function tokensIssuing(
       validate: async () => null,
     },
     findInstallation: async (id) => {
-      const status = reads.length ? reads.shift() : 'active';
-      return status ? installationAt(status, id) : undefined;
+      const read = reads.length ? reads.shift() : 'active';
+      if (!read) {
+        return undefined;
+      }
+      return typeof read === 'string'
+        ? installationAt(read, id)
+        : installationAt(read.status, id, read.revision);
     },
     logging: { error() {} },
   });
@@ -135,6 +145,18 @@ describe('App session tokens', function () {
       ),
       { statusCode: 409, code: 'APP_SESSION_ENDED' },
     );
+  });
+
+  it('ends the session when the installation moves to another revision while renewing', async function () {
+    const tokens = tokensIssuing({ accessToken: 'ghost_app_x', expiresIn: 3600 }, 'ready', [
+      'active',
+      { status: 'active', revision: 3 },
+    ]);
+
+    await assert.rejects(tokens.renew('installation-id', 2, principal), {
+      statusCode: 409,
+      code: 'APP_SESSION_ENDED',
+    });
   });
 
   it('says the app is not installed when it is uninstalled while renewing', async function () {
