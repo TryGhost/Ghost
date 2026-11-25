@@ -1,12 +1,12 @@
 import {getTopLevelNativeElement} from './getTopLevelNativeElement';
 
 /**
- * 
- * @param {Selection} nativeSelection – Window selection (window.getSelection())
- * @param {number} [threshold=10] – Estimated height of one line, in pixels
- * @returns {boolean}
+ *
+ * @param nativeSelection - Window selection (window.getSelection())
+ * @param threshold - Estimated height of one line, in pixels
+ * @returns boolean
  */
-export function $isAtTopOfNode(nativeSelection, threshold = 10) {
+export function $isAtTopOfNode(nativeSelection: Selection | null, threshold = 10): boolean | undefined {
     if (!nativeSelection?.rangeCount) {
         return false;
     }
@@ -26,5 +26,5 @@ export function $isAtTopOfNode(nativeSelection, threshold = 10) {
         const elemRect = nativeTopLevelElement.getBoundingClientRect();
 
         return Math.abs(rangeRect.top - elemRect.top) <= threshold;
-    } 
+    }
 }

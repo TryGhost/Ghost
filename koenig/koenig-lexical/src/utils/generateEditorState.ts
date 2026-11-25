@@ -1,16 +1,17 @@
 import {$createParagraphNode, $setSelection} from 'lexical';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {$getRoot, $insertNodes} from 'lexical';
+import type {EditorState, LexicalEditor} from 'lexical';
 
 // exported for testing
-export function _$generateNodesFromHTML(editor, html) {
+export function _$generateNodesFromHTML(editor: LexicalEditor, html: string) {
     const parser = new DOMParser();
     const dom = parser.parseFromString(html, 'text/html');
     const nodes = $generateNodesFromDOM(editor, dom);
     return nodes;
 }
 
-export default function generateEditorState({editor, initialHtml}) {
+export default function generateEditorState({editor, initialHtml}: {editor: LexicalEditor; initialHtml?: string}): EditorState {
     if (initialHtml) {
         // convert html in `text` to Lexical nodes and populate the editor
         editor.update(() => {
