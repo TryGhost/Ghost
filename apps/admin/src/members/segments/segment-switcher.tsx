@@ -1,39 +1,11 @@
 import { useNavigate } from '@tryghost/admin-x-framework';
-import { useMemberCount, useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import type { Segment } from '@tryghost/admin-x-framework/api/segments';
-import {
-  Command,
-  CommandCheck,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@tryghost/shade/components';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { useRef, useState } from 'react';
+import { SegmentList } from './segment-list';
 import { buildSegmentUrl } from './segment-route';
-
-/** A count beside a name, as the page title shows its own: quieter than the name. */
-function Count({ value }: { value: number | null | undefined }) {
-  if (value === null || value === undefined) {
-    return null;
-  }
-
-  return <span className="text-muted-foreground tabular-nums">{formatNumber(value)}</span>;
-}
-
-/**
- * How many members a segment has. POC: one request for each segment listed, made when the list
- * opens. The segments API would return the counts with the list.
- */
-function SegmentCount({ filter }: { filter: string }) {
-  const { count } = useMembersCount(filter);
-  return <Count value={count} />;
-}
 
 interface SegmentSwitcherProps {
   segments: Segment[];
@@ -45,8 +17,8 @@ interface SegmentSwitcherProps {
 
 /**
  * The members screen's title, as the way between segments: it names what the screen is showing
- * and opens the list to switch to, so moving from one segment to another never leaves the page.
- * Each is listed with how many members it has, and the list can be searched by name.
+ * and opens the list of segments to switch to, so moving from one to another never leaves the
+ * page. The list is the one the segment picker opens, with every member as its first choice.
  */
 export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwitcherProps) {
   const navigate = useNavigate();
@@ -88,55 +60,26 @@ export function SegmentSwitcher({ segments, current, onNewSegment }: SegmentSwit
           }
         }}
       >
-        <Command>
-          <CommandInput placeholder="Search segments..." />
-          <CommandList>
-            <CommandGroup>
-              <CommandItem value="All members" onSelect={() => go('/members')}>
-                <span>All members</span>
-                <Count value={allMembers} />
-                {!current && <CommandCheck />}
-              </CommandItem>
-            </CommandGroup>
-            {/* A line, as the checkout's country list has under "All countries": the search and
-                the last row already say these are segments, so a heading would only repeat it. */}
-            {segments.length > 0 && <CommandSeparator className="-mx-1" />}
-            {segments.length > 0 && (
-              <CommandGroup>
-                {segments.map((segment) => (
-                  <CommandItem
-                    key={segment.id}
-                    value={segment.name}
-                    onSelect={() => go(buildSegmentUrl(segment))}
-                  >
-                    <span className="min-w-0 truncate">{segment.name}</span>
-                    <SegmentCount filter={segment.filter} />
-                    {segment.id === current?.id && <CommandCheck />}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-            {/* A row of the list, drawn as the custom field picker draws "Add custom field":
-                the arrow keys reach it, and when a search matches nothing it is the row left. */}
-            {onNewSegment && (
-              <CommandGroup className="pt-0" forceMount>
-                <CommandItem
-                  className="font-semibold text-green"
-                  value="__new-segment__"
-                  forceMount
-                  onSelect={() => {
-                    keepFocusWhereItGoes.current = true;
-                    setOpen(false);
-                    onNewSegment();
-                  }}
-                >
-                  <LucideIcon.Plus className="size-4" />
-                  <span>New segment</span>
-                </CommandItem>
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
+        <SegmentList
+          leading={{
+            label: 'All members',
+            count: allMembers,
+            selected: !current,
+            onSelect: () => go('/members'),
+          }}
+          segments={segments}
+          selectedId={current?.id}
+          onNewSegment={
+            onNewSegment
+              ? () => {
+                  keepFocusWhereItGoes.current = true;
+                  setOpen(false);
+                  onNewSegment();
+                }
+              : undefined
+          }
+          onSelect={(segment) => go(buildSegmentUrl(segment))}
+        />
       </PopoverContent>
     </Popover>
   );

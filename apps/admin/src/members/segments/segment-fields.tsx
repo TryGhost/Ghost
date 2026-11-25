@@ -6,6 +6,7 @@ import {
   Input,
   Switch,
 } from '@tryghost/shade/components';
+import { cn } from '@tryghost/shade/utils';
 import { useId } from 'react';
 
 /** The longest segment name the API accepts, in characters. */
@@ -32,6 +33,7 @@ interface SegmentFieldsProps {
  */
 export function SegmentFields({ name, onNameChange, error, onSubmit, pin }: SegmentFieldsProps) {
   const pinId = useId();
+  const hasName = Boolean(name.trim());
 
   return (
     <FieldGroup className="gap-3">
@@ -54,13 +56,30 @@ export function SegmentFields({ name, onNameChange, error, onSubmit, pin }: Segm
         />
         {error && <FieldError>{error}</FieldError>}
       </Field>
+      {/* Offered once there is a name: before that there is only one thing to do here. It
+          opens and closes under the name. Closed, it gives back the gap the group put above it,
+          and its switch is out of reach of the keyboard. */}
       {pin && (
-        <Field orientation="horizontal">
-          <FieldLabel className="font-normal" htmlFor={pinId}>
-            Pin in sidebar
-          </FieldLabel>
-          <Switch checked={pin.pinned} id={pinId} onCheckedChange={pin.onChange} />
-        </Field>
+        <div
+          className={cn(
+            'grid transition-[grid-template-rows,margin] duration-200 ease-out',
+            hasName ? 'grid-rows-[1fr]' : '-mt-3 grid-rows-[0fr]',
+          )}
+        >
+          <div className="overflow-hidden">
+            <Field aria-hidden={!hasName} orientation="horizontal">
+              <FieldLabel className="font-normal" htmlFor={pinId}>
+                Pin in sidebar
+              </FieldLabel>
+              <Switch
+                checked={pin.pinned}
+                id={pinId}
+                tabIndex={hasName ? undefined : -1}
+                onCheckedChange={pin.onChange}
+              />
+            </Field>
+          </div>
+        </div>
       )}
     </FieldGroup>
   );

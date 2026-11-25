@@ -1,40 +1,27 @@
 import { useMemberViews } from '@/members/hooks/use-member-views';
-import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import {
   Combobox,
   ComboboxContent,
   ComboboxTrigger,
   ComboboxValue,
-  Command,
-  CommandCheck,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
 } from '@tryghost/shade/components';
-import { Text } from '@tryghost/shade/primitives';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { useRef, useState } from 'react';
-import { SegmentBuilderPopover } from './segment-builder';
-
-function SegmentCount({ filter }: { filter: string }) {
-  const { count } = useMembersCount(filter);
-
-  if (count === null) {
-    return null;
-  }
-
-  return (
-    <Text as="span" className="tabular-nums" tone="secondary">
-      {formatNumber(count)}
-    </Text>
-  );
-}
+import { SegmentBuilderDialog, SegmentBuilderPopover } from './segment-builder';
+import { SegmentList } from './segment-list';
 
 interface SegmentPickerProps {
   /** The id of the segment chosen, if one is. */
   value?: string;
   onChange: (segmentId: string) => void;
+  /** Whether each segment shows how many members it has. On unless a place turns it off. */
+  showCounts?: boolean;
+  /**
+   * How a new segment is made from here: in a popover hung from the picker, in a dialog, or not
+   * at all, when the list has no "New segment" row.
+   */
+  create?: 'popover' | 'dialog' | false;
+  /** Whether the builder asks if the new segment is pinned to the sidebar. */
+  withPin?: boolean;
   /** Names the control for assistive technology, when no visible label is tied to it. */
   ariaLabel?: string;
   placeholder?: string;
@@ -43,15 +30,17 @@ interface SegmentPickerProps {
 }
 
 /**
- * A single-select picker over segments, with creation in place: for any screen that needs a
- * segment chosen, such as an automation's trigger. It lists every segment with how many members
- * it has, and ends with the green "New segment" row, as the custom field picker ends with "Add
- * custom field". That row opens the segment builder as a popover hung from the picker, and the
- * segment made there becomes the one chosen.
+ * A single-select picker over segments, for any screen that needs one chosen, such as an
+ * automation's trigger: a form field that opens the list of segments. A place decides whether
+ * the list shows member counts, and whether and how a new segment can be made from it. The
+ * segment made becomes the one chosen.
  */
 export function SegmentPicker({
   value,
   onChange,
+  showCounts = true,
+  create = 'popover',
+  withPin = false,
   ariaLabel = 'Segment',
   placeholder = 'Select a segment...',
   contentClassName,
@@ -70,57 +59,45 @@ export function SegmentPicker({
             <ComboboxValue placeholder={!selected}>{selected?.name ?? placeholder}</ComboboxValue>
           </ComboboxTrigger>
           <ComboboxContent className={contentClassName}>
-            <Command>
-              <CommandInput aria-label="Search segments" placeholder="Search segments..." />
-              <CommandList>
-                {segments.length > 0 && (
-                  <CommandGroup className="p-0">
-                    {segments.map((segment) => (
-                      <CommandItem
-                        key={segment.id}
-                        value={segment.name}
-                        onSelect={() => {
-                          onChange(segment.id);
-                          setOpen(false);
-                        }}
-                      >
-                        <Text as="span" className="truncate">
-                          {segment.name}
-                        </Text>
-                        <SegmentCount filter={segment.filter} />
-                        {segment.id === value && <CommandCheck />}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                )}
-                {/* A row of the list, as the custom field picker draws "Add custom field": the
-                    arrow keys reach it, and when a search matches nothing it is the row left. */}
-                <CommandGroup className="p-0" forceMount>
-                  <CommandItem
-                    className="font-semibold text-green"
-                    value="__new-segment__"
-                    forceMount
-                    onSelect={() => {
+            <SegmentList
+              segments={segments}
+              selectedId={value}
+              showCounts={showCounts}
+              dense
+              onNewSegment={
+                create
+                  ? () => {
                       setOpen(false);
                       setCreating(true);
-                    }}
-                  >
-                    <LucideIcon.Plus className="size-4" />
-                    <span>New segment</span>
-                  </CommandItem>
-                </CommandGroup>
-              </CommandList>
-            </Command>
+                    }
+                  : undefined
+              }
+              onSelect={(segment) => {
+                onChange(segment.id);
+                setOpen(false);
+              }}
+            />
           </ComboboxContent>
         </Combobox>
       </div>
-      <SegmentBuilderPopover
-        align="center"
-        anchorRef={pickerRef}
-        open={creating}
-        onCreated={(segment) => onChange(segment.id)}
-        onOpenChange={setCreating}
-      />
+      {create === 'popover' && (
+        <SegmentBuilderPopover
+          align="center"
+          anchorRef={pickerRef}
+          open={creating}
+          withPin={withPin}
+          onCreated={(segment) => onChange(segment.id)}
+          onOpenChange={setCreating}
+        />
+      )}
+      {create === 'dialog' && creating && (
+        <SegmentBuilderDialog
+          withPin={withPin}
+          open
+          onCreated={(segment) => onChange(segment.id)}
+          onOpenChange={setCreating}
+        />
+      )}
     </>
   );
 }
