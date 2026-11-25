@@ -3,7 +3,8 @@ import { ActionLog } from '../../lib/action-log/action-log';
 import { recordMemberDefinitionChanges } from '../../lib/action-log/custom-fields';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './metafields/definitions-service';
-import { MemberMetafieldValues } from './member-values';
+import { MemberMetafieldActivity } from './member-activity';
+import { MetafieldValuesService } from './metafields/values-service';
 import { MEMBERS_RESOURCE } from './members-resource';
 export { changedForMembers } from './members-resource';
 import { MetafieldBindingsService } from './metafields/bindings-service';
@@ -19,7 +20,9 @@ import { metafieldsTracking } from './metafields/tracking';
 export type { Definition } from './metafields/models';
 /** The members' fields as this site reads them, for every read here and in the domains that join them. */
 export type FieldSource = ResourceFieldSource<Caller>;
-export type { MemberMetafieldValues } from './member-values';
+/** What each member holds for each field. */
+export type MemberMetafieldValues = MetafieldValuesService<Caller>;
+export type { MemberMetafieldActivity } from './member-activity';
 export {
   refusalError,
   type MetafieldPlan,
@@ -54,6 +57,8 @@ export let namespaces: Namespaces<Caller> | undefined;
 export let fields: FieldSource | undefined;
 export let definitions: MemberDefinitions | undefined;
 export let values: MemberMetafieldValues | undefined;
+/** The activity feed members' metafield writes leave. */
+export let activity: MemberMetafieldActivity | undefined;
 export let bindings: MemberBindings | undefined;
 
 /**
@@ -65,19 +70,20 @@ export function booted(): {
   definitions: MemberDefinitions;
   values: MemberMetafieldValues;
   bindings: MemberBindings;
+  activity: MemberMetafieldActivity;
 } {
-  if (!namespaces || !definitions || !values || !bindings) {
+  if (!namespaces || !definitions || !values || !bindings || !activity) {
     throw new errors.IncorrectUsageError({
       message: 'Members metafields were used before boot initialised them.',
     });
   }
-  return { namespaces, definitions, values, bindings };
+  return { namespaces, definitions, values, bindings, activity };
 }
 
 export function init(): void {
-  // The five are constructed together below, so checking all of them keeps the "all or
+  // These are constructed together below, so checking all of them keeps the "all or
   // none" invariant explicit rather than trusting one to stand in for the rest.
-  if (namespaces && fields && definitions && values && bindings) {
+  if (namespaces && fields && definitions && values && bindings && activity) {
     return;
   }
 
@@ -115,16 +121,19 @@ export function init(): void {
     tracking,
     labs,
   });
+  // Each write of a member's values is recorded on the member's activity feed, inside the write.
+  activity = new MemberMetafieldActivity({ knex });
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the limit, which also caps how many values one request can carry — no handle on the
   // definitions service.
-  values = new MemberMetafieldValues({
+  values = new MetafieldValuesService({
     knex,
     resource: MEMBERS_RESOURCE,
     fields,
     namespaces,
     getMaxDefinitions,
     tracking,
+    onValuesWritten: activity.record,
   });
 
   // Built after the values, which is what a binding routes into. It has no handle on the

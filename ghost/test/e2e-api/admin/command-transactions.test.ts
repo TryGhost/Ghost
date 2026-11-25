@@ -478,13 +478,13 @@ describe('Commands and transactions', function () {
       },
     },
     {
-      name: 'custom field values: browseChangeEvents',
+      name: 'custom field activity: browse',
       arrange: async () => {
         const { memberId, planned } = await plannedValue();
-        const { values } = metafields.booted();
+        const { values, activity } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: async (executor) => (await values.browseChangeEvents({}, executor)).total,
+          read: async (executor) => (await activity.browse({}, executor)).total,
         };
       },
     },

@@ -1,4 +1,3 @@
-import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
@@ -9,7 +8,6 @@ import {
   matchField,
   shaped,
   type AcceptedValue,
-  type MetafieldChangeEventField,
   type TypedSettings,
 } from '@tryghost/metafield-types';
 import {
@@ -26,13 +24,11 @@ import {
   DbMetafieldValue,
   FIELD_STATUS,
   storedField,
-  StoredFieldList,
-  type MetafieldChangeEventInsert,
   type SingleWriteOrigin,
   type WriteOrigin,
 } from './schema';
-import { toDatabaseDate } from '../../../lib/db-types/date';
 import type { MetafieldsTracking } from './tracking';
+import { ValuesWritten, type OnValuesWritten } from './changes';
 import { ensureTransaction, transactionOf } from '../../../lib/ensure-transaction';
 import {
   ACTIVE_ONLY,
@@ -193,6 +189,7 @@ export class MetafieldValuesService<Caller> {
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
+  private onValuesWritten: OnValuesWritten;
   /**
    * The columns a value row is keyed by, from the canonical schema, so a write's conflict target
    * cannot fall behind the table's primary key. Only SQLite would notice if it did: MySQL ignores
@@ -208,6 +205,7 @@ export class MetafieldValuesService<Caller> {
     namespaces,
     getMaxDefinitions,
     tracking,
+    onValuesWritten,
   }: {
     knex: Knex;
     resource: MetafieldResource;
@@ -216,6 +214,8 @@ export class MetafieldValuesService<Caller> {
     namespaces: Pick<Namespaces<Caller>, 'canWrite'>;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
+    /** Called with each write, inside its transaction. */
+    onValuesWritten: OnValuesWritten;
   }) {
     this.knex = knex;
     this.resource = resource;
@@ -223,6 +223,7 @@ export class MetafieldValuesService<Caller> {
     this.namespaces = namespaces;
     this.getMaxDefinitions = getMaxDefinitions;
     this.tracking = tracking;
+    this.onValuesWritten = onValuesWritten;
 
     const schema = require('../../../data/schema').tables;
     this.valueKey = z
@@ -622,7 +623,7 @@ export class MetafieldValuesService<Caller> {
   }
 
   /**
-   * Stores a write and its activity feed entry inside `trx`.
+   * Stores a write inside `trx`, and reports it there.
    *
    * The existing values are read without a lock. On MySQL that read sees the database as it was
    * when the transaction first read anything without a lock, so it can miss values another
@@ -634,8 +635,9 @@ export class MetafieldValuesService<Caller> {
     trx: Knex.Transaction,
     resourceId: string,
     writes: PlannedWrite[],
-    { writtenBy, source }: WriteOrigin,
+    origin: WriteOrigin,
   ): Promise<void> {
+    const { writtenBy } = origin;
     const { tables, idColumn } = this.resource;
     // Built first, then sent as whole statements: a handful per write rather
     // than one per part, under one timestamp, because a write happened once
@@ -741,22 +743,19 @@ export class MetafieldValuesService<Caller> {
       }
     }
 
-    const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
-      namespace: field.namespace,
-      key: field.key,
-      name: field.name,
-    }));
-    await trx<MetafieldChangeEventInsert>(tables.changeEvents).insert({
-      id: new ObjectID().toHexString(),
-      [idColumn]: resourceId,
-      written_by_type: writtenBy.type,
-      written_by_id: writtenBy.id,
-      source,
-      metafields: StoredFieldList.encode(fields),
-      // A string rather than the Date the value rows take: SQLite stores a bound Date
-      // as a number, which sorts before every string the feed pages through time with.
-      created_at: toDatabaseDate(now),
-    });
+    await this.onValuesWritten(
+      trx,
+      new ValuesWritten({
+        resourceId,
+        origin,
+        fields: writes.map(({ field }) => ({
+          namespace: field.namespace,
+          key: field.key,
+          name: field.name,
+        })),
+        at: now,
+      }),
+    );
   }
 
   /**

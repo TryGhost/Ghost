@@ -24,7 +24,6 @@ export const MEMBERS_RESOURCE: MetafieldResource = {
   tables: {
     fields: 'members_metafields',
     values: 'members_metafield_values',
-    changeEvents: 'members_metafield_change_events',
     bindings: 'members_metafield_bindings',
   },
   idColumn: 'member_id',
