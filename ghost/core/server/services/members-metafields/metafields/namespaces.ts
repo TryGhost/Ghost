@@ -2,7 +2,7 @@ import errors from '@tryghost/errors';
 import { unreachable } from '../../../lib/unreachable';
 import type { Namespace } from '@tryghost/metafield-types/identity';
 import { MEMBER_ACCESS, type MemberAccess } from '@tryghost/metafield-types';
-import type { ResourceKind } from './resource';
+import type { Asking, CallerKind, ResourceKind } from './resource';
 
 /**
  * Who manages a namespace's fields: defines, renames, reorders, archives, restores and deletes
@@ -50,7 +50,7 @@ export type Level = MemberAccess;
  * It is the base each definition in the namespace lays its own level over: the caller a resource
  * stores a level for on every definition gets that definition's level instead.
  */
-export type Access<R extends ResourceKind> = { [Caller in R['Caller']]?: Level };
+export type Access<R extends ResourceKind> = { [Kind in CallerKind<R>]?: Level };
 
 /**
  * Which of a namespace's fields a caller's level reaches: all of them, none of them, or the ones
@@ -98,17 +98,11 @@ export interface Namespaces<R extends ResourceKind> {
   /** Refuses adding `adding` fields to the `held` the namespace already has. */
   assertRoom(namespace: Namespace, held: number, adding: number): Promise<void>;
   /** What `caller` may read in each namespace. */
-  readable(caller: R['Caller']): Grants;
+  readable(caller: Asking<R>): Grants;
   /** Whether `caller` may read `field`, by its namespace's grant, whatever the field's status. */
-  canRead(
-    caller: R['Caller'],
-    field: { namespace: Namespace; memberAccess: MemberAccess },
-  ): boolean;
+  canRead(caller: Asking<R>, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
   /** Whether `caller` may write the values of `field`, by its namespace's grant. */
-  canWrite(
-    caller: R['Caller'],
-    field: { namespace: Namespace; memberAccess: MemberAccess },
-  ): boolean;
+  canWrite(caller: Asking<R>, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
 }
 
 /**
@@ -134,7 +128,7 @@ export function createNamespaces<R extends ResourceKind>(
     /** How many fields each namespace may hold, counted for each namespace alone. */
     definitionLimit: CountLimit;
     /** The caller each definition stores its own level for, laid over its namespace's. */
-    storedLevelFor: R['Caller'] | undefined;
+    storedLevelFor: CallerKind<R> | undefined;
   },
 ): Namespaces<R> {
   const byNamespace = new Map(
@@ -144,11 +138,11 @@ export function createNamespaces<R extends ResourceKind>(
 
   // A definition's level for a caller, or else its namespace's, or else none. Every definition
   // stores a level for `storedLevelFor`, so that caller always gets the definition's.
-  const grantFor = (access: Access<R>, caller: R['Caller'], needs: readonly Level[]): Grant => {
-    if (caller === storedLevelFor) {
+  const grantFor = (access: Access<R>, caller: Asking<R>, needs: readonly Level[]): Grant => {
+    if (caller.kind === storedLevelFor) {
       return { fields: 'by stored level', levels: needs };
     }
-    return needs.includes(access[caller] ?? MEMBER_ACCESS.none) ? ALL : NONE;
+    return needs.includes(access[caller.kind] ?? MEMBER_ACCESS.none) ? ALL : NONE;
   };
 
   const owned = (namespace: Namespace): NamespaceRegistration<R> => {

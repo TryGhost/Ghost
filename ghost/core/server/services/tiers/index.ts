@@ -20,7 +20,7 @@ export default defineService('Tiers', async () => {
   const requirements = new TierRequirements({
     knex,
     // Tiers list a requirement's fields to anyone, so a port names its field as a member reads it.
-    boundPorts: (ports, executor) => bindings.boundPorts(ports, 'members', executor),
+    boundPorts: (ports, executor) => bindings.boundPorts(ports, { kind: 'member' }, executor),
     logging,
   });
 

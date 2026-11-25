@@ -43,7 +43,7 @@ import {
 } from './changes';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
-import type { ResourceKind } from './resource';
+import type { Asking, ResourceKind } from './resource';
 
 const MAX_KEY_ITERATIONS = 1000;
 
@@ -184,7 +184,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
 
   async browse(
     options: { namespace: Namespace; filter?: string },
-    caller: R['Caller'],
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<Definition[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
@@ -225,7 +225,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
   async read(
     namespace: Namespace,
     key: Key,
-    caller: R['Caller'],
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<Definition> {
     const [field] = await this.list(

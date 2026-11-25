@@ -39,7 +39,7 @@ import {
 } from './queries';
 import { MemberAccessSchema } from '@tryghost/metafield-types';
 import type { Namespaces } from './namespaces';
-import type { MetafieldResource, ResourceKind } from './resource';
+import type { Asking, MetafieldResource, ResourceKind } from './resource';
 import { readStoredField } from './stored-fields';
 import {
   VALUE_COLUMNS,
@@ -240,7 +240,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
   private async allowedFieldsByIdentity(
     executor: Knex,
     identities: string[],
-    caller: R['Caller'],
+    caller: Asking<R>,
   ): Promise<Map<string, AllowedField>> {
     // A write names whole fields, so an identity naming a part is one no field answers to.
     const keysByNamespace = new Map<Namespace, Key[]>();
@@ -295,7 +295,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async getValuesFor(
     resourceId: string,
-    caller: R['Caller'],
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
     return (await this.getValuesForMany([resourceId], caller, executor)).get(resourceId);
@@ -308,7 +308,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   private async typedFields(
     executor: Knex,
-    caller: R['Caller'],
+    caller: Asking<R>,
   ): Promise<Map<string, TypedSettings>> {
     const rows = await this.fields
       .definitions(executor, { caller, status: ACTIVE_ONLY })
@@ -333,7 +333,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async getValuesForMany(
     resourceIds: string[],
-    caller: R['Caller'],
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (resourceIds.length === 0) {
@@ -460,7 +460,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async planWrite(
     input: unknown,
-    caller: R['Caller'],
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<PlannedWrite[]> {
     const { writes, refusals } = await this.planOrRefuse(input, caller, undefined, executor);
@@ -485,7 +485,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async planOrRefuse(
     input: unknown,
-    caller: R['Caller'],
+    caller: Asking<R>,
     named?: (identity: string) => string,
     executor: Knex = this.knex,
   ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
@@ -776,7 +776,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async heldValues(
     field: FieldIdentity,
-    caller: R['Caller'],
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<string[]> {
     const values = this.resource.tables.values;

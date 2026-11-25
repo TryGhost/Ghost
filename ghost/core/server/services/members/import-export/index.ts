@@ -21,6 +21,9 @@ import { tracer } from '../../../lib/tracing';
 import { importExportTracking } from './tracking';
 import MembersCSVExporter, { type ExportOptions } from './export/exporter';
 
+/** An import is Ghost's own work, which reaches every field whoever started it. */
+const INTERNAL = { kind: 'internal' } as const;
+
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
 const models = require('../../../models');
@@ -115,8 +118,8 @@ export function makeImporter(deps: ImporterServices) {
     // Only the publisher's own fields: a file exported and imported again must not rewrite
     // the values another namespace's owner keeps.
     activeFields: async () =>
-      deps.metafields.definitions.browse({ namespace: CUSTOM_NAMESPACE }, 'internal'),
-    planWrite: (values) => deps.metafields.values.planWrite(values, 'internal'),
+      deps.metafields.definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
+    planWrite: (values) => deps.metafields.values.planWrite(values, INTERNAL),
     applyWrite: (memberId, plan, executor) =>
       deps.metafields.values.applyImportedWrite(memberId, plan, executor),
   };
@@ -206,9 +209,9 @@ export function makeExporter({
       // are always present -- no not-initialised state to guard.
       // The same fields the import reads back.
       activeDefinitions: async (): Promise<CsvField[]> =>
-        definitions.browse({ namespace: CUSTOM_NAMESPACE }, 'internal'),
+        definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
       valuesForMembers: (memberIds, executor) =>
-        values.getValuesForMany(memberIds, 'internal', executor),
+        values.getValuesForMany(memberIds, INTERNAL, executor),
     },
 
     tracking: importExportTracking(tracer),

@@ -39,7 +39,7 @@ export const MEMBERS_RESOURCE: MetafieldResource<Members> = {
   },
   idColumn: 'member_id',
   // Each field stores what its member may do with it, which a publisher sets per field.
-  storedLevelFor: 'members',
+  storedLevelFor: 'member',
 };
 
 /**
@@ -63,10 +63,13 @@ export function changedForMembers(
 function readByMembers(namespaces: Pick<Namespaces<Members>, 'canRead'>, definition: Definition) {
   return (
     definition.status === FIELD_STATUS.active &&
-    namespaces.canRead('members', {
-      namespace: definition.namespace,
-      memberAccess: definition.access.member,
-    })
+    namespaces.canRead(
+      { kind: 'member' },
+      {
+        namespace: definition.namespace,
+        memberAccess: definition.access.member,
+      },
+    )
   );
 }
 
