@@ -3,6 +3,8 @@ const tpl = require('@tryghost/tpl');
 const auth = require('../../../../auth');
 const shared = require('../../../shared');
 const apiMw = require('../../middleware');
+const { routedMethod } = require('@tryghost/api-framework');
+const apiPermissions = require('../../../../api/endpoints/utils/permissions');
 
 const messages = {
   apiTokenBlocked: 'API tokens do not have permission to access this endpoint',
@@ -124,6 +126,26 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
   );
 };
 
+/**
+ * Refuses an app the method its route ends in would refuse it on, before the route's own
+ * middleware runs: a rate limit keyed on the staff user the app acts for, or an upload being
+ * parsed and stored. The method is the route's last handler, from `http()`.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
+const refuseAppEarly = function refuseAppEarly(req, res, next) {
+  if (req.auth?.kind !== 'app') {
+    return next();
+  }
+  const routed = routedMethod(req.route?.stack.at(-1)?.handle);
+  if (!routed) {
+    return next();
+  }
+  apiPermissions.refuseAppEarly(routed, req.auth).then(() => next(), next);
+};
+
 /** @typedef {import('express').RequestHandler} RequestHandler */
 
 /**
@@ -139,6 +161,7 @@ module.exports.authAdminApi = [
   shared.middleware.urlRedirects.adminSSLAndHostRedirect,
   shared.middleware.prettyUrls,
   tokenPermissionCheck,
+  refuseAppEarly,
 ];
 
 /**

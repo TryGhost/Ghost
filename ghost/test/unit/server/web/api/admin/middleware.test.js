@@ -1,10 +1,15 @@
+const assert = require('node:assert/strict');
 const express = require('express');
 const request = require('supertest');
 
 // Module under test
 const middleware = require('../../../../../../core/server/web/api/endpoints/admin/middleware');
 
-const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+const { http, pipeline } = require('@tryghost/api-framework');
+
+const named = (name) => middleware.authAdminApi.find((handler) => handler.name === name);
+const tokenPermissionCheck = named('tokenPermissionCheck');
+const refuseAppEarly = named('refuseAppEarly');
 
 const createApiKey = (userId) => {
   return {
@@ -249,6 +254,97 @@ describe('Admin API Middleware', function () {
             },
           });
       });
+    });
+  });
+
+  describe('refuseAppEarly', function () {
+    const controller = pipeline(
+      {
+        docName: 'posts',
+        browse: { permissions: true, query: () => ({ ran: true }) },
+        upload: { permissions: false, query: () => ({ ran: true }) },
+        importCSV: {
+          permissions: { docName: 'content_imports', method: 'importContent' },
+          query: () => ({ ran: true }),
+        },
+      },
+      { permissions: { handle: async () => {}, handleUnchecked: async () => {} } },
+    );
+
+    /** An app holding `scopes`, on routes whose middleware records that it ran */
+    const createRoutes = (auth) => {
+      const app = express();
+      const ran = [];
+      const sideEffect = (req, res, next) => {
+        ran.push(req.path);
+        next();
+      };
+      app.use((req, res, next) => {
+        req.auth = auth;
+        next();
+      });
+      app.get('/posts', refuseAppEarly, sideEffect, http(controller.browse));
+      app.post('/upload', refuseAppEarly, sideEffect, http(controller.upload));
+      app.post('/import', refuseAppEarly, sideEffect, http(controller.importCSV));
+      app.post('/not-http', refuseAppEarly, sideEffect, (req, res) => res.json({ ok: true }));
+      app.use((err, req, res, _next) => {
+        void _next;
+        res.status(err.statusCode).json({ type: err.errorType, message: err.message });
+      });
+      return { app, ran };
+    };
+
+    const app = (scopes) => ({ kind: 'app', method: 'app_user_token', scopes });
+
+    it('refuses an app without the scope the method checks, before the route runs', async function () {
+      const { app: routes, ran } = createRoutes(app(['tag:browse']));
+
+      await request(routes).get('/posts').expect(403).expect({
+        type: 'NoPermissionError',
+        message: 'You do not have permission to browse posts',
+      });
+      await request(routes).post('/import').expect(403).expect({
+        type: 'NoPermissionError',
+        message: 'You do not have permission to importContent content_imports',
+      });
+      assert.deepEqual(ran, []);
+    });
+
+    it('refuses an app on a method it may not call unchecked, before the route runs', async function () {
+      const { app: routes, ran } = createRoutes(app(['post:browse']));
+
+      await request(routes).post('/upload').expect(403).expect({
+        type: 'NoPermissionError',
+        message: 'Apps do not have permission to upload posts',
+      });
+      assert.deepEqual(ran, []);
+    });
+
+    it('lets an app with the scope through to the route', async function () {
+      const { app: routes, ran } = createRoutes(
+        app(['post:browse', 'content_import:importContent']),
+      );
+
+      await request(routes).get('/posts').expect(200);
+      await request(routes).post('/import').expect(200);
+      assert.deepEqual(ran, ['/posts', '/import']);
+    });
+
+    it('leaves a route that does not end in http() to its own checks', async function () {
+      const { app: routes, ran } = createRoutes(app([]));
+
+      await request(routes).post('/not-http').expect(200);
+      assert.deepEqual(ran, ['/not-http']);
+    });
+
+    it('leaves every other principal to the route', async function () {
+      for (const auth of [{ kind: 'user' }, { kind: 'integration' }, undefined]) {
+        const { app: routes, ran } = createRoutes(auth);
+
+        await request(routes).get('/posts').expect(200);
+        await request(routes).post('/upload').expect(200);
+        assert.deepEqual(ran, ['/posts', '/upload']);
+      }
     });
   });
 });

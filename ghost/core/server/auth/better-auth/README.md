@@ -334,6 +334,14 @@ sooner. Its scopes are the requested ones the client lists.
   outside the pipeline, and `DELETE /session` refuses apps itself. A unit test
   lists every such method the Admin API mounts, so a new one is refused until
   someone decides otherwise.
+- The Admin API refuses an app on those methods, and on a method whose
+  standard check needs a scope the app wasn't approved for, before the
+  route's own middleware runs (`refuseAppEarly` in the Admin API's
+  `authAdminApi`). A rate limit keyed on the staff user the app acts for, or
+  an upload being parsed and stored, never acts for an app request that
+  can't succeed, so an app can't spend the user's budget. The error is the
+  one the pipeline would give. An app approved for the scope goes on to the
+  route and spends the budget as the user would.
 - Reconciling an installation that isn't active disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event

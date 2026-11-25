@@ -3,6 +3,9 @@ const _ = require('lodash');
 const permissions = require('../../../auth/permissions');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const { capabilities, capabilityKey } = require('../../../auth/policy/capabilities');
+const { scopesAllow } = require('../../../auth/policy/scopes');
+const { noPermission } = require('../../../auth/policy/authorize');
 
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
@@ -16,6 +19,10 @@ const messages = {
  */
 const APP_UNCHECKED_ALLOWLIST = new Set();
 
+/** The object type a docName names in permissions, e.g. `posts` → `post` */
+const singularOf = (docName) =>
+  docName.match(/ies$/) ? docName.replace(/ies$/, 'y') : docName.replace(/s$/, '');
+
 /**
  * @description Handle requests, which need authentication.
  *
@@ -26,12 +33,7 @@ const APP_UNCHECKED_ALLOWLIST = new Set();
 const nonePublicAuth = async (apiConfig, frame) => {
   debug('check admin permissions');
 
-  let singular;
-  if (apiConfig.docName.match(/ies$/)) {
-    singular = apiConfig.docName.replace(/ies$/, 'y');
-  } else {
-    singular = apiConfig.docName.replace(/s$/, '');
-  }
+  const singular = singularOf(apiConfig.docName);
   let permissionIdentifier = frame.options.id;
 
   // CASE: Target ctrl can override the identifier. The identifier is the unique identifier of the target resource
@@ -135,6 +137,39 @@ module.exports = {
         docName: apiConfig.docName,
       }),
     });
+  },
+
+  /**
+   * @description Refuses an app, ahead of the route's other middleware, on a method whose
+   * permission stage would refuse it whatever the request: one it may not call unchecked, or one
+   * whose standard check needs a scope the app wasn't approved for. Rate limits and uploads on
+   * the route then never act for a request that can't succeed. The error is the one the stage
+   * would throw; the role and row checks still run in the stage.
+   *
+   * @param {import('@tryghost/api-framework').RoutedMethod} routed
+   * @param {Object} principal - The request's principal
+   */
+  async refuseAppEarly(routed, principal) {
+    if (principal?.kind !== 'app' || !routed.docName || !routed.method) {
+      return;
+    }
+    const { permissions: own, docName, method } = routed;
+    if (own === false || typeof own === 'function') {
+      return module.exports.handleUnchecked(
+        { docName, method },
+        { options: { context: { principal } } },
+      );
+    }
+    const config = Object.assign({ docName, method }, typeof own === 'object' ? own : {});
+    const key = capabilityKey(singularOf(config.docName), config.method);
+    if (!scopesAllow(capabilities(principal).scopes, key)) {
+      const err = noPermission();
+      err.message = tpl(messages.noPermissionToCall, {
+        method: config.method,
+        docName: config.docName,
+      });
+      throw err;
+    }
   },
 
   APP_UNCHECKED_ALLOWLIST,

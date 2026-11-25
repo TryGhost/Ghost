@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
+import { join } from 'node:path';
 import sinon from 'sinon';
 import { generateTestAppKeys, type TestAppKeys } from '../../utils/app-identity';
 import { insertTestInstallation } from '../../utils/app-installations';
-import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
+import {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  resetRateLimits,
+} from '../../utils/e2e-framework';
 import { SESSION_COOKIE_NAME as SESSION_COOKIE } from '../../../core/server/auth/better-auth/create-auth';
 
 const models = require('../../../core/server/models');
@@ -287,6 +293,97 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
         assert.deepEqual(await knex()('users').where({ id: owner().id }).first(), ownerBefore);
       });
     }
+  });
+
+  describe('before a route does any work', function () {
+    const editing = () => ({
+      presence: [{ editing: { id: fixtureManager.get('posts', 0).id, type: 'post' } }],
+    });
+    // A file each route's own upload checks would refuse with a different error
+    const notAnUpload = (route: string) =>
+      route.startsWith('images')
+        ? join(__dirname, '../../utils/fixtures/csv/valid-members-import.csv')
+        : __filename;
+
+    beforeEach(resetRateLimits);
+    afterEach(resetRateLimits);
+
+    it('refuses an app on presence without spending the staff user’s budget', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+
+      // More than the user's budget of 12 every 10 seconds
+      for (let i = 0; i < 15; i++) {
+        const { body } = await agent
+          .post('presence/')
+          .header('Authorization', bearer(token))
+          .body(editing())
+          .expectStatus(403);
+        assert.equal(body.errors[0].type, 'NoPermissionError');
+      }
+
+      await signInOwner();
+      await agent.post('presence/').body(editing()).expectStatus(200);
+    });
+
+    it('refuses an app on upgrades without spending the staff user’s budget', async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+      const upgrade = {
+        upgrades: [
+          {
+            component: 'ghost',
+            to_version: '6.71.0',
+            idempotency_key: 'f76543a0-c052-45e8-b020-03c86a809b93',
+          },
+        ],
+      };
+
+      // More than the user's budget of 3 a minute
+      for (let i = 0; i < 5; i++) {
+        const { body } = await agent
+          .post('upgrades/')
+          .header('Authorization', bearer(token))
+          .body(upgrade)
+          .expectStatus(403);
+        assert.equal(body.errors[0].type, 'NoPermissionError');
+      }
+
+      await signInOwner();
+      // Unsupported without an upgrade adapter, but not limited
+      const { body } = await agent.post('upgrades/').body(upgrade).expectStatus(409);
+      assert.equal(body.errors[0].code, 'UPGRADE_UNSUPPORTED');
+    });
+
+    for (const { route, field } of [
+      { route: 'images/upload/', field: 'file' },
+      { route: 'members/upload/', field: 'membersfile' },
+    ]) {
+      it(`refuses an app on ${route} before reading the upload`, async function () {
+        const id = await installation(['post:browse']);
+        const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+
+        const { body } = await agent
+          .post(route)
+          .header('Authorization', bearer(token))
+          .attach(field, notAnUpload(route))
+          .expectStatus(403);
+        assert.equal(body.errors[0].type, 'NoPermissionError');
+      });
+    }
+
+    it('lets an app with the scope through to the route', async function () {
+      const id = await installation(['member:add']);
+      const { token } = await tokenFor(id, { clientScopes: ['member:add'] });
+
+      // The upload's own check now answers
+      const { body } = await agent
+        .post('members/upload/')
+        .header('Authorization', bearer(token))
+        .attach('membersfile', notAnUpload('members/upload/'))
+        .expectStatus(415);
+      assert.equal(body.errors[0].type, 'UnsupportedMediaTypeError');
+    });
   });
 
   describe('on routes with no standard permission check', function () {

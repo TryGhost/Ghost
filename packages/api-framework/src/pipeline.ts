@@ -286,6 +286,12 @@ const STAGES = {
 };
 
 const controllerMap = new Map<object, Record<string, ControllerHandler>>();
+const apiConfigs = new WeakMap<object, Readonly<ApiConfiguration>>();
+
+/** The docName and method of a controller method the pipeline built, or undefined */
+export function apiConfigOf(controllerMethod: unknown): Readonly<ApiConfiguration> | undefined {
+  return typeof controllerMethod === 'function' ? apiConfigs.get(controllerMethod) : undefined;
+}
 type PipelineResult<T> = {
   [K in Exclude<keyof T, 'docName'>]: T[K] & ControllerCall;
 };
@@ -468,6 +474,7 @@ function pipeline(
     obj[method] = implWrapper;
 
     Object.assign(implWrapper, apiImpl);
+    apiConfigs.set(implWrapper, Object.freeze({ docName, method }));
     return obj;
   }, {});
 
