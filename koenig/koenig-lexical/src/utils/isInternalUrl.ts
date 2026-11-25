@@ -1,4 +1,4 @@
-export function isInternalUrl(url: string, siteUrl: string): boolean {
+export function isInternalUrl(url: string, siteUrl: string | undefined): boolean {
     if (!url || !siteUrl) {
         return false;
     }
