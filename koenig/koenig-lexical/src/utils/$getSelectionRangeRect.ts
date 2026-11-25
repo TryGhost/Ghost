@@ -18,6 +18,10 @@ export function $getSelectionRangeRect({selection, editor}: {selection: BaseSele
     const selectionRects = createRectsFromDOMRange(editor, selectionRange);
     const returnRect = selectionRects[0];
 
+    if (!returnRect) {
+        return null;
+    }
+
     // we can get multiple rects if the selection spans multiple lines or has inline nodes like links
     if (selectionRects.length > 1) {
         // add up the widths of all rects using the first top position
