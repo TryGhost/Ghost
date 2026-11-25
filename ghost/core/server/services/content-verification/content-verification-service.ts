@@ -37,7 +37,7 @@ type SiteTitleChangedBody = {
   title: string;
 };
 
-export type AbuseWebhookServiceDeps = {
+export type ContentVerificationServiceDeps = {
   config: Config;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: RequestFn;
@@ -46,10 +46,10 @@ export type AbuseWebhookServiceDeps = {
 };
 
 /**
- * Posts signed abuse-classifier events to the host Worker. Title changes are
- * fire-and-forget so a settings save never waits on or fails from delivery.
+ * Posts signed content-verification events to the host Worker. Title changes
+ * are fire-and-forget so a settings save never waits on or fails from delivery.
  */
-export class AbuseWebhookService {
+export class ContentVerificationService {
   config: Config;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: RequestFn;
@@ -57,7 +57,7 @@ export class AbuseWebhookService {
   events: ModelEvents;
   listener: ModelEventListener;
 
-  constructor({ config, logging, request, urlUtils, events }: AbuseWebhookServiceDeps) {
+  constructor({ config, logging, request, urlUtils, events }: ContentVerificationServiceDeps) {
     this.config = config;
     this.logging = logging;
     this.request = request;
@@ -79,15 +79,15 @@ export class AbuseWebhookService {
 
   async sendTitleChanged(model: SettingsModel): Promise<void> {
     try {
-      const webhookUrl = this.config.get('hostSettings:abuseClassifier:webhookUrl');
+      const webhookUrl = this.config.get('hostSettings:contentVerification:webhookUrl');
       if (typeof webhookUrl !== 'string' || webhookUrl.length === 0) {
         return;
       }
 
-      const webhookSecret = this.config.get('hostSettings:abuseClassifier:webhookSecret');
+      const webhookSecret = this.config.get('hostSettings:contentVerification:webhookSecret');
       const siteIdRaw = this.config.get('hostSettings:siteId');
-      const siteCreatedAtRaw = this.config.get('hostSettings:abuseClassifier:siteCreatedAt');
-      const maxSiteAgeDaysRaw = this.config.get('hostSettings:abuseClassifier:maxSiteAgeDays');
+      const siteCreatedAtRaw = this.config.get('hostSettings:contentVerification:siteCreatedAt');
+      const maxSiteAgeDaysRaw = this.config.get('hostSettings:contentVerification:maxSiteAgeDays');
 
       const siteId =
         typeof siteIdRaw === 'string'
@@ -100,7 +100,7 @@ export class AbuseWebhookService {
 
       if (!webhookSecretValue || !siteId || !siteCreatedAt) {
         this.logging.warn(
-          'Abuse webhook is misconfigured: hostSettings:abuseClassifier:webhookUrl is set but webhookSecret, siteId, or siteCreatedAt is missing.',
+          'Content verification webhook is misconfigured: hostSettings:contentVerification:webhookUrl is set but webhookSecret, siteId, or siteCreatedAt is missing.',
         );
         return;
       }
@@ -131,7 +131,7 @@ export class AbuseWebhookService {
       });
 
       const sanitizedUrl = sanitizeWebhookUrl(webhookUrl);
-      this.logging.info(`Triggering abuse webhook to "${sanitizedUrl}"`);
+      this.logging.info(`Triggering content verification webhook to "${sanitizedUrl}"`);
 
       try {
         // Got excludes POST from retries by default; include it explicitly.
@@ -141,7 +141,9 @@ export class AbuseWebhookService {
         });
       } catch (error) {
         const message = describeWebhookError(error);
-        this.logging.error(`Failed to send abuse webhook to "${sanitizedUrl}": ${message}`);
+        this.logging.error(
+          `Failed to send content verification webhook to "${sanitizedUrl}": ${message}`,
+        );
       }
     } catch (error) {
       this.logging.error(error as Error);

@@ -1,10 +1,10 @@
 import { defineService } from '../../../kernel/define-service';
-import { AbuseWebhookService } from './abuse-webhook-service';
+import { ContentVerificationService } from './content-verification-service';
 
 // Boot must initialize this root after config and the shared event bus are ready.
-export default defineService('Abuse Webhook', {
+export default defineService('Content Verification', {
   create: () =>
-    new AbuseWebhookService({
+    new ContentVerificationService({
       config: require('../../../shared/config'),
       logging: require('@tryghost/logging'),
       request: require('@tryghost/request'),

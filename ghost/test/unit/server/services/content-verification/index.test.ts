@@ -2,20 +2,20 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import type { EventEmitter } from 'node:events';
 import sinon from 'sinon';
-import type abuseWebhookRoot from '../../../../../core/server/services/abuse-webhook';
-import type { AbuseWebhookServiceDeps } from '../../../../../core/server/services/abuse-webhook/abuse-webhook-service';
+import type contentVerificationRoot from '../../../../../core/server/services/content-verification';
+import type { ContentVerificationServiceDeps } from '../../../../../core/server/services/content-verification/content-verification-service';
 
 const events: EventEmitter = require('../../../../../core/server/lib/common/events');
-const config: AbuseWebhookServiceDeps['config'] = require('../../../../../core/shared/config');
-const logging: AbuseWebhookServiceDeps['logging'] = require('@tryghost/logging');
-const urlUtils: AbuseWebhookServiceDeps['urlUtils'] =
+const config: ContentVerificationServiceDeps['config'] = require('../../../../../core/shared/config');
+const logging: ContentVerificationServiceDeps['logging'] = require('@tryghost/logging');
+const urlUtils: ContentVerificationServiceDeps['urlUtils'] =
   require('../../../../../core/shared/url-utils').default;
 
-const { AbuseWebhookService } =
-  require('../../../../../core/server/services/abuse-webhook/abuse-webhook-service') as typeof import('../../../../../core/server/services/abuse-webhook/abuse-webhook-service');
+const { ContentVerificationService } =
+  require('../../../../../core/server/services/content-verification/content-verification-service') as typeof import('../../../../../core/server/services/content-verification/content-verification-service');
 const { IncorrectUsageError } = require('@tryghost/errors');
 
-const ROOT_PATH = require.resolve('../../../../../core/server/services/abuse-webhook');
+const ROOT_PATH = require.resolve('../../../../../core/server/services/content-verification');
 const EVENT_NAME = 'settings.title.edited';
 const WEBHOOK_ORIGIN = 'https://jev-classifier.example';
 const WEBHOOK_URL = `${WEBHOOK_ORIGIN}/v1/ghost/events`;
@@ -38,9 +38,9 @@ function titleModelWith(value: unknown) {
   };
 }
 
-describe('Abuse Webhook service root', function () {
+describe('Content Verification service root', function () {
   let originalModule: NodeJS.Module | undefined;
-  let root: typeof abuseWebhookRoot | undefined;
+  let root: typeof contentVerificationRoot | undefined;
   let sandbox: sinon.SinonSandbox;
   let getConfig: sinon.SinonStub<[string], unknown>;
   let getSiteUrl: sinon.SinonStub<[], string>;
@@ -56,10 +56,10 @@ describe('Abuse Webhook service root', function () {
     sandbox = sinon.createSandbox();
 
     getConfig = sandbox.stub(config, 'get').callThrough();
-    getConfig.withArgs('hostSettings:abuseClassifier:webhookUrl').returns(WEBHOOK_URL);
-    getConfig.withArgs('hostSettings:abuseClassifier:webhookSecret').returns(WEBHOOK_SECRET);
-    getConfig.withArgs('hostSettings:abuseClassifier:siteCreatedAt').returns(SITE_CREATED_AT);
-    getConfig.withArgs('hostSettings:abuseClassifier:maxSiteAgeDays').returns(365);
+    getConfig.withArgs('hostSettings:contentVerification:webhookUrl').returns(WEBHOOK_URL);
+    getConfig.withArgs('hostSettings:contentVerification:webhookSecret').returns(WEBHOOK_SECRET);
+    getConfig.withArgs('hostSettings:contentVerification:siteCreatedAt').returns(SITE_CREATED_AT);
+    getConfig.withArgs('hostSettings:contentVerification:maxSiteAgeDays').returns(365);
     getConfig.withArgs('hostSettings:siteId').returns(SITE_ID);
 
     getSiteUrl = sandbox.stub(urlUtils, 'getSiteUrl').returns(SITE_URL);
@@ -87,14 +87,14 @@ describe('Abuse Webhook service root', function () {
   });
 
   async function initRoot() {
-    root = require(ROOT_PATH).default as typeof abuseWebhookRoot;
+    root = require(ROOT_PATH).default as typeof contentVerificationRoot;
     await root.init();
     return root.service!;
   }
 
   it('subscribes only at init and delivers once after repeated init', async function () {
     const subscribe = sandbox.spy(events, 'on');
-    root = require(ROOT_PATH).default as typeof abuseWebhookRoot;
+    root = require(ROOT_PATH).default as typeof contentVerificationRoot;
     assert.throws(() => root!.service, IncorrectUsageError);
     sinon.assert.notCalled(subscribe);
 
@@ -129,7 +129,7 @@ describe('Abuse Webhook service root', function () {
       }
       return events;
     });
-    root = require(ROOT_PATH).default as typeof abuseWebhookRoot;
+    root = require(ROOT_PATH).default as typeof contentVerificationRoot;
 
     await assert.rejects(root.init(), (error) => error === failure);
     assert.throws(() => root!.service, IncorrectUsageError);
@@ -205,13 +205,13 @@ describe('Abuse Webhook service root', function () {
     assert.deepEqual(requestOptions.retry, { limit: 2, methods: ['POST'] });
     sinon.assert.calledOnceWithExactly(
       loggedInfo,
-      `Triggering abuse webhook to "${WEBHOOK_ORIGIN}"`,
+      `Triggering content verification webhook to "${WEBHOOK_ORIGIN}"`,
     );
     sinon.assert.calledOnce(getSiteUrl);
   });
 
   it('does not request when config is incomplete', async function () {
-    getConfig.withArgs('hostSettings:abuseClassifier:webhookUrl').returns('');
+    getConfig.withArgs('hostSettings:contentVerification:webhookUrl').returns('');
     const service = await initRoot();
     const request = sandbox.stub(service, 'request').resolves(null);
     const send = sandbox.spy(service, 'sendTitleChanged');
@@ -221,8 +221,8 @@ describe('Abuse Webhook service root', function () {
     sinon.assert.notCalled(request);
     sinon.assert.notCalled(loggedWarning);
 
-    getConfig.withArgs('hostSettings:abuseClassifier:webhookUrl').returns(WEBHOOK_URL);
-    getConfig.withArgs('hostSettings:abuseClassifier:webhookSecret').returns('');
+    getConfig.withArgs('hostSettings:contentVerification:webhookUrl').returns(WEBHOOK_URL);
+    getConfig.withArgs('hostSettings:contentVerification:webhookSecret').returns('');
     events.emit(EVENT_NAME, titleModel());
     await send.lastCall.returnValue;
     sinon.assert.notCalled(request);
@@ -232,14 +232,14 @@ describe('Abuse Webhook service root', function () {
   it('skips empty, null, and whitespace-only titles', async function () {
     const request = sinon.stub().resolves(null);
     const info = sinon.stub();
-    const service = new AbuseWebhookService({
+    const service = new ContentVerificationService({
       config: {
         get: (key: string) => {
           const values: Record<string, unknown> = {
-            'hostSettings:abuseClassifier:webhookUrl': WEBHOOK_URL,
-            'hostSettings:abuseClassifier:webhookSecret': WEBHOOK_SECRET,
-            'hostSettings:abuseClassifier:siteCreatedAt': SITE_CREATED_AT,
-            'hostSettings:abuseClassifier:maxSiteAgeDays': 365,
+            'hostSettings:contentVerification:webhookUrl': WEBHOOK_URL,
+            'hostSettings:contentVerification:webhookSecret': WEBHOOK_SECRET,
+            'hostSettings:contentVerification:siteCreatedAt': SITE_CREATED_AT,
+            'hostSettings:contentVerification:maxSiteAgeDays': 365,
             'hostSettings:siteId': SITE_ID,
           };
           return values[key];
@@ -275,9 +275,9 @@ describe('Abuse Webhook service root', function () {
       now: new Date('2026-11-01T12:00:00.000Z').getTime(),
       toFake: ['Date'],
     });
-    getConfig.withArgs('hostSettings:abuseClassifier:maxSiteAgeDays').returns(10);
+    getConfig.withArgs('hostSettings:contentVerification:maxSiteAgeDays').returns(10);
     getConfig
-      .withArgs('hostSettings:abuseClassifier:siteCreatedAt')
+      .withArgs('hostSettings:contentVerification:siteCreatedAt')
       .returns(new Date(Date.now() - 9 * DAY_MS).toISOString());
     const service = await initRoot();
     const request = sandbox.stub(service, 'request').resolves(null);
@@ -303,9 +303,9 @@ describe('Abuse Webhook service root', function () {
       now: new Date('2026-11-01T12:00:00.000Z').getTime(),
       toFake: ['Date'],
     });
-    getConfig.withArgs('hostSettings:abuseClassifier:maxSiteAgeDays').returns(undefined);
+    getConfig.withArgs('hostSettings:contentVerification:maxSiteAgeDays').returns(undefined);
     getConfig
-      .withArgs('hostSettings:abuseClassifier:siteCreatedAt')
+      .withArgs('hostSettings:contentVerification:siteCreatedAt')
       .returns(new Date(Date.now() - 364 * DAY_MS).toISOString());
     const service = await initRoot();
     const request = sandbox.stub(service, 'request').resolves(null);
@@ -355,7 +355,7 @@ describe('Abuse Webhook service root', function () {
     await send.lastCall.returnValue;
     sinon.assert.calledOnceWithExactly(
       loggedError,
-      `Failed to send abuse webhook to "${WEBHOOK_ORIGIN}": HTTP 503`,
+      `Failed to send content verification webhook to "${WEBHOOK_ORIGIN}": HTTP 503`,
     );
   });
 
