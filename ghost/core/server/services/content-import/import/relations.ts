@@ -10,7 +10,7 @@ interface RelationModel {
 export interface RelationModels {
   User: {
     findOne(data: object, options: object): Promise<RelationModel | null>;
-    getByEmail(email: string, options: object): Promise<RelationModel | undefined>;
+    findIdByEmail(email: string, options: object): Promise<string | undefined>;
     add(data: object, options: object): Promise<RelationModel>;
     getOwnerUser(options: object): Promise<RelationModel>;
   };
@@ -112,7 +112,8 @@ export class BookshelfPostRelationsResolver implements PostRelationsResolver {
         const emailKey = reference.email.toLowerCase();
         author = authorsByEmail.get(emailKey) ?? null;
         if (!author) {
-          author = (await this._models.User.getByEmail(emailKey, { ...options })) ?? null;
+          const authorId = await this._models.User.findIdByEmail(emailKey, { ...options });
+          author = authorId ? { id: authorId } : null;
         }
 
         if (!author && reference.name) {

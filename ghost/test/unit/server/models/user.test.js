@@ -27,6 +27,89 @@ describe('Unit: models/user', function () {
     });
   });
 
+  describe('findIdByEmail', function () {
+    function lookup({ client = 'mysql2', candidate, rows = [] } = {}) {
+      const indexed = {
+        where: sinon.stub().returnsThis(),
+        first: sinon.stub().resolves(candidate),
+      };
+      const fallback = sinon.stub().callsFake((resolve) => resolve(rows));
+      const query = {
+        select: sinon.stub().returnsThis(),
+        transacting: sinon.stub().returnsThis(),
+        clone: sinon.stub().returns(indexed),
+        then: fallback,
+      };
+      const knex = Object.assign(sinon.stub().returns(query), {
+        client: { config: { client } },
+      });
+      sinon.replace(ghostBookshelf, 'knex', knex);
+      return { query, indexed, knex, fallback };
+    }
+
+    it('uses an indexed ID/email lookup for an existing MySQL user', async function () {
+      const h = lookup({ candidate: { id: 'author', email: 'Author@example.com' } });
+      const transacting = {};
+
+      assert.equal(
+        await models.User.findIdByEmail('AUTHOR@example.com', { transacting }),
+        'author',
+      );
+      sinon.assert.calledOnceWithExactly(h.knex, 'users');
+      sinon.assert.calledOnceWithExactly(h.query.select, 'id', 'email');
+      sinon.assert.calledOnceWithExactly(h.query.transacting, transacting);
+      sinon.assert.calledOnceWithExactly(h.indexed.where, 'email', 'AUTHOR@example.com');
+      sinon.assert.notCalled(h.fallback);
+    });
+
+    it('falls back when a custom case-sensitive collation misses the user', async function () {
+      const h = lookup({ rows: [{ id: 'author', email: 'Author@example.com' }] });
+
+      assert.equal(await models.User.findIdByEmail('author@example.com'), 'author');
+      sinon.assert.calledOnce(h.fallback);
+      sinon.assert.notCalled(h.query.transacting);
+    });
+
+    it('rejects an accent-only match returned by the database collation', async function () {
+      const candidate = { id: 'other-author', email: 'josé@example.com' };
+      lookup({ candidate, rows: [candidate] });
+
+      assert.equal(await models.User.findIdByEmail('jose@example.com'), undefined);
+    });
+
+    it('returns undefined when no user matches', async function () {
+      lookup();
+
+      assert.equal(await models.User.findIdByEmail('missing@example.com'), undefined);
+    });
+
+    it('preserves JavaScript Unicode case folding on SQLite', async function () {
+      const h = lookup({
+        client: 'better-sqlite3',
+        rows: [
+          { id: 'other', email: 'other@example.com' },
+          { id: 'author', email: 'Äuthor@example.com' },
+        ],
+      });
+
+      assert.equal(await models.User.findIdByEmail('äuthor@example.com'), 'author');
+      sinon.assert.notCalled(h.query.clone);
+      sinon.assert.calledOnce(h.fallback);
+    });
+
+    it('propagates lookup failures instead of treating them as missing users', async function () {
+      const h = lookup();
+      const error = new Error('database unavailable');
+      h.indexed.first.rejects(error);
+
+      await assert.rejects(
+        models.User.findIdByEmail('author@example.com'),
+        (thrown) => thrown === error,
+      );
+      sinon.assert.notCalled(h.fallback);
+    });
+  });
+
   describe('lock method', function () {
     function lockUser(status) {
       const save = sinon.stub().resolves();

@@ -1,6 +1,7 @@
 const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
+const DatabaseInfo = require('@tryghost/database-info');
 const baseUtils = require('./base/utils');
 const { limitService } = require('../services/limits');
 const tpl = require('@tryghost/tpl');
@@ -1373,6 +1374,36 @@ const User = ghostBookshelf.Model.extend(
             .query('whereIn', 'id', [contextUser.id, results[2]])
             .fetch({ withRelated: ['roles'] });
         });
+    },
+
+    /**
+     * Finds an author ID without hydrating every staff user for each imported row.
+     * MySQL's email index handles the usual case-insensitive match. Compare the
+     * candidate in JavaScript too, because its collation may also ignore accents.
+     * If it cannot find the match (e.g. a case-sensitive custom collation), fall
+     * back to plain ID/email rows. SQLite also uses that fallback so non-ASCII
+     * case folding stays consistent with getByEmail(). Includes all user statuses.
+     *
+     * @param {string} email
+     * @param {object} [options]
+     * @returns {Promise<string | undefined>}
+     */
+    async findIdByEmail(email, options = {}) {
+      const emailKey = email.toLowerCase();
+      const query = ghostBookshelf.knex('users').select('id', 'email');
+      if (options.transacting) {
+        query.transacting(options.transacting);
+      }
+
+      if (DatabaseInfo.isMySQL(ghostBookshelf.knex)) {
+        const candidate = await query.clone().where('email', email).first();
+        if (candidate && candidate.email.toLowerCase() === emailKey) {
+          return candidate.id;
+        }
+      }
+
+      const users = await query;
+      return users.find((user) => user.email.toLowerCase() === emailKey)?.id;
     },
 
     // Get the user by email address, enforces case insensitivity rejects if the user is not found

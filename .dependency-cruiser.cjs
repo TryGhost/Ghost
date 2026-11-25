@@ -288,6 +288,7 @@ const specialistDependencies = [
     owners: [
       core('server/data/'),
       core('server/models/label.js'),
+      core('server/models/user.js'),
       service('jobs-service/index.ts'),
       service('members/service.js'),
       service('url/routable-resources.js'),

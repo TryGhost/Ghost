@@ -1400,7 +1400,7 @@ describe('Posts Importer API', function () {
   it('Reconciles mapped CSV authors and tags with existing records', async function () {
     await agent.loginAsOwner();
 
-    const emailAuthor = fixtureManager.get('users', 1);
+    const emailAuthor = fixtureManager.get('users', 2);
     const nameAuthor = fixtureManager.get('users', 3);
     const tagOptions = { context: { internal: true } };
     const exactTag = await models.Tag.add(
@@ -1465,6 +1465,7 @@ describe('Posts Importer API', function () {
       'posts-import-new-authors.csv',
       'title,authors,author_emails\n' +
         'CSV created contributor,"New CSV Contributor, New CSV Contributor","new-csv-contributor@example.com, new-csv-contributor@example.com"\n' +
+        'CSV reused contributor,,NEW-CSV-CONTRIBUTOR@example.com\n' +
         'CSV missing author email,Missing CSV Email,\n' +
         'CSV invalid author email,Invalid CSV Email,not-an-email\n',
     );
@@ -1500,6 +1501,15 @@ describe('Posts Importer API', function () {
       createdPost.related('authors').map((author) => author.id),
       [contributor.id],
       'duplicate author inputs create and attach one Contributor',
+    );
+    const reusedPost = await models.Post.findOne(
+      { title: 'CSV reused contributor', status: 'all' },
+      { withRelated: ['authors'] },
+    );
+    assert.deepEqual(
+      reusedPost.related('authors').map((author) => author.id),
+      [contributor.id],
+      'a later row reuses the locked Contributor by email',
     );
     for (const post of [missingEmailPost, invalidEmailPost]) {
       assert.deepEqual(

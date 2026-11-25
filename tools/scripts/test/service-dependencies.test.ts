@@ -690,6 +690,23 @@ it('allows supplied-storage helpers and UTF-8 decoding without exposing storage 
   assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, adapter]]);
 });
 
+it('allows database detection for user email lookup without allowing every model', (t) => {
+  const user = 'ghost/core/server/models/user.js';
+  const other = 'ghost/core/server/models/other.js';
+  const f = fixture(t, {
+    [user]: "require('@tryghost/database-info');",
+    [other]: "require('@tryghost/database-info');",
+    'node_modules/@tryghost/database-info/package.json':
+      '{"name":"@tryghost/database-info","main":"index.js"}',
+    'node_modules/@tryghost/database-info/index.js': 'module.exports = {};',
+  });
+  const graph = f.graph('ghost/core/server/models');
+  assert.equal(edges(graph).length, 2);
+  assert.deepEqual(violations(graph), [
+    ['specialist-dependencies', other, 'node_modules/@tryghost/database-info/index.js'],
+  ]);
+});
+
 it('allows individual Lodash functions without allowing the whole library, its builds or lodash/fp', (t) => {
   const approved = ['lodash/isEmpty', 'lodash/isEmpty.js', 'lodash/pick', 'lodash/indexOf'];
   const rejected = {
