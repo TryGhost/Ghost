@@ -1097,7 +1097,9 @@ jobs:
 
   # The e2e API suites under auth:engine=better-auth, until the legacy engine goes
   # (docs/plans/better-auth-migration.md §7). One Node leg: the engine, not the
-  # runtime, is what differs from job_acceptance-tests.
+  # runtime, is what differs from job_acceptance-tests. Collecting coverage turns
+  # strict mode off (test/utils/strict-mode.ts), so where coverage is collected a
+  # second leg runs without it and keeps one strict run.
   job_better-auth-tests:
     runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
@@ -1125,9 +1127,14 @@ jobs:
           --health-interval=2s
           --health-timeout=5s
           --health-retries=60
+    strategy:
+      fail-fast: false
+      matrix:
+        coverage: ${{ fromJSON(needs.job_setup.outputs.coverage_enabled == 'true' && '[true, false]' || '[false]') }}
     env:
       NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
-    name: E2E API tests (better-auth, mysql8)
+      COVERAGE_ENABLED: ${{ matrix.coverage }}
+    name: E2E API tests (better-auth, mysql8${{ matrix.coverage && ', coverage' || '' }})
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-node-pnpm
@@ -1149,7 +1156,12 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: E2E API tests (better-auth)
-        run: pnpm nx run ghost:test:e2e:better-auth
+        run: |
+          if [ "$COVERAGE_ENABLED" = "true" ]; then
+            pnpm nx run ghost:test:ci:e2e:better-auth
+          else
+            pnpm nx run ghost:test:e2e:better-auth
+          fi
 
       - name: Check for unexpected file changes
         run: |
@@ -1159,6 +1171,12 @@ jobs:
             git diff
             exit 1
           fi
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: env.COVERAGE_ENABLED == 'true'
+        with:
+          name: e2e-better-auth-coverage
+          path: ghost/coverage-e2e-better-auth/cobertura-coverage.xml
 
   job_legacy-tests:
     runs-on: ubuntu-latest
@@ -2697,7 +2715,7 @@ jobs:
 
   job_coverage:
     name: Coverage
-    needs: [job_setup, job_acceptance-tests, job_unit-tests]
+    needs: [job_setup, job_acceptance-tests, job_better-auth-tests, job_unit-tests]
     if: always() && needs.job_setup.outputs.coverage_enabled == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -2716,6 +2734,23 @@ jobs:
         with:
           flags: e2e-tests
           files: ghost/coverage-e2e/cobertura-coverage.xml,ghost/coverage-integration/cobertura-coverage.xml
+          disable_search: true
+
+      # Its own flag, so a failed better-auth run carries its last report
+      # forward instead of dropping its lines from e2e-tests' upload.
+      - name: Restore E2E (better-auth) coverage
+        if: contains(needs.job_better-auth-tests.result, 'success')
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: e2e-better-auth-coverage
+          path: ghost/coverage-e2e-better-auth
+
+      - name: Upload E2E (better-auth) test coverage
+        if: contains(needs.job_better-auth-tests.result, 'success')
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          flags: e2e-better-auth-tests
+          files: ghost/coverage-e2e-better-auth/cobertura-coverage.xml
           disable_search: true
 
       # The unit job only uploads this artifact when ghost was among the

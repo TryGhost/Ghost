@@ -58,9 +58,10 @@
     "test:unit": "vitest run",
     "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
-    "test:e2e:better-auth": "auth__engine=better-auth vitest run -c vitest.config.db.ts --project e2e-api --project e2e-isolated",
+    "test:e2e:better-auth": "auth__engine=better-auth labs__apps=true vitest run -c vitest.config.db.ts --project e2e-api --project e2e-isolated",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
+    "test:ci:e2e:better-auth": "COVERAGE_LANE=e2e-better-auth pnpm test:e2e:better-auth --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
     "test:ci:unit": "vitest run --coverage --coverage.reportsDirectory=coverage-unit --coverage.reporter=cobertura --coverage.reporter=text-summary",
     "test:int:slow": "pnpm test:integration",
@@ -370,6 +371,15 @@
         ],
         "outputs": [
           "{projectRoot}/coverage-e2e/cobertura-coverage.xml"
+        ]
+      },
+      "test:ci:e2e:better-auth": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-e2e-better-auth/cobertura-coverage.xml"
         ]
       },
       "test:ci:integration": {

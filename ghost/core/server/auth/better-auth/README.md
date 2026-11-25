@@ -113,6 +113,8 @@ until Phase 4.
   does, and a successful save deletes it, so a token saves once.
 - `routes.ts`: the Better Auth paths that matchers, limiters and
   `disabledPaths` refer to. A mistyped path matches nothing, silently.
+- `plugins/apps.ts`: the OAuth provider and `jwt` plugins that issue app
+  tokens. See [App tokens](#app-tokens).
 
 Ghost mounts at the subdirectory, so on a subdirectory install requests reach
 Better Auth as `/blog/ghost/api/admin/auth/...`. `basePath` therefore carries
@@ -174,6 +176,45 @@ whose password hasn't changed since still carry their old hash there, unread.
 > without rolling the migrations back locks out or reverts anyone whose
 > password changed since. Plan §8 has the recovery.
 
+## App tokens
+
+Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
+`better-auth` only.
+
+- The provider and the `jwt` plugin it signs with are registered only when the
+  `apps` labs flag is on at boot and their in-development tables exist, so a
+  site that boots without the flag sees no change to sign-in or session reads.
+  Plugins are fixed at boot: turning the flag on or off takes effect at the
+  next restart, and until then a site that turned it off keeps the provider's
+  hooks. The `jwt` plugin sets no header on session reads.
+- Boot reads the flag before remote flags load, so it must come from config
+  or the Labs setting. A flag turned on only through remote flags never
+  registers the provider, however often Ghost restarts.
+- Opaque access tokens carry the `ghost_app_` prefix. The provider registers
+  no scopes, `openid` included, so it issues no ID tokens; an ID token would
+  last 5 minutes. Nobody manages clients through the provider's endpoints
+  (`clientPrivileges` refuses every action), and none registers itself.
+- Neither plugin's routes are mounted. Ghost issues and validates app tokens
+  through the provider's server API, so every path either plugin declares is
+  in `disabledPaths` (`appOAuthDisabledPaths`): token, authorize,
+  introspection, revocation, userinfo, end-session, consent, registration and
+  client management, `jwt`'s session JWT (`/token`) and signing keys
+  (`/jwks`), and the metadata the provider serves from `onRequest`
+  (`/.well-known/oauth-authorization-server`,
+  `/.well-known/openid-configuration`), so it advertises nothing. The list is
+  read from the plugins, so a route an upgrade adds is disabled too; a test
+  fails if one takes a path parameter, which `disabledPaths` can't match.
+- The provider supports no standard grant (`grantTypes` is empty), so its
+  token endpoint refuses every grant even when called on the server.
+- Registering the provider adds its hooks to every site with the flag on: a
+  request whose body carries `oauth_query` must carry the provider's
+  signature, a response that sets a session cookie resumes a pending
+  authorization (there never is one), and deleting a session runs back-channel
+  logout for clients that registered a URI (none does).
+
+The provider's per-IP rate limits don't apply: the `customStorage` limiter
+allows every path it doesn't map.
+
 ## Running Better Auth locally
 
 On MySQL, as the Docker dev setup uses, only the engine needs switching (on
@@ -182,6 +223,15 @@ SQLite Ghost stays on `legacy`):
 ```bash
 auth__engine=better-auth pnpm dev:up
 ```
+
+Apps need the `apps` flag on when Ghost boots, as well as the engine:
+
+```bash
+auth__engine=better-auth labs__apps=true pnpm dev:up
+```
+
+The e2e API suites run apps under `pnpm nx run ghost:test:e2e:better-auth`,
+which sets both.
 
 Or set `"auth": {"engine": "better-auth"}` in `ghost/config.local.json`. Legacy
 session cookies are not read, so staff sign in again once, and again after
