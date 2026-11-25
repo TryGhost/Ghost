@@ -5,7 +5,6 @@ const { WebhookController } = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const { StripeLiveEnabledEvent, StripeLiveDisabledEvent } = require('./events');
 const { webhookCommands } = require('./webhook/commands');
-const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
 const memberWelcomeEmails = require('../member-welcome-emails').default;
 const metafields = require('../members-metafields');
 
@@ -100,17 +99,11 @@ module.exports = class StripeService {
       },
     };
 
-    const checkoutSessionEventService = new CheckoutSessionEventService({
+    const subscriptionCheckoutDeps = {
       api,
       tracking,
       get memberRepository() {
         return membersService.api.members;
-      },
-      get productRepository() {
-        return membersService.api.productRepository;
-      },
-      get eventRepository() {
-        return membersService.api.events;
       },
       sendSignupEmail(email) {
         return membersService.api.sendEmailWithMagicLink({
@@ -134,7 +127,7 @@ module.exports = class StripeService {
       get memberBREADService() {
         return membersService.api.memberBREADService;
       },
-    });
+    };
 
     const cardUpdateCheckoutDeps = {
       api,
@@ -171,7 +164,7 @@ module.exports = class StripeService {
     };
 
     const commands = webhookCommands({
-      checkoutSessionEventService,
+      subscription_checkout: subscriptionCheckoutDeps,
       card_update_checkout: cardUpdateCheckoutDeps,
       gift_checkout: giftCheckoutDeps,
       donation_checkout: donationCheckoutDeps,
@@ -193,7 +186,6 @@ module.exports = class StripeService {
     this.api = api;
     this.webhookManager = webhookManager;
     this.webhookController = webhookController;
-    this.checkoutSessionEventService = checkoutSessionEventService;
     this.webhookCommands = commands;
     this.billingPortalManager = billingPortalManager;
     /** @private */

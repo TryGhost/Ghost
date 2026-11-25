@@ -17,7 +17,9 @@ const thisSite = {
  */
 const SESSION = {
   id: 'cs_1',
-  customer: null,
+  created: 1767225600,
+  customer: 'cus_1',
+  subscription: null,
   customer_details: { name: 'A buyer', email: 'buyer@example.com' },
   amount_total: 500,
   currency: 'usd',

@@ -212,7 +212,7 @@ export class StripeTestService {
       paymentMethod.id,
     );
 
-    await this.sendCheckoutSessionCompletedWebhook(customer.id);
+    await this.sendCheckoutSessionCompletedWebhook(customer.id, subscription.id);
     await this.sendSubscriptionCreatedWebhook(subscription);
 
     return { customer, subscription, price, paymentMethod };
@@ -227,7 +227,7 @@ export class StripeTestService {
     const customer = buildCustomer({ email: opts.email, name: opts.name });
     this.server.upsertCustomer(customer);
     // Link the free member before Stripe creates the subscription.
-    await this.sendCheckoutSessionCompletedWebhook(customer.id);
+    await this.sendCheckoutSessionCompletedWebhook(customer.id, null);
 
     const price = buildPrice();
     const paymentMethod = buildPaymentMethod({ name: opts.name });
@@ -483,9 +483,14 @@ export class StripeTestService {
 
   private async sendCheckoutSessionCompletedWebhook(
     customerId: string,
+    subscriptionId: string | null,
     metadata?: Record<string, string>,
   ): Promise<void> {
-    const checkoutEvent = buildCheckoutSessionCompletedEvent({ customerId, metadata });
+    const checkoutEvent = buildCheckoutSessionCompletedEvent({
+      customerId,
+      subscriptionId,
+      metadata,
+    });
     const checkoutResponse = await this.webhookClient.sendWebhook(checkoutEvent);
     debug('checkout.session.completed webhook response: %d', checkoutResponse.status);
     if (!checkoutResponse.ok) {

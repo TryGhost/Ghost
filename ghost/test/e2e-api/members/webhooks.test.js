@@ -1250,6 +1250,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -1360,6 +1362,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -1413,6 +1417,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -1496,6 +1502,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -1677,6 +1685,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: compCustomerId,
             subscription: paidSubscriptionId,
@@ -1811,6 +1821,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: compCustomerId,
             subscription: paidSubscriptionId,
@@ -1940,6 +1952,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: compCustomerId,
             subscription: paidSubscriptionId,
@@ -2105,6 +2119,8 @@ describe('Members API', function () {
           type: 'checkout.session.completed',
           data: {
             object: {
+              id: createStripeID('cs'),
+              created: Math.floor(Date.now() / 1000),
               mode: 'subscription',
               customer: customerId,
               subscription: subscriptionId,
@@ -2484,6 +2500,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: paidCustomerId,
             subscription: paidSubscriptionId,
@@ -2629,6 +2647,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -3028,6 +3048,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -3233,6 +3255,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -3433,11 +3457,13 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
             metadata: attribution
-              ? {
+              ? stripeMetadata({
                   attribution_id: attribution.id,
                   attribution_url: attribution.url,
                   attribution_type: attribution.type,
@@ -3449,7 +3475,7 @@ describe('Members API', function () {
                   utm_campaign: attribution.utmCampaign,
                   utm_term: attribution.utmTerm,
                   utm_content: attribution.utmContent,
-                }
+                })
               : {},
           },
         },
@@ -3923,6 +3949,8 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -4155,6 +4183,7 @@ describe('Members API', function () {
         const checkout = {
           id: createStripeID('cs'),
           object: 'checkout.session',
+          created: Math.floor(Date.now() / 1000),
           mode: 'subscription',
           customer: customer.id,
           subscription: subscription.id,
@@ -4332,6 +4361,7 @@ describe('Members API', function () {
           const checkout = {
             id: createStripeID('cs'),
             object: 'checkout.session',
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
             subscription: subscription.id,
@@ -4500,6 +4530,7 @@ describe('Members API', function () {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: createStripeID('cs'),
             mode: 'subscription',
             created,
             customer: customer.id,

@@ -4,21 +4,15 @@ import { completeGiftPurchase, type GiftCheckoutDeps } from '../services/webhook
 import { recordInvoicePayment, type InvoiceDeps } from '../services/webhook/invoice';
 import { recordRefund, type RefundDeps } from '../services/webhook/refund';
 import { saveSubscriptionChange, type SubscriptionDeps } from '../services/webhook/subscription';
+import {
+  completeSubscriptionCheckout,
+  type SubscriptionCheckoutDeps,
+} from '../services/webhook/subscription-checkout';
 import type { WebhookCommands } from '../webhook-controller';
-import type { CheckoutSessionObject } from './webhook-event';
-
-/**
- * The checkout session event service, which still completes the one Checkout session whose command
- * takes Stripe's session rather than a typed input.
- */
-interface CheckoutSessionEventService {
-  completeSubscriptionCheckout(session: CheckoutSessionObject): Promise<unknown>;
-}
 
 /** The dependencies of each webhook command, by the kind of event the command handles. */
 export interface WebhookCommandDeps {
-  /** Completes the subscription checkouts, until they're read into a typed input. */
-  checkoutSessionEventService: CheckoutSessionEventService;
+  subscription_checkout: SubscriptionCheckoutDeps;
   card_update_checkout: CardUpdateCheckoutDeps;
   gift_checkout: GiftCheckoutDeps;
   donation_checkout: DonationCheckoutDeps;
@@ -34,10 +28,8 @@ export interface WebhookCommandDeps {
  */
 export function webhookCommands(deps: WebhookCommandDeps): WebhookCommands {
   return {
-    subscription_checkout: async ({ session }) => {
-      await deps.checkoutSessionEventService.completeSubscriptionCheckout(session);
-      return { result: 'handled' };
-    },
+    subscription_checkout: (input) =>
+      completeSubscriptionCheckout(deps.subscription_checkout, input),
     card_update_checkout: (input) => updateCard(deps.card_update_checkout, input),
     gift_checkout: (input) => completeGiftPurchase(deps.gift_checkout, input),
     donation_checkout: (input) => recordDonation(deps.donation_checkout, input),

@@ -155,6 +155,7 @@ describe('Stripe webhook outcomes', function () {
   const { stripeMocker } = mockManager;
   let membersAgent: Agents['membersAgent'];
   let metrics: MockedMetrics;
+  let mail: { getSentEmail(index: number): { to?: string; subject?: string } | undefined };
 
   /** Makes Stripe fail every request, or only those for one object, with `reply`. */
   function stripeFails(reply: StripeFailure, only?: { resource: string; id: string }) {
@@ -574,11 +575,13 @@ describe('Stripe webhook outcomes', function () {
   }
 
   /**
-   * A paid member, created by a completed checkout with `metadata`, whose Stripe customer and
-   * subscription Stripe holds.
+   * A paid member, created by a completed checkout with `metadata` for the buyer's Stripe customer
+   * `bought`, a new one by default, whose customer and subscription Stripe holds.
    */
-  async function paidMember(metadata: Record<string, string> = {}) {
-    const bought = stripeCustomer();
+  async function paidMember(
+    metadata: Record<string, string> = {},
+    bought: ReturnType<typeof stripeCustomer> = stripeCustomer(),
+  ) {
     assert.equal(
       await send('checkout.session.completed', subscriptionCheckout(bought, metadata)),
       200,
@@ -692,7 +695,7 @@ describe('Stripe webhook outcomes', function () {
   });
 
   beforeEach(function () {
-    mockManager.mockMail();
+    mail = mockManager.mockMail();
     metrics = mockManager.mockMetrics();
     mockManager.mockStripe();
   });
@@ -866,6 +869,125 @@ describe('Stripe webhook outcomes', function () {
       );
     });
 
+    describe('the signup email, which signs a new paid member in', function () {
+      /** How many signup emails have been sent to `email`. */
+      function signupEmailsTo(email: string) {
+        const sent = [];
+        for (let index = 0; mail.getSentEmail(index); index += 1) {
+          sent.push(mail.getSentEmail(index));
+        }
+        return sent.filter(
+          (message) =>
+            message?.to === email && /Thank you for signing up/.test(message.subject ?? ''),
+        ).length;
+      }
+
+      /** Turns on the site's welcome email for new paid members, and returns what turns it off. */
+      async function paidWelcomeEmailOn() {
+        const design = await models.EmailDesignSetting.findOne(
+          { slug: 'default-automated-email' },
+          { require: true },
+        );
+        const automation = await models.Automation.add({
+          name: 'Paid welcome email',
+          slug: 'member-welcome-email-paid',
+          status: 'active',
+        });
+        await models.WelcomeEmailAutomatedEmail.add({
+          welcome_email_automation_id: automation.id,
+          delay_days: 0,
+          subject: 'Welcome to the paid tier!',
+          lexical: JSON.stringify({
+            root: { children: [{ type: 'paragraph', children: [{ text: 'Welcome' }] }] },
+          }),
+          email_design_setting_id: design.id,
+        });
+        return async () => {
+          // The welcome emails it started finish first, while this test's mocks still catch them.
+          await DomainEvents.allSettled();
+          await db
+            .knex('welcome_email_automation_runs')
+            .where({ welcome_email_automation_id: automation.id })
+            .del();
+          await models.Automation.destroy({ id: automation.id });
+        };
+      }
+
+      // Portal marks an upgrade with `checkoutType`, and Ghost sets `ghostSignupContext` to how
+      // the buyer can sign in once they've paid. The paid welcome email greets a buyer who can
+      // already sign in in place of the signup email.
+      const cases: {
+        upgrade: boolean;
+        context: string | undefined;
+        welcomeEmail: boolean;
+        sent: boolean;
+      }[] = [
+        { upgrade: false, context: 'needs_magic_link_email', welcomeEmail: false, sent: true },
+        { upgrade: false, context: 'needs_magic_link_email', welcomeEmail: true, sent: true },
+        { upgrade: false, context: 'has_precheckout_magic_link', welcomeEmail: false, sent: true },
+        { upgrade: false, context: 'has_precheckout_magic_link', welcomeEmail: true, sent: false },
+        { upgrade: false, context: 'already_authenticated', welcomeEmail: false, sent: true },
+        { upgrade: false, context: 'already_authenticated', welcomeEmail: true, sent: false },
+        { upgrade: false, context: undefined, welcomeEmail: false, sent: true },
+        { upgrade: false, context: undefined, welcomeEmail: true, sent: true },
+        { upgrade: true, context: 'needs_magic_link_email', welcomeEmail: false, sent: true },
+        { upgrade: true, context: 'needs_magic_link_email', welcomeEmail: true, sent: true },
+        { upgrade: true, context: 'has_precheckout_magic_link', welcomeEmail: false, sent: false },
+        { upgrade: true, context: 'has_precheckout_magic_link', welcomeEmail: true, sent: false },
+        { upgrade: true, context: 'already_authenticated', welcomeEmail: false, sent: false },
+        { upgrade: true, context: 'already_authenticated', welcomeEmail: true, sent: false },
+        { upgrade: true, context: undefined, welcomeEmail: false, sent: false },
+        { upgrade: true, context: undefined, welcomeEmail: true, sent: false },
+      ];
+
+      it.each(
+        cases.map(
+          (testCase) =>
+            [
+              `${testCase.sent ? 'sends' : 'doesn’t send'} it for ${testCase.upgrade ? 'an upgrade' : 'a signup'} with ${testCase.context ?? 'no signup context'} while the paid welcome email is ${testCase.welcomeEmail ? 'on' : 'off'}`,
+              testCase,
+            ] as const,
+        ),
+      )('%s', async (_name, { upgrade, context, welcomeEmail, sent }) => {
+        const email = `${stripeId('buyer')}@example.com`;
+        if (upgrade) {
+          // A member who signed up before the checkout started, which Ghost compares to the
+          // second.
+          const membersService = require('../../../core/server/services/members');
+          await membersService.api.members.create({ email });
+          await db
+            .knex('members')
+            .where({ email })
+            .update({ created_at: new Date(Date.now() - 60 * 1000) });
+        }
+        const turnOff = welcomeEmail ? await paidWelcomeEmailOn() : async () => {};
+        try {
+          const metadata: Record<string, string> = {
+            ...(upgrade ? { checkoutType: 'upgrade' } : {}),
+            ...(context ? { ghostSignupContext: context } : {}),
+          };
+          assert.equal(
+            await send(completed, subscriptionCheckout(stripeCustomer({ email }), metadata)),
+            200,
+          );
+
+          if (sent) {
+            await mockManager.assert.sentEmailEventually({
+              to: email,
+              subject: /Thank you for signing up/,
+            });
+          } else {
+            // The webhook starts the signup email without waiting for it. Another buyer's,
+            // started once this webhook has responded, arrives after this one would have.
+            await paidMember();
+          }
+          assert.equal(signupEmailsTo(email), sent ? 1 : 0);
+        } finally {
+          await turnOff();
+        }
+      });
+    });
+
     itWritesNothing([
       {
         name: 'responds with 500 on every attempt when the checkout’s metadata has newsletters this site doesn’t have, as a checkout another site created before sites recorded their checkouts does',
@@ -910,6 +1032,42 @@ describe('Stripe webhook outcomes', function () {
           'ValidationError',
         ),
       },
+      ...(
+        [
+          [
+            'Stripe no longer has the buyer’s customer, as when it was deleted after the checkout',
+            ({ id }: { id: string }) => ({ id, object: 'customer', deleted: true }),
+          ],
+          [
+            'the buyer’s customer no longer has an email address',
+            (customer: object) => ({ ...customer, email: null }),
+          ],
+        ] as const
+      ).map(([which, heldAs]): NothingWritten => ({
+        name: `responds with 422 on every attempt when ${which}`,
+        event: () => {
+          const bought = stripeCustomer();
+          const held = stripeMocker.customers.findIndex(
+            ({ id }: { id: string }) => id === bought.customer.id,
+          );
+          stripeMocker.customers[held] = heldAs(stripeMocker.customers[held]);
+          return { type: completed, object: subscriptionCheckout(bought) };
+        },
+        attempts: 2,
+        status: 422,
+        webhook: span(
+          {
+            type: completed,
+            kind: 'subscription_checkout',
+            ...failedBecause('unusable_customer', 'site'),
+          },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+        checkout: checkoutSpan(
+          { type: 'subscription', ...failedBecause('unusable_customer', 'site') },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+      })),
       {
         name: 'responds with 429 when Stripe returns a lock timeout for the customer',
         event: () => {
@@ -1204,6 +1362,61 @@ describe('Stripe webhook outcomes', function () {
           },
           webhook: span({ type: completed, kind: 'subscription_checkout', result: 'handled' }),
           checkout: checkoutSpan({ type: 'subscription', member: 'signed_in' }),
+        },
+      );
+    });
+
+    it('names a new member with the name they gave the signup form over the cardholder’s, and with the cardholder’s when they gave none', async function () {
+      const named = await paidMember(
+        { name: 'Signup Name' },
+        stripeCustomer({ cardholder: 'Card Holder' }),
+      );
+      const unnamed = await paidMember({ name: '' }, stripeCustomer({ cardholder: 'Card Holder' }));
+
+      assert.equal((await memberByEmail(named.customer.email)).get('name'), 'Signup Name');
+      assert.equal((await memberByEmail(unnamed.customer.email)).get('name'), 'Card Holder');
+    });
+
+    it('gives a new member the site’s default newsletters when Ghost can’t read the newsletters their checkout names', async function () {
+      const newslettersOf = async (email: string) =>
+        (await models.Member.findOne({ email }, { withRelated: ['newsletters'] }))
+          .related('newsletters')
+          .map(({ id }: { id: string }) => id)
+          .sort();
+      const unreadable = await paidMember({ newsletters: 'not JSON' });
+      const unchosen = await paidMember();
+
+      const defaults = await newslettersOf(unchosen.customer.email);
+      assert.notDeepEqual(defaults, []);
+      assert.deepEqual(await newslettersOf(unreadable.customer.email), defaults);
+    });
+
+    it('gives the cardholder’s name to a member that signing in after paying created before the checkout completed', async function () {
+      const email = `${stripeId('member')}@example.com`;
+      // Portal's success link is a signup magic link, which can create the member first.
+      const membersService = require('../../../core/server/services/members');
+      await membersService.api.members.create({ email });
+      const bought = stripeCustomer({ email, cardholder: 'Card Holder' });
+      const checkout = subscriptionCheckout(bought, {
+        ghostSignupContext: 'has_precheckout_magic_link',
+      });
+
+      await pinOutcome(
+        { type: completed, object: { ...checkout, created: now() - 60 } },
+        {
+          status: 200,
+          writes: async () => {
+            await DomainEvents.allSettled();
+            await mockManager.assert.sentEmailEventually({
+              to: email,
+              subject: /Thank you for signing up/,
+            });
+            const member = await memberByEmail(email);
+            assert.equal(member.get('status'), 'paid');
+            assert.equal(member.get('name'), 'Card Holder');
+          },
+          webhook: span({ type: completed, kind: 'subscription_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'subscription', member: 'new' }),
         },
       );
     });

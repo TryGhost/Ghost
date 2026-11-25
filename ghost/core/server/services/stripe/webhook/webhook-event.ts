@@ -1,7 +1,9 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
+import { SIGNUP_CONTEXTS } from '../../../lib/member-signup-contexts';
 import { StripeBuyerEmail } from '../../gifts/gift-service';
 import { StripeName } from '../codecs';
+import { CompletedSession } from './completed-session';
 import { FAILURE_CODES } from './failures';
 
 /** A Stripe object from an event's `data.object`, as Stripe sent it. */
@@ -61,7 +63,7 @@ export type Ignored =
  * act on is `ignored`, with the reason.
  */
 export interface WebhookEvents {
-  subscription_checkout: { session: CheckoutSessionObject };
+  subscription_checkout: SubscriptionCheckout;
   card_update_checkout: CardUpdateCheckout;
   gift_checkout: GiftCheckout;
   donation_checkout: DonationCheckout;
@@ -196,12 +198,12 @@ function subscriptionEvent(type: SubscriptionEventType) {
   };
 }
 
+const isTrue = (value: unknown) => value === true || value === 'true';
+
 /**
- * A Checkout session as the webhook reads it from Stripe. Every field it doesn't declare passes
- * through as Stripe sent it.
+ * What decides which site a Checkout session is for, and which kind of checkout it is: its mode,
+ * whether it's paid, and the markers Ghost puts in the metadata of the sessions it creates.
  *
- * - `metadata.name` is the name the buyer gave the site's signup form, which Ghost passes to
- *   Stripe when it creates the session, shortened to fit what Ghost stores.
  * - `metadata.ghost_site_uuid` is the uuid of the site that created the session. Several Ghost
  *   sites can share one Stripe account, and Stripe sends each event on it to every site, so a
  *   site handles only the sessions it created and those that record no site: sessions created
@@ -209,38 +211,22 @@ function subscriptionEvent(type: SubscriptionEventType) {
  *   subscriptions, because a site imported onto another install gets a new uuid and a
  *   subscription outlives that. Sites that share a uuid, such as a staging copy of production's
  *   database, can't be told apart.
- */
-const CheckoutSessionObject = z
-  .object({
-    metadata: z
-      .object({ name: StripeName.optional(), ghost_site_uuid: z.string().optional() })
-      .loose()
-      .nullish(),
-  })
-  .loose();
-
-export type CheckoutSessionObject = z.output<typeof CheckoutSessionObject>;
-
-const isTrue = (value: unknown) => value === true || value === 'true';
-
-/**
- * What decides which kind of checkout a Checkout session is: its mode, whether it's paid, and the
- * markers Ghost puts in the metadata of the gift and donation sessions it creates. A gift is
- * marked by `ghost_gift_id`, or by `ghost_gift` on older gift sessions, and a donation by
- * `ghost_donation`. A session that has a `ghost_donation` key and a gift marker is
- * marked as both, whatever the key's value.
+ * - A gift is marked by `ghost_gift_id`, or by `ghost_gift` on a session from before Ghost
+ *   recorded gifts ahead of their checkout, and a donation by `ghost_donation`. A session that has
+ *   a `ghost_donation` key and a gift marker is marked as both, whatever the key's value.
  */
 const CheckoutSession = z
   .object({
     mode: z.string().nullish(),
     payment_status: z.string().nullish(),
-    metadata: z.record(z.string(), z.unknown()).nullish(),
+    metadata: z.object({ ghost_site_uuid: z.string().optional() }).loose().nullish(),
   })
   .loose()
   .transform(({ mode, payment_status: paymentStatus, metadata }) => {
-    const markers = metadata ?? {};
+    const markers: NonNullable<typeof metadata> = metadata ?? {};
     const gift = Object.hasOwn(markers, 'ghost_gift_id') || isTrue(markers.ghost_gift);
     return {
+      createdBy: markers.ghost_site_uuid,
       mode,
       paid: paymentStatus === 'paid',
       gift,
@@ -387,6 +373,96 @@ const DonationCheckoutPayload = z
 
 export type DonationCheckout = z.output<typeof DonationCheckoutPayload>;
 
+/**
+ * The newsletters a new member signs up to, from the checkout that makes them one:
+ *
+ * - `absent`: the checkout names none, as when the buyer's signup form offered no choice, so the
+ *   member gets the site's default newsletters.
+ * - `chosen`: the newsletters the buyer chose, which may be none.
+ * - `unreadable`: the checkout names newsletters Ghost can't read, as `given`. The member gets the
+ *   site's default newsletters, and Ghost logs what it couldn't read.
+ */
+type SignupNewsletters =
+  | { state: 'absent' }
+  | { state: 'chosen'; newsletters: { id: string }[] }
+  | { state: 'unreadable'; given: string };
+
+/** The newsletters a buyer chose, as Ghost writes them into a checkout's metadata: a JSON list. */
+const ChosenNewsletters = z.array(z.object({ id: z.string() }));
+
+/** `text` read as JSON, or undefined when it isn't JSON. */
+function fromJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
+/** The newsletters a checkout's metadata names, from the JSON Ghost wrote there. */
+function newslettersOf(given: string | undefined): SignupNewsletters {
+  if (!given) {
+    return { state: 'absent' };
+  }
+  const chosen = ChosenNewsletters.safeParse(fromJson(given));
+  return chosen.success
+    ? { state: 'chosen', newsletters: chosen.data }
+    : { state: 'unreadable', given };
+}
+
+/**
+ * What Ghost writes into the metadata of a paid signup or upgrade's Checkout session, besides
+ * where the buyer came from:
+ *
+ * - `checkoutType` is `upgrade` when a member upgrades. Portal sets it, not Ghost.
+ * - `ghostSignupContext` is how the buyer can sign in once they've paid (see `SIGNUP_CONTEXTS`),
+ *   which Ghost sets when it creates the session. A value Ghost doesn't know reads as none.
+ * - `name` is the name the buyer gave the site's signup form, shortened to fit what Ghost stores.
+ * - `newsletters` are the newsletters they chose on it (see `SignupNewsletters`).
+ * - `offer` is the id of the offer they took.
+ */
+const SubscriptionCheckoutMetadata = AttributionMetadata.extend({
+  checkoutType: z.string().optional(),
+  ghostSignupContext: z.enum(SIGNUP_CONTEXTS).optional().catch(undefined),
+  name: StripeName.optional(),
+  newsletters: z.string().optional(),
+  offer: z.string().optional(),
+});
+
+/**
+ * A paid signup or upgrade: the session, when it was created, in seconds, the buyer's Stripe
+ * customer and the subscription they bought, what Ghost wrote into the session's metadata, and
+ * the rest of the session, which says what the checkout collected (see `CompletedSession`).
+ * Ghost fetches the customer, with its subscriptions, to make the buyer a member, and reads what
+ * the checkout collected only when it saves it. A name left empty is no name, so the
+ * cardholder's name can take its place. A session without metadata carries none of Ghost's.
+ */
+const SubscriptionCheckoutPayload = CompletedSession.extend({
+  id: z.string(),
+  created: z.number(),
+  customer: z.string(),
+  subscription: z.string().nullable(),
+  metadata: SubscriptionCheckoutMetadata.nullish(),
+}).transform(({ id, created, customer, subscription, metadata: written, ...rest }) => {
+  const metadata: z.output<typeof SubscriptionCheckoutMetadata> = written ?? {};
+  const collected: CompletedSession = rest;
+  return {
+    sessionId: id,
+    customerId: customer,
+    subscriptionId: subscription,
+    createdAt: created,
+    upgrade: metadata.checkoutType === 'upgrade',
+    signupContext: metadata.ghostSignupContext,
+    name: metadata.name || undefined,
+    newsletters: newslettersOf(metadata.newsletters),
+    attribution: attributionOf(metadata),
+    offerId: metadata.offer,
+    collected,
+  };
+});
+
+export type SubscriptionCheckout = z.output<typeof SubscriptionCheckoutPayload>;
+
 const ignored = (reason: Exclude<IgnoreReason, 'listed_customer'>): WebhookEvent => ({
   kind: 'ignored',
   reason,
@@ -398,8 +474,7 @@ const ignored = (reason: Exclude<IgnoreReason, 'listed_customer'>): WebhookEvent
  * a member's new card, and one in `subscription` mode is a paid signup or upgrade. A session in
  * `payment` mode is a gift or a donation, by its markers. A gift paid with a method that settles
  * later completes on `checkout.session.async_payment_succeeded`, so only a paid gift is completed.
- * A paid signup or upgrade carries the session, and every other kind carries the input its command
- * takes, read from the session.
+ * Each kind carries the input its command takes, read from the session.
  */
 function checkoutEvent(
   type: CheckoutSessionEventType,
@@ -409,12 +484,14 @@ function checkoutEvent(
   if (type === 'checkout.session.async_payment_failed') {
     return ignored('payment_failed');
   }
-  const session = readPayload(CheckoutSessionObject, received, type);
-  const createdBy = session.metadata?.ghost_site_uuid;
+  const { createdBy, mode, paid, gift, donation, conflicting } = readPayload(
+    CheckoutSession,
+    received,
+    type,
+  );
   if (createdBy && createdBy !== siteUuid) {
     return ignored('another_site');
   }
-  const { mode, paid, gift, donation, conflicting } = readPayload(CheckoutSession, session, type);
   if (type === 'checkout.session.async_payment_succeeded') {
     if (mode !== 'payment' || !gift) {
       return ignored('not_a_gift');
@@ -427,7 +504,10 @@ function checkoutEvent(
       };
     }
     if (mode === 'subscription') {
-      return { kind: 'subscription_checkout', session };
+      return {
+        kind: 'subscription_checkout',
+        ...readPayload(SubscriptionCheckoutPayload, received, type),
+      };
     }
     if (mode !== 'payment' || !(gift || donation)) {
       return ignored('not_a_ghost_checkout');

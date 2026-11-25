@@ -7387,7 +7387,7 @@ services:
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/stripe-api.js
           - core/server/services/stripe/config.js
-          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/stripe/services/webhook/subscription-checkout.ts
           - core/server/services/members/api.js
           - core/boot.js
     entryPoints:
@@ -7420,8 +7420,8 @@ services:
       construction:
         summary: >-
           Import eagerly constructs the service, API, migrations, webhook and billing managers,
-          the checkout session event service, and the webhook controller with its table of
-          commands. Picked models and the API object are retained.
+          and the webhook controller with its table of commands. Picked models and the API object
+          are retained.
           Getter dependencies defer members repositories, donation repository, gifts service,
           staff emails until handler work; the welcome-email check reads the ready root per call.
           The API holds no checkout config: whatever opens each Checkout session passes the
@@ -7437,15 +7437,13 @@ services:
           - core/server/services/stripe/stripe-api.js
           - core/server/services/stripe/webhook-manager.js
           - core/server/services/stripe/webhook/commands.ts
-          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/stripe/services/webhook/subscription-checkout.ts
           - core/server/services/stripe/services/webhook/card-update-checkout.ts
           - core/server/services/stripe/services/webhook/gift-checkout.ts
           - core/server/services/stripe/services/webhook/donation-checkout.ts
           - core/server/services/stripe/services/webhook/invoice.ts
           - core/server/services/stripe/checkout-session-params.ts
         tests:
-          - >-
-            test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
           - test/e2e-api/members/stripe-webhook-outcomes.test.ts
       consumers:
         summary: >-
@@ -7573,13 +7571,12 @@ services:
           - core/server/services/stripe/stripe-api.js
           - core/server/services/stripe/webhook-manager.js
           - core/server/services/stripe/billing-portal-manager.js
-          - core/server/services/stripe/services/webhook/checkout-session-event-service.js
+          - core/server/services/stripe/services/webhook/subscription-checkout.ts
           - core/server/ghost-server.ts
           - package.json
         tests:
           - test/unit/server/services/stripe/billing-portal-manager.test.js
-          - >-
-            test/unit/server/services/stripe/services/webhooks/checkout-session-event-service.test.js
+          - test/e2e-api/members/stripe-webhook-outcomes.test.ts
       failures:
         summary: >-
           Callers pass each session's checkout; the checkout-config's checkout service logs a
