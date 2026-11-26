@@ -42,6 +42,48 @@ export interface AppOverlay {
 
 export const AppOverlayContext = React.createContext<AppOverlay | undefined>(undefined);
 
+/**
+ * Tracks the dialogs open in the overlay so toasts can show above them. Returns the overlay to
+ * give the dialogs, and the toasts' container: the overlay's while a dialog is open there.
+ */
+export function useOverlayToasts(
+  overlay: AppOverlay | undefined,
+): [AppOverlay | undefined, HTMLElement | undefined] {
+  const [container, setContainer] = React.useState<HTMLElement>();
+  const tracked = React.useMemo((): AppOverlay | undefined => {
+    if (!overlay) {
+      return undefined;
+    }
+    const open = new Map<object, HTMLElement>();
+    const update = () => setContainer([...open.values()].at(-1));
+    return {
+      container: () => overlay.container(),
+      hold(tint, element) {
+        const key = {};
+        const hold = overlay.hold(tint, element);
+        return {
+          setOpen(next) {
+            hold.setOpen(next);
+            open.delete(key);
+            // A dialog that fell back to the page keeps its toasts there too.
+            const root = next ? overlay.container() : undefined;
+            if (root?.contains(element)) {
+              open.set(key, root);
+            }
+            update();
+          },
+          release() {
+            open.delete(key);
+            update();
+            hold.release();
+          },
+        };
+      },
+    };
+  }, [overlay]);
+  return [tracked, overlay ? container : undefined];
+}
+
 /** Content portalled from a hosted dialog renders in the overlay too, above the dialog. */
 const PortalContainerContext = React.createContext<HTMLElement | undefined>(undefined);
 

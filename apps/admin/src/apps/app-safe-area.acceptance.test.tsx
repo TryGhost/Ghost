@@ -8,6 +8,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
   Dialog,
+  DialogClose,
   DialogContent,
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  toast,
 } from '@tryghost/shade/components';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { ListPage } from '@tryghost/shade/page-templates';
@@ -692,5 +694,104 @@ describe('in an app’s page, where a dialog renders while the overlay loads', (
     await settle();
 
     expect(insideSafeArea(box(byRole('dialog')))).toEqual(INSIDE);
+  });
+});
+
+describe('toasts in an app, while a dialog is open in its overlay', () => {
+  let frame: HTMLIFrameElement;
+  let frameRoot: HTMLDivElement;
+
+  /** A frame over the whole window, standing in for the app's overlay document. */
+  const frameOverlay: AppOverlay = {
+    container: () => frameRoot,
+    hold: () => ({ setOpen: () => {}, release: () => {} }),
+  };
+
+  beforeEach(async () => {
+    setInsets(INSETS);
+    actions = 0;
+    frame = document.createElement('iframe');
+    frame.style.cssText = 'position: fixed; inset: 0; width: 100%; height: 100%; border: 0';
+    document.body.append(frame);
+    const overlayDocument = frame.contentDocument!;
+    for (const sheet of document.head.querySelectorAll('style, link[rel=stylesheet]')) {
+      overlayDocument.head.append(sheet.cloneNode(true));
+    }
+    overlayDocument.documentElement.style.cssText = document.documentElement.style.cssText;
+    overlayDocument.body.style.margin = '0';
+    frameRoot = overlayDocument.createElement('div');
+    overlayDocument.body.append(frameRoot);
+    // Let the cloned stylesheets load.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+  });
+
+  afterEach(() => {
+    toast.dismiss();
+    frame.remove();
+  });
+
+  const toastIn = (document: Document) => document.querySelector('[data-sonner-toast]');
+  const button = (name: string) =>
+    [...frameRoot.querySelectorAll('button')].find((each) => each.textContent === name)!;
+
+  let actions = 0;
+  const ToastingDialog = () => (
+    <ShadeApp className="shade-admin" darkMode={false} overlay={frameOverlay}>
+      <Dialog defaultOpen>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <button
+            type="button"
+            onClick={() =>
+              toast.success('Saved', {
+                duration: 60_000,
+                action: { label: 'Undo', onClick: () => (actions += 1) },
+              })
+            }
+          >
+            Save
+          </button>
+          <DialogClose>Done</DialogClose>
+        </DialogContent>
+      </Dialog>
+    </ShadeApp>
+  );
+
+  const raiseToast = async () => {
+    await expect.poll(() => frameRoot.querySelector('[role=dialog]')).not.toBeNull();
+    button('Save').click();
+    await expect.poll(() => toastIn(frame.contentDocument!)).not.toBeNull();
+    await settle();
+    return toastIn(frame.contentDocument!)!;
+  };
+
+  it('shows a toast raised in the dialog above it, inside the safe area, then back in the page', async () => {
+    await render(<ToastingDialog />);
+    const shown = await raiseToast();
+
+    expect(toastIn(document)).toBeNull();
+    expect(insideSafeArea(box(shown))).toEqual(INSIDE);
+
+    button('Done').click();
+
+    await expect.poll(() => toastIn(document)).toBe(shown);
+    expect(toastIn(frame.contentDocument!)).toBeNull();
+  });
+
+  it('lets the publisher press a toast’s action above the dialog, which stays open', async () => {
+    await render(<ToastingDialog />);
+    const shown = await raiseToast();
+    const action = shown.querySelector('[data-button]')!;
+    const { left, top, width, height } = box(action);
+    const centre = { x: left + width / 2, y: top + height / 2 };
+    expect(frame.contentDocument!.elementFromPoint(centre.x, centre.y)).toBe(action);
+
+    await userEvent.click(page.elementLocator(frame), { position: centre });
+
+    await expect.poll(() => actions).toBe(1);
+    expect(frameRoot.querySelector('[role=dialog]')?.getAttribute('data-state')).toBe('open');
   });
 });
