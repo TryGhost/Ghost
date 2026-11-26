@@ -438,7 +438,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       onImportComplete={() => {
                         void refetch();
                       }}
-                      onManageSegments={() => setManagingSegments(true)}
+                      // POC (poc/segments-ui): Manage segments is hidden for now. The title
+                      // dropdown lists every segment, and each is managed by opening it. Passing
+                      // onManageSegments={() => setManagingSegments(true)} brings its icon back.
                     >
                       {!mobileFilters && headerFilters}
                     </MembersActions>
