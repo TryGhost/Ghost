@@ -124,7 +124,10 @@ describe('Stripe webhook: Ghosts serving one site', function () {
     return { webhook_id: valueOf(ID_SETTING), secret: valueOf(SECRET_SETTING) };
   }
 
-  function createGhost(loaded: StoredWebhook, config: { webhookSecret?: string } = {}) {
+  function createGhost(
+    loaded: StoredWebhook,
+    { webhookSecret, lockWaitMs }: { webhookSecret?: string; lockWaitMs?: number } = {},
+  ) {
     const settings: Record<string, string | null> = {
       [ID_SETTING]: loaded.webhook_id,
       [SECRET_SETTING]: loaded.secret,
@@ -133,12 +136,12 @@ describe('Stripe webhook: Ghosts serving one site', function () {
       settingsCache: { get: (key) => settings[key] },
       Settings: models.Settings,
       transaction: (fn) => models.Base.transaction(fn),
-      lockWaitMs: 200,
+      lockWaitMs,
     });
     const api = new StripeAPI({ labs: { isSet: () => false }, tracking: {} });
     api.configure({ secretKey: 'sk_live_fake', publicKey: 'pk_live_fake', testEnv: true });
     const manager = new WebhookManager({ api, StripeWebhook: webhookStore });
-    manager.configure({ webhookHandlerUrl: HANDLER_URL, ...config });
+    manager.configure({ webhookHandlerUrl: HANDLER_URL, webhookSecret });
     return {
       manager,
       transaction: sinon.spy(webhookStore, 'transaction'),
@@ -324,7 +327,7 @@ describe('Stripe webhook: Ghosts serving one site', function () {
 
   it('fails the start without calling Stripe when the lock wait runs out', async function () {
     await store(NOTHING);
-    const ghost = createGhost(NOTHING);
+    const ghost = createGhost(NOTHING, { lockWaitMs: 200 });
     const holder = await db.knex.transaction();
     await holder('settings').whereIn('key', [ID_SETTING, SECRET_SETTING]).forUpdate().select('id');
 
