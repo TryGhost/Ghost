@@ -5,6 +5,8 @@
  * Code never imports a site. It is passed one, and passes it on.
  */
 export interface Site {
+  /** Identifies the site. It is public, so it can be sent to other systems. */
+  readonly id: string;
   readonly config: Config;
   readonly log: Logger;
   readonly events: Events;

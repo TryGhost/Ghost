@@ -8,6 +8,14 @@
 import type { Site } from '#support/site';
 
 export const site: Site = Object.freeze({
+  // Every site has a site_uuid setting, seeded when its database is created.
+  get id() {
+    const id = require('../core/shared/settings-cache').get('site_uuid');
+    if (typeof id !== 'string' || id.length === 0) {
+      throw new Error('The site id was read before settings were loaded.');
+    }
+    return id;
+  },
   get config() {
     return require('../core/shared/config');
   },

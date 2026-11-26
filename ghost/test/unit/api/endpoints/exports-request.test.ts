@@ -27,6 +27,7 @@ describe('Export request endpoint', function () {
     };
     const log = { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() };
     return {
+      id: 'site-uuid',
       config: { get: (key: string) => values[key] },
       log,
       events: { on() {}, removeListener() {} },

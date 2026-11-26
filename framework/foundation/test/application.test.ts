@@ -9,7 +9,7 @@ import type { Site } from '#support/site';
 function createSite(name = 'a') {
   const events = new EventEmitter();
   const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
-  const site: Site = { config: { get: (key) => `${name}:${key}` }, log, events };
+  const site: Site = { id: name, config: { get: (key) => `${name}:${key}` }, log, events };
   return { site, events, log };
 }
 
@@ -72,7 +72,7 @@ describe('createApplication', () => {
     const seen: unknown[] = [];
     const provider = defineProvider({
       name: 'example',
-      listeners: { published: file((site) => seen.push(site.config.get('url'))) },
+      listeners: { published: file((site) => seen.push(site.id)) },
     });
     const application = createApplication({ providers: [provider] });
     const a = createSite('a');
@@ -82,7 +82,7 @@ describe('createApplication', () => {
 
     b.events.emit('published');
 
-    expect(seen).toEqual(['b:url']);
+    expect(seen).toEqual(['b']);
   });
 
   it('lets a listener that throws reach the emitter, as any listener does', () => {
