@@ -410,7 +410,7 @@ before Better Auth's limiter reads it:
 
 ```js
 if (config.get('auth:engine') === 'better-auth') {
-  apiApp.use(betterAuthRouter(auth.betterAuth.service));
+  apiApp.use(betterAuthRouter(auth.betterAuth.instance));
 }
 ```
 

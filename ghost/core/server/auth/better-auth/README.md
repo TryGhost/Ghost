@@ -10,7 +10,10 @@ for the design.
 `auth:engine` is `legacy` (default) or `better-auth`. Under `legacy` boot never
 loads Better Auth, but its tables are there and the legacy engine keeps
 passwords in `user_accounts` (see [Passwords](#passwords)). Under
-`better-auth` boot builds the instance after settings.
+`better-auth` boot starts it after settings: `index.ts` exports `start()`,
+which builds the instance and waits for Better Auth's own setup so that a bad
+setup fails boot, and `instance`, which its readers take synchronously and
+which throws before a successful start. It is not a `defineService` root.
 
 Better Auth needs MySQL. On SQLite the config schema
 ([`shared/config/schema.ts`](../../../shared/config/schema.ts)) turns
@@ -50,11 +53,9 @@ authenticated ahead of the key check.
   (plan §3.1) from injected dependencies.
 - `rate-limit.ts`: the `customStorage` that maps native credential routes to
   Ghost's limiters.
-- `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
-  calls `init()`; consumers read `.service`. It is the one `defineService` root
-  outside `server/services`, so the
-  [service checks](../../services/README.md#roots-outside-this-directory) do
-  not apply to it.
+- `index.ts`: the instance, exposed as `auth.betterAuth`. Boot awaits
+  `start()` under the engine; readers take `.instance`. It is not a
+  `defineService` root (see [Engine](#engine)).
 - `plugins/staff-lifecycle.ts`: `ghostStaffLifecycle`, Ghost's staff status
   rules (plan §3.3). `/sign-in/email` keeps Better Auth's
   `INVALID_EMAIL_OR_PASSWORD` for an unknown email, a wrong password and a

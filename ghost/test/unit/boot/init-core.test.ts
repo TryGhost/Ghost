@@ -3,7 +3,7 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { loadBootFunction } from './harness';
 
-function createCoreHarness() {
+function createCoreHarness({ isBetterAuth = false } = {}) {
   const settings = {
     init: sinon.stub().resolves(),
     syncEmailSettings: sinon.stub().resolves(),
@@ -11,6 +11,7 @@ function createCoreHarness() {
   const signingKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
   const giftLinks = { init: sinon.stub().resolves() };
+  const betterAuth = { start: sinon.stub().resolves() };
   const integrations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
   const applyImageUploadConfig = sinon.stub();
@@ -25,7 +26,7 @@ function createCoreHarness() {
     './server/services/internal-keys': { default: { init() {} } },
     './server/lib/common/events': {},
     './shared/i18n': i18n,
-    './server/auth': { isBetterAuth: false },
+    './server/auth': { isBetterAuth, betterAuth },
     './server/services/gift-links': { default: giftLinks },
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },
@@ -42,6 +43,7 @@ function createCoreHarness() {
     settings,
     signingKeys,
     i18n,
+    betterAuth,
     giftLinks,
     integrations,
     stripeCheckoutConfig,
@@ -107,6 +109,49 @@ it('propagates the original signing-key initialization error without continuing 
 
   sinon.assert.calledOnce(boot.signingKeys.init);
   sinon.assert.notCalled(boot.i18n.init);
+});
+
+it('does not start Better Auth under the legacy engine', async function () {
+  const boot = createCoreHarness();
+
+  await boot.init();
+
+  sinon.assert.notCalled(boot.betterAuth.start);
+});
+
+it('waits for Better Auth to start under its engine, after settings and before continuing', async function () {
+  const boot = createCoreHarness({ isBetterAuth: true });
+  const ready = Promise.withResolvers<void>();
+  boot.betterAuth.start.returns(ready.promise);
+  let completed = false;
+  const startup = boot.init().then(() => {
+    completed = true;
+  });
+
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.betterAuth.start);
+    sinon.assert.callOrder(boot.settings.init, boot.i18n.init, boot.betterAuth.start);
+    sinon.assert.notCalled(boot.giftLinks.init);
+    assert.equal(completed, false);
+  } finally {
+    ready.resolve();
+    await Promise.allSettled([startup]);
+  }
+  await startup;
+
+  sinon.assert.calledOnce(boot.giftLinks.init);
+  assert.equal(completed, true);
+});
+
+it('fails initCore with the error Better Auth failed to start with', async function () {
+  const boot = createCoreHarness({ isBetterAuth: true });
+  const failure = new Error('Better Auth setup failed');
+  boot.betterAuth.start.rejects(failure);
+
+  await assert.rejects(boot.init(), (error) => error === failure);
+
+  sinon.assert.notCalled(boot.giftLinks.init);
 });
 
 it('waits for i18n initialization before continuing or resolving initCore', async function () {

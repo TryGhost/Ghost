@@ -11,22 +11,23 @@ let scheduled = false;
 
 const extras = { scheduleCheckJob };
 
-// Runs after settings init so the key rows exist; advances any rotation that's due before
-// anything signs or publishes a key.
+// Runs after settings init so the key rows exist. Building the service reads nothing; `start`
+// advances any rotation that's due, and boot awaits it before anything signs or publishes a key.
 const signingKeys = defineService(
   'Signing keys',
-  async () => {
-    const settingsCache = require('../../../shared/settings-cache');
-    const models = require('../../models');
-    const instance = new SigningKeyService({
-      settingsCache,
-      Settings: models.Settings,
-      transaction: (fn) => models.Base.transaction(fn),
-      logging,
-      onRotationStarted: schedule,
-    });
-    await instance.check();
-    return instance;
+  {
+    create: () => {
+      const settingsCache = require('../../../shared/settings-cache');
+      const models = require('../../models');
+      return new SigningKeyService({
+        settingsCache,
+        Settings: models.Settings,
+        transaction: (fn) => models.Base.transaction(fn),
+        logging,
+        onRotationStarted: schedule,
+      });
+    },
+    start: (service) => service.check(),
   },
   extras,
 );

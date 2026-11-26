@@ -43,7 +43,7 @@ describe.skipIf(isSQLite)('ghostStaffLifecycle under auth:engine better-auth', f
     const [{ count }] = await query.count({ count: '*' });
     return Number(count);
   };
-  const api = () => auth.betterAuth.service.api;
+  const api = () => auth.betterAuth.instance.api;
 
   beforeAll(async function () {
     configUtils.set('sentry:disabled', true);

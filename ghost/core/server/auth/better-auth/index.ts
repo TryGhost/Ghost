@@ -1,15 +1,14 @@
+import { IncorrectUsageError } from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
-import { defineService } from '../../../kernel/define-service';
 import { createAuth, type GhostAuth } from './create-auth';
 import { createSignInCodeEmail } from '../emails/sign-in-code';
 import { APP_OAUTH_TABLES } from './plugins/apps';
 
 export type { GhostAuth } from './create-auth';
 
-// Boot initializes this after settings, which follows the database, and only
-// when auth:engine is better-auth
-export default defineService('Better Auth', async (): Promise<GhostAuth> => {
+/** Builds Better Auth from Ghost's settings, config and database. Starts nothing and awaits nothing. */
+function build(): GhostAuth {
   const config = require('../../../shared/config');
   const settingsCache = require('../../../shared/settings-cache');
   const urlUtils = require('../../../shared/url-utils').default;
@@ -34,7 +33,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   };
   const apps = labs.isSet('apps') && (await hasAppTables());
 
-  const auth = createAuth({
+  return createAuth({
     db: knex,
     secret: settingsCache.get('admin_session_secret'),
     sessionMaxAgeMs: config.get('admin:sessionMaxAgeMs'),
@@ -73,7 +72,49 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
       require('../session').default.getOriginOfRequest({ headers: Object.fromEntries(headers) }),
     apps,
   });
-  // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
-  await auth.$context;
-  return auth;
-});
+}
+
+let instance: GhostAuth | undefined;
+let starting: Promise<void> | undefined;
+
+/**
+ * Staff authentication under `auth:engine: better-auth`: a piece of auth infrastructure that boot
+ * starts explicitly, not a service root. It is built only under its engine, and its readers (the
+ * Admin API app, the session endpoint, staff sessions, Stripe Connect state and `authenticate`)
+ * read `instance` synchronously, so they cannot wait for it.
+ *
+ * Building is synchronous. The one thing to await is Better Auth's own deferred setup, which
+ * `start()` does, so a bad setup fails boot and not the first request. Boot calls `start()` after
+ * settings, which it reads the session secret from, and only under the engine.
+ */
+const betterAuth = {
+  /**
+   * Builds the instance and waits for its setup. Overlapping and later calls share the first
+   * successful start: the instance is built once per process. A failed start keeps nothing, so
+   * the next call builds again.
+   */
+  start(): Promise<void> {
+    starting ??= (async () => {
+      const built = build();
+      // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
+      await built.$context;
+      instance = built;
+    })().catch((error: unknown) => {
+      starting = undefined;
+      throw error;
+    });
+    return starting;
+  },
+
+  /** The started instance. Throws before `start()` has succeeded, as under the legacy engine. */
+  get instance(): GhostAuth {
+    if (instance === undefined) {
+      throw new IncorrectUsageError({
+        message: 'Better Auth used before start(). Boot starts it under auth:engine better-auth.',
+      });
+    }
+    return instance;
+  },
+};
+
+export default betterAuth;

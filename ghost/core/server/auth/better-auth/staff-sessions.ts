@@ -75,7 +75,7 @@ export default function getStaffSessions(): StaffSessions {
     const urlUtils = require('../../../shared/url-utils').default;
 
     staffSessions = createStaffSessions({
-      getAuth: () => betterAuth.service.api,
+      getAuth: () => betterAuth.instance.api,
       deleteLegacyUserSessions: (userId) => knex('sessions').where({ user_id: userId }).del(),
       getAdminOrigin: () => urlUtils.getAdminOrigin(),
     });

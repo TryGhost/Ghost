@@ -25,7 +25,7 @@ module.exports = function setupApiApp() {
   // Before body parsing: Better Auth's routes read the body with their own limit
   if (auth.isBetterAuth) {
     const { betterAuthRouter } = require('./better-auth');
-    apiApp.use(betterAuthRouter(auth.betterAuth.service));
+    apiApp.use(betterAuthRouter(auth.betterAuth.instance));
   }
 
   // Body parsing
