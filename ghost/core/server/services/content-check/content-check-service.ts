@@ -115,10 +115,7 @@ export class ContentCheckService {
       this.logging.info(`Triggering content check webhook to "${sanitizedUrl}"`);
 
       try {
-        await this.request(webhookUrl, {
-          ...requestOptions,
-          retry: { limit: 2, methods: ['POST'] },
-        });
+        await this.request(webhookUrl, requestOptions);
       } catch (error) {
         const message = describeWebhookError(error);
         this.logging.error(`Failed to send content check webhook to "${sanitizedUrl}": ${message}`);
@@ -155,7 +152,12 @@ export class ContentCheckService {
       webhookUrl: typeof webhookUrl === 'string' && webhookUrl.length > 0 ? webhookUrl : null,
       webhookSecret:
         typeof webhookSecret === 'string' && webhookSecret.length > 0 ? webhookSecret : null,
-      siteId: typeof siteId === 'string' && siteId.length > 0 ? siteId : null,
+      siteId:
+        typeof siteId === 'string' && siteId.length > 0
+          ? siteId
+          : typeof siteId === 'number' && Number.isFinite(siteId)
+            ? String(siteId)
+            : null,
       siteCreatedAt:
         typeof siteCreatedAt === 'string' &&
         siteCreatedAt.length > 0 &&

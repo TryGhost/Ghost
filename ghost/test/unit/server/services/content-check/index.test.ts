@@ -179,7 +179,6 @@ describe('Content Check service root', function () {
         method: string;
         body: string;
         headers: Record<string, string>;
-        retry: { limit: number; methods: string[] };
       },
     ];
     assert.equal(requestUrl, WEBHOOK_URL);
@@ -198,12 +197,25 @@ describe('Content Check service root', function () {
       .update(`${timestamp}:${requestOptions.body}`)
       .digest('base64');
     assert.equal(requestOptions.headers['X-Ghost-Signature'], expectedSignature);
-    assert.deepEqual(requestOptions.retry, { limit: 2, methods: ['POST'] });
+    assert.equal(requestOptions.retry, undefined);
     sinon.assert.calledOnceWithExactly(
       loggedInfo,
       `Triggering content check webhook to "${WEBHOOK_ORIGIN}"`,
     );
     sinon.assert.calledOnce(getSiteUrl);
+  });
+
+  it('stringifies a numeric siteId for the signed payload', async function () {
+    getConfig.withArgs('hostSettings:siteId').returns(123456);
+    const service = await initRoot();
+    const request = sandbox.stub(service, 'request').resolves(null);
+    const send = sandbox.spy(service, 'sendTitleChanged');
+
+    await emitTitle(send);
+
+    sinon.assert.calledOnce(request);
+    const [, requestOptions] = request.firstCall.args as [string, { body: string }];
+    assert.equal(JSON.parse(requestOptions.body).siteId, '123456');
   });
 
   it('does not request when config is incomplete', async function () {
