@@ -1397,9 +1397,9 @@ const schema = {
     // Unique as the database's collation compares names, so the database decides which
     // names clash.
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
-    // A readable name, such as `all-paid`: words of lowercase letters and digits joined by
-    // single hyphens. The segments service mints it from the name when the segment is added, and
-    // it doesn't change.
+    // How a members filter names the segment, as in `segment:all-paid`: words of lowercase
+    // letters and digits joined by single hyphens. The segments service mints it from the name
+    // when the segment is added, and it doesn't change.
     slug: {
       type: 'string',
       maxlength: 191,

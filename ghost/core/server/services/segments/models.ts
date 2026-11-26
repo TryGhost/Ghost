@@ -14,15 +14,15 @@ export const SEGMENT_KEY = 'segment';
 export const MAX_SLUG_LENGTH = 191;
 
 /**
- * A segment's slug: a readable name such as `all-paid`, in words of lowercase letters and
- * digits joined by single hyphens, no longer than the table's column holds. A segment gets the
- * slug the caller that adds it gives, when a filter can name a segment by that slug and no other
- * segment has it, and otherwise one the server mints from its name. The slug doesn't change after
- * that.
+ * A segment's slug, which a members filter names the segment by, as in `segment:all-paid`: a
+ * readable name in words of lowercase letters and digits joined by single hyphens, no longer than
+ * the table's column holds. A segment gets the slug the caller that adds it gives, when a filter
+ * can name a segment by that slug and no other segment has it, and otherwise one the server mints
+ * from its name. The slug doesn't change after that.
  *
  * This reads a hyphen slug, in the format the slug minting module defines, that fits the column:
- * what a stored slug and a slug a request gives are held to. A slug the server mints, and a slug
- * a caller gives a new segment, also has to satisfy `readsBackInFilter`.
+ * what a stored slug, a slug a request gives and a slug a filter names are held to. A slug the
+ * server mints, and a slug a caller gives a new segment, also has to satisfy `readsBackInFilter`.
  */
 export const SegmentSlug = z
   .string({ error: 'Slug must be a string' })

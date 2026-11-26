@@ -53,6 +53,11 @@ export interface SegmentEdit {
   slug?: SegmentSlug;
 }
 
+/** Which segments a browse returns: those with any of `slugs`, or every segment without it. */
+export interface SegmentCriteria {
+  slugs?: readonly SegmentSlug[];
+}
+
 interface SegmentsServiceDeps {
   knex: Knex;
   tracking: Pick<SegmentsTracking, 'change'>;
@@ -101,7 +106,8 @@ type Clash = 'name' | 'slug';
  * collation: MySQL's default collation also ignores accents, so it counts "Cafe" and "Café" as
  * one name.
  *
- * Each segment has a readable slug, which doesn't change when the segment is renamed. A caller
+ * Each segment has a readable slug, which a members filter names it by and which doesn't change
+ * when the segment is renamed. A caller
  * that adds a segment can give its slug, which has to be one a filter can name and that no other
  * segment has; otherwise the slug is minted from the name. Two segments can't have one slug, and
  * a deleted segment's slug can be given to a segment added later.
@@ -128,9 +134,16 @@ export class SegmentsService {
     this.onSegmentUpdated = onSegmentUpdated;
   }
 
-  /** Every segment, in order. */
-  async browse(executor: Knex = this.knex): Promise<Segment[]> {
-    return StoredSegments.parse(await this.rows.inOrder(executor, {}).select(...COLUMNS));
+  /** The segments `criteria` selects, in order: every segment without any criteria. */
+  async browse(criteria: SegmentCriteria = {}, executor: Knex = this.knex): Promise<Segment[]> {
+    const query = this.rows.inOrder(executor, {});
+    if (criteria.slugs !== undefined) {
+      if (criteria.slugs.length === 0) {
+        return [];
+      }
+      query.whereIn(`${TABLE}.slug`, criteria.slugs);
+    }
+    return StoredSegments.parse(await query.select(...COLUMNS));
   }
 
   /** The segment with `id`. Fails with a NotFoundError when there's no such segment. */
@@ -143,18 +156,6 @@ export class SegmentsService {
       throw notFoundError();
     }
     return segment;
-  }
-
-  /** The segments with any of `ids`, in no particular order. */
-  async readMany(ids: readonly SegmentId[], executor: Knex = this.knex): Promise<Segment[]> {
-    if (ids.length === 0) {
-      return [];
-    }
-    return StoredSegments.parse(
-      await executor(TABLE)
-        .whereIn('id', ids)
-        .select(...COLUMNS),
-    );
   }
 
   /**
@@ -175,7 +176,7 @@ export class SegmentsService {
         if (input.slug !== undefined && !readsBackInFilter(input.slug)) {
           reject(attempt, new SlugUnusableError());
         }
-        const stored = await this.browse(trx);
+        const stored = await this.browse({}, trx);
         if (stored.some(hasName(input.name))) {
           reject(attempt, new NameTakenError());
         }
@@ -219,7 +220,9 @@ export class SegmentsService {
         }
 
         // By the stored id: the database can match the request's id where it differs in case.
-        const others = (await this.browse(trx)).filter(({ id: other }) => other !== previous.id);
+        const others = (await this.browse({}, trx)).filter(
+          ({ id: other }) => other !== previous.id,
+        );
         if (others.some(hasName(input.name))) {
           reject(attempt, new NameTakenError());
         }

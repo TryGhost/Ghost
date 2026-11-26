@@ -233,12 +233,13 @@ describe('A members filter selects the same members everywhere', function () {
     return rows.map((row) => nameOf(row.member_email)).sort();
   }
 
+  /** Saves a segment, and returns the slug a filter names it by. */
   async function saveSegment(name: string, filter: string): Promise<string> {
     const { body } = await agent
       .post('segments/')
       .body({ segments: [{ name, filter }] })
       .expectStatus(201);
-    return body.segments[0].id;
+    return body.segments[0].slug;
   }
 
   async function membersList(filter?: string): Promise<Name[]> {
@@ -516,16 +517,16 @@ describe('A members filter selects the same members everywhere', function () {
       );
       assert.deepEqual(await membersList(nql), selected, `members list, ${nql}`);
 
-      const segmentId = await saveSegment(field, nql);
-      await assertAgrees(`Emailed to ${field}`, `segment:${segmentId}`, nql);
+      const slug = await saveSegment(field, nql);
+      await assertAgrees(`Emailed to ${field}`, `segment:${slug}`, nql);
     });
 
     it(`${field}, left out`, async function () {
       const nql = filter(site);
       assert.deepEqual(await membersList(`-(${nql})`), others, `members list, -(${nql})`);
 
-      const segmentId = await saveSegment(`${field}, left out`, nql);
-      await assertAgrees(`Emailed to all but ${field}`, `segment:-${segmentId}`, `-(${nql})`);
+      const slug = await saveSegment(`${field}, left out`, nql);
+      await assertAgrees(`Emailed to all but ${field}`, `segment:-${slug}`, `-(${nql})`);
     });
   }
 
