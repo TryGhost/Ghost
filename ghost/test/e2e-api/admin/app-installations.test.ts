@@ -15,6 +15,9 @@ import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-fram
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
 const appInstallations: typeof import('../../../core/server/services/app-installations').default =
   require('../../../core/server/services/app-installations').default;
+const {
+  AppInstallationsRepository,
+}: typeof import('../../../core/server/services/app-installations/app-installations-repository') = require('../../../core/server/services/app-installations/app-installations-repository');
 const models = require('../../../core/server/models');
 const configUtils = require('../../utils/config-utils');
 
@@ -158,6 +161,35 @@ describe('App installations Admin API', function () {
     models.Base.knex('app_installation_manifests')
       .where({ id: manifestId })
       .update({ manifest: JSON.stringify({ id: 'com.example.podcast' }) });
+  /**
+   * Whether `work` comes to wait for a lock on an installation row before it settles, giving up
+   * after five seconds.
+   */
+  const waitsForLock = async (work: Promise<unknown>): Promise<boolean> => {
+    let settled = false;
+    const done = () => {
+      settled = true;
+    };
+    work.then(done, done);
+    const deadline = Date.now() + 5000;
+    while (!settled && Date.now() < deadline) {
+      const [[{ waiting }]] = await models.Base.knex.raw(`
+        SELECT COUNT(*) AS waiting
+        FROM performance_schema.data_lock_waits AS waits
+        JOIN performance_schema.data_locks AS requested
+          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+        WHERE requested.OBJECT_SCHEMA = DATABASE()
+          AND requested.OBJECT_NAME = 'app_installations'
+      `);
+      if (waiting > 0) {
+        return true;
+      }
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+    }
+    return false;
+  };
   /** Starts an app session, as Admin does when an app page opens. */
   const start = (id: string, status = 200) =>
     agent.post(`apps/installations/${id}/sessions/`).expectStatus(status);
@@ -2451,6 +2483,63 @@ describe('App installations Admin API', function () {
       assert.equal(row.status, 'active');
       assert.equal(row.current_app_id, 'com.example.podcast');
       assert.equal((await actions()).length, 1);
+    });
+
+    it('uninstalls while a session start applies a manifest change', async function () {
+      const installation = await install();
+      serve(manifest({ description: 'Episodes and players.' }));
+      const applied = Promise.withResolvers<void>();
+      const released = Promise.withResolvers<void>();
+      // The session's change holds the installation's row until the uninstall is waiting on it.
+      const whileUnchanged = AppInstallationsRepository.prototype.whileUnchanged;
+      sinon.stub(AppInstallationsRepository.prototype, 'whileUnchanged').callsFake(function (
+        this: InstanceType<typeof AppInstallationsRepository>,
+        row,
+        write,
+        options,
+      ) {
+        return whileUnchanged.call(
+          this,
+          row,
+          async (locked) => {
+            const written = await write(locked);
+            applied.resolve();
+            await released.promise;
+            return written;
+          },
+          options,
+        );
+      });
+
+      // The session can finish after the uninstall and find the app gone, which is fine here.
+      const session = service()
+        .startSession(installation.id)
+        .catch(() => {});
+      const paused = await Promise.race([
+        applied.promise.then(() => true),
+        session.then(() => false),
+      ]);
+      assert.ok(paused, 'the session should pause holding its change');
+      const uninstalling = service().uninstall(owner, installation.id);
+      let waited = false;
+      try {
+        waited = await waitsForLock(uninstalling);
+      } finally {
+        released.resolve();
+      }
+      await session;
+      await uninstalling;
+      assert.ok(waited, 'the uninstall should wait for the session');
+
+      const manifests = await manifestRows();
+      assert.equal(manifests.length, 2);
+      const row = await installationRow(installation.id);
+      assert.equal(row.status, 'uninstalled');
+      assert.equal(row.manifest_id, manifests[1].id);
+      assert.deepEqual(
+        (await actions()).map((action: { event: string }) => action.event),
+        ['installed', 'uninstalled'],
+      );
     });
 
     it('does nothing, and records nothing, the second time', async function () {

@@ -327,11 +327,13 @@ export class AppInstallationsService {
    * Uninstalling an app that's already uninstalled does nothing, so a repeated request
    * doesn't add a second entry to the history.
    *
-   * Given a transaction as `executor` it joins that transaction; given a plain connection it
-   * opens its own.
+   * Given a transaction as `executor` it joins that transaction, which mustn't have made a
+   * plain read yet; given a plain connection it opens its own.
    */
   async uninstall(context: RequestContext, id: string, executor: Knex = this.knex): Promise<void> {
     return ensureTransaction(executor, async (transacting) => {
+      // Before any plain read, which would fix the snapshot and miss a manifest applied meanwhile.
+      await this.repository.lock(id, { transacting });
       const installation = await this.read(id, { executor: transacting });
 
       const ended = await this.repository.uninstall(id, { transacting });

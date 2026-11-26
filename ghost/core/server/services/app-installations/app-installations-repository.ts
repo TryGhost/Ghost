@@ -432,6 +432,11 @@ export class AppInstallationsRepository {
     };
   }
 
+  /** Locks the installation's row until the transaction ends. */
+  async lock(id: string, { transacting }: { transacting: Knex.Transaction }): Promise<void> {
+    await transacting(INSTALLATIONS).where({ id }).forUpdate().first('id');
+  }
+
   /** Returns false if it was already uninstalled. */
   async uninstall(
     id: string,
