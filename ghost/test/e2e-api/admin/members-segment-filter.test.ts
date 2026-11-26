@@ -478,6 +478,7 @@ describe('Members filtered by segment', function () {
         .body({ segments: [{ name: 'Nested', filter: `segment:${segments.vip}+status:paid` }] })
         .expectStatus(422);
       assert.equal(body.errors[0].property, 'filter');
+      assert.equal(body.errors[0].code, 'SEGMENT_FILTER_NAMES_SEGMENT');
     });
   });
 
