@@ -3,30 +3,54 @@ import ObjectID from 'bson-objectid';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { RequestContext } from '../../lib/actor';
-import { isUniqueViolation } from '../../lib/db-errors';
+import { uniqueViolationColumn } from '../../lib/db-errors';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 import { sortable } from '../../lib/sortable';
 import { SegmentAdded, SegmentDeleted, SegmentRenamed, type OnSegmentUpdated } from './changes';
 import { filterNamesSegment } from './expansion';
-import { Segment, SegmentId, type SegmentFilter, type SegmentName } from './models';
-import { nameTakenError, normalizeName } from './rejections';
+import {
+  FilterChangedError,
+  FilterNamesSegmentError,
+  NameTakenError,
+  NoFreeSlugError,
+  type SegmentError,
+  SlugChangedError,
+  SlugTakenError,
+  SlugUnusableError,
+} from './errors';
+import {
+  normalizeName,
+  readsBackInFilter,
+  Segment,
+  SegmentId,
+  type SegmentFilter,
+  type SegmentName,
+  type SegmentSlug,
+} from './models';
+import { slugsForName } from './slugs';
 import type { SegmentChangeAttempt, SegmentsTracking } from './tracking';
 
 /** A segment a command adds. */
 export interface NewSegment {
   name: SegmentName;
   filter: SegmentFilter;
+  /**
+   * The slug to give the segment. It has to be one a filter can name and that no other segment
+   * has. Without one, the slug is minted from the name.
+   */
+  slug?: SegmentSlug;
 }
 
 /**
  * A change to a segment. Only the name can change. A change can give the segment's own filter
- * back, so that a segment as the API returns it is a valid change. Any other filter is
- * rejected: changing a segment's filter isn't supported.
+ * and slug back, so that a segment as the API returns it is a valid change. Any other filter or
+ * slug is rejected: changing a segment's filter or slug isn't supported.
  */
 export interface SegmentEdit {
   name: SegmentName;
   filter?: SegmentFilter;
+  slug?: SegmentSlug;
 }
 
 interface SegmentsServiceDeps {
@@ -38,6 +62,9 @@ interface SegmentsServiceDeps {
 
 const TABLE = 'segments';
 
+/** The columns a segment is read from: one for each of its fields. */
+const COLUMNS = Segment.keyof().options;
+
 const StoredSegment = Segment.optional();
 const StoredSegments = z.array(Segment);
 
@@ -46,17 +73,23 @@ const hasName = (name: string) => (segment: Segment) =>
 
 const notFoundError = () => new errors.NotFoundError({ message: 'Segment not found.' });
 
+/** A new segment's id. */
+const newId = () => SegmentId.parse(new ObjectID().toHexString());
+
 /** Rejects a change because no segment has the id in the request. */
 function notFound(attempt: SegmentChangeAttempt): never {
   attempt.rejecting('not_found');
   throw notFoundError();
 }
 
-/** Rejects a change because another segment has the name. */
-function nameTaken(attempt: SegmentChangeAttempt): never {
-  attempt.rejecting('name_taken');
-  throw nameTakenError();
+/** Rejects a change with `error`, after recording on the change's span why it was rejected. */
+function reject(attempt: SegmentChangeAttempt, error: SegmentError): never {
+  attempt.rejecting(error.reason);
+  throw error;
 }
+
+/** Which value that must be unique another segment has, when the table rejects a new row. */
+type Clash = 'name' | 'slug';
 
 /**
  * Segments: named filters over members, which Admin shows as saved member views. They are rows
@@ -67,6 +100,11 @@ function nameTaken(attempt: SegmentChangeAttempt): never {
  * database. The second is the table's unique index, which compares names by the database's
  * collation: MySQL's default collation also ignores accents, so it counts "Cafe" and "Café" as
  * one name.
+ *
+ * Each segment has a readable slug, which doesn't change when the segment is renamed. A caller
+ * that adds a segment can give its slug, which has to be one a filter can name and that no other
+ * segment has; otherwise the slug is minted from the name. Two segments can't have one slug, and
+ * a deleted segment's slug can be given to a segment added later.
  *
  * Every method reads or writes through the executor it's given. Given a transaction, a command
  * joins it; given a plain connection, it opens its own. Each command reports the change it made
@@ -92,14 +130,14 @@ export class SegmentsService {
 
   /** Every segment, in order. */
   async browse(executor: Knex = this.knex): Promise<Segment[]> {
-    return StoredSegments.parse(
-      await this.rows.inOrder(executor, {}).select('id', 'name', 'filter'),
-    );
+    return StoredSegments.parse(await this.rows.inOrder(executor, {}).select(...COLUMNS));
   }
 
   /** The segment with `id`. Fails with a NotFoundError when there's no such segment. */
   async read(id: string, executor: Knex = this.knex): Promise<Segment> {
-    const row: unknown = await executor(TABLE).where('id', id).first('id', 'name', 'filter');
+    const row: unknown = await executor(TABLE)
+      .where('id', id)
+      .first(...COLUMNS);
     const segment = StoredSegment.parse(row);
     if (!segment) {
       throw notFoundError();
@@ -113,13 +151,17 @@ export class SegmentsService {
       return [];
     }
     return StoredSegments.parse(
-      await executor(TABLE).whereIn('id', ids).select('id', 'name', 'filter'),
+      await executor(TABLE)
+        .whereIn('id', ids)
+        .select(...COLUMNS),
     );
   }
 
   /**
-   * Adds a segment after the others, and returns it. Fails with a ValidationError when another
-   * segment has the name, or when its filter names a segment. Another segment can have the same
+   * Adds a segment after the others, and returns it. Its slug is the one `input` gives, or else
+   * the first slug minted from its name that no other segment has. Fails with a ValidationError
+   * when another segment has the name, when its filter names a segment, or when `input` gives a
+   * slug that a filter can't name or that another segment has. Another segment can have the same
    * filter.
    */
   add(context: RequestContext, input: NewSegment, executor: Knex = this.knex): Promise<Segment> {
@@ -128,45 +170,33 @@ export class SegmentsService {
         // Expansion replaces a segment with its filter once, without recursing, so a segment's
         // filter can't name another segment
         if (filterNamesSegment(input.filter)) {
-          attempt.rejecting('filter_names_segment');
-          throw new errors.ValidationError({
-            message: "A segment's filter cannot name another segment.",
-            property: 'filter',
-          });
+          reject(attempt, new FilterNamesSegmentError());
+        }
+        if (input.slug !== undefined && !readsBackInFilter(input.slug)) {
+          reject(attempt, new SlugUnusableError());
         }
         const stored = await this.browse(trx);
         if (stored.some(hasName(input.name))) {
-          nameTaken(attempt);
+          reject(attempt, new NameTakenError());
         }
 
-        const segment = {
-          id: SegmentId.parse(new ObjectID().toHexString()),
-          name: input.name,
-          filter: input.filter,
-        };
-        try {
-          await this.rows.insert(trx, {}, { ...segment, created_at: toDatabaseDate(new Date()) });
-        } catch (err) {
-          // The table rejected the row although no stored segment had its name above: another
-          // request took the name at the same time, or the database's collation counts the
-          // name as another segment's.
-          if (isUniqueViolation(err)) {
-            nameTaken(attempt);
-          }
-          throw err;
-        }
-
-        await this.onSegmentUpdated(trx, context, new SegmentAdded(segment));
-        return segment;
+        const segment = { id: newId(), name: input.name, filter: input.filter };
+        const added =
+          input.slug === undefined
+            ? await this.insertMinted(trx, attempt, segment, stored)
+            : await this.insertGiven(trx, attempt, { ...segment, slug: input.slug }, stored);
+        await this.onSegmentUpdated(trx, context, new SegmentAdded(added));
+        return added;
       }),
     );
   }
 
   /**
-   * Renames the segment with `id`, and returns it. Fails with a NotFoundError when there's no
-   * such segment, and with a ValidationError when another segment has the name, or when `input`
-   * has a filter other than the segment's own, because a segment's filter can't change. A rename
-   * to the name the segment already has changes nothing, so nothing is written or reported.
+   * Renames the segment with `id`, and returns it. Its slug stays as it is. Fails with a
+   * NotFoundError when there's no such segment, and with a ValidationError when another segment
+   * has the name, or when `input` has a filter or a slug other than the segment's own, because a
+   * segment's filter and slug can't change. A rename to the name the segment already has changes
+   * nothing, so nothing is written or reported.
    */
   edit(
     context: RequestContext,
@@ -178,11 +208,10 @@ export class SegmentsService {
       ensureTransaction(executor, async (trx) => {
         const previous = (await this.lock(id, trx)) ?? notFound(attempt);
         if (input.filter !== undefined && input.filter !== previous.filter) {
-          attempt.rejecting('filter_changed');
-          throw new errors.ValidationError({
-            message: "A segment's filter cannot be changed",
-            property: 'filter',
-          });
+          reject(attempt, new FilterChangedError());
+        }
+        if (input.slug !== undefined && input.slug !== previous.slug) {
+          reject(attempt, new SlugChangedError());
         }
         if (input.name === previous.name) {
           attempt.unchanged();
@@ -192,7 +221,7 @@ export class SegmentsService {
         // By the stored id: the database can match the request's id where it differs in case.
         const others = (await this.browse(trx)).filter(({ id: other }) => other !== previous.id);
         if (others.some(hasName(input.name))) {
-          nameTaken(attempt);
+          reject(attempt, new NameTakenError());
         }
         try {
           await trx(TABLE)
@@ -201,8 +230,8 @@ export class SegmentsService {
         } catch (err) {
           // The database's collation counts the name as another segment's, or another request
           // took the name at the same time.
-          if (isUniqueViolation(err)) {
-            nameTaken(attempt);
+          if (uniqueViolationColumn(err, TABLE) === 'name') {
+            reject(attempt, new NameTakenError());
           }
           throw err;
         }
@@ -229,9 +258,83 @@ export class SegmentsService {
     );
   }
 
+  /**
+   * Inserts `segment` under the slug it was given. Rejects it when one of `stored` has that slug,
+   * and when the table rejects the row because another segment has the name or the slug, as one
+   * another request added at the same time can: the caller asked for this slug, so no other is
+   * tried.
+   */
+  private async insertGiven(
+    trx: Knex.Transaction,
+    attempt: SegmentChangeAttempt,
+    segment: Segment,
+    stored: readonly Segment[],
+  ): Promise<Segment> {
+    if (stored.some(({ slug }) => slug === segment.slug)) {
+      reject(attempt, new SlugTakenError());
+    }
+    const clash = await this.insert(trx, segment);
+    if (clash === 'name') {
+      reject(attempt, new NameTakenError());
+    }
+    if (clash === 'slug') {
+      reject(attempt, new SlugTakenError());
+    }
+    return segment;
+  }
+
+  /**
+   * Inserts `segment` under the first slug minted from its name that none of `stored` has, and
+   * returns it with that slug. The table rejects the row when another segment has the name or the
+   * slug, which `stored` didn't show: one another request added at the same time, or a name the
+   * database's collation counts as the same. A taken name rejects the segment. A taken slug is
+   * skipped for the next one minted, so segments added at the same time whose names mint the same
+   * slug are all added. Fails with a ValidationError when every slug minted from the name is
+   * taken.
+   */
+  private async insertMinted(
+    trx: Knex.Transaction,
+    attempt: SegmentChangeAttempt,
+    segment: Omit<Segment, 'slug'>,
+    stored: readonly Segment[],
+  ): Promise<Segment> {
+    for (const slug of slugsForName(segment.name, new Set(stored.map((other) => other.slug)))) {
+      const added = { ...segment, slug };
+      const clash = await this.insert(trx, added);
+      if (clash === undefined) {
+        return added;
+      }
+      if (clash === 'name') {
+        reject(attempt, new NameTakenError());
+      }
+    }
+    return reject(attempt, new NoFreeSlugError());
+  }
+
+  /**
+   * Inserts `segment` after the others. Returns which value another segment has when the table's
+   * unique index rejects the row, which the database's error names, and undefined when the row
+   * is added. Any other rejection is thrown as it is.
+   */
+  private async insert(trx: Knex.Transaction, segment: Segment): Promise<Clash | undefined> {
+    try {
+      await this.rows.insert(trx, {}, { ...segment, created_at: toDatabaseDate(new Date()) });
+      return undefined;
+    } catch (err) {
+      const column = uniqueViolationColumn(err, TABLE);
+      if (column === 'name' || column === 'slug') {
+        return column;
+      }
+      throw err;
+    }
+  }
+
   /** The segment with `id`, if there is one, with its row locked until `trx` ends. */
   private async lock(id: string, trx: Knex.Transaction): Promise<Segment | undefined> {
-    const row: unknown = await trx(TABLE).where('id', id).forUpdate().first('id', 'name', 'filter');
+    const row: unknown = await trx(TABLE)
+      .where('id', id)
+      .forUpdate()
+      .first(...COLUMNS);
     return StoredSegment.parse(row);
   }
 }

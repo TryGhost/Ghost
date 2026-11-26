@@ -2,8 +2,15 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import segments from '../../../../services/segments';
 import { filterNamesSegment } from '../../../../services/segments/expansion';
-import { MAX_NAME_LENGTH, SegmentFilter, SegmentName } from '../../../../services/segments/models';
-import { isNameTakenError, normalizeName } from '../../../../services/segments/rejections';
+import { NameTakenError, SlugRejectedError } from '../../../../services/segments/errors';
+import {
+  MAX_NAME_LENGTH,
+  normalizeName,
+  type Segment,
+  SegmentFilter,
+  SegmentName,
+  SegmentSlug,
+} from '../../../../services/segments/models';
 import {
   type ExportedSegment,
   SavedMemberView,
@@ -109,6 +116,12 @@ export class SegmentsImporter {
    * with another filter is added with a number, such as "VIP (2)", because nobody can be asked
    * for another name during an import. Every segment whose own name is free keeps it, so a
    * segment only gets a number when the site, or an earlier segment in the file, has its name.
+   *
+   * A segment keeps the slug it had on the site it was exported from when the segments service
+   * accepts it, and gets one the service mints from its name when the site has that slug or a
+   * filter can't name a segment by it, as a saved member view, which has no slug, does. A
+   * segment added earlier in the import can be minted the slug a later segment of the file had,
+   * and that later segment then gets a minted slug too.
    */
   async doImport({ transacting }: { transacting: Knex.Transaction }): Promise<void> {
     if (this.toImport.length === 0) {
@@ -201,21 +214,45 @@ export class SegmentsImporter {
     transacting: Knex.Transaction,
   ): Promise<void> {
     let { number } = names;
+    const slug = SegmentSlug.safeParse(segment.slug).data;
     for (let tried = 0; tried < names.tries; tried += 1) {
       const name = SegmentName.parse(numbered(segment.name, number));
       try {
-        const added = await segments.service.add({ actor: null }, { name, filter }, transacting);
+        const added = await this.addUnder(name, filter, slug, transacting);
         this.importedData.push(added);
         this.importedDataToReturn.push(added);
         return;
       } catch (err) {
-        if (!isNameTakenError(err)) {
+        if (!(err instanceof NameTakenError)) {
           throw err;
         }
         number = names.take(segment.name, number + 1);
       }
     }
     this.skipped(segment, 'Segment was not imported because no name was free for it.');
+  }
+
+  /**
+   * Adds a segment under `name`, with `slug`, the slug it had in the file when that is in a
+   * slug's format. When the service rejects that slug, because the site has it or a filter can't
+   * name a segment by it, the segment is added again without one, for the service to mint.
+   */
+  private async addUnder(
+    name: SegmentName,
+    filter: SegmentFilter,
+    slug: SegmentSlug | undefined,
+    transacting: Knex.Transaction,
+  ): Promise<Segment> {
+    if (slug !== undefined) {
+      try {
+        return await segments.service.add({ actor: null }, { name, filter, slug }, transacting);
+      } catch (err) {
+        if (!(err instanceof SlugRejectedError)) {
+          throw err;
+        }
+      }
+    }
+    return segments.service.add({ actor: null }, { name, filter }, transacting);
   }
 
   private skipped(segment: ExportedSegment, message: string): void {

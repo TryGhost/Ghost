@@ -1,9 +1,51 @@
 import { z } from 'zod';
 import { maxBytes } from '../../lib/db-types/text';
+import { parseFilter } from '../../lib/filters';
+import { slugSchema } from '../../lib/slug';
 
 /** What identifies a segment in the API. Callers treat it as opaque. */
 export const SegmentId = z.string().brand('SegmentId');
 export type SegmentId = z.infer<typeof SegmentId>;
+
+/** The members filter key that names a segment. */
+export const SEGMENT_KEY = 'segment';
+
+/** The most characters a segment's slug can have, which is what the table's column holds. */
+export const MAX_SLUG_LENGTH = 191;
+
+/**
+ * A segment's slug: a readable name such as `all-paid`, in words of lowercase letters and
+ * digits joined by single hyphens, no longer than the table's column holds. A segment gets the
+ * slug the caller that adds it gives, when a filter can name a segment by that slug and no other
+ * segment has it, and otherwise one the server mints from its name. The slug doesn't change after
+ * that.
+ *
+ * This reads a hyphen slug, in the format the slug minting module defines, that fits the column:
+ * what a stored slug and a slug a request gives are held to. A slug the server mints, and a slug
+ * a caller gives a new segment, also has to satisfy `readsBackInFilter`.
+ */
+export const SegmentSlug = z
+  .string({ error: 'Slug must be a string' })
+  .max(MAX_SLUG_LENGTH, { error: `Slug cannot be longer than ${MAX_SLUG_LENGTH} characters` })
+  .pipe(slugSchema('-'));
+export type SegmentSlug = z.infer<typeof SegmentSlug>;
+
+/**
+ * Whether the filter parser reads `slug` back as itself when a members filter holds it without
+ * quotes, as `segment:<slug>`, as it reads a label's slug. The parser reads some text without
+ * quotes as something else, such as `2024` as a number, `null` as no value and `now-1d` as a
+ * date, so this asks the parser rather than listing them. A slug is checked when it is minted and
+ * when a caller gives one to a new segment, not when a stored slug is read: a later change to the
+ * parser then can't make a stored segment unreadable.
+ */
+export function readsBackInFilter(slug: SegmentSlug): boolean {
+  try {
+    const parsed = parseFilter(`${SEGMENT_KEY}:${slug}`);
+    return Object.keys(parsed).length === 1 && parsed[SEGMENT_KEY] === slug;
+  } catch {
+    return false;
+  }
+}
 
 /** The most characters a segment's name can have, counted after trimming. */
 export const MAX_NAME_LENGTH = 191;
@@ -18,6 +60,9 @@ export const SegmentName = z
   })
   .brand('SegmentName');
 export type SegmentName = z.infer<typeof SegmentName>;
+
+/** A name as names are compared: ignoring case and surrounding whitespace. */
+export const normalizeName = (name: string) => name.trim().toLowerCase();
 
 /** The most bytes a segment's filter can have, which is what the table's text column holds. */
 export const MAX_FILTER_BYTES = 65535;
@@ -39,6 +84,7 @@ export type SegmentFilter = z.infer<typeof SegmentFilter>;
 export const Segment = z.object({
   id: SegmentId,
   name: z.string(),
+  slug: SegmentSlug,
   filter: z.string(),
 });
 export type Segment = z.infer<typeof Segment>;

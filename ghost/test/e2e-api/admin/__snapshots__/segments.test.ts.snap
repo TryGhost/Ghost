@@ -49,6 +49,7 @@ Object {
       "filter": "label:vip",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "VIP",
+      "slug": "vip",
     },
   ],
 }
@@ -58,7 +59,7 @@ exports[`Segments Admin API GET /segments/ lists the segments 2: [headers] 1`] =
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "82",
+  "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -124,6 +125,7 @@ Object {
       "filter": "label:vip",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "VIP",
+      "slug": "vip",
     },
   ],
 }
@@ -133,7 +135,7 @@ exports[`Segments Admin API GET /segments/:id/ returns the segment 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "82",
+  "content-length": "95",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -149,6 +151,7 @@ Object {
       "filter": "label:vip",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "VIP",
+      "slug": "vip",
     },
   ],
 }
@@ -281,6 +284,7 @@ Object {
       "filter": "label:vip",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Very important",
+      "slug": "vip",
     },
   ],
 }

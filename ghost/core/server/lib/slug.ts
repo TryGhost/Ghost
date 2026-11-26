@@ -7,10 +7,10 @@ import { z } from 'zod';
 // in a member filter, a CSV column or an email replacement string, so what a slug may contain is an
 // allowlist rather than whatever Ghost's slugify lets through, and its separator is the one the
 // places it is typed agree on. The separator is the only thing that differs between kinds of slug:
-// a custom field's key is a slug with an underscore between its words. This module says what a slug
-// is, its format, its type and the guard that checks one, and mints slugs, numbers them and reads
-// them from outside. Transliteration and the stripping of invisible characters stay with the
-// libraries that own them.
+// a custom field's key is a slug with an underscore between its words, and a segment's slug one
+// with a hyphen. This module says what a slug is, its format, its type and the guard that checks
+// one, and mints slugs, numbers them and reads them from outside. Transliteration and the stripping
+// of invisible characters stay with the libraries that own them.
 
 /** The character a slug puts between words, and before a number added to it. */
 export type Separator = '_' | '-';

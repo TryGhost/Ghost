@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
+const KnexMigrator = require('knex-migrator');
 const testUtils = require('../../utils');
 const db = require('../../../core/server/data/db');
 
 const VERSIONS = path.join(__dirname, '../../../core/server/data/migrations/versions');
 
-function loadMigration(slug: string) {
+function findMigration(slug: string) {
   const [file] = fs
     .readdirSync(VERSIONS)
     .flatMap((version) =>
@@ -17,13 +18,24 @@ function loadMigration(slug: string) {
     )
     .filter((candidate) => candidate.endsWith(`-${slug}.ts`));
   assert.ok(file, `finds the ${slug} migration`);
-  return require(file).default;
+  return file;
 }
 
-const migration = loadMigration('move-saved-member-views-to-segments');
+const file = findMigration('move-saved-member-views-to-segments');
+const migration = require(file).default;
 
 const run = (step: 'up' | 'down') =>
   db.knex.transaction((transacting: unknown) => migration[step]({ transacting }));
+
+/**
+ * Rolls back every migration of a version after this migration's own, so the tables are as they
+ * were when that version was current, which is what this migration runs on.
+ */
+const rollBackToOwnVersion = () =>
+  new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../../../') }).rollback({
+    version: path.basename(path.dirname(file)),
+    force: true,
+  });
 
 /** A saved member view as Admin wrote one to the setting. */
 const memberView = (name: string, filter: string) => ({
@@ -52,6 +64,7 @@ const segmentNames = async () => (await segments()).map(({ name }) => name);
 describe('Migration: move saved member views to segments', function () {
   beforeAll(testUtils.teardownDb);
   beforeAll(testUtils.setup('settings'));
+  beforeAll(rollBackToOwnVersion);
 
   beforeEach(async function () {
     await db.knex('segments').del();

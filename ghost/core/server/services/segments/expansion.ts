@@ -2,7 +2,7 @@ import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { type ParsedFilter, parseFilter } from '../../lib/filters';
 import { ObjectIdSchema } from '../../lib/db-types/object-id';
-import { type Segment, SegmentId } from './models';
+import { SEGMENT_KEY, type Segment, SegmentId } from './models';
 
 // A members filter names a segment with the `segment` key, whose value is the segment's id, as
 // in `segment:'<id>'` or `segment:['<id>','<id>']`, and leaves one out with `segment:-'<id>'` or
@@ -10,9 +10,6 @@ import { type Segment, SegmentId } from './models';
 // filter is replaced by the segment's own parsed filter, and a left-out segment by a `$nor` of it,
 // which matches every member the segment doesn't, including a member with no value in a field
 // the segment tests.
-
-/** The members filter key that names a segment. */
-const SEGMENT_KEY = 'segment';
 
 /**
  * Reads the segments with any of `ids`, from the segments table or from a copy of them, such as

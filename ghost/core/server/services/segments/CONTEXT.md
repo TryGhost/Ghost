@@ -14,6 +14,9 @@ What Admin's members list calls a segment. Segments were first stored as entries
 **Segment id**:
 An ObjectID the segment is given when it is added, as the rows of Ghost's other tables have. Callers treat it as opaque. A saved member view in the setting had no stored id, so the API made one from the view's filter; the migration gave each moved view a new id.
 
+**Segment slug**:
+A readable name, such as `all-paid` for "All paid". The caller that adds a segment can give its slug, which is used when a filter can name a segment by it and no other segment has it, and rejected otherwise. Without one, the server mints it from the segment's name. A rename keeps it, and nothing changes it: an edit can give back only the segment's own slug. No two segments have the same slug, and a deleted segment's slug can be given to a segment added later.
+
 **Segment in a filter**:
 A members filter names a segment with the `segment` key: `segment:'<id>'` selects the segment's members, and `segment:['<id>','<id>']` the members of any of them. `segment:-'<id>'` and `segment:-['<id>','<id>']` leave them out, which keeps every member the segment doesn't select, including a member with no value in a field the segment tests. It combines with every other condition, as in `segment:'<id>',status:paid`, and can sit inside a negated group. The id is quoted, because NQL reads an unquoted id made only of digits as a number. The members model's first filter step reads the segments a filter names, so whoever runs a members query, resolving its filter reads them from the segments table, in the query's transaction when there is one, and replaces each `segment` statement with the segment's own filter. That happens before the caller's checks on the filter, such as the Admin API's restricted-field check, so they see each segment's filter. A segment that doesn't exist is rejected rather than ignored, and a segment's own filter can't name another segment. A post's visibility and an email's recipient filter can't name a segment yet: access is checked in memory against one member, and an email's filter runs when the email is sent, with segments that may have changed since. While the segmentEmails flag is off, a filter that names a segment is rejected. A server without segments in filters rejects the `segment` key as an unknown column, so a filter that names one never selects more members there.
 
@@ -21,13 +24,19 @@ A members filter names a segment with the `segment` key: `segment:'<id>'` select
 
 Segments are rows of the `segments` table, in the order of the table's sortable collection. The service reads and writes the table itself, with Knex. It rejects a name another segment has. Two segments can have the same filter under different names.
 
+## Slugs
+
+A segment's slug is minted from its name as a custom field's key is (`server/lib/slug.ts`), with a hyphen between words where a key has an underscore: the name is transliterated to ASCII and lowercased, invisible characters and apostrophes are dropped, and each run of other characters becomes one hyphen, with none at either end. The result is cut to leave room for a number within the column. A minted slug is one the filter parser reads back as itself when a members filter holds it without quotes, as `segment:<slug>`, and the parser decides that: a name that mints something the parser reads as something else, such as `2024` (a number), `null`, `true` or `now-1d` (a date), gets `segment-` in front, and a name that mints nothing, such as a name of emoji, gets `segment`. When another segment has the slug, the new segment gets `-2`, `-3` and so on. A stored slug, and a slug a request gives, is checked for its format only, so a change to the filter parser can't make a stored segment unreadable.
+
+A slug a caller gives is held to the same rules: its format, and the filter parser reading it back. An import gives each segment the slug it had on the site it was exported from, when that is in a slug's format, and adds the segment again without one, for the service to mint, when the service rejects it. A segment the import added earlier can be minted the slug a later segment of the file had, and that later segment then gets a minted slug too. The migration that mints a slug for each segment stored before segments had slugs carries its own copy of the minting, so that a later change to the service's minting doesn't change what the migration does.
+
 ## Names
 
 A name is taken when another segment has it by either of two rules. The first ignores case and surrounding whitespace, and is the same on every database. The second is the table's unique index, which compares by the database's collation: MySQL's default collation also ignores accents, so "Café" is rejected when "Cafe" exists.
 
 ## Concurrent writes
 
-No lock keeps writers apart. The table's unique index rejects a name another request takes at the same time. Segments added at the same moment can get the same position, and are then listed in the order of the table's tie-break.
+No lock keeps writers apart. The table's unique indexes reject a name or a slug another request takes at the same time, and the database's error names the index. A name taken that way rejects the segment, and so does a slug the caller gave. A minted slug taken that way is skipped, and the segment is added under the next one, so segments added at the same time whose names mint the same slug are all added. Segments added at the same moment can get the same position, and are then listed in the order of the table's tie-break.
 
 ## Changes
 

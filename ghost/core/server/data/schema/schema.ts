@@ -8,6 +8,7 @@
  * Text = length 65535 (64 KiB)
  * Long text = length 1,000,000,000
  */
+import { slugPattern } from '../../lib/slug';
 import { sortableBy } from './lib/sortable';
 import type { TableDefinition } from './types';
 
@@ -1400,6 +1401,16 @@ const schema = {
     // Unique as the database's collation compares names, so the database decides which
     // names clash.
     name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // A readable name, such as `all-paid`: words of lowercase letters and digits joined by
+    // single hyphens. The segments service mints it from the name when the segment is added, and
+    // it doesn't change.
+    slug: {
+      type: 'string',
+      maxlength: 191,
+      nullable: false,
+      unique: true,
+      pattern: slugPattern('-'),
+    },
     // An NQL filter. Not validated against the members' fields.
     filter: { type: 'text', maxlength: 65535, nullable: false },
     // Segments are listed in the order they were added.
