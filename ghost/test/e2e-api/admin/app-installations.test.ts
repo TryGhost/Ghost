@@ -1698,6 +1698,33 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
           .where({ client_id: `ghost-app-user-${id}` })
           .first();
 
+      /** The installation id the client's metadata names it the client of */
+      const ownerIdOf = async (id: string) =>
+        JSON.parse((await clientOf(id)).metadata).ghost_app_installation_id;
+
+      it('issues a session started with the id in uppercase at the first attempt', async function () {
+        const installed = await install();
+        serve(manifest());
+        const issue = sinon.spy(appTokens(), 'issue');
+
+        const { body } = await start(installed.id.toUpperCase());
+
+        assert.ok(body.app_sessions[0].token);
+        assert.equal(issue.callCount, 1);
+        assert.equal(await ownerIdOf(installed.id), installed.id);
+      });
+
+      it('names the installation by its stored id in the client of an app uninstalled with the id in uppercase', async function () {
+        const installed = await install();
+        serve(manifest());
+        await start(installed.id);
+
+        await agent.delete(`apps/installations/${installed.id.toUpperCase()}/`).expectStatus(204);
+
+        assert.equal((await clientOf(installed.id)).disabled, 1);
+        assert.equal(await ownerIdOf(installed.id), installed.id);
+      });
+
       it('answers a session start that races an uninstall as not installed, leaving no token', async function () {
         const installed = await install();
         serve(manifest());

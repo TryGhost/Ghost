@@ -44,6 +44,16 @@ describe('appClientOwnerOf', function () {
     }
   });
 
+  it('names the installation in lowercase, as its id is stored, however it was written', function () {
+    const written = appUserClient({
+      installationId: installationId.toUpperCase(),
+      active: true,
+      scopes: [],
+    });
+
+    assert.deepEqual(written, client);
+  });
+
   it("says a client is no app's when its id isn't the one Ghost gives that owner", function () {
     const other = appClientId({ installationId: '6745a1b2c3d4e5f6a7b8c9d1', kind: 'user' });
 
