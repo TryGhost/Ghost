@@ -38,6 +38,7 @@ import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
 import { AppCanvas } from './components/app-canvas';
 import { WithAppFooter } from './components/app-footer';
+import { AppOverlay } from './components/app-overlay';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
@@ -257,7 +258,10 @@ const AppFrame: React.FC<{
     [resolvedTheme, accentColor],
   );
   // The canvas measures it before the page can connect.
-  const [layout, setLayout] = useState<Layout>({ safeArea: NO_INSETS });
+  const [layout, setLayout] = useState<Layout>({
+    safeArea: NO_INSETS,
+    overlaySafeArea: NO_INSETS,
+  });
 
   const context: StartContext = {
     site: { url: site.url, title: site.title, timezone, locale: site.locale },
@@ -312,9 +316,17 @@ const AppFrame: React.FC<{
         }),
     }),
   );
-  const { status, title, attempt, startedAt } = useSyncExternalStore(
+  const { status, title, attempt, startedAt, overlay } = useSyncExternalStore(
     frameSession.subscribe,
     frameSession.getState,
+  );
+  const [pageFrame, setPageFrame] = useState<HTMLIFrameElement | null>(null);
+  const attachFrame = useCallback(
+    (frame: HTMLIFrameElement | null) => {
+      frameSession.attach(frame);
+      setPageFrame(frame);
+    },
+    [frameSession],
   );
   // Each load of the frame opens the app's page at the app's current route, so a reload of Admin,
   // or coming back to the app, shows the page the publisher was on, also in a multi-page app. The
@@ -358,7 +370,7 @@ const AppFrame: React.FC<{
     >
       <iframe
         key={attempt}
-        ref={frameSession.attach}
+        ref={attachFrame}
         allow={APP_FRAME_ALLOW}
         aria-hidden={status !== 'ready'}
         // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
@@ -371,6 +383,21 @@ const AppFrame: React.FC<{
         src={frameSource.src}
         title={manifest.name}
       />
+      {/* Once the page has started, so it doesn't slow the page's own load. */}
+      {status === 'ready' && (
+        <AppOverlay
+          key={`overlay ${attempt}`}
+          colorScheme={resolvedTheme}
+          pageFrame={pageFrame}
+          safeArea={layout.overlaySafeArea}
+          // The page's current address, so dialogs get that page's stylesheets.
+          src={appFrameUrl(url, path)}
+          tint={overlay}
+          title={manifest.name}
+          onDismiss={frameSession.overlayDismissed}
+          onLeft={frameSession.overlayLeft}
+        />
+      )}
     </AppCanvas>
   );
 };

@@ -24,11 +24,13 @@ import {
 } from './errors.ts';
 import { toFetchRequest, toResponse } from './fetch.ts';
 import { currentRoute, watchHistory, type HistoryWatch } from './history.ts';
+import { PageOverlay } from './overlay.ts';
 import { applySafeArea } from './safe-area.ts';
 import { watchTitle } from './title.ts';
 import type {
   Ghost,
   GhostFetchInit,
+  GhostOverlay,
   GhostPath,
   Session,
   Site,
@@ -127,17 +129,30 @@ export class Channel {
   #history: HistoryWatch | undefined;
   // Counts page and Admin moves, so an answer to an earlier page move is ignored.
   #moves = 0;
+  readonly #overlay: PageOverlay;
 
   constructor(port: MessagePort, hostExports: readonly string[], events: ChannelEvents) {
     this.#port = port;
     this.#hostExports = new Set(hostExports);
     this.#events = events;
+    this.#overlay = new PageOverlay({
+      mode: () => this.#theme?.mode ?? 'light',
+      show: (tint) => this.#call('overlayShown', { tint }),
+      hide: () => this.#call('overlayHidden'),
+      found: (overlay) => this.#history?.watchLinks(overlay),
+      // The page starts again, rather than hold a dialog no one can see or close.
+      lost: () => window.location.reload(),
+    });
     this.#thread = new ThreadMessagePort<HostExports, AppExports>(port, {
       exports: {
         start: async (context) => this.#start(context),
         themeChanged: async (theme) => this.#themeChanged(theme),
         pathChanged: async (path) => this.#pathChanged(path),
         layoutChanged: async (layout) => this.#layoutChanged(layout),
+        overlayDismissed: async () => {
+          this.#assertStarted();
+          this.#overlay.dismissed();
+        },
       },
     });
     port.addEventListener('close', () => this.end(sessionEnded()));
@@ -165,6 +180,7 @@ export class Channel {
     this.#theme = Object.freeze({ ...context.theme });
     // Before the app starts, so its first paint keeps clear of Admin's chrome.
     applySafeArea(document.documentElement, context.layout.safeArea);
+    this.#overlay.layoutChanged(context.layout.overlaySafeArea);
     // Admin owns the history from here on. The page's own address is its route: Admin loads a
     // new frame at its own path, so the two differ only when the page's server redirected it or
     // a form or link loaded another page in place, and then Admin follows the page.
@@ -193,6 +209,7 @@ export class Channel {
     }
     this.#theme = Object.freeze({ ...theme });
     notify(this.#themeListeners, this.#theme);
+    this.#overlay.themeChanged();
   }
 
   #layoutChanged(layout: unknown) {
@@ -201,6 +218,7 @@ export class Channel {
       throw refusal('invalid_argument', "Ghost sent a layout this SDK doesn't understand");
     }
     applySafeArea(document.documentElement, layout.safeArea);
+    this.#overlay.layoutChanged(layout.overlaySafeArea);
   }
 
   #pathChanged(path: unknown) {
@@ -325,6 +343,11 @@ export class Channel {
         this.#onSessionEnd(callback),
       fetch: (path: string, init?: GhostFetchInit): Promise<Response> => this.#fetch(path, init),
       open: (place: Place): Promise<void> => this.#open(place),
+      // Only the members `GhostOverlay` declares reach the app.
+      overlay: Object.freeze<GhostOverlay>({
+        container: () => this.#overlay.container(),
+        hold: (tint, element) => this.#overlay.hold(tint, element),
+      }),
     });
   }
 

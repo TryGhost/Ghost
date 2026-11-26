@@ -42,7 +42,10 @@ const context = {
   theme,
   session: { revision: 3 },
   path: '/episodes/12',
-  layout: { safeArea: { top: 0, right: 0, bottom: 57, left: 285 } },
+  layout: {
+    safeArea: { top: 0, right: 0, bottom: 57, left: 285 },
+    overlaySafeArea: { top: 44, right: 8, bottom: 65, left: 293 },
+  },
 };
 
 const response = {
@@ -178,11 +181,12 @@ describe('a safe area', () => {
 describe('a layout', () => {
   const check = holds(isLayout);
 
-  it('has a safe area', () => {
+  it('has a safe area for the page, and for the overlay', () => {
     check(context.layout, true);
     check({ ...context.layout, somethingNew: true }, true);
     check({}, false);
-    check({ safeArea: { top: 0 } }, false);
+    check({ ...context.layout, safeArea: { top: 0 } }, false);
+    check({ safeArea: context.layout.safeArea }, false);
     check(null, false);
   });
 });
@@ -210,7 +214,10 @@ describe('a start context', () => {
       { ...context, path: 'episodes' },
       { ...context, path: '//evil.example' },
       { ...context, layout: undefined },
-      { ...context, layout: { safeArea: { top: 0, right: 0, bottom: -1, left: 0 } } },
+      {
+        ...context,
+        layout: { ...context.layout, safeArea: { top: 0, right: 0, bottom: -1, left: 0 } },
+      },
     ]) {
       check(value, false);
     }
