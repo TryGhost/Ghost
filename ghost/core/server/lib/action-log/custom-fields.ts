@@ -5,26 +5,42 @@ import type {
   OnDefinitionUpdated,
 } from '../../services/members-metafields/metafields/changes';
 import type { Definition } from '../../services/members-metafields/metafields/models';
+import type { DefinitionsType } from '../../services/members-metafields/metafields/resource';
 import type { ActionLog, ActionRow } from './action-log';
 
-type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;
+/**
+ * A custom field action, on any resource's definitions. A resource whose definitions type isn't
+ * one of the action log's kinds can't be logged, so wiring it doesn't compile until it is added.
+ */
+type FieldAction = Extract<ActionRow, { resourceType: DefinitionsType }>;
+
+/** A custom field action before it says which resource's definitions it is about. */
+type FieldEntry = FieldAction extends infer Action
+  ? Action extends unknown
+    ? Omit<Action, 'resourceType'>
+    : never
+  : never;
 
 /**
- * Logs the changes the members' definitions service reports, as custom field actions, whichever
- * namespace the definition is in. This is the only place that knows how a change to a member's
- * definition reads in Admin's History; the service only says what happened.
+ * Logs the changes a resource's definitions service reports, as custom field actions under that
+ * resource's definitions type, whichever namespace the definition is in. This is the only place
+ * that knows how a change to a definition reads in Admin's History; the service only says what
+ * happened.
  */
-export function recordMemberDefinitionChanges(actionLog: ActionLog): OnDefinitionUpdated {
+export function recordDefinitionChanges(
+  actionLog: ActionLog,
+  resourceType: DefinitionsType,
+): OnDefinitionUpdated {
   return async (trx, context, change) => {
-    for (const action of actionsFor(change)) {
-      await actionLog.record(trx, context, action);
+    for (const entry of actionsFor(change)) {
+      await actionLog.record(trx, context, { ...entry, resourceType });
     }
   };
 }
 
 // A field's timeline reads added -> edited -> archived -> restored, and a permanent delete (only
 // from the archived state) ends it with deleted.
-function actionsFor(change: DefinitionChange): FieldAction[] {
+function actionsFor(change: DefinitionChange): FieldEntry[] {
   switch (change.type) {
     // Each field added has a timeline of its own to start, so each gets its own action.
     case 'DefinitionsAdded':
@@ -38,7 +54,6 @@ function actionsFor(change: DefinitionChange): FieldAction[] {
     case 'DefinitionsReordered':
       return [
         {
-          resourceType: 'member_custom_field',
           event: 'edited',
           resourceId: null,
           actionName: 'reordered',
@@ -50,7 +65,7 @@ function actionsFor(change: DefinitionChange): FieldAction[] {
 }
 
 /** What changing one property of a field logs: its actions, or nothing by decision. */
-type EditOf = ((previous: Definition, next: Definition) => FieldAction[]) | typeof NOT_LOGGED;
+type EditOf = ((previous: Definition, next: Definition) => FieldEntry[]) | typeof NOT_LOGGED;
 
 const NOT_LOGGED = 'not logged';
 
@@ -101,7 +116,7 @@ function memberAccessOf(field: Definition): MemberAccess {
  * found by comparing the field before with the field after. An edit that changed nothing has no
  * action.
  */
-function editActions(previous: Definition, next: Definition): FieldAction[] {
+function editActions(previous: Definition, next: Definition): FieldEntry[] {
   return Object.values(EDITS).flatMap((edit) => (edit === NOT_LOGGED ? [] : edit(previous, next)));
 }
 
@@ -121,9 +136,8 @@ function fieldAction(
     member_access?: MemberAccess;
     previous_member_access?: MemberAccess;
   } = {},
-): FieldAction {
+): FieldEntry {
   return {
-    resourceType: 'member_custom_field',
     event,
     resourceId: field.id,
     primaryName: field.name,

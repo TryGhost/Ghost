@@ -5,25 +5,14 @@ import type { EditedDefinition } from './metafields/definitions-service';
 import { metafieldsRelation } from './metafields/filter';
 import type { Definition } from './metafields/models';
 import type { Namespaces } from './metafields/namespaces';
-import type { MetafieldResource, ResourceKind } from './metafields/resource';
+import { metafieldResource } from './metafields/resource';
 import { FIELD_STATUS, DbMetafieldChangeEvent, type FieldsTable } from './metafields/schema';
 
-/** Members, by name. Who may do what with their fields is each namespace's access policy. */
-export interface Members extends ResourceKind {
-  Name: 'members';
-}
-
-/** Members, the one resource that holds metafields so far. */
-export const MEMBERS_RESOURCE: MetafieldResource<Members> = {
-  name: 'members',
-  tables: {
-    fields: 'members_metafields',
-    values: 'members_metafield_values',
-    bindings: 'members_metafield_bindings',
-    changes: 'members_metafield_change_events',
-  },
-  idColumn: 'member_id',
-};
+/**
+ * Members, the one resource that holds metafields so far. Its tables and `member_id` follow from
+ * the schema, and who may do what with its fields is each namespace's access policy.
+ */
+export const MEMBERS_RESOURCE = metafieldResource('members');
 
 /**
  * The Member filter relation that exposes metafield values, so a member filter can ask about

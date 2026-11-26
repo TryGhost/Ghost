@@ -1,5 +1,10 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { booted, callerOf, changedForMembers } from '../../services/members-metafields';
+import {
+  MEMBERS_RESOURCE,
+  booted,
+  callerOf,
+  changedForMembers,
+} from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
 interface MemberMetafieldOptions {
@@ -32,7 +37,7 @@ type WriteFrame = Frame<{
 // The namespace is settled first, so a request for one nobody registered is told so rather than
 // sent after a permission that wouldn't help.
 const managing = (method: 'add' | 'edit' | 'destroy') => ({
-  docName: 'member_custom_field',
+  docName: MEMBERS_RESOURCE.definitionsType,
   method,
   before(frame: ReadFrame) {
     booted().namespaces.registered(namespaceRoute(frame.options).namespace);
