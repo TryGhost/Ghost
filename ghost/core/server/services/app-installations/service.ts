@@ -339,8 +339,8 @@ export class AppInstallationsService {
 
   /**
    * Starts an app session when Admin opens an app page. Re-checks the manifest, then
-   * returns the installation, which Admin decides what to show from, and for an active one a
-   * user token for the staff user. Nothing about the session is stored.
+   * returns the installation, which Admin decides what to show from, and for an active one an
+   * app user token for the staff user. Nothing about the session is stored.
    */
   async startSession(id: string, principal: Principal | null): Promise<AppSession> {
     const staff = this.sessionTokens.staffSessionFor(principal);
@@ -360,7 +360,7 @@ export class AppInstallationsService {
     return token ? { installation, token } : { installation: await this.read(id), token: null };
   }
 
-  /** A fresh user token for a session started at `revision`; see `AppSessionTokens.renew`. */
+  /** A fresh app user token for a session started at `revision`; see `AppSessionTokens.renew`. */
   createToken(id: string, revision: number, principal: Principal | null): Promise<AppSessionToken> {
     return this.sessionTokens.renew(id, revision, principal);
   }

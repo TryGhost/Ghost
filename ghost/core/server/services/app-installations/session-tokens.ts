@@ -100,7 +100,7 @@ export class AppSessionTokens {
   }
 
   /**
-   * A user token for an installation that was active when read, holding the scopes of its
+   * An app user token for an installation that was active when read, holding the scopes of its
    * approved manifest. Null when it was suspended meanwhile, or given `atRevision`, moved to
    * another revision; throws when it was uninstalled.
    *
@@ -171,7 +171,7 @@ export class AppSessionTokens {
   }
 
   /**
-   * A fresh user token for a session started at `revision`, without fetching the manifest.
+   * A fresh app user token for a session started at `revision`, without fetching the manifest.
    * Nothing about the session is stored. The same checks as starting a session, and the
    * session must still be current.
    */

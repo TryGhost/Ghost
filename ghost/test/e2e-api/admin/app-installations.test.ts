@@ -1570,7 +1570,7 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
     });
 
     describe('app tokens', function () {
-      /** The installation's user tokens, as the provider stores them. */
+      /** The installation's app user tokens, as the provider stores them. */
       const tokenRowsOf = (id: string) =>
         models.Base.knex('oauth_access_tokens').where({ client_id: `ghost-app-user-${id}` });
 
@@ -1598,7 +1598,7 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
           .body({ app_tokens: [{ revision }] })
           .expectStatus(status);
 
-      it('gives an active installation a user token for an hour, holding no more than its approved scopes', async function () {
+      it('gives an active installation an app user token for an hour, holding no more than its approved scopes', async function () {
         const installed = await install({ scopes: ['post:browse', 'tag:browse'] });
         serve(manifest({ scopes: ['post:browse', 'tag:browse'] }));
 

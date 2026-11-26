@@ -145,13 +145,13 @@ _Avoid_: accept, update
 **App session**:
 One run of an installed app in Admin, started when Admin opens one of its
 pages. Starting a session re-checks the app and returns the installation and,
-for an active one, a user token. The session is pinned to the installation's
+for an active one, an app user token. The session is pinned to the installation's
 revision at that point. Nothing about the session is stored; it ends when the
 revision changes. Sessions open only on the `better-auth` auth engine, for a
 verified staff session of an active Administrator or the Owner.
 _Avoid_: login, connection
 
-**User token**:
+**App user token**:
 The app token an app's Admin API calls are to be sent with, issued by Better
 Auth's OAuth provider when a session starts. It acts for the staff user, is
 bound to their staff session and lasts an hour, or until the staff session
@@ -163,10 +163,10 @@ none refuses apps, unless it's safe for any app. Admin's bridge allowlist
 still filters what an app can send. Only Admin holds the token; the app's
 frame never sees it. App tokens and their other kinds are defined in
 [Authentication and Authorization](../../auth/CONTEXT.md).
-_Avoid_: backend token (an app backend's own), access token
+_Avoid_: user token, app backend token (an app backend's own), access token
 
 **Renewal**:
-A new user token for a session, without re-checking the app. Each renewal
+A new app user token for a session, without re-checking the app. Each renewal
 creates another token; nothing about the session is stored. A token says how
 long it lasts in
 seconds (`expires_in`), so renewal can be scheduled on the browser's own clock. It is refused
@@ -175,7 +175,7 @@ the session's, which ends the session.
 _Avoid_: refresh
 
 **OAuth client**:
-The provider's record of an installation, which its user tokens are issued
+The provider's record of an installation, which its app user tokens are issued
 to. Install, approval, uninstall and session start bring it in step with the
 installation, outside the installation's transaction: the installation is the
 authority on every call, so a client out of step grants nothing. A client of

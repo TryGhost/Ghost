@@ -25,7 +25,7 @@ const AppInstallationsResponse = z.object({
   app_installations: z.array(AppInstallationResource),
 });
 /**
- * The user token Admin sends for the app, as `Authorization: Bearer`. It acts for the staff
+ * The app user token Admin sends for the app, as `Authorization: Bearer`. It acts for the staff
  * user within the installation's approved scopes, and is bound to their staff session.
  *
  * Admin's alone: it never reaches the app's frame. Session start and renewal return the same
