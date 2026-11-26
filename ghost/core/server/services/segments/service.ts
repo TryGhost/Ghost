@@ -234,6 +234,33 @@ export class SegmentsService {
     );
   }
 
+  /**
+   * POC (poc/segments-ui): puts the segments in the order of `ids`, the site's order for every
+   * list of them, and returns them in it. Fails with a ValidationError, and changes nothing,
+   * unless `ids` names every segment exactly once: an order that leaves one out, or names one
+   * since deleted, was made from an out-of-date list. No segment changes, only the list around
+   * them, so nothing is reported through `onSegmentUpdated` and no `updated_at` moves.
+   */
+  reorder(
+    _context: RequestContext,
+    ids: readonly string[],
+    executor: Knex = this.knex,
+  ): Promise<Segment[]> {
+    return this.tracking.change('reorder', (attempt) =>
+      ensureTransaction(executor, async (trx) => {
+        try {
+          await this.rows.reorder(trx, {}, ids);
+        } catch (err) {
+          if (err instanceof errors.ValidationError) {
+            attempt.rejecting('order_out_of_date');
+          }
+          throw err;
+        }
+        return this.browse(trx);
+      }),
+    );
+  }
+
   /** The segment with `id`, if there is one, with its row locked until `trx` ends. */
   private async lock(id: string, trx: Knex.Transaction): Promise<Segment | undefined> {
     const row: unknown = await trx(TABLE).where('id', id).forUpdate().first('id', 'name', 'filter');

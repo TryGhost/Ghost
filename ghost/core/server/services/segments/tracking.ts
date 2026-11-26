@@ -11,6 +11,8 @@ import type { Tracer } from '../../lib/tracing/tracer';
  *   same.
  * - `filter_changed`: the request has a filter that isn't the segment's own.
  * - `filter_names_segment`: the new segment's filter names a segment.
+ * - `order_out_of_date`: a new order doesn't name every segment exactly once, so it was made
+ *   from an out-of-date list.
  *
  * Any other error is a failure.
  */
@@ -18,7 +20,8 @@ export type SegmentRejection =
   | 'not_found'
   | 'name_taken'
   | 'filter_changed'
-  | 'filter_names_segment';
+  | 'filter_names_segment'
+  | 'order_out_of_date';
 
 /** What a command that changes a segment reports. */
 export interface SegmentChangeAttempt {
@@ -36,6 +39,7 @@ const CHANGE_SPANS = {
   add: 'segments.add',
   edit: 'segments.edit',
   delete: 'segments.delete',
+  reorder: 'segments.reorder',
 } as const;
 
 export type SegmentsTracking = ReturnType<typeof segmentsTracking>;

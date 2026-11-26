@@ -7,7 +7,12 @@ import {
 import { z } from 'zod';
 import { actingContext } from '../../lib/actor';
 import segments from '../../services/segments';
-import { NewSegmentBody, SegmentEditBody, SegmentRoute } from '../../services/segments/serializers';
+import {
+  NewSegmentBody,
+  SegmentEditBody,
+  SegmentOrderBody,
+  SegmentRoute,
+} from '../../services/segments/serializers';
 
 // Segments only appear in Admin, so changing one doesn't invalidate the site's cache.
 const noCacheInvalidation = { cacheInvalidate: false };
@@ -54,6 +59,16 @@ const edit = defineMethod({
   },
 });
 
+// POC (poc/segments-ui): the site's order of segments, set by dragging them in Admin's sidebar.
+const reorder = defineMethod({
+  headers: noCacheInvalidation,
+  schema: { options: z.object({}), body: SegmentOrderBody },
+  permissions: true,
+  query(frame) {
+    return segments.service.reorder(actingContext(frame.options.context), frame.validated.body);
+  },
+});
+
 const destroy = defineMethod({
   statusCode: 204,
   headers: noCacheInvalidation,
@@ -73,12 +88,14 @@ const controller = {
   read,
   add,
   edit,
+  reorder,
   destroy,
 } satisfies Controller<{
   browse: InferMethodFrame<typeof browse>;
   read: InferMethodFrame<typeof read>;
   add: InferMethodFrame<typeof add>;
   edit: InferMethodFrame<typeof edit>;
+  reorder: InferMethodFrame<typeof reorder>;
   destroy: InferMethodFrame<typeof destroy>;
 }>;
 

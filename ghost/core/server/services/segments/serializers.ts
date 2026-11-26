@@ -20,6 +20,23 @@ export const SegmentEditBody = z
   .strictObject({ id: ReadOnlyId, name: SegmentName, filter: SegmentFilter.optional() })
   .transform(({ name, filter }): SegmentEdit => ({ name, filter }));
 
+/**
+ * POC (poc/segments-ui): a new order as a request sends it, every segment in the order wanted,
+ * as `{segments: [{id}, ...]}`. Segments sent back as the API returned them are accepted, and
+ * only their ids are read.
+ */
+export const SegmentOrderBody = z
+  .object({
+    segments: z.array(
+      z.strictObject({
+        id: z.string(),
+        name: z.string().optional(),
+        filter: z.string().optional(),
+      }),
+    ),
+  })
+  .transform(({ segments }) => segments.map(({ id }) => id));
+
 const SegmentResource = z.object({
   id: z.string(),
   name: z.string(),

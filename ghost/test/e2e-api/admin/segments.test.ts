@@ -480,6 +480,71 @@ describe('Segments Admin API', function () {
     });
   });
 
+  // POC (poc/segments-ui): the site's order of segments, set by dragging them in Admin's sidebar.
+  describe('PUT /segments/', function () {
+    const reorder = (ids: string[]) =>
+      agent.put('segments/').body({ segments: ids.map((id) => ({ id })) });
+
+    it('puts the segments in the order given, and returns them in it', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      const comped = await add('Comped', 'status:comped');
+
+      const { body } = await reorder([comped.id, free.id, paid.id])
+        .expectStatus(200)
+        .expect(cacheInvalidateHeaderNotSet());
+
+      assert.deepEqual(
+        body.segments.map((segment) => segment.name),
+        ['Comped', 'Free', 'Paid'],
+      );
+      assert.deepEqual(
+        (await browse()).map((segment) => segment.name),
+        ['Comped', 'Free', 'Paid'],
+      );
+    });
+
+    it('accepts the segments as GET returns them', async function () {
+      await add('Free', 'status:free');
+      await add('Paid', 'status:paid');
+      const segments = (await browse()).reverse();
+
+      await agent.put('segments/').body({ segments }).expectStatus(200);
+
+      assert.deepEqual(
+        (await browse()).map((segment) => segment.name),
+        ['Paid', 'Free'],
+      );
+    });
+
+    it('adds a new segment after the reordered ones', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      await reorder([paid.id, free.id]).expectStatus(200);
+
+      await add('Comped', 'status:comped');
+
+      assert.deepEqual(
+        (await browse()).map((segment) => segment.name),
+        ['Paid', 'Free', 'Comped'],
+      );
+    });
+
+    it('rejects an order that leaves a segment out, or names one twice, and changes nothing', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+
+      for (const ids of [[paid.id], [paid.id, paid.id], [paid.id, free.id, UNKNOWN_ID]]) {
+        const { type } = await validationError(reorder(ids));
+        assert.equal(type, 'ValidationError');
+      }
+      assert.deepEqual(
+        (await browse()).map((segment) => segment.name),
+        ['Free', 'Paid'],
+      );
+    });
+  });
+
   describe('DELETE /segments/:id/', function () {
     it('removes the segment', async function () {
       await add('Free', 'status:free');
@@ -516,6 +581,10 @@ describe('Segments Admin API', function () {
 
       const { id } = await add('VIP', 'label:vip');
       await rename(id, 'Gold');
+      await agent
+        .put('segments/')
+        .body({ segments: [{ id }] })
+        .expectStatus(200);
       await agent.delete(`segments/${id}/`).expectStatus(204);
 
       assert.equal(await storedSharedViews(), stored);
@@ -718,6 +787,10 @@ describe('Segments Admin API', function () {
         .body({ segments: [{ name: 'Gold' }] })
         .expectStatus(403);
       await agent.delete(`segments/${id}/`).expectStatus(403);
+      await agent
+        .put('segments/')
+        .body({ segments: [{ id }] })
+        .expectStatus(403);
     });
 
     // The framework validates a request's body before it checks permissions, so a caller who

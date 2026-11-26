@@ -17,7 +17,7 @@ export const permissions = {
   notification: ['browse', 'add', 'destroy'],
   post: ['browse', 'read', 'edit', 'add', 'destroy', 'publish'],
   setting: ['browse', 'read', 'edit'],
-  segment: ['browse', 'read', 'add', 'edit', 'destroy'],
+  segment: ['browse', 'read', 'add', 'edit', 'destroy', 'reorder'],
   slug: ['generate'],
   tag: ['browse', 'read', 'edit', 'add', 'destroy'],
   theme: ['browse', 'edit', 'activate', 'readActive', 'add', 'read', 'destroy'],

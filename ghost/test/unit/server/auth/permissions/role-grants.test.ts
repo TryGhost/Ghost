@@ -105,6 +105,7 @@ const GRANTS: [string, string, string[]][] = [
   ['add', 'segment', ['Administrator', 'Admin Integration']],
   ['edit', 'segment', ['Administrator', 'Admin Integration']],
   ['destroy', 'segment', ['Administrator', 'Admin Integration']],
+  ['reorder', 'segment', ['Administrator', 'Admin Integration']],
   [
     'generate',
     'slug',
@@ -332,9 +333,9 @@ const holders = (actionType: string, objectType: string) =>
 
 describe('Permissions', function () {
   describe('role grants', function () {
-    it('defines 154 permissions', function () {
+    it('defines 155 permissions', function () {
       // If you have to change this number, add the relevant rows to GRANTS.
-      assert.equal(allPermissionKeys.length, 154);
+      assert.equal(allPermissionKeys.length, 155);
     });
 
     it('lists every permission exactly once in GRANTS', function () {

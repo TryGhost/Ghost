@@ -12,6 +12,9 @@ module.exports = {
   browse(segments: Segment[], _apiConfig: unknown, frame: Frame): void {
     frame.response = toSegmentsResponse.parse(segments);
   },
+  reorder(segments: Segment[], _apiConfig: unknown, frame: Frame): void {
+    frame.response = toSegmentsResponse.parse(segments);
+  },
   read: serializeOne,
   add: serializeOne,
   edit: serializeOne,
