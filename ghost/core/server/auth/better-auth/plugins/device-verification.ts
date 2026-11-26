@@ -1,6 +1,10 @@
 import crypto from 'node:crypto';
-import { defineRequestState, runWithTransaction } from '@better-auth/core/context';
-import { APIError, BASE_ERROR_CODES, getCurrentAdapter } from 'better-auth';
+import {
+  defineRequestState,
+  getCurrentAdapter,
+  runWithTransaction,
+} from '@better-auth/core/context';
+import { APIError, BASE_ERROR_CODES } from '@better-auth/core/error';
 import type { BetterAuthPlugin, GenericEndpointContext, Session, User } from 'better-auth';
 import {
   createAuthEndpoint,

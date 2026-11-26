@@ -1,5 +1,5 @@
 import errors, { utils as errorUtils } from '@tryghost/errors';
-import { BASE_ERROR_CODES } from 'better-auth';
+import { BASE_ERROR_CODES } from '@better-auth/core/error';
 import { isAPIError } from 'better-auth/api';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { NextFunction, Request, Response } from 'express';
