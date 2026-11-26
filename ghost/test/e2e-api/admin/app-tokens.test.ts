@@ -239,7 +239,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(403);
   });
 
-  it('leaves an app on a router authenticated in front to its method’s own check', async function () {
+  it('leaves an app on a router authenticated in front to the API pipeline’s check', async function () {
     const id = await installation(['post:browse']);
     const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
 
@@ -266,7 +266,9 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     }
   });
 
-  // Posts are checked by their model's own hook and tags by the policy core; the scopes cap both
+  // Both are refused before the route runs, as the API pipeline would refuse them: a post read by
+  // its model's own hook and tags by the policy core. The test of a router authenticated in front
+  // shows a refusal from the pipeline itself.
   it('says which scope an app lacked, with a code of its own', async function () {
     const id = await installation(['post:browse']);
     const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
