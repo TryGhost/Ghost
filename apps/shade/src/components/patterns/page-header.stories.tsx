@@ -144,7 +144,6 @@ function MembersHeader({
     <Stack className="p-6" gap="md">
       <PageHeader blurredBackground={false} sticky={false}>
         <PageHeader.Left>
-          <PageHeader.Breadcrumb>Audience</PageHeader.Breadcrumb>
           <PageHeader.Title>
             Members<PageHeader.Count>{formatNumber(12345)}</PageHeader.Count>
             <PageHeader.Description>Readers and subscribers</PageHeader.Description>
@@ -296,14 +295,27 @@ export const DetailPage: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Detail headers use the same controls with a breadcrumb and a single save action.',
+        story:
+          'Detail headers use the same controls with a breadcrumb and a single save action. The breadcrumb names the section and what the page does, level with the actions; the title below names the item.',
       },
     },
   },
   render: () => (
     <PageHeader>
       <PageHeader.Left>
-        <PageHeader.Breadcrumb>Members</PageHeader.Breadcrumb>
+        <PageHeader.Breadcrumb>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="#">Members</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Edit member</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </PageHeader.Breadcrumb>
         <PageHeader.Title>Jamie Larson</PageHeader.Title>
       </PageHeader.Left>
       <PageHeader.Actions>

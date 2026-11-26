@@ -269,25 +269,27 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
           >
             <div className={cn('flex w-full flex-col', largeTitles ? 'gap-1' : 'gap-6')}>
               <div className="flex w-full flex-col flex-wrap justify-between md:flex-row md:items-center">
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <button
-                          className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
-                          type="button"
-                          onClick={() => navigate('/analytics/')}
-                        >
-                          Analytics
-                        </button>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>Post analytics</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
+                <PageHeader.Breadcrumb>
+                  <Breadcrumb>
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <button
+                            className="cursor-pointer rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+                            type="button"
+                            onClick={() => navigate('/analytics/')}
+                          >
+                            Analytics
+                          </button>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>Post analytics</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                </PageHeader.Breadcrumb>
                 <div className="flex w-full items-center gap-2 md:w-auto">
                   {webAnalyticsEnabled && !post?.email_only && (
                     <div className="mr-3 flex grow items-center gap-2 md:grow-0">

@@ -391,34 +391,34 @@ const TagDetail: React.FC = () => {
           >
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link data-test-link="tags-back" to="/tags">
-                          Tags
-                        </Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    {largeTitles ? (
+                <PageHeader.Breadcrumb>
+                  <Breadcrumb>
+                    <BreadcrumbList>
                       <BreadcrumbItem>
-                        <BreadcrumbPage>{isCreating ? 'New tag' : 'Edit tag'}</BreadcrumbPage>
+                        <BreadcrumbLink asChild>
+                          <Link data-test-link="tags-back" to="/tags">
+                            Tags
+                          </Link>
+                        </BreadcrumbLink>
                       </BreadcrumbItem>
-                    ) : (
-                      <BreadcrumbItem className="items-baseline gap-2">
-                        {!isCreating && isLoading ? (
-                          <Skeleton className="h-4 w-40" />
-                        ) : (
-                          <BreadcrumbPage className="truncate" data-testid="tag-detail-title">
-                            {title}
-                          </BreadcrumbPage>
-                        )}
-                        {internalBadge}
-                      </BreadcrumbItem>
-                    )}
-                  </BreadcrumbList>
-                </Breadcrumb>
+                      <BreadcrumbSeparator />
+                      {largeTitles ? (
+                        <BreadcrumbItem>
+                          <BreadcrumbPage>{isCreating ? 'New tag' : 'Edit tag'}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                      ) : (
+                        <BreadcrumbItem className="items-baseline gap-2">
+                          {!isCreating && isLoading ? (
+                            <Skeleton className="h-4 w-40" />
+                          ) : (
+                            <BreadcrumbPage data-testid="tag-detail-title">{title}</BreadcrumbPage>
+                          )}
+                          {internalBadge}
+                        </BreadcrumbItem>
+                      )}
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                </PageHeader.Breadcrumb>
               </PageHeader.Left>
               {showEditor && draft && (
                 <PageHeader.Actions>

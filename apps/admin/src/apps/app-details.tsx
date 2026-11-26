@@ -368,25 +368,25 @@ export const AppDetails: React.FC = () => {
           >
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link to="/apps">Apps</Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      {isLoading ? (
-                        <Skeleton className="h-4 w-40" />
-                      ) : (
-                        <BreadcrumbPage className="truncate">
-                          {installation?.manifest.name}
-                        </BreadcrumbPage>
-                      )}
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
+                <PageHeader.Breadcrumb>
+                  <Breadcrumb>
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link to="/apps">Apps</Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        {isLoading ? (
+                          <Skeleton className="h-4 w-40" />
+                        ) : (
+                          <BreadcrumbPage>{installation?.manifest.name}</BreadcrumbPage>
+                        )}
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </Breadcrumb>
+                </PageHeader.Breadcrumb>
               </PageHeader.Left>
               {installation && installation.status !== 'uninstalled' && (
                 <Actions installation={installation} onUninstall={() => setUninstalling(true)} />
