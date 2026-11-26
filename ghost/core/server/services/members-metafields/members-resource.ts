@@ -1,23 +1,13 @@
 import { z } from 'zod';
-import type { Knex } from 'knex';
 import type { MetafieldChangeEntry } from '@tryghost/metafield-types';
+import type { NewRow, SchemaTable } from '../../lib/db-types/tables';
 import type { Caller } from './callers';
 import type { EditedDefinition } from './metafields/definitions-service';
 import { metafieldsRelation } from './metafields/filter';
 import type { Definition } from './metafields/models';
 import type { Namespaces } from './metafields/namespaces';
 import type { MetafieldResource, ResourceKind } from './metafields/resource';
-import {
-  FIELD_STATUS,
-  DbMetafieldBinding,
-  type MetafieldBindingRow,
-  DbMetafieldChangeEvent,
-  DbMetafieldValue,
-  type FieldsTable,
-  type MetafieldChangeEventInsert,
-  type MetafieldChangeEventRow,
-  type MetafieldValueRow,
-} from './metafields/schema';
+import { FIELD_STATUS, DbMetafieldChangeEvent, type FieldsTable } from './metafields/schema';
 
 /**
  * What members bring to metafields: the APIs a request for a member's fields can come through,
@@ -73,9 +63,6 @@ function readByMembers(namespaces: Pick<Namespaces<Members>, 'canRead'>, definit
   );
 }
 
-/** The column a member's values and change events hold the member's id in. */
-type OwnedByMember = { member_id: string };
-
 const { id, ...entryColumns } = DbMetafieldChangeEvent.shape;
 
 /**
@@ -108,21 +95,22 @@ export const DbMetafieldChangeEventWithMember = z
 declare module 'knex/types/tables' {
   interface Tables {
     members_metafields: FieldsTable;
-    members_metafield_values: Knex.CompositeTableType<
-      MetafieldValueRow & OwnedByMember,
-      Omit<z.input<typeof DbMetafieldValue>, 'updated_at'> & OwnedByMember,
-      Partial<MetafieldValueRow & OwnedByMember>
+    members_metafield_values: SchemaTable<'members_metafield_values'>;
+    members_metafield_change_events: SchemaTable<
+      'members_metafield_change_events',
+      // An entry is written with its date already in the string form SQLite orders against the
+      // feed's time filters, which a `Date` would silently break.
+      {
+        insert: Omit<NewRow<'members_metafield_change_events'>, 'created_at'> & {
+          created_at: string;
+        };
+      }
     >;
-    members_metafield_change_events: Knex.CompositeTableType<
-      MetafieldChangeEventRow & OwnedByMember,
-      MetafieldChangeEventInsert & OwnedByMember
-    >;
-    members_metafield_bindings: Knex.CompositeTableType<
-      MetafieldBindingRow,
+    members_metafield_bindings: SchemaTable<
+      'members_metafield_bindings',
       // `updated_at` is set on insert as well as update: a binding is a setting, and
       // "when was this last stated" is the same question whichever way it got there.
-      z.input<typeof DbMetafieldBinding>,
-      Partial<MetafieldBindingRow>
+      { insert: Required<NewRow<'members_metafield_bindings'>> }
     >;
   }
 }

@@ -12,8 +12,9 @@ import {
   type RequirementName,
   type RequirementSettings,
 } from '@tryghost/checkout';
-import { toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
+import { toDatabaseDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
+import type { SchemaTable } from '../../lib/db-types/tables';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 
 const REQUIREMENTS_TABLE = 'tier_requirements';
@@ -323,25 +324,9 @@ function listedAs(
 
 declare module 'knex/types/tables' {
   interface Tables {
-    // Read as stored, where a later version may have kept a scope this one doesn't know, and
-    // written as this one stores it.
-    tier_requirements: Knex.CompositeTableType<
-      {
-        requirement: string;
-        tier_scope: string;
-        countries: string | null;
-        created_at: DatabaseDate;
-        updated_at: DatabaseDate | null;
-      },
-      {
-        requirement: string;
-        tier_scope: TierScope;
-        countries: string | null;
-        created_at: string;
-        updated_at: string | null;
-      },
-      { tier_scope?: TierScope; countries?: string | null; updated_at?: string }
-    >;
-    tier_requirement_tiers: Knex.CompositeTableType<{ requirement: string; product_id: string }>;
+    // A scope is read as any string, where a later version may have kept one this version
+    // doesn't know, and written as one of the scopes the schema lists.
+    tier_requirements: SchemaTable<'tier_requirements'>;
+    tier_requirement_tiers: SchemaTable<'tier_requirement_tiers'>;
   }
 }
