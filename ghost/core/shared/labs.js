@@ -70,6 +70,7 @@ const PRIVATE_FEATURES = [
   'commentsAnalytics',
   'oauthBridge',
   'segmentEmails',
+  'settingsGroupedNav',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

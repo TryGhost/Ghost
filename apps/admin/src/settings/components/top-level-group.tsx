@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useState } from 'react';
 import { Button } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
 import {
   SettingGroup,
   SettingGroupActions,
@@ -12,6 +13,7 @@ import {
 import { createComponentId } from '@/settings/utils/search';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useScrollSection, useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
+import { useSettingsGroupedNav } from '@/settings/hooks/use-settings-groups';
 import { useOpenSectionRequest, useSearch } from '@/settings/providers/settings-app-context';
 import { type SaveState } from '@tryghost/admin-x-framework/hooks';
 
@@ -62,6 +64,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
 }) => {
   const { checkVisible, noResult, registerComponent, unregisterComponent } = useSearch();
   const { route } = useSettingsNavigation();
+  const grouped = useSettingsGroupedNav();
   const [highlight, setHighlight] = useState(false);
   const { ref } = useScrollSection(navid);
   const uniqueId = useId();
@@ -167,7 +170,11 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
 
   return (
     <SettingGroup
-      className={isVisible ? undefined : 'hidden'}
+      className={cn(
+        // The grouped navigation's cards are grey like its sidebar, and stay flat
+        grouped && 'border-border bg-sidebar shadow-none hover:shadow-none',
+        !isVisible && 'hidden',
+      )}
       data-testid={testId}
       editing={isEditing}
       highlighted={(highlight && highlightOnModalClose) || isEditing}
