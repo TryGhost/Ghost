@@ -1,7 +1,9 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import type { Principal } from '../../../auth/principal';
+import type { RequestContext } from '../../../lib/actor';
 import { unreachable } from '../../../lib/unreachable';
+import type { SingleWriteOrigin } from './schema';
 
 /**
  * Who is asking for a resource's metafields, in metafields' terms. A namespace's access policy
@@ -9,11 +11,13 @@ import { unreachable } from '../../../lib/unreachable';
  *
  * Ghost works out who made a request separately for authorization, as a principal, and for the
  * records it keeps, as an actor. This file is the facade between those and metafields: it is the
- * only one that reads a principal or a request's context, so when they come together, only this
- * changes.
+ * only one that reads a principal or a request's context, and the actor a change is recorded
+ * under and who a write of values is stored as are worked out from the caller it reads, so when
+ * those come together, only this changes.
  */
 export type Caller =
-  | { kind: 'staff'; userId: string }
+  /** A staff user, signed in to Admin or calling the Admin API with their staff token. */
+  | { kind: 'staff'; userId: string; via: 'session' | 'staff_token' }
   | { kind: 'integration'; integrationId: string | null }
   | { kind: 'app'; installationId: string; actingFor: string | null }
   | { kind: 'member'; memberId: string }
@@ -41,7 +45,7 @@ const Id = z.object({ id: z.string() });
 
 /** The parts of auth's principal metafields reads, one entry for each of auth's kinds. */
 const PrincipalSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('user'), user: Id }),
+  z.object({ kind: z.literal('user'), user: Id, apiKey: z.unknown().optional() }),
   z.object({ kind: z.literal('integration'), integration: Id.nullable() }),
   z.object({ kind: z.literal('app'), app: Id, actingFor: Id.nullable() }),
   z.object({ kind: z.literal('internal') }),
@@ -58,7 +62,11 @@ void readsEveryPrincipal;
 export function callerOfPrincipal(principal: PrincipalRead): Caller {
   switch (principal.kind) {
     case 'user':
-      return { kind: 'staff', userId: principal.user.id };
+      return {
+        kind: 'staff',
+        userId: principal.user.id,
+        via: principal.apiKey ? 'staff_token' : 'session',
+      };
     case 'integration':
       return { kind: 'integration', integrationId: principal.integration?.id ?? null };
     case 'app':
@@ -116,9 +124,69 @@ export function callerOf(context: unknown): Caller {
     return { kind: 'integration', integrationId: read.integration?.id ?? null };
   }
   if (read.user !== null && read.user !== undefined) {
-    return { kind: 'staff', userId: String(read.user) };
+    return {
+      kind: 'staff',
+      userId: String(read.user),
+      via: read.api_key ? 'staff_token' : 'session',
+    };
   }
   throw new errors.NoPermissionError({
     message: 'Members metafields were asked for by a request that names nobody.',
   });
+}
+
+/**
+ * The context a change is recorded in the action log under, as `actingContext` reads it from a
+ * request: the staff user or integration who made it, and the app it came through. Ghost isn't an
+ * installation, so a change Ghost makes names nobody, as Ghost's internal context does.
+ */
+export function actingContextOf(caller: Caller): RequestContext {
+  switch (caller.kind) {
+    case 'staff':
+      return { actor: { type: 'user', id: caller.userId } };
+    case 'integration':
+      return {
+        actor: caller.integrationId ? { type: 'integration', id: caller.integrationId } : null,
+      };
+    case 'app':
+      if (caller.installationId === GHOST_APP_ID) {
+        return { actor: null };
+      }
+      return {
+        actor: caller.actingFor ? { type: 'user', id: caller.actingFor } : null,
+        appInstallationId: caller.installationId,
+      };
+    case 'member':
+    case 'anonymous':
+      return { actor: null };
+    default:
+      return unreachable(caller, 'caller');
+  }
+}
+
+/**
+ * Who a write of values made through an API is stored as, and where it was made: staff in Admin
+ * or through the Admin API, an integration through the Admin API, a member through the Members
+ * API, which Portal calls. Null for a caller no stored writer names, which can't write values
+ * through an API.
+ */
+export function writeOriginOf(caller: Caller): SingleWriteOrigin | null {
+  switch (caller.kind) {
+    case 'staff':
+      return {
+        writtenBy: { type: 'user', id: caller.userId },
+        source: caller.via === 'staff_token' ? 'admin_api' : 'admin',
+      };
+    case 'integration':
+      return caller.integrationId
+        ? { writtenBy: { type: 'integration', id: caller.integrationId }, source: 'admin_api' }
+        : null;
+    case 'member':
+      return { writtenBy: { type: 'member', id: caller.memberId }, source: 'portal' };
+    case 'app':
+    case 'anonymous':
+      return null;
+    default:
+      return unreachable(caller, 'caller');
+  }
 }

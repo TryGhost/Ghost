@@ -1,3 +1,4 @@
+import type { Caller } from '../../../core/server/services/members-metafields';
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import { portsOf } from '@tryghost/checkout';
@@ -60,6 +61,11 @@ describe('Commands and transactions', function () {
   let knex: Knex;
   let postId: string;
   let context: { actor: { id: string; type: 'user'; viaApiKey: boolean } };
+
+  /** The staff user `context` names, as the definitions commands are called. */
+  function asStaff(): Caller {
+    return { kind: 'staff', userId: context.actor.id, via: 'session' };
+  }
 
   const HISTORY = ['gift_link', 'member_custom_field', 'segment', 'stripe_checkout_config'];
   const PHONE_PORT = portsOf('phone')[0];
@@ -169,8 +175,7 @@ describe('Commands and transactions', function () {
         metafields
           .booted()
           .definitions.add(
-            { kind: 'staff' },
-            context,
+            asStaff(),
             CUSTOM_NAMESPACE,
             [{ name: 'Company', type: 'short_text' }],
             executor,
@@ -185,14 +190,7 @@ describe('Commands and transactions', function () {
         return (executor) =>
           metafields
             .booted()
-            .definitions.edit(
-              { kind: 'staff' },
-              context,
-              CUSTOM_NAMESPACE,
-              key,
-              { name: 'Employer' },
-              executor,
-            );
+            .definitions.edit(asStaff(), CUSTOM_NAMESPACE, key, { name: 'Employer' }, executor);
       },
     },
     {
@@ -206,8 +204,7 @@ describe('Commands and transactions', function () {
           metafields
             .booted()
             .definitions.reorder(
-              { kind: 'staff' },
-              context,
+              asStaff(),
               CUSTOM_NAMESPACE,
               [{ key: second }, { key: first }],
               executor,
@@ -225,9 +222,7 @@ describe('Commands and transactions', function () {
           .body({ members_metafields: [{ status: 'archived' }] })
           .expectStatus(200);
         return (executor) =>
-          metafields
-            .booted()
-            .definitions.destroy({ kind: 'staff' }, context, CUSTOM_NAMESPACE, key, executor);
+          metafields.booted().definitions.destroy(asStaff(), CUSTOM_NAMESPACE, key, executor);
       },
     },
     {
@@ -444,8 +439,7 @@ describe('Commands and transactions', function () {
           metafields
             .booted()
             .definitions.add(
-              { kind: 'staff' },
-              context,
+              asStaff(),
               CUSTOM_NAMESPACE,
               [{ name: 'Company', type: 'short_text' }],
               trx,
@@ -463,14 +457,7 @@ describe('Commands and transactions', function () {
         const { definitions } = metafields.booted();
         return {
           change: (trx) =>
-            definitions.edit(
-              { kind: 'staff' },
-              context,
-              CUSTOM_NAMESPACE,
-              key,
-              { name: 'Employer' },
-              trx,
-            ),
+            definitions.edit(asStaff(), CUSTOM_NAMESPACE, key, { name: 'Employer' }, trx),
           read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, { kind: 'staff' }, executor),
         };
       },
@@ -515,8 +502,7 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             definitions.add(
-              { kind: 'staff' },
-              context,
+              asStaff(),
               CUSTOM_NAMESPACE,
               [{ name: 'Nickname', type: 'short_text' }],
               trx,
@@ -543,8 +529,7 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             definitions.add(
-              { kind: 'staff' },
-              context,
+              asStaff(),
               CUSTOM_NAMESPACE,
               [{ name: 'Nickname', type: 'short_text' }],
               trx,

@@ -1,5 +1,4 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { actingContext } from '../../lib/actor';
 import { booted, callerOf, changedForMembers } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
@@ -90,7 +89,6 @@ const controller = {
     query(frame: WriteFrame) {
       return booted().definitions.add(
         callerOf(frame.options.context),
-        actingContext(frame.options.context),
         namespaceRoute(frame.options).namespace,
         frame.data.members_metafields,
       );
@@ -105,7 +103,6 @@ const controller = {
     query(frame: WriteFrame) {
       return booted().definitions.reorder(
         callerOf(frame.options.context),
-        actingContext(frame.options.context),
         namespaceRoute(frame.options).namespace,
         frame.data.members_metafields,
       );
@@ -121,7 +118,6 @@ const controller = {
       const field = fieldRoute(frame.options);
       const edited = await booted().definitions.edit(
         callerOf(frame.options.context),
-        actingContext(frame.options.context),
         field.namespace,
         field.key,
         frame.data.members_metafields[0],
@@ -154,7 +150,6 @@ const controller = {
       }
       await booted().definitions.destroy(
         callerOf(frame.options.context),
-        actingContext(frame.options.context),
         field.namespace,
         field.key,
       );
