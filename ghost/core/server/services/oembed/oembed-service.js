@@ -3,7 +3,6 @@
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const pick = require('lodash/pick');
 const pickBy = require('lodash/pickBy');
 const iconv = require('iconv-lite');
 const path = require('path');
@@ -519,21 +518,6 @@ class OEmbedService {
   }
 
   /**
-   * @param {string} url
-   *
-   * @returns {Promise<{url: string, body: Object}>}
-   */
-  async fetchPageJson(url) {
-    const res = await this.fetchPage(url, { responseType: 'json' });
-    const body = res.body;
-    const pageUrl = res.url;
-    return {
-      body,
-      url: pageUrl,
-    };
-  }
-
-  /**
    * Requests a URL through this.externalRequest and resolves with the response
    * and at most the first chunk of its body, aborting the rest of the download.
    *
@@ -734,94 +718,6 @@ class OEmbedService {
   }
 
   /**
-   * @param {string} url
-   * @param {string} html
-   * @param {string} [cardType]
-   *
-   * @returns {Promise<Object>}
-   */
-  async fetchOembedData(url, html, cardType) {
-    // Lazy require the library to keep boot quick
-    const cheerio = require('cheerio/slim');
-
-    // check for <link rel="alternate" type="application/json+oembed"> element
-    let oembedUrl;
-    try {
-      oembedUrl = cheerio.load(html)('link[type="application/json+oembed"]').attr('href');
-    } catch (e) {
-      return this.unknownProvider(url);
-    }
-
-    if (oembedUrl) {
-      // for standard WP oembed's we want to insert a bookmark card rather than their blockquote+script
-      // which breaks in the editor and most Ghost themes. Only fallback if card type was not explicitly chosen
-      if (!cardType && oembedUrl.match(/wp-json\/oembed/)) {
-        return;
-      }
-
-      // fetch oembed response from embedded rel="alternate" url
-      const oembedResponse = await this.fetchPageJson(oembedUrl);
-      // validate the fetched json against the oembed spec to avoid
-      // leaking non-oembed responses
-      const body = oembedResponse.body;
-      const hasRequiredFields = body.type && body.version;
-      const hasValidType = ['photo', 'video', 'link', 'rich'].includes(body.type);
-
-      if (hasRequiredFields && hasValidType) {
-        // extract known oembed fields from the response to limit leaking of unrecognised data
-        const knownFields = [
-          'type',
-          'version',
-          'html',
-          'url',
-          'title',
-          'width',
-          'height',
-          'author_name',
-          'author_url',
-          'provider_name',
-          'provider_url',
-          'thumbnail_url',
-          'thumbnail_width',
-          'thumbnail_height',
-        ];
-        const oembed = pick(body, knownFields);
-
-        // Fallback to bookmark if it's a link type
-        if (oembed.type === 'link') {
-          return;
-        }
-
-        // ensure we have required data for certain types
-        if (oembed.type === 'photo' && !oembed.url) {
-          return;
-        }
-        if (
-          (oembed.type === 'video' || oembed.type === 'rich') &&
-          (!oembed.html || !oembed.width)
-        ) {
-          return;
-        }
-
-        // `rich`, `video` and `photo` responses can all ship provider-supplied
-        // HTML that gets stored in the post's Lexical payload and rendered
-        // into the admin editor preview (via srcdoc) and into public themes
-        // and emails (via innerHTML). Known providers (YouTube, Twitter, etc.)
-        // go through `knownProvider` with @extractus/oembed-extractor's
-        // allowlist — anything reaching here is an arbitrary site's
-        // self-declared oEmbed endpoint, which we must not trust. Drop the
-        // response and let the caller fall back to a bookmark card.
-        if (oembed.type === 'video' || oembed.type === 'rich' || oembed.type === 'photo') {
-          return;
-        }
-
-        // return the extracted object, don't pass through the response body
-        return oembed;
-      }
-    }
-  }
-
-  /**
    * @param {string} url - oembed URL
    * @param {string} type - card type
    * @param {Object} [options] Specific fetch options
@@ -965,8 +861,6 @@ class OEmbedService {
         return { ...bookmark, body, contentType };
       }
 
-      // attempt to fetch oembed
-
       // In case response was a redirect, see if we were
       // redirected to a known oembed
       if (pageUrl !== url) {
@@ -976,19 +870,14 @@ class OEmbedService {
         }
       }
 
-      let data = await this.fetchOembedData(url, body);
-
-      // fallback to bookmark when we can't get oembed
-      if (!data && !type) {
-        data = await this.fetchBookmarkData(url, body, 'bookmark');
+      // Only allowlisted providers produce embeds. A page's self-declared
+      // <link type="application/json+oembed"> endpoint is untrusted, so it
+      // is never requested and the page falls back to a bookmark instead
+      if (!type) {
+        return this.fetchBookmarkData(url, body, 'bookmark');
       }
 
-      // couldn't get anything, throw a validation error
-      if (!data) {
-        return this.unknownProvider(url);
-      }
-
-      return data;
+      return this.unknownProvider(url);
     } catch (err) {
       if (shouldRethrowFetchError?.(err)) {
         throw err;

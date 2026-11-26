@@ -167,61 +167,89 @@ describe('oembed-service', function () {
     });
   });
 
-  describe('fetchOembedData', function () {
-    const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`;
+  describe('self-declared oEmbed endpoints', function () {
+    // Known providers (YouTube, Twitter, …) go through `knownProvider` with an
+    // allowlist. Any other page's <link type="application/json+oembed"> is an
+    // arbitrary site's self-declared endpoint, whose response could carry
+    // attacker-controlled html into post content (ONC-1648). It is never
+    // requested, whatever it would answer.
+    const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"><title>Example</title></head></html>`;
 
-    it('drops rich-type responses from non-allowlisted providers (ONC-1648)', async function () {
-      // Self-declared oEmbed endpoints for arbitrary sites cannot be trusted
-      // to return safe HTML — known providers (Twitter, YouTube, …) go through
-      // `knownProvider` which uses an allowlist. Rich/video responses reaching
-      // this fallback path must not propagate their html into post content.
-      nock('https://www.example.com').get('/oembed').reply(200, {
+    const mockPage = () => {
+      nock('https://www.example.com').get('/').reply(200, pageHtml);
+    };
+
+    const responses = [
+      {
         type: 'rich',
-        version: '1.0',
-        title: 'Test Title',
         html: '<img src=x onerror="alert(1)">',
         width: 640,
         height: 480,
-      });
-
-      const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
-
-      // Returning undefined signals the caller to fall back to a bookmark
-      // card instead of storing the attacker-controlled html.
-      assert.equal(response, undefined);
-    });
-
-    it('drops video-type responses from non-allowlisted providers (ONC-1648)', async function () {
-      nock('https://www.example.com').get('/oembed').reply(200, {
+      },
+      {
         type: 'video',
-        version: '1.0',
-        title: 'Test Title',
         html: '<iframe src="javascript:alert(1)"></iframe>',
         width: 640,
         height: 480,
-      });
-
-      const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
-
-      assert.equal(response, undefined);
-    });
-
-    it('drops photo-type responses from non-allowlisted providers', async function () {
-      // `photo` responses may also carry an `html` field, which would be
-      // rendered via innerHTML just like rich/video.
-      nock('https://www.example.com').get('/oembed').reply(200, {
+      },
+      {
+        // `photo` responses may also carry an `html` field, which would be
+        // rendered via innerHTML just like rich/video
         type: 'photo',
-        version: '1.0',
-        title: 'Test Title',
         url: 'https://www.example.com/photo.jpg',
         html: '<img src=x onerror="alert(1)">',
         width: 640,
         height: 480,
+      },
+      {
+        type: 'link',
+        url: 'https://www.example.com',
+      },
+    ];
+
+    for (const body of responses) {
+      it(`returns a bookmark without requesting an endpoint that answers with ${body.type}`, async function () {
+        mockPage();
+        const endpoint = nock('https://www.example.com')
+          .get('/oembed')
+          .reply(200, { version: '1.0', title: 'Test Title', ...body });
+
+        const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+
+        assert.equal(response.type, 'bookmark');
+        assert.equal(response.url, 'https://www.example.com');
+        assert.equal(response.metadata.title, 'Example');
+        assert.equal('html' in response, false);
+        assert.equal(endpoint.isDone(), false);
       });
+    }
 
-      const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
+    it('returns a bookmark when the advertised endpoint fails', async function () {
+      mockPage();
+      const endpoint = nock('https://www.example.com').get('/oembed').reply(404);
 
-      assert.equal(response, undefined);
+      const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+
+      assert.equal(response.type, 'bookmark');
+      assert.equal(response.metadata.title, 'Example');
+      assert.equal(endpoint.isDone(), false);
+      sinon.assert.notCalled(logging.error);
+    });
+
+    it('rejects an embed request as an unknown provider without requesting the endpoint', async function () {
+      mockPage();
+      const endpoint = nock('https://www.example.com')
+        .get('/oembed')
+        .reply(200, { version: '1.0', ...responses[0] });
+
+      await assert.rejects(
+        oembedService.fetchOembedDataFromUrl('https://www.example.com', 'embed'),
+        {
+          name: 'ValidationError',
+          message: 'No provider found for supplied URL.',
+        },
+      );
+      assert.equal(endpoint.isDone(), false);
     });
   });
 
@@ -309,32 +337,6 @@ describe('oembed-service', function () {
       );
 
       assert.equal(response.metadata.publisher, 'Evil Site');
-    });
-
-    it('should return a bookmark response when the oembed endpoint returns a link type', async function () {
-      nock('https://www.example.com')
-        .get('/')
-        .query(true)
-        .reply(
-          200,
-          `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"><title>Example</title></head></html>`,
-        );
-
-      nock('https://www.example.com').get('/oembed').query(true).reply(200, {
-        type: 'link',
-        version: '1.0',
-        title: 'Test Title',
-        author_name: 'Test Author',
-        author_url: 'https://example.com/user/testauthor',
-        url: 'https://www.example.com',
-      });
-
-      const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
-
-      assert.equal(response.version, '1.0');
-      assert.equal(response.type, 'bookmark');
-      assert.equal(response.url, 'https://www.example.com');
-      assert.equal(response.metadata.title, 'Example');
     });
 
     it('enriches other allowlisted provider bookmarks without discarding page metadata', async function () {
