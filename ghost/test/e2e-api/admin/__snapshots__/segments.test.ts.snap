@@ -246,6 +246,75 @@ Object {
 }
 `;
 
+exports[`Segments Admin API PUT /segments/ puts the segments in the order given, and returns them in it 1: [body] 1`] = `
+Object {
+  "segments": Array [
+    Object {
+      "filter": "status:comped",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Comped",
+      "slug": "comped",
+    },
+    Object {
+      "filter": "status:free",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Free",
+      "slug": "free",
+    },
+    Object {
+      "filter": "status:paid",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Paid",
+      "slug": "paid",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API PUT /segments/ puts the segments in the order given, and returns them in it 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API PUT /segments/ rejects an order that leaves a segment out, names one twice or names a deleted one, and changes nothing 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "SEGMENT_ORDER_OUT_OF_DATE",
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "The order must name every segment exactly once. Reload and try again.",
+      "property": "id",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API PUT /segments/ rejects an order that leaves a segment out, names one twice or names a deleted one, and changes nothing 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Segments Admin API PUT /segments/:id/ rejects a different filter, and changes nothing 1: [body] 1`] = `
 Object {
   "errors": Array [

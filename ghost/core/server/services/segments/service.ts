@@ -15,6 +15,7 @@ import {
   FilterUnparseableError,
   NameTakenError,
   NoFreeSlugError,
+  OrderOutOfDateError,
   type SegmentError,
   SlugChangedError,
   SlugTakenError,
@@ -115,9 +116,9 @@ type Clash = 'name' | 'slug';
  * a deleted segment's slug can be given to a segment added later.
  *
  * Every method reads or writes through the executor it's given. Given a transaction, a command
- * joins it; given a plain connection, it opens its own. Each command reports the change it made
- * through `onSegmentUpdated` as its last step inside the transaction, so a failure there fails
- * the command. A command that opened its own transaction rolls the change back. A command that
+ * joins it; given a plain connection, it opens its own. Each command but a reorder, which History
+ * doesn't record, reports the change it made through `onSegmentUpdated` as its last step inside
+ * the transaction, so a failure there fails the command. A command that opened its own transaction rolls the change back. A command that
  * joined a transaction leaves the rollback to the caller, who must not commit after a failure.
  * A change that is rejected has written nothing, so a caller's transaction can go on after it.
  *
@@ -254,6 +255,29 @@ export class SegmentsService {
         const segment = { ...previous, name: input.name };
         await this.onSegmentUpdated(trx, context, new SegmentRenamed(previous, segment));
         return segment;
+      }),
+    );
+  }
+
+  /**
+   * Puts the segments in the order of `ids`, and returns them in it. Fails with a ValidationError,
+   * and changes nothing, unless `ids` names every segment exactly once.
+   */
+  reorder(ids: readonly string[], executor: Knex = this.knex): Promise<Segment[]> {
+    return this.tracking.change('reorder', (attempt) =>
+      ensureTransaction(executor, async (trx) => {
+        // Nothing may read before the collection's reorder locks the segments: the first plain
+        // read fixes what the transaction sees, and could then list a segment deleted since.
+        try {
+          await this.rows.reorder(trx, {}, ids);
+        } catch (err) {
+          // The collection's reorder fails with a ValidationError only for an incomplete order.
+          if (err instanceof errors.ValidationError) {
+            reject(attempt, new OrderOutOfDateError());
+          }
+          throw err;
+        }
+        return this.browse({}, trx);
       }),
     );
   }

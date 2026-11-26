@@ -278,10 +278,12 @@ describe('Segments in a site export and import', function () {
   });
 
   it('brings segments back in their order, not the order they were added in', async function () {
-    await add('Free', 'status:free');
-    await add('VIP', 'label:vip');
-    // Nothing reorders segments yet, so the first one is moved to the end in the table.
-    await knex('segments').where({ name: 'Free' }).update({ sort_order: 5 });
+    const free = await add('Free', 'status:free');
+    const vip = await add('VIP', 'label:vip');
+    await agent
+      .put('segments/')
+      .body({ segments: [{ id: vip.id }, { id: free.id }] })
+      .expectStatus(200);
     const exported = await exportSavedViews();
     await removeSegments();
 

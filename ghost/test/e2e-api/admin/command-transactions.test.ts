@@ -320,6 +320,19 @@ describe('Commands and transactions', function () {
       },
     },
     {
+      name: 'segments: reorder',
+      tables: ['segments'],
+      recorded: false,
+      arrange: async () => {
+        const first = await addSegment();
+        const { id: second } = await segments.default.service.add(context, {
+          name: SegmentName.parse('Gold'),
+          filter: SegmentFilter.parse('label:gold'),
+        });
+        return (executor) => segments.default.service.reorder([second, first], executor);
+      },
+    },
+    {
       name: 'segments: destroy',
       tables: ['segments'],
       recorded: true,
