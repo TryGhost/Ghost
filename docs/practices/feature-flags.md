@@ -29,6 +29,19 @@ on after every Ghost(Pro) server has the type's code, and only creating a field
 of the type is gated. See
 [why a new field type starts behind a flag](../../contracts/metafield-types/docs/explanation/why-a-new-field-type-starts-behind-a-flag.md).
 
+Member segments are another exception. The private `memberSegments` flag gates
+members filters that name a segment, emailing a post to a segment and Admin's
+segment screens, and those screens take it to mean that the server has every
+segments API change they use. Some servers have the flag without all of that
+code, so this holds only because no customer's site can have the flag on,
+through the remote manifest, public beta or GA, until every Ghost(Pro) server
+has every server change the screens use. Until then, only sites with developer
+experiments turn it on, and they can meet a server that is behind Admin. Once
+it is on for customers, an Admin change that needs newer server code detects
+it, or merges only after every Ghost(Pro) server has it. Self-hosted sites get
+Admin and Ghost Core together in one release, so they never meet an older
+server.
+
 ## Flag stages
 
 Flags are camelCase keys registered in
