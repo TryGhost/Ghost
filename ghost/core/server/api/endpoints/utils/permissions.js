@@ -18,8 +18,10 @@ const messages = {
  * the pipeline has no name to list, so it runs through `pipeline()` first, which for methods
  * written as single functions adds only this check.
  *
- * - `site.read`: the site's public title, description, logo, icon and accent colour, which
- *   Admin's bridge lets every app read
+ * - `site.read`: the site's public config, which anyone may read without signing in: its
+ *   title, description, images and accent colour, but also its URL, locale, timezone, Ghost's
+ *   version, the site's UUID, whether anyone can sign up, and the browser Sentry DSN and
+ *   environment where those are set
  */
 const APP_UNCHECKED_ALLOWLIST = new Set(['site.read']);
 
