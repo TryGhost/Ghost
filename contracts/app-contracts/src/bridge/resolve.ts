@@ -16,7 +16,7 @@ const GHOST_API = /ghost\/api/i;
 const VERSION_SEGMENT = /^(?:v2|v3|v4|canary)$/i;
 
 // The site's public details, for showing its branding. Ghost serves them without signing in, so
-// they need no scope, and reads no query parameters on them.
+// they need no scope.
 const SITE = /^\/site\/?$/i;
 
 // Decodes every escape that's valid on its own, byte by byte, and leaves the rest. Only used
@@ -64,11 +64,12 @@ export type AdminApiRequestCheck =
  * Absolute and protocol-relative URLs, paths that don't start with `/`, backslashes, `..` in
  * any spelling the URL parser understands, and escaped separators are all `invalid_path`.
  *
- * A path that stays under the root is `blocked` when its path or query mentions `ghost/api`,
- * or its first segment is an old API version (`v4`); when its query isn't one every parser reads
- * alike (`readQuery`); when `APP_ROUTES` lists no route for it with this method, unless it reads
- * the site's public details; when the installation wasn't approved for the scope its route is
- * listed under; or when a server gap on the route refuses it.
+ * A path that stays under the root is `blocked` when the route it reaches can't be told: its
+ * path or query mentions `ghost/api`, its first segment is an old API version (`v4`), or it has
+ * an empty segment; when its query isn't one every parser reads alike (`readQuery`); when
+ * `APP_ROUTES` lists no route for it with this method, unless it reads the site's public
+ * details; when the installation wasn't approved for the scope its route is listed under; or
+ * when a server gap on the route refuses it.
  *
  * The query is never sent as the app spelled it. The bridge reads it strictly and writes its
  * own, one `name=value` for each parameter, so the parameters the gaps acted on are exactly the
@@ -124,14 +125,19 @@ export function checkAdminApiRequest(
   ) {
     return blocked(`Apps can't use ${method} ${pathname}: it names an old API address`);
   }
+  // Where a path with an empty segment leads depends on which parser reads it, so the gaps
+  // below couldn't be matched to the route it reaches.
+  if (/\/\//.test(pathname)) {
+    return blocked(`Apps can't use ${method} ${pathname}: its path has an empty segment`);
+  }
+
   const read = readQuery(url.search);
   if ('refused' in read) {
     return blocked(`${read.refused} (${method} ${pathname})`);
   }
 
   const scopes = scopesOpening(pathname, method);
-  const site = method === 'GET' && SITE.test(pathname);
-  if (scopes.length === 0 && !site) {
+  if (scopes.length === 0 && !(method === 'GET' && SITE.test(pathname))) {
     return blocked(`Apps can't use ${method} ${pathname}`);
   }
   const unapproved = scopes.find((scope) => !approvedScopes.has(scope));
@@ -140,7 +146,7 @@ export function checkAdminApiRequest(
   }
 
   let query = read.parameters;
-  const gaps: readonly ServerGapName[] = site ? ['noParameters'] : serverGapsFor(pathname, method);
+  const gaps = serverGapsFor(pathname, method);
   for (const name of gaps) {
     const gap: ServerGap = SERVER_GAPS[name];
     const outcome = gap.apply({ method, pathname, query, body, approvedScopes });

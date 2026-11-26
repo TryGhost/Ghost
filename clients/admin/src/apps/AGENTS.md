@@ -10,8 +10,7 @@ that check a permission and refuses it on the rest. To open a route to apps,
 give it a permission key in Core that a scope names, and add it under that
 scope in `APP_ROUTES` (`contracts/app-contracts/src/bridge/app-routes.ts`),
 the reviewed list of what each scope opens, which a test in Ghost holds to the
-server's routes, naming the few the server opens that the bridge doesn't send
-yet. The bridge sends only the routes listed
+server's routes in both directions. The bridge sends only the routes listed
 there, for an installation approved for the scope. A new scope goes in the
 scope registry (`contracts/app-contracts/src/scopes.ts`) with its review
 wording.

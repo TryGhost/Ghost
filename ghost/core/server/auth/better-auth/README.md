@@ -445,9 +445,9 @@ upload then never runs for an app request that can't succeed.
   for an app's scopes (`APP_ROUTES` in
   `contracts/app-contracts/src/bridge/app-routes.ts`), which
   `test/unit/server/web/api/admin/app-routes.test.ts` holds to the routes the
-  Admin API mounts under each scope's key, naming the few it doesn't send yet,
-  and refuses or rewrites what the server doesn't check yet within them (the
-  server gaps in `contracts/app-contracts/src/bridge/server-gaps.ts`).
+  Admin API mounts under each scope's key, in both directions, and refuses or
+  rewrites what the server doesn't check yet within them (the server gaps in
+  `contracts/app-contracts/src/bridge/server-gaps.ts`).
   `test/e2e-api/admin/app-server-gaps.test.ts` sends what each gap acts on
   twice, through the bridge's check and as written to the server, and fails
   when the bridge no longer acts on it by that gap or the server stops

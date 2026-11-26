@@ -138,10 +138,10 @@ _Avoid_: permission list, scope list
 The reviewed list of the Admin API routes each scope opens to an app
 (`APP_ROUTES`), each with the server gaps the bridge covers on it, or none. A
 test in Ghost holds it to the routes the server opens under each scope's key,
-naming the few the bridge doesn't send yet, so opening a route to apps is one
-edit here that also says what the bridge covers on it. The bridge sends only
-the routes it lists, and the site's public details, and only for an
-installation approved for the scope a route is listed under.
+in both directions, so opening a route to apps is one edit here that also says
+what the bridge covers on it. The bridge sends only the routes it lists, and
+the site's public details, and only for an installation approved for the scope
+a route is listed under.
 _Avoid_: allowlist, route table
 
 **Scopes field**:
@@ -260,14 +260,16 @@ _Avoid_: normalised query, raw query
 Something Ghost's server doesn't check yet in an app's request, which the
 bridge refuses or rewrites meanwhile. Each is one unit in `SERVER_GAPS`: the
 issue that moves it to the server, and its own check or rewrite of the
-request, so it goes whole when that lands. They are the query parameters each
-route takes, by exact name, which leave out those that email a post or take
-HTML as its content; code injection and mobiledoc in a post, page or tag
-write; and the scopes a post's includes and sorts need. A related object needs
-its own scope, and how a post performed needs `post:readStats`; when an app
-names no `include` and no `fields` on a post or page request, the bridge names
-the includes it may have, as Ghost's defaults include how a post performed.
-The app routes say which gaps apply on which route, and the bridge applies every
+request, so it goes whole when that lands. They are the parameters that email
+a post or take HTML as its content, those that re-render a post or convert it
+to Lexical, code injection and mobiledoc in a post, page or tag write, bulk edit of posts and pages, copying a post or page, and
+the scopes a post's includes and sorts need. A related object needs its own
+scope, and how a post performed needs `post:readStats`; when an app names no
+`include` on a post or page request, the bridge names the includes it may
+have, as Ghost's defaults include how a post performed. It does so whatever
+`fields` says, as Ghost honours `fields` only on a read, and only when it reads
+it as a list, so a write that sends it gets Ghost's defaults. The
+app routes say which gaps apply on which route, and the bridge applies every
 one of them to the sent query's parameters, so a gap and the server act on the
 same ones. The gaps are no list of what apps may call.
 _Avoid_: allowlist, blocklist, permissions
