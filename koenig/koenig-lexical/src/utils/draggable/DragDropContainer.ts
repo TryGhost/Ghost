@@ -27,7 +27,7 @@ export interface DragDropContainerOptions {
     draggableSelector: string;
     droppableSelector: string;
     isDragEnabled?: boolean;
-    createGhostElement?: (draggableInfo: DraggableInfo) => Node | undefined;
+    createGhostElement?: (draggableInfo: DraggableInfo) => HTMLElement | undefined;
     getDraggableInfo?: (draggableElement: HTMLElement) => DraggableInfoSeed | false;
     getIndicatorPosition?: (draggableInfo: DraggableInfo, droppableElem: Element, position: DroppablePosition) => IndicatorPosition | false;
     onDragStart?: (draggableInfo: DraggableInfo) => void;
@@ -48,7 +48,7 @@ export class DragDropContainer {
     isDragEnabled = true;
     draggableSelector: string;
     droppableSelector: string;
-    private _createGhostElement?: (draggableInfo: DraggableInfo) => Node | undefined;
+    private _createGhostElement?: (draggableInfo: DraggableInfo) => HTMLElement | undefined;
 
     constructor(element: HTMLElement, options: DragDropContainerOptions) {
         if (options.createGhostElement) {
@@ -103,8 +103,8 @@ export class DragDropContainer {
     // currently grabs the first <img> and uses that but should be configurable:
     // - a selector for which element in the draggable to copy
     // - a function to hand off element creation to the consumer
-    createGhostElement(draggableInfo: DraggableInfo): Node | undefined {
-        let ghostElement: Node | undefined;
+    createGhostElement(draggableInfo: DraggableInfo): HTMLElement | undefined {
+        let ghostElement: HTMLElement | undefined;
 
         if (typeof this._createGhostElement === 'function') {
             ghostElement = this._createGhostElement(draggableInfo);
