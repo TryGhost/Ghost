@@ -16,6 +16,7 @@ const RevueSubscriberImporter = require('./revue-subscriber-importer');
 const RolesImporter = require('./roles-importer');
 const { CustomFieldsImporter } = require('./custom-fields-importer');
 const { SegmentsImporter } = require('./segments-importer');
+const { StripeCheckoutConfigImporter } = require('./stripe-checkout-config-importer');
 const { slugify } = require('@tryghost/string/lib');
 
 const importers = {};
@@ -40,6 +41,7 @@ const DataImporter = {
     importers.products = new ProductsImporter(importData.data);
     importers.stripe_products = new StripeProductsImporter(importData.data);
     importers.stripe_prices = new StripePricesImporter(importData.data);
+    importers.stripe_checkout_config = new StripeCheckoutConfigImporter(importData.data);
     importers.posts = new PostsImporter(importData.data);
     importers.custom_theme_settings = new CustomThemeSettingsImporter(importData.data);
     importers.revue_subscribers = new RevueSubscriberImporter(importData.data);

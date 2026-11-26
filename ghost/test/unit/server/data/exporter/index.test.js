@@ -75,6 +75,10 @@ describe('Exporter', function () {
         'snippets',
         'segments',
         'members_metafields',
+        'members_metafield_bindings',
+        'stripe_checkout_config',
+        'tier_requirements',
+        'tier_requirement_tiers',
       ]);
       const actualTables = new Set(knexMock.getCalls().map((call) => call.args[0]));
       assert.deepEqual(actualTables, expectedTables);
@@ -121,6 +125,10 @@ describe('Exporter', function () {
         'snippets',
         'segments',
         'members_metafields',
+        'members_metafield_bindings',
+        'stripe_checkout_config',
+        'tier_requirements',
+        'tier_requirement_tiers',
         ...include,
       ]);
       const actualTables = new Set(knexMock.getCalls().map((call) => call.args[0]));
