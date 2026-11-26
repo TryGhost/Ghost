@@ -36,6 +36,10 @@ A segment's slug is minted from its name as a custom field's key is (`server/lib
 
 A slug a caller gives is held to the same rules: its format, and the filter parser reading it back. An import gives each segment the slug it had on the site it was exported from, when that is in a slug's format, and adds the segment again without one, for the service to mint, when the service rejects it. A segment the import added earlier can be minted the slug a later segment of the file had, and that later segment then gets a minted slug too. The migration that mints a slug for each segment stored before segments had slugs carries its own copy of the minting, so that a later change to the service's minting doesn't change what the migration does.
 
+## Times
+
+A segment has the time it was added, `created_at`, and the time it was last edited, `updated_at`. An add writes one time to both, so a segment has been edited when `updated_at` is later than `created_at`. Both are stored to the second in UTC, and a command returns them as a read of the segment would. A rename to the name a segment already has writes nothing, so its times stay as they were. A segment the migration moved from the saved views setting has the time the migration ran, as the setting held no time for a view, and a 6.80 migration gave each segment that had never been renamed its `created_at` as its `updated_at`. An import adds each segment through the same command as any other, so an imported segment is created at the time of the import and hasn't been edited, whatever times the file holds.
+
 ## Names
 
 A name is taken when another segment has it by either of two rules. The first ignores case and surrounding whitespace, and is the same on every database. The second is the table's unique index, which compares by the database's collation: MySQL's default collation also ignores accents, so "Café" is rejected when "Cafe" exists.

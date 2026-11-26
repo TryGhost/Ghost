@@ -58,6 +58,7 @@ const insert = (name: string, position: number, slug?: string) =>
     filter: 'status:free',
     sort_order: position,
     created_at: '2026-11-24 10:00:00',
+    updated_at: '2026-11-24 10:00:00',
   });
 
 /** Whether the segments table has the unique index over its slugs. */
@@ -154,6 +155,7 @@ describe('Migrations: segment slugs', function () {
       filter: 'status:free',
       sort_order: index,
       created_at: '2026-11-24 10:00:00',
+      updated_at: '2026-11-24 10:00:00',
     }));
     await db.knex.batchInsert('segments', taken, 500);
     const id = ObjectID().toHexString();
@@ -163,6 +165,7 @@ describe('Migrations: segment slugs', function () {
       filter: 'status:free',
       sort_order: 1000,
       created_at: '2026-11-24 10:00:00',
+      updated_at: '2026-11-24 10:00:00',
     });
 
     await run(migrations[1], 'up');

@@ -2,11 +2,19 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'fs-extra';
+import { assertTimeSince } from '../../utils/assertions';
 
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const { knex } = require('../../../core/server/data/db');
 
-type Segment = { id: string; name: string; slug: string; filter: string };
+type Segment = {
+  id: string;
+  name: string;
+  slug: string;
+  filter: string;
+  created_at: string;
+  updated_at: string;
+};
 type Setting = { key: string; value: unknown };
 type ExportData = { segments?: unknown[]; settings: Setting[] };
 type Export = { db: [{ meta: { version: string }; data: ExportData }] };
@@ -148,6 +156,33 @@ describe('Segments in a site export and import', function () {
       problems.filter(({ help }) => help === 'Segment'),
       [],
     );
+  });
+
+  it('adds each segment as new, created when it is imported and not edited since', async function () {
+    const vip = await add('VIP', 'label:vip');
+    await rename(vip.id, 'Very important');
+    // Earlier than the import can be, so the times in the file can be told from the import's.
+    await knex('segments').update({
+      created_at: '2020-01-01 00:00:00',
+      updated_at: '2021-01-01 00:00:00',
+    });
+    const exported = await exportSavedViews();
+    expect(exported.segments).toMatchObject([
+      {
+        name: 'Very important',
+        created_at: '2020-01-01T00:00:00.000Z',
+        updated_at: '2021-01-01T00:00:00.000Z',
+      },
+    ]);
+    await removeSegments();
+    const importing = new Date();
+
+    await importData(exported);
+
+    const [imported] = await browse();
+    assert.equal(imported.name, 'Very important');
+    assertTimeSince(imported.created_at, importing);
+    assert.equal(imported.updated_at, imported.created_at);
   });
 
   // A version from before segments had a table imports them from the setting alone.
@@ -392,6 +427,7 @@ describe('Segments in a site export and import', function () {
       filter: 'status:paid+',
       sort_order: 0,
       created_at: new Date(),
+      updated_at: new Date(),
     });
     const exported = await exportSavedViews();
 

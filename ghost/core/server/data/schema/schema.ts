@@ -1416,7 +1416,8 @@ const schema = {
     // Segments are listed in the order they were added.
     ...sortableBy({ tieBreak: ['created_at'] }),
     created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
+    // The time the segment was added until it is first edited.
+    updated_at: { type: 'dateTime', nullable: false },
   },
   members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

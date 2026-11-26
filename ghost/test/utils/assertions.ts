@@ -12,6 +12,20 @@ export function assertExists<T>(
   assert(value !== undefined && value !== null, message);
 }
 
+/**
+ * Checks that `time` is a time as the API returns one stored to the second, in ISO 8601 in UTC,
+ * and that it is from `from` to now. A time stored to the second can be up to a second earlier
+ * than `from`, so `from` is compared without its milliseconds.
+ */
+export function assertTimeSince(time: string | null | undefined, from: Date): void {
+  assertExists(time, 'Expected a time');
+  assert.equal(new Date(time).toISOString(), time, `${time} is not an ISO 8601 time in UTC`);
+  assert.match(time, /\.000Z$/, `${time} is not to the second`);
+  const earliest = Math.floor(from.getTime() / 1000) * 1000;
+  assert.ok(new Date(time).getTime() >= earliest, `${time} is before ${from.toISOString()}`);
+  assert.ok(new Date(time).getTime() <= Date.now(), `${time} is in the future`);
+}
+
 export function assertMatchSnapshot(
   obj: Parameters<typeof snapshotManager.match>[0],
   properties?: Parameters<typeof snapshotManager.match>[1],

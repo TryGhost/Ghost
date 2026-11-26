@@ -339,6 +339,7 @@ describe('Members filtered by segment', function () {
         filter: `segment:${segments.vip}`,
         sort_order: 99,
         created_at: new Date(),
+        updated_at: new Date(),
       });
 
       try {

@@ -4,7 +4,7 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { RequestContext } from '../../lib/actor';
 import { uniqueViolationColumn } from '../../lib/db-errors';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { databaseNow, toDatabaseDate } from '../../lib/db-types/date';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 import { sortable } from '../../lib/sortable';
 import { SegmentAdded, SegmentDeleted, SegmentRenamed, type OnSegmentUpdated } from './changes';
@@ -162,11 +162,11 @@ export class SegmentsService {
   }
 
   /**
-   * Adds a segment after the others, and returns it. Its slug is the one `input` gives, or else
-   * the first slug minted from its name that no other segment has. Fails with a ValidationError
-   * when another segment has the name, when its filter isn't valid NQL or names a segment, or
-   * when `input` gives a slug that a filter can't name or that another segment has. Another
-   * segment can have the same filter.
+   * Adds a segment after the others, and returns it, created now and not yet edited. Its slug is
+   * the one `input` gives, or else the first slug minted from its name that no other segment has.
+   * Fails with a ValidationError when another segment has the name, when its filter isn't valid
+   * NQL or names a segment, or when `input` gives a slug that a filter can't name or that another
+   * segment has. Another segment can have the same filter.
    */
   add(context: RequestContext, input: NewSegment, executor: Knex = this.knex): Promise<Segment> {
     return this.tracking.change('add', (attempt) =>
@@ -187,7 +187,15 @@ export class SegmentsService {
           reject(attempt, new NameTakenError());
         }
 
-        const segment = { id: newId(), name: input.name, filter: input.filter };
+        // One time for both, so a new segment's `updated_at` is its `created_at`.
+        const now = databaseNow();
+        const segment = {
+          id: newId(),
+          name: input.name,
+          filter: input.filter,
+          created_at: now,
+          updated_at: now,
+        };
         const added =
           input.slug === undefined
             ? await this.insertMinted(trx, attempt, segment, stored)
@@ -199,13 +207,14 @@ export class SegmentsService {
   }
 
   /**
-   * Renames the segment with `id`, and returns it. Its slug stays as it is. Fails with a
-   * NotFoundError when there's no such segment, and with a ValidationError when another segment
+   * Renames the segment with `id`, and returns it, edited now. Its slug stays as it is. Fails with
+   * a NotFoundError when there's no such segment, and with a ValidationError when another segment
    * has the name, when `input` has a filter other than the segment's own that isn't valid NQL, or
    * when `input` has a filter or a slug other than the segment's own, because a segment's filter
    * and slug can't change. The segment's own filter is accepted back as it is stored, even when
    * it isn't valid NQL, as a stored filter can be. A rename to the name the segment already has
-   * changes nothing, so nothing is written or reported.
+   * changes nothing, so nothing is written or reported, and the segment keeps the time it was
+   * last edited.
    */
   edit(
     context: RequestContext,
@@ -239,10 +248,11 @@ export class SegmentsService {
         if (others.some(hasName(input.name))) {
           reject(attempt, new NameTakenError());
         }
+        const segment = { ...previous, name: input.name, updated_at: databaseNow() };
         try {
           await trx(TABLE)
             .where('id', previous.id)
-            .update({ name: input.name, updated_at: toDatabaseDate(new Date()) });
+            .update({ name: segment.name, updated_at: toDatabaseDate(segment.updated_at) });
         } catch (err) {
           // The database's collation counts the name as another segment's, or another request
           // took the name at the same time.
@@ -252,7 +262,6 @@ export class SegmentsService {
           throw err;
         }
 
-        const segment = { ...previous, name: input.name };
         await this.onSegmentUpdated(trx, context, new SegmentRenamed(previous, segment));
         return segment;
       }),
@@ -357,7 +366,15 @@ export class SegmentsService {
    */
   private async insert(trx: Knex.Transaction, segment: Segment): Promise<Clash | undefined> {
     try {
-      await this.rows.insert(trx, {}, { ...segment, created_at: toDatabaseDate(new Date()) });
+      await this.rows.insert(
+        trx,
+        {},
+        {
+          ...segment,
+          created_at: toDatabaseDate(segment.created_at),
+          updated_at: toDatabaseDate(segment.updated_at),
+        },
+      );
       return undefined;
     } catch (err) {
       const column = uniqueViolationColumn(err, TABLE);

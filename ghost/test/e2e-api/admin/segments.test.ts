@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { setTimeout as sleep } from 'node:timers/promises';
 import ObjectID from 'bson-objectid';
 import type { SpanDocument } from '../../../core/server/lib/tracing/create-tracer';
+import { assertTimeSince } from '../../utils/assertions';
 
 const {
   agentProvider,
@@ -13,11 +14,25 @@ const {
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
-const { anyContentLength, anyContentVersion, anyErrorId, anyEtag, anyLocationFor, anyObjectId } =
-  matchers;
+const {
+  anyContentLength,
+  anyContentVersion,
+  anyErrorId,
+  anyEtag,
+  anyISODateTime,
+  anyLocationFor,
+  anyObjectId,
+} = matchers;
 const { cacheInvalidateHeaderNotSet } = assertions;
 
-type Segment = { id: string; name: string; slug: string; filter: string };
+type Segment = {
+  id: string;
+  name: string;
+  slug: string;
+  filter: string;
+  created_at: string;
+  updated_at: string;
+};
 
 type ApiResponse = {
   headers: Record<string, string | undefined>;
@@ -76,8 +91,10 @@ const memberView = (name: string, filter: string) => ({
 const readHeaders = { 'content-version': anyContentVersion, etag: anyEtag };
 const writeHeaders = { ...readHeaders, 'content-length': anyContentLength };
 const errorBody = { errors: [{ id: anyErrorId }] };
-/** A response with one segment. Its id is new each time. */
-const oneSegment = { segments: [{ id: anyObjectId }] };
+/** A segment in a response. Its id and its times are new each time. */
+const anySegment = { id: anyObjectId, created_at: anyISODateTime, updated_at: anyISODateTime };
+/** A response with one segment. */
+const oneSegment = { segments: [anySegment] };
 
 describe('Segments Admin API', function () {
   let agent: AdminAgent;
@@ -110,10 +127,10 @@ describe('Segments Admin API', function () {
     return body.segments[0];
   }
 
-  async function rename(id: string, name: string) {
+  async function rename(id: string, name: string, extra: Record<string, unknown> = {}) {
     const { body } = await agent
       .put(`segments/${id}/`)
-      .body({ segments: [{ name }] })
+      .body({ segments: [{ ...extra, name }] })
       .expectStatus(200)
       .expect(cacheInvalidateHeaderNotSet());
     return body.segments[0];
@@ -196,12 +213,17 @@ describe('Segments Admin API', function () {
    * Stores a segment in the table as a version that didn't check a filter's syntax could have
    * saved it, and returns it.
    */
-  async function storeSegment(segment: Omit<Segment, 'id'>): Promise<Segment> {
-    const stored = { id: ObjectID().toHexString(), ...segment };
+  async function storeSegment(
+    segment: Pick<Segment, 'name' | 'slug' | 'filter'>,
+  ): Promise<Segment> {
+    // A time to the second, as the table holds times, so the segment compares as the API returns it
+    const time = '2026-11-24T10:00:00.000Z';
+    const stored = { id: ObjectID().toHexString(), ...segment, created_at: time, updated_at: time };
     await models.Base.knex('segments').insert({
       ...stored,
       sort_order: 0,
-      created_at: new Date(),
+      created_at: new Date(time),
+      updated_at: new Date(time),
     });
     return stored;
   }
@@ -283,6 +305,18 @@ describe('Segments Admin API', function () {
         .expect(cacheInvalidateHeaderNotSet())
         .matchHeaderSnapshot({ ...writeHeaders, location: anyLocationFor('segments') })
         .matchBodySnapshot(oneSegment);
+    });
+
+    it('returns when the segment was added, as the time it was last edited too', async function () {
+      const adding = new Date();
+
+      const segment = await add('VIP', 'label:vip');
+
+      assertTimeSince(segment.created_at, adding);
+      assert.equal(segment.updated_at, segment.created_at);
+      assert.deepEqual(await browse(), [segment]);
+      const { body } = await agent.get(`segments/${segment.id}/`).expectStatus(200);
+      assert.deepEqual(body.segments, [segment]);
     });
 
     it('adds each segment after the others', async function () {
@@ -409,6 +443,26 @@ describe('Segments Admin API', function () {
       assert.deepEqual(await browse(), [segment]);
     });
 
+    it('ignores the times a request gives, which the server sets', async function () {
+      const times = {
+        created_at: '2020-01-01T00:00:00.000Z',
+        updated_at: '2020-01-02T00:00:00.000Z',
+      };
+      const adding = new Date();
+
+      const segment = await add('VIP', 'label:vip', times);
+
+      assertTimeSince(segment.created_at, adding);
+      assert.equal(segment.updated_at, segment.created_at);
+
+      const renaming = new Date();
+      const renamed = await rename(segment.id, 'Gold', times);
+
+      assert.equal(renamed.created_at, segment.created_at);
+      assertTimeSince(renamed.updated_at, renaming);
+      assert.deepEqual(await browse(), [renamed]);
+    });
+
     it('adds a segment under the slug it is given', async function () {
       const segment = await add('VIP', 'label:vip', { slug: 'customers' });
 
@@ -492,6 +546,7 @@ describe('Segments Admin API', function () {
           filter: 'label:vip',
           sort_order: index,
           created_at: new Date(),
+          updated_at: new Date(),
         })),
         500,
       );
@@ -518,6 +573,7 @@ describe('Segments Admin API', function () {
           filter: 'status:paid',
           sort_order: 0,
           created_at: new Date(),
+          updated_at: new Date(),
         });
         adding = Promise.resolve(
           agent
@@ -581,6 +637,7 @@ describe('Segments Admin API', function () {
           filter: 'status:paid',
           sort_order: 0,
           created_at: new Date(),
+          updated_at: new Date(),
         });
         adding = Promise.resolve(
           agent
@@ -678,6 +735,35 @@ describe('Segments Admin API', function () {
         .matchBodySnapshot(oneSegment);
     });
 
+    it('returns when the segment was renamed, and keeps when it was added', async function () {
+      const segment = await add('VIP', 'label:vip');
+      const renaming = new Date();
+
+      const renamed = await rename(segment.id, 'Very important');
+
+      assert.equal(renamed.created_at, segment.created_at);
+      assertTimeSince(renamed.updated_at, renaming);
+      assert.deepEqual(await browse(), [renamed]);
+    });
+
+    it('keeps when the segment was last edited on a rename to the name it has', async function () {
+      const segment = await add('VIP', 'label:vip');
+
+      assert.deepEqual(await rename(segment.id, 'VIP'), segment);
+      assert.deepEqual(await browse(), [segment]);
+
+      const renamed = await rename(segment.id, 'Gold');
+      // Earlier than the rename that follows can be, so a write of the time would show.
+      await models.Base.knex('segments')
+        .where('id', segment.id)
+        .update({ updated_at: '2020-01-01 00:00:00' });
+
+      const unchanged = await rename(segment.id, 'Gold');
+
+      assert.deepEqual(unchanged, { ...renamed, updated_at: '2020-01-01T00:00:00.000Z' });
+      assert.deepEqual(await browse(), [unchanged]);
+    });
+
     it('keeps the segment in its place, and its id and its slug the same', async function () {
       await add('Free', 'status:free');
       const paid = await add('Paid', 'status:paid');
@@ -727,35 +813,45 @@ describe('Segments Admin API', function () {
     });
 
     it('rejects a different filter, and changes nothing', async function () {
-      const { id } = await add('VIP', 'label:vip');
+      const segment = await add('VIP', 'label:vip');
 
       await agent
-        .put(`segments/${id}/`)
+        .put(`segments/${segment.id}/`)
         .body({ segments: [{ name: 'Gold', filter: 'label:gold' }] })
         .expectStatus(422)
         .matchHeaderSnapshot(writeHeaders)
         .matchBodySnapshot(errorBody);
-      assert.deepEqual(await browse(), [{ id, name: 'VIP', slug: 'vip', filter: 'label:vip' }]);
+      assert.deepEqual(await browse(), [segment]);
     });
 
     it('rejects a different filter that is not valid NQL for its syntax', async function () {
-      const { id } = await add('VIP', 'label:vip');
+      const segment = await add('VIP', 'label:vip');
 
       for (const filter of UNPARSEABLE_FILTERS) {
-        assert.deepEqual(await renameError(id, { name: 'VIP', filter }), FILTER_UNPARSEABLE);
+        assert.deepEqual(
+          await renameError(segment.id, { name: 'VIP', filter }),
+          FILTER_UNPARSEABLE,
+        );
       }
-      assert.deepEqual(await browse(), [{ id, name: 'VIP', slug: 'vip', filter: 'label:vip' }]);
+      assert.deepEqual(await browse(), [segment]);
     });
 
     it('renames a stored segment whose filter is not valid NQL, given that filter back', async function () {
       const stored = await storeSegment({ name: 'Broken', slug: 'broken', filter: 'status:paid+' });
+      const renaming = new Date();
 
       const { body } = await agent
         .put(`segments/${stored.id}/`)
         .body({ segments: [{ ...stored, name: 'Still broken' }] })
         .expectStatus(200);
 
-      assert.deepEqual(body.segments, [{ ...stored, name: 'Still broken' }]);
+      const [renamed] = body.segments;
+      assert.deepEqual(renamed, {
+        ...stored,
+        name: 'Still broken',
+        updated_at: renamed.updated_at,
+      });
+      assertTimeSince(renamed.updated_at, renaming);
       assert.deepEqual(await browse(), body.segments);
     });
 
@@ -790,13 +886,13 @@ describe('Segments Admin API', function () {
     });
 
     it('rejects a field it does not know, rather than renaming the segment', async function () {
-      const { id } = await add('VIP', 'label:vip');
+      const segment = await add('VIP', 'label:vip');
 
-      assert.deepEqual(await renameBodyError(id, { name: 'Gold', fliter: 'label:gold' }), {
+      assert.deepEqual(await renameBodyError(segment.id, { name: 'Gold', fliter: 'label:gold' }), {
         property: 'body.segments.0',
         message: 'Unrecognized key: "fliter"',
       });
-      assert.deepEqual(await browse(), [{ id, name: 'VIP', slug: 'vip', filter: 'label:vip' }]);
+      assert.deepEqual(await browse(), [segment]);
     });
 
     it('returns a 404 for an id no segment has', async function () {
@@ -821,9 +917,7 @@ describe('Segments Admin API', function () {
         .expectStatus(200)
         .expect(cacheInvalidateHeaderNotSet())
         .matchHeaderSnapshot(writeHeaders)
-        .matchBodySnapshot({
-          segments: [{ id: anyObjectId }, { id: anyObjectId }, { id: anyObjectId }],
-        });
+        .matchBodySnapshot({ segments: [anySegment, anySegment, anySegment] });
       assert.deepEqual(await names(), ['Comped', 'Free', 'Paid']);
     });
 
@@ -913,18 +1007,24 @@ describe('Segments Admin API', function () {
       assert.deepEqual(await names(), ['Free']);
     });
 
-    // When a segment was last edited is a column of the table that the API doesn't return yet.
     it('leaves when each segment was last edited as it was', async function () {
-      const lastEdited = () =>
-        models.Base.knex('segments').orderBy('id').select('id', 'updated_at');
+      /** Each segment's id with the time it was last edited. */
+      const lastEdited = (segments: Segment[]) =>
+        Object.fromEntries(segments.map(({ id, updated_at: updatedAt }) => [id, updatedAt]));
       const free = await add('Free', 'status:free');
       const paid = await add('Paid', 'status:paid');
+      // Earlier than the reorder can be, so a reorder that wrote the time would show.
+      await models.Base.knex('segments').update({
+        created_at: '2020-01-01 00:00:00',
+        updated_at: '2020-01-01 00:00:00',
+      });
       await rename(paid.id, 'Paying');
-      const before = await lastEdited();
+      const before = lastEdited(await browse());
 
-      await reorder([paid.id, free.id]).expectStatus(200);
+      const { body } = await reorder([paid.id, free.id]).expectStatus(200);
 
-      assert.deepEqual(await lastEdited(), before);
+      assert.deepEqual(lastEdited(body.segments), before);
+      assert.deepEqual(lastEdited(await browse()), before);
     });
   });
 

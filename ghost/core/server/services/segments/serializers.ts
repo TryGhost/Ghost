@@ -6,9 +6,14 @@ import type { NewSegment, SegmentEdit } from './service';
 /** The segment a route names. A malformed id is rejected rather than looked up. */
 export const SegmentRoute = z.object({ id: ObjectIdSchema });
 
-// A request can send a segment back as the API returned it, so its read-only `id` is accepted
-// and dropped. Any other field the schema doesn't name is rejected.
-const ReadOnlyId = z.string().optional();
+// A request can send a segment back as the API returned it, so the fields the server sets are
+// accepted and dropped. Any other field the schema doesn't name is rejected. A field added to a
+// segment that a request can't give fails to compile here until it is listed.
+const readOnlyFields = {
+  id: z.string().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+} satisfies Record<Exclude<keyof Segment, keyof NewSegment>, z.ZodType>;
 
 /**
  * A new segment as a request sends it. A slug it gives has to be in a slug's format here; the
@@ -17,7 +22,7 @@ const ReadOnlyId = z.string().optional();
  */
 export const NewSegmentBody = z
   .strictObject({
-    id: ReadOnlyId,
+    ...readOnlyFields,
     name: SegmentName,
     slug: SegmentSlug.optional(),
     filter: SegmentFilter,
@@ -30,7 +35,7 @@ export const NewSegmentBody = z
  */
 export const SegmentEditBody = z
   .strictObject({
-    id: ReadOnlyId,
+    ...readOnlyFields,
     name: SegmentName,
     slug: SegmentSlug.optional(),
     filter: SegmentFilter.optional(),
@@ -49,6 +54,9 @@ const SegmentResource = z.object({
   name: z.string(),
   slug: z.string(),
   filter: z.string(),
+  // Each is sent as an ISO 8601 time in UTC, as other resources' times are.
+  created_at: z.date(),
+  updated_at: z.date(),
 } satisfies Record<keyof Segment, z.ZodType>);
 const SegmentsResponse = z.object({ segments: z.array(SegmentResource) });
 
