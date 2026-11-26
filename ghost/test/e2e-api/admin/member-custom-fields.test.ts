@@ -422,9 +422,25 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(list[0].key, active.key);
     });
 
-    it('treats a namespace with no fields as an ordinary empty collection', async function () {
-      const { body } = await agent.get('members/metafields/transistor/').expectStatus(200);
-      assert.deepEqual(body.members_metafields, []);
+    it('refuses staff reading a namespace whose policy gives staff nothing', async function () {
+      const { namespaces } = metafields.booted();
+      namespaces.register({ namespace: 'vault', owner: 'vault-app', limits: [], access: {} });
+      try {
+        const { body } = await agent.get('members/metafields/vault/').expectStatus(403);
+        assert.equal(
+          body.errors[0].context,
+          'You do not have permission to read the fields in the "vault" namespace.',
+        );
+      } finally {
+        namespaces.unregister('vault');
+      }
+    });
+
+    it('tells staff that a namespace nobody registered holds no fields', async function () {
+      // Listed, it is refused as adding to it is: staff can see which namespaces exist, so
+      // saying so gives nothing away.
+      const listed = await agent.get('members/metafields/transistor/').expectStatus(422);
+      assert.equal(listed.body.errors[0].property, 'namespace');
       await agent.get('members/metafields/transistor/some_key/').expectStatus(404);
       const refused = await agent
         .post('members/metafields/transistor/')

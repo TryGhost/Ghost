@@ -204,10 +204,18 @@ describe('Member Custom Fields Members API', function () {
     });
 
     it('offers a member no fields and hands back none of their answers', async function () {
+      // With nothing in it to read, the namespace answers as one nobody registered does, so a
+      // member can't tell the two apart.
       const { body: offered } = await membersAgent
         .get('/api/member/metafields/custom/')
-        .expectStatus(200);
-      assert.deepEqual(offered.members_metafields, []);
+        .expectStatus(404);
+      const { body: unknown } = await membersAgent
+        .get('/api/member/metafields/transistor/')
+        .expectStatus(404);
+      // Every error has an id of its own, so that's left out of the comparison.
+      const withoutId = ({ errors: [{ id: _id, ...error }] }: { errors: [{ id: string }] }) =>
+        error;
+      assert.deepEqual(withoutId(offered), withoutId(unknown));
 
       const { body: account } = await membersAgent.get('/api/member/').expectStatus(200);
       assert.equal(account.metafields?.custom?.[fieldKey], undefined);

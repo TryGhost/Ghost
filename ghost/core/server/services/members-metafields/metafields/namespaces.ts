@@ -115,6 +115,11 @@ export interface Namespaces {
   assertRoom(namespace: Namespace, held: number, adding: number): Promise<void>;
   /** Refuses a caller who may not manage the namespace's definitions. */
   assertManageable(caller: Asking, namespace: Namespace): void;
+  /**
+   * Refuses staff, an integration or an app that can read nothing in the namespace. Only a
+   * member's level is set field by field, so for every other caller the namespace's policy says.
+   */
+  assertReadable(caller: Asking, namespace: Namespace): void;
   /** Whether `caller` may read `field` on `record`, whatever the field's status. */
   canRead(caller: Asking, field: PolicyField, record: RecordOf): boolean;
 }
@@ -178,6 +183,14 @@ export function createNamespaces(
       if (!atLeast(levelFor(registered(namespace), {}, caller, null), 'manage')) {
         throw new errors.NoPermissionError({
           message: `You do not have permission to manage the fields in the "${namespace}" namespace.`,
+        });
+      }
+    },
+
+    assertReadable(caller, namespace) {
+      if (!atLeast(levelFor(registered(namespace), {}, caller, null), 'read')) {
+        throw new errors.NoPermissionError({
+          message: `You do not have permission to read the fields in the "${namespace}" namespace.`,
         });
       }
     },

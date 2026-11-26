@@ -41,6 +41,14 @@ export const GHOST_APP_ID = 'ghost';
  */
 export const GHOST: Caller = { kind: 'app', installationId: GHOST_APP_ID, actingFor: null };
 
+/**
+ * A caller from outside the site: a member, or anyone at all. Such a caller is never told that a
+ * namespace it can read nothing in exists.
+ */
+export function isPublic(caller: Asking): boolean {
+  return caller.kind === 'member' || caller.kind === 'anonymous';
+}
+
 const Id = z.object({ id: z.string() });
 
 /** The parts of auth's principal metafields reads, one entry for each of auth's kinds. */

@@ -42,7 +42,7 @@ import {
 } from './changes';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
-import { actingContextOf, type Asking, type Caller } from './callers';
+import { actingContextOf, isPublic, type Asking, type Caller } from './callers';
 
 const MAX_KEY_ITERATIONS = 1000;
 
@@ -181,10 +181,32 @@ export class MetafieldDefinitionsService {
     this.inputs = definitionInputs(fields.maxLength);
   }
 
+  /**
+   * A namespace's definitions the caller may read. Staff, an integration or an app is told when
+   * the namespace isn't registered, or when they can read nothing in it. A member, or anyone at
+   * all, gets the same not found for both, and for a namespace they can read no field in, so
+   * which namespaces exist can't be found out by asking: the read runs either way.
+   */
   async browse(
     options: { namespace: Namespace; filter?: string },
     caller: Asking,
     executor: Knex = this.knex,
+  ): Promise<Definition[]> {
+    if (!isPublic(caller)) {
+      this.namespaces.assertReadable(caller, options.namespace);
+      return this.readable(options, caller, executor);
+    }
+    const fields = await this.readable(options, caller, executor);
+    if (fields.length === 0) {
+      throw new errors.NotFoundError({ message: 'Custom fields not found.' });
+    }
+    return fields;
+  }
+
+  private async readable(
+    options: { namespace: Namespace; filter?: string },
+    caller: Asking,
+    executor: Knex,
   ): Promise<Definition[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
     // narrows the list, it never reorders it.
