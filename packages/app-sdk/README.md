@@ -47,7 +47,8 @@ Write each query parameter once, under a plain name: Admin won't send a name
 with brackets, such as `include[]=tags`, one that repeats, or one every
 JavaScript object already has, such as `constructor`, and `fetch` rejects with
 the code `blocked`, so write `include=tags,authors`. Values can hold anything,
-escaped as usual.
+escaped as usual, but every `%` must start a valid escape of UTF-8: write a
+literal `%` as `%25`, as in `filter=title:~'50%25'`.
 
 ## Signing the manifest
 
