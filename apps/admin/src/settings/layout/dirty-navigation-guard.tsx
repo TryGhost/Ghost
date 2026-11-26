@@ -13,8 +13,8 @@ import {
 
 // History (back/forward) navigations are blocked: every in-app way out of a dirty
 // settings dialog already runs its own dirty confirmation before navigating. With the
-// grouped navigation, leaving a group from its page is blocked however it happens, as
-// leaving Settings is, since its unsaved cards would be hidden.
+// grouped navigation, leaving a group is blocked however it happens, from its page or
+// from a dialog over it, as leaving Settings is, since its unsaved cards would be hidden.
 export const DirtyNavigationGuard: React.FC = () => {
   const { isDirty } = useGlobalDirtyState();
   const grouped = useSettingsGroupedNav();
@@ -26,11 +26,10 @@ export const DirtyNavigationGuard: React.FC = () => {
     if (!isDirty) {
       return false;
     }
-    // From a dialog, its own confirmation already ran
+    // From a dialog too: a dialog's own confirmation covers only its form, not
+    // the dirty cards of the group behind it, and some of its links skip it
     const leavesGroup =
-      grouped &&
-      dialogIdentity(currentLocation.pathname) === 'settings' &&
-      (settingsGroupForPath(nextLocation.pathname) ?? activeGroup) !== activeGroup;
+      grouped && (settingsGroupForPath(nextLocation.pathname) ?? activeGroup) !== activeGroup;
     if (historyAction !== NavigationType.Pop) {
       return leavesGroup;
     }

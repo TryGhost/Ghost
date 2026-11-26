@@ -10,6 +10,7 @@ import {
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import { settingsScreen } from './settings.screen';
+import { fakeStaffWorld } from './general/staff.test-helpers';
 
 const GROUPED = { labs: { settingsGroupedNav: true } };
 
@@ -136,6 +137,26 @@ describe('Settings grouped navigation', () => {
     await expect.element(settingsScreen.confirmationModal()).toBeVisible();
     await settingsScreen.confirmationAction('Stay').click();
     await expect.poll(currentRoute).toBe('/settings/general-settings');
+  });
+
+  it('asks before a dialog link leaves a group with unsaved changes', async () => {
+    const { boot, currentUser } = fakeStaffWorld();
+    await renderAdminApp('/settings', { ...GROUPED, boot });
+
+    await settingsScreen.editTitle('New Site Title');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    await settingsScreen.users().getByTestId('owner-user').click();
+    const modal = settingsScreen.userDetailModal();
+    await expect.element(modal).toBeVisible();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    await modal.getByRole('button', { name: 'Actions' }).click();
+    await settingsScreen.menuItem('View user activity').click();
+
+    await expect.element(settingsScreen.confirmationModal()).toHaveTextContent(/leave/i);
+    await settingsScreen.confirmationAction('Stay').click();
+    await expect.poll(currentRoute).toBe(`/settings/staff/${currentUser.slug}`);
+    await expect.element(settingsScreen.titleInput()).toHaveValue('New Site Title');
   });
 
   it('moves within a group with unsaved changes without asking', async () => {
