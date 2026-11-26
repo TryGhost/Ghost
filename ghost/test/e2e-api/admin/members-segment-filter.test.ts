@@ -11,8 +11,6 @@ const models = require('../../../core/server/models');
 
 type Agent = Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
 
-const UNKNOWN_ID = '0123456789abcdef01234567';
-
 /** The members this suite adds, by first name, with their labels and status. */
 const MEMBERS = {
   ada: { labels: ['vip'], status: 'free' },
@@ -26,17 +24,19 @@ const NAMES = Object.keys(MEMBERS).sort();
 const emailOf = (name: string) => `${name}@segment-filter.example`;
 const nameOf = (email: string) => email.replace('@segment-filter.example', '');
 
-/** A members filter that names segments, through the members Admin API. */
+/** A members filter that names segments by their slugs, through the members Admin API. */
 describe('Members filtered by segment', function () {
   let agent: Agent;
+  /** The slug of each segment the suite adds first. */
   let segments: { vip: string; founders: string; lapsed: string };
 
+  /** Adds a segment, and returns its slug. */
   async function addSegment(name: string, filter: string): Promise<string> {
     const { body } = await agent
       .post('segments/')
       .body({ segments: [{ name, filter }] })
       .expectStatus(201);
-    return body.segments[0].id;
+    return body.segments[0].slug;
   }
 
   /** The names of the members `filter` selects on the members list. */
@@ -124,8 +124,24 @@ describe('Members filtered by segment', function () {
       );
     });
 
-    it('accepts a segment id in quotes', async function () {
+    it('names a segment by its slug, which needs no quotes', async function () {
+      assert.equal(segments.vip, 'vip');
+      assert.deepEqual(await membersList('segment:vip'), ['ada', 'grace']);
+    });
+
+    it('names a segment by a slug it was given', async function () {
+      const { body } = await agent
+        .post('segments/')
+        .body({ segments: [{ name: 'Chosen', filter: 'label:[vip]', slug: 'chosen-vips' }] })
+        .expectStatus(201);
+      assert.equal(body.segments[0].slug, 'chosen-vips');
+
+      assert.deepEqual(await membersList('segment:chosen-vips'), ['ada', 'grace']);
+    });
+
+    it('accepts a slug in quotes, and in any case', async function () {
       assert.deepEqual(await membersList(`segment:'${segments.vip}'`), ['ada', 'grace']);
+      assert.deepEqual(await membersList('segment:VIP'), ['ada', 'grace']);
     });
 
     it('lists the members of a segment or of another condition', async function () {
@@ -232,21 +248,31 @@ describe('Members filtered by segment', function () {
     });
 
     it('rejects a segment that does not exist rather than ignoring it', async function () {
-      const error = await listError(`segment:${segments.vip},segment:${UNKNOWN_ID}`, 422);
+      const error = await listError(`segment:${segments.vip},segment:no-such-segment`, 422);
       assert.equal(error.type, 'ValidationError');
-      assert.match(error.context, new RegExp(UNKNOWN_ID));
+      assert.equal(error.context, 'Segment not found. No segment has the slug no-such-segment.');
     });
 
-    it('rejects a value that is not a segment id', async function () {
-      const error = await listError('segment:vip', 422);
+    it("rejects a segment's id, which a filter doesn't name a segment by", async function () {
+      const { body } = await agent.get('segments/').expectStatus(200);
+      const vip = body.segments.find(({ slug }: { slug: string }) => slug === segments.vip);
+
+      const error = await listError(`segment:'${vip.id}'`, 422);
       assert.equal(error.type, 'ValidationError');
+      assert.equal(error.context, `Segment not found. No segment has the slug ${vip.id}.`);
+    });
+
+    it('rejects a value that is not a slug', async function () {
+      const error = await listError("segment:'VIP members!'", 422);
+      assert.equal(error.type, 'ValidationError');
+      assert.equal(error.context, 'Segment not found. No segment has the slug vip members!.');
     });
 
     it.each([
       ['no value', 'segment:null'],
-      ['a comparison', `segment:>'${UNKNOWN_ID}'`],
-      ['a text match', `segment:~'${UNKNOWN_ID}'`],
-      ['a number', 'segment:123456789012345678901234'],
+      ['a comparison', "segment:>'vip'"],
+      ['a text match', "segment:~'vip'"],
+      ['a number', 'segment:2024'],
     ])('rejects a segment named with %s', async function (_what, filter) {
       const error = await listError(filter, 400);
       assert.equal(error.type, 'BadRequestError');
@@ -316,7 +342,7 @@ describe('Members filtered by segment', function () {
       });
 
       try {
-        const error = await listError(`segment:${nested}`, 400);
+        const error = await listError('segment:nested', 400);
         assert.match(error.context, /names another segment/);
       } finally {
         await models.Base.knex('segments').where({ id: nested }).del();

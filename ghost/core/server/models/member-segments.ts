@@ -1,19 +1,18 @@
 import errors from '@tryghost/errors';
-import type { Knex } from 'knex';
 import type { FilterStep } from '../lib/filters';
 import { expandSegments, namesSegment } from '../services/segments/expansion';
-import type { Segment, SegmentId } from '../services/segments/models';
+import type { SegmentsService } from '../services/segments/service';
 
-// A members filter names a saved segment with the `segment` key. The members model's first filter
-// step reads the segments a filter names and replaces each `segment` statement with the segment's
-// own filter, whoever runs the query.
+// A members filter names a saved segment by its slug with the `segment` key. The members model's
+// first filter step reads the segments a filter names and replaces each `segment` statement with
+// the segment's own filter, whoever runs the query.
 
 /** What members filters read the segments they name with. Boot supplies it. */
 export interface FilterSegments {
   /** Whether members filters can name segments, which the segmentEmails flag decides. */
   isEnabled: () => boolean;
-  /** Reads the segments with any of `ids`, in the given transaction or on the default connection. */
-  read: (ids: readonly SegmentId[], executor?: Knex) => Promise<readonly Segment[]>;
+  /** Reads segments, in the given transaction or on the default connection. */
+  browse: SegmentsService['browse'];
 }
 
 let segments: FilterSegments | undefined;
@@ -40,5 +39,5 @@ export const segmentStep: FilterStep = async (filter, { transacting }) => {
     }
     return filter;
   }
-  return expandSegments(filter, (ids) => source.read(ids, transacting));
+  return expandSegments(filter, (slugs) => source.browse({ slugs }, transacting));
 };

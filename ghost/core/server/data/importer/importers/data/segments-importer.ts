@@ -128,7 +128,7 @@ export class SegmentsImporter {
       return;
     }
     const { service } = segments;
-    const stored = await service.browse(transacting);
+    const stored = await service.browse({}, transacting);
     const taken = new Set(stored.map(({ name }) => normalizeName(name)));
 
     // The names the site's segments have, by filter, and then those of the file's segments too.

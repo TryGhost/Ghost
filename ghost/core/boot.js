@@ -488,7 +488,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const labs = require('./shared/labs');
   models.Member.readSegmentsWith({
     isEnabled: () => labs.isSet('segmentEmails'),
-    read: (ids, executor) => segments.service.readMany(ids, executor),
+    browse: (criteria, executor) => segments.service.browse(criteria, executor),
   });
   if (ghostServer) {
     // Each releases what its start acquired; the next boot in this process starts it again.

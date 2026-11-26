@@ -647,7 +647,7 @@ describe('Commands and transactions', function () {
       name: 'segments: browse',
       arrange: async () => ({
         change: (trx) => segments.default.service.add(context, newSegment(), trx),
-        read: (executor) => segments.default.service.browse(executor),
+        read: (executor) => segments.default.service.browse({}, executor),
       }),
     },
     {
