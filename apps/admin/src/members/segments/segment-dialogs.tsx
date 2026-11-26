@@ -188,8 +188,8 @@ export function DeleteSegmentDialog({
             ) : (
               <Stack gap="sm">
                 <p>
-                  The segment is removed for all staff and can’t be restored. Its members aren’t
-                  affected.
+                  Deleting this segment removes it for all staff. Your members won’t be changed or
+                  removed.
                 </p>
                 {error && (
                   <Text className="text-destructive" role="alert" size="sm">
