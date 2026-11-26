@@ -7,17 +7,38 @@ import { adminApiRouter, adminApiRoutes, examplePath } from '../../../../../util
 
 const ROUTES: Record<string, Record<string, readonly string[]>> = APP_ROUTES;
 
-// Ghost's permissions are the only gate on what an app may call: a scope opens every route
-// whose permission check is the scope's key. The app contracts hold the reviewed list of those
-// routes, with what Admin's bridge still covers on each, so that list has to be exactly the
-// routes Ghost opens.
+// Ghost's server is the gate on what an app may call: a scope opens every route that takes an
+// app's token and whose permission check is the scope's key. A route that refuses an app's token
+// before anything else, such as one with a rate limiter ahead of authentication, opens to no
+// app. The app contracts hold the reviewed list of the routes each scope opens, with what
+// Admin's bridge still covers on each, so that list has to be exactly the routes Ghost opens.
 describe('The routes an app’s scopes open', function () {
   const routes = adminApiRoutes();
+  // Whether a route starts with one of the Admin API's authentication chains, which take an
+  // app's token on the Better Auth engine. Read from what follows the token's first handling
+  // rather than from the handling itself, as the legacy engine refuses an app's token on every
+  // route: there the refusal is followed by the chain, here by whatever runs ahead of it.
+  const core = '../../../../../../core';
+  const { authenticatesAppTokens, refuseUnauthenticatedAppToken: refusal } = require(
+    `${core}/server/auth/app-token`,
+  );
+  const mw = require(`${core}/server/web/api/endpoints/admin/middleware`);
+  const chainStarts = new Set(
+    [mw.authAdminApi, mw.publicAdminApi].map((chain) => chain.flat(Infinity)[0]),
+  );
+  const takesAppTokens = (handlers: unknown[]) => {
+    const first = handlers.findIndex(
+      (handler) => handler === refusal || authenticatesAppTokens(handler),
+    );
+    return authenticatesAppTokens(handlers[first]) || chainStarts.has(handlers[first + 1]);
+  };
 
   for (const scope of APP_PERMISSION_KEYS) {
     it(`opens exactly the reviewed routes for ${scope}`, function () {
       const opened = routes
-        .filter(({ permissionKey }) => permissionKey === scope)
+        .filter(
+          ({ permissionKey, handlers }) => permissionKey === scope && takesAppTokens(handlers),
+        )
         .map(({ route }) => route)
         .sort();
 
@@ -51,7 +72,7 @@ describe('The routes an app’s scopes open', function () {
       );
     };
     const reachedAsListed = routes
-      .filter(({ route }) => !listed.includes(route))
+      .filter(({ route, handlers }) => !listed.includes(route) && takesAppTokens(handlers))
       .filter(({ route }) => listed.some((entry) => readAs(route, entry)));
 
     assert.deepEqual(reachedAsListed.map(({ route }) => route).sort(), ['GET /posts/export']);
