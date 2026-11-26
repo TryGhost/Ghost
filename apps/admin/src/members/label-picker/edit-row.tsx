@@ -9,9 +9,31 @@ interface EditRowProps {
   onSave: (id: string, name: string) => Promise<void>;
   onCancel: () => void;
   onDelete: (id: string) => Promise<void>;
+  /**
+   * What is being edited, in its messages: "Delete label?". The segment list edits segments
+   * with the same row.
+   */
+  noun?: string;
+  /** What a failed save says. Without it, the API's own message, or a general one. */
+  describeError?: (error: unknown) => string;
+  /**
+   * Asks for the delete elsewhere instead of confirming it in the row, for something whose
+   * deletion has more to say, such as a segment something still uses.
+   */
+  onDeleteRequest?: () => void;
+  maxLength?: number;
 }
 
-export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDelete }) => {
+export const EditRow: React.FC<EditRowProps> = ({
+  label,
+  onSave,
+  onCancel,
+  onDelete,
+  noun = 'label',
+  describeError,
+  onDeleteRequest,
+  maxLength,
+}) => {
   const [name, setName] = useState(label.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +57,11 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
       await onSave(label.id, name.trim());
       onCancel();
     } catch (saveError) {
-      setError(getErrorMessage(saveError, 'Failed to save label, please try again.'));
+      setError(
+        describeError
+          ? describeError(saveError)
+          : getErrorMessage(saveError, `Failed to save ${noun}, please try again.`),
+      );
       setIsSaving(false);
     }
   };
@@ -66,8 +92,10 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
     <Stack className="pt-1 pb-2" gap="sm" data-edit-row>
       <Input
         ref={inputRef}
+        aria-label={`${noun[0].toUpperCase()}${noun.slice(1)} name`}
         className="h-7 rounded-control-sm! px-2 text-sm"
         disabled={isBusy}
+        maxLength={maxLength}
         type="text"
         value={name}
         onChange={(e) => {
@@ -79,7 +107,7 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
       {error && <span className="text-xs text-destructive">{error}</span>}
       {showDeleteConfirm ? (
         <div className="flex items-center gap-1 text-sm">
-          <span className="flex-1 font-semibold">Delete label?</span>
+          <span className="flex-1 font-semibold">Delete {noun}?</span>
           <Button
             className="h-6 px-2 text-xs"
             disabled={isBusy}
@@ -106,7 +134,7 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
             disabled={isBusy}
             size="sm"
             variant="ghost"
-            onClick={() => setShowDeleteConfirm(true)}
+            onClick={() => (onDeleteRequest ? onDeleteRequest() : setShowDeleteConfirm(true))}
           >
             Delete
           </Button>

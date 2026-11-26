@@ -5,7 +5,7 @@ import { Inline } from '@tryghost/shade/primitives';
 import { useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePrototypeSeed } from './poc-seed';
-import { useBuilderFilterFirst, useSimulateNoSegments } from './poc-store';
+import { useBuilderFilterFirst, useSegmentUsage, useSimulateNoSegments } from './poc-store';
 import { SegmentBuilderDialog, SegmentBuilderPopover } from './segment-builder';
 import { useSegmentSuggestions } from './segment-suggestions';
 
@@ -20,17 +20,24 @@ import { useSegmentSuggestions } from './segment-suggestions';
  *   prototype is shown with. For filming from nothing, and coming back after.
  * - A switch that makes the site look as if it had no segments, so the empty states can be seen
  *   without deleting any. Nothing is deleted. The segments come back when it is switched off.
+ * - While a segment is open, a switch that pretends something uses it, so the dialogs that say
+ *   so can be seen: a scheduled post and an automation.
  * - Buttons that open the segment builder, the component other screens would create a segment
  *   with, such as an automation's trigger: as a dialog, and as a popover hung from the button.
  *   The members screen itself doesn't use it.
  */
 export function PocControls({
   onSegmentCreated,
+  openSegmentId,
 }: {
   onSegmentCreated?: (segment: Segment) => void;
+  /** The segment the members screen is showing, if any. */
+  openSegmentId?: string;
 }) {
   const id = useId();
   const filterFirstId = useId();
+  const inUseId = useId();
+  const { isSimulated, setSimulated } = useSegmentUsage();
   const { filterFirst, setFilterFirst } = useBuilderFilterFirst();
   const prototypeSeed = usePrototypeSeed();
   const suggestions = useSegmentSuggestions();
@@ -66,6 +73,18 @@ export function PocControls({
                 No segments
               </Label>
             </Inline>
+            {openSegmentId && (
+              <Inline as="span" gap="sm">
+                <Switch
+                  checked={isSimulated(openSegmentId)}
+                  id={inUseId}
+                  onCheckedChange={(checked) => setSimulated(openSegmentId, checked)}
+                />
+                <Label className="text-xs font-normal text-muted-foreground" htmlFor={inUseId}>
+                  In use
+                </Label>
+              </Inline>
+            )}
             <Inline as="span" gap="sm">
               <Switch checked={filterFirst} id={filterFirstId} onCheckedChange={setFilterFirst} />
               <Label className="text-xs font-normal text-muted-foreground" htmlFor={filterFirstId}>

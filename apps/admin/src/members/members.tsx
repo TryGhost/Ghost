@@ -35,6 +35,7 @@ import { ManageSegmentsDialog } from './segments/manage-segments-dialog';
 import { MemberSegmentActions } from './segments/member-segment-actions';
 import { PocControls } from './segments/poc-controls';
 import { SEGMENT_PARAM, buildSegmentUrl } from './segments/segment-route';
+import { EditSegmentButton } from './segments/edit-segment-button';
 import { SegmentSwitcher } from './segments/segment-switcher';
 import { useNewSuggestions, useSegmentSuggestions } from './segments/segment-suggestions';
 import { SuggestionChips } from './segments/suggestion-chips';
@@ -75,7 +76,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   // saved filter on a custom field be read precisely. Archived fields are included so a filter
   // on one still shows its values, matching the read-only pill the filter bar renders for it.
   //
-  const [filterSearchParams, setFilterSearchParams] = useSearchParams();
+  const [filterSearchParams] = useSearchParams();
   const { newsletters, customFields } = useMemberFilterSources(
     filterSearchParams.get('filter') ?? undefined,
   );
@@ -94,14 +95,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const canChangeSegments = useCanChangeMemberViews();
   const factsOf = useSegmentFacts(savedViews);
 
-  // With its filters cleared the screen shows every member, which is no longer the segment.
-  useEffect(() => {
-    if (segmentParam && !appliedFilter) {
-      const next = new URLSearchParams(filterSearchParams);
-      next.delete(SEGMENT_PARAM);
-      setFilterSearchParams(next, { replace: true });
-    }
-  }, [segmentParam, appliedFilter, filterSearchParams, setFilterSearchParams]);
+  // Removing a segment's last filter doesn't leave it: the segment stays open, changed, with the
+  // filter bar empty and its add button showing, as when a new segment is being made. Replacing
+  // a segment's only condition is then remove and add, in either order, and the segment is only
+  // left on purpose: with Reset, or by opening something else.
   const [showMobileSearch, setShowMobileSearch] = useState(search.length > 0);
   const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
   const [searchInput, setSearchInput] = useState(search);
@@ -211,7 +208,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
     navigate(`/members?${new URLSearchParams({ filter: suggestion.filter }).toString()}`);
   };
   const shouldShowMobileSearchRow = showMobileSearch;
-  const shouldShowFiltersRow = hasFilters || makingSegment;
+  const segmentWithoutFilters = Boolean(viewedSegment) && !hasFilters;
+  const shouldShowFiltersRow = hasFilters || makingSegment || segmentWithoutFilters;
   const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
   const shouldShowMembersHelpCards =
     !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
@@ -251,30 +249,43 @@ const MembersPage: React.FC<MembersPageProps> = ({
   const handleShowAllMembers = () => {
     commitSearch.cancel();
     setSearchInput('');
+    // Showing every member leaves the segment: clearing its filters alone would keep it open,
+    // with none.
+    if (segmentParam) {
+      navigate('/members');
+      return;
+    }
     clearAll({ replace: false });
   };
 
-  const segmentActions =
-    nql || makingSegment ? (
-      <MemberSegmentActions
-        filter={nql ?? ''}
-        isModified={isSegmentModified}
-        saveRequest={saveRequest}
-        segment={viewedSegment}
-        suggestedName={makingSegment ? (suggestedName ?? undefined) : undefined}
-        onLeaveSegment={() => navigate('/members')}
-        onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
-      />
-    ) : undefined;
+  // An unchanged segment has nothing beside its filters: renaming and deleting it start from
+  // the title, which names it, and the bar only offers what to do with filters that changed.
+  // A changed segment keeps them while it has no filter, or one still being chosen, so Reset
+  // and Save changes stay put while its conditions are replaced.
+  const showsSegmentActions = makingSegment || (viewedSegment ? isSegmentModified : Boolean(nql));
+  const segmentActions = showsSegmentActions ? (
+    <MemberSegmentActions
+      filter={nql ?? ''}
+      isModified={isSegmentModified}
+      saveRequest={saveRequest}
+      segment={viewedSegment}
+      suggestedName={makingSegment ? (suggestedName ?? undefined) : undefined}
+      onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
+    />
+  ) : undefined;
 
-  // While a segment's filters are changed, the bar's clear button puts them back instead. While
-  // a new segment is being made, it stops: Cancel before there are filters, Clear after.
+  // While a segment's filters are changed, the bar's clear button puts them back instead. An
+  // unchanged segment has none: its filters are the segment, and leaving it is how to stop
+  // seeing them. While a new segment is being made, it stops: Cancel before there are filters,
+  // Clear after.
   const clearAction =
     viewedSegment && isSegmentModified
       ? { label: 'Reset', onSelect: () => navigate(buildSegmentUrl(viewedSegment)) }
-      : makingSegment
-        ? { label: hasFilters ? 'Clear' : 'Cancel', onSelect: stopMakingSegment }
-        : undefined;
+      : viewedSegment
+        ? null
+        : makingSegment
+          ? { label: hasFilters ? 'Clear' : 'Cancel', onSelect: stopMakingSegment }
+          : undefined;
 
   // What the header says about the segment being shown: who made it, and when. What uses it is
   // said where it matters, when the segment is about to be changed or deleted.
@@ -350,7 +361,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
   // The header's Filter button, while the filter bar isn't showing. A new segment shows the bar,
   // with a Filter button of its own.
   const headerFilters = shouldShowMemberControls &&
-    ((!hasFilters && !makingSegment) || mobileFilters) && (
+    ((!hasFilters && !makingSegment && !segmentWithoutFilters) || mobileFilters) && (
       <MembersFilters
         clearAction={clearAction}
         filters={filters}
@@ -406,6 +417,9 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       <SegmentSwitcher
                         current={viewedSegment}
                         segments={savedViews}
+                        onCurrentDeleted={
+                          canChangeSegments ? () => navigate('/members') : undefined
+                        }
                         onNewSegment={canChangeSegments ? startNewSegment : undefined}
                       />
                       {/* The count sits as far from the title as it does on main. There the
@@ -443,6 +457,14 @@ const MembersPage: React.FC<MembersPageProps> = ({
                       // onManageSegments={() => setManagingSegments(true)} brings its icon back.
                     >
                       {!mobileFilters && headerFilters}
+                      {/* A labelled secondary action, after the filter and before New member,
+                          as Shade's page header orders them. */}
+                      {viewedSegment && canChangeSegments && shouldShowMemberControls && (
+                        <EditSegmentButton
+                          segment={viewedSegment}
+                          onDeleted={() => navigate('/members')}
+                        />
+                      )}
                     </MembersActions>
                   </PageHeader.ActionGroup>
                 </PageHeader.Actions>
@@ -471,7 +493,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                     filters={filters}
                     multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
                     segmentActions={segmentActions}
-                    showActions={makingSegment}
+                    showActions={makingSegment || segmentWithoutFilters}
                     onFiltersChange={setFilters}
                   />
                 </FilterBar>
@@ -549,7 +571,10 @@ const MembersPage: React.FC<MembersPageProps> = ({
             onOpenSegment={(segment) => navigate(buildSegmentUrl(segment))}
           />
         )}
-        <PocControls onSegmentCreated={(segment) => navigate(buildSegmentUrl(segment))} />
+        <PocControls
+          openSegmentId={viewedSegment?.id}
+          onSegmentCreated={(segment) => navigate(buildSegmentUrl(segment))}
+        />
       </Container>
     </Box>
   );

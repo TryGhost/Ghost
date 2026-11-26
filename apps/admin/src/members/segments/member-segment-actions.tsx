@@ -14,7 +14,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useSegmentUsage } from './poc-store';
 import { SaveSegmentForm, SaveSegmentPopover } from './save-segment-popover';
 import { UpdateSegmentDialog } from './segment-dialogs';
-import { SegmentMenu } from './segment-menu';
 
 interface MemberSegmentActionsProps {
   /** The filters the members screen is showing. */
@@ -25,8 +24,6 @@ interface MemberSegmentActionsProps {
   isModified: boolean;
   /** Shows a segment: one just saved, or the same one after its conditions changed. */
   onOpenSegment: (segment: Segment) => void;
-  /** Leaves the segment, after it is deleted. */
-  onLeaveSegment: () => void;
   /**
    * Counts the times something else on the screen asked for these filters to be saved as a new
    * segment, such as "New segment" in the title's list. Each new count opens the name form.
@@ -41,7 +38,7 @@ interface MemberSegmentActionsProps {
  * filter bar, after the bar's own clear button.
  *
  * - Filters that are no segment's can be saved as one.
- * - A segment shown as it is saved can be edited: renamed, pinned, deleted.
+ * - A segment shown as it is saved has nothing here: it is renamed and deleted from the title.
  * - A segment whose filters have been changed is not saved by the change. Saving asks whether to
  *   update the segment, which is confirmed first, or to keep it and save another.
  *
@@ -52,7 +49,6 @@ export function MemberSegmentActions({
   segment,
   isModified,
   onOpenSegment,
-  onLeaveSegment,
   saveRequest = 0,
   suggestedName,
 }: MemberSegmentActionsProps) {
@@ -75,14 +71,14 @@ export function MemberSegmentActions({
     return null;
   }
 
-  // Making a segment before there is a filter: the button still says what the bar is for, but
-  // a name can't be saved without conditions, so it takes the publisher to the missing step
-  // instead. A filter that isn't finished, such as one with no value, filters nothing, so the
+  // No filter yet, making a segment or with a segment's last filter removed: the button still
+  // says what the bar is for, but a segment can't be saved without conditions, so it takes the
+  // publisher to the missing step instead. A filter that isn't finished, such as one with no value, filters nothing, so the
   // cursor goes to its empty value. With no filter at all, the bar's Filter menu opens.
-  if (!segment && !filter) {
+  if (!filter) {
     return (
       <FilterBar.Action
-        variant="outline"
+        variant={segment ? 'default' : 'outline'}
         onClick={(event) => {
           const bar =
             event.currentTarget.closest('[data-slot="filter-bar"]') ??
@@ -97,7 +93,7 @@ export function MemberSegmentActions({
           bar?.querySelector<HTMLButtonElement>('[data-slot="filters-add"]')?.click();
         }}
       >
-        Save segment
+        {segment ? 'Save changes' : 'Save segment'}
       </FilterBar.Action>
     );
   }
@@ -115,12 +111,9 @@ export function MemberSegmentActions({
     );
   }
 
+  // An unchanged segment is renamed and deleted from the title's list, not here.
   if (!isModified) {
-    return (
-      <SegmentMenu segment={segment} onDeleted={onLeaveSegment}>
-        <FilterBar.Action variant="outline">Edit segment</FilterBar.Action>
-      </SegmentMenu>
-    );
+    return null;
   }
 
   return (
@@ -141,7 +134,7 @@ export function MemberSegmentActions({
               }
             }}
           >
-            {/* Icons, as the Edit segment menu that opens from the same place has. */}
+            {/* Icons, as the title's list has for renaming and deleting a segment. */}
             <DropdownMenuItem onSelect={() => setUpdating(true)}>
               <LucideIcon.RefreshCw className="size-4" />
               Update segment

@@ -43,9 +43,10 @@ interface MembersFiltersProps {
   segmentActions?: React.ReactNode;
   /**
    * What the button before those actions does, when it isn't clearing the filters: putting a
-   * changed segment's own filters back.
+   * changed segment's own filters back. Null leaves the button out: an unchanged segment's
+   * filters are the segment, and leaving it is how to stop seeing them.
    */
-  clearAction?: { label: string; onSelect: () => void };
+  clearAction?: { label: string; onSelect: () => void } | null;
   /**
    * POC (poc/segments-ui): shows the clear and segment buttons before there is a filter, while
    * a new segment is being made.
@@ -202,17 +203,22 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   const mobile = useMobileFilters();
   const hasFilters = filters.length > 0;
 
+  // Nothing to show when the clear button is left out and there are no segment actions, as for
+  // an unchanged segment.
+  const hasActions = clearAction !== null || Boolean(segmentActions);
   const clearAndSaveButtons =
-    hasFilters || showActions ? (
+    (hasFilters || showActions) && hasActions ? (
       <FilterBar.Actions data-testid="members-filter-actions" gap="sm">
-        <FilterBar.Action
-          className="hidden items-center lg:inline-flex"
-          type="button"
-          variant="ghost"
-          onClick={clearAction ? clearAction.onSelect : () => onFiltersChange([])}
-        >
-          {clearAction ? clearAction.label : 'Clear'}
-        </FilterBar.Action>
+        {clearAction !== null && (
+          <FilterBar.Action
+            className="hidden items-center lg:inline-flex"
+            type="button"
+            variant="ghost"
+            onClick={clearAction ? clearAction.onSelect : () => onFiltersChange([])}
+          >
+            {clearAction ? clearAction.label : 'Clear'}
+          </FilterBar.Action>
+        )}
         {segmentActions}
       </FilterBar.Actions>
     ) : undefined;
@@ -242,7 +248,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
         // Only where the filter control places the actions itself: on a phone. Embedded, each
         // filter's own remove button is enough.
-        showClearButton={hasFilters && mobile}
+        showClearButton={hasFilters && mobile && clearAction !== null}
         allowMultiple
         showSearchInput
         onChange={handleFiltersChange}

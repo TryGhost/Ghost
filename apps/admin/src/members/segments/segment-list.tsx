@@ -10,6 +10,9 @@ import {
   CommandSeparator,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { useState } from 'react';
+import { EditRow } from '@/members/label-picker';
+import { SEGMENT_NAME_MAX_LENGTH } from './segment-fields';
 
 /** A count beside a name, quieter than the name. Nothing while it isn't known. */
 export function SegmentListCount({ value }: { value: number | null | undefined }) {
@@ -45,6 +48,15 @@ interface SegmentListProps {
   onNewSegment?: () => void;
   /** Rows set closer to the list's edges, for a list hung from a form field. */
   dense?: boolean;
+  /**
+   * Renames a segment, from the pencil that hovering its row shows, as the label picker edits a
+   * label. Given, each row can be edited in place.
+   */
+  onRename?: (segment: Segment, name: string) => Promise<void>;
+  /** What a failed rename says. */
+  describeRenameError?: (error: unknown) => string;
+  /** Asks to delete a segment, from the row being edited. */
+  onDeleteRequest?: (segment: Segment) => void;
 }
 
 /**
@@ -64,8 +76,12 @@ export function SegmentList({
   leading,
   onNewSegment,
   dense = false,
+  onRename,
+  describeRenameError,
+  onDeleteRequest,
 }: SegmentListProps) {
   const group = dense ? 'p-0' : undefined;
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   return (
     <Command>
@@ -84,13 +100,60 @@ export function SegmentList({
         {leading && segments.length > 0 && <CommandSeparator className="-mx-1" />}
         {segments.length > 0 && (
           <CommandGroup className={group}>
-            {segments.map((segment) => (
-              <CommandItem key={segment.id} value={segment.name} onSelect={() => onSelect(segment)}>
-                <span className="min-w-0 truncate">{segment.name}</span>
-                {showCounts && <MemberCount filter={segment.filter} />}
-                {segment.id === selectedId && <CommandCheck />}
-              </CommandItem>
-            ))}
+            {segments.map((segment) =>
+              onRename && editingId === segment.id ? (
+                <div key={segment.id} className="px-2">
+                  <EditRow
+                    describeError={describeRenameError}
+                    label={segment}
+                    maxLength={SEGMENT_NAME_MAX_LENGTH}
+                    noun="segment"
+                    onCancel={() => setEditingId(null)}
+                    onDelete={async () => {}}
+                    onDeleteRequest={
+                      onDeleteRequest
+                        ? () => {
+                            setEditingId(null);
+                            onDeleteRequest(segment);
+                          }
+                        : undefined
+                    }
+                    onSave={(_id, name) => onRename(segment, name)}
+                  />
+                </div>
+              ) : (
+                <CommandItem
+                  key={segment.id}
+                  className={onRename ? 'group' : undefined}
+                  value={segment.name}
+                  onSelect={() => onSelect(segment)}
+                >
+                  <span className="min-w-0 truncate">{segment.name}</span>
+                  {showCounts && <MemberCount filter={segment.filter} />}
+                  {onRename ? (
+                    // The tick and the pencil share one place, as in the label picker: the
+                    // pencil slides in over the tick while the row is hovered.
+                    <button
+                      aria-label={`Edit segment ${segment.name}`}
+                      className="relative ms-auto flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        setEditingId(segment.id);
+                      }}
+                    >
+                      {segment.id === selectedId && (
+                        <LucideIcon.Check className="absolute text-primary transition-opacity duration-150 group-hover:opacity-0" />
+                      )}
+                      <LucideIcon.Pencil className="absolute translate-x-2 opacity-0 transition-all duration-150 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
+                    </button>
+                  ) : (
+                    segment.id === selectedId && <CommandCheck />
+                  )}
+                </CommandItem>
+              ),
+            )}
           </CommandGroup>
         )}
         {onNewSegment && (
