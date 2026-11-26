@@ -33,9 +33,9 @@ describe('schema-aware pipeline', function () {
           add: defineMethod({
             schema: { body: z.unknown() },
             permissions: false,
-            query(frame) {
+            handler(frame) {
               assert.equal(reads, 0);
-              return frame.validated.body;
+              return frame.body;
             },
           }),
         },
@@ -70,12 +70,12 @@ describe('schema-aware pipeline', function () {
         add: defineMethod({
           schema: { body: z.object({ value: z.string() }) },
           permissions: false,
-          query() {},
+          handler() {},
         }),
       },
       apiUtils,
     );
-    await assert.rejects(controller.add(body, {}), errors.ValidationError);
+    await assert.rejects(controller.add(body as never, {}), errors.ValidationError);
     assert.equal(reads, 0);
   });
 
@@ -87,8 +87,8 @@ describe('schema-aware pipeline', function () {
           schema: { body: z.object({ value: z.string().transform(BigInt) }) },
           generateCacheKeyData,
           permissions: false,
-          query(frame) {
-            return frame.validated.body.value;
+          handler(frame) {
+            return frame.body.value;
           },
         }),
       },
@@ -117,31 +117,6 @@ describe('schema-aware pipeline', function () {
     assert.equal(generateCacheKeyData.calledOnce, true);
   });
 
-  it('keeps an option named validated separate from parsed channels in cache keys', async function () {
-    const store = new Map<string, unknown>();
-    const cache = {
-      get: (key: string) => store.get(key),
-      set: (key: string, value: unknown) => store.set(key, value),
-    };
-    const query = sinon.spy((frame: Frame) => frame.options.validated);
-    const controller = pipeline(
-      {
-        add: defineMethod({
-          options: ['validated'],
-          schema: { body: z.object({ value: z.string() }) },
-          permissions: false,
-          query,
-          cache,
-        }),
-      },
-      apiUtils,
-    );
-    assert.equal(await controller.add({ value: 'same' }, { validated: 'one' }), 'one');
-    assert.equal(await controller.add({ value: 'same' }, { validated: 'two' }), 'two');
-    assert.equal(await controller.add({ value: 'same' }, { validated: 'one' }), 'one');
-    assert.equal(query.callCount, 2);
-  });
-
   it.each(['set', 'map', 'bigint'])(
     'requires a JSON-compatible custom key for parsed %s values',
     async function (kind) {
@@ -163,7 +138,7 @@ describe('schema-aware pipeline', function () {
               }),
             },
             permissions: false,
-            query() {},
+            handler() {},
             cache,
           }),
         },
@@ -200,12 +175,12 @@ describe('schema-aware pipeline', function () {
               }),
             },
             generateCacheKeyData(frame) {
-              return [...frame.validated.body.value];
+              return [...frame.body.value];
             },
             permissions: false,
-            query(frame) {
+            handler(frame) {
               queries += 1;
-              return [...frame.validated.body.value];
+              return [...frame.body.value];
             },
             cache,
           }),
@@ -222,60 +197,89 @@ describe('schema-aware pipeline', function () {
 
   it('parses internal options and body with defaults and transforms without legacy validators', async function () {
     const schema = {
-      options: z.object({ id: z.string(), page: z.string().transform(Number).default(1) }),
+      params: z.object({ id: z.string() }),
+      query: z.object({ page: z.string().transform(Number).default(1) }),
       body: z.object({ title: z.string(), enabled: z.boolean().default(true) }),
     };
     const method = defineMethod({
       schema,
       permissions: false,
-      query(frame) {
-        assert.equal(frame.options.id, undefined);
-        assert.deepEqual(frame.options.context, { internal: true });
-        assert.equal(Object.isFrozen(frame.validated), true);
-        return frame.validated;
+      handler(frame) {
+        assert.deepEqual(frame.context, { internal: true });
+        assert.equal(Object.isFrozen(frame.params), true);
+        assert.equal(Object.isFrozen(frame.query), true);
+        assert.equal(Object.isFrozen(frame.body), false);
+        return { params: frame.params, query: frame.query, body: frame.body };
       },
     });
     const controller = pipeline({ docName: 'widgets', add: method }, apiUtils);
 
-    assert.equal(controller.add.schema, schema);
-    assert.equal(controller.add.schema.options, schema.options);
     assert.deepEqual(
       await controller.add(
-        { title: 'New', extra: 'stripped' },
-        {
-          id: 'not-a-mongo-id',
-          context: { internal: true },
-        },
+        { title: 'New', extra: 'stripped' } as never,
+        { id: 'not-a-mongo-id', undeclared: 'dropped', context: { internal: true } } as never,
       ),
       {
-        options: { id: 'not-a-mongo-id', page: 1 },
+        params: { id: 'not-a-mongo-id' },
+        query: { page: 1 },
         body: { title: 'New', enabled: true },
       },
     );
     assert.deepEqual(
       await controller.add({ title: 'New' }, { id: 'id', page: '2', context: { internal: true } }),
-      {
-        options: { id: 'id', page: 2 },
-        body: { title: 'New', enabled: true },
-      },
+      { params: { id: 'id' }, query: { page: 2 }, body: { title: 'New', enabled: true } },
     );
   });
 
-  it('merges HTTP query, params and options in order, excluding request context', async function () {
+  it('compiles sync schemas and parses async schemas only when declared', async function () {
+    const params = z.object({ id: z.string() });
+    const sync = pipeline(
+      {
+        read: defineMethod({
+          schema: { params },
+          permissions: false,
+          handler: (frame) => frame.params.id,
+        }),
+      },
+      apiUtils,
+    );
+    assert.notEqual(sync.read.schema.params, params);
+    assert.equal(await sync.read({ id: 'id' }), 'id');
+
+    const asyncParams = z.object({ id: z.string().refine(async () => true) });
+    const asyncMethod = pipeline(
+      {
+        read: defineMethod({
+          schema: { params: asyncParams, async: true },
+          permissions: false,
+          handler: (frame) => frame.params.id,
+        }),
+      },
+      apiUtils,
+    );
+    assert.equal(asyncMethod.read.schema.params, asyncParams);
+    assert.equal(await asyncMethod.read({ id: 'id' }), 'id');
+  });
+
+  it('keeps HTTP params, query and body in separate channels', async function () {
     const permissions = sinon.spy();
     const controller = pipeline(
       {
         docName: 'widgets',
         read: defineMethod({
-          schema: { options: z.strictObject({ id: z.string(), page: z.coerce.number() }) },
+          schema: {
+            params: z.object({ id: z.string() }),
+            query: z.object({ page: z.coerce.number() }),
+          },
           permissions: {
             before(frame) {
-              assert.deepEqual(frame.validated.options, { id: 'param', page: 2 });
-              assert.equal(frame.options.context?.user, 'staff');
+              assert.deepEqual(frame.params, { id: 'param' });
+              assert.deepEqual(frame.query, { page: 2 });
+              assert.equal(frame.context.user, 'staff');
             },
           },
-          query(frame) {
-            return frame.validated.options;
+          handler(frame) {
+            return { params: frame.params, query: frame.query };
           },
         }),
       },
@@ -285,8 +289,8 @@ describe('schema-aware pipeline', function () {
       get: () => 'example.com',
       url: '/widgets/param/',
       user: { id: 'staff' },
-      query: { id: 'query', page: '2', context: { user: 'untrusted' } },
-      params: { id: 'param' },
+      query: { id: 'query', page: '2', context: { internal: true }, transacting: 'untrusted' },
+      params: { id: 'param', page: '9' },
     };
     const res = { json: sinon.spy(), send: sinon.spy(), status: sinon.spy(), set: sinon.spy() };
     const next = sinon.spy();
@@ -294,95 +298,128 @@ describe('schema-aware pipeline', function () {
     await http(controller.read)(req, res, next);
     assert.equal(next.called, false);
     assert.equal(permissions.calledOnce, true);
-    assert.deepEqual(res.json.firstCall.firstArg, { id: 'param', page: 2 });
+    const [, frame] = permissions.firstCall.args;
+    assert.equal(frame.context.internal, undefined);
+    assert.deepEqual(frame.transaction, {});
+    assert.deepEqual(res.json.firstCall.firstArg, { params: { id: 'param' }, query: { page: 2 } });
+  });
 
-    const requestFrame = new Frame({
-      query: { id: 'query', page: '1' },
-      params: { id: 'param' },
-      options: { id: 'internal', page: '3', context: {} },
-    });
-    const internal = pipeline(
+  it('routes options on a caller-supplied frame over its params and query', async function () {
+    const controller = pipeline(
       {
         read: defineMethod({
-          schema: { options: z.strictObject({ id: z.string(), page: z.coerce.number() }) },
-          permissions: false,
-          query(frame) {
-            return frame.validated.options;
+          schema: {
+            params: z.object({ id: z.string() }),
+            query: z.object({ page: z.coerce.number() }),
           },
+          permissions: false,
+          handler: (frame) => ({ ...frame.params, ...frame.query }),
         }),
       },
       apiUtils,
     );
-    assert.deepEqual(await internal.read(requestFrame), { id: 'internal', page: 3 });
-  });
-
-  it('validates the original body rather than data populated from options', async function () {
-    const read = defineMethod({
-      data: ['id'],
-      schema: { body: z.object({ title: z.string() }).default({ title: 'default' }) },
-      permissions: false,
-      query(frame) {
-        return frame.validated.body;
-      },
+    const frame = new Frame({
+      query: { page: '1' },
+      params: { id: 'param' },
+      options: { id: 'internal', page: '3' },
     });
-    const controller = pipeline(
-      { read },
-      {
-        ...apiUtils,
-        serializers: {
-          ...apiUtils.serializers,
-          input: {
-            all(_config: unknown, frame: Frame) {
-              assert.deepEqual(frame.data, { id: 'id' });
-            },
-          },
-        },
-      },
-    );
-    assert.deepEqual(await controller.read({ id: 'id' }), { title: 'default' });
-    await assert.rejects(controller.read({}, { id: 'id' }), errors.ValidationError);
+    assert.deepEqual(await controller.read(frame), { id: 'internal', page: 3 });
   });
 
-  it('reports invalid options with their channel and path before any callback', async function () {
-    const query = sinon.spy();
-    const validation = sinon.spy();
-    const cache = { get: sinon.stub().resolves('cached'), set: sinon.spy() };
-    const generateCacheKeyData = sinon.spy();
-    const permissions = sinon.spy();
+  it('takes transaction handles only from trusted internal calls', async function () {
+    const transacting = { trx: true };
+    const cache = { get: sinon.stub().resolves(undefined), set: sinon.spy() };
+    const seen: unknown[] = [];
     const controller = pipeline(
       {
-        read: defineMethod({
-          schema: { options: z.object({ id: z.string() }) },
-          validation,
-          generateCacheKeyData,
-          permissions,
-          query,
+        edit: defineMethod({
+          schema: { params: z.object({ id: z.string() }) },
+          permissions: false,
+          handler(frame) {
+            seen.push({
+              transaction: frame.transaction,
+              options: frame.modelOptions,
+            });
+          },
           cache,
         }),
       },
       apiUtils,
     );
-    await assert.rejects(controller.read({ id: 123 }), (error: unknown) => {
-      assert.ok(error instanceof errors.ValidationError);
-      assert.equal(error.statusCode, 422);
-      assert.equal(error.property, 'options.id');
-      assert.deepEqual(error.errorDetails[0].path, ['options', 'id']);
-      return true;
-    });
-    for (const callback of [validation, generateCacheKeyData, permissions, query, cache.get]) {
-      assert.equal(callback.called, false);
-    }
+    await controller.edit({ id: 'one', transacting, forUpdate: true, context: { internal: true } });
+    await controller.edit({ id: 'one', transacting, forUpdate: true, context: { user: 'staff' } });
+    assert.deepEqual(seen, [
+      {
+        transaction: { transacting, forUpdate: true },
+        options: { id: 'one', context: { internal: true }, transacting, forUpdate: true },
+      },
+      { transaction: {}, options: { id: 'one', context: { user: 'staff' } } },
+    ]);
+    assert.doesNotMatch(cache.get.firstCall.firstArg, /trx|forUpdate/);
   });
 
+  it('validates the original body rather than data populated from params', async function () {
+    const read = defineMethod({
+      schema: { body: z.object({ title: z.string() }).default({ title: 'default' }) },
+      permissions: false,
+      handler(frame) {
+        return frame.body;
+      },
+    });
+    const controller = pipeline({ read }, apiUtils);
+    assert.deepEqual(await controller.read({ id: 'id' } as never), { title: 'default' });
+    await assert.rejects(controller.read({} as never, {}), errors.ValidationError);
+  });
+
+  it.each([
+    ['params', { id: 123 }, 'params.id'],
+    ['query', { page: 'one' }, 'query.page'],
+  ] as const)(
+    'reports invalid %s with their channel and path before any callback',
+    async function (_channel, options, property) {
+      const handler = sinon.spy();
+      const validation = sinon.spy();
+      const cache = { get: sinon.stub().resolves('cached'), set: sinon.spy() };
+      const generateCacheKeyData = sinon.spy();
+      const permissions = sinon.spy();
+      const controller = pipeline(
+        {
+          read: defineMethod({
+            schema: {
+              params: z.object({ id: z.string().optional() }),
+              query: z.object({ page: z.coerce.number().optional() }),
+            },
+            validation,
+            generateCacheKeyData,
+            permissions,
+            handler,
+            cache,
+          }),
+        },
+        apiUtils,
+      );
+      await assert.rejects(controller.read(options as never), (error: unknown) => {
+        assert.ok(error instanceof errors.ValidationError);
+        assert.equal(error.statusCode, 422);
+        assert.equal(error.property, property);
+        assert.deepEqual(error.errorDetails[0].path, property.split('.'));
+        return true;
+      });
+      for (const callback of [validation, generateCacheKeyData, permissions, handler, cache.get]) {
+        assert.equal(callback.called, false);
+      }
+    },
+  );
+
   it('passes body validation errors to HTTP next with method metadata', async function () {
-    const query = sinon.spy();
+    const handler = sinon.spy();
     const controller = pipeline(
       {
         docName: 'widgets',
         add: defineMethod({
           schema: { body: z.object({ widgets: z.array(z.object({ title: z.string() })) }) },
           permissions: false,
-          query,
+          handler,
         }),
       },
       apiUtils,
@@ -404,7 +441,7 @@ describe('schema-aware pipeline', function () {
     assert.deepEqual(error.errorDetails[0].path, ['body', 'widgets', 0, 'title']);
     assert.deepEqual(req.frameOptions, { docName: 'widgets', method: 'add' });
     assert.equal(res.json.called, false);
-    assert.equal(query.called, false);
+    assert.equal(handler.called, false);
   });
 
   it('runs parsing and custom validation once before cache-key generation on every cache hit', async function () {
@@ -416,31 +453,32 @@ describe('schema-aware pipeline', function () {
       },
       set: sinon.spy(),
     };
-    const query = sinon.spy();
+    const handler = sinon.spy();
     const controller = pipeline(
       {
         read: defineMethod({
           schema: {
-            options: z.object({
+            params: z.object({
               id: z.string().transform(async (id) => {
                 calls.push('parse');
                 return id.toUpperCase();
               }),
             }),
+            async: true,
           },
           validation(frame) {
             calls.push('validation');
-            assert.equal(frame.validated.options.id, 'ID');
+            assert.equal(frame.params.id, 'ID');
           },
           generateCacheKeyData(frame) {
             calls.push('key');
-            return frame.validated.options;
+            return frame.params;
           },
           permissions(frame) {
             calls.push('permissions');
-            assert.equal(frame.validated.options.id, 'ID');
+            assert.equal(frame.params.id, 'ID');
           },
-          query,
+          handler,
           cache,
         }),
       },
@@ -458,21 +496,9 @@ describe('schema-aware pipeline', function () {
     );
     assert.equal(await controller.read({ id: 'id' }), 'cached');
     assert.equal(await controller.read({ id: 'id' }), 'cached');
-    assert.deepEqual(calls, [
-      'parse',
-      'validation',
-      'key',
-      'serialize',
-      'permissions',
-      'cache',
-      'parse',
-      'validation',
-      'key',
-      'serialize',
-      'permissions',
-      'cache',
-    ]);
-    assert.equal(query.called, false);
+    const once = ['parse', 'validation', 'key', 'serialize', 'permissions', 'cache'];
+    assert.deepEqual(calls, [...once, ...once]);
+    assert.equal(handler.called, false);
   });
 
   it('waits for schema-method authorization before returning a shared cached response', async function () {
@@ -489,17 +515,17 @@ describe('schema-aware pipeline', function () {
     const authorized = new Promise<boolean>((resolve) => {
       finishAuthorization = resolve;
     });
-    const query = sinon.stub().returns('private response');
+    const handler = sinon.stub().returns('private response');
     const controller = pipeline(
       {
         read: defineMethod({
-          schema: { options: z.object({ id: z.string() }) },
+          schema: { params: z.object({ id: z.string() }) },
           generateCacheKeyData(frame) {
-            return frame.validated.options;
+            return frame.params;
           },
           async permissions(frame) {
-            assert.equal(frame.validated.options.id, 'id');
-            if (frame.options.context?.role === 'Owner') {
+            assert.equal(frame.params.id, 'id');
+            if (frame.context.role === 'Owner') {
               return;
             }
             startAuthorization();
@@ -507,7 +533,7 @@ describe('schema-aware pipeline', function () {
               throw new errors.NoPermissionError();
             }
           },
-          query,
+          handler,
           cache,
         }),
       },
@@ -535,7 +561,7 @@ describe('schema-aware pipeline', function () {
       await controller.read({ id: 'id', context: { role: 'Owner' } }),
       'private response',
     );
-    assert.equal(query.callCount, 1, 'authorized cache hits must reuse the response');
+    assert.equal(handler.callCount, 1, 'authorized cache hits must reuse the response');
   });
 
   it('does not consult the cache when custom validation rejects parsed input', async function () {
@@ -544,12 +570,12 @@ describe('schema-aware pipeline', function () {
     const controller = pipeline(
       {
         read: defineMethod({
-          schema: { options: z.object({ id: z.string() }) },
+          schema: { params: z.object({ id: z.string() }) },
           validation() {
             throw error;
           },
           permissions: false,
-          query() {},
+          handler() {},
           cache,
         }),
       },
@@ -559,57 +585,63 @@ describe('schema-aware pipeline', function () {
     assert.equal(cache.get.called, false);
   });
 
-  it('uses parsed options, body and trusted context in the default cache key', async function () {
+  it('uses parsed channels and trusted context, without the principal, in the default cache key', async function () {
     const cache = { get: sinon.stub().resolves('cached'), set: sinon.spy() };
     const controller = pipeline(
       {
         add: defineMethod({
           schema: {
-            options: z.object({ page: z.coerce.number().default(1) }),
+            params: z.object({ id: z.string() }),
+            query: z.object({ page: z.coerce.number().default(1) }),
             body: z.object({ title: z.string() }),
           },
           permissions: false,
-          query() {},
+          handler() {},
           cache,
         }),
       },
       apiUtils,
     );
-    await controller.add({ title: 'first' }, { page: '1', context: { user: 'one' } });
-    await controller.add({ title: 'first' }, { context: { user: 'one' } });
-    await controller.add({ title: 'second' }, { context: { user: 'one' } });
-    await controller.add({ title: 'first' }, { context: { user: 'two' } });
+    const user = (id: string, session: string) => ({ user: id, principal: { session } });
+    await controller.add({ title: 'first' }, { id: 'a', page: '1', context: user('one', 'x') });
+    await controller.add({ title: 'first' }, { id: 'a', context: user('one', 'y') });
+    await controller.add({ title: 'second' }, { id: 'a', context: user('one', 'x') });
+    await controller.add({ title: 'first' }, { id: 'a', context: user('two', 'x') });
+    await controller.add({ title: 'first' }, { id: 'b', context: user('one', 'x') });
     const keys = cache.get.args.map(([key]) => key);
     assert.equal(keys[0], keys[1]);
-    assert.notEqual(keys[0], keys[2]);
-    assert.notEqual(keys[0], keys[3]);
+    assert.equal(new Set(keys).size, 4);
+    assert.doesNotMatch(keys[0], /principal/);
   });
 
-  it('keeps explicitly described parsed objects independent of serializer mutations', async function () {
+  it('derives working options from parsed params and query for serializers', async function () {
     const nested = { value: 'original' };
     const body = { payload: { value: 'body' } };
     const controller = pipeline(
       {
         docName: 'widgets',
         edit: defineMethod({
-          options: ['nested', 'include'],
           schema: {
-            options: z.object({ nested: z.object({ value: z.string() }), include: z.string() }),
+            params: z.object({ id: z.string() }),
+            query: z.object({ nested: z.object({ value: z.string() }), include: z.string() }),
             body: z.object({ payload: z.object({ value: z.string() }) }),
           },
           permissions(frame) {
-            assert.deepEqual(frame.validated.options.nested, { value: 'original' });
-            assert.deepEqual(frame.validated.body.payload, { value: 'body' });
+            assert.deepEqual(frame.query.nested, { value: 'original' });
+            assert.deepEqual(frame.body.payload, { value: 'body' });
           },
-          query(frame) {
-            assert.deepEqual(frame.options.withRelated, ['tags']);
-            assert.equal(frame.options.include, undefined);
-            assert.equal(frame.validated.options.include, 'tags');
-            assert.deepEqual(frame.options.nested, { value: 'mutated' });
+          handler(frame) {
+            assert.deepEqual(frame.modelOptions, {
+              id: 'id',
+              nested: { value: 'mutated' },
+              withRelated: ['tags'],
+              context: {},
+            });
+            assert.equal(frame.query.include, 'tags');
             assert.throws(() => {
-              Object.assign(frame, { validated: {} });
+              Object.assign(frame, { query: {} });
             }, TypeError);
-            return frame.validated;
+            return { query: frame.query, body: frame.body };
           },
         }),
       },
@@ -620,70 +652,58 @@ describe('schema-aware pipeline', function () {
           input: {
             widgets: {
               edit(_config: unknown, frame: Frame) {
+                // The shared serializer has already mapped include.
+                assert.deepEqual(frame.options, {
+                  id: 'id',
+                  nested: { value: 'original' },
+                  withRelated: ['tags'],
+                  context: {},
+                });
                 Object.assign(frame.options.nested as object, { value: 'mutated' });
                 Object.assign(frame.data.payload as object, { value: 'mutated body' });
-                assert.deepEqual(frame.data.payload, { value: 'mutated body' });
               },
             },
           },
         },
       },
     );
-    assert.deepEqual(await controller.edit(body, { nested, include: 'tags' }), {
-      options: { nested: { value: 'original' }, include: 'tags' },
-      body: { payload: { value: 'body' } },
-    });
+    assert.deepEqual(
+      await controller.edit(body, { id: 'id', nested, include: 'tags', extra: 'dropped' } as never),
+      {
+        query: { nested: { value: 'original' }, include: 'tags' },
+        body: { payload: { value: 'body' } },
+      },
+    );
     assert.deepEqual(body, { payload: { value: 'body' } });
   });
 
   it('retains Zod reference semantics for unknown, any and passthrough values', async function () {
     const unknown = { value: 'unknown' };
     const any = { value: 'any' };
-    const extra = { value: 'passthrough' };
     const body = { payload: { value: 'body' } };
     const controller = pipeline(
       {
         read: defineMethod({
           schema: {
-            options: z.looseObject({ unknown: z.unknown(), any: z.any() }),
+            query: z.object({ unknown: z.unknown(), any: z.any() }),
             body: z.object({ payload: z.unknown() }),
           },
           permissions: false,
-          query(frame) {
-            assert.equal(frame.validated.options.unknown, unknown);
-            assert.equal(frame.validated.options.any, any);
-            assert.equal(frame.validated.options.extra, extra);
-            assert.equal(frame.validated.body.payload, body.payload);
-            return frame.validated.body;
+          handler(frame) {
+            assert.equal(frame.query.unknown, unknown);
+            assert.equal(frame.query.any, any);
+            assert.equal(frame.body.payload, body.payload);
+            return frame.body;
           },
         }),
       },
       apiUtils,
     );
 
-    assert.deepEqual(await controller.read(body, { unknown, any, extra }), body);
+    assert.deepEqual(await controller.read(body, { unknown, any }), body);
   });
 
-  it('retains configured working options in cache keys for body-only schemas', async function () {
-    const cache = { get: sinon.stub().resolves('cached'), set: sinon.spy() };
-    const controller = pipeline(
-      {
-        edit: defineMethod({
-          options: ['id'],
-          schema: { body: z.object({ title: z.string() }) },
-          permissions: false,
-          query() {},
-          cache,
-        }),
-      },
-      apiUtils,
-    );
-    await controller.edit({ title: 'same' }, { id: 'one' });
-    await controller.edit({ title: 'same' }, { id: 'two' });
-    assert.notEqual(cache.get.firstCall.firstArg, cache.get.secondCall.firstArg);
-  });
-
-  it('awaits async body refinement and transformation before permissions and query', async function () {
+  it('awaits async body refinement and transformation before permissions and handler', async function () {
     const calls: string[] = [];
     const controller = pipeline(
       {
@@ -701,21 +721,22 @@ describe('schema-aware pipeline', function () {
                   return title.toUpperCase();
                 }),
             }),
+            async: true,
           },
           permissions(frame) {
             calls.push('permissions');
-            assert.equal(frame.validated.body.title, 'TITLE');
+            assert.equal(frame.body.title, 'TITLE');
           },
-          query(frame) {
-            calls.push('query');
-            return frame.validated.body.title;
+          handler(frame) {
+            calls.push('handler');
+            return frame.body.title;
           },
         }),
       },
       apiUtils,
     );
     assert.equal(await controller.add({ title: 'title' }, {}), 'TITLE');
-    assert.deepEqual(calls, ['refine', 'transform', 'permissions', 'query']);
+    assert.deepEqual(calls, ['refine', 'transform', 'permissions', 'handler']);
     await assert.rejects(controller.add({ title: '' }, {}), errors.ValidationError);
   });
 
@@ -725,14 +746,14 @@ describe('schema-aware pipeline', function () {
       {
         read: defineMethod({
           schema: {
-            options: z.object({
+            params: z.object({
               id: z.string().refine(() => {
                 throw failure;
               }),
             }),
           },
           permissions: false,
-          query() {},
+          handler() {},
         }),
       },
       apiUtils,
@@ -744,10 +765,10 @@ describe('schema-aware pipeline', function () {
     const controller = pipeline(
       {
         read: defineMethod({
-          schema: { options: z.object({ id: z.string() }) },
+          schema: { params: z.object({ id: z.string() }) },
           permissions: false,
-          query(frame) {
-            return frame.validated.options.id;
+          handler(frame) {
+            return frame.params.id;
           },
         }),
       },
@@ -759,6 +780,26 @@ describe('schema-aware pipeline', function () {
     assert.equal(await controller.read(frame), 'second');
     frame.original.options = { id: 123 };
     await assert.rejects(controller.read(frame), errors.ValidationError);
-    assert.equal('validated' in frame, false);
+    for (const key of ['params', 'context', 'transaction', 'modelOptions']) {
+      assert.equal(key in frame, false, key);
+    }
+  });
+
+  it('rejects schema methods that were not created with defineMethod', function () {
+    assert.throws(
+      () =>
+        pipeline(
+          {
+            docName: 'widgets',
+            read: { schema: { body: z.string() }, permissions: false, handler() {} },
+          } as never,
+          apiUtils,
+        ),
+      (error: unknown) => {
+        assert.ok(error instanceof errors.IncorrectUsageError);
+        assert.match(error.message, /widgets\.read.*defineMethod/);
+        return true;
+      },
+    );
   });
 });

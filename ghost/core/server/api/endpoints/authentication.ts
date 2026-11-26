@@ -66,10 +66,10 @@ const controller = {
     schema: {
       body: resourceBody('setup', auth.setup.setupDetailsSchema),
     },
-    async query(frame) {
+    async handler(frame) {
       await auth.setup.assertSetupCompleted(false)();
 
-      const setupDetails = { ...frame.validated.body, status: 'active' };
+      const setupDetails = { ...frame.body, status: 'active' };
       let data = await auth.setup.setupUser(setupDetails);
 
       data = await auth.setup.doFixtures(data);
@@ -91,17 +91,17 @@ const controller = {
     },
     permissions: async (frame) => {
       const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
-      if (owner.id !== frame.options.context?.user) {
+      if (owner.id !== frame.context.user) {
         throw new errors.NoPermissionError({ message: tpl(messages.notTheBlogOwner) });
       }
     },
     schema: {
       body: resourceBody('setup', auth.setup.updateSetupDetailsSchema),
     },
-    async query(frame) {
+    async handler(frame) {
       await auth.setup.assertSetupCompleted(true)();
 
-      const { name, email, password, blogTitle } = frame.validated.body;
+      const { name, email, password, blogTitle } = frame.body;
       const setupDetails = { name, email, password, blogTitle, status: 'active' };
 
       const data = await auth.setup.setupUser(setupDetails);
