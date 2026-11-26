@@ -127,9 +127,27 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
 };
 
 /**
+ * The handlers a route runs for a request's method, picked as Express picks them: the layers for
+ * that verb or for every verb, with HEAD served by GET when the route has no HEAD of its own
+ *
+ * @param {{stack: {method?: string, handle: Function}[], methods: Record<string, boolean>}} route
+ * @param {string} method
+ */
+const routeHandlers = (route, method) => {
+  let verb = method.toLowerCase();
+  if (verb === 'head' && !route.methods.head) {
+    verb = 'get';
+  }
+  return route.stack
+    .filter((layer) => !layer.method || layer.method === verb)
+    .map((layer) => layer.handle);
+};
+
+/**
  * Refuses an app the method its route ends in would refuse it on, before the route's own
  * middleware runs: a rate limit keyed on the staff user the app acts for, or an upload being
- * parsed and stored. The method is the route's last handler, from `http()`.
+ * parsed and stored. The method is the last handler the route runs for the request's verb, from
+ * `http()`.
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -139,7 +157,7 @@ const refuseAppEarly = function refuseAppEarly(req, res, next) {
   if (req.auth?.kind !== 'app') {
     return next();
   }
-  const routed = routedMethod(req.route?.stack.at(-1)?.handle);
+  const routed = req.route && routedMethod(routeHandlers(req.route, req.method).at(-1));
   if (!routed) {
     return next();
   }
@@ -191,3 +209,5 @@ module.exports.publicAdminApi = [
   shared.middleware.prettyUrls,
   tokenPermissionCheck,
 ];
+
+module.exports.routeHandlers = routeHandlers;

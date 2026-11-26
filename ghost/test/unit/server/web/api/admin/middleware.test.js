@@ -287,6 +287,11 @@ describe('Admin API Middleware', function () {
       app.post('/upload', refuseAppEarly, sideEffect, http(controller.upload));
       app.post('/import', refuseAppEarly, sideEffect, http(controller.importCSV));
       app.post('/not-http', refuseAppEarly, sideEffect, (req, res) => res.json({ ok: true }));
+      app
+        .route('/multi')
+        .get(refuseAppEarly, sideEffect, http(controller.browse))
+        .post(refuseAppEarly, sideEffect, http(controller.upload));
+      app.route('/any').all(refuseAppEarly, sideEffect, http(controller.browse));
       app.use((err, req, res, _next) => {
         void _next;
         res.status(err.statusCode).json({ type: err.errorType, message: err.message });
@@ -328,6 +333,19 @@ describe('Admin API Middleware', function () {
       await request(routes).get('/posts').expect(200);
       await request(routes).post('/import').expect(200);
       assert.deepEqual(ran, ['/posts', '/import']);
+    });
+
+    it('judges a route serving several verbs by the method the request runs', async function () {
+      const { app: routes, ran } = createRoutes(app(['post:browse']));
+
+      await request(routes).get('/multi').expect(200);
+      await request(routes).head('/multi').expect(200);
+      await request(routes).post('/any').expect(200);
+      await request(routes).post('/multi').expect(403).expect({
+        type: 'NoPermissionError',
+        message: 'Apps do not have permission to upload posts',
+      });
+      assert.deepEqual(ran, ['/multi', '/multi', '/any']);
     });
 
     it('leaves a route that does not end in http() to its own checks', async function () {

@@ -3,8 +3,12 @@ import errors from '@tryghost/errors';
 
 const permissions = require('../../../../../../core/server/api/endpoints/utils/permissions');
 const routes = require('../../../../../../core/server/web/api/endpoints/admin/routes');
+const {
+  routeHandlers,
+} = require('../../../../../../core/server/web/api/endpoints/admin/middleware');
 // Required, not imported, so it is the copy the routes registered their handlers with
-const { routedMethod } = require('@tryghost/api-framework');
+const { http, pipeline, routedMethod } = require('@tryghost/api-framework');
+const express = require('express');
 
 /**
  * Admin API methods whose permission check is their own or none, which refuse apps, by their
@@ -99,7 +103,7 @@ type MountedRoutes = {
  * Everything the Admin API router mounts, walked from the router itself rather than read from
  * the routes file, so a route mounted in any form is found
  */
-function mountedRoutes(): MountedRoutes {
+function mountedRoutes(adminApi: { stack: any[] } = routes()): MountedRoutes {
   const found: MountedRoutes = {
     methods: [],
     outside: [],
@@ -109,6 +113,28 @@ function mountedRoutes(): MountedRoutes {
     middleware: [],
   };
   const methods = new Map<unknown, AdminApiMethod>();
+
+  /** One verb of a route, by the handlers Express runs for it */
+  const classify = (route: string, handlers: any[], mounted: boolean) => {
+    const routed = routedMethod(handlers.at(-1));
+    if (!routed) {
+      // A handler from http() whose method is undefined
+      found[handlers.at(-1).name === 'Http' ? 'empty' : 'unrouted'].push(route);
+      return;
+    }
+    // Authenticated by the route the router is mounted after, whose refusal can't see the method
+    if (mounted && handlers.length > 1) {
+      found.guardedLate.push(route);
+    }
+    if (!routed.docName) {
+      found.outside.push(route);
+      return;
+    }
+    methods.set(routed.controller, {
+      name: `${routed.docName}.${routed.method}`,
+      impl: { permissions: routed.permissions },
+    });
+  };
 
   const walk = (router: { stack: any[] }, mounted: boolean) => {
     for (const layer of router.stack) {
@@ -120,32 +146,15 @@ function mountedRoutes(): MountedRoutes {
         }
         continue;
       }
-      const verbs = Object.keys(layer.route.methods).map((verb) =>
-        verb === '_all' ? 'ALL' : verb.toUpperCase(),
-      );
-      const route = `${verbs.join(',')} ${[layer.route.path].flat().join(',')}`;
-      const handlers = layer.route.stack.map((l: { handle: unknown }) => l.handle);
-      const routed = routedMethod(handlers.at(-1));
-      if (!routed) {
-        // A handler from http() whose method is undefined
-        found[handlers.at(-1).name === 'Http' ? 'empty' : 'unrouted'].push(route);
-        continue;
+      const path = [layer.route.path].flat().join(',');
+      // A route serving several verbs runs a different chain for each
+      for (const verb of Object.keys(layer.route.methods)) {
+        const route = `${verb === '_all' ? 'ALL' : verb.toUpperCase()} ${path}`;
+        classify(route, routeHandlers(layer.route, verb), mounted);
       }
-      // Authenticated by the route the router is mounted after, whose refusal can't see the method
-      if (mounted && handlers.length > 1) {
-        found.guardedLate.push(route);
-      }
-      if (!routed.docName) {
-        found.outside.push(route);
-        continue;
-      }
-      methods.set(routed.controller, {
-        name: `${routed.docName}.${routed.method}`,
-        impl: { permissions: routed.permissions },
-      });
     }
   };
-  walk(routes(), false);
+  walk(adminApi, false);
 
   found.methods = [...methods.values()];
   return found;
@@ -180,6 +189,30 @@ describe('API permissions for apps', function () {
     // Refusing an app before a route's own middleware needs the route to name its method
     assert.deepEqual(guardedLate, []);
     assert.deepEqual([...new Set(middleware)].sort(), ROUTER_MIDDLEWARE);
+  });
+
+  describe('walking a router', function () {
+    const controller = pipeline(
+      {
+        docName: 'things',
+        browse: { permissions: false, query: () => ({}) },
+        add: { permissions: true, query: () => ({}) },
+      },
+      {},
+    );
+
+    it('classifies each verb of a route that serves several', function () {
+      const router = express.Router();
+      router.route('/things').get(http(controller.browse)).post(http(controller.add));
+
+      const { methods } = mountedRoutes(router);
+
+      assert.deepEqual(
+        methods.filter(isUnchecked).map(({ name }) => name),
+        ['things.browse'],
+      );
+      assert.deepEqual(methods.map(({ name }) => name).sort(), ['things.add', 'things.browse']);
+    });
   });
 
   it('finds no unchecked method sharing its name with another', function () {
