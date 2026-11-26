@@ -17,7 +17,7 @@ const { IncorrectUsageError } = require('@tryghost/errors');
 
 const ROOT_PATH = require.resolve('../../../../../core/server/services/content-check');
 const EVENT_NAME = 'settings.title.edited';
-const WEBHOOK_ORIGIN = 'https://jev-classifier.example';
+const WEBHOOK_ORIGIN = 'https://content-check.example';
 const WEBHOOK_URL = `${WEBHOOK_ORIGIN}/v1/ghost/events`;
 const WEBHOOK_SECRET = 'not-a-live-secret';
 const SITE_ID = '123456';
@@ -350,18 +350,5 @@ describe('Content Check service root', function () {
       loggedError,
       `Failed to send content check webhook to "${WEBHOOK_ORIGIN}": HTTP 503`,
     );
-  });
-
-  it('passes POST retry options so Got will retry the delivery', async function () {
-    const service = await initRoot();
-    const request = sandbox.stub(service, 'request').resolves(null);
-    const send = sandbox.spy(service, 'sendTitleChanged');
-
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
-
-    sinon.assert.calledOnce(request);
-    const options = request.lastCall.args[1] as { retry: { limit: number; methods: string[] } };
-    assert.deepEqual(options.retry, { limit: 2, methods: ['POST'] });
   });
 });

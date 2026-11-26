@@ -279,7 +279,7 @@ describe('Public-config response builders', function () {
           webhookSecret: 'verification-secret',
         },
         contentCheck: {
-          webhookUrl: 'https://example.com/abuse',
+          webhookUrl: 'https://example.com/content-check',
           webhookSecret: 'content-check-secret',
           siteCreatedAt: '2026-10-15T10:00:00.000Z',
           maxSiteAgeDays: 30,
