@@ -69,7 +69,7 @@ const PRIVATE_FEATURES = [
   'editorLease',
   'commentsAnalytics',
   'oauthBridge',
-  'segmentEmails',
+  'memberSegments',
   'settingsGroupedNav',
 ];
 

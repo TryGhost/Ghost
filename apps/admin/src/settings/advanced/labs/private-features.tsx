@@ -125,10 +125,10 @@ const features: Feature[] = [
     flag: 'oauthBridge',
   },
   {
-    title: 'Email posts to segments',
+    title: 'Member segments',
     description:
-      'Work in progress. So far, member filters in the Admin API can name saved segments.',
-    flag: 'segmentEmails',
+      "Work in progress. Members filters that name a segment, Admin's segment screens and emailing posts to segments. So far, members filters in the Admin API can name segments.",
+    flag: 'memberSegments',
   },
   {
     title: 'Grouped settings navigation',
