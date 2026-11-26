@@ -19,6 +19,8 @@ export type Config = {
   database: string;
   blogUrl?: string;
   labs: Record<string, boolean>;
+  // Which auth engine the site runs. Missing on servers older than the engine choice.
+  auth?: { engine?: 'legacy' | 'better-auth' };
   stripeDirect: boolean;
   mail: string;
   stats?: JSONObject & {

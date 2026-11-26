@@ -16,3 +16,11 @@ scopes on routes that check a permission and refuses it on the rest, except the
 site's public details. The allowlist still filters what an app can send more
 finely than a scope does, such as includes, query parameters and what a write
 may set.
+
+Apps need Ghost's new auth engine. `useAppsAvailability` reads whether the site
+runs it from its config, as `supported`, `unsupported` or, until the config
+has loaded, `loading`. What can be done with an installation is one answer,
+`installationActions` (`lib/installation-actions.ts`): ask it, wherever an
+installation is listed or shown, rather than combining status, availability
+and pins again. Where apps aren't supported, offer nothing that installs,
+approves or opens an app, and keep listing and uninstalling working.

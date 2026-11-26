@@ -48,6 +48,9 @@ import { historyTitle } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
+import { type InstallationActions, installationActions } from './lib/installation-actions';
+import { useAppsAvailability } from './lib/use-apps-availability';
+import { AppsUnsupportedBanner } from './components/apps-unsupported';
 import { AppAuthor, UnverifiedDeveloperBadge } from './components/app-author';
 
 /** A fact in the sidebar, its label over its value, as on a member's details. */
@@ -230,9 +233,12 @@ const Sidebar: React.FC<SidebarProps> = ({ installation, timezone, showIdentity 
 
 const Details: React.FC<{
   installation: AppInstallation;
+  /** Whether apps can't be used on this site, which the page then says */
+  unsupported: boolean;
+  actions: InstallationActions;
   timezone: string;
   showIdentity: boolean;
-}> = ({ installation, timezone, showIdentity }) => {
+}> = ({ installation, unsupported, actions, timezone, showIdentity }) => {
   const { manifest, status, history = [] } = installation;
   const sidebar = (
     <Sidebar installation={installation} showIdentity={showIdentity} timezone={timezone} />
@@ -250,7 +256,8 @@ const Details: React.FC<{
     >
       {showIdentity && sidebar}
       <Stack className="min-w-0 flex-1 in-data-[admin7-design=true]:gap-18" gap="2xl">
-        {status === 'suspended' && (
+        {unsupported && status !== 'uninstalled' && <AppsUnsupportedBanner />}
+        {actions.canReview && (
           <Banner data-testid="app-needs-approval" size="md" variant="warning">
             <Text as="p" size="sm">
               {manifest.name} has been updated, and the changes need your approval. It won’t open
@@ -284,12 +291,13 @@ const Details: React.FC<{
 
 interface ActionsProps {
   installation: AppInstallation;
+  /** Where no app can be opened, only uninstalling is left */
+  actions: InstallationActions;
+  pins: ReturnType<typeof useInstalledApps>['pins'];
   onUninstall: () => void;
 }
 
-const Actions: React.FC<ActionsProps> = ({ installation, onUninstall }) => {
-  const { pins } = useInstalledApps();
-
+const Actions: React.FC<ActionsProps> = ({ installation, actions, pins, onUninstall }) => {
   return (
     <PageHeader.Actions>
       <PageHeader.ActionGroup>
@@ -300,7 +308,7 @@ const Actions: React.FC<ActionsProps> = ({ installation, onUninstall }) => {
             </PageHeader.Action>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {pins.isLoaded && (
+            {actions.canPin && (
               <>
                 <PinMenuItem
                   full={!pins.canPinMore}
@@ -319,14 +327,14 @@ const Actions: React.FC<ActionsProps> = ({ installation, onUninstall }) => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        {installation.status === 'active' && (
+        {actions.canOpen && (
           <PageHeader.ActionGroup.Primary>
             <PageHeader.Action label="Open" asChild>
               <Link to={appRoute(installation.id)}>Open</Link>
             </PageHeader.Action>
           </PageHeader.ActionGroup.Primary>
         )}
-        {installation.status === 'suspended' && (
+        {actions.canReview && (
           <PageHeader.ActionGroup.Primary>
             <PageHeader.Action label="Review changes" asChild>
               <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
@@ -347,10 +355,21 @@ export const AppDetails: React.FC = () => {
   const [uninstalling, setUninstalling] = useState(false);
   const { data: settingsData } = useBrowseSettings({});
   const timezone = getSiteTimezone(settingsData?.settings ?? []);
-  const { data, error, isLoading, refetch } = useReadAppInstallation(installationId, {
+  const {
+    data,
+    error,
+    isLoading: isInstallationLoading,
+    refetch,
+  } = useReadAppInstallation(installationId, {
     defaultErrorHandler: false,
   });
-  const installation = data?.app_installations[0];
+  const { pins } = useInstalledApps();
+  // What the page offers depends on whether apps can be used here, so it shows as loading
+  // until Admin knows, rather than without its actions and then with them
+  const availability = useAppsAvailability();
+  const isLoading = isInstallationLoading || availability === 'loading';
+  const installation = isLoading ? undefined : data?.app_installations[0];
+  const actions = installation && installationActions(installation, availability, pins);
 
   if (isInstallationNotFound(error)) {
     return <NotFound />;
@@ -388,8 +407,13 @@ export const AppDetails: React.FC = () => {
                   </BreadcrumbList>
                 </Breadcrumb>
               </PageHeader.Left>
-              {installation && installation.status !== 'uninstalled' && (
-                <Actions installation={installation} onUninstall={() => setUninstalling(true)} />
+              {installation && actions && installation.status !== 'uninstalled' && (
+                <Actions
+                  actions={actions}
+                  installation={installation}
+                  pins={pins}
+                  onUninstall={() => setUninstalling(true)}
+                />
               )}
             </PageHeader>
             {/* The title wraps rather than truncates, and stops short of the actions above it
@@ -453,11 +477,13 @@ export const AppDetails: React.FC = () => {
                 </Stack>
               </Stack>
             )}
-            {installation && (
+            {installation && actions && (
               <Details
+                actions={actions}
                 installation={installation}
                 showIdentity={!largeTitles}
                 timezone={timezone}
+                unsupported={availability === 'unsupported'}
               />
             )}
             {!installation && error && (

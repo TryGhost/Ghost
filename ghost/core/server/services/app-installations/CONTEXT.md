@@ -148,7 +148,11 @@ pages. Starting a session re-checks the app and returns the installation and,
 for an active one, an app user token. The session is pinned to the installation's
 revision at that point. Nothing about the session is stored; it ends when the
 revision changes. Sessions open only on the `better-auth` auth engine, for a
-verified staff session of an active Administrator or the Owner.
+verified staff session of an active Administrator or the Owner. On any other
+engine Ghost also refuses to load a manifest, so an app can't be previewed,
+installed or approved where it could never be opened; listing and
+uninstalling load none and still work, so an app installed earlier can be
+removed.
 _Avoid_: login, connection
 
 **App user token**:

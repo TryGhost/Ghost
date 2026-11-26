@@ -186,8 +186,10 @@ whose password hasn't changed since still carry their old hash there, unread.
 
 ## App tokens
 
-Apps open only under `better-auth`. When an app session starts, Ghost issues
-the staff user an app user token for the app from `@better-auth/oauth-provider`,
+Apps open only under `better-auth`, and under any other engine Ghost refuses
+to preview, install or approve one (`409 APP_AUTH_ENGINE_UNSUPPORTED`); listing
+and uninstalling still work. When an app session starts, Ghost issues the
+staff user an app user token for the app from `@better-auth/oauth-provider`,
 bound to their staff session, and Admin sends the app's Admin API calls with
 it as `Authorization: Bearer` and no cookie.
 

@@ -20,7 +20,8 @@ import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
 import { PinMenuItem } from './pin-menu-item';
-import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
+import { type AppsAvailability, installationActions } from '@/apps/lib/installation-actions';
+import { appDetailsRoute, appReviewRoute } from '@/apps/lib/routes';
 import type { AppPinsState } from '@/apps/lib/use-app-pins';
 
 interface AppsListProps {
@@ -28,6 +29,11 @@ interface AppsListProps {
   onUninstall: (installation: AppInstallation) => void;
   /** Pinning to the sidebar; left out, the menu doesn't offer it. */
   pins?: Pick<AppPinsState, 'isPinned' | 'canPinMore' | 'setPinned'>;
+  /**
+   * Whether apps can be used on this site. Where they can't, a row leads to the app's details,
+   * and offers nothing that opens it: no review of its changes, and no pin.
+   */
+  availability: AppsAvailability;
 }
 
 /**
@@ -35,9 +41,10 @@ interface AppsListProps {
  * while the row is hovered, to stand out from its background.
  */
 const AppRow: React.FC<
-  { installation: AppInstallation } & Pick<AppsListProps, 'onUninstall' | 'pins'>
-> = ({ installation, onUninstall, pins }) => {
-  const { id, status, manifest } = installation;
+  { installation: AppInstallation } & Pick<AppsListProps, 'onUninstall' | 'pins' | 'availability'>
+> = ({ installation, onUninstall, pins, availability }) => {
+  const { id, manifest } = installation;
+  const actions = installationActions(installation, availability, { isLoaded: !!pins });
   const [isHovered, setIsHovered] = useState(false);
   const rowRef = useRef<HTMLTableRowElement>(null);
   return (
@@ -56,7 +63,7 @@ const AppRow: React.FC<
           <span className="min-w-0">
             <Inline gap="xs">
               <RowPrimaryAction asChild>
-                <Link className="text-md font-semibold" to={appRoute(id)}>
+                <Link className="text-md font-semibold" to={actions.rowTo}>
                   {manifest.name}
                 </Link>
               </RowPrimaryAction>
@@ -72,7 +79,7 @@ const AppRow: React.FC<
       <TableCell className="relative z-10 p-4">
         <Inline gap="xs" justify="end">
           {/* The row opens the app, so only an app waiting for approval gets a button. */}
-          {status === 'suspended' && (
+          {actions.canReview && (
             <Button
               className={cn('hover:bg-background', isHovered && 'bg-background')}
               variant="outline"
@@ -113,7 +120,7 @@ const AppRow: React.FC<
                   Details
                 </Link>
               </DropdownMenuItem>
-              {pins && (
+              {actions.canPin && pins && (
                 <PinMenuItem
                   full={!pins.canPinMore}
                   pinned={pins.isPinned(id)}
@@ -136,12 +143,13 @@ const AppRow: React.FC<
   );
 };
 
-const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins }) => (
+const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins, availability }) => (
   <Table aria-label="Apps" className="table-auto" data-testid="apps-list">
     <TableBody>
       {installations.map((installation) => (
         <AppRow
           key={installation.id}
+          availability={availability}
           installation={installation}
           pins={pins}
           onUninstall={onUninstall}

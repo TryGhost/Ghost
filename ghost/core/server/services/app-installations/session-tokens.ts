@@ -12,7 +12,7 @@ import type { AppSessionToken } from './serializers';
 import { staffSessionOf, staffSessionRequired, type StaffSession } from './staff-session';
 
 /** Why app tokens can't be issued on this site, whichever app it is. */
-function tokensUnavailable(availability: Exclude<AppTokensAvailability, 'ready'>) {
+export function tokensUnavailable(availability: Exclude<AppTokensAvailability, 'ready'>) {
   switch (availability) {
     case 'legacy_engine':
       return new errors.ConflictError({

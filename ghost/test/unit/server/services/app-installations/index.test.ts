@@ -9,6 +9,7 @@ const endpointPaths = [
   require.resolve('../../../../../core/server/api/endpoints/app-sessions'),
 ];
 const requestPath = require.resolve('../../../../../core/server/lib/request-external');
+const auth = require('../../../../../core/server/auth');
 const db = require('../../../../../core/server/data/db');
 const { IncorrectUsageError } = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -79,6 +80,7 @@ describe('App installations composition root', function () {
   let readKnex: sinon.SinonStub;
   let query: sinon.SinonStub;
   let request: sinon.SinonStub;
+  let availability: 'ready' | 'legacy_engine' | 'needs_restart';
 
   beforeAll(async function () {
     keys = await generateTestAppKeys();
@@ -105,6 +107,12 @@ describe('App installations composition root', function () {
     query = sandbox.stub().returns(builder);
     readKnex = sandbox.stub().returns(query as unknown as Knex);
     sandbox.stub(db, 'knex').get(readKnex);
+    // Apps install only where app tokens can be issued, which Better Auth's engine decides
+    availability = 'ready';
+    sandbox.stub(auth, 'appTokens').get(() => ({
+      availability: () => availability,
+      reconcileClient: async () => {},
+    }));
     // Substitute only the outbound transport; keep the real fetcher, manifest validation and
     // identity check. It serves the signed manifest, and answers challenges as the app's
     // backend.
@@ -177,6 +185,24 @@ describe('App installations composition root', function () {
     );
     sinon.assert.calledOnceWithExactly(startSession, 'installation-id', principal);
     assert.equal(startSession.firstCall.thisValue, root.service);
+  });
+
+  // An app previewed, installed or approved there could never be opened
+  it('loads no manifest where the auth engine can’t issue app tokens', async function () {
+    await root.init();
+    const refused = { statusCode: 409, code: 'APP_AUTH_ENGINE_UNSUPPORTED' };
+    const reviewed = { manifestUrl: MANIFEST_URL, digest: 'digest' };
+
+    availability = 'legacy_engine';
+    await assert.rejects(root.service.preview(MANIFEST_URL), refused);
+    await assert.rejects(root.service.create({ actor: null }, reviewed), refused);
+    sinon.assert.notCalled(request);
+
+    // A site that only needs a restart can still install
+    availability = 'needs_restart';
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    assert.equal((await root.service.preview(MANIFEST_URL)).manifest.id, manifest.id);
   });
 
   it('wires logging through the manifest loader and fetcher', async function () {
