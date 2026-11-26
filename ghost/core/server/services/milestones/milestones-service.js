@@ -1,21 +1,28 @@
 const Milestone = require('./milestone');
 
 /**
+ * @typedef {object} Options
+ * @prop {object} [transacting]
+ */
+
+/**
  * @typedef {object} IMilestoneRepository
- * @prop {(milestone: Milestone) => Promise<void>} save
- * @prop {(arr: number, [currency]: string|null) => Promise<Milestone>} getByARR
- * @prop {(count: number) => Promise<Milestone>} getByCount
- * @prop {(type: 'arr'|'members', [currency]: string|null) => Promise<Milestone>} getLatestByType
- * @prop {() => Promise<Milestone>} getLastEmailSent
- * @prop {(type: 'arr'|'members', [currency]: string|null) => Promise<Milestone[]>} getAllByType
+ * @prop {<T>(fn: (transacting: object) => Promise<T>) => Promise<T>} transaction
+ * @prop {(transacting: object) => Promise<void>} lockChecks
+ * @prop {(milestone: Milestone, [options]: Options) => Promise<void>} save
+ * @prop {(arr: number, [currency]: string|null, [options]: Options) => Promise<Milestone>} getByARR
+ * @prop {(count: number, [options]: Options) => Promise<Milestone>} getByCount
+ * @prop {(type: 'arr'|'members', [currency]: string|null, [options]: Options) => Promise<Milestone>} getLatestByType
+ * @prop {([options]: Options) => Promise<Milestone>} getLastEmailSent
+ * @prop {(type: 'arr'|'members', [currency]: string|null, [options]: Options) => Promise<Milestone[]>} getAllByType
  */
 
 /**
  * @typedef {object} IQueries
- * @prop {() => Promise<number>} getMembersCount
- * @prop {() => Promise<object>} getARR
- * @prop {() => Promise<boolean>} hasImportedMembersInPeriod
- * @prop {() => Promise<string>} getDefaultCurrency
+ * @prop {([options]: Options) => Promise<number>} getMembersCount
+ * @prop {([options]: Options) => Promise<object>} getARR
+ * @prop {([options]: Options) => Promise<boolean>} hasImportedMembersInPeriod
+ * @prop {([options]: Options) => Promise<string>} getDefaultCurrency
  */
 
 /**
@@ -52,25 +59,30 @@ module.exports = class MilestonesService {
 
   /**
    * @param {string} [currency]
+   * @param {Options} [options]
    *
    * @returns {Promise<Milestone>}
    */
-  async #getLatestArrMilestone(currency = 'usd') {
-    return this.#repository.getLatestByType('arr', currency);
+  async #getLatestArrMilestone(currency = 'usd', options) {
+    return this.#repository.getLatestByType('arr', currency, options);
   }
 
   /**
+   * @param {Options} options
+   *
    * @returns {Promise<Milestone>}
    */
-  async #getLatestMembersCountMilestone() {
-    return this.#repository.getLatestByType('members', null);
+  async #getLatestMembersCountMilestone(options) {
+    return this.#repository.getLatestByType('members', null, options);
   }
 
   /**
+   * @param {Options} options
+   *
    * @returns {Promise<string>}
    */
-  async #getDefaultCurrency() {
-    return await this.#queries.getDefaultCurrency();
+  async #getDefaultCurrency(options) {
+    return await this.#queries.getDefaultCurrency(options);
   }
 
   /**
@@ -78,18 +90,19 @@ module.exports = class MilestonesService {
    * @param {'arr'|'members'} milestone.type
    * @param {number} milestone.value
    * @param {string} milestone.currency
+   * @param {Options} options
    *
    * @returns {Promise<boolean>}
    */
-  async #checkMilestoneExists(milestone) {
+  async #checkMilestoneExists(milestone, options) {
     let foundExistingMilestone = false;
     let existingMilestone = null;
 
     if (milestone.type === 'arr') {
       existingMilestone =
-        (await this.#repository.getByARR(milestone.value, milestone.currency)) || false;
+        (await this.#repository.getByARR(milestone.value, milestone.currency, options)) || false;
     } else if (milestone.type === 'members') {
-      existingMilestone = (await this.#repository.getByCount(milestone.value)) || false;
+      existingMilestone = (await this.#repository.getByCount(milestone.value, options)) || false;
     }
 
     foundExistingMilestone = existingMilestone ? true : false;
@@ -101,13 +114,14 @@ module.exports = class MilestonesService {
    * @param {object} milestone
    * @param {'arr'|'members'} milestone.type
    * @param {number} milestone.value
+   * @param {Options} options
    *
    * @returns {Promise<Milestone>}
    */
-  async #createMilestone(milestone) {
+  async #createMilestone(milestone, options) {
     const newMilestone = await Milestone.create(milestone);
 
-    await this.#repository.save(newMilestone);
+    await this.#repository.save(newMilestone, options);
     return newMilestone;
   }
 
@@ -131,11 +145,12 @@ module.exports = class MilestonesService {
    * @param {object} milestone.meta
    * @param {string|null} [milestone.currency]
    * @param {Date|null} [milestone.emailSentAt]
+   * @param {Options} options
    *
    * @returns {Promise<Milestone>}
    */
-  async #saveMileStoneAndSendEmail(milestone) {
-    const { shouldSendEmail, reason } = await this.#shouldSendEmail();
+  async #saveMileStoneAndSendEmail(milestone, options) {
+    const { shouldSendEmail, reason } = await this.#shouldSendEmail(options);
 
     if (shouldSendEmail) {
       milestone.emailSentAt = new Date();
@@ -145,7 +160,7 @@ module.exports = class MilestonesService {
       milestone.meta.reason = reason;
     }
 
-    return await this.#createMilestone(milestone);
+    return await this.#createMilestone(milestone, options);
   }
 
   /**
@@ -155,23 +170,26 @@ module.exports = class MilestonesService {
    * @param {object} milestone.meta
    * @param {string|null} [milestone.currency]
    * @param {Date|null} [milestone.emailSentAt]
+   * @param {Options} options
    *
    * @returns {Promise<Milestone>}
    */
-  async #saveMileStoneWithoutEmail(milestone) {
-    return await this.#createMilestone(milestone);
+  async #saveMileStoneWithoutEmail(milestone, options) {
+    return await this.#createMilestone(milestone, options);
   }
 
   /**
+   * @param {Options} options
+   *
    * @returns {Promise<{shouldSendEmail: boolean, reason: string}>}
    */
-  async #shouldSendEmail() {
+  async #shouldSendEmail(options) {
     let emailTooSoon = false;
     let reason = null;
     // Two cases in which we don't want to send an email
     // 1. There has been an import of members within the last week
     // 2. The last email has been sent less than two weeks ago
-    const lastMilestoneSent = await this.#repository.getLastEmailSent();
+    const lastMilestoneSent = await this.#repository.getLastEmailSent(options);
 
     if (lastMilestoneSent) {
       const differenceInTime =
@@ -181,7 +199,7 @@ module.exports = class MilestonesService {
       emailTooSoon = differenceInDays <= this.#milestonesConfig.minDaysSinceLastEmail;
     }
 
-    const hasMembersImported = await this.#queries.hasImportedMembersInPeriod();
+    const hasMembersImported = await this.#queries.hasImportedMembersInPeriod(options);
     const shouldSendEmail = !emailTooSoon && !hasMembersImported;
 
     if (!shouldSendEmail) {
@@ -192,12 +210,14 @@ module.exports = class MilestonesService {
   }
 
   /**
+   * @param {Options} options
+   *
    * @returns {Promise<Milestone>}
    */
-  async #runARRQueries() {
+  async #runARRQueries(options) {
     // Fetch the current data from queries
-    const currentARR = await this.#queries.getARR();
-    const defaultCurrency = await this.#getDefaultCurrency();
+    const currentARR = await this.#queries.getARR(options);
+    const defaultCurrency = await this.#getDefaultCurrency(options);
 
     // Check the definitions in the milestonesConfig
     const arrMilestoneSettings = this.#milestonesConfig.arr;
@@ -224,6 +244,7 @@ module.exports = class MilestonesService {
         const allMilestonesForCurrency = await this.#repository.getAllByType(
           'arr',
           defaultCurrency,
+          options,
         );
         const isInitialRun = !allMilestonesForCurrency || allMilestonesForCurrency?.length === 0;
         const highestAchievedMilestone = Math.max(...achievedMilestones);
@@ -231,14 +252,17 @@ module.exports = class MilestonesService {
         if (achievedMilestones && achievedMilestones.length) {
           for await (const milestone of achievedMilestones) {
             // Fetch the latest milestone for this currency
-            const latestMilestone = await this.#getLatestArrMilestone(defaultCurrency);
+            const latestMilestone = await this.#getLatestArrMilestone(defaultCurrency, options);
 
             // Ensure the milestone doesn't already exist
-            const milestoneExists = await this.#checkMilestoneExists({
-              value: milestone,
-              type: 'arr',
-              currency: defaultCurrency,
-            });
+            const milestoneExists = await this.#checkMilestoneExists(
+              {
+                value: milestone,
+                type: 'arr',
+                currency: defaultCurrency,
+              },
+              options,
+            );
 
             if (!milestoneExists) {
               if (isInitialRun) {
@@ -248,12 +272,15 @@ module.exports = class MilestonesService {
                   currentValue: currentARRForCurrency.arr,
                   reason: 'initial',
                 };
-                await this.#saveMileStoneWithoutEmail({
-                  value: milestone,
-                  type: 'arr',
-                  currency: defaultCurrency,
-                  meta,
-                });
+                await this.#saveMileStoneWithoutEmail(
+                  {
+                    value: milestone,
+                    type: 'arr',
+                    currency: defaultCurrency,
+                    meta,
+                  },
+                  options,
+                );
               } else if (
                 (latestMilestone && milestone <= latestMilestone?.value) ||
                 milestone < highestAchievedMilestone
@@ -264,37 +291,45 @@ module.exports = class MilestonesService {
                   currentValue: currentARRForCurrency.arr,
                   reason: 'skipped',
                 };
-                await this.#saveMileStoneWithoutEmail({
-                  value: milestone,
-                  type: 'arr',
-                  currency: defaultCurrency,
-                  meta,
-                });
+                await this.#saveMileStoneWithoutEmail(
+                  {
+                    value: milestone,
+                    type: 'arr',
+                    currency: defaultCurrency,
+                    meta,
+                  },
+                  options,
+                );
               } else if (!latestMilestone || milestone > latestMilestone.value) {
                 const meta = {
                   currentValue: currentARRForCurrency.arr,
                 };
-                await this.#saveMileStoneAndSendEmail({
-                  value: milestone,
-                  type: 'arr',
-                  currency: defaultCurrency,
-                  meta,
-                });
+                await this.#saveMileStoneAndSendEmail(
+                  {
+                    value: milestone,
+                    type: 'arr',
+                    currency: defaultCurrency,
+                    meta,
+                  },
+                  options,
+                );
               }
             }
           }
         }
-        return await this.#getLatestArrMilestone(defaultCurrency);
+        return await this.#getLatestArrMilestone(defaultCurrency, options);
       }
     }
   }
 
   /**
+   * @param {Options} options
+   *
    * @returns {Promise<Milestone>}
    */
-  async #runMemberQueries() {
+  async #runMemberQueries(options) {
     // Fetch the current data
-    const membersCount = await this.#queries.getMembersCount();
+    const membersCount = await this.#queries.getMembersCount(options);
 
     // Check the definitions in the milestonesConfig
     const membersMilestones = this.#milestonesConfig.members;
@@ -304,21 +339,24 @@ module.exports = class MilestonesService {
 
     // check for previously achieved milestones. We do not send an email when no
     // previous milestones exist
-    const allMembersMilestones = await this.#repository.getAllByType('members', null);
+    const allMembersMilestones = await this.#repository.getAllByType('members', null, options);
     const isInitialRun = !allMembersMilestones || allMembersMilestones?.length === 0;
     const highestAchievedMilestone = Math.max(...achievedMilestones);
 
     if (achievedMilestones && achievedMilestones.length) {
       for await (const milestone of achievedMilestones) {
         // Fetch the latest achieved Members milestones
-        const latestMembersMilestone = await this.#getLatestMembersCountMilestone();
+        const latestMembersMilestone = await this.#getLatestMembersCountMilestone(options);
 
         // Ensure the milestone doesn't already exist
-        const milestoneExists = await this.#checkMilestoneExists({
-          value: milestone,
-          type: 'members',
-          currency: null,
-        });
+        const milestoneExists = await this.#checkMilestoneExists(
+          {
+            value: milestone,
+            type: 'members',
+            currency: null,
+          },
+          options,
+        );
 
         if (!milestoneExists) {
           if (isInitialRun) {
@@ -328,7 +366,10 @@ module.exports = class MilestonesService {
               currentValue: membersCount,
               reason: 'initial',
             };
-            await this.#saveMileStoneWithoutEmail({ value: milestone, type: 'members', meta });
+            await this.#saveMileStoneWithoutEmail(
+              { value: milestone, type: 'members', meta },
+              options,
+            );
           } else if (
             (latestMembersMilestone && milestone <= latestMembersMilestone?.value) ||
             milestone < highestAchievedMilestone
@@ -339,16 +380,22 @@ module.exports = class MilestonesService {
               currentValue: membersCount,
               reason: 'skipped',
             };
-            await this.#saveMileStoneWithoutEmail({ value: milestone, type: 'members', meta });
+            await this.#saveMileStoneWithoutEmail(
+              { value: milestone, type: 'members', meta },
+              options,
+            );
           } else if (!latestMembersMilestone || milestone > latestMembersMilestone.value) {
             const meta = {
               currentValue: membersCount,
             };
-            await this.#saveMileStoneAndSendEmail({ value: milestone, type: 'members', meta });
+            await this.#saveMileStoneAndSendEmail(
+              { value: milestone, type: 'members', meta },
+              options,
+            );
           }
         }
       }
-      return await this.#getLatestMembersCountMilestone();
+      return await this.#getLatestMembersCountMilestone(options);
     }
   }
 
