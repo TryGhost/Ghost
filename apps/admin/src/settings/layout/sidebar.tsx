@@ -845,24 +845,21 @@ const Sidebar: React.FC = () => {
             </>
           )}
 
-          {!filter &&
-            (grouped ? (
-              showHelp && (
-                <SidebarMenu>
-                  <NavHelpItem />
-                </SidebarMenu>
-              )
-            ) : (
-              <SidebarMenu>
-                {aboutItem}
-                {showHelp && <NavHelpItem />}
-              </SidebarMenu>
-            ))}
+          {!filter && !grouped && (
+            <SidebarMenu>
+              {aboutItem}
+              {showHelp && <NavHelpItem />}
+            </SidebarMenu>
+          )}
         </nav>
-        {/* The grouped navigation keeps About Ghost in its own footer, below the groups */}
+        {/* The grouped navigation keeps About Ghost and Help in their own footer, below
+            the groups, since they aren't settings */}
         {grouped && (
           <Box className={cn('shrink-0 pt-2 pb-5', floatingSidebar ? 'px-3' : 'bg-sidebar px-5')}>
-            <SidebarMenu>{aboutItem}</SidebarMenu>
+            <SidebarMenu>
+              {aboutItem}
+              {showHelp && <NavHelpItem />}
+            </SidebarMenu>
           </Box>
         )}
       </NavGroupContext.Provider>
