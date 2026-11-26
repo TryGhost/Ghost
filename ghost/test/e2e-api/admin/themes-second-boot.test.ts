@@ -1,7 +1,8 @@
-const assert = require('node:assert/strict');
-const path = require('path');
-const fs = require('fs-extra');
-const supertest = require('supertest');
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import fs from 'fs-extra';
+import supertest from 'supertest';
+
 const config = require('../../../core/shared/config');
 const localUtils = require('./utils');
 
@@ -10,9 +11,12 @@ const localUtils = require('./utils');
 // that handles the request, whichever folder an earlier boot in the process used.
 // Real HTTP requests, like the other theme tests.
 describe('Themes API after a second boot in the same process', function () {
-  const fixture = (name) => path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', name);
+  type Agent = ReturnType<typeof supertest.agent>;
 
-  const bootAndSignIn = async () => {
+  const fixture = (name: string) =>
+    path.join(__dirname, '..', '..', 'utils', 'fixtures', 'themes', name);
+
+  const bootAndSignIn = async (): Promise<Agent> => {
     await localUtils.startGhost();
     const request = supertest.agent(config.get('url'));
     await localUtils.doAuth(request);
@@ -20,7 +24,7 @@ describe('Themes API after a second boot in the same process', function () {
     return request;
   };
 
-  const uploadTheme = (request, zipName) =>
+  const uploadTheme = (request: Agent, zipName: string) =>
     request
       .post(localUtils.API.getApiQuery('themes/upload'))
       .set('Origin', config.get('url'))
@@ -29,13 +33,13 @@ describe('Themes API after a second boot in the same process', function () {
   it('uploads and deletes themes in the content folder of the current boot', async function () {
     // The first boot uses theme storage, in its own content folder
     const firstRequest = await bootAndSignIn();
-    const firstThemesPath = config.getContentPath('themes');
+    const firstThemesPath: string = config.getContentPath('themes');
 
     await uploadTheme(firstRequest, 'valid.zip').expect(200);
     assert.equal(await fs.pathExists(path.join(firstThemesPath, 'valid')), true);
 
     const secondRequest = await bootAndSignIn();
-    const secondThemesPath = config.getContentPath('themes');
+    const secondThemesPath: string = config.getContentPath('themes');
     assert.notEqual(secondThemesPath, firstThemesPath);
 
     const uploaded = await uploadTheme(secondRequest, 'warnings.zip').expect(200);
@@ -47,7 +51,8 @@ describe('Themes API after a second boot in the same process', function () {
       .get(localUtils.API.getApiQuery('themes/'))
       .set('Origin', config.get('url'))
       .expect(200);
-    assert.deepEqual(listed.body.themes.map((theme) => theme.name).sort(), ['source', 'warnings']);
+    const listedNames: string[] = listed.body.themes.map((theme: { name: string }) => theme.name);
+    assert.deepEqual(listedNames.sort(), ['source', 'warnings']);
 
     await secondRequest
       .del(localUtils.API.getApiQuery('themes/warnings'))

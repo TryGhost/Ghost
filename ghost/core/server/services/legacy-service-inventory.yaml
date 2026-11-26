@@ -7876,7 +7876,7 @@ services:
         tests:
           - test/unit/server/services/themes/validate.test.js
           - test/unit/server/services/themes/storage.test.ts
-          - test/e2e-api/admin/themes-second-boot.test.js
+          - test/e2e-api/admin/themes-second-boot.test.ts
           - test/e2e-frontend/theme-i18n.test.js
       resources:
         summary: >-
