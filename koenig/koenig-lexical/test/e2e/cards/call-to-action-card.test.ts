@@ -276,9 +276,9 @@ test.describe('Call To Action Card', async () => {
         const content = page.locator('[data-testid="cta-card-content-editor"]');
         await expect(content.locator('h2')).toHaveText('Join our newsletter');
 
-        const json = JSON.parse(await getEditorStateJSON(page));
+        const json = JSON.parse(await getEditorStateJSON(page)) as {root: {children: Array<{type: string; textValue?: string}>}};
         const card = json.root.children.find(child => child.type === 'call-to-action');
-        expect(card.textValue).toContain('<h2');
+        expect(card?.textValue).toContain('<h2');
     });
 
     test('turns ## and ### at the start of a line into headings in the content editor', async function () {

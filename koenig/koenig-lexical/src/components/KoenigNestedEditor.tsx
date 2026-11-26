@@ -24,6 +24,7 @@ interface KoenigNestedEditorProps {
     initialEditorState?: string;
     initialTheme?: EditorThemeClasses;
     nodes?: 'basic' | 'minimal';
+    markdownTransformers?: Transformer[] | null;
     placeholderText?: string;
     textClassName?: string;
     placeholderClassName?: string;
@@ -73,7 +74,7 @@ const KoenigNestedEditor = ({
                 hiddenFormats={hiddenFormats}
                 inheritStyles={true}
                 isDragEnabled={false}
-                markdownTransformers={markdownTransformers as Transformer[]}
+                markdownTransformers={markdownTransformers}
                 placeholder={<Placeholder className={placeholderClassName} text={placeholderText} />}
                 useDefaultClasses={useDefaultClasses}
             >
