@@ -465,9 +465,11 @@ upload then never runs for an app request that can't succeed.
   before the route's own middleware runs
   (`refuseAppEarly` in the Admin API's `authAdminApi`). It reads the method
   from the route's last handler, which `routedMethod` recognises for every
-  handler `http()` returns. A route ending in anything else is a `router.all`
-  that authenticates a router mounted after it; the app goes on, and the
-  mounted route's method decides. A rate limit keyed on the staff user the app
+  handler `http()` returns. A route that ends in the check itself is the
+  `router.all` that authenticates a router mounted after it
+  (`mountAuthenticated`); the app goes on, and the mounted route's method
+  decides. A route ending in anything else runs nothing an app's scopes could
+  cap, so the app is refused there (`APP_NOT_ALLOWED`). A rate limit keyed on the staff user the app
   acts for, or an upload being parsed and stored, never acts for an app
   request that can't succeed, so an app can't spend the user's budget. The
   code is the one the pipeline would give, but the message may not be: the

@@ -379,6 +379,38 @@ describe.skipIf(!isBetterAuth)('An app’s token where nothing authenticates it'
     await resetRateLimits();
   });
 
+  // A route open to app tokens that ended in a plain handler would run as the staff user with
+  // nothing to cap it by the app's scopes. The Admin API's early refusal refuses an app there,
+  // and this holds every open route to the shapes it lets an app through to.
+  it('is let through only to a method of the API pipeline, or to the router a route is ahead of', async function () {
+    const { routedMethod } = require('@tryghost/api-framework');
+    const refuseAppEarly =
+      require('../../../core/server/web/api/endpoints/admin/middleware').authAdminApi.find(
+        (each: { name: string }) => each.name === 'refuseAppEarly',
+      );
+    const open = routes.filter(({ handlers }) => appTokenAccess(handlers) === 'open');
+    assert.ok(open.length > 100, String(open.length));
+
+    const elsewhere = open.filter(
+      ({ mounts, handlers }) => !mounts && handlers.at(-1) !== refuseAppEarly,
+    );
+    for (const { route, handlers } of elsewhere) {
+      assert.ok(
+        routedMethod(handlers.at(-1)),
+        `${route} is open to app tokens, but ends in a handler outside the API pipeline, so no scope caps what it does`,
+      );
+    }
+    // From `http()`, but with no method of the pipeline behind it, which the early refusal refuses
+    assert.deepEqual(
+      elsewhere.map(({ route }) => route),
+      ['GET /config/featurebase'],
+    );
+    const response = await agent
+      .get('config/featurebase/')
+      .header('Authorization', `Bearer ${token}`);
+    refused(response, 'GET /config/featurebase');
+  });
+
   it('finds the routes that don’t authenticate it first in the mounted router', function () {
     const found = closed.map(({ route }) => route);
     for (const route of [

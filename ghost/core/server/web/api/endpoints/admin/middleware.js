@@ -143,9 +143,10 @@ const routeHandlers = (route, method) => {
  * Refuses an app the method its route ends in would refuse it on, before the route's own
  * middleware runs: a rate limit keyed on the staff user the app acts for, or an upload being
  * parsed and stored. The method is the last handler the route runs for the request's verb, from
- * `http()`; a route ending in a controller outside the pipeline refuses apps. A route ending in
- * anything else authenticates a router mounted after it, whose routes the pipeline guards, so
- * the app goes on to them.
+ * `http()`; a route ending in a controller outside the pipeline refuses apps. A route that ends
+ * in this check authenticates a router mounted after it (`mountAuthenticated`), whose routes the
+ * pipeline guards, so the app goes on to them. A route ending in anything else runs no
+ * permission check an app's scopes could cap, so it refuses apps.
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -155,9 +156,14 @@ const refuseAppEarly = function refuseAppEarly(req, res, next) {
   if (req.auth?.kind !== 'app') {
     return next();
   }
-  const routed = req.route && routedMethod(routeHandlers(req.route, req.method).at(-1));
-  if (!routed) {
+  const last = req.route && routeHandlers(req.route, req.method).at(-1);
+  // Nothing after this check: the route runs ahead of a mounted router, which the request goes on to
+  if (last === refuseAppEarly) {
     return next();
+  }
+  const routed = routedMethod(last);
+  if (!routed) {
+    return next(appNotAllowed());
   }
   apiPermissions.refuseAppEarly(routed, req.auth).then(() => next(), next);
 };
