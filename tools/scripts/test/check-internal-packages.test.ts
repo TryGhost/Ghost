@@ -43,7 +43,7 @@ async function createRepository() {
   });
   await writeFile(
     path.join(rootDirectory, 'pnpm-workspace.yaml'),
-    "packages:\n  - 'packages/**'\n  - '!packages/_template'\n  - 'contracts/*'\n  - 'koenig/*'\n",
+    "packages:\n  - 'packages/**'\n  - '!packages/_template'\n  - 'contracts/*'\n  - 'framework/*'\n  - 'koenig/*'\n",
   );
   const templateManifest = compliantManifest('packages/template');
   templateManifest.name = '@tryghost/{{NAME}}';
@@ -156,6 +156,17 @@ test('applies the golden path to packages under contracts/', async () => {
 
   assert.deepEqual(await checkInternalPackages(rootDirectory), [
     'contracts/example/package.json: ghostPackage.goldenPath must be one of compliant, migration, exempt',
+  ]);
+});
+
+test('applies the golden path to packages under framework/', async () => {
+  const rootDirectory = await createRepository();
+  const manifest = compliantManifest('framework/example');
+  delete manifest.ghostPackage;
+  await createCompliantPackage(rootDirectory, 'framework/example', manifest);
+
+  assert.deepEqual(await checkInternalPackages(rootDirectory), [
+    'framework/example/package.json: ghostPackage.goldenPath must be one of compliant, migration, exempt',
   ]);
 });
 

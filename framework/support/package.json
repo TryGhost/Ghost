@@ -14,21 +14,52 @@
     "build"
   ],
   "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "exports": {
-    "./*": {
-      "source": "./src/*.ts",
-      "types": "./build/*.d.ts",
-      "default": "./build/*.js"
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./define-provider": {
+      "source": "./src/define-provider.ts",
+      "types": "./build/define-provider.d.ts",
+      "default": "./build/define-provider.js"
+    },
+    "./schedule": {
+      "source": "./src/schedule.ts",
+      "types": "./build/schedule.d.ts",
+      "default": "./build/schedule.js"
+    },
+    "./site": {
+      "source": "./src/site.ts",
+      "types": "./build/site.d.ts",
+      "default": "./build/site.js"
     }
   },
   "scripts": {
     "build": "tsc",
-    "test:types": "tsc --noEmit"
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test": "pnpm run '/^test:/'",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
   },
   "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
-    "@typescript/native": "catalog:"
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "compliant"
   },
   "nx": {
     "targets": {

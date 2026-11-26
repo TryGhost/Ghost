@@ -14,29 +14,48 @@
     "build"
   ],
   "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "imports": {
     "#support/*": "@tryghost/support/*"
   },
   "exports": {
-    "./*": {
-      "source": "./src/*.ts",
-      "types": "./build/*.d.ts",
-      "default": "./build/*.js"
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./application": {
+      "source": "./src/application.ts",
+      "types": "./build/application.d.ts",
+      "default": "./build/application.js"
     }
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest run",
-    "test:types": "tsc --noEmit -p test/tsconfig.json"
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "test": "pnpm run '/^test:/'",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
     "@tryghost/support": "workspace:*"
   },
   "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "compliant"
   },
   "nx": {
     "targets": {

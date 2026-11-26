@@ -426,8 +426,12 @@ async function validateCompliantPackage({
 export async function checkInternalPackages(rootDirectory: string): Promise<string[]> {
   rootDirectory = await realpath(rootDirectory);
   const packagesDirectory = path.join(rootDirectory, 'packages');
-  // Contracts are internal packages too; they live apart only to mark their role.
-  const packageRoots = [packagesDirectory, path.join(rootDirectory, 'contracts')];
+  // Contracts and framework packages are internal packages too; they live apart only to mark their role.
+  const packageRoots = [
+    packagesDirectory,
+    path.join(rootDirectory, 'contracts'),
+    path.join(rootDirectory, 'framework'),
+  ];
   let workspacePackages;
   try {
     workspacePackages = await listWorkspacePackages(rootDirectory);

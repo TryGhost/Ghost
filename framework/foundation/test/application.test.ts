@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { setImmediate } from 'node:timers/promises';
 import { describe, expect, it, vi } from 'vitest';
-import { createApplication } from '../src/application.ts';
+import { createApplication } from '../src/index.ts';
 import { defineProvider, on } from '#support/define-provider';
 import type { Job, Listener, ListenerEntry } from '#support/define-provider';
 import type { Events, Jobs, Site } from '#support/site';

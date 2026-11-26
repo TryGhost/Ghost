@@ -1,7 +1,7 @@
 # Internal package golden path
 
 This document is the source of truth for Node.js libraries created under
-`packages/` and [`contracts/`](../contracts/README.md) for use inside the Ghost
+`packages/`, [`contracts/`](../contracts/README.md) and `framework/` for use inside the Ghost
 monorepo. Start from [`_template`](./_template)
 and keep the resulting package aligned with these rules throughout its lifetime.
 Generate a package with `pnpm gx generate package <name>`; see
@@ -29,7 +29,7 @@ support policy before removing `private` or adding publishing automation.
 
 ### Golden path status
 
-Every private package under `packages/` or `contracts/` declares its lifecycle state in
+Every private package under `packages/`, `contracts/` or `framework/` declares its lifecycle state in
 `ghostPackage.goldenPath`:
 
 - `compliant` means the package is mechanically checked against this document;
