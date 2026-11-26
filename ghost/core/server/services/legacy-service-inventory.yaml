@@ -1620,9 +1620,9 @@ services:
       consumers:
         summary: >-
           Boot passes the three wrappers to jobs handlers that retain them and return startFetch
-          in separate two-slot queues. Background boot schedules all three; newsletter sends,
-          automation sends and accepted gift deliveries request their own schedule with the
-          recent-send lookup bypass. The Admin emails endpoint reads current newsletter service
+          in separate two-slot queues. Background boot schedules all three with one scheduler
+          call; newsletter sends, automation sends and accepted gift deliveries request their
+          own schedule with the recent-send lookup bypass. The Admin emails endpoint reads current newsletter service
           status and requests backfill/cancel via root getters. Booted-backend integration tests
           dispatch each job with Mailgun fetching stubbed, assert recipient/outcome and selected
           aggregate writes, its cursor progress and unchanged sibling cursor rows. Automation
@@ -1648,13 +1648,15 @@ services:
         summary: >-
           Boot initializes analytics synchronously after constructing gifts and invoking
           members.init earlier in the service group, then registers handlers and starts jobs. Analytics init
-          itself is not feature-gated. Background scheduling starts after server readiness,
-          skips test environments and uses allSettled so individual scheduling failures are
-          logged without suppressing later background services. Scheduler registration requires
+          itself is not feature-gated. Background boot makes one scheduler call after server
+          readiness and skips test environments. The scheduler settles all three registrations
+          and logs each failure; boot isolates the call, so an unexpected failure is logged
+          without suppressing later background services. Scheduler registration requires
           both enable flags and recent eligible sends, unless its caller bypasses that lookup.
           Boot VM tests use mocked collaborators: they assert initializer invocation ordering
-          and continuation after two scheduling failures; separate held-promise cases prove
-          waits for Stripe, async peer initializers and jobs startup. Separate VM cases cover
+          and continuation after the scheduling call rejects or throws; scheduler units assert
+          two failed registrations are logged while the third still schedules. Held-promise
+          cases prove waits for Stripe, async peer initializers and jobs startup. Separate VM cases cover
           selected environment/recovery barriers without asserting analytics schedule calls;
           scheduler units establish those gates. Real-boot HTTP remains ready while controlled
           newsletter recovery is held, with analytics scheduling disabled in that test. These
@@ -8056,8 +8058,8 @@ services:
           tinybird-sync queue with concurrency one. No runtime direct factory/helper consumer
           or HTTP/CLI entry was found. Handler units assert one exact injected sync call and
           the queue declaration, not a real queued upload or deferred completion. The background
-          boot harness asserts scheduling is reached after sibling email-analytics registration
-          failures, using a stub root. Persisted cursor data also appears in the exporter backup
+          boot harness asserts scheduling is reached after the earlier email-analytics
+          scheduling step fails, using a stub root. Persisted cursor data also appears in the exporter backup
           table list; the exporter test asserts its output key, not a populated cursor round-trip.
         sources:
           - core/boot.js
