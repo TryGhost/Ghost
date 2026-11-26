@@ -43,7 +43,7 @@ import {
 } from './changes';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
-import type { Asking, ResourceKind } from './resource';
+import type { Asking } from './callers';
 
 const MAX_KEY_ITERATIONS = 1000;
 
@@ -147,11 +147,11 @@ export interface EditedDefinition {
  * its limits allow, and reports the change it made, inside its transaction, to the function it
  * is given. Who may run a command is the owner's to decide, before calling it.
  */
-export class MetafieldDefinitionsService<R extends ResourceKind> {
+export class MetafieldDefinitionsService {
   private knex: Knex;
-  private fields: FieldSource<R>;
+  private fields: FieldSource;
   private onDefinitionUpdated: OnDefinitionUpdated;
-  private namespaces: Namespaces<R>;
+  private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
   private inputs: ReturnType<typeof definitionInputs>;
@@ -165,10 +165,10 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
     labs,
   }: {
     knex: Knex;
-    fields: FieldSource<R>;
+    fields: FieldSource;
     /** Called with each change a command makes, inside the command's transaction. */
     onDefinitionUpdated: OnDefinitionUpdated;
-    namespaces: Namespaces<R>;
+    namespaces: Namespaces;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
     labs: { isSet(flag: string): boolean };
@@ -184,7 +184,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
 
   async browse(
     options: { namespace: Namespace; filter?: string },
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Definition[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
@@ -209,7 +209,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
   }
 
   private async list(query: DefinitionQuery): Promise<Definition[]> {
-    const rows = await inFieldOrder(query.read, this.fields.name).select('*');
+    const rows = await inFieldOrder(query.read, this.fields.name).select(`${this.fields.name}.*`);
     return rows.flatMap((row) => this.readField(row) ?? []);
   }
 
@@ -225,7 +225,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
   async read(
     namespace: Namespace,
     key: Key,
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Definition> {
     const [field] = await this.list(
@@ -256,11 +256,14 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
    * opens its own.
    */
   async add(
+    caller: Asking,
     context: RequestContext,
     namespace: Namespace,
     input: unknown,
     executor: Knex = this.knex,
   ): Promise<Definition[]> {
+    // Before anything is tracked: a caller who may not manage the namespace never attempted it.
+    this.namespaces.assertManageable(caller, namespace);
     return this.tracking.definition('create', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const requestedCount = Array.isArray(input) ? input.length : 0;
@@ -412,11 +415,14 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
    * opens its own.
    */
   async reorder(
+    caller: Asking,
     context: RequestContext,
     namespace: Namespace,
     input: unknown,
     executor: Knex = this.knex,
   ): Promise<Definition[]> {
+    // Before anything is tracked: a caller who may not manage the namespace never attempted it.
+    this.namespaces.assertManageable(caller, namespace);
     return this.tracking.definition('reorder', async () => {
       await this.namespaces.assertChangeable(namespace);
       const parsed = ReorderInput.safeParse(input);
@@ -622,12 +628,15 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
   }
 
   async edit(
+    caller: Asking,
     context: RequestContext,
     namespace: Namespace,
     key: Key,
     input: unknown,
     executor: Knex = this.knex,
   ): Promise<EditedDefinition> {
+    // Before anything is tracked: a caller who may not manage the namespace never attempted it.
+    this.namespaces.assertManageable(caller, namespace);
     return this.tracking.definition('edit', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const parsed = this.inputs.edit.safeParse(input);
@@ -763,11 +772,14 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
    * reversible soft state (see `edit` with a status change).
    */
   async destroy(
+    caller: Asking,
     context: RequestContext,
     namespace: Namespace,
     key: Key,
     executor: Knex = this.knex,
   ): Promise<void> {
+    // Before anything is tracked: a caller who may not manage the namespace never attempted it.
+    this.namespaces.assertManageable(caller, namespace);
     return this.tracking.definition('delete', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       await ensureTransaction(executor, async (trx) => {

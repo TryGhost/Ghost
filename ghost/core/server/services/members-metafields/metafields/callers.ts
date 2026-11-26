@@ -1,17 +1,11 @@
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import { MEMBER_ACCESS, MemberAccessSchema, type MemberAccess } from '@tryghost/metafield-types';
-import type { Principal } from '../../auth/principal';
-import { unreachable } from '../../lib/unreachable';
-
-// Re-exported so the rest of the service imports the access vocabulary from one place. What each
-// caller can read and write is decided by each namespace's access.
-export { MEMBER_ACCESS, MemberAccessSchema, type MemberAccess };
+import type { Principal } from '../../../auth/principal';
+import { unreachable } from '../../../lib/unreachable';
 
 /**
- * Who is asking for members' metafields, in metafields' terms. Access is granted to each kind;
- * the rest says which one, for when a namespace grants something to one caller alone, such as
- * the app that owns it.
+ * Who is asking for a resource's metafields, in metafields' terms. A namespace's access policy
+ * decides what each one may do; the rest says which one, for the policy's `owner` and `member`.
  *
  * Ghost works out who made a request separately for authorization, as a principal, and for the
  * records it keeps, as an actor. This file is the facade between those and metafields: it is the
@@ -23,8 +17,25 @@ export type Caller =
   | { kind: 'integration'; integrationId: string | null }
   | { kind: 'app'; installationId: string; actingFor: string | null }
   | { kind: 'member'; memberId: string }
-  | { kind: 'internal' }
   | { kind: 'anonymous' };
+
+/**
+ * Who is asking, as the core reads them: a whole caller where there is one, or a kind alone where
+ * a read asks what any caller of that kind can see, such as which definitions a member is offered.
+ */
+export type Asking = Caller | { kind: Caller['kind'] };
+
+/**
+ * The id Ghost has as an app. An installation's id is an ObjectId, so no installed app can have
+ * it.
+ */
+export const GHOST_APP_ID = 'ghost';
+
+/**
+ * Ghost itself: the app that owns the namespaces Ghost registers, such as custom fields, and
+ * what its own processes read and write as. It reaches what an owner reaches, and no more.
+ */
+export const GHOST: Caller = { kind: 'app', installationId: GHOST_APP_ID, actingFor: null };
 
 const Id = z.object({ id: z.string() });
 
@@ -43,7 +54,7 @@ type PrincipalRead = z.infer<typeof PrincipalSchema>;
 const readsEveryPrincipal: (principal: Principal) => PrincipalRead = (principal) => principal;
 void readsEveryPrincipal;
 
-/** The caller a principal is. */
+/** The caller a principal is. Auth's internal principal is Ghost. */
 export function callerOfPrincipal(principal: PrincipalRead): Caller {
   switch (principal.kind) {
     case 'user':
@@ -57,7 +68,7 @@ export function callerOfPrincipal(principal: PrincipalRead): Caller {
         actingFor: principal.actingFor?.id ?? null,
       };
     case 'internal':
-      return { kind: 'internal' };
+      return GHOST;
     case 'anonymous':
       return { kind: 'anonymous' };
     default:
@@ -89,14 +100,14 @@ const RequestContext = z
  */
 export function callerOf(context: unknown): Caller {
   if (context === 'internal') {
-    return { kind: 'internal' };
+    return GHOST;
   }
   const read = RequestContext.parse(context ?? {});
   if (read.principal && read.principal.kind !== 'anonymous') {
     return callerOfPrincipal(read.principal);
   }
   if (read.internal) {
-    return { kind: 'internal' };
+    return GHOST;
   }
   if (read.member) {
     return { kind: 'member', memberId: read.member.id };

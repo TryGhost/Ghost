@@ -12,7 +12,8 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import type { Asking, MetafieldResource, ResourceKind } from './resource';
+import { GHOST, type Asking } from './callers';
+import type { MetafieldResource, ResourceKind } from './resource';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS, type MetafieldBindingRow } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
@@ -56,32 +57,24 @@ export interface RoutedPlans {
 export class MetafieldBindingsService<R extends ResourceKind> {
   private knex: Knex;
   private table: string;
-  private fields: FieldSource<R>;
+  private fields: FieldSource;
   private values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
-  private internal: Asking<R>;
 
   constructor({
     knex,
     resource,
     fields,
     values,
-    internal,
   }: {
     knex: Knex;
     resource: MetafieldResource;
-    fields: FieldSource<R>;
+    fields: FieldSource;
     values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
-    /**
-     * The caller Ghost itself writes as. A port's values are planned as Ghost's, since the
-     * binding, not whoever sent them, is what admits them.
-     */
-    internal: Asking<R>;
   }) {
     this.knex = knex;
     this.table = resource.tables.bindings;
     this.fields = fields;
     this.values = values;
-    this.internal = internal;
   }
 
   private bindings(db: Knex) {
@@ -133,7 +126,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
    */
   async boundPorts(
     ports: readonly string[],
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Map<string, string | null>> {
     if (!ports.length) {
@@ -217,7 +210,10 @@ export class MetafieldBindingsService<R extends ResourceKind> {
 
     const { writes, refusals } = await this.values.planOrRefuse(
       input,
-      this.internal,
+      // Planned as Ghost's, since the binding, not whoever sent the values, is what admits them.
+      // Ghost reaches its namespaces' fields on any record, so the record doesn't decide.
+      GHOST,
+      null,
       // Every value planned came through a port, so each refusal names one.
       (identity) => routed.get(identity)?.port ?? identity,
       executor,

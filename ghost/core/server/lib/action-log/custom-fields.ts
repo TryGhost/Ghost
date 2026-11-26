@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import type { MemberAccess } from '../../services/members-metafields/callers';
+import type { MemberAccess } from '@tryghost/metafield-types';
 import type {
   DefinitionChange,
   OnDefinitionUpdated,

@@ -1,35 +1,15 @@
-import type { ObjectType, permissions } from '../../../auth/permissions/permissions-data';
-import type { TableName } from '../../../data/schema/schema';
-
-/** The staff permissions that cover managing fields: each grants adding, editing and deleting. */
-export type ManagingPermission = {
-  [Type in ObjectType]: 'add' | 'edit' | 'destroy' extends (typeof permissions)[Type][number]
-    ? Type
-    : never;
-}[ObjectType];
+import { z } from 'zod';
+import schema, { type TableName } from '../../../data/schema/schema';
 
 /**
- * What a kind of resource brings to metafields. Every type in the core takes one, so a
+ * What a kind of resource brings to metafields: its name. Every type in the core takes one, so a
  * registration, a field source or a service can only be used with the resource it was built for.
+ * Who may do what is a namespace's access policy, the same for every resource.
  */
 export interface ResourceKind {
   /** The resource's name, as its tables and routes are named. */
   Name: string;
-  /** Who can ask for the resource's metafields, told apart by their kind. */
-  Caller: { kind: string };
-  /** The staff permission that manages the namespaces staff own on the resource. */
-  StaffPermission: ManagingPermission;
 }
-
-/** The kinds of caller a resource has, which access is granted to. */
-export type CallerKind<R extends ResourceKind> = R['Caller']['kind'];
-
-/**
- * Who is asking, as the core reads them: only their kind, as access is granted to kinds of caller.
- * A whole caller is passed where there is one, and a kind alone where a read asks what any caller
- * of that kind can see, such as what any member can read.
- */
-export type Asking<R extends ResourceKind> = R['Caller'] | { kind: CallerKind<R> };
 
 /**
  * A kind of thing that holds metafields, such as members or posts, and the tables its fields and
@@ -50,9 +30,17 @@ export interface MetafieldResource<R extends ResourceKind = ResourceKind> {
   };
   /** The column of the values that holds the id of the member or post. */
   idColumn: string;
-  /**
-   * The caller every definition stores its own level for, in the fields table's `member_access`
-   * column, laid over its namespace's access. None when the resource stores no such level.
-   */
-  storedLevelFor?: CallerKind<R>;
+}
+
+/** The part of a column's definition that says which table's id it references, if any. */
+const ForeignKey = z.object({ references: z.string().optional() });
+
+/**
+ * Whether a resource's records are members, read from the schema: they are when its values'
+ * foreign key references `members.id`. A policy's `member` is the member a record belongs to, so
+ * on any other resource no member owns a record.
+ */
+export function recordsAreMembers(resource: MetafieldResource): boolean {
+  const columns: Record<string, unknown> = schema[resource.tables.values];
+  return ForeignKey.safeParse(columns[resource.idColumn]).data?.references === 'members.id';
 }

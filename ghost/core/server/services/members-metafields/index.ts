@@ -10,7 +10,7 @@ export { changedForMembers } from './members-resource';
 import type { MetafieldBindingsService } from './metafields/bindings-service';
 import { resolveMaxDefinitions } from './config';
 import { definitionLimit } from './definition-limit';
-import { CUSTOM_FIELDS_ACCESS, customFields } from './custom-fields/namespace';
+import { customFields } from './custom-fields/namespace';
 import { metafieldsFor } from './metafields/metafields';
 import type { Namespaces } from './metafields/namespaces';
 import type { FieldSource as ResourceFieldSource } from './metafields/queries';
@@ -19,7 +19,7 @@ import { metafieldsTracking } from './metafields/tracking';
 
 export type { Definition } from './metafields/models';
 /** The members' fields as this site reads them, for every read here and in the domains that join them. */
-export type FieldSource = ResourceFieldSource<Members>;
+export type FieldSource = ResourceFieldSource;
 /** What each member holds for each field. */
 export type MemberMetafieldValues = MetafieldValuesService<Members>;
 export type { MemberMetafieldActivity } from './member-activity';
@@ -32,15 +32,16 @@ export {
 /** Which member field each port another domain declares writes into. */
 export type MemberBindings = MetafieldBindingsService<Members>;
 /** The members' definitions, read and changed for every namespace. */
-export type MemberDefinitions = MetafieldDefinitionsService<Members>;
+export type MemberDefinitions = MetafieldDefinitionsService;
 export { adminWriteOrigin } from './write-origin';
 export type { BoundField } from './metafields/bindings-service';
 export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
 export type { MetafieldChangeEvent, Members } from './members-resource';
 
-// The API a request came through decides which custom fields it can read and write. Every read
-// and write takes one, so a new caller has to state which API it is rather than get a default.
-export { MEMBER_ACCESS, callerOf, type Caller, type MemberAccess } from './callers';
+// Who is asking decides which fields a read or write reaches, by each namespace's access policy.
+// Every read and write takes one, so a new caller has to say who it is rather than get a default.
+export { MEMBER_ACCESS, type MemberAccess } from '@tryghost/metafield-types';
+export { GHOST, callerOf, type Caller } from './metafields/callers';
 
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the
@@ -52,7 +53,7 @@ export { MEMBER_ACCESS, callerOf, type Caller, type MemberAccess } from './calle
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 /** The namespaces fields can be defined in, each with its owner, limits and access policy. */
-export let namespaces: Namespaces<Members> | undefined;
+export let namespaces: Namespaces | undefined;
 /** The fields as this site reads them, for every read here and in the domains that join them. */
 export let fields: FieldSource | undefined;
 export let definitions: MemberDefinitions | undefined;
@@ -66,7 +67,7 @@ export let bindings: MemberBindings | undefined;
  * throws.
  */
 export function booted(): {
-  namespaces: Namespaces<Members>;
+  namespaces: Namespaces;
   definitions: MemberDefinitions;
   values: MemberMetafieldValues;
   bindings: MemberBindings;
@@ -106,15 +107,10 @@ export function init(): void {
   ({ namespaces, fields, definitions, values, bindings } = metafieldsFor(MEMBERS_RESOURCE, {
     knex,
     // Custom fields are the one namespace registered on members so far, and the only one anyone
-    // can define fields in.
+    // can define fields in or reach.
     namespaces: [customFields({ limitService })],
-    // Nobody owns another namespace yet, so a field stored in one, as an app's would be, is
-    // reached the way a custom field is, by its member access. An app that owns its namespace
-    // will state its own access.
-    unowned: CUSTOM_FIELDS_ACCESS,
     definitionLimit: definitionLimit(getMaxDefinitions),
     maxDefinitions: getMaxDefinitions,
-    internal: { kind: 'internal' },
     // Each change to a definition is logged as a staff action inside the command that made it.
     onDefinitionUpdated: recordMemberDefinitionChanges(new ActionLog()),
     onValuesWritten: activity.record,

@@ -9,6 +9,7 @@ module.exports = {
     const events = require('../../lib/common/events');
     const urlService = require('../url');
     const membersService = require('../members');
+    const { GHOST } = require('../members-metafields');
     const createSerialize = require('./serialize');
     const createPayload = require('./payload');
     const WebhookTrigger = require('./webhook-trigger');
@@ -16,7 +17,7 @@ module.exports = {
 
     // Looked up when an event arrives: the members service starts alongside this one.
     const readMemberMetafields = (memberId) =>
-      membersService.api.memberBREADService.readMetafieldsForMember(memberId, { kind: 'internal' });
+      membersService.api.memberBREADService.readMetafieldsForMember(memberId, GHOST);
 
     const serialize = createSerialize({ urlService, readMemberMetafields });
     const payload = createPayload({ serialize });

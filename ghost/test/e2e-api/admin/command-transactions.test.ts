@@ -97,9 +97,11 @@ describe('Commands and transactions', function () {
     const key = await createField('Nickname');
     const memberId = await createMember();
     const { values } = metafields.booted();
-    const planned = await values.planWrite(values.unwrapWire({ custom: { [key]: 'Bex' } }), {
-      kind: 'staff',
-    });
+    const planned = await values.planWrite(
+      values.unwrapWire({ custom: { [key]: 'Bex' } }),
+      { kind: 'staff' },
+      memberId,
+    );
     return { memberId, planned };
   }
 
@@ -167,6 +169,7 @@ describe('Commands and transactions', function () {
         metafields
           .booted()
           .definitions.add(
+            { kind: 'staff' },
             context,
             CUSTOM_NAMESPACE,
             [{ name: 'Company', type: 'short_text' }],
@@ -182,7 +185,14 @@ describe('Commands and transactions', function () {
         return (executor) =>
           metafields
             .booted()
-            .definitions.edit(context, CUSTOM_NAMESPACE, key, { name: 'Employer' }, executor);
+            .definitions.edit(
+              { kind: 'staff' },
+              context,
+              CUSTOM_NAMESPACE,
+              key,
+              { name: 'Employer' },
+              executor,
+            );
       },
     },
     {
@@ -196,6 +206,7 @@ describe('Commands and transactions', function () {
           metafields
             .booted()
             .definitions.reorder(
+              { kind: 'staff' },
               context,
               CUSTOM_NAMESPACE,
               [{ key: second }, { key: first }],
@@ -214,7 +225,9 @@ describe('Commands and transactions', function () {
           .body({ members_metafields: [{ status: 'archived' }] })
           .expectStatus(200);
         return (executor) =>
-          metafields.booted().definitions.destroy(context, CUSTOM_NAMESPACE, key, executor);
+          metafields
+            .booted()
+            .definitions.destroy({ kind: 'staff' }, context, CUSTOM_NAMESPACE, key, executor);
       },
     },
     {
@@ -431,6 +444,7 @@ describe('Commands and transactions', function () {
           metafields
             .booted()
             .definitions.add(
+              { kind: 'staff' },
               context,
               CUSTOM_NAMESPACE,
               [{ name: 'Company', type: 'short_text' }],
@@ -449,7 +463,14 @@ describe('Commands and transactions', function () {
         const { definitions } = metafields.booted();
         return {
           change: (trx) =>
-            definitions.edit(context, CUSTOM_NAMESPACE, key, { name: 'Employer' }, trx),
+            definitions.edit(
+              { kind: 'staff' },
+              context,
+              CUSTOM_NAMESPACE,
+              key,
+              { name: 'Employer' },
+              trx,
+            ),
           read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, { kind: 'staff' }, executor),
         };
       },
@@ -494,6 +515,7 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             definitions.add(
+              { kind: 'staff' },
               context,
               CUSTOM_NAMESPACE,
               [{ name: 'Nickname', type: 'short_text' }],
@@ -505,6 +527,7 @@ describe('Commands and transactions', function () {
             const { writes } = await values.planOrRefuse(
               values.unwrapWire({ custom: { nickname: 'Bex' } }),
               { kind: 'staff' },
+              null,
               undefined,
               executor,
             );
@@ -520,6 +543,7 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             definitions.add(
+              { kind: 'staff' },
               context,
               CUSTOM_NAMESPACE,
               [{ name: 'Nickname', type: 'short_text' }],
@@ -530,6 +554,7 @@ describe('Commands and transactions', function () {
               .planWrite(
                 values.unwrapWire({ custom: { nickname: 'Bex' } }),
                 { kind: 'staff' },
+                null,
                 executor,
               )
               .then(

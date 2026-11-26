@@ -1,12 +1,19 @@
-import { unreachable } from '../../../lib/unreachable';
 import type { Knex } from 'knex';
 import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
 import { z } from 'zod';
+import { MEMBER_ACCESS } from '@tryghost/metafield-types';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
 import schema from '../../../data/schema/schema';
-import type { Grant, Grants, Namespaces } from './namespaces';
-import type { Asking, MetafieldResource, ResourceKind } from './resource';
+import type { Asking } from './callers';
+import {
+  LEVEL_RANK,
+  isRecordsMember,
+  possibleSubjects,
+  type Namespaces,
+  type RecordOf,
+} from './namespaces';
+import { recordsAreMembers, type MetafieldResource } from './resource';
 import { FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
 
 /**
@@ -38,45 +45,38 @@ export { knexify };
 // code, and a query that forgets either is a silent bug.
 
 /**
- * Narrows a read of the fields to the ones `grants` reach: in each namespace someone owns, by its
- * owner's grant, and in every other namespace by the grant for those.
+ * The CTEs a read works out the caller's level on each field with. Namespaces are registered in
+ * code, so their owners and policies reach the query as bound values; each field's own policy is
+ * read from its row. Named for metafields so they can't shadow a table a query also reads.
  */
-function readableBy<T extends Knex.QueryBuilder>(query: T, fieldsName: string, grants: Grants): T {
-  const namespaceColumn = `${fieldsName}.namespace`;
-  const owned = grants.owned.map(({ namespace }) => namespace);
-  const reached: Array<(where: Knex.QueryBuilder) => void> = [
-    ...grants.owned.map(
-      ({ namespace, grant }) =>
-        (where: Knex.QueryBuilder) =>
-          narrowTo(where.where(namespaceColumn, namespace), fieldsName, grant),
-    ),
-    (where: Knex.QueryBuilder) =>
-      narrowTo(where.whereNotIn(namespaceColumn, owned), fieldsName, grants.unowned),
-  ];
-  query.where((anyNamespace) => {
-    for (const narrow of reached) {
-      anyNamespace.orWhere(narrow);
-    }
-  });
-  return query;
+const CTE = {
+  namespaces: 'metafield_namespaces',
+  grants: 'metafield_grants',
+  subjects: 'metafield_subjects',
+  levels: 'metafield_levels',
+} as const;
+
+/**
+ * A table of bound values with `columns`, one row for each of `rows`, for a CTE. Written out,
+ * because knex drops a union from a select that reads no table. With no rows it's still a valid,
+ * empty table.
+ */
+function rowsOf(db: Knex, columns: readonly string[], rows: ReadonlyArray<readonly Knex.Value[]>) {
+  if (rows.length === 0) {
+    return db.raw(`select ${columns.map(() => 'null as ??').join(', ')} where 1 = 0`, [...columns]);
+  }
+  const select = `select ${columns.map(() => '? as ??').join(', ')}`;
+  return db.raw(
+    rows.map(() => select).join(' union all '),
+    rows.flatMap((row) => columns.flatMap((column, index) => [row[index], column])),
+  );
 }
 
-/** Narrows a read already scoped to some namespaces to the fields `grant` reaches in them. */
-function narrowTo(where: Knex.QueryBuilder, fieldsName: string, grant: Grant): void {
-  switch (grant.fields) {
-    case 'all':
-      return;
-    case 'none':
-      // An empty `IN` matches nothing.
-      where.whereIn(`${fieldsName}.namespace`, []);
-      return;
-    case 'by stored level':
-      where.whereIn(`${fieldsName}.member_access`, grant.levels);
-      return;
-    default:
-      unreachable(grant, 'grant');
-  }
-}
+/** The name the caller's level on each field is joined under, for a read to filter or select. */
+export const LEVELS = CTE.levels;
+
+/** The level a read needs, as `LEVELS` holds it. */
+export const READ_RANK = LEVEL_RANK.read;
 
 /**
  * Whether a read includes definitions the publisher has archived.
@@ -118,8 +118,13 @@ class ScopedDefinitions {
 export type DefinitionQuery = ScopedDefinitions;
 
 /** Which fields a definitions read is for, and who for. */
-export interface DefinitionScope<R extends ResourceKind> {
-  caller: Asking<R>;
+export interface DefinitionScope {
+  caller: Asking;
+  /**
+   * The record the read is for, which decides whether a member is its member. Without one, it is
+   * a question about definitions, answered as for the member's own record.
+   */
+  record?: RecordOf;
   status: StatusScope;
   /** One namespace's fields. Without it, every namespace's. */
   namespace?: Namespace;
@@ -138,17 +143,27 @@ export interface DefinitionScope<R extends ResourceKind> {
  * holds for every one of them. That includes the check before writing a value. Writes, and
  * the reads a change to the field list is compared with, name the table itself.
  */
-export interface FieldSource<R extends ResourceKind> {
+export interface FieldSource {
   /**
    * The name the fields are read under: their table's, so a column is qualified the same way
    * whether a read names the table or the fields as this reads them.
    */
   name: string;
   /**
-   * Narrows a read that joins the fields to the ones `caller` may read, as each namespace's
-   * owner grants them.
+   * Joins `caller`'s level on each field to a query that reads the fields under `name`, as
+   * `LEVELS`, worked out in the same statement: a field's own grant replaces its namespace's for
+   * the same subject, and the caller has the highest level of any subject it is. A field in a
+   * namespace nobody registered has no level, so the join leaves it out.
    */
-  readable<T extends Knex.QueryBuilder>(query: T, caller: Asking<R>): T;
+  withLevels<T extends Knex.QueryBuilder>(db: Knex, query: T, caller: Asking): T;
+  /** The column of `LEVELS` that holds the caller's level on `record`. */
+  levelOn(caller: Asking, record: RecordOf): string;
+  /**
+   * The caller's level on the record each row is about, where a read covers several records: the
+   * record's id is in `recordColumn`. Only on a resource whose records are members can it be the
+   * caller's own.
+   */
+  levelOnEach(db: Knex, caller: Asking, recordColumn: string): Knex.Raw;
   /** The longest name and key the fields table can store. */
   maxLength: { name: number; key: number };
   /**
@@ -161,8 +176,8 @@ export interface FieldSource<R extends ResourceKind> {
    * query that joins them.
    */
   asRead(db: Knex, alias?: string): Knex.TableDescriptor;
-  /** The fields `scope` names, in no particular order. */
-  definitions(db: Knex, scope: DefinitionScope<R>): DefinitionQuery;
+  /** The fields `scope` names that its caller may read, in no particular order. */
+  definitions(db: Knex, scope: DefinitionScope): DefinitionQuery;
   /**
    * The fields `keys` name in `namespace`, held against change until `trx` ends. The lock is
    * taken in the same statement as the read, on the rows as stored.
@@ -181,10 +196,10 @@ const FieldColumnLengths = z.object({
  * available reads as archived. Which namespaces aren't is asked on every read, as it can change
  * while Ghost runs.
  */
-export function fieldSource<R extends ResourceKind>(
+export function fieldSource(
   resource: MetafieldResource,
-  namespaces: Pick<Namespaces<R>, 'unavailable' | 'readable'>,
-): FieldSource<R> {
+  namespaces: Pick<Namespaces, 'unavailable' | 'policies'>,
+): FieldSource {
   const tableName = resource.tables.fields;
   // The canonical schema, which the migrations and models also read, so these can't drift from
   // the database.
@@ -207,13 +222,136 @@ export function fieldSource<R extends ResourceKind>(
     );
   };
 
-  const source: FieldSource<R> = {
+  /** `metafield_namespaces (namespace, owner)`: every registered namespace. */
+  const namespacesCte = (db: Knex) =>
+    rowsOf(
+      db,
+      ['namespace', 'owner'],
+      namespaces.policies().map(({ namespace, owner }) => [namespace, owner]),
+    );
+
+  /**
+   * `metafield_grants (namespace, key, subject, level)`: one row for each level a policy gives a
+   * subject. A namespace's own policy has the empty key. Each field's own policy is its stored
+   * member level, the one place that column is read, so storing whole policies changes only this.
+   */
+  const grantsCte = (db: Knex) => {
+    const memberLevel = db.raw(
+      `case ?? ${Object.values(MEMBER_ACCESS)
+        .map(() => 'when ? then ?')
+        .join(' ')} end as ??`,
+      [
+        'member_access',
+        ...Object.values(MEMBER_ACCESS).flatMap((access) => [access, LEVEL_RANK[access]]),
+        'level',
+      ],
+    );
+    const fieldGrants = db(tableName).select(
+      'namespace',
+      'key',
+      db.raw('? as ??', ['member', 'subject']),
+      memberLevel,
+    );
+    const namespaceGrants = namespaces
+      .policies()
+      .flatMap(({ namespace, policy }) =>
+        Object.entries(policy).map(([subject, level]) => [
+          namespace,
+          '',
+          subject,
+          LEVEL_RANK[level],
+        ]),
+      );
+    return namespaceGrants.length > 0
+      ? fieldGrants.unionAll(rowsOf(db, ['namespace', 'key', 'subject', 'level'], namespaceGrants))
+      : fieldGrants;
+  };
+
+  /** `metafield_subjects (subject)`: every subject the caller can be. */
+  const subjectsCte = (db: Knex, caller: Asking) =>
+    rowsOf(
+      db,
+      ['subject'],
+      possibleSubjects(caller).map((subject) => [subject]),
+    );
+
+  /**
+   * `metafield_levels (namespace, key, level_on_others, level_on_own)`: the caller's level on each
+   * field. `owner` counts only in the namespaces the caller owns. `member` counts only on the
+   * member's own record, so there's a level for that and one for every other record.
+   */
+  const levelsCte = (db: Knex, caller: Asking) => {
+    const installation =
+      caller.kind === 'app' && 'installationId' in caller ? caller.installationId : null;
+    const level = db
+      .raw('coalesce(??, ??, 0)', ['field_grant.level', 'namespace_grant.level'])
+      .toQuery();
+    return db
+      .select(
+        'f.namespace',
+        'f.key',
+        db.raw(`max(case when ?? = ? then 0 else ${level} end) as ??`, [
+          's.subject',
+          'member',
+          'level_on_others',
+        ]),
+        db.raw(`max(${level}) as ??`, ['level_on_own']),
+      )
+      .from(`${tableName} as f`)
+      .join(`${CTE.namespaces} as n`, 'n.namespace', 'f.namespace')
+      .join(`${CTE.subjects} as s`, function () {
+        this.on(db.raw('?? <> ?', ['s.subject', 'owner'])).orOn(
+          db.raw('?? = ?', ['n.owner', installation]),
+        );
+      })
+      .leftJoin(`${CTE.grants} as namespace_grant`, function () {
+        this.on('namespace_grant.namespace', 'f.namespace')
+          .andOnVal('namespace_grant.key', '')
+          .andOn('namespace_grant.subject', 's.subject');
+      })
+      .leftJoin(`${CTE.grants} as field_grant`, function () {
+        this.on('field_grant.namespace', 'f.namespace')
+          .andOn('field_grant.key', 'f.key')
+          .andOn('field_grant.subject', 's.subject');
+      })
+      .groupBy('f.namespace', 'f.key');
+  };
+
+  const source: FieldSource = {
     name: tableName,
 
     maxLength: { name: columns.name.maxlength, key: columns.key.maxlength },
 
-    readable(query, caller) {
-      return readableBy(query, tableName, namespaces.readable(caller));
+    withLevels(db, query, caller) {
+      query
+        .with(CTE.namespaces, namespacesCte(db))
+        .with(CTE.grants, grantsCte(db))
+        .with(CTE.subjects, subjectsCte(db, caller))
+        .with(CTE.levels, levelsCte(db, caller))
+        .join(CTE.levels, function () {
+          this.on(`${CTE.levels}.namespace`, `${tableName}.namespace`).andOn(
+            `${CTE.levels}.key`,
+            `${tableName}.key`,
+          );
+        });
+      return query;
+    },
+
+    levelOn(caller, record) {
+      return `${CTE.levels}.${isRecordsMember(caller, record) ? 'level_on_own' : 'level_on_others'}`;
+    },
+
+    levelOnEach(db, caller, recordColumn) {
+      const me =
+        recordsAreMembers(resource) && caller.kind === 'member' && 'memberId' in caller
+          ? caller.memberId
+          : null;
+      return db.raw('case when ?? = ? then ?? else ?? end', [
+        recordColumn,
+        me,
+        `${CTE.levels}.level_on_own`,
+        `${CTE.levels}.level_on_others`,
+      ]);
     },
 
     table(db) {
@@ -248,8 +386,9 @@ export function fieldSource<R extends ResourceKind>(
       if (scope.limit !== undefined) {
         query = query.limit(scope.limit);
       }
-
-      return new ScopedDefinitions(source.readable(query, scope.caller));
+      query = source.withLevels(db, query, scope.caller);
+      query = query.where(source.levelOn(scope.caller, scope.record ?? null), '>=', READ_RANK);
+      return new ScopedDefinitions(query);
     },
 
     locked(trx, namespace, keys) {

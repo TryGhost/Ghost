@@ -4516,7 +4516,7 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/callers.ts
+          - core/server/services/members-metafields/metafields/callers.ts
           - core/server/services/members-metafields/metafields/schema.ts
           - core/server/services/members-metafields/config.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
@@ -4548,7 +4548,7 @@ services:
           rules and provenance; they do not pin the root export shape or init return timing.
         sources:
           - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/callers.ts
+          - core/server/services/members-metafields/metafields/callers.ts
           - core/server/services/members-metafields/write-origin.ts
           - core/server/services/members-metafields/metafields/namespaces.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts

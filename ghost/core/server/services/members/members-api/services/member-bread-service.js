@@ -1,9 +1,6 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const { adminWriteOrigin, callerOf } = require('../../../members-metafields');
-
-/** @type {import('../../../members-metafields').Caller} */
-const INTERNAL = { kind: 'internal' };
+const { GHOST, adminWriteOrigin, callerOf } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -487,8 +484,13 @@ module.exports = class MemberBREADService {
       return null;
     }
 
-    // Planned before the member is touched, so a bad value refuses the whole request.
-    const writes = await this.metafieldValues.planWrite(metafields, callerOf(options.context));
+    // Planned before the member is touched, so a bad value refuses the whole request. An edit
+    // names its member; an add names none yet.
+    const writes = await this.metafieldValues.planWrite(
+      metafields,
+      callerOf(options.context),
+      options.id ?? null,
+    );
     if (writes.length === 0) {
       return null;
     }
@@ -719,11 +721,11 @@ module.exports = class MemberBREADService {
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
 
       // Read as Ghost itself, as the change it finds is what the site's webhooks are sent.
-      const before = await this.readMetafieldsForMember(model.id, INTERNAL, { transacting });
+      const before = await this.readMetafieldsForMember(model.id, GHOST, { transacting });
       for (const { writes, origin } of plans) {
         await this.metafieldValues.applyWrite(model.id, writes, origin, transacting);
       }
-      const after = await this.readMetafieldsForMember(model.id, INTERNAL, { transacting });
+      const after = await this.readMetafieldsForMember(model.id, GHOST, { transacting });
       if (!_.isEqual(before, after)) {
         // Metafields aren't member columns, so the model doesn't keep their old values.
         model._previousMetafields = before;

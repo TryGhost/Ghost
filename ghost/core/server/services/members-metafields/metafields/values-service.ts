@@ -33,14 +33,15 @@ import { ValuesWritten, type OnValuesWritten } from './changes';
 import { ensureTransaction, transactionOf } from '../../../lib/ensure-transaction';
 import {
   ACTIVE_ONLY,
+  READ_RANK,
   fieldReference,
   onField,
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { MemberAccessSchema } from '@tryghost/metafield-types';
-import type { Namespaces } from './namespaces';
-import type { Asking, MetafieldResource, ResourceKind } from './resource';
+import { DbLevel, atLeast, type RecordOf } from './namespaces';
+import type { Asking } from './callers';
+import { recordsAreMembers, type MetafieldResource, type ResourceKind } from './resource';
 import { readStoredField } from './stored-fields';
 import {
   VALUE_COLUMNS,
@@ -112,30 +113,38 @@ const WritableField = storedField({
   namespace: NamespaceSchema,
   key: KeySchema,
   name: z.string(),
-  memberAccess: MemberAccessSchema,
+  /** The caller's level on the field, on the record the write is for. */
+  level: DbLevel,
 });
 
-/** The column each of a writable field's values is read from, keyed so none is left out. */
-const WRITABLE_FIELD_COLUMNS = {
-  id: 'id',
-  namespace: 'namespace',
-  key: 'key',
-  name: 'name',
-  memberAccess: 'member_access',
-  type: 'type',
-  settings: 'settings',
-} satisfies Record<keyof z.input<typeof WritableField.asStored>, string>;
+/**
+ * The column each of a writable field's values is read from, the fields read under `fields` and
+ * the caller's level in `level`. Keyed so none is left out.
+ */
+function writableFieldColumns(fields: string, level: string) {
+  return {
+    id: `${fields}.id`,
+    namespace: `${fields}.namespace`,
+    key: `${fields}.key`,
+    name: `${fields}.name`,
+    level,
+    type: `${fields}.type`,
+    settings: `${fields}.settings`,
+  } satisfies Record<keyof z.input<typeof WritableField.asStored>, string>;
+}
 
 /** A field's identity with its type and settings, for reading its values. */
 const DbTypedField = storedField({ namespace: NamespaceSchema, key: KeySchema });
 
-/** The columns of a field's identity, type and settings, keyed so none is left out. */
-const TYPED_FIELD_COLUMNS = Object.keys({
-  namespace: true,
-  key: true,
-  type: true,
-  settings: true,
-} satisfies Record<keyof z.input<typeof DbTypedField.asStored>, true>);
+/** The columns of a field's identity, type and settings, read under `fields`. */
+function typedFieldColumns(fields: string) {
+  return {
+    namespace: `${fields}.namespace`,
+    key: `${fields}.key`,
+    type: `${fields}.type`,
+    settings: `${fields}.settings`,
+  } satisfies Record<keyof z.input<typeof DbTypedField.asStored>, string>;
+}
 
 /**
  * The columns of the joined read of values, each as `values` and `fields` name it. Keyed by the
@@ -155,6 +164,9 @@ function storedValueColumns(resource: MetafieldResource, fields: string) {
 }
 
 type AllowedField = z.output<typeof WritableField.asStored>;
+
+/** The first of a field's rows in a read of values, which is the one its settings come with. */
+const FirstFieldRow = z.object({ field_row: z.coerce.number().pipe(z.literal(1)) });
 
 /** An absent `accepted` means clear the field. */
 export interface PlannedWrite {
@@ -184,9 +196,8 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
  */
 export class MetafieldValuesService<R extends ResourceKind> {
   protected knex: Knex;
-  protected resource: MetafieldResource;
-  private fields: FieldSource<R>;
-  private namespaces: Pick<Namespaces<R>, 'canWrite'>;
+  protected resource: MetafieldResource<R>;
+  private fields: FieldSource;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
@@ -198,21 +209,20 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   private valueKey: string[];
   private valuesInput: z.ZodType<Record<string, unknown>>;
+  /** Whether a member owns a record: on members, the record is the member. */
+  private memberOf: (resourceId: string) => string | null;
 
   constructor({
     knex,
     resource,
     fields,
-    namespaces,
     getMaxDefinitions,
     tracking,
     onValuesWritten,
   }: {
     knex: Knex;
-    resource: MetafieldResource;
-    fields: FieldSource<R>;
-    /** Whose grant decides what a caller may write, namespace by namespace. */
-    namespaces: Pick<Namespaces<R>, 'canWrite'>;
+    resource: MetafieldResource<R>;
+    fields: FieldSource;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
     /** Called with each write, inside its transaction. */
@@ -221,7 +231,6 @@ export class MetafieldValuesService<R extends ResourceKind> {
     this.knex = knex;
     this.resource = resource;
     this.fields = fields;
-    this.namespaces = namespaces;
     this.getMaxDefinitions = getMaxDefinitions;
     this.tracking = tracking;
     this.onValuesWritten = onValuesWritten;
@@ -233,6 +242,8 @@ export class MetafieldValuesService<R extends ResourceKind> {
         ),
       })
       .parse(schema[resource.tables.values])['@@PRIMARY_KEY@@'];
+    const ofMembers = recordsAreMembers(resource);
+    this.memberOf = (resourceId) => (ofMembers ? resourceId : null);
     // From the fields table's `key` column, so no key a site could hold is rejected.
     this.valuesInput = z.record(z.string().max(fields.maxLength.key * 2 + 1), z.unknown());
   }
@@ -244,7 +255,8 @@ export class MetafieldValuesService<R extends ResourceKind> {
   private async allowedFieldsByIdentity(
     executor: Knex,
     identities: string[],
-    caller: Asking<R>,
+    caller: Asking,
+    record: RecordOf,
   ): Promise<Map<string, AllowedField>> {
     // A write names whole fields, so an identity naming a part is one no field answers to.
     const keysByNamespace = new Map<Namespace, Key[]>();
@@ -258,16 +270,19 @@ export class MetafieldValuesService<R extends ResourceKind> {
     if (keysByNamespace.size === 0) {
       return new Map();
     }
+    const fieldsName = this.fields.name;
     const rows = await this.fields
-      .definitions(executor, { caller, status: ACTIVE_ONLY })
-      .read.where((query) => {
+      .definitions(executor, { caller, status: ACTIVE_ONLY, record })
+      .read.where((query: Knex.QueryBuilder) => {
         for (const [namespace, keys] of keysByNamespace) {
-          query.orWhere((inNamespace) =>
-            inNamespace.where('namespace', namespace).whereIn('key', keys),
+          query.orWhere((inNamespace: Knex.QueryBuilder) =>
+            inNamespace
+              .where(`${fieldsName}.namespace`, namespace)
+              .whereIn(`${fieldsName}.key`, keys),
           );
         }
       })
-      .select(WRITABLE_FIELD_COLUMNS);
+      .select(writableFieldColumns(fieldsName, this.fields.levelOn(caller, record)));
 
     const allowed = new Map<string, AllowedField>();
     for (const row of rows) {
@@ -299,45 +314,23 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async getValuesFor(
     resourceId: string,
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
     return (await this.getValuesForMany([resourceId], caller, executor)).get(resourceId);
   }
 
   /**
-   * The type and settings of each active field the caller can read, keyed by identity. A field
-   * whose settings can't be read is read with its type's defaults, and one that can't be read even
-   * so is left out, and its values with it.
-   */
-  private async typedFields(
-    executor: Knex,
-    caller: Asking<R>,
-  ): Promise<Map<string, TypedSettings>> {
-    const rows = await this.fields
-      .definitions(executor, { caller, status: ACTIVE_ONLY })
-      .read.select(...TYPED_FIELD_COLUMNS);
-    const typedFields = new Map<string, TypedSettings>();
-    for (const row of rows) {
-      const field = readStoredField(row, DbTypedField, {
-        reader: 'values',
-        tracking: this.tracking,
-      });
-      if (field) {
-        typedFields.set([field.namespace, field.key].join(SEPARATOR), field);
-      }
-    }
-    return typedFields;
-  }
-
-  /**
    * Metafields for each member or post, keyed by its id. Only active fields the caller can read are
    * included. One with no metafields has no entry. Given an executor, reads inside that
    * transaction.
+   *
+   * One query: the policy is in its WHERE, worked out for each row's record, so a member's own
+   * record and anyone else's can be read together.
    */
   async getValuesForMany(
     resourceIds: string[],
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (resourceIds.length === 0) {
@@ -348,21 +341,46 @@ export class MetafieldValuesService<R extends ResourceKind> {
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const valuesTable = this.resource.tables.values;
+    const fieldsName = this.fields.name;
+    const recordColumn = `${valuesTable}.${this.resource.idColumn}`;
+    // Each field's type and settings come with its first row only: a list's settings would
+    // otherwise come back once for every answer, and one read can cover a whole list or export.
+    const fieldRow = executor.raw('row_number() over (partition by ??, ?? order by ??, ??)', [
+      `${fieldsName}.namespace`,
+      `${fieldsName}.key`,
+      recordColumn,
+      `${valuesTable}.path`,
+    ]);
+    const query = executor(valuesTable).join(
+      this.fields.asRead(executor),
+      onField(fieldsName, valuesTable),
+    );
     const rows = await this.fields
-      .readable(
-        executor(valuesTable).join(
-          this.fields.asRead(executor),
-          onField(this.fields.name, valuesTable),
-        ),
-        caller,
-      )
-      .whereIn(`${valuesTable}.${this.resource.idColumn}`, resourceIds)
-      .where(`${this.fields.name}.status`, FIELD_STATUS.active)
+      .withLevels(executor, query, caller)
+      .whereIn(recordColumn, resourceIds)
+      .where(`${fieldsName}.status`, FIELD_STATUS.active)
+      .where(this.fields.levelOnEach(executor, caller, recordColumn), '>=', READ_RANK)
       .orderBy(`${valuesTable}.path`, 'asc')
-      .select(storedValueColumns(this.resource, this.fields.name));
+      .select({
+        ...storedValueColumns(this.resource, fieldsName),
+        settings: `${fieldsName}.settings`,
+        field_row: fieldRow,
+      });
 
     const stored: z.output<typeof DbStoredValueRow>[] = [];
+    const typedFields = new Map<string, TypedSettings>();
     for (const row of rows) {
+      if (FirstFieldRow.safeParse(row).success) {
+        // A field whose settings can't be read is read with its type's defaults, and one that
+        // can't be read even so is left out, and its values with it.
+        const field = readStoredField(row, DbTypedField, {
+          reader: 'values',
+          tracking: this.tracking,
+        });
+        if (field) {
+          typedFields.set([field.namespace, field.key].join(SEPARATOR), field);
+        }
+      }
       try {
         stored.push(DbStoredValueRow.parse(row));
       } catch (err) {
@@ -378,11 +396,6 @@ export class MetafieldValuesService<R extends ResourceKind> {
         );
       }
     }
-
-    // Each field's type and settings are read once, from its definition, rather than beside every
-    // row: a list's settings would otherwise come back once for every answer, and one read can
-    // cover a whole list or export.
-    const typedFields = stored.length > 0 ? await this.typedFields(executor, caller) : new Map();
     const typedField = ({ namespace, key }: (typeof stored)[number]) =>
       typedFields.get([namespace, key].join(SEPARATOR)) ?? null;
 
@@ -457,17 +470,25 @@ export class MetafieldValuesService<R extends ResourceKind> {
   }
 
   /**
-   * Resolve input into the writes it implies, writing nothing. Returned so a caller can
-   * validate before opening a transaction it would otherwise have to unwind, then apply
-   * the same plan without re-resolving it. A value the site won't accept refuses the whole
-   * write, with every refusal at once.
+   * Resolve input into the writes it implies on the record `resourceId` names, writing nothing,
+   * or on a record still to be added when it names none. Returned so a caller can validate before
+   * opening a transaction it would otherwise have to unwind, then apply the same plan to that
+   * record without re-resolving it. A value the site won't accept refuses the whole write, with
+   * every refusal at once.
    */
   async planWrite(
     input: unknown,
-    caller: Asking<R>,
+    caller: Asking,
+    resourceId: string | null,
     executor: Knex = this.knex,
   ): Promise<PlannedWrite[]> {
-    const { writes, refusals } = await this.planOrRefuse(input, caller, undefined, executor);
+    const { writes, refusals } = await this.planOrRefuse(
+      input,
+      caller,
+      resourceId,
+      undefined,
+      executor,
+    );
     const [first, ...rest] = refusals;
     if (first) {
       throw refusalError(first, rest);
@@ -489,7 +510,8 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async planOrRefuse(
     input: unknown,
-    caller: Asking<R>,
+    caller: Asking,
+    resourceId: string | null,
     named?: (identity: string) => string,
     executor: Knex = this.knex,
   ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
@@ -508,7 +530,9 @@ export class MetafieldValuesService<R extends ResourceKind> {
       });
     }
 
-    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, caller);
+    // A record still to be added belongs to no member yet, so no member's own policy reaches it.
+    const record = { member: resourceId === null ? null : this.memberOf(resourceId) };
+    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, caller, record);
     const writes: PlannedWrite[] = [];
     // Gathered rather than thrown as they are found. A write names several values, and
     // a composite is several again, so refusing at the first leaves someone correcting
@@ -527,7 +551,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
 
       // A different refusal from the unknown-field one above: this caller can
       // already see the field, so naming it discloses nothing.
-      if (!this.namespaces.canWrite(caller, field)) {
+      if (!atLeast(field.level, 'write')) {
         refusals.push({
           message: `Cannot set custom field: ${nameOf(identity)}`,
           property: propertyOf(identity),
@@ -780,13 +804,13 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async heldValues(
     field: FieldIdentity,
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<string[]> {
     const values = this.resource.tables.values;
     const [row] = await this.fields
       .definitions(executor, { caller, status: ACTIVE_ONLY, field })
-      .read.select(...TYPED_FIELD_COLUMNS);
+      .read.select(typedFieldColumns(this.fields.name));
     // A field that can't be read even with its type's defaults is treated as missing, as the
     // definitions read treats it.
     const typed =
