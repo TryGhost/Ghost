@@ -38,7 +38,7 @@ export interface DragDropContainerCallbacks {
     onDragEnterContainer(draggableInfo: DraggableInfo): void;
     onDragEnterDroppable(droppableElem: Element, position: DroppablePosition): void;
     onDragOverDroppable(droppableElem: Element, position: DroppablePosition): void;
-    onDragLeaveDroppable(droppableElem: Element): void;
+    onDragLeaveDroppable(droppableElem: Element | null): void;
     onDragLeaveContainer(draggableInfo: DraggableInfo): void;
     onDragEnd(): void;
     onDrop(draggableInfo: DraggableInfo, droppableElem: Element | null, position: DroppablePosition | null): boolean;
@@ -103,7 +103,7 @@ export class DragDropContainer implements DragDropContainerCallbacks {
     onDragEnterContainer(_draggableInfo: DraggableInfo) { }
     onDragEnterDroppable(_droppableElem: Element, _position: DroppablePosition) { }
     onDragOverDroppable(_droppableElem: Element, _position: DroppablePosition) { }
-    onDragLeaveDroppable(_droppableElem: Element) { }
+    onDragLeaveDroppable(_droppableElem: Element | null) { }
     onDragLeaveContainer(_draggableInfo: DraggableInfo) { }
     onDragEnd() { }
     onDrop(_draggableInfo: DraggableInfo, _droppableElem: Element | null, _position: DroppablePosition | null): boolean { return false; }
