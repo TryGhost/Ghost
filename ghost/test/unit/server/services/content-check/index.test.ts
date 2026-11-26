@@ -197,7 +197,7 @@ describe('Content Check service root', function () {
       .update(`${timestamp}:${requestOptions.body}`)
       .digest('base64');
     assert.equal(requestOptions.headers['X-Ghost-Signature'], expectedSignature);
-    assert.equal(requestOptions.retry, undefined);
+    assert.equal(Object.prototype.hasOwnProperty.call(request.firstCall.args[1], 'retry'), false);
     sinon.assert.calledOnceWithExactly(
       loggedInfo,
       `Triggering content check webhook to "${WEBHOOK_ORIGIN}"`,
