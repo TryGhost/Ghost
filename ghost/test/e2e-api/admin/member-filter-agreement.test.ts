@@ -270,7 +270,7 @@ describe('A members filter selects the same members everywhere', function () {
     await fixtureManager.init('users');
     await agent.loginAsOwner();
     mockRecordingMailgun();
-    mockManager.mockLabsEnabled('segmentEmails');
+    mockManager.mockLabsEnabled('memberSegments');
 
     const addNewsletter = async (name: string) => {
       const { body } = await agent

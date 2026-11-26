@@ -487,7 +487,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   // Members filters can name saved segments, which the members model reads from the segments service
   const labs = require('./shared/labs');
   models.Member.readSegmentsWith({
-    isEnabled: () => labs.isSet('segmentEmails'),
+    isEnabled: () => labs.isSet('memberSegments'),
     browse: (criteria, executor) => segments.service.browse(criteria, executor),
   });
   if (ghostServer) {

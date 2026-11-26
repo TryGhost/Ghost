@@ -97,7 +97,7 @@ describe('Members filtered by segment', function () {
   });
 
   beforeEach(function () {
-    mockManager.mockLabsEnabled('segmentEmails');
+    mockManager.mockLabsEnabled('memberSegments');
   });
 
   afterEach(function () {
@@ -366,8 +366,8 @@ describe('Members filtered by segment', function () {
       );
     });
 
-    it('rejects a segment while the segmentEmails flag is off', async function () {
-      mockManager.mockLabsDisabled('segmentEmails');
+    it('rejects a segment while the memberSegments flag is off', async function () {
+      mockManager.mockLabsDisabled('memberSegments');
       const error = await listError(`segment:${segments.vip}`, 400);
       assert.equal(error.type, 'BadRequestError');
       assert.equal(error.property, 'filter');

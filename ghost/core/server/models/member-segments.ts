@@ -9,7 +9,7 @@ import type { SegmentsService } from '../services/segments/service';
 
 /** What members filters read the segments they name with. Boot supplies it. */
 export interface FilterSegments {
-  /** Whether members filters can name segments, which the segmentEmails flag decides. */
+  /** Whether members filters can name segments, which the memberSegments flag decides. */
   isEnabled: () => boolean;
   /** Reads segments, in the given transaction or on the default connection. */
   browse: SegmentsService['browse'];
