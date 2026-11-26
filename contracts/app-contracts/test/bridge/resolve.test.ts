@@ -7,7 +7,7 @@ import { APP_PERMISSION_KEYS, type AppPermissionKey } from '../../src/scopes.ts'
 const root = new URL('https://site.example/ghost/api/admin/');
 
 // Every scope but the stats one, unless a test says otherwise.
-const APPROVED = new Set(APP_PERMISSION_KEYS.filter((name) => name !== 'post:read_stats'));
+const APPROVED = new Set(APP_PERMISSION_KEYS.filter((name) => name !== 'post:readStats'));
 
 const check = (
   path: string,
@@ -256,10 +256,10 @@ describe('checking an Admin API request', () => {
     expect(include('/pages/?include=,')).toBe('tags,authors,tiers');
     expect(include('/posts/?include=%20')).toBe('tags,authors,tiers,newsletter');
     expect(include('/posts/', new Set(['post:browse']))).toBe('authors');
-    expect(include('/posts/', new Set([...APPROVED, 'post:read_stats']))).toBe(
+    expect(include('/posts/', new Set([...APPROVED, 'post:readStats']))).toBe(
       'tags,authors,email,tiers,newsletter,count.clicks',
     );
-    expect(include('/pages/', new Set(['post:browse', 'post:read_stats']))).toBe(
+    expect(include('/pages/', new Set(['post:browse', 'post:readStats']))).toBe(
       'authors,count.signups,count.paid_conversions',
     );
     // What an app names is left as it is.
@@ -373,9 +373,9 @@ describe('checking an Admin API request', () => {
     expect(result.problem === undefined && result.url.search).toBe('');
   });
 
-  // How a post performed is `post:read_stats`'s, so reads and writes of posts and pages can
+  // How a post performed is `post:readStats`'s, so reads and writes of posts and pages can
   // include it, or sort by it, only with that scope.
-  it('includes or sorts by how posts performed only with post:read_stats', () => {
+  it('includes or sorts by how posts performed only with post:readStats', () => {
     const id = '5ddc9141c35e7700383b2937';
     const cases = [
       ['GET', '/posts/?include=email', 'including email'],
@@ -393,13 +393,13 @@ describe('checking an Admin API request', () => {
       ['GET', '/posts/?order=sentiment%20desc', 'ordering by sentiment'],
       ['GET', '/posts/?order=title%20asc,%20email.open_rate%20desc', 'ordering by email.open_rate'],
     ] as const;
-    const withStats = new Set([...APPROVED, 'post:read_stats' as const]);
+    const withStats = new Set([...APPROVED, 'post:readStats' as const]);
     for (const [method, path, what] of cases) {
       const pathname = path.split('?')[0];
       expect(check(path, method), `${method} ${path}`).toEqual({
         problem: 'blocked',
         pathname,
-        detail: `This app wasn't approved for post:read_stats, which ${what} needs`,
+        detail: `This app wasn't approved for post:readStats, which ${what} needs`,
       });
       expect(check(path, method, root, undefined, withStats).problem, path).toBeUndefined();
     }

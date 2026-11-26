@@ -20,7 +20,7 @@ const controller = {
     },
     permissions: {
       docName: 'posts',
-      method: 'read_stats',
+      method: 'readStats',
     },
     query(frame) {
       return feedbackService.service.controller.browse(frame);

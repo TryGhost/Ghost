@@ -457,7 +457,7 @@ const controller = {
     },
     permissions: {
       docName: 'posts',
-      method: 'read_stats',
+      method: 'readStats',
     },
     cache: statsCache,
     generateCacheKeyData(frame) {
@@ -487,7 +487,7 @@ const controller = {
     },
     permissions: {
       docName: 'posts',
-      method: 'read_stats',
+      method: 'readStats',
     },
     cache: statsCache,
     generateCacheKeyData(frame) {
@@ -524,7 +524,7 @@ const controller = {
     },
     permissions: {
       docName: 'posts',
-      method: 'read_stats',
+      method: 'readStats',
     },
     cache: statsCache,
     generateCacheKeyData(frame) {

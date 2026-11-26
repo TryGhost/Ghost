@@ -18,7 +18,7 @@ const ROUTES = {
     { method: 'get', path: 'search-index/posts/' },
     { method: 'get', path: 'search-index/pages/' },
   ],
-  'post:read_stats': [
+  'post:readStats': [
     { method: 'get', path: 'stats/posts/:id/stats/' },
     { method: 'get', path: 'feedback/:id/' },
     { method: 'post', path: 'stats/posts-visitor-counts/', body: { postUuids: [] } },
@@ -34,7 +34,7 @@ const ROUTES = {
   ],
   'post:export': [{ method: 'get', path: 'posts/export/' }],
   // The filter matches nothing, so an allowed delete removes nothing
-  'post:bulk_destroy': [
+  'post:bulkDestroy': [
     { method: 'delete', path: "posts/?filter=slug:'no-such-post'" },
     { method: 'delete', path: "pages/?filter=slug:'no-such-page'" },
   ],
@@ -67,17 +67,17 @@ const CALLERS: Array<{
   {
     name: 'Author',
     signIn: (agent) => agent.loginAsAuthor(),
-    allowed: without('post:bulk_destroy'),
+    allowed: without('post:bulkDestroy'),
   },
   {
     name: 'Contributor',
     signIn: (agent) => agent.loginAsContributor(),
-    allowed: without('post:bulk_destroy'),
+    allowed: without('post:bulkDestroy'),
   },
   {
     name: 'Admin Integration',
     signIn: (agent) => agent.useZapierAdminAPIKey(),
-    allowed: ['post:browse', 'post:export', 'post:bulk_destroy'],
+    allowed: ['post:browse', 'post:export', 'post:bulkDestroy'],
   },
   {
     name: 'DB Backup Integration',

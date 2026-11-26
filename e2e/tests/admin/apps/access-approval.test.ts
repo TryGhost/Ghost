@@ -61,7 +61,7 @@ test.describe('Ghost Admin - App access approval', () => {
     // The app reaches only what it was approved for.
     await appPage.app.callAdminApi('/posts/');
     await expect(appPage.app.result).toHaveText(/^200 \{"posts":/);
-    // Not how its posts performed, which Ghost includes by default but needs post:read_stats. A
+    // Not how its posts performed, which Ghost includes by default but needs post:readStats. A
     // post's email is an object, or null, unlike an author's.
     await expect(appPage.app.result).not.toHaveText(/"email":(null|\{)|"count":\{/);
     await appPage.app.callAdminApi('/tags/');

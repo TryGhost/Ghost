@@ -22,9 +22,10 @@ export const permissions = {
     'add',
     'destroy',
     'publish',
-    'read_stats',
+    // camelCase, as every other multi-word action is spelled for now
+    'readStats',
     'export',
-    'bulk_destroy',
+    'bulkDestroy',
   ],
   setting: ['browse', 'read', 'edit'],
   segment: ['browse', 'read', 'add', 'edit', 'destroy'],
@@ -223,7 +224,7 @@ export const rolePermissions = {
     identity: ['read'],
   },
   Author: {
-    post: ['browse', 'read', 'edit', 'add', 'destroy', 'read_stats', 'export'],
+    post: ['browse', 'read', 'edit', 'add', 'destroy', 'readStats', 'export'],
     setting: ['browse', 'read'],
     segment: ['browse', 'read'],
     slug: 'all',
@@ -243,7 +244,7 @@ export const rolePermissions = {
     identity: ['read'],
   },
   Contributor: {
-    post: ['browse', 'read', 'edit', 'add', 'destroy', 'read_stats', 'export'],
+    post: ['browse', 'read', 'edit', 'add', 'destroy', 'readStats', 'export'],
     setting: ['browse', 'read'],
     segment: ['browse', 'read'],
     slug: 'all',

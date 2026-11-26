@@ -27,7 +27,7 @@ import type { FetchMethod } from './rules.ts';
  * - The site's public details: its title, description, logo, icon, cover image and accent
  *   colour, for showing the site's branding. They need no scope.
  * - A post's related tags, tiers and newsletter only with their own scopes, and how a post
- *   performed, through the includes and sort fields that reach it, only with `post:read_stats`.
+ *   performed, through the includes and sort fields that reach it, only with `post:readStats`.
  *   Ghost includes some of both by default, so a request that names no `include` and no
  *   `fields`, which Ghost adds no defaults to, is sent with the defaults the app may have.
  * - Every request may carry only the query parameters its group lists, by exact name, so an
@@ -95,7 +95,7 @@ export interface AdminApiResource {
    * own, mapped to that scope, or to `null` when the route's own scope is enough. A key ending
    * in `.*` covers every name under it. With this map, an `include` it doesn't name is refused,
    * and an `order` field it doesn't name needs nothing more. Reading a post can include how it
-   * performed, which only `post:read_stats` gives.
+   * performed, which only `post:readStats` gives.
    */
   readonly fieldScopes?: Readonly<Record<string, AppPermissionKey | null>>;
   /**
@@ -168,7 +168,7 @@ export const ADMIN_API_ALLOWLIST: Readonly<Record<AppResourceName | 'site', Admi
     ],
     // A related object needs its own scope, other than a post's authors, which come with reading
     // posts, as full user records with their emails. How a post performed by email, in signups
-    // and conversions, and in feedback is `post:read_stats`'s. Authors' roles and revisions'
+    // and conversions, and in feedback is `post:readStats`'s. Authors' roles and revisions'
     // authors aren't for apps.
     fieldScopes: {
       tags: 'tag:browse',
@@ -176,10 +176,10 @@ export const ADMIN_API_ALLOWLIST: Readonly<Record<AppResourceName | 'site', Admi
       tiers: 'product:browse',
       newsletter: 'newsletter:browse',
       post_revisions: null,
-      email: 'post:read_stats',
-      'email.*': 'post:read_stats',
-      'count.*': 'post:read_stats',
-      sentiment: 'post:read_stats',
+      email: 'post:readStats',
+      'email.*': 'post:readStats',
+      'count.*': 'post:readStats',
+      sentiment: 'post:readStats',
     },
     // Ghost's own defaults for posts and pages, less authors' roles; a test in Ghost holds them
     // to its serializers.

@@ -74,7 +74,7 @@ const GRANTS: [string, string, string[]][] = [
     ['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration', 'Super Editor'],
   ],
   [
-    'read_stats',
+    'readStats',
     'post',
     ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor'],
   ],
@@ -92,7 +92,7 @@ const GRANTS: [string, string, string[]][] = [
     ],
   ],
   // Author and Contributor delete only their own posts, one at a time
-  ['bulk_destroy', 'post', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']],
+  ['bulkDestroy', 'post', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']],
   // Integration keys can't reach the stats routes, so no integration role holds it
   ['browse', 'stat', ['Administrator', 'Editor', 'Author', 'Contributor', 'Super Editor']],
   ['flushReminders', 'gift', ['Scheduler Integration']],

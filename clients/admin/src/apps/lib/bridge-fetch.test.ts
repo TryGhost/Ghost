@@ -49,11 +49,11 @@ describe('createAdminApiFetch', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('includes how posts performed for an app approved for post:read_stats', async () => {
+  it('includes how posts performed for an app approved for post:readStats', async () => {
     fetchMock.mockImplementation(() => Promise.resolve(new Response('{}')));
     const withStats = createAdminApiFetch({
       apiRoot: new URL(API_ROOT),
-      approvedScopes: new Set(['post:browse', 'post:read_stats']),
+      approvedScopes: new Set(['post:browse', 'post:readStats']),
       token,
     });
 

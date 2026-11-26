@@ -59,7 +59,7 @@ export const APP_SCOPES = {
       'Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them.',
   },
   'post:destroy': { resource: 'post', wording: 'Delete posts and pages.' },
-  'post:read_stats': {
+  'post:readStats': {
     resource: 'post',
     wording: 'See how each post performed, by email, in signups and in feedback.',
   },
