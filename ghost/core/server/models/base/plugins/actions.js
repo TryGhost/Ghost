@@ -1,10 +1,15 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const { appInstallationIdFrom } = require('../../../lib/actor');
 
-// An app acting for a user is recorded beside that user, the actor
-const appId = (options) => {
-  const principal = options.context && options.context.principal;
-  return principal && principal.kind === 'app' ? principal.app.id : undefined;
+// An app acting for a user is recorded beside that user, the actor. Set last, so a model's own
+// context can't stand in for it.
+const setAppInstallation = (context, options) => {
+  delete context.app_installation_id;
+  const installationId = appInstallationIdFrom(options.context);
+  if (installationId) {
+    context.app_installation_id = installationId;
+  }
 };
 
 /**
@@ -108,11 +113,6 @@ module.exports = function (Bookshelf) {
           action_name: options.actionName,
         };
 
-        const app = appId(options);
-        if (app) {
-          context.app_id = app;
-        }
-
         // Used to attach extra content to the action (ie. the key + group for settings changes)
         if (this.actionsExtraContext && Array.isArray(this.actionsExtraContext)) {
           for (const c of this.actionsExtraContext) {
@@ -130,6 +130,7 @@ module.exports = function (Bookshelf) {
         } else if (['added', 'edited'].includes(event)) {
           context.primary_name = currentPrimaryName || previousPrimaryName;
         }
+        setAppInstallation(context, options);
 
         const data = {
           event,
@@ -205,11 +206,6 @@ module.exports = function (Bookshelf) {
           action_name: options.actionName,
         };
 
-        const app = appId(options);
-        if (app) {
-          context.app_id = app;
-        }
-
         if (
           this.getBulkActionExtraContext &&
           typeof this.getBulkActionExtraContext === 'function'
@@ -219,6 +215,7 @@ module.exports = function (Bookshelf) {
             ...this.getBulkActionExtraContext.bind(this)(options),
           };
         }
+        setAppInstallation(context, options);
 
         const data = {
           event,
