@@ -29,7 +29,7 @@ export class ScrollHandler {
     options: {speed: number; sensitivity: number};
     currentMousePosition: {clientX: number; clientY: number} | null;
     findScrollableElementFrame: number | null;
-    scrollableElement: Element | null;
+    scrollableElement: HTMLElement | null;
     scrollAnimationFrame: number | null;
     private _isSafari: boolean;
 
@@ -85,8 +85,9 @@ export class ScrollHandler {
         this.scrollAnimationFrame = null;
     }
 
-    getScrollableElement(target: Element | null): Element | null {
-        return getParentScrollableElement(target);
+    getScrollableElement(target: Element | null): HTMLElement | null {
+        const element = getParentScrollableElement(target);
+        return element instanceof HTMLElement ? element : null;
     }
 
     _scroll(): void {
@@ -106,7 +107,7 @@ export class ScrollHandler {
         const clientX = this.currentMousePosition.clientX;
         const clientY = this.currentMousePosition.clientY;
 
-        const {offsetHeight, offsetWidth} = scrollableElement as HTMLElement;
+        const {offsetHeight, offsetWidth} = scrollableElement;
 
         const topPosition = rect.top + offsetHeight - clientY;
         const bottomPosition = clientY - rect.top;
