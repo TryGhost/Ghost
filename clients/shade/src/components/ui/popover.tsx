@@ -21,25 +21,28 @@ const PopoverContent = React.forwardRef<
   (
     { className, align = 'center', onEscapeKeyDown, sideOffset = 4, collisionBoundary, ...props },
     ref,
-  ) => (
-    <PopoverPrimitive.Portal container={usePortalContainer()}>
-      <ShadeScope>
-        <PopoverPrimitive.Content
-          ref={ref}
-          align={align}
-          className={cn(
-            'data-[safe-area]:max-h-(--radix-popover-content-available-height) data-[safe-area]:max-w-(--radix-popover-content-available-width) data-[safe-area]:overflow-y-auto',
-            'z-50 origin-(--radix-popover-content-transform-origin) rounded-menu border border-border/60 bg-surface-elevated-2 p-5 text-popover-foreground shadow-md outline-hidden data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
-            className,
-          )}
-          {...safeAreaCollision(collisionBoundary, usePortalContainer())}
-          sideOffset={sideOffset}
-          onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
-          {...props}
-        />
-      </ShadeScope>
-    </PopoverPrimitive.Portal>
-  ),
+  ) => {
+    const container = usePortalContainer();
+    return (
+      <PopoverPrimitive.Portal container={container}>
+        <ShadeScope>
+          <PopoverPrimitive.Content
+            ref={ref}
+            align={align}
+            className={cn(
+              'data-[safe-area]:max-h-(--radix-popover-content-available-height) data-[safe-area]:max-w-(--radix-popover-content-available-width) data-[safe-area]:overflow-y-auto',
+              'z-50 origin-(--radix-popover-content-transform-origin) rounded-menu border border-border/60 bg-surface-elevated-2 p-5 text-popover-foreground shadow-md outline-hidden data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
+              className,
+            )}
+            {...safeAreaCollision(collisionBoundary, container)}
+            sideOffset={sideOffset}
+            onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
+            {...props}
+          />
+        </ShadeScope>
+      </PopoverPrimitive.Portal>
+    );
+  },
 );
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 

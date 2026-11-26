@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { hasSafeArea } from '@/lib/safe-area';
+import { setRef } from '@/lib/set-ref';
 
 export type AppOverlayTint = 'dialog' | 'sheet';
 
@@ -10,16 +11,6 @@ const OVERLAY_TINTS: Record<AppOverlayTint, string> = {
 
 /** A modal's tint classes. Admin draws the same tint behind an app's dialogs and sheets. */
 export const overlayTint = (tint: AppOverlayTint) => OVERLAY_TINTS[tint];
-
-/**
- * Centres a dialog on the window, moved only as far as it must to stay inside the safe area.
- * One wider than the safe area is centred on it instead.
- */
-export const SAFE_AREA_DIALOG_X =
-  'w-[calc(100%_-_var(--ghost-safe-area-inset-left,0px)_-_var(--ghost-safe-area-inset-right,0px))] translate-x-[calc(-50%_+_clamp(min(var(--ghost-safe-area-inset-left,0px)_-_50vw_+_50%,(var(--ghost-safe-area-inset-left,0px)_-_var(--ghost-safe-area-inset-right,0px))/2),0px,max(50vw_-_var(--ghost-safe-area-inset-right,0px)_-_50%,(var(--ghost-safe-area-inset-left,0px)_-_var(--ghost-safe-area-inset-right,0px))/2)))]';
-
-export const SAFE_AREA_DIALOG_HEIGHT =
-  'max-h-[calc(100dvh_-_var(--ghost-safe-area-inset-top,0px)_-_var(--ghost-safe-area-inset-bottom,0px)_-_1rem)] overflow-y-auto';
 
 /** A dialog or sheet's hold on the overlay, from when it mounts until it unmounts. */
 export interface AppOverlayHold {
@@ -42,20 +33,23 @@ export interface AppOverlay {
 
 export const AppOverlayContext = React.createContext<AppOverlay | undefined>(undefined);
 
-/**
- * Tracks the dialogs open in the overlay so toasts can show above them. Returns the overlay to
- * give the dialogs, and the toasts' container: the overlay's while a dialog is open there.
- */
-export function useOverlayToasts(
-  overlay: AppOverlay | undefined,
-): [AppOverlay | undefined, HTMLElement | undefined] {
+interface OverlayToasts {
+  /** The overlay to give the dialogs, which tracks the ones open there. */
+  overlay: AppOverlay | undefined;
+  /** The overlay's container while a dialog is open there, else undefined for the page. */
+  toasterContainer: HTMLElement | undefined;
+}
+
+/** Tracks the dialogs open in the overlay, so toasts can show above them. */
+export function useOverlayToasts(overlay: AppOverlay | undefined): OverlayToasts {
   const [container, setContainer] = React.useState<HTMLElement>();
   const tracked = React.useMemo((): AppOverlay | undefined => {
     if (!overlay) {
       return undefined;
     }
-    const open = new Map<object, HTMLElement>();
-    const update = () => setContainer([...open.values()].at(-1));
+    // The overlay root each open dialog rendered in, the last to open last.
+    const openIn = new Map<object, HTMLElement>();
+    const update = () => setContainer([...openIn.values()].at(-1));
     return {
       container: () => overlay.container(),
       hold(tint, element) {
@@ -64,16 +58,16 @@ export function useOverlayToasts(
         return {
           setOpen(next) {
             hold.setOpen(next);
-            open.delete(key);
+            openIn.delete(key);
             // A dialog that fell back to the page keeps its toasts there too.
             const root = next ? overlay.container() : undefined;
             if (root?.contains(element)) {
-              open.set(key, root);
+              openIn.set(key, root);
             }
             update();
           },
           release() {
-            open.delete(key);
+            openIn.delete(key);
             update();
             hold.release();
           },
@@ -81,7 +75,7 @@ export function useOverlayToasts(
       },
     };
   }, [overlay]);
-  return [tracked, overlay ? container : undefined];
+  return { overlay: tracked, toasterContainer: overlay ? container : undefined };
 }
 
 /** Content portalled from a hosted dialog renders in the overlay too, above the dialog. */
@@ -129,70 +123,74 @@ export function useModalOpen<P extends OpenProps>(
 /** The container for a Radix `Portal`: the overlay inside a hosted dialog, else the default. */
 export const usePortalContainer = () => React.useContext(PortalContainerContext);
 
-function setRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
-  if (typeof ref === 'function') {
-    ref(value);
-  } else if (ref) {
-    (ref as React.MutableRefObject<T | null>).current = value;
-  }
-}
-
 /**
  * Transparent so Admin's tint shows through, but still there so a press beside the dialog closes
- * it. A style rather than a class, to override the overlay's colour in either theme.
+ * it. A style rather than a class, to override the backdrop's colour in either theme.
  */
-const HOSTED_OVERLAY_STYLE: React.CSSProperties = { background: 'transparent' };
+const HOSTED_BACKDROP_STYLE: React.CSSProperties = { background: 'transparent' };
 
 interface Placement {
   open: boolean | undefined;
   container: HTMLElement | undefined;
 }
 
-interface HostedModal<T extends HTMLElement> {
-  /** The overlay when the dialog renders there, or a non-modal one opens from a dialog there. */
-  container: HTMLElement | undefined;
-  inApp: boolean;
-  modal: boolean;
-  overlayStyle: React.CSSProperties | undefined;
-  ref: React.RefCallback<T>;
-  wrap: (children: React.ReactNode) => React.ReactNode;
-}
-
 /**
- * Renders a dialog, alert dialog or sheet in the app's overlay when there is one, holding the
- * overlay while its content is mounted.
+ * The overlay's container when a modal renders there, which only a modal does. Decided as it
+ * opens and kept while it closes: moving it would remount the content. Outside Shade's dialog
+ * roots `open` is undefined, so it decides on each render.
  */
-export function useHostedModal<T extends HTMLElement>(
-  tint: AppOverlayTint,
-  forwardedRef: React.Ref<T>,
-): HostedModal<T> {
-  const overlay = React.useContext(AppOverlayContext);
-  const inherited = usePortalContainer();
-  const state = React.useContext(ModalStateContext);
-  const open = state?.open;
-  const modal = state?.modal ?? true;
-  // Decided as the dialog opens and kept while it closes: moving it would remount the content.
-  // Outside Shade's dialog roots `open` is undefined, so it decides on each render.
+function useHostContainer(
+  overlay: AppOverlay | undefined,
+  open: boolean | undefined,
+  modal: boolean,
+): HTMLElement | undefined {
   const place = () => (modal ? overlay?.container() : undefined);
   const [placed, setPlaced] = React.useState<Placement>(() => ({
     open,
     container: open === false ? undefined : place(),
   }));
-  let placement = placed;
   if (open === undefined) {
-    placement = { ...placed, container: place() };
-  } else if (open !== placed.open) {
-    placement = open && !placed.open ? { open, container: place() } : { ...placed, open };
-    setPlaced(placement);
+    return place();
   }
-  const { container } = placement;
-  const hosted = modal && container !== undefined;
+  let { container } = placed;
+  if (open !== placed.open) {
+    const next = open && !placed.open ? { open, container: place() } : { ...placed, open };
+    setPlaced(next);
+    container = next.container;
+  }
+  return modal ? container : undefined;
+}
 
+/** Holds the overlay for a modal's content, open while the content is. Returns the release. */
+function holdOverlay(overlay: AppOverlay, tint: AppOverlayTint, element: HTMLElement) {
+  const hold = overlay.hold(tint, element);
+  const sync = () => hold.setOpen(element.getAttribute('data-state') === 'open');
+  sync();
+  // The element lives in the overlay's document, so use that window's constructor.
+  const Observer = element.ownerDocument.defaultView?.MutationObserver ?? MutationObserver;
+  const observer = new Observer(sync);
+  observer.observe(element, { attributes: true, attributeFilter: ['data-state'] });
+  return () => {
+    observer.disconnect();
+    hold.release();
+  };
+}
+
+interface HoldTarget {
+  overlay: AppOverlay;
+  tint: AppOverlayTint;
+}
+
+/** The content's ref, which holds `target`'s overlay while the content is mounted. */
+function useHoldingRef<T extends HTMLElement>(
+  forwardedRef: React.Ref<T>,
+  target: HoldTarget | undefined,
+): React.RefCallback<T> {
   // The ref must stay stable: a new one makes React reattach the content, releasing the hold.
-  // The insertion effect stores this render's decision before React attaches the content.
-  const latest = React.useRef({ overlay, hosted, tint });
+  // The insertion effect stores this render's target before React attaches the content.
+  const latest = React.useRef(target);
   React.useInsertionEffect(() => {
-    latest.current = { overlay, hosted, tint };
+    latest.current = target;
   });
   // Hands the element over when the caller's ref changes, as React would.
   const content = React.useRef<T | null>(null);
@@ -206,48 +204,63 @@ export function useHostedModal<T extends HTMLElement>(
       attached.current = forwardedRef;
     }
   }, [forwardedRef]);
-  const cleanup = React.useRef<() => void>(undefined);
-  const ref = React.useCallback((element: T | null) => {
-    const current = latest.current;
+  const release = React.useRef<() => void>(undefined);
+  return React.useCallback((element: T | null) => {
+    const held = latest.current;
     content.current = element;
     setRef(attached.current, element);
-    cleanup.current?.();
-    cleanup.current = undefined;
-    if (!element || !current.overlay || !current.hosted) {
-      return;
+    release.current?.();
+    release.current = undefined;
+    if (element && held) {
+      release.current = holdOverlay(held.overlay, held.tint, element);
     }
-    const hold = current.overlay.hold(current.tint, element);
-    const sync = () => hold.setOpen(element.getAttribute('data-state') === 'open');
-    sync();
-    // The element lives in the overlay's document, so use that window's constructor.
-    const Observer = element.ownerDocument.defaultView?.MutationObserver ?? MutationObserver;
-    const observer = new Observer(sync);
-    observer.observe(element, { attributes: true, attributeFilter: ['data-state'] });
-    cleanup.current = () => {
-      observer.disconnect();
-      hold.release();
-    };
   }, []);
+}
 
-  const wrap = React.useCallback(
+interface HostedModal<T extends HTMLElement> {
+  /** The overlay when the dialog renders there, or a non-modal one opens from a dialog there. */
+  portalContainer: HTMLElement | undefined;
+  /** Whether the safe area is set where it renders. */
+  inApp: boolean;
+  modal: boolean;
+  backdropStyle: React.CSSProperties | undefined;
+  contentRef: React.RefCallback<T>;
+  /** Wraps the content, so what it portals renders in the overlay too. */
+  withPortalContainer: (children: React.ReactNode) => React.ReactNode;
+}
+
+/**
+ * Renders a dialog, alert dialog or sheet in the app's overlay when there is one, holding the
+ * overlay while its content is mounted.
+ */
+export function useHostedModal<T extends HTMLElement>(
+  tint: AppOverlayTint,
+  forwardedRef: React.Ref<T>,
+): HostedModal<T> {
+  const overlay = React.useContext(AppOverlayContext);
+  const inherited = usePortalContainer();
+  const state = React.useContext(ModalStateContext);
+  const modal = state?.modal ?? true;
+  const host = useHostContainer(overlay, state?.open, modal);
+  const contentRef = useHoldingRef(forwardedRef, host && overlay ? { overlay, tint } : undefined);
+
+  const withPortalContainer = React.useCallback(
     (children: React.ReactNode) =>
-      hosted ? (
-        <PortalContainerContext.Provider value={container}>
-          {children}
-        </PortalContainerContext.Provider>
+      host ? (
+        <PortalContainerContext.Provider value={host}>{children}</PortalContainerContext.Provider>
       ) : (
         children
       ),
-    [hosted, container],
+    [host],
   );
 
-  const portal = modal ? container : inherited;
+  const portalContainer = modal ? host : inherited;
   return {
-    container: portal,
-    inApp: hasSafeArea(portal),
+    portalContainer,
+    inApp: hasSafeArea(portalContainer),
     modal,
-    overlayStyle: hosted ? HOSTED_OVERLAY_STYLE : undefined,
-    ref,
-    wrap,
+    backdropStyle: host ? HOSTED_BACKDROP_STYLE : undefined,
+    contentRef,
+    withPortalContainer,
   };
 }

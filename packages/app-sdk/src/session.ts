@@ -10,6 +10,7 @@ import {
   isTheme,
   type AppExports,
   type HostExports,
+  type Layout,
   type PathMove,
   type Place,
   type Theme,
@@ -179,8 +180,7 @@ export class Channel {
     };
     this.#theme = Object.freeze({ ...context.theme });
     // Before the app starts, so its first paint keeps clear of Admin's chrome.
-    applySafeArea(document.documentElement, context.layout.safeArea);
-    this.#overlay.layoutChanged(context.layout.overlaySafeArea);
+    this.#applyLayout(context.layout);
     // Admin owns the history from here on. The page's own address is its route: Admin loads a
     // new frame at its own path, so the two differ only when the page's server redirected it or
     // a form or link loaded another page in place, and then Admin follows the page.
@@ -217,8 +217,12 @@ export class Channel {
     if (!isLayout(layout)) {
       throw refusal('invalid_argument', "Ghost sent a layout this SDK doesn't understand");
     }
-    applySafeArea(document.documentElement, layout.safeArea);
-    this.#overlay.layoutChanged(layout.overlaySafeArea);
+    this.#applyLayout(layout);
+  }
+
+  #applyLayout({ safeArea, overlaySafeArea }: Layout) {
+    applySafeArea(document.documentElement, safeArea);
+    this.#overlay.layoutChanged(overlaySafeArea);
   }
 
   #pathChanged(path: unknown) {

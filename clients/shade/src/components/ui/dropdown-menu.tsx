@@ -45,45 +45,51 @@ DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayNam
 const DropdownMenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
->(({ className, onEscapeKeyDown, collisionBoundary, ...props }, ref) => (
-  <ShadeScope>
-    <DropdownMenuPrimitive.SubContent
-      ref={ref}
-      className={cn(
-        'data-[safe-area]:max-h-(--radix-dropdown-menu-content-available-height) data-[safe-area]:max-w-(--radix-dropdown-menu-content-available-width) data-[safe-area]:overflow-y-auto',
-        'z-50 min-w-[8rem] overflow-hidden rounded-menu border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
-        className,
-      )}
-      {...safeAreaCollision(collisionBoundary, usePortalContainer())}
-      onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
-      {...props}
-    />
-  </ShadeScope>
-));
+>(({ className, onEscapeKeyDown, collisionBoundary, ...props }, ref) => {
+  const container = usePortalContainer();
+  return (
+    <ShadeScope>
+      <DropdownMenuPrimitive.SubContent
+        ref={ref}
+        className={cn(
+          'data-[safe-area]:max-h-(--radix-dropdown-menu-content-available-height) data-[safe-area]:max-w-(--radix-dropdown-menu-content-available-width) data-[safe-area]:overflow-y-auto',
+          'z-50 min-w-[8rem] overflow-hidden rounded-menu border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
+          className,
+        )}
+        {...safeAreaCollision(collisionBoundary, container)}
+        onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
+        {...props}
+      />
+    </ShadeScope>
+  );
+});
 DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
 
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, onEscapeKeyDown, sideOffset = 4, collisionBoundary, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal container={usePortalContainer()}>
-    <ShadeScope>
-      <DropdownMenuPrimitive.Content
-        ref={ref}
-        className={cn(
-          'data-[safe-area]:max-h-(--radix-dropdown-menu-content-available-height) data-[safe-area]:max-w-(--radix-dropdown-menu-content-available-width) data-[safe-area]:overflow-y-auto',
-          'z-50 min-w-[8rem] overflow-hidden rounded-menu border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30',
-          'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-          className,
-        )}
-        {...safeAreaCollision(collisionBoundary, usePortalContainer())}
-        sideOffset={sideOffset}
-        onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
-        {...props}
-      />
-    </ShadeScope>
-  </DropdownMenuPrimitive.Portal>
-));
+>(({ className, onEscapeKeyDown, sideOffset = 4, collisionBoundary, ...props }, ref) => {
+  const container = usePortalContainer();
+  return (
+    <DropdownMenuPrimitive.Portal container={container}>
+      <ShadeScope>
+        <DropdownMenuPrimitive.Content
+          ref={ref}
+          className={cn(
+            'data-[safe-area]:max-h-(--radix-dropdown-menu-content-available-height) data-[safe-area]:max-w-(--radix-dropdown-menu-content-available-width) data-[safe-area]:overflow-y-auto',
+            'z-50 min-w-[8rem] overflow-hidden rounded-menu border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30',
+            'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+            className,
+          )}
+          {...safeAreaCollision(collisionBoundary, container)}
+          sideOffset={sideOffset}
+          onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
+          {...props}
+        />
+      </ShadeScope>
+    </DropdownMenuPrimitive.Portal>
+  );
+});
 DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
 const DropdownMenuItem = React.forwardRef<

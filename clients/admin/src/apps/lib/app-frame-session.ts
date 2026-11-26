@@ -25,6 +25,9 @@ export interface AppFrameState {
   overlay?: OverlayTint;
 }
 
+/** Clears what the page set, which goes when its document does. */
+const WITHOUT_PAGE = { title: undefined, overlay: undefined } satisfies Partial<AppFrameState>;
+
 /**
  * Options for the navigation Admin makes to follow the app to one of the app's routes. Admin owns
  * the app's history: the frame keeps a single entry, and each of the app's moves adds an entry to
@@ -181,11 +184,10 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   const restart = () => {
     detach();
     update({
+      ...WITHOUT_PAGE,
       status: 'loading',
-      title: undefined,
       attempt: state.attempt + 1,
       startedAt: new Date(),
-      overlay: undefined,
     });
   };
 
@@ -211,7 +213,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     }
     if (shortLived > MAX_SHORT_LIVED) {
       detach();
-      update({ status: 'failed', title: undefined, overlay: undefined });
+      update({ ...WITHOUT_PAGE, status: 'failed' });
       return false;
     }
     return true;
@@ -280,12 +282,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         documentChanged: () => {
           if (host === bound && documentEnded(false)) {
             window.clearTimeout(timer);
-            update({
-              status: 'loading',
-              title: undefined,
-              startedAt: new Date(),
-              overlay: undefined,
-            });
+            update({ ...WITHOUT_PAGE, status: 'loading', startedAt: new Date() });
             timer = window.setTimeout(restartOnItsOwn, appFrameTimeouts.ready);
           }
         },
@@ -304,7 +301,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     const fail = () => {
       if (host === bound) {
         bound.dispose();
-        update({ status: 'failed', title: undefined, overlay: undefined });
+        update({ ...WITHOUT_PAGE, status: 'failed' });
       }
     };
     // Cleared as soon as the app starts, so a started app is never marked unresponsive.

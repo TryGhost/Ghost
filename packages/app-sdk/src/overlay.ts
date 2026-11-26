@@ -137,21 +137,134 @@ function focusInto(root: OverlayRoot, dialog: HTMLElement, preferred: HTMLElemen
   const active = overlay.activeElement;
   const inDialog = (element: Element | null): element is HTMLElement =>
     element instanceof HTMLElement && element !== dialog && dialog.contains(element);
-  const target = inDialog(preferred)
-    ? preferred
-    : inDialog(active)
-      ? active
-      : tabbables(dialog).find((element) => element.tagName !== 'A');
+  // Not a link, as a dialog's own focus handling passes over links when it opens.
+  const target =
+    [preferred, active].find(inDialog) ??
+    tabbables(dialog).find((element) => element.tagName !== 'A');
   if (!target || (target === active && overlay.hasFocus())) {
     return;
   }
   root[FOCUS](target);
 }
 
-interface HoldState {
+/**
+ * A guard on one side of the root, which sends Tab round to the topmost dialog's other end. Focus
+ * from outside the dialog, such as the overlay's body, enters at the near end.
+ */
+function addTabGuard(
+  root: OverlayRoot,
+  side: 'before' | 'after',
+  topmost: () => HTMLElement | undefined,
+): HTMLElement {
+  const guard = root.ownerDocument.createElement('span');
+  guard.tabIndex = 0;
+  guard.setAttribute(GUARD_ATTRIBUTE, '');
+  guard.style.cssText =
+    'position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none';
+  guard.addEventListener('focus', (event) => {
+    const dialog = topmost();
+    const controls = dialog ? tabbables(dialog) : [];
+    const [near, far] =
+      side === 'before' ? [controls[0], controls.at(-1)] : [controls.at(-1), controls[0]];
+    const next = root.contains(event.relatedTarget as Node | null) ? far : near;
+    if (next) {
+      root[FOCUS](next);
+    }
+  });
+  if (side === 'before') {
+    root.before(guard);
+  } else {
+    root.after(guard);
+  }
+  return guard;
+}
+
+interface FocusTrap {
+  /**
+   * Moves focus into the topmost dialog once the dialog and the overlay's frame can take it, if
+   * the overlay is still asked for then.
+   */
+  refocus(): void;
+  stop(): void;
+}
+
+/** Keeps focus in the topmost dialog, which its own focus trap can't do from the page. */
+function trapFocus(
+  root: OverlayRoot,
+  topmost: () => HTMLElement | undefined,
+  requested: () => boolean,
+): FocusTrap {
+  const overlay = root.ownerDocument;
+  const view = overlay.defaultView as Window;
+  // Focus moves into the topmost dialog when it opens, and when Admin focuses the overlay's
+  // frame, which leaves focus on the overlay's body.
+  let lastFocused: HTMLElement | null = null;
+  const refocus = () => {
+    const run = () => {
+      const dialog = topmost();
+      if (dialog && requested()) {
+        focusInto(root, dialog, lastFocused);
+      }
+    };
+    // A task later, after the dialog's own focus handling; WebKit also ignores focus moved to
+    // another frame during a focus event. Again after a paint, as Firefox and WebKit drop focus
+    // moved into a frame that has only just become visible.
+    setTimeout(() => {
+      run();
+      view.requestAnimationFrame(() => view.requestAnimationFrame(run));
+    }, 0);
+  };
+  const onOverlayFocus = (event: FocusEvent) => {
+    if (event.target instanceof HTMLElement && topmost()?.contains(event.target)) {
+      lastFocused = event.target;
+    }
+  };
+  overlay.addEventListener('focusin', onOverlayFocus, true);
+  view.addEventListener('focus', refocus);
+  const guards = [addTabGuard(root, 'before', topmost), addTabGuard(root, 'after', topmost)];
+  return {
+    refocus,
+    stop: () => {
+      for (const guard of guards) {
+        guard.remove();
+      }
+      overlay.removeEventListener('focusin', onOverlayFocus, true);
+      view.removeEventListener('focus', refocus);
+    },
+  };
+}
+
+interface ThemeMirror {
+  /** Copies the theme again, for a change the page's classes don't show. */
+  update(): void;
+  stop(): void;
+}
+
+/** Keeps the overlay's theme the page's: its classes, and Admin's color scheme. */
+function mirrorTheme(overlay: Document, mode: () => 'light' | 'dark'): ThemeMirror {
+  const page = document.documentElement;
+  const update = () => {
+    overlay.documentElement.className = page.className;
+    overlay.documentElement.style.colorScheme = mode();
+  };
+  update();
+  const observer = new MutationObserver(update);
+  observer.observe(page, { attributes: true, attributeFilter: ['class'] });
+  return { update, stop: () => observer.disconnect() };
+}
+
+interface DialogHold {
   tint: OverlayTint;
   element: HTMLElement;
   open: boolean;
+}
+
+/** What's set up while any dialog holds the overlay. */
+interface ActiveOverlay {
+  refocus(): void;
+  updateTheme(): void;
+  /** Undoes it all, and gives focus back to where it was in the page. */
+  deactivate(): void;
 }
 
 export interface PageOverlayOptions {
@@ -170,13 +283,12 @@ export interface PageOverlayOptions {
  */
 export class PageOverlay implements GhostOverlay {
   readonly #options: PageOverlayOptions;
-  readonly #holds = new Set<HoldState>();
+  readonly #holds = new Set<DialogHold>();
   #root: OverlayRoot | undefined;
-  #shown: OverlayTint | undefined;
+  /** The tint Admin was last asked to show, or undefined if asked to hide. */
+  #requested: OverlayTint | undefined;
   #safeArea: SafeArea | undefined;
-  #returnFocus: Element | null = null;
-  #stopHolding: (() => void) | undefined;
-  #refocus: (() => void) | undefined;
+  #active: ActiveOverlay | undefined;
 
   constructor(options: PageOverlayOptions) {
     this.#options = options;
@@ -204,22 +316,19 @@ export class PageOverlay implements GhostOverlay {
       // Rendered in the page, because `container()` had nowhere else for it.
       return { setOpen: () => {}, release: () => {} };
     }
-    const state: HoldState = { tint, element, open: false };
-    if (this.#holds.size === 0) {
-      this.#returnFocus = document.activeElement;
-      this.#stopHolding = this.#startHolding(root);
-    }
-    this.#holds.add(state);
+    const dialog: DialogHold = { tint, element, open: false };
+    this.#active ??= this.#activate(root);
+    this.#holds.add(dialog);
     let released = false;
     return {
       setOpen: (open) => {
-        if (released || state.open === open) {
+        if (released || dialog.open === open) {
           return;
         }
-        state.open = open;
+        dialog.open = open;
         this.#sync();
         if (open) {
-          this.#refocus?.();
+          this.#active?.refocus();
         }
       },
       release: () => {
@@ -227,17 +336,13 @@ export class PageOverlay implements GhostOverlay {
           return;
         }
         released = true;
-        this.#holds.delete(state);
+        this.#holds.delete(dialog);
         this.#sync();
         if (this.#holds.size === 0) {
-          this.#stopHolding?.();
-          this.#stopHolding = undefined;
-          this.#refocus = undefined;
-          window.focus();
-          if (this.#returnFocus instanceof HTMLElement && this.#returnFocus.isConnected) {
-            this.#returnFocus.focus({ preventScroll: true });
-          }
-          this.#returnFocus = null;
+          // Cleared first: giving focus back can take a new hold, which must start afresh.
+          const active = this.#active;
+          this.#active = undefined;
+          active?.deactivate();
         }
       },
     };
@@ -246,7 +351,7 @@ export class PageOverlay implements GhostOverlay {
   /** Admin's tint was pressed: presses outside every dialog, as if beside the topmost one. */
   dismissed() {
     const overlay = this.#root?.ownerDocument;
-    if (!overlay?.defaultView || this.#holds.size === 0) {
+    if (!overlay?.defaultView || !this.#active) {
       return;
     }
     const view = overlay.defaultView as unknown as typeof globalThis;
@@ -258,10 +363,7 @@ export class PageOverlay implements GhostOverlay {
   }
 
   themeChanged() {
-    const root = this.#root;
-    if (root && this.#holds.size > 0) {
-      root.ownerDocument.documentElement.style.colorScheme = this.#options.mode();
-    }
+    this.#active?.updateTheme();
   }
 
   layoutChanged(safeArea: SafeArea) {
@@ -275,8 +377,16 @@ export class PageOverlay implements GhostOverlay {
     }
   }
 
+  /** The open dialogs' holds, the topmost last. */
+  #openHolds(): DialogHold[] {
+    return [...this.#holds].filter((hold) => hold.open);
+  }
+
+  /** The dialog focus belongs in: the topmost open one whose element is still connected. */
   #topmost(): HTMLElement | undefined {
-    return [...this.#holds].filter((hold) => hold.open && hold.element.isConnected).at(-1)?.element;
+    return this.#openHolds()
+      .filter((hold) => hold.element.isConnected)
+      .at(-1)?.element;
   }
 
   /** Lets Tab pass over the dialogs behind the topmost, as its own focus trap would. */
@@ -289,82 +399,31 @@ export class PageOverlay implements GhostOverlay {
 
   #sync() {
     this.#inertBehind();
-    const next = [...this.#holds].filter((hold) => hold.open).at(-1)?.tint;
-    if (next === this.#shown) {
+    this.#request(this.#openHolds().at(-1)?.tint);
+  }
+
+  #request(tint: OverlayTint | undefined) {
+    if (tint === this.#requested) {
       return;
     }
-    this.#shown = next;
-    (next ? this.#options.show(next) : this.#options.hide()).catch(() => {
+    this.#requested = tint;
+    (tint ? this.#options.show(tint) : this.#options.hide()).catch(() => {
       // The session ended, and the overlay with it.
     });
   }
 
-  #startHolding(root: OverlayRoot): () => void {
+  #activate(root: OverlayRoot): ActiveOverlay {
+    const returnFocus = document.activeElement;
     const overlay = root.ownerDocument;
     // `#findRoot` only returns a root whose document has a window.
     const view = overlay.defaultView as Window;
-    const page = document.documentElement;
-    const mirror = () => {
-      overlay.documentElement.className = page.className;
-      overlay.documentElement.style.colorScheme = this.#options.mode();
-    };
-    mirror();
-    const observer = new MutationObserver(mirror);
-    observer.observe(page, { attributes: true, attributeFilter: ['class'] });
+    const theme = mirrorTheme(overlay, () => this.#options.mode());
     const unshareRealm = shareRealm(view);
-
-    // Focus moves into the topmost dialog when it opens, and when Admin focuses the overlay's
-    // frame, which leaves focus on the overlay's body.
-    let lastFocused: HTMLElement | null = null;
-    const refocus = () => {
-      const run = () => {
-        const dialog = this.#topmost();
-        if (dialog && this.#shown !== undefined) {
-          focusInto(root, dialog, lastFocused);
-        }
-      };
-      // A task later, after the dialog's own focus handling; WebKit also ignores focus moved to
-      // another frame during a focus event. Again after a paint, as Firefox and WebKit drop focus
-      // moved into a frame that has only just become visible.
-      setTimeout(() => {
-        run();
-        view.requestAnimationFrame(() => view.requestAnimationFrame(run));
-      }, 0);
-    };
-    this.#refocus = refocus;
-    const onOverlayFocus = (event: FocusEvent) => {
-      if (event.target instanceof HTMLElement && this.#topmost()?.contains(event.target)) {
-        lastFocused = event.target;
-      }
-    };
-    overlay.addEventListener('focusin', onOverlayFocus, true);
-    view.addEventListener('focus', refocus);
-
-    // The dialog's own focus trap only works in one document. Guards either side of the root
-    // send Tab round to the topmost dialog's other end.
-    const guards = (['before', 'after'] as const).map((side) => {
-      const guard = overlay.createElement('span');
-      guard.tabIndex = 0;
-      guard.setAttribute(GUARD_ATTRIBUTE, '');
-      guard.style.cssText =
-        'position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none';
-      guard.addEventListener('focus', (event) => {
-        const dialog = this.#topmost();
-        const controls = dialog ? tabbables(dialog) : [];
-        // Focus from outside the dialog, such as the overlay's body, enters at the near end.
-        const leaving = root.contains(event.relatedTarget as Node | null);
-        const next = (side === 'before') === leaving ? controls.at(-1) : controls[0];
-        if (next) {
-          root[FOCUS](next);
-        }
-      });
-      if (side === 'before') {
-        root.before(guard);
-      } else {
-        root.after(guard);
-      }
-      return guard;
-    });
+    const focus = trapFocus(
+      root,
+      () => this.#topmost(),
+      () => this.#requested !== undefined,
+    );
 
     // The overlay's frame can load another document under a dialog, which takes the dialog along.
     const onOverlayGone = (event: PageTransitionEvent) => {
@@ -375,23 +434,26 @@ export class PageOverlay implements GhostOverlay {
     // Admin hides the overlay when the page's next document connects, which one on another site
     // never does.
     const onPageGone = (event: PageTransitionEvent) => {
-      if (!event.persisted && this.#shown !== undefined) {
-        this.#shown = undefined;
-        this.#options.hide().catch(() => {});
+      if (!event.persisted) {
+        this.#request(undefined);
       }
     };
     view.addEventListener('pagehide', onOverlayGone);
     window.addEventListener('pagehide', onPageGone);
-    return () => {
-      observer.disconnect();
-      unshareRealm();
-      view.removeEventListener('pagehide', onOverlayGone);
-      window.removeEventListener('pagehide', onPageGone);
-      for (const guard of guards) {
-        guard.remove();
-      }
-      overlay.removeEventListener('focusin', onOverlayFocus, true);
-      view.removeEventListener('focus', refocus);
+    return {
+      refocus: focus.refocus,
+      updateTheme: theme.update,
+      deactivate: () => {
+        theme.stop();
+        unshareRealm();
+        view.removeEventListener('pagehide', onOverlayGone);
+        window.removeEventListener('pagehide', onPageGone);
+        focus.stop();
+        window.focus();
+        if (returnFocus instanceof HTMLElement && returnFocus.isConnected) {
+          returnFocus.focus({ preventScroll: true });
+        }
+      },
     };
   }
 }

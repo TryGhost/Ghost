@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { hideOthers } from 'aria-hidden';
+import { dequal } from 'dequal';
 import {
   OVERLAY_FRAME_NAME,
   type OverlayTint,
@@ -9,49 +10,23 @@ import {
 import { overlayTint, ShadeScope } from '@tryghost/shade/app';
 import { cn } from '@tryghost/shade/utils';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX } from '@/apps/lib/frame';
-import { sameSafeArea } from '@/apps/lib/layout';
 import {
-  APP_OVERLAY_ATTRIBUTE,
-  type Box,
-  type Corners,
-  clippingAncestors,
+  type Card,
+  cardCorners,
+  cardElement,
+  measureCard,
   overlayClipPath,
-} from '@/apps/lib/overlay-clip';
+} from '@/apps/lib/overlay-geometry';
+
+/**
+ * Set on `<html>` while an app's overlay shows, so Admin's chrome that floats over the app's page
+ * hides from beneath it. Admin 7's unpinned navigation needn't: under the overlay it only closes.
+ */
+const APP_OVERLAY_ATTRIBUTE = 'data-app-overlay';
 
 interface Surroundings {
-  window: { width: number; height: number };
-  /** Admin's card, which clips the app's page. */
-  card: (Box & { radius: number }) | undefined;
-}
-
-const sameSurroundings = (a: Surroundings, b: Surroundings) =>
-  a.window.width === b.window.width &&
-  a.window.height === b.window.height &&
-  (a.card === b.card ||
-    (a.card !== undefined &&
-      b.card !== undefined &&
-      a.card.radius === b.card.radius &&
-      sameSafeArea(a.card, b.card)));
-
-const cornerRadius = (element: Element) =>
-  parseFloat(getComputedStyle(element).borderTopRightRadius) || 0;
-
-const roundedClipElement = (element: HTMLElement) =>
-  clippingAncestors(element).find((clip) => cornerRadius(clip) > 0);
-
-function roundedClip(element: HTMLElement): (Box & { radius: number }) | undefined {
-  const card = roundedClipElement(element);
-  if (!card) {
-    return undefined;
-  }
-  const { top, right, bottom, left } = card.getBoundingClientRect();
-  return {
-    top: Math.floor(top),
-    right: Math.ceil(right),
-    bottom: Math.ceil(bottom),
-    left: Math.floor(left),
-    radius: cornerRadius(card),
-  };
+  viewport: { width: number; height: number };
+  card: Card | undefined;
 }
 
 /** The window and Admin's card, which the clip allows for. Kept as the overlay fades out. */
@@ -61,7 +36,7 @@ function useSurroundings(
   pageFrame: HTMLIFrameElement | null,
 ): Surroundings {
   const [surroundings, setSurroundings] = useState<Surroundings>(() => ({
-    window: { width: window.innerWidth, height: window.innerHeight },
+    viewport: { width: window.innerWidth, height: window.innerHeight },
     card: undefined,
   }));
   useLayoutEffect(() => {
@@ -71,14 +46,14 @@ function useSurroundings(
     const measure = () => {
       const { clientWidth, clientHeight } = document.documentElement;
       const next = {
-        window: { width: clientWidth, height: clientHeight },
-        card: pageFrame ? roundedClip(pageFrame) : undefined,
+        viewport: { width: clientWidth, height: clientHeight },
+        card: pageFrame ? measureCard(pageFrame) : undefined,
       };
-      setSurroundings((current) => (sameSurroundings(current, next) ? current : next));
+      setSurroundings((current) => (dequal(current, next) ? current : next));
     };
     measure();
     const observer = new ResizeObserver(measure);
-    const card = pageFrame && roundedClipElement(pageFrame);
+    const card = pageFrame && cardElement(pageFrame);
     if (card) {
       observer.observe(card);
     }
@@ -90,24 +65,6 @@ function useSurroundings(
     // `shown` isn't read: the card may have moved, so it measures again each time it shows.
   }, [shown, everShown, pageFrame]);
   return surroundings;
-}
-
-/** Rounds the corners of the safe area that are also the card's. */
-function cardCorners(safeArea: SafeArea, { window: view, card }: Surroundings): Corners {
-  if (!card) {
-    return { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0 };
-  }
-  const near = (a: number, b: number) => Math.abs(a - b) <= 1;
-  const top = near(safeArea.top, card.top);
-  const bottom = near(view.height - safeArea.bottom, card.bottom);
-  const left = near(safeArea.left, card.left);
-  const right = near(view.width - safeArea.right, card.right);
-  return {
-    topLeft: top && left ? card.radius : 0,
-    topRight: top && right ? card.radius : 0,
-    bottomRight: bottom && right ? card.radius : 0,
-    bottomLeft: bottom && left ? card.radius : 0,
-  };
 }
 
 /**
@@ -145,7 +102,7 @@ export const AppOverlay: React.FC<{
     return () => document.documentElement.removeAttribute(APP_OVERLAY_ATTRIBUTE);
   }, [shown]);
 
-  const surroundings = useSurroundings(shown, last !== undefined, pageFrame);
+  const { viewport, card } = useSurroundings(shown, last !== undefined, pageFrame);
 
   // Browsers don't reliably let one frame focus another, so the window holding both moves focus
   // between them.
@@ -229,7 +186,7 @@ export const AppOverlay: React.FC<{
         sandbox={APP_FRAME_SANDBOX}
         src={source}
         style={{
-          clipPath: overlayClipPath(safeArea, cardCorners(safeArea, surroundings)),
+          clipPath: overlayClipPath(safeArea, cardCorners(safeArea, viewport, card)),
           colorScheme,
         }}
         title={title}

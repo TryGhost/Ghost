@@ -3,6 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 import { usePortalContainer } from '@/lib/app-overlay';
+import { setRef } from '@/lib/set-ref';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 import { safeAreaCollision } from '@/lib/safe-area';
@@ -123,6 +124,27 @@ function Tooltip({
   );
 }
 
+/** Radix closes the tooltip as what its trigger is in scrolls, but only in the page's window. */
+function useCloseOnOverlayScroll(
+  container: HTMLElement | undefined,
+  trigger: React.RefObject<HTMLButtonElement | null>,
+) {
+  const close = React.useContext(TooltipCloseContext);
+  React.useEffect(() => {
+    const view = container?.ownerDocument.defaultView;
+    if (!close || !view || view === window) {
+      return;
+    }
+    const onScroll = (event: Event) => {
+      if (event.target instanceof view.Node && event.target.contains(trigger.current)) {
+        close();
+      }
+    };
+    view.addEventListener('scroll', onScroll, true);
+    return () => view.removeEventListener('scroll', onScroll, true);
+  }, [close, container, trigger]);
+}
+
 const TooltipTrigger = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>
@@ -137,30 +159,12 @@ const TooltipTrigger = React.forwardRef<
     }
   }, [container, input]);
 
-  // Radix closes the tooltip as what its trigger is in scrolls, but only in the page's window.
-  const close = React.useContext(TooltipCloseContext);
   const trigger = React.useRef<HTMLButtonElement | null>(null);
-  React.useEffect(() => {
-    const view = container?.ownerDocument.defaultView;
-    if (!close || !view || view === window) {
-      return;
-    }
-    const onScroll = (event: Event) => {
-      if (event.target instanceof view.Node && event.target.contains(trigger.current)) {
-        close();
-      }
-    };
-    view.addEventListener('scroll', onScroll, true);
-    return () => view.removeEventListener('scroll', onScroll, true);
-  }, [close, container]);
+  useCloseOnOverlayScroll(container, trigger);
   const triggerRef = React.useCallback(
     (element: HTMLButtonElement | null) => {
       trigger.current = element;
-      if (typeof ref === 'function') {
-        ref(element);
-      } else if (ref) {
-        ref.current = element;
-      }
+      setRef(ref, element);
     },
     [ref],
   );
@@ -204,8 +208,9 @@ const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
 >(({ className, sideOffset = 4, variant, collisionBoundary, ...props }, ref) => {
+  const container = usePortalContainer();
   return (
-    <TooltipPrimitive.Portal container={usePortalContainer()}>
+    <TooltipPrimitive.Portal container={container}>
       <ShadeScope>
         <TooltipPrimitive.Content
           ref={ref}
@@ -214,7 +219,7 @@ const TooltipContent = React.forwardRef<
             'data-[safe-area]:max-w-(--radix-tooltip-content-available-width)',
             className,
           )}
-          {...safeAreaCollision(collisionBoundary, usePortalContainer())}
+          {...safeAreaCollision(collisionBoundary, container)}
           sideOffset={sideOffset}
           {...props}
         />
