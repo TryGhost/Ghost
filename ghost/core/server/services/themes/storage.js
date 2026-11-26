@@ -31,10 +31,6 @@ const messages = {
 
 const INVALID_THEME_REGEX = /^[./]*$/;
 
-// Built per operation, not kept: ThemeStorage reads the themes folder from
-// config when it is constructed, and the theme loader reads it on every call.
-// A retained instance would keep writing to the folder of the boot that first
-// used it once a later boot in the same process has another one.
 const getStorage = () => new ThemeStorage();
 
 module.exports = {
