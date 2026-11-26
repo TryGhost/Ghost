@@ -162,6 +162,9 @@ describe('checking an Admin API request', () => {
     expect(check('/posts/', 'POST', root, '{"posts":[{"title":"Hi"}]}', none).problem).toBe(
       undefined,
     );
+    // The site's public details are sent too, however the path is cased.
+    expect(check('/site/', 'GET', root, undefined, none).problem).toBeUndefined();
+    expect(check('/SITE', 'GET', root, undefined, none).problem).toBeUndefined();
   });
 
   it('reads the gaps the same whichever way the root is written', () => {
