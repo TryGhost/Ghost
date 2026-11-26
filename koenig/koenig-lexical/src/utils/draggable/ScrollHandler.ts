@@ -28,13 +28,18 @@ export type DraggableInfo = DraggableInfoSeed & {
     insertIndex?: number;
 };
 
-export const defaultOptions = {
+export interface ScrollOptions {
+    speed: number;
+    sensitivity: number;
+}
+
+export const defaultOptions: ScrollOptions = {
     speed: 8,
     sensitivity: 50
 };
 
 export class ScrollHandler {
-    options: {speed: number; sensitivity: number};
+    options: ScrollOptions;
     currentMousePosition: {clientX: number; clientY: number} | null;
     findScrollableElementFrame: number | null;
     scrollableElement: HTMLElement | null;
