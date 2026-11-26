@@ -660,9 +660,7 @@ describe('Custom fields', () => {
     const browsesBeforeDrag = browseApi.requests.length;
 
     // A real pointer drag of the handle onto the first row, which is what dnd-kit
-    // listens for. Note this cannot be driven from the keyboard: the sortable list
-    // does not wire dnd-kit's sortable coordinate getter, so arrow keys move a
-    // lifted item by a flat 25px and it never reaches the next row.
+    // listens for.
     await dragField('Nickname', rows.first());
 
     // The whole list goes up, in the order the drag left it, keys only — order is a

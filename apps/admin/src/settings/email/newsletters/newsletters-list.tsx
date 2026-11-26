@@ -124,7 +124,7 @@ const NewslettersList: React.FC<NewslettersListProps> = ({
     return (
       <SortableList
         container={(props) => <NewsletterItemContainer {...props} />}
-        getDragHandleLabel={(item) => `Reorder ${item.name}`}
+        getItemLabel={(item) => item.name}
         items={newsletters}
         renderItem={(item) => <NewsletterItem newsletter={item} />}
         wrapper={List}
