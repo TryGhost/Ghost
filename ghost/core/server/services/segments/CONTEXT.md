@@ -38,7 +38,7 @@ A slug a caller gives is held to the same rules: its format, and the filter pars
 
 ## Times
 
-A segment has the time it was added, `created_at`, and the time it was last edited, `updated_at`. An add writes one time to both, so a segment has been edited when `updated_at` is later than `created_at`. Both are stored to the second in UTC, and a command returns them as a read of the segment would. A rename to the name a segment already has writes nothing, so its times stay as they were. A segment the migration moved from the saved views setting has the time the migration ran, as the setting held no time for a view, and a 6.80 migration gave each segment that had never been renamed its `created_at` as its `updated_at`. An import adds each segment through the same command as any other, so an imported segment is created at the time of the import and hasn't been edited, whatever times the file holds.
+A segment has the time it was added, `created_at`, and the time it was last edited, `updated_at`. An add writes one time to both, so a segment has been edited when `updated_at` is later than `created_at`. Both are stored to the second in UTC, and a command returns them as a read of the segment would. An edit that leaves a segment's name and filter as they are writes nothing, so its times stay as they were. A segment the migration moved from the saved views setting has the time the migration ran, as the setting held no time for a view, and a 6.80 migration gave each segment that had never been renamed its `created_at` as its `updated_at`. An import adds each segment through the same command as any other, so an imported segment is created at the time of the import and hasn't been edited, whatever times the file holds.
 
 ## Names
 
@@ -50,7 +50,7 @@ No lock keeps writers apart. The table's unique indexes reject a name or a slug 
 
 ## Changes
 
-Each command reports one change: `SegmentAdded`, `SegmentRenamed` or `SegmentDeleted`, with the whole segment before and after. The service root records each one in History as an action on the segment (added, edited or deleted), with the segment's name. A reorder reports nothing, so History doesn't record it: the order is a visual preference, and dragging segments around would fill History with entries. Changes made while segments were stored in the `shared_views` setting were recorded as edits of that setting, and those entries stay as they are. A rename to the name a segment already has changes nothing and reports nothing.
+Each command reports one change: `SegmentAdded`, `SegmentEdited` or `SegmentDeleted`, with the whole segment before and after. An edit can change the name, the filter or both, and leaves out what it doesn't give, so a change of filter can't undo a rename made since the caller read the segment. The service root records each change in History as an action on the segment (added, edited or deleted), with the segment's name. An edit records one action for each thing it changed: a rename is an edit with the previous name, and a change of filter is an edit with the action name `conditions_changed`. A reorder reports nothing, so History doesn't record it: the order is a visual preference, and dragging segments around would fill History with entries. Changes made while segments were stored in the `shared_views` setting were recorded as edits of that setting, and those entries stay as they are. An edit that leaves the name and the filter as they are changes nothing and reports nothing.
 
 ## Not this
 

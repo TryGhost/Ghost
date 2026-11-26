@@ -136,6 +136,15 @@ describe('Segments Admin API', function () {
     return body.segments[0];
   }
 
+  async function edit(id: string, change: Record<string, unknown>) {
+    const { body } = await agent
+      .put(`segments/${id}/`)
+      .body({ segments: [change] })
+      .expectStatus(200)
+      .expect(cacheInvalidateHeaderNotSet());
+    return body.segments[0];
+  }
+
   const reorder = (ids: string[]) =>
     agent.put('segments/').body({ segments: ids.map((id) => ({ id })) });
 
@@ -812,16 +821,65 @@ describe('Segments Admin API', function () {
       assert.deepEqual(await browse(), body.segments);
     });
 
-    it('rejects a different filter, and changes nothing', async function () {
+    it('changes only the filter when the name is not given, keeping the segment in its place', async function () {
+      await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      await add('Comped', 'status:comped');
+      // Renamed since a client read it, which a change of filter alone must not undo
+      await rename(paid.id, 'Paying');
+
+      const { id, name, slug, filter } = await edit(paid.id, { filter: 'status:paid+label:vip' });
+
+      assert.deepEqual(
+        { id, name, slug, filter },
+        { id: paid.id, name: 'Paying', slug: 'paid', filter: 'status:paid+label:vip' },
+      );
+      assert.deepEqual(
+        (await browse()).map((segment) => [segment.name, segment.filter]),
+        [
+          ['Free', 'status:free'],
+          ['Paying', 'status:paid+label:vip'],
+          ['Comped', 'status:comped'],
+        ],
+      );
+    });
+
+    it('changes the name and the filter together', async function () {
       const segment = await add('VIP', 'label:vip');
 
-      await agent
-        .put(`segments/${segment.id}/`)
-        .body({ segments: [{ name: 'Gold', filter: 'label:gold' }] })
-        .expectStatus(422)
-        .matchHeaderSnapshot(writeHeaders)
-        .matchBodySnapshot(errorBody);
-      assert.deepEqual(await browse(), [segment]);
+      const edited = await edit(segment.id, { name: 'Gold', filter: 'label:gold' });
+
+      assert.deepEqual(edited, {
+        ...segment,
+        name: 'Gold',
+        filter: 'label:gold',
+        updated_at: edited.updated_at,
+      });
+      assert.deepEqual(await browse(), [edited]);
+    });
+
+    it('returns when the filter was changed, and keeps when the segment was last edited for a save that changes nothing', async function () {
+      const segment = await add('VIP', 'label:vip');
+      // Earlier than an edit can be, so a write of the time would show.
+      const editedEarlier = () =>
+        models.Base.knex('segments')
+          .where('id', segment.id)
+          .update({ updated_at: '2020-01-01 00:00:00' });
+      await editedEarlier();
+      const changing = new Date();
+
+      const changed = await edit(segment.id, { filter: 'label:gold' });
+
+      assert.equal(changed.created_at, segment.created_at);
+      assertTimeSince(changed.updated_at, changing);
+
+      await editedEarlier();
+      const { body } = await agent.get(`segments/${segment.id}/`).expectStatus(200);
+      const [stored] = body.segments;
+      assert.equal(stored.updated_at, '2020-01-01T00:00:00.000Z');
+      for (const change of [stored, { name: 'VIP', filter: 'label:gold' }, {}]) {
+        assert.deepEqual(await edit(segment.id, change), stored);
+      }
     });
 
     it('rejects a different filter that is not valid NQL for its syntax', async function () {
@@ -1114,7 +1172,7 @@ describe('Segments Admin API', function () {
       await addError({ name: 'Gold', filter: 'label:gold', slug: 'vip' });
       await addError({ name: 'Gold', filter: 'label:gold', slug: '2024' });
       await renameError(id, { name: 'Free' });
-      await renameError(id, { name: 'VIP', filter: 'label:gold' });
+      await renameError(id, { filter: 'segment:free' });
       await renameError(id, { name: 'VIP', slug: 'free' });
       await agent
         .put(`segments/${UNKNOWN_ID}/`)
@@ -1135,7 +1193,7 @@ describe('Segments Admin API', function () {
       ]);
       expect(failedSpans('edit')).toMatchObject([
         rejected('SEGMENT_NAME_TAKEN', 'name_taken'),
-        rejected('SEGMENT_FILTER_CHANGED', 'filter_changed'),
+        rejected('SEGMENT_FILTER_NAMES_SEGMENT', 'filter_names_segment'),
         rejected('SEGMENT_SLUG_CHANGED', 'slug_changed'),
         rejected('NotFoundError', 'not_found'),
       ]);
@@ -1225,8 +1283,34 @@ describe('Segments Admin API', function () {
 
       assert.deepEqual(await segmentActions(), [
         { resource_id: id, event: 'added', context: { primary_name: 'VIP' } },
-        { resource_id: id, event: 'edited', context: { primary_name: 'Gold' } },
+        {
+          resource_id: id,
+          event: 'edited',
+          context: { primary_name: 'Gold', previous_name: 'VIP' },
+        },
         { resource_id: id, event: 'deleted', context: { primary_name: 'Gold' } },
+      ]);
+    });
+
+    it('records a change of filter apart from a rename, as an action for each', async function () {
+      const { id } = await add('VIP', 'label:vip');
+
+      await edit(id, { filter: 'label:gold' });
+      await edit(id, { name: 'Gold', filter: 'label:platinum' });
+
+      const conditionsChanged = (name: string) => ({
+        resource_id: id,
+        event: 'edited',
+        context: { primary_name: name, action_name: 'conditions_changed' },
+      });
+      assert.deepEqual((await segmentActions()).slice(1), [
+        conditionsChanged('VIP'),
+        {
+          resource_id: id,
+          event: 'edited',
+          context: { primary_name: 'Gold', previous_name: 'VIP' },
+        },
+        conditionsChanged('Gold'),
       ]);
     });
 

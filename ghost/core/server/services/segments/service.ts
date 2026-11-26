@@ -7,10 +7,9 @@ import { uniqueViolationColumn } from '../../lib/db-errors';
 import { databaseNow, toDatabaseDate } from '../../lib/db-types/date';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 import { sortable } from '../../lib/sortable';
-import { SegmentAdded, SegmentDeleted, SegmentRenamed, type OnSegmentUpdated } from './changes';
+import { SegmentAdded, SegmentDeleted, SegmentEdited, type OnSegmentUpdated } from './changes';
 import { filterNamesSegment } from './expansion';
 import {
-  FilterChangedError,
   FilterNamesSegmentError,
   FilterUnparseableError,
   NameTakenError,
@@ -46,12 +45,13 @@ export interface NewSegment {
 }
 
 /**
- * A change to a segment. Only the name can change. A change can give the segment's own filter
- * and slug back, so that a segment as the API returns it is a valid change. Any other filter or
- * slug is rejected: changing a segment's filter or slug isn't supported.
+ * A change to a segment's name, its filter, or both. What a change leaves out stays as it is
+ * stored, so a change that gives only the filter can't undo a rename made since the caller read
+ * the segment. A change can give the segment's own slug back, so that a segment as the API
+ * returns it is a valid change. Any other slug is rejected: a segment's slug doesn't change.
  */
 export interface SegmentEdit {
-  name: SegmentName;
+  name?: SegmentName;
   filter?: SegmentFilter;
   slug?: SegmentSlug;
 }
@@ -207,14 +207,14 @@ export class SegmentsService {
   }
 
   /**
-   * Renames the segment with `id`, and returns it, edited now. Its slug stays as it is. Fails with
-   * a NotFoundError when there's no such segment, and with a ValidationError when another segment
-   * has the name, when `input` has a filter other than the segment's own that isn't valid NQL, or
-   * when `input` has a filter or a slug other than the segment's own, because a segment's filter
-   * and slug can't change. The segment's own filter is accepted back as it is stored, even when
-   * it isn't valid NQL, as a stored filter can be. A rename to the name the segment already has
-   * changes nothing, so nothing is written or reported, and the segment keeps the time it was
-   * last edited.
+   * Changes the name, the filter, or both, of the segment with `id`, and returns it, edited now.
+   * Its slug and its place stay as they are. Fails with a NotFoundError when there's no such
+   * segment, and with a ValidationError when another segment has the name, when `input` has a
+   * filter other than the segment's own that isn't valid NQL or names a segment, or when `input`
+   * has a slug other than the segment's own, because a segment's slug can't change. The segment's
+   * own filter is accepted back as it is stored, even when it isn't valid NQL, as a stored filter
+   * can be. A change that leaves the name and the filter as they are changes nothing, so nothing
+   * is written or reported, and the segment keeps the time it was last edited.
    */
   edit(
     context: RequestContext,
@@ -225,34 +225,38 @@ export class SegmentsService {
     return this.tracking.change('edit', (attempt) =>
       ensureTransaction(executor, async (trx) => {
         const previous = (await this.lock(id, trx)) ?? notFound(attempt);
-        // Another filter is checked as a new segment's is, so one that isn't valid NQL is
-        // rejected for its syntax rather than for being a change
         if (input.filter !== undefined && input.filter !== previous.filter) {
           if (!isParseableFilter(input.filter)) {
             reject(attempt, new FilterUnparseableError());
           }
-          reject(attempt, new FilterChangedError());
+          if (filterNamesSegment(input.filter)) {
+            reject(attempt, new FilterNamesSegmentError());
+          }
         }
         if (input.slug !== undefined && input.slug !== previous.slug) {
           reject(attempt, new SlugChangedError());
         }
-        if (input.name === previous.name) {
+        const name = input.name ?? previous.name;
+        const filter = input.filter ?? previous.filter;
+        if (name === previous.name && filter === previous.filter) {
           attempt.unchanged();
           return previous;
         }
 
-        // By the stored id: the database can match the request's id where it differs in case.
-        const others = (await this.browse({}, trx)).filter(
-          ({ id: other }) => other !== previous.id,
-        );
-        if (others.some(hasName(input.name))) {
-          reject(attempt, new NameTakenError());
+        if (name !== previous.name) {
+          // By the stored id: the database can match the request's id where it differs in case.
+          const others = (await this.browse({}, trx)).filter(
+            ({ id: other }) => other !== previous.id,
+          );
+          if (others.some(hasName(name))) {
+            reject(attempt, new NameTakenError());
+          }
         }
-        const segment = { ...previous, name: input.name, updated_at: databaseNow() };
+        const segment = { ...previous, name, filter, updated_at: databaseNow() };
         try {
           await trx(TABLE)
             .where('id', previous.id)
-            .update({ name: segment.name, updated_at: toDatabaseDate(segment.updated_at) });
+            .update({ name, filter, updated_at: toDatabaseDate(segment.updated_at) });
         } catch (err) {
           // The database's collation counts the name as another segment's, or another request
           // took the name at the same time.
@@ -262,7 +266,7 @@ export class SegmentsService {
           throw err;
         }
 
-        await this.onSegmentUpdated(trx, context, new SegmentRenamed(previous, segment));
+        await this.onSegmentUpdated(trx, context, new SegmentEdited(previous, segment));
         return segment;
       }),
     );

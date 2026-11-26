@@ -43,23 +43,13 @@ export class FilterUnparseableError extends SegmentError {
   }
 }
 
-/** A new segment's filter names a segment, which a segment's filter can't. */
+/** A filter a segment would be saved with names a segment, which a segment's filter can't. */
 export class FilterNamesSegmentError extends SegmentError {
   readonly reason = 'filter_names_segment';
   readonly code = 'SEGMENT_FILTER_NAMES_SEGMENT';
 
   constructor() {
     super({ message: "A segment's filter cannot name another segment.", property: 'filter' });
-  }
-}
-
-/** A change gives a filter other than the segment's own, and a segment's filter can't change. */
-export class FilterChangedError extends SegmentError {
-  readonly reason = 'filter_changed';
-  readonly code = 'SEGMENT_FILTER_CHANGED';
-
-  constructor() {
-    super({ message: "A segment's filter cannot be changed", property: 'filter' });
   }
 }
 

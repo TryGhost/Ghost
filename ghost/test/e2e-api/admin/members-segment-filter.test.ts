@@ -481,6 +481,35 @@ describe('Members filtered by segment', function () {
       assert.equal(body.errors[0].property, 'filter');
       assert.equal(body.errors[0].code, 'SEGMENT_FILTER_NAMES_SEGMENT');
     });
+
+    it('rejects an edit that gives a filter naming another segment', async function () {
+      const { body: added } = await agent
+        .post('segments/')
+        .body({ segments: [{ name: 'Nested later', filter: 'status:paid' }] })
+        .expectStatus(201);
+
+      const { body } = await agent
+        .put(`segments/${added.segments[0].id}/`)
+        .body({ segments: [{ filter: `segment:${segments.vip}+status:paid` }] })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'filter');
+      assert.equal(body.errors[0].code, 'SEGMENT_FILTER_NAMES_SEGMENT');
+    });
+
+    it('selects the members of the filter an edit gives the segment, under the same slug', async function () {
+      const { body: added } = await agent
+        .post('segments/')
+        .body({ segments: [{ name: 'Changing', filter: 'label:[vip]' }] })
+        .expectStatus(201);
+      const [{ id, slug }] = added.segments;
+
+      await agent
+        .put(`segments/${id}/`)
+        .body({ segments: [{ filter: 'label:[founder]' }] })
+        .expectStatus(200);
+
+      assert.deepEqual(await membersList(`segment:${slug}`), ['alan', 'grace']);
+    });
   });
 
   describe('Posts', function () {
