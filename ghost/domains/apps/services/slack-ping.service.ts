@@ -1,16 +1,12 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import type { GhostLogger } from '@tryghost/logging';
-import { defineService } from '#support/define-service';
+import type { Logger, Site } from '#support/site';
 import { getUnixTime } from '../../../core/kernel/clock';
-import {
-  BlogIcon,
-  ExternalRequest,
-  Logging,
-  SettingsCache,
-  UrlService,
-  UrlUtils,
-} from '../../../shared/transition/legacy';
+import { blogIcon } from '../../../shared/transition/blog-icon';
+import { externalRequest } from '../../../shared/transition/external-request';
+import { settingsCache } from '../../../shared/transition/settings-cache';
+import { urlUtils } from '../../../shared/transition/url-utils';
+import { getResourceUrl } from '../../publishing/actions/get-resource-url.action';
 
 const messages = {
   requestFailedError:
@@ -69,9 +65,9 @@ export type SlackPingPayload = {
   [key: string]: unknown;
 };
 
-export type SlackPingServiceDeps = {
+export type SlackPingDeps = {
   blogIcon: BlogIcon;
-  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
+  logging: Logger;
   request: RequestFn;
   settingsCache: SettingsCache;
   urlService: UrlService;
@@ -86,22 +82,15 @@ function hasPostProperties(data: Record<string, unknown>): boolean {
 }
 
 /** Posts to the Slack webhook the publisher has set. Shared by this domain's listeners. */
-export class SlackPingService {
+export class SlackPing {
   blogIcon: BlogIcon;
-  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
+  logging: Logger;
   request: RequestFn;
   settingsCache: SettingsCache;
   urlService: UrlService;
   urlUtils: UrlUtils;
 
-  constructor({
-    blogIcon,
-    logging,
-    request,
-    settingsCache,
-    urlService,
-    urlUtils,
-  }: SlackPingServiceDeps) {
+  constructor({ blogIcon, logging, request, settingsCache, urlService, urlUtils }: SlackPingDeps) {
     this.blogIcon = blogIcon;
     this.logging = logging;
     this.request = request;
@@ -260,16 +249,15 @@ export class SlackPingService {
   }
 }
 
-export const SlackPing = defineService({
-  name: 'apps/slack-ping',
-  lifetime: 'site',
-  needs: {
-    blogIcon: BlogIcon,
-    logging: Logging,
-    request: ExternalRequest,
-    settingsCache: SettingsCache,
-    urlService: UrlService,
-    urlUtils: UrlUtils,
-  },
-  create: (needs) => new SlackPingService(needs),
-});
+/** The Slack ping for a site, made from that site's settings, addresses and icon. */
+export const slackPing = (site: Site) =>
+  new SlackPing({
+    blogIcon: blogIcon(site),
+    logging: site.log,
+    request: externalRequest(site),
+    settingsCache: settingsCache(site),
+    urlService: {
+      getUrlForResource: (resource, options) => getResourceUrl(site, resource, options),
+    },
+    urlUtils: urlUtils(site),
+  });

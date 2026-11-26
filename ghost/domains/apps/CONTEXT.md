@@ -26,5 +26,6 @@ Installed apps and webhooks belong here too. They have not moved in yet.
 
 ## Where things are
 
+- `provider.ts` lists what the application must call here: the listeners.
 - `actions/` and `listeners/` hold the logic: one file per thing the domain does.
 - `services/` holds only logic that several of those share.

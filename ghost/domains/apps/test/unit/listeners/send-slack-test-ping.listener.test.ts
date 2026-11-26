@@ -1,19 +1,19 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { Site } from '#support/site';
 import sendSlackTestPing from '../../../listeners/send-slack-test-ping.listener';
 import { SlackPing } from '../../../services/slack-ping.service';
-import type { SlackPingService } from '../../../services/slack-ping.service';
 
 describe('Send a Slack test ping', function () {
-  it('reacts to slack.test with the Slack ping service', function () {
-    assert.equal(sendSlackTestPing.event, 'slack.test');
-    assert.deepEqual(sendSlackTestPing.needs, { slackPing: SlackPing });
+  afterEach(function () {
+    sinon.restore();
   });
 
-  it('pings with the test message', function () {
-    const ping = sinon.stub();
+  it('pings with the test message and hands back the delivery', function () {
+    const delivery = Promise.resolve();
+    const ping = sinon.stub(SlackPing.prototype, 'ping').returns(delivery);
 
-    sendSlackTestPing.handle({ slackPing: { ping } as unknown as SlackPingService });
+    assert.equal(sendSlackTestPing({ log: {} } as Site), delivery);
 
     sinon.assert.calledOnceWithExactly(ping, {
       message:

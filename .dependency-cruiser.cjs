@@ -7,8 +7,7 @@ const servicesRoot = 'ghost/core/server/services';
 const serviceImplementations = {
   path: `^${servicesRoot}/([^/]+)(?:/|$)`,
   // Legacy JS roots remain wiring candidates; nested indexes are implementations.
-  // The folder's provider.ts is wiring too, and has its own rule: provider-dependencies.
-  pathNot: [`^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`, `^${servicesRoot}/provider\\.ts$`],
+  pathNot: `^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`,
 };
 
 // The service checks apply to the services directory only, so a defineService
@@ -493,20 +492,9 @@ module.exports = {
       to: { path: '^framework/foundation/' },
     },
     {
-      name: 'provider-dependencies',
-      comment:
-        'The legacy services provider only declares. It imports the roots it lists, and names anything else through ghost/shared.',
-      severity: 'error',
-      from: { path: `^${servicesRoot}/provider\\.ts$` },
-      to: {
-        pathNot: ['^framework/support/', '^ghost/shared/', `^${servicesRoot}/[^/]+/index\\.ts$`],
-        dependencyTypesNot: ['type-only', 'type-import'],
-      },
-    },
-    {
       name: 'domain-dependencies',
       comment:
-        'A domain imports its own files, framework/support and the definitions in ghost/shared. Everything else is named in needs and handed to it. Another domain is used only through its actions, data and events.',
+        'A domain imports its own files, framework/support and ghost/shared. It is handed the site and never imports state. Another domain is used only through its actions, data and events.',
       severity: 'error',
       from: { path: '^ghost/domains/([^/]+)/' },
       to: {
@@ -532,6 +520,20 @@ module.exports = {
         path: '^ghost/domains/[^/]+/',
         pathNot: '^ghost/domains/[^/]+/(actions|data|events)/',
       },
+    },
+    {
+      name: 'site-is-handed-over',
+      comment:
+        'Code is handed the site; it does not import it. Only boot and the API layer, which call into new code, reach bootstrap.',
+      severity: 'error',
+      from: {
+        pathNot: [
+          '^ghost/bootstrap/',
+          '^ghost/core/boot\\.js$',
+          '^ghost/core/server/api/endpoints/utils/with-site\\.js$',
+        ],
+      },
+      to: { path: '^ghost/bootstrap/' },
     },
     {
       name: 'bootstrap-only-providers',

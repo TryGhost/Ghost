@@ -1,13 +1,8 @@
 {
+  "extends": "@internal/cfg-typescript/esm.json",
   "compilerOptions": {
-    "target": "es2024",
-    "module": "nodenext",
-    "strict": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "erasableSyntaxOnly": true,
-    "skipLibCheck": true,
-    "types": ["node"]
+    "rootDir": "src",
+    "outDir": "build"
   },
-  "include": ["src"]
+  "include": ["src/**/*"]
 }

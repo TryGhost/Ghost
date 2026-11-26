@@ -1,7 +1,7 @@
 import { InternalServerError, NotFoundError } from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import { defineAction } from '#support/define-action';
-import { Models } from '../../../shared/transition/legacy';
+import type { Site } from '#support/site';
+import { models } from '../../../shared/transition/models';
 
 const messages = {
   notFound: '{resource} not found.',
@@ -26,56 +26,54 @@ type IntegrationModels = {
 export type EditIntegrationOptions = Record<string, unknown> & { id?: string; keyid?: string };
 
 /** Edits an integration, or refreshes the secret of one of its API keys when `options.keyid` is set. */
-export const EditIntegration = defineAction({
-  name: 'apps/edit-integration',
-  needs: { models: Models },
-  handle: async (
-    { models }: { models: IntegrationModels },
-    data: unknown,
-    options: EditIntegrationOptions,
-  ): Promise<Model | null> => {
-    if (options.keyid) {
-      const model = await models.ApiKey.findOne({ id: options.keyid });
+export function editIntegration(site: Site, data: unknown, options: EditIntegrationOptions) {
+  return editIntegrationWith(models(site) as unknown as IntegrationModels, data, options);
+}
 
-      if (!model) {
-        throw new NotFoundError({
-          message: tpl(messages.notFound, {
-            resource: 'ApiKey',
-          }),
-        });
-      }
-      try {
-        await models.ApiKey.refreshSecret(
-          model.toJSON(),
-          Object.assign({}, options, { id: options.keyid }),
-        );
+/** The edit itself, given the models to use. */
+export async function editIntegrationWith(
+  { Integration, ApiKey }: IntegrationModels,
+  data: unknown,
+  options: EditIntegrationOptions,
+): Promise<Model | null> {
+  if (options.keyid) {
+    const model = await ApiKey.findOne({ id: options.keyid });
 
-        return await models.Integration.findOne(
-          { id: options.id },
-          {
-            withRelated: ['api_keys', 'webhooks'],
-          },
-        );
-      } catch (err) {
-        throw new InternalServerError({
-          err: err as Error,
-        });
-      }
+    if (!model) {
+      throw new NotFoundError({
+        message: tpl(messages.notFound, {
+          resource: 'ApiKey',
+        }),
+      });
     }
-
     try {
-      return await models.Integration.edit(data, Object.assign(options, { require: true }));
-    } catch (error) {
-      const message = (error as { message?: unknown }).message;
-      if (message === 'NotFound' || message === 'EmptyResponse') {
-        throw new NotFoundError({
-          message: tpl(messages.notFound, {
-            resource: 'Integration',
-          }),
-        });
-      }
+      await ApiKey.refreshSecret(model.toJSON(), Object.assign({}, options, { id: options.keyid }));
 
-      throw error;
+      return await Integration.findOne(
+        { id: options.id },
+        {
+          withRelated: ['api_keys', 'webhooks'],
+        },
+      );
+    } catch (err) {
+      throw new InternalServerError({
+        err: err as Error,
+      });
     }
-  },
-});
+  }
+
+  try {
+    return await Integration.edit(data, Object.assign(options, { require: true }));
+  } catch (error) {
+    const message = (error as { message?: unknown }).message;
+    if (message === 'NotFound' || message === 'EmptyResponse') {
+      throw new NotFoundError({
+        message: tpl(messages.notFound, {
+          resource: 'Integration',
+        }),
+      });
+    }
+
+    throw error;
+  }
+}

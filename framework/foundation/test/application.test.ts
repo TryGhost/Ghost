@@ -1,184 +1,146 @@
 import { EventEmitter } from 'node:events';
-import { describe, expect, expectTypeOf, it } from 'vitest';
-import { defineAction } from '#support/define-action';
-import { defineListener } from '#support/define-listener';
+import { setImmediate } from 'node:timers/promises';
+import { describe, expect, it, vi } from 'vitest';
+import { createApplication } from '../src/application.ts';
 import { defineProvider } from '#support/define-provider';
-import { defineService } from '#support/define-service';
-import type { AnyServiceDefinition } from '#support/define-service';
-import { ApplicationError, createApplication, instance } from '#foundation/application';
+import type { Listener } from '#support/define-provider';
+import type { Site } from '#support/site';
 
-type Settings = { readonly webhook: string };
+function createSite(name = 'a') {
+  const events = new EventEmitter();
+  const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+  const site: Site = { config: { get: (key) => `${name}:${key}` }, log, events };
+  return { site, events, log };
+}
 
-function fixture() {
-  const built: string[] = [];
-  const Logger = defineService({
-    name: 'logger',
-    lifetime: 'process',
-    create: () => {
-      built.push('logger');
-      return { lines: [] as string[] };
-    },
-  });
-  const Settings = defineService({
-    name: 'settings',
-    lifetime: 'site',
-    create: (): Settings => {
-      throw new Error('settings are supplied per site');
-    },
-  });
-  const Events = defineService({
-    name: 'events',
-    lifetime: 'site',
-    create: () => new EventEmitter(),
-  });
-  const Pinger = defineService({
-    name: 'pinger',
-    lifetime: 'site',
-    needs: { logger: Logger, settings: Settings },
-    create: ({ logger, settings }) => {
-      built.push('pinger');
-      return { ping: (what: string) => logger.lines.push(`${settings.webhook} <- ${what}`) };
-    },
-  });
-  const provider = defineProvider({
-    name: 'pinger',
-    services: [Pinger],
-    listeners: [
-      defineListener({
-        bus: Events,
-        event: 'published',
-        needs: { pinger: Pinger },
-        handle: ({ pinger }, what: string) => pinger.ping(what),
-      }),
-    ],
-  });
-  return { built, Logger, Settings, Events, Pinger, provider };
+// Stands in for `() => require('./file')`, and counts how often the file is asked for.
+function file(listener: Listener) {
+  return vi.fn(() => ({ default: listener }));
+}
+
+function listening(site: Site, listeners: Parameters<typeof defineProvider>[0]['listeners']) {
+  return createApplication({
+    providers: [defineProvider({ name: 'example', listeners })],
+  }).listen(site);
 }
 
 describe('createApplication', () => {
-  it('builds nothing on create, on boot or on opening a site scope', () => {
-    const { built, provider, Settings } = fixture();
-    const app = createApplication({ providers: [provider] });
-    app.boot();
-    app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
-    expect(built).toEqual([]);
+  it('loads nothing when it is created or when it starts listening', () => {
+    const load = file(() => {});
+    const { site, events } = createSite();
+
+    listening(site, { published: load });
+
+    expect(load).not.toHaveBeenCalled();
+    expect(events.listenerCount('published')).toBe(1);
   });
 
-  it('refuses to hand out services before boot', () => {
-    const { Logger, provider } = fixture();
-    const app = createApplication({ providers: [provider] });
-    expect(() => app.get(Logger)).toThrow(ApplicationError);
-    expect(() => app.createSiteScope()).toThrow(ApplicationError);
+  it('loads a listener when its first event arrives, and hands it the site and the event', () => {
+    const listener = vi.fn();
+    const load = file(listener);
+    const { site, events } = createSite();
+    listening(site, { published: load });
+
+    events.emit('published', 'post-1', { importing: false });
+
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledExactlyOnceWith(site, 'post-1', { importing: false });
   });
 
-  it('builds a service on first use and keeps one instance per scope', () => {
-    const { built, provider, Pinger, Settings } = fixture();
-    const app = createApplication({ providers: [provider] });
-    app.boot();
-    const site = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
-    const pinger = site.get(Pinger);
-    expect(site.get(Pinger)).toBe(pinger);
-    expect(built).toEqual(['logger', 'pinger']);
-  });
-
-  it('hands a service the built instances of what it needs, typed, however deep', () => {
-    const { Pinger, provider, Settings } = fixture();
-    const Reporter = defineService({
-      name: 'reporter',
-      lifetime: 'site',
-      needs: { pinger: Pinger, settings: Settings },
-      create: ({ pinger, settings }) => {
-        expectTypeOf(pinger.ping).toEqualTypeOf<(what: string) => number>();
-        expectTypeOf(settings).toEqualTypeOf<Settings>();
-        return { report: () => pinger.ping(`report for ${settings.webhook}`) };
+  it('calls every listener listed for an event, across providers, in the order listed', () => {
+    const calls: string[] = [];
+    const { site, events } = createSite();
+    const first = defineProvider({
+      name: 'first',
+      listeners: {
+        published: [file(() => calls.push('first-a')), file(() => calls.push('first-b'))],
+        edited: file(() => calls.push('first-edited')),
       },
     });
-    const app = createApplication({ providers: [provider] });
-    app.boot();
-    const site = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
-    expect(site.get(Reporter).report()).toBe(1);
-    expectTypeOf(site.get(Reporter).report).toEqualTypeOf<() => number>();
-  });
-
-  it("hands an action what it needs, then the caller's arguments", () => {
-    const { Logger, Pinger, provider, Settings } = fixture();
-    const PingTwice = defineAction({
-      name: 'ping-twice',
-      needs: { pinger: Pinger },
-      handle: ({ pinger }, what: string) => [pinger.ping(what), pinger.ping(what)],
+    const second = defineProvider({
+      name: 'second',
+      listeners: { published: file(() => calls.push('second')) },
     });
-    const Caller = defineService({
-      name: 'caller',
-      lifetime: 'site',
-      needs: { pingTwice: PingTwice },
-      create: ({ pingTwice }) => ({ call: () => pingTwice('post-1') }),
+    createApplication({ providers: [first, second] }).listen(site);
+
+    events.emit('published');
+
+    expect(calls).toEqual(['first-a', 'first-b', 'second']);
+  });
+
+  it('keeps two sites apart: each listener is handed the site its event came from', () => {
+    const seen: unknown[] = [];
+    const provider = defineProvider({
+      name: 'example',
+      listeners: { published: file((site) => seen.push(site.config.get('url'))) },
     });
-    const app = createApplication({
-      providers: [provider, defineProvider({ name: 'caller', actions: [PingTwice] })],
+    const application = createApplication({ providers: [provider] });
+    const a = createSite('a');
+    const b = createSite('b');
+    application.listen(a.site);
+    application.listen(b.site);
+
+    b.events.emit('published');
+
+    expect(seen).toEqual(['b:url']);
+  });
+
+  it('lets a listener that throws reach the emitter, as any listener does', () => {
+    const { site, events, log } = createSite();
+    const failure = new Error('listener failed');
+    listening(site, {
+      published: file(() => {
+        throw failure;
+      }),
     });
-    app.boot();
-    const site = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
 
-    expectTypeOf(site.get(PingTwice)).toEqualTypeOf<(what: string) => number[]>();
-    expect(site.get(PingTwice)('post-0')).toEqual([1, 2]);
-    expect(site.get(Caller).call()).toEqual([3, 4]);
-    expect(app.get(Logger).lines).toHaveLength(4);
+    expect(() => events.emit('published')).toThrow(failure);
+    expect(log.error).not.toHaveBeenCalled();
   });
 
-  it('gives an action the lifetime of the shortest-lived thing it needs', () => {
-    const { Logger, Pinger } = fixture();
-    const noop = () => {};
-    expect(defineAction({ name: 'a', handle: noop }).lifetime).toBe('process');
-    expect(defineAction({ name: 'b', needs: { logger: Logger }, handle: noop }).lifetime).toBe(
-      'process',
-    );
-    expect(
-      defineAction({ name: 'c', needs: { logger: Logger, pinger: Pinger }, handle: noop }).lifetime,
-    ).toBe('site');
+  it('logs a listener whose promise rejects, which the emitter cannot see', async () => {
+    const { site, events, log } = createSite();
+    const failure = new Error('delivery failed');
+    listening(site, { published: file(() => Promise.reject(failure)) });
+
+    expect(() => events.emit('published')).not.toThrow();
+    await setImmediate();
+
+    expect(log.error).toHaveBeenCalledExactlyOnceWith(failure);
   });
 
-  it('gives two sites their own site services and one shared process service', () => {
-    const { Events, Logger, Pinger, provider, Settings } = fixture();
-    const app = createApplication({ providers: [provider] });
-    app.boot();
-    const a = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
-    const b = app.createSiteScope({ instances: [instance(Settings, { webhook: 'b' })] });
+  it('logs a listener whose file cannot be loaded, without failing whoever emitted the event', () => {
+    const { site, events, log } = createSite();
+    const failure = new Error('Cannot find module');
+    listening(site, {
+      published: () => {
+        throw failure;
+      },
+    });
 
-    expect(a.get(Pinger)).not.toBe(b.get(Pinger));
-    expect(a.get(Logger)).toBe(b.get(Logger));
-    expect(a.get(Logger)).toBe(app.get(Logger));
-
-    a.get(Events).emit('published', 'post-1');
-    b.get(Events).emit('published', 'post-2');
-    expect(app.get(Logger).lines).toEqual(['a <- post-1', 'b <- post-2']);
+    expect(() => events.emit('published')).not.toThrow();
+    expect(log.error).toHaveBeenCalledExactlyOnceWith(failure);
   });
 
-  it('delivers an event to a service that was not built when the event was declared', () => {
-    const { built, Events, Logger, provider, Settings } = fixture();
-    const app = createApplication({ providers: [provider] });
-    app.boot();
-    const site = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
-    expect(built).toEqual([]);
-    site.get(Events).emit('published', 'post-1');
-    expect(built).toEqual(['logger', 'pinger']);
-    expect(app.get(Logger).lines).toEqual(['a <- post-1']);
-  });
+  it('stops listening when asked, leaving other listeners alone', () => {
+    const listener = vi.fn();
+    const unrelated = vi.fn();
+    const { site, events } = createSite();
+    events.on('published', unrelated);
+    const stop = listening(site, { published: file(listener) });
 
-  it('stops listening and drops instances when a scope is disposed', () => {
-    const { Events, Logger, Pinger, provider, Settings } = fixture();
-    const app = createApplication({ providers: [provider] });
-    app.boot();
-    const site = app.createSiteScope({ instances: [instance(Settings, { webhook: 'a' })] });
-    const events = site.get(Events);
-    site.dispose();
-    events.emit('published', 'post-1');
-    expect(app.get(Logger).lines).toEqual([]);
-    expect(() => site.get(Pinger)).toThrow(/scope that has ended/);
+    stop();
+    events.emit('published');
+
+    expect(listener).not.toHaveBeenCalled();
+    expect(unrelated).toHaveBeenCalledTimes(1);
+    expect(events.listeners('published')).toEqual([unrelated]);
   });
 
   it('removes the subscriptions it made when a later one fails', () => {
     const calls: string[] = [];
-    const bus = {
+    const { site } = createSite();
+    const events = {
       on(event: string) {
         calls.push(`on ${event}`);
         if (event === 'second') {
@@ -187,92 +149,10 @@ describe('createApplication', () => {
       },
       removeListener: (event: string) => calls.push(`off ${event}`),
     };
-    const Bus = defineService({ name: 'bus', lifetime: 'site', create: () => bus });
-    const Service = defineService({ name: 'service', lifetime: 'site', create: () => ({}) });
-    const provider = defineProvider({
-      name: 'example',
-      listeners: ['first', 'second'].map((event) =>
-        defineListener({ bus: Bus, event, needs: { service: Service }, handle: () => {} }),
-      ),
-    });
-    const app = createApplication({ providers: [provider] });
-    app.boot();
-    expect(() => app.createSiteScope()).toThrow('cannot subscribe');
+
+    expect(() =>
+      listening({ ...site, events }, { first: file(() => {}), second: file(() => {}) }),
+    ).toThrow('cannot subscribe');
     expect(calls).toEqual(['on first', 'on second', 'off first', 'off second']);
-  });
-
-  describe('boot rejects', () => {
-    it('a process service that needs a site service', () => {
-      const { Settings } = fixture();
-      const Cache = defineService({
-        name: 'cache',
-        lifetime: 'process',
-        needs: { settings: Settings },
-        create: () => ({}),
-      });
-      const app = createApplication({
-        providers: [defineProvider({ name: 'cache', services: [Cache] })],
-      });
-      expect(() => app.boot()).toThrow(
-        '"cache" lives for the process but needs "settings" (as settings), which lives only for one site.',
-      );
-    });
-
-    it('a per-site service listening on a process-wide bus', () => {
-      const { Pinger } = fixture();
-      const Bus = defineService({
-        name: 'bus',
-        lifetime: 'process',
-        create: () => new EventEmitter(),
-      });
-      const provider = defineProvider({
-        name: 'pinger',
-        listeners: [
-          defineListener({
-            bus: Bus,
-            event: 'published',
-            needs: { pinger: Pinger },
-            handle: () => {},
-          }),
-        ],
-      });
-      expect(() => createApplication({ providers: [provider] }).boot()).toThrow(
-        /Every site would react to the same event/,
-      );
-    });
-
-    it('services that need each other in a circle', () => {
-      const needs: Record<string, AnyServiceDefinition> = {};
-      const A = defineService({ name: 'a', lifetime: 'process', create: () => ({}) });
-      const B = defineService({
-        name: 'b',
-        lifetime: 'process',
-        needs: { a: A },
-        create: () => ({}),
-      });
-      // A definition is frozen, so a circle can only be made by going around the types.
-      const C = { name: 'c', lifetime: 'process' as const, needs, create: () => ({}) };
-      needs.b = B;
-      needs.c = C;
-      const app = createApplication({
-        providers: [defineProvider({ name: 'circle', services: [C] })],
-      });
-      expect(() => app.boot()).toThrow('Services need each other in a circle: c → c.');
-    });
-
-    it('an instance given to a scope of the wrong lifetime', () => {
-      const { Logger, provider, Settings } = fixture();
-      expect(() =>
-        createApplication({
-          providers: [provider],
-          instances: [instance(Settings, { webhook: 'a' })],
-        }),
-      ).toThrow(/a process scope cannot be given its instance/);
-      const app = createApplication({ providers: [provider] });
-      app.boot();
-      expect(() => app.createSiteScope({ instances: [instance(Logger, { lines: [] })] })).toThrow(
-        /a site scope cannot be given its instance/,
-      );
-    });
   });
 });

@@ -14,7 +14,7 @@ instance or initialization hook.
   callbacks. Construction retains the callbacks without invoking them.
 - [export-components.ts](export-components.ts) defines the synchronous and
   asynchronous component lists. The exports endpoint and
-  [export requests](../../services/export-requests/export-requests-service.ts)
+  [export requests](../../../../domains/hosting/actions/request-export.action.ts)
   share those definitions. The arrays are compile-time readonly, not frozen
   at runtime; the asynchronous list adds media to the synchronous list.
 

@@ -9691,14 +9691,6 @@ followUps:
         Serialization failures, MRR rejection, post-date errors, sibling queries continuing
         after Promise.all rejects, warning details for statistics failures and boot's handling
         of the detached rejection remain uncharacterized.
-  export-requests:
-    lifecycle:
-      - >-
-        Establish pending-delivery and shared transport ownership before adding disposal.
-        A unit sends through the real request client and shows a failed delivery is not
-        retried; actual timeout, redirect and shutdown behavior is not asserted. The client
-        follows redirects, and one attempt is no proof of safe cancellation after a lost
-        response.
   gift-links:
     lifecycle:
       - >-

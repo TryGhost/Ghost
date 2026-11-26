@@ -2200,6 +2200,9 @@ importers:
         specifier: workspace:*
         version: link:../support
     devDependencies:
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../tools/configs/typescript
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5
@@ -2212,6 +2215,9 @@ importers:
 
   framework/support:
     devDependencies:
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../tools/configs/typescript
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5

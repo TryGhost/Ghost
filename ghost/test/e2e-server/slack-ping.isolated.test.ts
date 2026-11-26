@@ -7,13 +7,13 @@ import sinon from 'sinon';
 import supertest from 'supertest';
 import type { Response } from 'supertest';
 import type { GhostServer } from '../../core/server/ghost-server';
-import type { SlackPingService as SlackPingInstance } from '../../domains/apps/services/slack-ping.service';
+import type { SlackPing as SlackPingInstance } from '../../domains/apps/services/slack-ping.service';
 
 const { startGhost, fixtureManager, configUtils } = require('../utils/e2e-framework');
 const { AdminAPITestAgent } = require('../utils/agents');
 const { GhostServer: GhostServerClass } = require('../../core/server/ghost-server');
 const {
-  SlackPingService,
+  SlackPing,
 }: typeof import('../../domains/apps/services/slack-ping.service') = require('../../domains/apps/services/slack-ping.service');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -57,10 +57,10 @@ describe('Slack notifications through HTTP and model events', function () {
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     serverStart = sandbox.spy(GhostServerClass.prototype, 'start');
-    const originalPing: SlackPingInstance['ping'] = SlackPingService.prototype.ping;
+    const originalPing: SlackPingInstance['ping'] = SlackPing.prototype.ping;
     // Shared events do not await listener work. Observe every real delivery
     // immediately so a broken error handler still reaches assertions and cleanup.
-    ping = sandbox.stub(SlackPingService.prototype, 'ping').callsFake(function (
+    ping = sandbox.stub(SlackPing.prototype, 'ping').callsFake(function (
       this: SlackPingInstance,
       ...args: Parameters<SlackPingInstance['ping']>
     ) {
@@ -117,15 +117,7 @@ taxonomies:
     loggedError.resetHistory();
   });
 
-  it('returns HTTP success while a test notification is pending after repeated init, then absorbs delivery failure', async function () {
-    const {
-      SlackPing,
-    }: typeof import('../../domains/apps/services/slack-ping.service') = require('../../domains/apps/services/slack-ping.service');
-    const singleSite: typeof import('../../bootstrap/transition/single-site') = require('../../bootstrap/transition/single-site');
-    const service = singleSite.site().get(SlackPing);
-    singleSite.start();
-    singleSite.start();
-    assert.equal(singleSite.site().get(SlackPing), service);
+  it('returns HTTP success while a test notification is pending, then absorbs delivery failure', async function () {
     const received = Promise.withResolvers<unknown>();
     const release = Promise.withResolvers<void>();
     const scope = nock(webhook, { reqheaders: { 'content-type': 'application/json' } })
@@ -151,7 +143,6 @@ taxonomies:
       const payload = await within(received.promise, 'The Slack test route did not send a webhook');
       await within(request!, 'The Slack test route waited for webhook delivery');
       sinon.assert.calledOnce(ping);
-      assert.equal(ping.firstCall.thisValue, service);
       delivery = ping.firstCall.returnValue;
       assert.ok(delivery instanceof Promise);
       sinon.assert.notCalled(loggedError);

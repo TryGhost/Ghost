@@ -3,10 +3,10 @@ import crypto from 'crypto';
 import nock from 'nock';
 import sinon from 'sinon';
 import ghostRequest from '@tryghost/request';
-import { createLoggingFake } from '../../../../utils/logging-utils';
-import { ExportRequestsService } from '../../../../../core/server/services/export-requests/export-requests-service';
+import { createLoggingFake } from '../../../../../test/utils/logging-utils';
+import { requestExportWith } from '../../../actions/request-export.action';
 
-describe('ExportRequestsService', function () {
+describe('Request export action', function () {
   const webhookUrl = 'https://export-generator.example.com/api/generate/';
   const webhookSecret = 'not-a-live-secret';
   const requestedByUserId = '1';
@@ -39,7 +39,10 @@ describe('ExportRequestsService', function () {
       ...overrides,
     };
 
-    return new ExportRequestsService(dependencies as any);
+    return {
+      requestExport: (input: Parameters<typeof requestExportWith>[1]) =>
+        requestExportWith(dependencies as any, input),
+    };
   };
 
   it('throws a NotFoundError when the webhook URL is not configured', async function () {

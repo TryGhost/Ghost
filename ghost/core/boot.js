@@ -171,14 +171,14 @@ async function initCore({ ghostServer, config }) {
   await appInstallationsService.init();
   debug('End: App Installations Service');
 
-  // Declared listeners are subscribed here, and each provided service is built on first use.
-  debug('Begin: Site scope');
-  const singleSite = require('../bootstrap/transition/single-site');
-  singleSite.start();
+  // Subscribes the listeners that providers list. A listener's file loads when its first event arrives.
+  debug('Begin: Application listeners');
+  const application = require('../bootstrap/app');
+  application.start();
   if (ghostServer) {
-    ghostServer.registerCleanupTask(() => singleSite.stop(), 'Site scope');
+    ghostServer.registerCleanupTask(() => application.stop(), 'Application listeners');
   }
-  debug('End: Site scope');
+  debug('End: Application listeners');
 
   debug('Begin: Invites Service');
   const invites = require('./server/services/invites').default;

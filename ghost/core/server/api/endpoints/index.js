@@ -1,5 +1,6 @@
 const apiFramework = require('@tryghost/api-framework');
 const localUtils = require('./utils');
+const withSite = require('./utils/with-site');
 
 // ESLint Override Notice
 // This is a valid index.js file - it just exports a lot of stuff!
@@ -40,7 +41,7 @@ module.exports = {
   },
 
   get exports() {
-    return apiFramework.pipeline(require('./exports'), localUtils);
+    return apiFramework.pipeline(withSite(require('./exports')), localUtils);
   },
 
   get identities() {
@@ -48,7 +49,7 @@ module.exports = {
   },
 
   get integrations() {
-    return apiFramework.pipeline(require('./integrations'), localUtils);
+    return apiFramework.pipeline(withSite(require('./integrations')), localUtils);
   },
 
   // @TODO: transform

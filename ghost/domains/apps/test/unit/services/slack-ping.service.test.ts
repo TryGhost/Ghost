@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import nock from 'nock';
 import sinon from 'sinon';
-import { SlackPingService } from '../../../services/slack-ping.service';
+import { SlackPing } from '../../../services/slack-ping.service';
 
 const testUtils = require('../../../../../test/utils');
 const { createLoggingFake } = require('../../../../../test/utils/logging-utils');
@@ -27,7 +27,7 @@ async function waitFor(assertion: () => boolean, timeout = 1000) {
   }
 }
 
-// Build a SlackPingService with fully injected fakes. The real @tryghost/request
+// Build a SlackPing with fully injected fakes. The real @tryghost/request
 // is injected so nock intercepts at the HTTP layer - only the stateful/config
 // singletons become injected fakes.
 function createService() {
@@ -44,7 +44,7 @@ function createService() {
   const logging = createLoggingFake();
 
   const deps = { blogIcon, logging, request, settingsCache, urlService, urlUtils };
-  const service = new SlackPingService(deps);
+  const service = new SlackPing(deps);
 
   return { service, deps };
 }

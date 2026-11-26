@@ -3,32 +3,39 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { NotFoundError, InternalServerError } from '@tryghost/errors';
 
-import { EditIntegration } from '../../../actions/edit-integration.action';
+import type { Site } from '#support/site';
+import { editIntegration, editIntegrationWith } from '../../../actions/edit-integration.action';
+
+const legacyModels = require('../../../../../core/server/models');
 
 describe('Edit integration action', function () {
   const sandbox = sinon.createSandbox();
   let IntegrationModel: { edit: sinon.SinonStub; findOne: sinon.SinonStub };
   let ApiKeyModel: { findOne: sinon.SinonStub; refreshSecret: sinon.SinonStub };
-  let edit: ReturnType<typeof EditIntegration.create>;
+  let edit: (
+    ...args: Parameters<typeof editIntegration> extends [Site, ...infer Rest] ? Rest : never
+  ) => ReturnType<typeof editIntegrationWith>;
 
   beforeEach(function () {
     IntegrationModel = { edit: sandbox.stub(), findOne: sandbox.stub() };
     ApiKeyModel = { findOne: sandbox.stub(), refreshSecret: sandbox.stub().resolves() };
-    edit = EditIntegration.create({
-      models: { Integration: IntegrationModel, ApiKey: ApiKeyModel },
-    });
+    edit = (data, options) =>
+      editIntegrationWith({ Integration: IntegrationModel, ApiKey: ApiKeyModel }, data, options);
   });
 
   afterEach(function () {
     sandbox.restore();
   });
 
-  it('is built without querying the models, and lives as long as they do', function () {
-    assert.equal(EditIntegration.lifetime, 'site');
+  it("uses the site's models when it is asked through the site", async function () {
+    const result = { id: 'integration-id' };
+    const legacyEdit = sandbox.stub(legacyModels.Integration, 'edit').resolves(result);
+    const options = { id: 'integration-id' };
+
+    assert.equal(await editIntegration({} as Site, { name: 'Zapier' }, options), result);
+
+    sinon.assert.calledOnceWithExactly(legacyEdit, { name: 'Zapier' }, options);
     sinon.assert.notCalled(IntegrationModel.edit);
-    sinon.assert.notCalled(IntegrationModel.findOne);
-    sinon.assert.notCalled(ApiKeyModel.findOne);
-    sinon.assert.notCalled(ApiKeyModel.refreshSecret);
   });
 
   it('forwards ordinary edits with the same data and options, adding require in place', async function () {

@@ -3,18 +3,40 @@
   "version": "private",
   "private": true,
   "description": "Framework code that holds no state. Any file may import it.",
-  "type": "module",
-  "imports": {
-    "#support/*": "./src/*.ts"
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "framework/support"
   },
+  "files": [
+    "build"
+  ],
+  "type": "module",
   "exports": {
-    "./*": "./src/*.ts"
+    "./*": {
+      "source": "./src/*.ts",
+      "types": "./build/*.d.ts",
+      "default": "./build/*.js"
+    }
   },
   "scripts": {
+    "build": "tsc",
     "test:types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@internal/cfg-typescript": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
   }
 }

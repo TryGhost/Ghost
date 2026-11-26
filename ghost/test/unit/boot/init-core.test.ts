@@ -11,7 +11,7 @@ function createCoreHarness() {
   const signingKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
   const giftLinks = { init: sinon.stub().resolves() };
-  const siteScope = { start: sinon.stub(), stop: sinon.stub() };
+  const application = { start: sinon.stub(), stop: sinon.stub() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
   const applyImageUploadConfig = sinon.stub();
   const uploads = {};
@@ -29,7 +29,7 @@ function createCoreHarness() {
     './server/services/gift-links': { default: giftLinks },
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },
-    '../bootstrap/transition/single-site': siteScope,
+    '../bootstrap/app': application,
     './server/services/jobs-service': { shutdown() {} },
     './server/services/invites': { default: { init() {} } },
     './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
@@ -46,7 +46,7 @@ function createCoreHarness() {
     signingKeys,
     i18n,
     giftLinks,
-    siteScope,
+    application,
     stripeCheckoutConfig,
   };
 }
@@ -147,27 +147,27 @@ it('propagates the original i18n initialization error without continuing initCor
   sinon.assert.notCalled(boot.giftLinks.init);
 });
 
-it('opens the site scope once, before the services that follow it', async function () {
+it('starts the application listening once, before the services that follow it', async function () {
   const boot = createCoreHarness();
 
   await boot.init();
 
-  sinon.assert.calledOnceWithExactly(boot.siteScope.start);
-  sinon.assert.callOrder(boot.siteScope.start, boot.stripeCheckoutConfig.init);
-  sinon.assert.notCalled(boot.siteScope.stop);
+  sinon.assert.calledOnceWithExactly(boot.application.start);
+  sinon.assert.callOrder(boot.application.start, boot.stripeCheckoutConfig.init);
+  sinon.assert.notCalled(boot.application.stop);
 });
 
-it('fails initCore with the same error when the site scope cannot open', async function () {
+it('fails initCore with the same error when the application cannot listen', async function () {
   const boot = createCoreHarness();
-  const failure = new Error('A declaration is invalid');
-  boot.siteScope.start.throws(failure);
+  const failure = new Error('Cannot subscribe');
+  boot.application.start.throws(failure);
 
   await assert.rejects(boot.init(), (error) => error === failure);
 
   sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
 });
 
-it('ends the site scope as a server cleanup task', async function () {
+it('stops the application listening as a server cleanup task', async function () {
   const boot = createCoreHarness();
   const registerCleanupTask = sinon.stub();
 
@@ -175,10 +175,10 @@ it('ends the site scope as a server cleanup task', async function () {
 
   const registrations = registerCleanupTask
     .getCalls()
-    .filter((call) => call.args[1] === 'Site scope');
+    .filter((call) => call.args[1] === 'Application listeners');
   assert.equal(registrations.length, 1);
   registrations[0]!.args[0]();
-  sinon.assert.calledOnceWithExactly(boot.siteScope.stop);
+  sinon.assert.calledOnceWithExactly(boot.application.stop);
 });
 
 it('applies the uploads config to image handling before anything initializes', async function () {

@@ -2,25 +2,49 @@
   "name": "@tryghost/foundation",
   "version": "private",
   "private": true,
-  "description": "Framework code that creates the application and builds its services. Only bootstrap imports it.",
+  "description": "Framework code that creates the application and calls what providers list. Only bootstrap imports it.",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "framework/foundation"
+  },
+  "files": [
+    "build"
+  ],
   "type": "module",
   "imports": {
-    "#foundation/*": "./src/*.ts",
     "#support/*": "@tryghost/support/*"
   },
   "exports": {
-    "./*": "./src/*.ts"
+    "./*": {
+      "source": "./src/*.ts",
+      "types": "./build/*.d.ts",
+      "default": "./build/*.js"
+    }
   },
   "scripts": {
+    "build": "tsc",
     "test": "vitest run",
-    "test:types": "tsc --noEmit"
+    "test:types": "tsc --noEmit -p test/tsconfig.json"
   },
   "dependencies": {
     "@tryghost/support": "workspace:*"
   },
   "devDependencies": {
+    "@internal/cfg-typescript": "workspace:*",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
   }
 }

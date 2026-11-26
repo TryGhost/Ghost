@@ -1,234 +1,63 @@
-import type { ListenerDefinition } from '#support/define-listener';
 import type { Provider } from '#support/define-provider';
-import { outlives } from '#support/define-service';
-import type {
-  AnyServiceDefinition,
-  Lifetime,
-  Needs,
-  ServiceDefinition,
-} from '#support/define-service';
+import type { Site } from '#support/site';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Definition<Service> = ServiceDefinition<Service, any>;
-
-/** A ready-made instance to use for a definition instead of building it. */
-export type Instance = readonly [definition: AnyServiceDefinition, instance: unknown];
-
-export function instance<Service>(definition: Definition<Service>, value: Service): Instance {
-  return [definition, value];
-}
-
-export interface Scope {
-  readonly lifetime: Lifetime;
-  /** Returns the scope's instance of a service, building it on first use. */
-  get<Service>(definition: Definition<Service>): Service;
-  /** Unsubscribes the scope's listeners and drops its instances. */
-  dispose(): void;
-}
-
-export interface Application extends Scope {
-  /** Checks every declaration, then allows services to be built. Builds nothing itself. */
-  boot(): void;
-  /** Opens a scope for one site. Site-lifetime services are built once per scope. */
-  createSiteScope(options?: { readonly instances?: readonly Instance[] }): Scope;
-}
-
-export class ApplicationError extends Error {
-  override name = 'ApplicationError';
-}
-
-/** Rejects declarations that could not work, before anything is built. */
-function validate(providers: readonly Provider[]): void {
-  const names = new Map<string, AnyServiceDefinition>();
-  const done = new Set<AnyServiceDefinition>();
-  const path: AnyServiceDefinition[] = [];
-
-  function visit(definition: AnyServiceDefinition): void {
-    if (done.has(definition)) {
-      return;
-    }
-    if (path.includes(definition)) {
-      const cycle = [...path.slice(path.indexOf(definition)), definition];
-      throw new ApplicationError(
-        `Services need each other in a circle: ${cycle.map((entry) => entry.name).join(' → ')}.`,
-      );
-    }
-    const sameName = names.get(definition.name);
-    if (sameName !== undefined && sameName !== definition) {
-      throw new ApplicationError(`Two different services are both named "${definition.name}".`);
-    }
-    names.set(definition.name, definition);
-
-    path.push(definition);
-    for (const [key, need] of Object.entries<AnyServiceDefinition>(definition.needs)) {
-      if (!outlives(need.lifetime, definition.lifetime)) {
-        throw new ApplicationError(
-          `"${definition.name}" lives for the ${definition.lifetime} but needs "${need.name}" (as ${key}), ` +
-            `which lives only for one ${need.lifetime}. It would keep one ${need.lifetime}'s instance for all of them.`,
-        );
-      }
-      visit(need);
-    }
-    path.pop();
-    done.add(definition);
-  }
-
-  for (const provider of providers) {
-    for (const definition of [...provider.services, ...provider.actions]) {
-      visit(definition);
-    }
-    for (const listener of provider.listeners) {
-      visit(listener.bus);
-      for (const [key, need] of Object.entries<AnyServiceDefinition>(listener.needs)) {
-        visit(need);
-        // The listener is subscribed once per scope of its bus, and is handed what that scope holds.
-        if (!outlives(need.lifetime, listener.bus.lifetime)) {
-          throw new ApplicationError(
-            `"${provider.name}" listens for "${listener.event}" on "${listener.bus.name}", which is shared by the whole ` +
-              `${listener.bus.lifetime}, and needs "${need.name}" (as ${key}), which exists once per ${need.lifetime}. ` +
-              `Every ${need.lifetime} would react to the same event.`,
-          );
-        }
-      }
-    }
-  }
-}
-
-class ServiceScope implements Scope {
-  readonly lifetime: Lifetime;
-  readonly #parent: ServiceScope | undefined;
-  readonly #instances = new Map<AnyServiceDefinition, unknown>();
-  readonly #unsubscribe: (() => void)[] = [];
-  #open = true;
-
-  constructor(
-    lifetime: Lifetime,
-    parent: ServiceScope | undefined,
-    instances: readonly Instance[],
-  ) {
-    this.lifetime = lifetime;
-    this.#parent = parent;
-    for (const [definition, value] of instances) {
-      if (definition.lifetime !== lifetime) {
-        throw new ApplicationError(
-          `"${definition.name}" lives for the ${definition.lifetime}, so a ${lifetime} scope cannot be given its instance.`,
-        );
-      }
-      this.#instances.set(definition, value);
-    }
-  }
-
-  get<Service>(definition: Definition<Service>): Service {
-    if (!this.#open) {
-      throw new ApplicationError(`"${definition.name}" was asked for from a scope that has ended.`);
-    }
-    if (definition.lifetime !== this.lifetime) {
-      if (this.#parent !== undefined && outlives(definition.lifetime, this.lifetime)) {
-        return this.#parent.get(definition);
-      }
-      throw new ApplicationError(
-        `"${definition.name}" exists once per ${definition.lifetime}. Ask a ${definition.lifetime} scope for it.`,
-      );
-    }
-    if (this.#instances.has(definition)) {
-      return this.#instances.get(definition) as Service;
-    }
-    const built = definition.create(this.#resolve(definition.needs)) as Service;
-    this.#instances.set(definition, built);
-    return built;
-  }
-
-  #resolve(needs: Needs): Record<string, unknown> {
-    const resolved: Record<string, unknown> = {};
-    for (const [key, need] of Object.entries<AnyServiceDefinition>(needs)) {
-      resolved[key] = this.get(need);
-    }
-    return resolved;
-  }
-
-  /** Subscribes the listeners whose bus lives in this scope. What a listener needs is built by its first event. */
-  listen(listeners: readonly ListenerDefinition[]): void {
-    try {
-      for (const listener of listeners) {
-        if (listener.bus.lifetime !== this.lifetime) {
-          continue;
-        }
-        const bus = this.get(listener.bus);
-        const handler = (...args: unknown[]) =>
-          listener.handle(this.#resolve(listener.needs), ...args);
-        // Recorded first, so a subscription that throws part-way is still removed.
-        this.#unsubscribe.push(() => bus.removeListener(listener.event, handler));
-        bus.on(listener.event, handler);
-      }
-    } catch (error) {
-      this.#stopListening();
-      throw error;
-    }
-  }
-
-  #stopListening(): void {
-    for (const unsubscribe of this.#unsubscribe.splice(0)) {
-      unsubscribe();
-    }
-  }
-
-  dispose(): void {
-    this.#stopListening();
-    this.#instances.clear();
-    this.#open = false;
-  }
+export interface Application {
+  /**
+   * Subscribes every listed listener to the site's events. A listener's file is
+   * loaded when its first event arrives. Returns a function that unsubscribes them.
+   *
+   * A listener is called as the emitter calls any listener: if it throws, the
+   * emitter sees it. If it returns a promise that rejects, or its file cannot be
+   * loaded, that is logged.
+   */
+  listen(site: Site): () => void;
 }
 
 export function createApplication(options: {
   readonly providers: readonly Provider[];
-  readonly instances?: readonly Instance[];
 }): Application {
   const providers = [...options.providers];
-  const listeners = providers.flatMap((provider) => provider.listeners);
-  const root = new ServiceScope('process', undefined, options.instances ?? []);
-  const sites = new Set<ServiceScope>();
-  let booted = false;
-
-  function assertBooted(): void {
-    if (!booted) {
-      throw new ApplicationError('The application was used before boot().');
-    }
-  }
 
   return {
-    lifetime: 'process',
-    boot() {
-      if (booted) {
-        return;
-      }
-      validate(providers);
-      root.listen(listeners);
-      booted = true;
-    },
-    get(definition) {
-      assertBooted();
-      return root.get(definition);
-    },
-    createSiteScope({ instances = [] } = {}) {
-      assertBooted();
-      const site = new ServiceScope('site', root, instances);
-      site.listen(listeners);
-      sites.add(site);
-      return {
-        lifetime: 'site',
-        get: (definition) => site.get(definition),
-        dispose() {
-          site.dispose();
-          sites.delete(site);
-        },
+    listen(site) {
+      const subscribed: (() => void)[] = [];
+      const stop = () => {
+        for (const unsubscribe of subscribed.splice(0)) {
+          unsubscribe();
+        }
       };
-    },
-    dispose() {
-      for (const site of sites) {
-        site.dispose();
+
+      try {
+        for (const provider of providers) {
+          for (const [event, loads] of Object.entries(provider.listeners)) {
+            for (const load of loads) {
+              const handler = (...args: unknown[]) => {
+                let listener;
+                try {
+                  listener = load().default;
+                } catch (error) {
+                  // A file that cannot be loaded is no fault of whoever emitted the event.
+                  site.log.error(error);
+                  return;
+                }
+                const result = listener(site, ...args);
+                // An emitter does not wait for its listeners, so nothing else would see this fail.
+                if (result instanceof Promise) {
+                  result.catch((error: unknown) => site.log.error(error));
+                }
+              };
+              // Recorded first, so a subscription that throws part-way is still removed.
+              subscribed.push(() => site.events.removeListener(event, handler));
+              site.events.on(event, handler);
+            }
+          }
+        }
+      } catch (error) {
+        stop();
+        throw error;
       }
-      sites.clear();
-      root.dispose();
+
+      return stop;
     },
   };
 }

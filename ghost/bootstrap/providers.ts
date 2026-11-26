@@ -1,5 +1,4 @@
-/** Every provider Ghost registers. A provider only declares, so the order does not matter. */
-import legacyServices from '../core/server/services/provider';
+/** Every provider Ghost registers. A provider names files and loads none, so the order does not matter. */
 import apps from '../domains/apps/provider';
 
-export default [apps, legacyServices];
+export default [apps];

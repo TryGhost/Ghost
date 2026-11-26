@@ -8,8 +8,7 @@ import ts from 'typescript';
 const coreRoot = path.resolve(__dirname, '../../../..');
 const servicesRoot = path.join(coreRoot, 'core/server/services');
 const inventoryFile = 'legacy-service-inventory.yaml';
-// provider.ts registers the services here that describe themselves with defineService.
-const metadata = ['README.md', inventoryFile, 'provider.ts'];
+const metadata = ['README.md', inventoryFile];
 // The section for standard services that still have something open.
 const followUpsSection = 'followUps';
 // The section for bugs in any service, legacy or standard.
@@ -270,12 +269,7 @@ describe('legacy service inventory', function () {
     }
   });
 
-  // Extras accompany a root that boot starts. A root that only describes its service has none.
-  const describesItsService = (name: string) =>
-    readFileSync(path.join(servicesRoot, name, 'index.ts'), 'utf8').includes(
-      "'#support/define-service'",
-    );
-  for (const name of standard.filter((service) => !describesItsService(service))) {
+  for (const name of standard) {
     it(`${name} has exactly the catalogued extras`, function () {
       const extras = open[name]?.extras ?? {};
       assert.deepEqual(
