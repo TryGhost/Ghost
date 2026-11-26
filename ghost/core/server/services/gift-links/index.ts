@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { recordGiftLinkChanges } from '../../lib/action-log/gift-links';
 import { GiftLinksService } from './service';

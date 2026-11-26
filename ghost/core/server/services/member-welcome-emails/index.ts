@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { IncorrectUsageError } from '@tryghost/errors';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 
 const VERIFICATION_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const VERIFICATION_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;

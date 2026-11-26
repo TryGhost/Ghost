@@ -7,7 +7,7 @@ import {
   localDateOf,
   resolveTimeZone,
   startOfLocalDay,
-} from '../../../kernel/clock';
+} from '../../../support/clock';
 const nql = require('@tryghost/nql');
 
 export type CommentsInterval = 'day' | 'week' | 'month';

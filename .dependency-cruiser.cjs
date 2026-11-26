@@ -45,7 +45,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
-  '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
+  '^ghost/core/support/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
@@ -395,7 +395,7 @@ const serviceDependencyDecisions = {
   // owners is counted here too, without a pattern.
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
-    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
+    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the Support clock, which exports moment for existing date logic.
     '^(node:)?url$', // Use the global URL; url.parse is deprecated.
     '^(node:)?(fs(/promises)?|os|net)$|^fs-extra$', // No file system, operating system or networking modules: the root passes a loader limited to what is needed.
   ],
@@ -480,22 +480,22 @@ module.exports = {
         path: '^ghost/core/',
         pathNot: [
           `^${servicesRoot}/[^/]+/index\\.ts$`,
-          '^ghost/core/kernel/',
+          '^ghost/core/support/',
           ...serviceRootsElsewhere,
         ],
       },
       to: {
-        path: '^ghost/core/kernel/define-service\\.ts$',
+        path: '^ghost/core/support/define-service\\.ts$',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
-    // Kernel primitives must be independent of the application they support.
+    // Support primitives must be independent of the application they serve.
     {
-      name: 'kernel-not-application',
-      comment: 'Kernel code must not import application code, including shared.',
+      name: 'support-not-application',
+      comment: 'Support code must not import application code, including shared.',
       severity: 'error',
-      from: { path: '^ghost/core/kernel/' },
-      to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+      from: { path: '^ghost/core/support/' },
+      to: { path: '^ghost/', pathNot: '^ghost/core/support/' },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*

@@ -29,7 +29,7 @@ export const serviceRootShape: CreateRule = {
     ],
     messages: {
       runtimeExport: 'Named runtime exports belong in extras; type-only exports are allowed.',
-      defaultExport: 'Export a default initializer created by the kernel defineService helper.',
+      defaultExport: 'Export a default initializer created by the Support defineService helper.',
       alias: 'Initializer and extras aliases must resolve to local const declarations.',
       arguments: 'Use defineService(name, create or { create, start?, stop? }, extras?).',
       explicitExtras: 'Extras must be an explicit object so every member can be catalogued.',

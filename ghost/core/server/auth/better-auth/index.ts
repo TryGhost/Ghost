@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { createAuth, type GhostAuth } from './create-auth';
 import { createSignInCodeEmail } from '../emails/sign-in-code';
 

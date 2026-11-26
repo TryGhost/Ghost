@@ -211,7 +211,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/adapter-manager/index.ts
-        - core/kernel/adapter-manager/adapter-manager.ts
+        - core/support/adapter-manager/adapter-manager.ts
         - core/server/lib/image/index.js
         - core/server/services/post-scheduling/index.ts
         - core/boot.js
@@ -229,11 +229,11 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/adapter-manager/index.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/adapter-paths.ts
           - core/server/services/adapter-manager/base-classes.ts
-          - core/kernel/adapter-manager/loader.ts
-          - core/kernel/adapter-manager/options.ts
+          - core/support/adapter-manager/loader.ts
+          - core/support/adapter-manager/options.ts
           - core/server/services/adapter-manager/config.ts
           - bin/validate-adapters.ts
           - core/server/lib/image/index.js
@@ -242,7 +242,7 @@ services:
       - adapter-manager/index.ts
     notes: >-
       Split in progress. The reusable loading, validation and instance-management machinery
-      now lives in core/kernel/adapter-manager and takes its configuration through an
+      now lives in core/support/adapter-manager and takes its configuration through an
       explicit getConfig callback, so it imports nothing from the application. This
       directory holds only Ghost's composition: the base-class registry, search paths, the
       legacy scheduling/storage normalization, import-storage isolation and content-path
@@ -265,8 +265,8 @@ services:
           CLI. There is no manager shutdown or disposal API.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
-          - core/kernel/adapter-manager/types.ts
+          - core/support/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/types.ts
           - bin/validate-adapters.ts
         tests:
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
@@ -283,14 +283,14 @@ services:
           or configured adapters.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/adapter-paths.ts
           - core/server/services/adapter-manager/base-classes.ts
-          - core/kernel/adapter-manager/loader.ts
+          - core/support/adapter-manager/loader.ts
           - core/server/services/adapter-manager/config.ts
           - bin/validate-adapters.ts
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/support/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/base-classes.test.ts
           - test/unit/server/services/adapter-manager/adapter-paths.test.ts
       consumers:
@@ -348,13 +348,13 @@ services:
           guard and import-time consumers can construct adapters independently of validation.
         sources:
           - core/boot.js
-          - core/kernel/adapter-manager/adapter-manager.ts
-          - core/kernel/adapter-manager/options.ts
+          - core/support/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
           - core/server/api/endpoints/authentication.ts
           - core/server/lib/image/index.js
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/support/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
       lifetime:
         summary: >-
@@ -366,13 +366,13 @@ services:
           Conditional S3 route-store integration tests clear the cache before rereading settings;
           they do not establish replacement of retained consumers or cleanup.
         sources:
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/lib/image/index.js
           - core/server/services/jobs-service/index.ts
           - core/server/adapters/lib/redis/redis-store-factory.ts
           - core/server/ghost-server.ts
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/support/adapter-manager/adapter-manager.test.ts
           - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
           - test/unit/server/adapters/lib/redis/redis-store-factory.test.ts
       configuration:
@@ -386,14 +386,14 @@ services:
           config mutation; they establish neither production hot reload nor changed options
           reaching an already retained adapter.
         sources:
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/adapter-paths.ts
-          - core/kernel/adapter-manager/options.ts
+          - core/support/adapter-manager/options.ts
           - core/server/services/adapter-manager/config.ts
           - core/shared/config/defaults.json
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
-          - test/unit/kernel/adapter-manager/options.test.ts
+          - test/unit/support/adapter-manager/adapter-manager.test.ts
+          - test/unit/support/adapter-manager/options.test.ts
           - test/unit/server/services/adapter-manager/config.test.ts
           - test/unit/server/services/adapter-manager/adapter-paths.test.ts
           - test/integration/adapters/storage/imports-storage-config.test.ts
@@ -407,8 +407,8 @@ services:
           owns backend shutdown through GhostServer cleanup. clearCache invokes none of these
           owners and cannot drain active consumers or release custom-adapter resources.
         sources:
-          - core/kernel/adapter-manager/adapter-manager.ts
-          - core/kernel/adapter-manager/types.ts
+          - core/support/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/types.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
           - core/server/adapters/lib/redis/AdapterCacheRedis.ts
@@ -435,12 +435,12 @@ services:
           Static validation is synchronous and not awaited. No failed-init guard, rollback or
           manager retry exists; later calls retry uncached work using current config.
         sources:
-          - core/kernel/adapter-manager/adapter-manager.ts
-          - core/kernel/adapter-manager/loader.ts
+          - core/support/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/loader.ts
           - core/server/services/adapter-manager/config.ts
-          - core/kernel/adapter-manager/types.ts
+          - core/support/adapter-manager/types.ts
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/support/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/adapter-paths.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
     unverified: []
@@ -508,7 +508,7 @@ services:
             configuration-read timing.
           - >-
             Wire scheduler helpers, logging and timer utilities at the root and use the existing
-            kernel clock for legacy Moment operations.
+            Support clock for legacy Moment operations.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/automations/index.ts
@@ -1121,7 +1121,7 @@ services:
           - core/server/services/custom-redirects/index.js
           - core/server/services/custom-redirects/redirects-service.ts
           - core/server/services/adapter-manager/index.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/boot.js
         tests: []
       consumers:
@@ -1200,7 +1200,7 @@ services:
           - core/server/web/shared/dynamic-redirect-manager.js
           - core/shared/url-utils.ts
           - core/shared/config/validated.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
         tests:
@@ -1331,7 +1331,7 @@ services:
     notes: >-
       Planned split and relocation out of services: the configured Ghost sender-policy
       service belongs in shared; construction and live settings wiring belong in boot.
-      Mailbox parsing and formatting belong in an ordinary library, not kernel, while
+      Mailbox parsing and formatting belong in an ordinary library, not Support, while
       delivery compatibility rules belong with sending. Mailbox mechanics now live in
       @tryghost/parse-email-address/mailbox; core/server/lib/mail/format-address-for-delivery.ts
       preserves delivery formatting for existing string-valued callers. The removed private
@@ -2944,9 +2944,9 @@ services:
       - jobs-service/register-job-handlers.ts
     notes: >-
       Planned split and relocation out of services: generic scheduling, dispatch, execution
-      and outbox machinery belong in kernel; application configuration, registration and
+      and outbox machinery belong in Support; application configuration, registration and
       activation belong in boot; job definitions and handlers belong with their owning
-      services. The kernel boundary must exclude Ghost's config/schema imports and concrete
+      services. The Support boundary must exclude Ghost's config/schema imports and concrete
       database wiring, including outbox availability checks and the jobs_outbox mapping. No
       source has moved. Reassess initialization after separating ownership rather than
       migrating this root in place. Preserve the retained process instance, per-boot handler
@@ -4266,7 +4266,7 @@ services:
         wraps callbacks without exposing a disposer. Establish a removable subscription
         boundary before promising cleanup and retry after partial registration. Preserve the
         live members-API getter, optional click listener and existing cache identity; this
-        is dependency ownership work rather than a need for kernel cleanup hooks.
+        is dependency ownership work rather than a need for Support cleanup hooks.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/members-events/index.js
@@ -4294,7 +4294,7 @@ services:
           - core/server/services/members-events/index.js
           - core/server/services/members-events/last-seen-at-updater.js
           - core/server/services/members-events/last-seen-at-cache.js
-          - core/kernel/clock.ts
+          - core/support/clock.ts
     entryPoints:
       - members-events/index.js
     notes: >-
@@ -5019,7 +5019,7 @@ services:
         preparation:
           - >-
             Inject version/comparison, utility and sanitizing operations, and use the existing
-            kernel clock for Moment.
+            Support clock for Moment.
           - >-
             Give the caller-constructed email helper an explicit sanitizer dependency or a shared
             library home; update Update Check without making it depend on notification-service
@@ -5596,7 +5596,7 @@ services:
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/api/endpoints/authentication.ts
           - core/boot.js
@@ -5661,7 +5661,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/scheduling-default.ts
           - core/server/adapters/scheduling/error-capture.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
       configuration:
@@ -5704,7 +5704,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/adapters/scheduling/scheduling-default.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
@@ -6097,7 +6097,7 @@ services:
       Suggested future home after this migration: alongside core/shared/labs and its flag-override store; remote rollout
       policy is part of the same Ghost-wide feature-flag capability. Boot injects runtime
       dependencies and owns poller startup/shutdown; generic timers do not make the flag policy
-      Kernel code. No source has moved. Preserve config-gated background polling, stable rollout
+      Support code. No source has moved. Preserve config-gated background polling, stable rollout
       buckets and labs precedence. Late startup, timer bounds and writes from stopped instances
       remain explicit blockers.
     contracts:
@@ -6343,7 +6343,7 @@ services:
         sources:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/dynamic-routing-service.js
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/services/adapter-manager/base-classes.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
@@ -6451,7 +6451,7 @@ services:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/route-settings-parser.ts
           - core/server/services/adapter-manager/config.ts
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/shared/config/defaults.json
@@ -6479,7 +6479,7 @@ services:
           They do not prove transport release, collision safety or drain on shutdown.
         sources:
           - core/server/services/route-settings/dynamic-routing-service.js
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/server/adapters/route-settings/utils.ts
@@ -7075,7 +7075,7 @@ services:
         shutdown operations. Preserve per-boot configuration, tolerated configuration
         failures, ephemeral-webhook cleanup and deferred Members/Gifts/Staff access outside
         one-time construction. This requires careful ordering and failure-policy work, but
-        reconfiguration of a stable owner does not itself require a kernel change.
+        reconfiguration of a stable owner does not itself require a Support change.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/stripe/service.js
@@ -7472,7 +7472,7 @@ services:
           - core/frontend/services/theme-engine/engine.js
           - core/frontend/services/theme-engine/i18n/index.js
           - core/frontend/services/theme-engine/i18next/index.js
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/themes/loader.test.js
           - test/unit/server/services/themes/storage.test.ts
@@ -7557,7 +7557,7 @@ services:
           - core/server/services/themes/list.js
           - core/server/services/themes/validate.js
           - core/server/services/themes/storage.js
-          - core/kernel/adapter-manager/adapter-manager.ts
+          - core/support/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/frontend/services/theme-engine/active.js
         tests:
@@ -7743,7 +7743,7 @@ services:
     notes: >-
       Review ownership and client lifetime before migration. Allowed pipes and site scoping are
       application policy across traffic, gifts and automation analytics. Reusable provider/JWT
-      mechanics could become library support; they are not Kernel
+      mechanics could become library support; they are not core/support
       machinery. An optional token service is published through static methods. Preserve the
       different lifetimes of request-time initialization, retained stats clients and automation
       lookups.

@@ -8,7 +8,7 @@ import {
   localDateOf,
   resolveTimeZone,
   startOfLocalDay,
-} from '../../../core/kernel/clock';
+} from '../../../core/support/clock';
 
 describe('Clock', function () {
   afterEach(function () {
