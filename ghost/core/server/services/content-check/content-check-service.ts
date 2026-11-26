@@ -130,7 +130,6 @@ export class ContentCheckService {
       this.logging.info(`Triggering content check webhook to "${sanitizedUrl}"`);
 
       try {
-        // Got excludes POST from retries by default; include it explicitly.
         await this.request(webhookUrl, {
           ...requestOptions,
           retry: { limit: 2, methods: ['POST'] },
@@ -174,14 +173,6 @@ export class ContentCheckService {
     if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
       return value;
     }
-
-    if (typeof value === 'string' && value.length > 0) {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed) && parsed > 0) {
-        return parsed;
-      }
-    }
-
     return null;
   }
 }

@@ -1,7 +1,6 @@
 import { defineService } from '../../../kernel/define-service';
 import { ContentCheckService } from './content-check-service';
 
-// Boot must initialize this root after config and the shared event bus are ready.
 export default defineService('Content Check', {
   create: () =>
     new ContentCheckService({
@@ -12,6 +11,5 @@ export default defineService('Content Check', {
       events: require('../../lib/common/events'),
     }),
   start: (service) => service.subscribeEvents(),
-  // Also removes the listeners of a partial subscription when start fails.
   stop: (service) => service.unsubscribeEvents(),
 });

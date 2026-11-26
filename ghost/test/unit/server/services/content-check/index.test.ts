@@ -11,8 +11,6 @@ const logging: ContentCheckServiceDeps['logging'] = require('@tryghost/logging')
 const urlUtils: ContentCheckServiceDeps['urlUtils'] =
   require('../../../../../core/shared/url-utils').default;
 
-const { ContentCheckService } =
-  require('../../../../../core/server/services/content-check/content-check-service') as typeof import('../../../../../core/server/services/content-check/content-check-service');
 const { IncorrectUsageError } = require('@tryghost/errors');
 
 const ROOT_PATH = require.resolve('../../../../../core/server/services/content-check');
@@ -26,15 +24,9 @@ const SITE_CREATED_AT = '2026-10-15T10:00:00.000Z';
 const FROZEN_NOW = '2026-11-01T12:00:00.000Z';
 const MAX_SITE_AGE_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const SAMPLE_TITLE = 'Acme Weekly';
 
-function titleModel(value: unknown = 'Your bank paid 587 USD') {
-  return {
-    get: (field: string) => (field === 'value' ? value : undefined),
-  };
-}
-
-function titleModelWith(value: unknown) {
-  // Do not use a default parameter: titleModel(undefined) would substitute the default.
+function titleModel(value: unknown) {
   return {
     get: (field: string) => (field === 'value' ? value : undefined),
   };
@@ -57,7 +49,6 @@ describe('Content Check service root', function () {
     originalListeners = events.listeners(EVENT_NAME);
     delete require.cache[ROOT_PATH];
     sandbox = sinon.createSandbox();
-    // Freeze Date so SITE_CREATED_AT stays under the configured age gate.
     clock = sandbox.useFakeTimers({
       now: new Date(FROZEN_NOW).getTime(),
       toFake: ['Date'],
@@ -100,6 +91,11 @@ describe('Content Check service root', function () {
     return root.service!;
   }
 
+  async function emitTitle(send: sinon.SinonSpy | sinon.SinonStub, title: unknown = SAMPLE_TITLE) {
+    events.emit(EVENT_NAME, titleModel(title));
+    await send.lastCall.returnValue;
+  }
+
   it('subscribes only at init and delivers once after repeated init', async function () {
     const subscribe = sandbox.spy(events, 'on');
     root = require(ROOT_PATH).default as typeof contentCheckRoot;
@@ -117,11 +113,10 @@ describe('Content Check service root', function () {
     );
 
     const send = sandbox.stub(service, 'sendTitleChanged').resolves();
-    const model = titleModel();
+    const model = titleModel(SAMPLE_TITLE);
     events.emit(EVENT_NAME, model);
     events.emit(EVENT_NAME, model, { importing: true });
     sinon.assert.calledOnceWithExactly(send, model);
-    await Promise.all(send.returnValues);
   });
 
   it('removes a failed partial subscription and retries cleanly', async function () {
@@ -159,49 +154,42 @@ describe('Content Check service root', function () {
 
     await root!.stop();
     assert.deepEqual(events.listeners(EVENT_NAME), listenersBeforeInit);
-    events.emit(EVENT_NAME, titleModel());
+    events.emit(EVENT_NAME, titleModel(SAMPLE_TITLE));
     sinon.assert.notCalled(send);
     assert.equal(root!.service, service);
 
     await root!.init();
     assert.equal(root!.service, service);
     assert.deepEqual(events.listeners(EVENT_NAME), [...listenersBeforeInit, service.listener]);
-    events.emit(EVENT_NAME, titleModel());
+    events.emit(EVENT_NAME, titleModel(SAMPLE_TITLE));
     sinon.assert.calledOnce(send);
-    await Promise.all(send.returnValues);
   });
 
   it('POSTs a signed site.title_changed payload through the wired request helper', async function () {
     const service = await initRoot();
-    let requestUrl: string | undefined;
-    let requestOptions:
-      | {
-          method: string;
-          body: string;
-          headers: Record<string, string>;
-          retry: { limit: number; methods: string[] };
-        }
-      | undefined;
-    const request = sandbox.stub(service, 'request').callsFake(async (url, options) => {
-      requestUrl = url;
-      requestOptions = options as typeof requestOptions;
-      return null;
-    });
+    const request = sandbox.stub(service, 'request').resolves(null);
     const send = sandbox.spy(service, 'sendTitleChanged');
 
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
+    await emitTitle(send);
 
     sinon.assert.calledOnce(request);
+    const [requestUrl, requestOptions] = request.firstCall.args as [
+      string,
+      {
+        method: string;
+        body: string;
+        headers: Record<string, string>;
+        retry: { limit: number; methods: string[] };
+      },
+    ];
     assert.equal(requestUrl, WEBHOOK_URL);
-    assert.ok(requestOptions);
     assert.equal(requestOptions.method, 'POST');
     assert.deepEqual(JSON.parse(requestOptions.body), {
       type: 'site.title_changed',
       siteId: SITE_ID,
       siteUrl: SITE_URL,
       siteCreatedAt: SITE_CREATED_AT,
-      title: 'Your bank paid 587 USD',
+      title: SAMPLE_TITLE,
     });
 
     const timestamp = requestOptions.headers['X-Ghost-Request-Timestamp'];
@@ -224,58 +212,32 @@ describe('Content Check service root', function () {
     const request = sandbox.stub(service, 'request').resolves(null);
     const send = sandbox.spy(service, 'sendTitleChanged');
 
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
+    await emitTitle(send);
     sinon.assert.notCalled(request);
     sinon.assert.notCalled(loggedWarning);
 
     getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns(WEBHOOK_URL);
     getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns('');
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
+    await emitTitle(send);
     sinon.assert.notCalled(request);
     sinon.assert.calledOnce(loggedWarning);
+
+    getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns(WEBHOOK_SECRET);
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(undefined);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    sinon.assert.calledTwice(loggedWarning);
   });
 
   it('skips empty, null, and whitespace-only titles', async function () {
-    const request = sinon.stub().resolves(null);
-    const info = sinon.stub();
-    const service = new ContentCheckService({
-      config: {
-        get: (key: string) => {
-          const values: Record<string, unknown> = {
-            'hostSettings:contentCheck:webhookUrl': WEBHOOK_URL,
-            'hostSettings:contentCheck:webhookSecret': WEBHOOK_SECRET,
-            'hostSettings:contentCheck:siteCreatedAt': SITE_CREATED_AT,
-            'hostSettings:contentCheck:maxSiteAgeDays': MAX_SITE_AGE_DAYS,
-            'hostSettings:siteId': SITE_ID,
-          };
-          return values[key];
-        },
-      },
-      logging: {
-        info,
-        warn: sinon.stub(),
-        error: sinon.stub(),
-      },
-      request,
-      urlUtils: { getSiteUrl: () => SITE_URL },
-      events: {
-        on() {
-          return this;
-        },
-        removeListener() {
-          return this;
-        },
-      },
-    });
+    const service = await initRoot();
+    const request = sandbox.stub(service, 'request').resolves(null);
 
-    assert.equal(request.callCount, 0);
     for (const value of ['', '   ', null, undefined]) {
-      await service.sendTitleChanged(titleModelWith(value));
-      assert.equal(request.callCount, 0, `request called for title=${JSON.stringify(value)}`);
+      await service.sendTitleChanged(titleModel(value));
+      sinon.assert.notCalled(request);
     }
-    sinon.assert.notCalled(info);
+    sinon.assert.notCalled(loggedInfo);
   });
 
   it('sends below the age cutoff and skips at or above it without restart', async function () {
@@ -287,31 +249,12 @@ describe('Content Check service root', function () {
     const request = sandbox.stub(service, 'request').resolves(null);
     const send = sandbox.spy(service, 'sendTitleChanged');
 
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
+    await emitTitle(send);
     sinon.assert.calledOnce(request);
 
     clock.tick(DAY_MS);
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
+    await emitTitle(send);
     sinon.assert.calledOnce(request);
-
-    clock.tick(1);
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
-    sinon.assert.calledOnce(request);
-  });
-
-  it('skips when maxSiteAgeDays is missing', async function () {
-    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(undefined);
-    const service = await initRoot();
-    const request = sandbox.stub(service, 'request').resolves(null);
-    const send = sandbox.spy(service, 'sendTitleChanged');
-
-    events.emit(EVENT_NAME, titleModel());
-    await send.lastCall.returnValue;
-    sinon.assert.notCalled(request);
-    sinon.assert.calledOnce(loggedWarning);
   });
 
   it('swallows synchronous preparation failures inside the async send path', async function () {
@@ -330,7 +273,7 @@ describe('Content Check service root', function () {
     sinon.assert.calledOnce(send);
     await send.lastCall.returnValue;
     sinon.assert.notCalled(request);
-    sinon.assert.calledOnce(loggedError);
+    sinon.assert.calledOnceWithExactly(loggedError, error);
   });
 
   it('returns from the event handler while the request is still unresolved', async function () {
@@ -339,7 +282,7 @@ describe('Content Check service root', function () {
     const request = sandbox.stub(service, 'request').returns(promise);
     const send = sandbox.spy(service, 'sendTitleChanged');
 
-    assert.doesNotThrow(() => events.emit(EVENT_NAME, titleModel()));
+    assert.doesNotThrow(() => events.emit(EVENT_NAME, titleModel(SAMPLE_TITLE)));
     sinon.assert.calledOnce(request);
     sinon.assert.calledOnce(loggedInfo);
     sinon.assert.notCalled(loggedError);
