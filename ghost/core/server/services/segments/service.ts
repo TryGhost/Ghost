@@ -184,6 +184,15 @@ export class SegmentsService {
           attempt.unchanged();
           return previous;
         }
+        // As for a new segment: expansion replaces a segment with its filter once, so a
+        // segment's filter can't come to name another segment.
+        if (filter !== previous.filter && filterNamesSegment(filter)) {
+          attempt.rejecting('filter_names_segment');
+          throw new errors.ValidationError({
+            message: "A segment's filter cannot name another segment.",
+            property: 'filter',
+          });
+        }
 
         // By the stored id: the database can match the request's id where it differs in case.
         const others = (await this.browse(trx)).filter(({ id: other }) => other !== previous.id);
