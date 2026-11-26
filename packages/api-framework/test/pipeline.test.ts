@@ -497,6 +497,24 @@ describe('Pipeline', function () {
       });
     });
 
+    it('runs an api controller fn only once handleUnchecked allows it', async function () {
+      const refusal = new errors.NoPermissionError();
+      const add = sinon.stub().resolves('response');
+      const handleUnchecked = sinon.stub().rejects(refusal);
+      const result = shared.pipeline(
+        { docName: 'posts', add },
+        { permissions: { handle: sinon.stub().resolves(), handleUnchecked } },
+      );
+
+      await assert.rejects(result.add({ context: { principal: { kind: 'app' } } }), refusal);
+      assert.equal(add.called, false);
+
+      handleUnchecked.resolves();
+      assert.equal(await result.add({ context: {} }), 'response');
+      const frame = add.firstCall.args[0];
+      assert.equal(handleUnchecked.calledWith({ docName: 'posts', method: 'add' }, frame), true);
+    });
+
     it('uses existing frame instance and generateCacheKeyData', async function () {
       const apiController = {
         browse: {

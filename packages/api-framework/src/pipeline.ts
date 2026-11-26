@@ -57,8 +57,8 @@ interface ApiUtils {
   permissions?: {
     handle(config: Dictionary, frame: Frame): AsyncResult;
     /**
-     * Runs before a method whose `permissions` is `false` or its own function, which `handle`
-     * never sees; a rejection stops the method
+     * Runs before a method whose `permissions` is `false` or its own function, or one written as a
+     * single function, which `handle` never sees; a rejection stops the method
      */
     handleUnchecked?(config: ApiConfiguration, frame: Frame): AsyncResult;
   };
@@ -404,8 +404,10 @@ function pipeline(
       }
 
       // CASE: api controller *can* be a single function, but it's not recommended to disable the framework.
+      // It checks no permission, so it runs only once `handleUnchecked` allows the caller.
       if (typeof apiImpl === 'function') {
         debug('ctrl function call');
+        await apiUtils.permissions?.handleUnchecked?.(apiConfig, frame);
         return (apiImpl as ControllerHandler)(frame);
       }
 

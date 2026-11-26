@@ -154,7 +154,8 @@ module.exports = {
       return;
     }
     const { permissions: own, docName, method } = routed;
-    if (own === false || typeof own === 'function') {
+    // A method with no permissions of its own is written as a single function, which checks none
+    if (own === undefined || own === false || typeof own === 'function') {
       return module.exports.handleUnchecked(
         { docName, method },
         { options: { context: { principal } } },

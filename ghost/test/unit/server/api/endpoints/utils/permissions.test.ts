@@ -126,7 +126,8 @@ function mountedRoutes(adminApi: { stack: any[] } = routes()): MountedRoutes {
     if (mounted && handlers.length > 1) {
       found.guardedLate.push(route);
     }
-    if (!routed.docName) {
+    // A method written as a single function declares no permissions, and checks none
+    if (!routed.docName || routed.permissions === undefined) {
       found.outside.push(route);
       return;
     }
@@ -197,6 +198,7 @@ describe('API permissions for apps', function () {
         docName: 'things',
         browse: { permissions: false, query: () => ({}) },
         add: { permissions: true, query: () => ({}) },
+        bare: () => ({}),
       },
       {},
     );
@@ -212,6 +214,16 @@ describe('API permissions for apps', function () {
         ['things.browse'],
       );
       assert.deepEqual(methods.map(({ name }) => name).sort(), ['things.add', 'things.browse']);
+    });
+
+    it('puts a method written as a single function outside the pipeline', function () {
+      const router = express.Router();
+      router.get('/things/bare', http(controller.bare));
+
+      const { methods, outside } = mountedRoutes(router);
+
+      assert.deepEqual(methods, []);
+      assert.deepEqual(outside, ['GET /things/bare']);
     });
   });
 

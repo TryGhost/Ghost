@@ -267,6 +267,7 @@ describe('Admin API Middleware', function () {
           permissions: { docName: 'content_imports', method: 'importContent' },
           query: () => ({ ran: true }),
         },
+        bare: () => ({ ran: true }),
       },
       { permissions: { handle: async () => {}, handleUnchecked: async () => {} } },
     );
@@ -287,6 +288,7 @@ describe('Admin API Middleware', function () {
       app.post('/upload', refuseAppEarly, sideEffect, http(controller.upload));
       app.post('/import', refuseAppEarly, sideEffect, http(controller.importCSV));
       app.post('/not-http', refuseAppEarly, sideEffect, (req, res) => res.json({ ok: true }));
+      app.post('/bare', refuseAppEarly, sideEffect, http(controller.bare));
       app
         .route('/multi')
         .get(refuseAppEarly, sideEffect, http(controller.browse))
@@ -346,6 +348,16 @@ describe('Admin API Middleware', function () {
         message: 'Apps do not have permission to upload posts',
       });
       assert.deepEqual(ran, ['/multi', '/multi', '/any']);
+    });
+
+    it('refuses an app on a method written as a single function, before the route runs', async function () {
+      const { app: routes, ran } = createRoutes(app(['post:bare']));
+
+      await request(routes).post('/bare').expect(403).expect({
+        type: 'NoPermissionError',
+        message: 'Apps do not have permission to bare posts',
+      });
+      assert.deepEqual(ran, []);
     });
 
     it('leaves a route that does not end in http() to its own checks', async function () {

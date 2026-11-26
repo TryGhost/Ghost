@@ -15,7 +15,10 @@ export interface RoutedMethod {
   controller: ControllerMethod;
   docName?: string;
   method?: string;
-  /** As the controller declares it; undefined for a method outside the pipeline */
+  /**
+   * As the controller declares it; undefined for a method outside the pipeline or written as a
+   * single function, neither of which checks a permission
+   */
   permissions?: ControllerMethod['permissions'];
 }
 
