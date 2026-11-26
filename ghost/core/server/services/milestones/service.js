@@ -44,6 +44,7 @@ module.exports = {
       const repository = new BookshelfMilestoneRepository({
         DomainEvents,
         MilestoneModel: models.Milestone,
+        logging,
       });
 
       const queries = new MilestoneQueries({
