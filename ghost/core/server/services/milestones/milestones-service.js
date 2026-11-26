@@ -405,10 +405,14 @@ module.exports = class MilestonesService {
    * @returns {Promise<Milestone>}
    */
   async checkMilestones(type) {
-    if (type === 'arr') {
-      return await this.#runARRQueries();
-    }
+    return await this.#repository.transaction(async (transacting) => {
+      await this.#repository.lockChecks(transacting);
 
-    return await this.#runMemberQueries();
+      if (type === 'arr') {
+        return await this.#runARRQueries({ transacting });
+      }
+
+      return await this.#runMemberQueries({ transacting });
+    });
   }
 };
