@@ -279,18 +279,21 @@ export function useSettingsGroupItems(): Record<SettingsGroupId, SettingsGroupIt
   return useMemo(() => settingsGroupItems(visibility), [visibility]);
 }
 
+/** The search keywords of each group, from the items it lists. */
+export function settingsGroupKeywords(
+  groupItems: Record<SettingsGroupId, SettingsGroupItem[]>,
+): Record<SettingsGroupId, string[]> {
+  return Object.fromEntries(
+    Object.entries(groupItems).map(([group, items]) => [
+      group,
+      items.flatMap((item) => item.keywords),
+    ]),
+  ) as Record<SettingsGroupId, string[]>;
+}
+
 /** The search keywords of each group's visible sections. */
 export function useSettingsGroupKeywords(): Record<SettingsGroupId, string[]> {
   const groupItems = useSettingsGroupItems();
 
-  return useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(groupItems).map(([group, items]) => [
-          group,
-          items.flatMap((item) => item.keywords),
-        ]),
-      ) as Record<SettingsGroupId, string[]>,
-    [groupItems],
-  );
+  return useMemo(() => settingsGroupKeywords(groupItems), [groupItems]);
 }

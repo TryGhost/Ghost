@@ -26,12 +26,15 @@ import { searchKeywords as siteSearchKeywords } from '@/settings/site/search-key
 import { SETTINGS_GROUPS, type SettingsGroupId, getSettingsGroup } from './settings-groups';
 
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useSettingsSectionVisibility } from '@/settings/hooks/use-section-visibility';
+import {
+  type SettingsSectionVisibility,
+  useSettingsSectionVisibility,
+} from '@/settings/hooks/use-section-visibility';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import {
+  settingsGroupItems,
+  settingsGroupKeywords,
   useActiveSettingsGroup,
-  useSettingsGroupItems,
-  useSettingsGroupKeywords,
   useSettingsGroupedNav,
 } from '@/settings/hooks/use-settings-groups';
 import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/use-scroll-section';
@@ -53,6 +56,8 @@ interface NavItemProps {
 
 interface NavGroupContextValue {
   activeGroup: SettingsGroupId;
+  /** Read once by the sidebar, so each row doesn't check the flag itself. */
+  admin7Design: boolean;
   collapsedGroup: SettingsGroupId | null;
   /** True when the navigation shows one group of settings at a time. */
   grouped: boolean;
@@ -65,8 +70,9 @@ const NavItem: React.FC<NavItemProps> = ({ icon, keywords, navid, onClick, title
   const { ref, props: scrollProps } = useScrollSectionNav(navid);
   const { currentSection } = useScrollSectionContext();
   const { checkVisible } = useSearch();
-  const grouped = React.useContext(NavGroupContext)?.grouped;
-  const admin7Design = useFeatureFlag('admin7Design');
+  const navGroup = React.useContext(NavGroupContext);
+  const grouped = navGroup?.grouped;
+  const admin7Design = navGroup?.admin7Design;
 
   // Convert navid to array if it's a string
   const navids = Array.isArray(navid) ? navid : [navid];
@@ -202,48 +208,57 @@ const PrivateBadge: React.FC = () => (
   </Badge>
 );
 
-/**
- * Keeps the search context's noResult in step with the filter. Whichever view
- * holds the search runs it: the nav, or the page on mobile where the nav sits
- * in a sheet that unmounts while closed.
- */
-function useSearchResults() {
-  const { filter, checkVisible, setNoResult } = useSearch();
-  const groupKeywords = useSettingsGroupKeywords();
-
-  useEffect(() => {
-    setNoResult(!Object.values(groupKeywords).some((keywords) => checkVisible(keywords)));
-  }, [checkVisible, setNoResult, filter, groupKeywords]);
-
-  return groupKeywords;
+/** The keywords of each section in the stacked navigation. */
+function stackedSectionKeywords(visibility: SettingsSectionVisibility) {
+  return {
+    general: Object.values(generalSearchKeywords).flat(),
+    site: Object.values(siteSearchKeywords).flat(),
+    membership: [
+      membershipSearchKeywords.access,
+      membershipSearchKeywords.tiers,
+      membershipSearchKeywords.portal,
+      ...(visibility.giftSubscriptions ? [membershipSearchKeywords.giftSubscriptions] : []),
+      ...(visibility.welcomeEmails ? [membershipSearchKeywords.memberEmails] : []),
+      ...(visibility.tipsAndDonations ? [membershipSearchKeywords.tips] : []),
+      ...(visibility.customFields ? [membershipSearchKeywords.customFields] : []),
+      visibility.emailKeywords,
+    ].flat(),
+    growth: [
+      growthSearchKeywords.network,
+      growthSearchKeywords.explore,
+      growthSearchKeywords.recommendations,
+      growthSearchKeywords.embedSignupForm,
+      ...(visibility.offers ? [growthSearchKeywords.offers] : []),
+    ].flat(),
+    advanced: Object.values(advancedSearchKeywords).flat(),
+  };
 }
 
-/** The keywords of the membership and growth sections in the stacked navigation. */
-function useStackedSectionKeywords() {
+/**
+ * The navigation's lists, from one read of which sections the site shows, and
+ * the search's noResult kept in step with the lists on screen, grouped or
+ * stacked. Whichever view holds the search runs it: the nav, or the page on
+ * mobile where the nav sits in a sheet that unmounts while closed.
+ */
+function useNavigationLists() {
+  const { filter, checkVisible, setNoResult } = useSearch();
   const visibility = useSettingsSectionVisibility();
+  const grouped = useSettingsGroupedNav();
 
-  return React.useMemo(
-    () => ({
-      membership: [
-        membershipSearchKeywords.access,
-        membershipSearchKeywords.tiers,
-        membershipSearchKeywords.portal,
-        ...(visibility.giftSubscriptions ? [membershipSearchKeywords.giftSubscriptions] : []),
-        ...(visibility.welcomeEmails ? [membershipSearchKeywords.memberEmails] : []),
-        ...(visibility.tipsAndDonations ? [membershipSearchKeywords.tips] : []),
-        ...(visibility.customFields ? [membershipSearchKeywords.customFields] : []),
-        visibility.emailKeywords,
-      ].flat(),
-      growth: [
-        growthSearchKeywords.network,
-        growthSearchKeywords.explore,
-        growthSearchKeywords.recommendations,
-        growthSearchKeywords.embedSignupForm,
-        ...(visibility.offers ? [growthSearchKeywords.offers] : []),
-      ].flat(),
-    }),
-    [visibility],
-  );
+  const lists = React.useMemo(() => {
+    const groupItems = settingsGroupItems(visibility);
+    const groupKeywords = settingsGroupKeywords(groupItems);
+    const stackedKeywords = stackedSectionKeywords(visibility);
+    const shownKeywords = Object.values(grouped ? groupKeywords : stackedKeywords);
+
+    return { visibility, groupItems, groupKeywords, stackedKeywords, shownKeywords };
+  }, [visibility, grouped]);
+
+  useEffect(() => {
+    setNoResult(!lists.shownKeywords.some((keywords) => checkVisible(keywords)));
+  }, [checkVisible, setNoResult, filter, lists]);
+
+  return lists;
 }
 
 const NoSearchResult: React.FC<{ className?: string }> = ({ className }) => {
@@ -260,7 +275,7 @@ const NoSearchResult: React.FC<{ className?: string }> = ({ className }) => {
 /** The search's no-result message, for the page when the nav isn't on screen. */
 export const SettingsSearchStatus: React.FC<{ className?: string }> = ({ className }) => {
   const { noResult } = useSearch();
-  useSearchResults();
+  useNavigationLists();
 
   return noResult ? <NoSearchResult className={className} /> : null;
 };
@@ -404,15 +419,12 @@ const Sidebar: React.FC = () => {
   const { isAnyTextFieldFocused } = useFocusContext();
   const { settings } = useGlobalData();
   const [isPrivate] = getSettingValues(settings, ['is_private']) as [boolean];
-  const visibility = useSettingsSectionVisibility();
   // With admin7Design, the navigation sits in the floating sidebar's glass
   const floatingSidebar = useFeatureFlag('admin7Design');
   // Admin 7 has Help in its top bar instead
   const showHelp = !floatingSidebar;
   const scrollFade = useScrollFade(scrollerRef, floatingSidebar);
-  const groupKeywords = useSearchResults();
-  const stackedKeywords = useStackedSectionKeywords();
-  const groupItems = useSettingsGroupItems();
+  const { visibility, groupItems, groupKeywords, stackedKeywords } = useNavigationLists();
   const grouped = useSettingsGroupedNav();
   const activeGroup = useActiveSettingsGroup();
   const [collapsedGroup, setCollapsedGroup] = useState<SettingsGroupId | null>(null);
@@ -521,6 +533,7 @@ const Sidebar: React.FC = () => {
 
   const navGroup: NavGroupContextValue = {
     activeGroup,
+    admin7Design: floatingSidebar,
     collapsedGroup,
     grouped,
     onGroupClick: handleGroupClick,
@@ -580,7 +593,7 @@ const Sidebar: React.FC = () => {
             <>
               {/* General settings */}
               <NavSection
-                isVisible={checkVisible(Object.values(generalSearchKeywords).flat())}
+                isVisible={checkVisible(stackedKeywords.general)}
                 title="General settings"
               >
                 <NavItem
@@ -635,10 +648,7 @@ const Sidebar: React.FC = () => {
               </NavSection>
 
               {/* Site settings */}
-              <NavSection
-                isVisible={checkVisible(Object.values(siteSearchKeywords).flat())}
-                title="Site"
-              >
+              <NavSection isVisible={checkVisible(stackedKeywords.site)} title="Site">
                 <NavItem
                   icon={<LucideIcon.SwatchBook />}
                   keywords={siteSearchKeywords.design}
@@ -788,10 +798,7 @@ const Sidebar: React.FC = () => {
                 )}
               </NavSection>
 
-              <NavSection
-                isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())}
-                title="Advanced"
-              >
+              <NavSection isVisible={checkVisible(stackedKeywords.advanced)} title="Advanced">
                 <NavItem
                   icon={<LucideIcon.Blocks />}
                   keywords={advancedSearchKeywords.integrations}
