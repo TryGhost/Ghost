@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { transactionsWaitingOn } from '../../utils/lock-waits';
 import { z } from 'zod';
 import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 
@@ -2534,19 +2535,6 @@ describe('Member Custom Fields Admin API', function () {
   // create members rather than edit them, because editing two members who get the same
   // newsletter makes the second edit wait for the first, so their saves never overlap.
   describe.runIf(DatabaseInfo.isMySQL(knex))('Two members created at once', function () {
-    // How many transactions are waiting for a lock on members_metafield_values.
-    async function savesWaitingToWriteValues(): Promise<number> {
-      const [rows] = await models.Base.knex.raw(`
-        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
-        FROM performance_schema.data_lock_waits AS waits
-        JOIN performance_schema.data_locks AS requested
-          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
-        WHERE requested.OBJECT_SCHEMA = DATABASE()
-          AND requested.OBJECT_NAME = 'members_metafield_values'
-      `);
-      return Number(rows[0].waiting);
-    }
-
     // Sends both creates while a transaction holds a lock on the whole members_metafield_values
     // table, so neither create can write a value yet. Once both creates are waiting on that
     // lock, or one has already answered, the lock is released and both write their values at
@@ -2576,7 +2564,11 @@ describe('Member Custom Fields Admin API', function () {
             });
         });
         await vi.waitFor(
-          async () => assert.equal((await savesWaitingToWriteValues()) + answered, 2),
+          async () =>
+            assert.equal(
+              (await transactionsWaitingOn(knex, 'members_metafield_values')) + answered,
+              2,
+            ),
           { timeout: 5000 },
         );
         await gate.commit();
