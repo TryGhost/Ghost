@@ -607,8 +607,8 @@ const schema = {
     failed_verification_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     locked_until: { type: 'dateTime', precision: 3, nullable: true },
   },
-  // Better Auth's OAuth provider and jwt plugin models (in development), which
-  // issue app tokens. Lists and JSON are stored as JSON text.
+  // Better Auth's OAuth provider and jwt plugin models, which issue app tokens.
+  // Lists and JSON are stored as JSON text.
   oauth_clients: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // MySQL compares these case-insensitively, so Ghost's client ids are lowercase

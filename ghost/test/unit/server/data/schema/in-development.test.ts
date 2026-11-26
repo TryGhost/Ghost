@@ -36,6 +36,24 @@ describe('In-development schema tables', function () {
     }
   });
 
+  it("creates the OAuth provider's tables in production", function () {
+    configUtils.set('env', 'production');
+    const tables = inDevelopment.getTablesToCreate();
+
+    for (const table of [
+      'oauth_clients',
+      'oauth_resources',
+      'oauth_client_resources',
+      'oauth_refresh_tokens',
+      'oauth_access_tokens',
+      'oauth_consents',
+      'oauth_client_assertions',
+      'oauth_jwks',
+    ]) {
+      assert(tables.includes(table), table);
+    }
+  });
+
   describe('shouldCreateInDevelopmentTables', function () {
     it('is enabled in development and testing when configured', function () {
       configUtils.set('createInDevelopmentTables', true);

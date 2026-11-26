@@ -21,7 +21,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const labs = require('../../../shared/labs');
   const { getTables } = require('../../data/schema/commands');
 
-  // In-development tables exist only in development and testing databases
+  // Migrations create these, so they're missing only where the migrations haven't run
   const hasAppTables = async () => {
     const tables: string[] = await getTables(knex);
     const missing = APP_OAUTH_TABLES.filter((table) => !tables.includes(table));
