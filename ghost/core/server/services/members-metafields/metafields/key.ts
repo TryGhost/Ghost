@@ -1,33 +1,14 @@
-import { type Key, KeySchema } from '@tryghost/metafield-types/identity';
-import { stripInvisibleChars } from '@tryghost/string';
-import unidecode from 'unidecode';
+import type { Key } from '@tryghost/metafield-types/identity';
+import type { Slug } from '../../../lib/slug';
 
 /**
- * Mint the key a field is addressed by, from the name a publisher chose.
+ * A key that addresses a field: either a `Key`, as `KeySchema` reads one from storage or from a
+ * caller, or an underscore slug, as a key is minted from the name a publisher chose.
  *
- * A key is typed by hand into member filters, CSV columns, email replacement strings
- * and, later, themes. Those agree on letters, digits and the underscore, and disagree
- * about everything else, so what a key may contain is stated here as an allowlist
- * rather than inherited from slugify, whose separator and reserved characters answer
- * to URLs. The two formats happen to be near-identical today; they are not the same
- * rule, and this one belongs where its consumers are known.
- *
- * Transliteration and invisible-character stripping stay with the libraries that own
- * them. Only the policy is local.
- *
- * Runs collapse and the ends are trimmed, so no key can lead or trail with a
- * separator. `__proto__` is unmintable as a result, which is worth more than
- * reserving it would be.
- *
- * Returns null for a name with nothing usable in it; the caller decides what to do
- * about that.
+ * A minted key is a slug with an underscore between its words (see `mintSlug`): member filters,
+ * CSV columns, email replacement strings and themes, where a key is typed by hand, agree on the
+ * underscore. `KeySchema` is looser than a slug and also accepts keys such as `a__b`. Every
+ * underscore slug is a key the fields table can store, so a minted key is written as the slug it
+ * is, and whatever addresses the field by it takes either kind.
  */
-export function mintableKey(name: string): Key | null {
-  const minted = unidecode(stripInvisibleChars(name))
-    .toLowerCase()
-    // Dropped rather than separated, so a possessive reads as one word.
-    .replace(/'/g, '')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  return KeySchema.safeParse(minted).data ?? null;
-}
+export type FieldKey = Key | Slug<'_'>;
