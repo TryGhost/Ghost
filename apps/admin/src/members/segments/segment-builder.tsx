@@ -32,7 +32,6 @@ import {
   PopoverAnchor,
   PopoverContent,
   Skeleton,
-  Switch,
 } from '@tryghost/shade/components';
 import { type Filter, FilterBar } from '@tryghost/shade/patterns';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -366,31 +365,16 @@ function SegmentBuilderForm({
 
 interface SegmentBuilderActionsProps {
   builder: SegmentBuilder;
-  /** Whether the builder asks if the segment is pinned to the sidebar. */
-  withPin: boolean;
   size?: 'sm';
   onCancel: () => void;
 }
 
-/** The builder's pin switch, where the place asks for it, and its buttons. */
-function SegmentBuilderActions({ builder, withPin, size, onCancel }: SegmentBuilderActionsProps) {
-  const pinId = useId();
-  const { draft, hasError, hasFilters, save } = builder;
+/** The builder's buttons. */
+function SegmentBuilderActions({ builder, size, onCancel }: SegmentBuilderActionsProps) {
+  const { draft, hasError, save } = builder;
 
   return (
-    <Inline className="w-full" gap="md" justify="between">
-      {/* Offered once there is a filter, with the list of who matches: before that there is
-          no segment yet to pin, and the builder asks only for what it needs. */}
-      {withPin && hasFilters ? (
-        <Field className="w-auto" orientation="horizontal">
-          <Switch checked={draft.pinned} id={pinId} onCheckedChange={draft.setPinned} />
-          <FieldLabel className="font-normal" htmlFor={pinId}>
-            Pin to sidebar
-          </FieldLabel>
-        </Field>
-      ) : (
-        <span />
-      )}
+    <Inline className="w-full" gap="md" justify="end">
       <Inline gap="sm">
         <Button disabled={draft.isPending} size={size} variant="outline" onClick={onCancel}>
           Cancel
@@ -413,8 +397,6 @@ interface SegmentBuilderProps {
   onOpenChange: (open: boolean) => void;
   /** Conditions to start building from, such as a template's. */
   startFrom?: string;
-  /** Whether the builder asks if the segment is pinned to the sidebar. It is made unpinned either way. */
-  withPin?: boolean;
   /**
    * Segments to start from, offered while there is no filter yet. Left out, none are offered.
    * `useSegmentSuggestions` gives the ones a site can use.
@@ -431,15 +413,11 @@ interface SegmentBuilderProps {
  *
  * This is the builder as a dialog. `SegmentBuilderPopover` is the same builder hung from a
  * control.
- *
- * A segment is made unpinned. A place can offer the sidebar switch (`withPin`), as a custom field
- * made in passing is staff-only unless the place asks who can see it.
  */
 export function SegmentBuilderDialog({
   open,
   onOpenChange,
   startFrom,
-  withPin = false,
   suggestions,
   onCreated,
 }: SegmentBuilderProps) {
@@ -476,11 +454,7 @@ export function SegmentBuilderDialog({
         </DialogHeader>
         <SegmentBuilderForm builder={builder} suggestions={suggestions} />
         <DialogFooter>
-          <SegmentBuilderActions
-            builder={builder}
-            withPin={withPin}
-            onCancel={() => onOpenChange(false)}
-          />
+          <SegmentBuilderActions builder={builder} onCancel={() => onOpenChange(false)} />
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -501,7 +475,6 @@ interface SegmentBuilderPopoverProps extends SegmentBuilderProps {
 function SegmentBuilderPopoverContent({
   onOpenChange,
   startFrom,
-  withPin = false,
   align = 'center',
   suggestions,
   onCreated,
@@ -540,12 +513,7 @@ function SegmentBuilderPopoverContent({
     >
       <Stack gap="lg">
         <SegmentBuilderForm builder={builder} suggestions={suggestions} compact />
-        <SegmentBuilderActions
-          builder={builder}
-          size="sm"
-          withPin={withPin}
-          onCancel={() => onOpenChange(false)}
-        />
+        <SegmentBuilderActions builder={builder} size="sm" onCancel={() => onOpenChange(false)} />
       </Stack>
     </PopoverContent>
   );

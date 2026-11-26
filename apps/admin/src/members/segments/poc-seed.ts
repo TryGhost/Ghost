@@ -5,7 +5,7 @@ import {
   useInvalidateSegments,
 } from '@tryghost/admin-x-framework/api/segments';
 import { useState } from 'react';
-import { pinSegments, resetPrototypeState } from './poc-store';
+import { resetPrototypeState } from './poc-store';
 
 /**
  * POC (poc/segments-ui) only: the segments the prototype is shown with, for putting the site back
@@ -60,23 +60,18 @@ export function usePrototypeSeed() {
     }
   };
 
-  /** Adds the seed segments the site doesn't have, and pins every one of them. */
+  /** Adds the seed segments the site doesn't have. */
   const seed = async () => {
     setWorking('seeding');
     try {
-      const pinned: string[] = [];
       for (const { name, filter } of SEED) {
-        const existing = segments.find(
+        const exists = segments.some(
           (segment) => normalizeName(segment.name) === normalizeName(name),
         );
-        if (existing) {
-          pinned.push(existing.id);
-          continue;
+        if (!exists) {
+          await addSegment({ name, filter });
         }
-        const { segments: added } = await addSegment({ name, filter });
-        pinned.push(...added.map(({ id }) => id));
       }
-      pinSegments(pinned);
     } finally {
       refetchSegments();
       setWorking(null);

@@ -1,17 +1,17 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Grid, Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { useSidebarShowsAllPins } from '@/members/api';
+import { useSidebarShowsAllSegments } from '@/members/api';
 import { NavMenuItem } from './nav-menu-item';
 import { NavSavedViews } from './nav-saved-views';
 import { useMemberSidebarViews } from './member-sidebar-views';
 
-/** How many pinned segments the sidebar shows before it folds the rest away. */
+/** How many segments the sidebar shows before it folds the rest away. */
 const SHOWN_WHEN_FOLDED = 5;
 
 /**
- * The pinned segments under Members. The sidebar shows the first few and folds the rest behind
- * a row that shows them, so a long list of pins can't push the rest of the sidebar out of view.
+ * The segments under Members. The sidebar shows the first few and folds the rest behind a row
+ * that shows them, so a long list of segments can't push the rest of the sidebar out of view.
  * That matters most under the Admin 7 design, where the list opens whenever the members screen
  * does and can't be closed. The segment on screen always shows: past the fold, it is listed
  * with the first few while the rest are folded away.
@@ -24,16 +24,14 @@ const SHOWN_WHEN_FOLDED = 5;
  */
 export function NavMemberViews() {
   const memberViews = useMemberSidebarViews();
-  const { showsAllPins, setShowsAllPins } = useSidebarShowsAllPins();
+  const { showsAll, setShowsAll } = useSidebarShowsAllSegments();
 
   const folds = memberViews.length > SHOWN_WHEN_FOLDED + 1;
   // While the rest are folded away, the segment on screen joins the first few so it still
   // shows. With the rest shown, every segment keeps its place, so opening one never reorders
   // the list under the pointer.
   const first = folds
-    ? memberViews.filter(
-        (view, index) => index < SHOWN_WHEN_FOLDED || (!showsAllPins && view.isActive),
-      )
+    ? memberViews.filter((view, index) => index < SHOWN_WHEN_FOLDED || (!showsAll && view.isActive))
     : memberViews;
   const rest = folds ? memberViews.filter((view) => !first.includes(view)) : [];
 
@@ -42,9 +40,9 @@ export function NavMemberViews() {
   const restRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (restRef.current) {
-      restRef.current.inert = !showsAllPins;
+      restRef.current.inert = !showsAll;
     }
-  }, [showsAllPins, folds]);
+  }, [showsAll, folds]);
 
   return (
     <>
@@ -54,10 +52,10 @@ export function NavMemberViews() {
           {/* The same motion as the sidebar's lists opening and closing (Admin 7's). */}
           <Grid
             ref={restRef}
-            aria-hidden={!showsAllPins || undefined}
+            aria-hidden={!showsAll || undefined}
             className={cn(
               'transition-[grid-template-rows] duration-260 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none',
-              showsAllPins ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+              showsAll ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
             )}
             gap="none"
             id="member-views-rest"
@@ -65,7 +63,7 @@ export function NavMemberViews() {
             <Stack
               className={cn(
                 'min-h-0 overflow-hidden transition-opacity duration-150 motion-reduce:transition-none',
-                showsAllPins ? 'opacity-100' : 'opacity-0',
+                showsAll ? 'opacity-100' : 'opacity-0',
               )}
               gap="none"
             >
@@ -74,11 +72,11 @@ export function NavMemberViews() {
           </Grid>
           <NavMenuItem.SubmenuButton
             aria-controls="member-views-rest"
-            aria-expanded={showsAllPins}
-            onClick={() => setShowsAllPins(!showsAllPins)}
+            aria-expanded={showsAll}
+            onClick={() => setShowsAll(!showsAll)}
           >
             <NavMenuItem.Label>
-              {showsAllPins ? 'Show less' : `Show ${rest.length} more`}
+              {showsAll ? 'Show less' : `Show ${rest.length} more`}
             </NavMenuItem.Label>
           </NavMenuItem.SubmenuButton>
         </>

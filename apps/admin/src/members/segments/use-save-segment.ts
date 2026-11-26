@@ -1,23 +1,20 @@
 import { type Segment, useAddSegment } from '@tryghost/admin-x-framework/api/segments';
 import { useState } from 'react';
-import { useSegmentPins } from './poc-store';
 import { segmentWriteFailure } from './segment-write-failure';
 
 export const NAME_MISSING = 'Enter a name for the segment';
 const FILTERS_MISSING = 'Add a filter to choose who is in the segment';
 
 /**
- * The state of a segment being made: its name, whether it will be pinned, and the save. Shared
+ * The state of a segment being made: its name and the save. Shared
  * by every place that makes one, so they refuse and report the same way.
  */
 export function useSaveSegment(onCreated?: (segment: Segment) => void, initialName = '') {
   const [name, setName] = useState(initialName);
-  const [pinned, setPinned] = useState(false);
   const [error, setError] = useState('');
   // Whether the last save found no filters to save. It stands until there are some.
   const [missedFilters, setMissedFilters] = useState(false);
   const { mutateAsync: addSegment, isPending } = useAddSegment();
-  const { setPinned: storePinned } = useSegmentPins();
 
   /**
    * Saves the segment. Resolves to whether it was saved. The save button is never disabled for
@@ -39,9 +36,6 @@ export function useSaveSegment(onCreated?: (segment: Segment) => void, initialNa
     try {
       const { segments } = await addSegment({ name: name.trim(), filter });
       const [segment] = segments;
-      if (segment && pinned) {
-        storePinned(segment.id, true);
-      }
       if (segment) {
         onCreated?.(segment);
       }
@@ -58,8 +52,6 @@ export function useSaveSegment(onCreated?: (segment: Segment) => void, initialNa
       setName(next);
       setError('');
     },
-    pinned,
-    setPinned,
     error,
     /** What to say when the last save found no filters, or nothing once there are some. */
     filterError: (filter: string | undefined) => (missedFilters && !filter ? FILTERS_MISSING : ''),

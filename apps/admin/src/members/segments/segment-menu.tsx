@@ -12,7 +12,7 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type ReactNode, useRef, useState } from 'react';
-import { useSegmentPins, useSegmentUsage } from './poc-store';
+import { useSegmentUsage } from './poc-store';
 import { DeleteSegmentDialog, RenameSegmentPopoverContent } from './segment-dialogs';
 
 interface SegmentMenuProps {
@@ -25,15 +25,13 @@ interface SegmentMenuProps {
 }
 
 /**
- * What can be done to a segment: rename it, pin it to the sidebar, delete it. The same menu
+ * What can be done to a segment: rename it or delete it. The same menu
  * opens from the members screen while it shows the segment, and from the segment's row in the
  * list of all segments.
  */
 export function SegmentMenu({ segment, children, leadingItems, onDeleted }: SegmentMenuProps) {
   const [dialog, setDialog] = useState<'rename' | 'delete' | null>(null);
-  const { isPinned, setPinned } = useSegmentPins();
   const { usageOf, isSimulated, setSimulated } = useSegmentUsage();
-  const pinned = isPinned(segment.id);
   const closeDialog = (open: boolean) => {
     if (!open) {
       setDialog(null);
@@ -69,19 +67,6 @@ export function SegmentMenu({ segment, children, leadingItems, onDeleted }: Segm
           >
             <LucideIcon.Pencil className="size-4" />
             Rename
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setPinned(segment.id, !pinned)}>
-            {pinned ? (
-              <>
-                <LucideIcon.PinOff className="size-4" />
-                Unpin from sidebar
-              </>
-            ) : (
-              <>
-                <LucideIcon.Pin className="size-4" />
-                Pin to sidebar
-              </>
-            )}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

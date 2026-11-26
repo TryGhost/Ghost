@@ -4,9 +4,8 @@ import { useCallback, useSyncExternalStore } from 'react';
  * POC storage (poc/segments-ui). What the segments API and the staff preferences don't hold yet
  * is kept in this browser's localStorage, so the screens can be tried without a schema change:
  *
- * - which segments are pinned to the sidebar, which would be a field on the segment
- * - whether the sidebar shows every pinned segment or only the first few, which would be one of
- *   the staff user's navigation preferences
+ * - whether the sidebar shows every segment or only the first few, which would be one of the
+ *   staff user's navigation preferences
  * - which segments pretend to be in use, standing in for the posts and automations that will
  *   refer to one
  * - whether the site pretends to have no segments at all, to look at the empty states
@@ -15,7 +14,6 @@ import { useCallback, useSyncExternalStore } from 'react';
  * leaves the screens as they are.
  */
 
-const PINS_KEY = 'ghost-poc:segment-pins';
 const SIMULATED_USAGE_KEY = 'ghost-poc:segment-simulated-usage';
 
 const listeners = new Set<() => void>();
@@ -71,23 +69,17 @@ function useIdSet(key: string) {
   return { has, set };
 }
 
-/** Which segments show as shortcuts under Members in the sidebar. None do until pinned. */
-export function useSegmentPins() {
-  const { has, set } = useIdSet(PINS_KEY);
-  return { isPinned: has, setPinned: set };
-}
-
-const SIDEBAR_SHOWS_ALL_PINS_KEY = 'ghost-poc:sidebar-shows-all-pins';
+const SIDEBAR_SHOWS_ALL_KEY = 'ghost-poc:sidebar-shows-all-pins';
 
 /**
- * Whether the sidebar shows every pinned segment. It shows only the first few until asked for
- * the rest, so pinning many can't push the rest of the sidebar out of view.
+ * Whether the sidebar shows every segment. It shows only the first few until asked for the
+ * rest, so many segments can't push the rest of the sidebar out of view.
  */
-export function useSidebarShowsAllPins() {
-  const { has, set } = useIdSet(SIDEBAR_SHOWS_ALL_PINS_KEY);
-  const setShowsAllPins = useCallback((on: boolean) => set('on', on), [set]);
+export function useSidebarShowsAllSegments() {
+  const { has, set } = useIdSet(SIDEBAR_SHOWS_ALL_KEY);
+  const setShowsAll = useCallback((on: boolean) => set('on', on), [set]);
 
-  return { showsAllPins: has('on'), setShowsAllPins };
+  return { showsAll: has('on'), setShowsAll };
 }
 
 // What is kept is the opt-out, name first, so filters first is what a browser starts with.
@@ -106,13 +98,12 @@ export function useBuilderFilterFirst() {
 }
 
 /**
- * Puts the prototype's own state back to a fresh browser's: no pins, the sidebar folded, no
- * segment pretending to be in use. The builder's order and the "No segments" switch are left as
+ * Puts the prototype's own state back to a fresh browser's: the sidebar folded, no segment
+ * pretending to be in use. The builder's order and the "No segments" switch are left as
  * they are.
  */
 export function resetPrototypeState() {
-  write(PINS_KEY, []);
-  write(SIDEBAR_SHOWS_ALL_PINS_KEY, []);
+  write(SIDEBAR_SHOWS_ALL_KEY, []);
   write(SIMULATED_USAGE_KEY, []);
   try {
     // The automation mock's marks, kept by the automations screen. Read afresh on its next load.
@@ -120,12 +111,6 @@ export function resetPrototypeState() {
   } catch {
     // Nothing kept, nothing to clear.
   }
-}
-
-/** Pins these segments, as if each had been pinned by hand. */
-export function pinSegments(ids: readonly string[]) {
-  const pinned = read(PINS_KEY);
-  write(PINS_KEY, [...pinned, ...ids.filter((id) => !pinned.includes(id))]);
 }
 
 const SIMULATE_NO_SEGMENTS_KEY = 'ghost-poc:simulate-no-segments';

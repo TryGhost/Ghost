@@ -1,13 +1,4 @@
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  Switch,
-} from '@tryghost/shade/components';
-import { cn } from '@tryghost/shade/utils';
-import { useId } from 'react';
+import { Field, FieldError, FieldGroup, Input } from '@tryghost/shade/components';
 
 /** The longest segment name the API accepts, in characters. */
 export const SEGMENT_NAME_MAX_LENGTH = 191;
@@ -19,22 +10,13 @@ interface SegmentFieldsProps {
   error?: string;
   /** Called when Enter is pressed in the name. */
   onSubmit?: () => void;
-  /**
-   * Whether this place asks if the segment is pinned to the sidebar. Left out, the segment is
-   * made without a shortcut and pinned later from its menu.
-   */
-  pin?: { pinned: boolean; onChange: (pinned: boolean) => void };
 }
 
 /**
- * A segment's name and, where the place asks, whether it is pinned to the sidebar: the fields of
- * the small forms that have a title of their own, which is why the name has no label here. They
- * are Shade's field components, as the custom field form's are.
+ * A segment's name: the field of the small forms that have a title of their own, which is why
+ * the name has no label here. It is Shade's field components, as the custom field form's are.
  */
-export function SegmentFields({ name, onNameChange, error, onSubmit, pin }: SegmentFieldsProps) {
-  const pinId = useId();
-  const hasName = Boolean(name.trim());
-
+export function SegmentFields({ name, onNameChange, error, onSubmit }: SegmentFieldsProps) {
   return (
     <FieldGroup className="gap-3">
       <Field data-invalid={Boolean(error) || undefined}>
@@ -56,31 +38,6 @@ export function SegmentFields({ name, onNameChange, error, onSubmit, pin }: Segm
         />
         {error && <FieldError>{error}</FieldError>}
       </Field>
-      {/* Offered once there is a name: before that there is only one thing to do here. It
-          opens and closes under the name. Closed, it gives back the gap the group put above it,
-          and its switch is out of reach of the keyboard. */}
-      {pin && (
-        <div
-          className={cn(
-            'grid transition-[grid-template-rows,margin] duration-200 ease-out',
-            hasName ? 'grid-rows-[1fr]' : '-mt-3 grid-rows-[0fr]',
-          )}
-        >
-          <div className="overflow-hidden">
-            <Field aria-hidden={!hasName} orientation="horizontal">
-              <FieldLabel className="font-normal" htmlFor={pinId}>
-                Pin to sidebar
-              </FieldLabel>
-              <Switch
-                checked={pin.pinned}
-                id={pinId}
-                tabIndex={hasName ? undefined : -1}
-                onCheckedChange={pin.onChange}
-              />
-            </Field>
-          </div>
-        </div>
-      )}
     </FieldGroup>
   );
 }

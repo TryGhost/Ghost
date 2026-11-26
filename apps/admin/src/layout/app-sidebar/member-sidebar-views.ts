@@ -1,6 +1,6 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useMemo } from 'react';
-import { SEGMENT_PARAM, useMemberViews, useSegmentPins } from '@/members/api';
+import { SEGMENT_PARAM, useMemberViews } from '@/members/api';
 import { type NavSavedView } from './nav-saved-views';
 
 function getMemberViewUrl(id: string, filter: string) {
@@ -22,23 +22,17 @@ function isMemberViewActive(pathname: string, currentSearch: string, id: string,
   return shown ? shown === id : searchParams.get('filter') === filter;
 }
 
-/**
- * The segments pinned to the sidebar, as shortcuts under Members. A segment isn't pinned until
- * someone pins it, so most sites show none.
- */
+/** Every segment, as a shortcut under Members in the sidebar, in the site's order. */
 export function useMemberSidebarViews() {
   const location = useLocation();
   const memberViews = useMemberViews();
-  const { isPinned } = useSegmentPins();
 
   return useMemo<NavSavedView[]>(() => {
-    return memberViews
-      .filter((view) => isPinned(view.id))
-      .map((view) => ({
-        key: view.id,
-        name: view.name,
-        to: getMemberViewUrl(view.id, view.filter),
-        isActive: isMemberViewActive(location.pathname, location.search, view.id, view.filter),
-      }));
-  }, [location.pathname, location.search, memberViews, isPinned]);
+    return memberViews.map((view) => ({
+      key: view.id,
+      name: view.name,
+      to: getMemberViewUrl(view.id, view.filter),
+      isActive: isMemberViewActive(location.pathname, location.search, view.id, view.filter),
+    }));
+  }, [location.pathname, location.search, memberViews]);
 }

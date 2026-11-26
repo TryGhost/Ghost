@@ -15,7 +15,7 @@ export {
   parseAllSharedViewsJSON,
 } from './shared-views';
 export { useMemberViews } from './hooks/use-member-views';
-export { useSegmentPins, useSidebarShowsAllPins } from './segments/poc-store';
+export { useSidebarShowsAllSegments } from './segments/poc-store';
 export { SegmentPicker } from './segments/segment-picker';
 export { type SegmentSuggestion, useSegmentSuggestions } from './segments/segment-suggestions';
 export { SEGMENT_PARAM } from './segments/segment-route';

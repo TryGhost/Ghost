@@ -40,7 +40,6 @@ export function SaveSegmentForm({ filter, initialName, onClose, onCreated }: Sav
         <SegmentFields
           error={draft.error}
           name={draft.name}
-          pin={{ pinned: draft.pinned, onChange: draft.setPinned }}
           onNameChange={draft.setName}
           onSubmit={() => void save()}
         />
@@ -72,7 +71,7 @@ interface SaveSegmentPopoverProps {
 
 /**
  * Saves the members screen's filters as a segment, from a popover under the filter bar's button:
- * a name and whether to pin it. The members matched are the list behind it.
+ * a name. The members matched are the list behind it.
  */
 export function SaveSegmentPopover({
   filter,
