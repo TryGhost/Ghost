@@ -7666,7 +7666,7 @@ services:
       dependencies:
         complexity: complex
         reason: >-
-          The catalogue, lazy ThemeStorage instance and validation-cache adapter live in different
+          The catalogue, per-operation ThemeStorage and validation-cache adapter live in different
           modules. Activation reaches bridge and Custom Theme Settings, while validation loads gscan
           lazily and reads live labs/config. Shared upload-reporting is also imported by HTTP
           middleware. These are multiple composition and ownership boundaries, not just logger
@@ -7731,8 +7731,8 @@ services:
           constructors read the card manifest and create/copy Admin authentication
           files; the shared rendering engine and both translation objects also exist
           before themes.init. Every init acquires cache:gscan through adapter-manager
-          and loads/checks/activates the current theme. File operations separately create
-          one lazy ThemeStorage with a captured content path. Each successful frontend
+          and loads/checks/activates the current theme. Each file operation constructs its
+          own ThemeStorage, which reads the content path. Each successful frontend
           activation constructs a new ActiveTheme. Loader units use real temporary
           directories and assert parsed/missing-package results; storage and validation
           units replace their collaborators and do not characterize root acquisition.
@@ -7823,7 +7823,8 @@ services:
         summary: >-
           Source-checked: there is no root init guard, reset or shutdown. Reinitializing
           reacquires the validation adapter and attempts to replace the active frontend object;
-          the list, lazy storage and captured API functions have independent lifetimes.
+          the list and captured API functions have independent lifetimes, and no
+          ThemeStorage outlives its file operation.
           List.set deep-clones its input but get/getAll return live references, and
           list.init replaces the backing object; old references can survive replacement.
           Validation results are keyed only by theme name and destroy does not clear
@@ -7845,9 +7846,9 @@ services:
       configuration:
         summary: >-
           Source-checked: init reads active_theme and skipBootChecks each call. Loaders
-          read the content path each call; ThemeStorage captures it on first file use
-          and translation singletons capture it at import. Validation reads labs,
-          upload limits and environment per check and suppresses warnings in production;
+          and file operations read the content path each call; translation singletons
+          capture it at import. Validation reads labs, upload limits and environment
+          per check and suppresses warnings in production;
           cached results bypass those reads. The HTTP uploader captures its compressed
           size limit at import. Activation reads the locale, derives package config and
           invalidates shared assets; bridge settings events refresh translations.
@@ -7855,11 +7856,14 @@ services:
           Validation units assert size options passed to fake gscan. Frontend HTTP
           asserts English/German output, interpolation, missing-key and English fallback
           while changing settings, after explicitly resetting both translation paths.
+          A storage unit and a two-boot HTTP case assert that file operations follow a
+          changed content path; nothing asserts the same of the translation singletons.
           These assertions do not prove production content-path/config replacement.
         sources:
           - core/server/services/themes/index.js
           - core/server/services/themes/loader.js
           - core/server/services/themes/validate.js
+          - core/server/services/themes/storage.js
           - core/server/services/themes/theme-storage.js
           - core/server/web/api/middleware/upload.js
           - core/bridge.js
@@ -7871,6 +7875,8 @@ services:
           - core/shared/url-utils.ts
         tests:
           - test/unit/server/services/themes/validate.test.js
+          - test/unit/server/services/themes/storage.test.ts
+          - test/e2e-api/admin/themes-second-boot.test.js
           - test/e2e-frontend/theme-i18n.test.js
       resources:
         summary: >-
