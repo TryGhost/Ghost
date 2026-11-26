@@ -8,9 +8,9 @@
 // The name decides the verb, so a service declares each change once, as a class that extends the
 // verb's class and gives it the change's name:
 //
-//     export class SegmentRenamed extends Edited('SegmentRenamed')<Segment> {}
+//     export class GiftLinkReset extends Edited('GiftLinkReset')<Post> {}
 //
-// A command then only names the change it made: `new SegmentRenamed(previous, next)`.
+// A command then only names the change it made: `new GiftLinkReset(previous, next)`.
 //
 // A change holds data and nothing else. Whoever is told reads its `type` and `verb`, and never
 // asks `instanceof`, so a change is read the same way once it has been stored and read back, or

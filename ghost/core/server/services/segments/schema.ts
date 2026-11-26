@@ -11,8 +11,9 @@ type SegmentRow = Omit<StoredRow<'segments'>, 'sort_order' | 'id'> & Pick<Segmen
 /** What an insert names. The collection adds the position. */
 type NewSegmentRow = Omit<NewRow<'segments'>, 'sort_order' | 'id'> & Pick<Segment, 'id'>;
 
-/** Only a segment's name changes once it is stored. */
-type SegmentUpdate = Required<Pick<RowUpdate<'segments'>, 'name' | 'updated_at'>>;
+/** A segment's name and filter can change once it is stored, and an edit sets when it was edited. */
+type SegmentUpdate = Pick<RowUpdate<'segments'>, 'name' | 'filter'> &
+  Required<Pick<RowUpdate<'segments'>, 'updated_at'>>;
 
 declare module 'knex/types/tables' {
   interface Tables {

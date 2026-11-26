@@ -30,13 +30,14 @@ export const NewSegmentBody = z
   .transform(({ name, slug, filter }): NewSegment => ({ name, slug, filter }));
 
 /**
- * A change to a segment as a request sends it. It can give the segment's own slug back, and the
+ * A change to a segment as a request sends it. The name and the filter are each optional, and a
+ * change that gives neither changes nothing. It can give the segment's own slug back, and the
  * service rejects any other.
  */
 export const SegmentEditBody = z
   .strictObject({
     ...readOnlyFields,
-    name: SegmentName,
+    name: SegmentName.optional(),
     slug: SegmentSlug.optional(),
     filter: SegmentFilter.optional(),
   })

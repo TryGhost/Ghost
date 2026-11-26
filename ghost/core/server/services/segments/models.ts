@@ -112,8 +112,8 @@ export const Segment = z.object({
   created_at: DbDate,
   /**
    * When the segment was last edited, to the second. It is `created_at` until the segment is
-   * first edited, so a segment has been edited when this is later than `created_at`. Only a
-   * segment's name can change, so this is when it was last renamed.
+   * first edited, so a segment has been edited when this is later than `created_at`. This is when
+   * its name or its filter last changed.
    */
   updated_at: DbDate,
 });
