@@ -7,11 +7,14 @@ import type { LoadedManifest } from './load-manifest';
 type Approved = Pick<Installation, 'manifest'>;
 
 /**
- * Lists what differs between the approved manifest and a loaded one. The preview shows
- * this list and decisions are made from it, so a review always matches what happens.
+ * Lists what differs between the approved manifest and a loaded or pending one. The preview
+ * shows this list and decisions are made from it, so a review always matches what happens.
  */
-export function changesFrom(approved: Approved, loaded: LoadedManifest): ManifestChange[] {
-  return compareManifests(approved.manifest, loaded.manifest).changes;
+export function changesFrom(
+  approved: Approved,
+  reviewed: Pick<LoadedManifest, 'manifest'>,
+): ManifestChange[] {
+  return compareManifests(approved.manifest, reviewed.manifest).changes;
 }
 
 /** What an install grants: every scope it declares, as added. */

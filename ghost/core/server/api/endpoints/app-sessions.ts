@@ -15,9 +15,10 @@ const controller = {
 
   // Admin starts a session when it opens an app page. There's no body: the re-check only
   // fetches the approved manifest URL, never one from the request. So this needs the same
-  // permission as reading the installation, unlike previewing, which fetches a URL from the
-  // request and needs `add`. Anyone with `read` can trigger a re-check, which can suspend
-  // the app or apply silent changes.
+  // permission as reading the installation, unlike previewing a URL, which fetches one from
+  // the request and needs `add`. A suspended app's session also returns the preview of its
+  // pending manifest as stored; approving it still needs `add`. Anyone with `read` can
+  // trigger a re-check, which can suspend the app or apply silent changes.
   start: {
     headers: { cacheInvalidate: false },
     options: ['id'],

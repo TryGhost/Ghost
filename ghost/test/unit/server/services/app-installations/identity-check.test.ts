@@ -287,6 +287,19 @@ describe('createIdentityChecker', function () {
       assert.equal(trusting.fetchFromApp.mock.calls.length, 0);
     });
 
+    it('says which origin a manifest URL’s check would skip the challenge for, sending nothing', function () {
+      const { checker, fetchFromApp } = setup({
+        trust: { trustedOrigins: new Set([ORIGIN]), trustLoopback: true },
+      });
+
+      assert.deepEqual(checker.trustedOriginsOf(MANIFEST_URL), [ORIGIN]);
+      assert.deepEqual(checker.trustedOriginsOf('http://localhost:8787/ghost-app.json'), [
+        'http://localhost:8787',
+      ]);
+      assert.deepEqual(checker.trustedOriginsOf('https://other.example.com/ghost-app.json'), []);
+      assert.equal(fetchFromApp.mock.calls.length, 0);
+    });
+
     it('skips only the challenge: the pinned key and retired keys still apply', async function () {
       const { checkIdentity } = setup({
         trust: { trustedOrigins: new Set([ORIGIN]), trustLoopback: false },

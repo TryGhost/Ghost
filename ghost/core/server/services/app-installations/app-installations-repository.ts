@@ -36,6 +36,13 @@ const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: 
 
 const DigestAndIconRow = DbAppInstallationManifest.pick({ digest: true, icon_data_url: true });
 
+const PendingManifestRow = DbAppInstallationManifest.pick({
+  manifest_url: true,
+  manifest: true,
+  digest: true,
+  icon_data_url: true,
+});
+
 const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: true });
 
 const HistoryActionRow = z
@@ -268,6 +275,23 @@ export class AppInstallationsRepository {
       .where({ id })
       .first<z.input<typeof DigestAndIconRow> | undefined>('digest', 'icon_data_url');
     return row ? z.decode(DigestAndIconRow, row) : undefined;
+  }
+
+  /**
+   * A pending manifest as the publisher reviews it. Undefined if there's no such row, or it no
+   * longer decodes.
+   */
+  async findPendingManifest(id: string): Promise<z.output<typeof PendingManifestRow> | undefined> {
+    const row = await this.knex(MANIFESTS)
+      .where({ id })
+      .first<z.input<typeof PendingManifestRow> | undefined>(
+        'manifest_url',
+        'manifest',
+        'digest',
+        'icon_data_url',
+      );
+    const decoded = row ? PendingManifestRow.safeDecode(row) : undefined;
+    return decoded?.success ? decoded.data : undefined;
   }
 
   /**
