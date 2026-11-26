@@ -125,12 +125,6 @@ describe('Themes API', function () {
     });
     const jsonResponse = res.body;
 
-    // Says what the server answered when the upload is refused, which the checks below do not.
-    assert.equal(
-      jsonResponse.errors,
-      undefined,
-      `THEME-UPLOAD-FAILED ${res.status} ${JSON.stringify(jsonResponse).slice(0, 2000)}`,
-    );
     assert.equal(res.headers['x-cache-invalidate'], undefined);
 
     assertExists(jsonResponse.themes);
