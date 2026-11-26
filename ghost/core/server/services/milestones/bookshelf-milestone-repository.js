@@ -66,20 +66,27 @@ module.exports = class BookshelfMilestoneRepository {
   /**
    * @param {'arr'|'members'} type
    * @param {string} [currency]
+   * @param {object} [options]
+   * @param {object} [options.transacting]
    *
    * @returns {Promise<Milestone[]>}
    */
-  async getAllByType(type, currency = 'usd') {
+  async getAllByType(type, currency = 'usd', options = {}) {
+    const { transacting } = options;
     let milestone = null;
 
     if (type === 'arr') {
       milestone = await this.#MilestoneModel.findAll(
-        { filter: `currency:${currency}+type:arr`, order: 'created_at ASC, value DESC' },
+        {
+          filter: `currency:${currency}+type:arr`,
+          order: 'created_at ASC, value DESC',
+          transacting,
+        },
         { require: false },
       );
     } else {
       milestone = await this.#MilestoneModel.findAll(
-        { filter: 'type:members', order: 'created_at ASC, value DESC' },
+        { filter: 'type:members', order: 'created_at ASC, value DESC', transacting },
         { require: false },
       );
     }
@@ -99,20 +106,29 @@ module.exports = class BookshelfMilestoneRepository {
   /**
    * @param {'arr'|'members'} type
    * @param {string} [currency]
+   * @param {object} [options]
+   * @param {object} [options.transacting]
    *
    * @returns {Promise<Milestone|null>}
    */
-  async getLatestByType(type, currency = 'usd') {
-    const allMilestonesForType = await this.getAllByType(type, currency);
+  async getLatestByType(type, currency = 'usd', options = {}) {
+    const allMilestonesForType = await this.getAllByType(type, currency, options);
     return allMilestonesForType?.[0] || null;
   }
 
   /**
+   * @param {object} [options]
+   * @param {object} [options.transacting]
+   *
    * @returns {Promise<Milestone|null>}
    */
-  async getLastEmailSent() {
+  async getLastEmailSent(options = {}) {
     let milestone = await this.#MilestoneModel.findAll(
-      { filter: 'email_sent_at:-null', order: 'email_sent_at ASC' },
+      {
+        filter: 'email_sent_at:-null',
+        order: 'email_sent_at ASC',
+        transacting: options.transacting,
+      },
       { require: false },
     );
 
@@ -128,14 +144,16 @@ module.exports = class BookshelfMilestoneRepository {
   /**
    * @param {number} value
    * @param {string} [currency]
+   * @param {object} [options]
+   * @param {object} [options.transacting]
    *
    * @returns {Promise<Milestone|null>}
    */
-  async getByARR(value, currency = 'usd') {
+  async getByARR(value, currency = 'usd', options = {}) {
     // find a milestone of the ARR type by a given value
     const milestone = await this.#MilestoneModel.findOne(
       { type: 'arr', currency: currency, value: value },
-      { require: false },
+      { require: false, transacting: options.transacting },
     );
 
     if (!milestone) {
@@ -146,14 +164,16 @@ module.exports = class BookshelfMilestoneRepository {
 
   /**
    * @param {number} value
+   * @param {object} [options]
+   * @param {object} [options.transacting]
    *
    * @returns {Promise<Milestone|null>}
    */
-  async getByCount(value) {
+  async getByCount(value, options = {}) {
     // find a milestone of the members type by a given value
     const milestone = await this.#MilestoneModel.findOne(
       { type: 'members', value: value },
-      { require: false },
+      { require: false, transacting: options.transacting },
     );
 
     if (!milestone) {

@@ -10,20 +10,33 @@ module.exports = class MilestoneQueries {
   }
 
   /**
+   * @param {object} [options]
+   * @param {object} [options.transacting]
+   */
+  #knex(options = {}) {
+    return options.transacting || this.#db.knex;
+  }
+
+  /**
+   * @param {object} [options]
+   * @param {object} [options.transacting]
+   *
    * @returns {Promise<number>}
    */
-  async getMembersCount() {
-    const [membersCount] = await this.#db.knex('members').count('id as count');
+  async getMembersCount(options) {
+    const [membersCount] = await this.#knex(options)('members').count('id as count');
 
     return membersCount?.count || 0;
   }
 
   /**
+   * @param {object} [options]
+   * @param {object} [options.transacting]
+   *
    * @returns {Promise<Array>}
    */
-  async getARR() {
-    const currentARR = await this.#db
-      .knex('members_paid_subscription_events as stripe')
+  async getARR(options) {
+    const currentARR = await this.#knex(options)('members_paid_subscription_events as stripe')
       .select(
         this.#db.knex.raw(
           'ROUND(SUM(stripe.mrr_delta) * 12) / 100 AS arr, stripe.currency as currency',
@@ -35,14 +48,16 @@ module.exports = class MilestoneQueries {
   }
 
   /**
+   * @param {object} [options]
+   * @param {object} [options.transacting]
+   *
    * @returns {Promise<boolean>}
    */
-  async hasImportedMembersInPeriod() {
+  async hasImportedMembersInPeriod(options) {
     const importedThreshold = new Date();
     importedThreshold.setDate(importedThreshold.getDate() - this.#minDaysSinceImported);
 
-    const [hasImportedMembers] = await this.#db
-      .knex('members_subscribe_events')
+    const [hasImportedMembers] = await this.#knex(options)('members_subscribe_events')
       .count('id as count')
       .where('source', '=', 'import')
       .where('created_at', '>=', importedThreshold);
@@ -51,10 +66,13 @@ module.exports = class MilestoneQueries {
   }
 
   /**
+   * @param {object} [options]
+   * @param {object} [options.transacting]
+   *
    * @returns {Promise<string>}
    */
-  async getDefaultCurrency() {
-    const currentARR = await this.getARR();
+  async getDefaultCurrency(options) {
+    const currentARR = await this.getARR(options);
 
     // Set the default currency as the one with the highest value
     if (currentARR.length > 1) {
