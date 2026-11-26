@@ -127,11 +127,11 @@ _Avoid_: object, entity
 
 **Scope registry**:
 The one list of scopes, with each scope's resource and the words the review
-screen uses for it. Manifest validation, Admin's review screen and the bridge,
-which checks every route's scope and the include and sort gaps, all read it.
-The words are Ghost's own, never the developer's. Ghost's server holds an app's
-calls to the scopes it was approved for: a scope opens the Admin API routes
-that check its permission key, which the app routes list.
+screen uses for it. Manifest validation, Admin's review screen and the bridge's
+include and sort gaps all read it. The words are Ghost's own, never the
+developer's. Ghost's server holds an app's calls to the scopes it was approved
+for: a scope opens the Admin API routes that check its permission key, which
+the app routes list.
 _Avoid_: permission list, scope list
 
 **App routes**:

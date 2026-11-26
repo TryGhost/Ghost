@@ -34,9 +34,9 @@ export function createAdminApiFetch({
   /** The Admin API's root URL, as Admin's own requests use it. */
   apiRoot: URL;
   /**
-   * The scopes in the approved manifest the app session is pinned to. The bridge refuses a
-   * route none of them opens, and the include and sort gaps read them until the server holds
-   * what a read returns to scopes itself.
+   * The scopes in the approved manifest the app session is pinned to, which the include and
+   * sort gaps read until the server holds what a read returns to scopes itself. Which routes
+   * they open is the server's to check.
    */
   approvedScopes: ReadonlySet<AppPermissionKey>;
   ghostVersion?: string;
