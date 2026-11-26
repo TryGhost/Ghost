@@ -1,19 +1,20 @@
-import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
-import { toDatabaseDate } from '../../lib/db-types/date';
-import { DbMetafieldChangeEventWithMember, type MetafieldChangeEvent } from './members-resource';
-import type { ValuesWritten } from './metafields/changes';
+import {
+  DbMetafieldChangeEventWithMember,
+  MEMBERS_RESOURCE,
+  type MetafieldChangeEvent,
+} from './members-resource';
 import { knexify } from './metafields/queries';
 import { StoredFieldList } from './metafields/schema';
 
 const MEMBERS_TABLE = 'members';
-const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
+const CHANGE_EVENTS_TABLE = MEMBERS_RESOURCE.tables.changes;
 
 /**
- * The activity feed members' metafield writes leave: an entry for each write, naming the fields
- * it wrote and who wrote them. A write of a member's values is a change to the member, so it is
- * recorded here, in the write's transaction, and read with each entry's member.
+ * The activity feed of members' metafield writes: the entry each write leaves, naming the fields
+ * it wrote and who wrote them, read with each entry's member. The metafields core writes the
+ * entries with the values, in the write's transaction.
  */
 export class MemberMetafieldActivity {
   private knex: Knex;
@@ -21,21 +22,6 @@ export class MemberMetafieldActivity {
   constructor({ knex }: { knex: Knex }) {
     this.knex = knex;
   }
-
-  /** Records a write as an entry on its member's feed, inside the write's transaction. */
-  record = async (trx: Knex.Transaction, change: ValuesWritten): Promise<void> => {
-    await trx(CHANGE_EVENTS_TABLE).insert({
-      id: new ObjectID().toHexString(),
-      member_id: change.resourceId,
-      written_by_type: change.origin.writtenBy.type,
-      written_by_id: change.origin.writtenBy.id,
-      source: change.origin.source,
-      metafields: StoredFieldList.encode(change.fields),
-      // A string rather than the Date the value rows take: SQLite stores a bound Date
-      // as a number, which sorts before every string the feed pages through time with.
-      created_at: toDatabaseDate(change.at),
-    });
-  };
 
   /**
    * Entries from members' activity feeds, newest first, each with its member, as one page

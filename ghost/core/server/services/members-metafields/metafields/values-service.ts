@@ -1,3 +1,4 @@
+import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
@@ -23,13 +24,15 @@ import {
   DbStoredValueRow,
   DbMetafieldValue,
   FIELD_STATUS,
+  StoredFieldList,
   storedField,
+  DbMetafieldChangeEvent,
   type SingleWriteOrigin,
   type WriteOrigin,
 } from './schema';
 import schema from '../../../data/schema/schema';
 import type { MetafieldsTracking } from './tracking';
-import { ValuesWritten, type OnValuesWritten } from './changes';
+import { toDatabaseDate } from '../../../lib/db-types/date';
 import { ensureTransaction, transactionOf } from '../../../lib/ensure-transaction';
 import {
   ACTIVE_ONLY,
@@ -68,6 +71,15 @@ const UPSERT_CHUNK = 400;
 
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
 type DbValueRow = z.infer<typeof DbMetafieldValue>;
+
+/**
+ * A change entry as it is written, except for the resource's id column: with its date already in
+ * the string form SQLite orders against the feed's time filters, which a `Date` would silently
+ * break.
+ */
+type ChangeEntryInsert = Omit<z.input<typeof DbMetafieldChangeEvent>, 'created_at'> & {
+  created_at: string;
+};
 
 /**
  * A value row's key, as read to decide which rows a write removes: the field and path it is
@@ -192,7 +204,6 @@ export class MetafieldValuesService<R extends ResourceKind> {
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
-  private onValuesWritten: OnValuesWritten;
   /**
    * The columns a value row is keyed by, from the canonical schema, so a write's conflict target
    * cannot fall behind the table's primary key. Only SQLite would notice if it did: MySQL ignores
@@ -210,7 +221,6 @@ export class MetafieldValuesService<R extends ResourceKind> {
     namespaces,
     getMaxDefinitions,
     tracking,
-    onValuesWritten,
   }: {
     knex: Knex;
     resource: MetafieldResource<R>;
@@ -219,8 +229,6 @@ export class MetafieldValuesService<R extends ResourceKind> {
     namespaces: Pick<Namespaces, 'canWrite'>;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
-    /** Called with each write, inside its transaction. */
-    onValuesWritten: OnValuesWritten;
   }) {
     this.knex = knex;
     this.resource = resource;
@@ -228,7 +236,6 @@ export class MetafieldValuesService<R extends ResourceKind> {
     this.namespaces = namespaces;
     this.getMaxDefinitions = getMaxDefinitions;
     this.tracking = tracking;
-    this.onValuesWritten = onValuesWritten;
 
     this.valueKey = z
       .object({
@@ -789,19 +796,25 @@ export class MetafieldValuesService<R extends ResourceKind> {
       }
     }
 
-    await this.onValuesWritten(
-      trx,
-      new ValuesWritten({
-        resourceId,
-        origin,
-        fields: writes.map(({ field }) => ({
+    // Each write is an entry in the record's history of its values, written in the same
+    // transaction, so the history can't name a change that wasn't stored or miss one that was.
+    const entry: ChangeEntryInsert = {
+      id: new ObjectID().toHexString(),
+      written_by_type: writtenBy.type,
+      written_by_id: writtenBy.id,
+      source: origin.source,
+      metafields: StoredFieldList.encode(
+        writes.map(({ field }) => ({
           namespace: field.namespace,
           key: field.key,
           name: field.name,
         })),
-        at: now,
-      }),
-    );
+      ),
+      // A string rather than the Date the value rows take: SQLite stores a bound Date as a number,
+      // which sorts before every string the history pages through time with.
+      created_at: toDatabaseDate(now),
+    };
+    await trx(tables.changes).insert({ ...entry, [idColumn]: resourceId });
   }
 
   /**

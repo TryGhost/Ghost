@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import { MetafieldBindingsService } from './bindings-service';
-import type { OnDefinitionUpdated, OnValuesWritten } from './changes';
+import type { OnDefinitionUpdated } from './changes';
 import { MetafieldDefinitionsService } from './definitions-service';
 import {
   createNamespaces,
@@ -27,8 +27,9 @@ export interface Metafields<R extends ResourceKind> {
 
 /**
  * Wires metafields for a resource from the namespaces registered on it and what the resource
- * decides for itself: how many definitions each namespace may hold, and how each change is
- * recorded. A namespace nobody registered has no policy, so nobody reaches its fields.
+ * decides for itself: how many definitions each namespace may hold, and how a change to a
+ * definition is recorded. Each write of values is recorded in the resource's change events table.
+ * A namespace nobody registered has no policy, so nobody reaches its fields.
  */
 export function metafieldsFor<R extends ResourceKind>(
   resource: MetafieldResource<R>,
@@ -41,8 +42,6 @@ export function metafieldsFor<R extends ResourceKind>(
     maxDefinitions: () => number;
     /** Called with each change to a definition, inside the command's transaction. */
     onDefinitionUpdated: OnDefinitionUpdated;
-    /** Called with each write of values, inside its transaction. */
-    onValuesWritten: OnValuesWritten;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
     labs: { isSet(flag: string): boolean };
@@ -70,7 +69,6 @@ export function metafieldsFor<R extends ResourceKind>(
     namespaces,
     getMaxDefinitions: wiring.maxDefinitions,
     tracking,
-    onValuesWritten: wiring.onValuesWritten,
   });
   // Built after the values, which is what a binding routes into. Making a definition is not part
   // of binding to one, so it has no handle on the definitions.
