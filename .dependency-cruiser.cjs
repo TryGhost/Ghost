@@ -69,6 +69,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/sortable\\.ts$', // Ordered reads, inserts and reorders for a schema-declared collection, on the caller's connection; no application instances.
   '^ghost/core/server/lib/db-errors\\.ts$', // Recognises the errors a database rejects a write with.
   '^ghost/core/server/lib/changes\\.ts$', // Base classes a service extends to declare the changes it reports; they hold data only, no application instances.
+  '^ghost/core/server/lib/first-error\\.ts$', // Reads a thrown array of errors, as model validation throws, as its first error.
   '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
   '^ghost/core/server/lib/db-types/text\\.ts$', // Byte-length check for text columns.
   '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.

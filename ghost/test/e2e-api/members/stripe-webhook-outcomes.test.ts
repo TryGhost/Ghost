@@ -990,7 +990,9 @@ describe('Stripe webhook outcomes', function () {
 
     itWritesNothing([
       {
-        name: 'responds with 500 on every attempt when the checkout’s metadata has newsletters this site doesn’t have, as a checkout another site created before sites recorded their checkouts does',
+        // Saving the member tries to create the newsletters it names. Their validation fails with
+        // an array of ValidationErrors, which Ghost reads as its first error.
+        name: 'responds with 422 on every attempt when the checkout’s metadata has newsletters this site doesn’t have, as a checkout another site created before sites recorded their checkouts does',
         event: () => ({
           type: completed,
           object: subscriptionCheckout(stripeCustomer(), {
@@ -998,18 +1000,18 @@ describe('Stripe webhook outcomes', function () {
           }),
         }),
         attempts: 2,
-        status: 500,
+        status: 422,
         webhook: span(
           {
             type: completed,
             kind: 'subscription_checkout',
             ...failedBecause('unclassified', 'ghost'),
           },
-          '_OTHER',
+          'ValidationError',
         ),
         checkout: checkoutSpan(
           { type: 'subscription', member: 'new', ...failedBecause('unclassified', 'ghost') },
-          '_OTHER',
+          'ValidationError',
         ),
       },
       {

@@ -2,6 +2,7 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
+import { firstError } from '../../lib/first-error';
 import type { StripeTracking, WebhookOutcome } from './tracking';
 import { classifyFailure, FAILURE_CODES } from './webhook/failures';
 import {
@@ -128,10 +129,12 @@ export class WebhookController {
       });
       res.writeHead(200);
       res.end();
-    } catch (err) {
-      // The span has already recorded the failure and logged the error. Only failures whose reason
-      // is set to report go to Sentry, and Ghost's Sentry setup also drops every Ghost error whose
-      // status isn't 500.
+    } catch (thrown) {
+      // The span has already recorded the failure and logged the error. The failure is classified,
+      // reported and answered as the error Ghost reads from what was thrown (see `firstError`).
+      // Only failures whose reason is set to report go to Sentry, and Ghost's Sentry setup also
+      // drops every Ghost error whose status isn't 500.
+      const err = firstError(thrown);
       if (classifyFailure(err).sentry) {
         this.#deps.sentry.captureException(err);
       }
