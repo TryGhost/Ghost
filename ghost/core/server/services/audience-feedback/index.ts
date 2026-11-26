@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import urlUtils from '../../../shared/url-utils';
 const urlService = require('../url');
 const permissions = require('../../auth/permissions');

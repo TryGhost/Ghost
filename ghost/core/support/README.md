@@ -1,17 +1,17 @@
-# Kernel
+# Support
 
-The kernel contains application-independent framework primitives. It has no
+Support contains application-independent framework primitives. It has no
 knowledge of Ghost's features, domain models, business rules or configuration.
 
 This directory is a temporary home for `defineService`. Its location may change;
 the contract below is the one migrated services rely on.
 
-Application code depends on the kernel; the kernel does not depend on application
-code. Kernel modules may use one another and general-purpose dependencies, but
+Application code depends on Support; Support does not depend on application
+code. Support modules may use one another and general-purpose dependencies, but
 must not import from elsewhere in the Ghost package, including `shared`.
 
 Helpers specific to a feature stay with that feature. Shared use alone does not
-make a helper part of the kernel.
+make a helper part of Support.
 
 ## Clock
 

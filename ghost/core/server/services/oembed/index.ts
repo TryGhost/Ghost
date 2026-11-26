@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 
 // Needs the adapter manager, which boot sets up in initCore. Boot initializes
 // this root before Mentions and Recommendations, which read the ready instance

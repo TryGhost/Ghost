@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 
 // Boot initializes oEmbed before this root, which reads its ready instance.
 export default defineService('Mentions', () => {

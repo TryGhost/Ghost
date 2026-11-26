@@ -7,8 +7,8 @@ import {
   AdapterManager,
   type AdapterManagerOptions,
   resolveAdapterEntryPoint,
-} from '../../../../core/kernel/adapter-manager';
-import type { Adapter, AdapterConfig } from '../../../../core/kernel/adapter-manager';
+} from '../../../../core/support/adapter-manager';
+import type { Adapter, AdapterConfig } from '../../../../core/support/adapter-manager';
 
 class BaseMailAdapter implements Adapter {
   readonly requiredFns: string[];

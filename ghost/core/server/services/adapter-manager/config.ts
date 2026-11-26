@@ -1,4 +1,4 @@
-import type { AdapterConfig, AdapterTypeConfig } from '../../../kernel/adapter-manager';
+import type { AdapterConfig, AdapterTypeConfig } from '../../../support/adapter-manager';
 import type { ConfigInstance } from '../../../shared/config/loader';
 
 function getSchedulingConfig(config: ConfigInstance): AdapterTypeConfig | undefined {
@@ -45,7 +45,7 @@ function normalizeAdapterPaths(
 }
 
 /**
- * Ghost's adapter configuration, in the shape the kernel's adapter manager
+ * Ghost's adapter configuration, in the shape Support's adapter manager
  * resolves lookups from. Read on every lookup so runtime config changes are
  * reflected.
  *

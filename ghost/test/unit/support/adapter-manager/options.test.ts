@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {
   getConfiguredFeatures,
   resolveAdapterOptions,
-} from '../../../../core/kernel/adapter-manager';
+} from '../../../../core/support/adapter-manager';
 
 describe('Adapter Manager: options', function () {
   describe('resolveAdapterOptions', function () {
