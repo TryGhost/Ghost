@@ -153,7 +153,13 @@ export function watchHistory(
     if (!link || link.hasAttribute('download') || (target !== '' && target !== '_self')) {
       return;
     }
-    const url = new URL(link.getAttribute('href') as string, document.baseURI);
+    let url: URL;
+    try {
+      url = new URL(link.getAttribute('href') as string, document.baseURI);
+    } catch {
+      // Not an address the browser can follow either.
+      return;
+    }
     // A link to anything but a web page, such as `mailto:`, opens as it is, with an overlay
     // click's activation.
     if (!WEB_PROTOCOLS.has(url.protocol)) {
