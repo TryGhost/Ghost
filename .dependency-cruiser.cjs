@@ -81,6 +81,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/auto-filling-map\\.ts$', // Map that fills missing keys from a caller-supplied factory.
   '^ghost/core/server/lib/member-signup-contexts\\.ts$', // Member signup context constants and one predicate.
   '^ghost/core/server/lib/truncate-characters\\.ts$', // Cuts a string to a column's length in characters; no application instances.
+  '^ghost/core/server/lib/slug\\.ts$', // What a slug is, and minting slugs people type, such as custom field keys, from names; no application instances.
   '^ghost/core/server/lib/filters/index\\.ts$', // Parses filter text, rewrites the parsed filter with caller-supplied steps and compiles it onto the caller's query builder; no application instances or I/O.
   '^ghost/core/shared/errify\\.ts$', // Turns any thrown value into an Error.
   '^ghost/core/shared/timing-safe-string-equal\\.ts$', // Constant-time string comparison.
@@ -223,6 +224,11 @@ const specialistDependencies = [
 
   // Content and rendering.
   {
+    // Transliterating names to ASCII, to mint slugs such as custom field keys.
+    dependency: npm('unidecode'),
+    owners: [core('server/lib/slug.ts')],
+  },
+  {
     // Converting Mobiledoc and Lexical content.
     dependency: workspace('@tryghost/kg-converters', 'koenig/kg-converters'),
     owners: [
@@ -307,11 +313,6 @@ const specialistDependencies = [
   },
 
   // One service each.
-  {
-    // Custom field keys.
-    dependency: npm('unidecode'),
-    owners: [service('members-metafields/')],
-  },
   {
     // Cron expressions for scheduled jobs.
     dependency: npm('cron-validate'),

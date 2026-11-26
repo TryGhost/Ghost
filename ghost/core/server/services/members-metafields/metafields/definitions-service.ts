@@ -31,8 +31,15 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { mintableKey } from './key';
+import type { FieldKey } from './key';
 import type { RequestContext } from '../../../lib/actor';
+import {
+  mintSlug,
+  numberedSlugs,
+  type Numbering,
+  type Slug,
+  withRoomForNumber,
+} from '../../../lib/slug';
 import {
   DefinitionAdded,
   DefinitionDeleted,
@@ -126,14 +133,21 @@ function definitionInputs(maxLength: { name: number; key: number }) {
       key: z.optional(KeySchema),
       type: FieldTypeSchema.optional(),
     }),
-    // Leaves room for a `_<n>` suffix, with n up to MAX_KEY_ITERATIONS, so even the longest
-    // minted key fits the column.
-    maxKeyBase: maxLength.key - (String(MAX_KEY_ITERATIONS).length + 1),
+    // A minted key's base leaves room for a `_<n>` suffix, with n up to MAX_KEY_ITERATIONS, so
+    // even the longest minted key fits the column.
+    keyNumbering: {
+      separator: '_',
+      maxLength: maxLength.key,
+      lastNumber: MAX_KEY_ITERATIONS,
+    } satisfies Numbering<'_'>,
   };
 }
 
-/** The key a definition was given, or the base to mint one from when it was given none. */
-type KeyToTake = { given: Key } | { base: Key };
+/**
+ * The key a definition was given, or, when it was given none, the base to mint one from: its
+ * name minted as an underscore slug.
+ */
+type KeyToTake = { given: Key } | { base: Slug<'_'> };
 
 /** A definition as it was before an edit, and as the edit left it. */
 export interface EditedDefinition {
@@ -288,7 +302,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
         if (field.key !== undefined) {
           return { given: field.key };
         }
-        const base = mintableKey(field.name);
+        const base = mintSlug(field.name, '_');
         if (!base) {
           throw new errors.ValidationError({
             message: 'Custom field name must contain at least one usable character.',
@@ -309,7 +323,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
           // them rather than all sharing the end of the list.
           const firstSortOrder = await this.nextSortOrder(trx, namespace);
 
-          const keys: Key[] = [];
+          const keys: FieldKey[] = [];
           for (const [index, field] of fields.entries()) {
             await this.assertNameAvailable(trx, namespace, field.name);
             const key = await this.takeKey(
@@ -371,7 +385,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
     db: Knex,
     field: {
       namespace: Namespace;
-      key: Key;
+      key: FieldKey;
       name: string;
       typed: TypedSettings;
       memberAccess: MemberAccess;
@@ -509,7 +523,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
   }
 
   /** Read back a batch in the order its keys were created, not the table's order. */
-  private async readMany(db: Knex, namespace: Namespace, keys: Key[]): Promise<Definition[]> {
+  private async readMany(db: Knex, namespace: Namespace, keys: FieldKey[]): Promise<Definition[]> {
     const rows = await this.fields
       .table(db)
       .where('namespace', namespace)
@@ -537,7 +551,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
     namespace: Namespace,
     keyed: KeyToTake,
     context?: string,
-  ): Promise<Key> {
+  ): Promise<FieldKey> {
     if ('base' in keyed) {
       return this.mintKey(db, namespace, keyed.base);
     }
@@ -559,26 +573,19 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
    * Reads the keys the namespace has already taken by that base, archived fields
    * included, so a key is never reused once minted.
    */
-  private async mintKey(db: Knex, namespace: Namespace, base: Key): Promise<Key> {
-    // Trimmed again after cutting, because the cut can land mid-separator and
-    // a key that ends in one is not a shape minting is allowed to produce. The
-    // base starts with an alphanumeric, so something always survives.
-    const safeBase = base.slice(0, this.inputs.maxKeyBase).replace(/_+$/, '');
-    const taken = new Set([
+  private async mintKey(db: Knex, namespace: Namespace, base: Slug<'_'>): Promise<Slug<'_'>> {
+    const { keyNumbering } = this.inputs;
+    const taken = new Set<string>([
       ...RESERVED_KEYS,
       ...(await this.fields
         .table(db)
         .where('namespace', namespace)
-        .where('key', 'like', `${safeBase}%`)
+        .where('key', 'like', `${withRoomForNumber(base, keyNumbering)}%`)
         .pluck('key')),
     ]);
-    if (!taken.has(safeBase)) {
-      return KeySchema.parse(safeBase);
-    }
-    for (let suffix = 2; suffix <= MAX_KEY_ITERATIONS; suffix += 1) {
-      const candidate = `${safeBase}_${suffix}`;
+    for (const candidate of numberedSlugs(base, keyNumbering)) {
       if (!taken.has(candidate)) {
-        return KeySchema.parse(candidate);
+        return candidate;
       }
     }
     throw new errors.ValidationError({
