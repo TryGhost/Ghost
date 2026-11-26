@@ -127,8 +127,7 @@ An integration, identified by an Admin API token or a Content API key.
 **App principal**:
 An app acting on the site, for a staff user or on its own. It names the app's
 installation, not the app, and always has scopes. Its shape is provisional.
-An app user token resolves to one, but Admin still sends an app's calls with the
-staff user's session, so they resolve to that user's principal.
+An app user token resolves to one, and Admin sends an app's calls with one.
 
 **Acting for**:
 The staff user an app principal acts on behalf of, or no one when the app acts
@@ -292,5 +291,4 @@ _Avoid_: system context, admin context
   [App Installations](../services/app-installations/CONTEXT.md). Each is a
   permission key, never a wildcard, and **resource** there means an object
   type. For a request with an app user token, they cap the standard permission
-  checks through the policy. Admin still sends an app's calls with the staff
-  user's session, so its bridge holds an app to them there.
+  checks through the policy. Admin's bridge also filters what an app can send.
