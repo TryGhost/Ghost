@@ -22,10 +22,22 @@ export interface Logger {
   error(...args: unknown[]): void;
 }
 
-/** The part of an event emitter that listeners are subscribed through. */
+/** An event is named by a string, or by the class its instances are made from. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type EventName = string | (abstract new (...args: any[]) => object);
+
+/** The part of an event bus that listeners are subscribed through. */
 export interface Events {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on(event: string, listener: (...args: any[]) => void): unknown;
+  on(event: EventName, listener: (...args: any[]) => unknown): unknown;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  removeListener(event: string, listener: (...args: any[]) => void): unknown;
+  removeListener(event: EventName, listener: (...args: any[]) => unknown): unknown;
+}
+
+/** The part of a job runner that an application's jobs are registered with. */
+export interface Jobs {
+  /** Says what to run for a job. */
+  handle(name: string, handler: () => unknown): void;
+  /** Runs a job again and again, on a cron schedule. */
+  scheduleRecurring(name: string, schedule: { readonly cron: string }): unknown;
 }

@@ -12,7 +12,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const emailSuppressionList = { init: sinon.stub().resolves() };
   const mentions = sinon.stub().resolves();
   // Recommendations initializes synchronously and reads the mentions fields during its call.
-  const recommendations = sinon.stub();
+  const registerProviderJobs = sinon.stub();
   const media = sinon.stub().resolves();
   const email = sinon.stub().resolves();
   const donations = sinon.stub().resolves();
@@ -62,7 +62,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/mentions': {
         default: { init: mentions, service: { controller: {}, sendingService: {} } },
       },
-      './server/services/recommendations': { default: { init: recommendations } },
       './server/services/email-analytics': {
         getGifts: () => ({}),
         getAutomations: () => ({}),
@@ -82,6 +81,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
+      '../bootstrap/app': { registerJobs: registerProviderJobs },
       './server/services/signing-keys': { default: { service: signingKeys } },
       './server/services/automations': { automationsService: { init: automations } },
     },
@@ -94,7 +94,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     emailAddress,
     gifts,
     mentions,
-    recommendations,
+    registerProviderJobs,
     analytics,
     emailSuppressionList,
     media,
@@ -221,17 +221,25 @@ it('waits for member attribution initialization before initializing staff', asyn
   sinon.assert.callOrder(boot.memberAttribution, boot.staff, boot.register);
 });
 
-it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
+it("registers the providers' jobs on the shared jobs service, after the legacy handlers and before jobs start", async function () {
   const boot = createServicesHarness();
-  const failure = new Error('recommendations initialization failed');
-  boot.recommendations.throws(failure);
+
+  await boot.initServices();
+
+  sinon.assert.calledOnce(boot.registerProviderJobs);
+  assert.equal(typeof boot.registerProviderJobs.firstCall.args[0].start, 'function');
+  sinon.assert.callOrder(boot.register, boot.registerProviderJobs, boot.start);
+});
+
+it("does not start jobs when registering the providers' jobs fails", async function () {
+  const boot = createServicesHarness();
+  const failure = new Error('Two jobs are both named "clean".');
+  boot.registerProviderJobs.throws(failure);
 
   await assert.rejects(boot.initServices(), (error) => error === failure);
 
-  sinon.assert.notCalled(boot.register);
   sinon.assert.notCalled(boot.start);
   sinon.assert.notCalled(boot.automations);
-  sinon.assert.notCalled(boot.reschedule);
 });
 
 it('registers the webhook listeners once, after mentions initialization', async function () {
@@ -352,25 +360,6 @@ for (const dependency of [
     sinon.assert.notCalled(boot.reschedule);
   });
 }
-
-it('waits for mentions initialization to finish before initializing recommendations', async function () {
-  // Recommendations reads the ready Mentions instance while it initializes.
-  const boot = createServicesHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.mentions.returns(ready.promise);
-  const startup = boot.initServices();
-
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.mentions);
-    sinon.assert.notCalled(boot.recommendations);
-  } finally {
-    ready.resolve();
-    await startup;
-  }
-
-  sinon.assert.calledOnce(boot.recommendations);
-});
 
 it('waits for jobs startup to finish before automations init and post rescheduling', async function () {
   const boot = createServicesHarness();

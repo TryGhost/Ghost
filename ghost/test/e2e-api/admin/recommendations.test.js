@@ -7,12 +7,13 @@ const {
 const { anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag } =
   matchers;
 const assert = require('node:assert/strict');
-const recommendationsService = require('../../../core/server/services/recommendations').default;
 const {
-  Recommendation,
-  ClickEvent,
-  SubscribeEvent,
-} = require('../../../core/server/services/recommendations/service');
+  recommendations: recommendationsFor,
+} = require('../../../domains/network/services/recommendation.service');
+const { site } = require('../../../bootstrap/site');
+const { Recommendation } = require('../../../domains/network/entities/recommendation.entity');
+const { ClickEvent } = require('../../../domains/network/entities/click-event.entity');
+const { SubscribeEvent } = require('../../../domains/network/entities/subscribe-event.entity');
 const nock = require('nock');
 
 async function addDummyRecommendation(i = 0) {
@@ -27,7 +28,7 @@ async function addDummyRecommendation(i = 0) {
     createdAt: new Date(i * 5000), // Reliable ordering
   });
 
-  await recommendationsService.service.controller.service.repository.save(recommendation);
+  await recommendationsFor(site).repository.save(recommendation);
   return recommendation.id;
 }
 
@@ -39,11 +40,9 @@ async function addDummyRecommendations(amount = 15) {
 }
 
 async function addClicksAndSubscribers({ memberId }) {
-  const recommendations = await recommendationsService.service.controller.service.repository.getAll(
-    {
-      order: [{ field: 'createdAt', direction: 'desc' }],
-    },
-  );
+  const recommendations = await recommendationsFor(site).repository.getAll({
+    order: [{ field: 'createdAt', direction: 'desc' }],
+  });
 
   // Create 2 clicks for 1st
   for (let i = 0; i < 2; i++) {
@@ -51,7 +50,7 @@ async function addClicksAndSubscribers({ memberId }) {
       recommendationId: recommendations[0].id,
     });
 
-    await recommendationsService.service.controller.service.clickEventRepository.save(clickEvent);
+    await recommendationsFor(site).clickEventRepository.save(clickEvent);
   }
 
   // Create 3 clicks for 2nd
@@ -60,7 +59,7 @@ async function addClicksAndSubscribers({ memberId }) {
       recommendationId: recommendations[1].id,
     });
 
-    await recommendationsService.service.controller.service.clickEventRepository.save(clickEvent);
+    await recommendationsFor(site).clickEventRepository.save(clickEvent);
   }
 
   // Create 3 subscribers for 1st
@@ -70,9 +69,7 @@ async function addClicksAndSubscribers({ memberId }) {
       memberId,
     });
 
-    await recommendationsService.service.controller.service.subscribeEventRepository.save(
-      subscribeEvent,
-    );
+    await recommendationsFor(site).subscribeEventRepository.save(subscribeEvent);
   }
 
   // Create 2 subscribers for 3rd
@@ -82,9 +79,7 @@ async function addClicksAndSubscribers({ memberId }) {
       memberId,
     });
 
-    await recommendationsService.service.controller.service.subscribeEventRepository.save(
-      subscribeEvent,
-    );
+    await recommendationsFor(site).subscribeEventRepository.save(subscribeEvent);
   }
 }
 
@@ -100,9 +95,9 @@ describe('Recommendations Admin API', function () {
   });
 
   afterEach(async function () {
-    for (const recommendation of await recommendationsService.service.controller.service.repository.getAll()) {
+    for (const recommendation of await recommendationsFor(site).repository.getAll()) {
       recommendation.delete();
-      await recommendationsService.service.controller.service.repository.save(recommendation);
+      await recommendationsFor(site).repository.save(recommendation);
     }
     mockManager.restore();
   });
@@ -333,8 +328,7 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Can fetch recommendations with relations when there are no recommendations', async function () {
-      const recommendations =
-        await recommendationsService.service.controller.service.repository.getCount();
+      const recommendations = await recommendationsFor(site).repository.getCount();
       assert.equal(recommendations, 0, 'This test expects there to be no recommendations');
 
       const { body: page1 } = await agent

@@ -8,3 +8,8 @@ import type { Site } from '#support/site';
 export function forSite<Legacy>(legacy: Legacy): (site: Site) => Legacy {
   return () => legacy;
 }
+
+/** The same, for a module that is not ready, or should not be loaded, until it is asked for. */
+export function forSiteWhenAsked<Legacy>(find: () => Legacy): (site: Site) => Legacy {
+  return () => find();
+}

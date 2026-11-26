@@ -15,7 +15,6 @@ const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
-const recommendationsService = require('../../server/services/recommendations').default;
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirectsHandler = require('./routers/link-redirects');
 const siteRoutes = require('./routes');
@@ -72,7 +71,12 @@ module.exports = function setupSiteApp(routerConfig) {
   siteApp.get(
     '/.well-known/recommendations.json',
     function lazyRecommendationsWellKnownMw(req, res, next) {
-      return recommendationsService.service.wellknownController.getRecommendations(req, res, next);
+      // This route is not handed the site yet, so it reaches for it here.
+      const { site } = require('../../../bootstrap/site');
+      const {
+        wellKnownController,
+      } = require('../../../domains/network/http/well-known.controller');
+      return wellKnownController(site).getRecommendations(req, res, next);
     },
   );
 

@@ -2,14 +2,20 @@ import { EventEmitter } from 'node:events';
 import { setImmediate } from 'node:timers/promises';
 import { describe, expect, it, vi } from 'vitest';
 import { createApplication } from '../src/application.ts';
-import { defineProvider } from '#support/define-provider';
-import type { Listener } from '#support/define-provider';
-import type { Site } from '#support/site';
+import { defineProvider, on } from '#support/define-provider';
+import type { Job, Listener, ListenerEntry } from '#support/define-provider';
+import type { Events, Jobs, Site } from '#support/site';
 
 function createSite(name = 'a') {
   const events = new EventEmitter();
   const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
-  const site: Site = { id: name, config: { get: (key) => `${name}:${key}` }, log, events };
+  const site: Site = {
+    id: name,
+    config: { get: (key) => `${name}:${key}` },
+    log,
+    // A string-named bus. Class-named events are covered with a bus of their own below.
+    events: events as unknown as Events,
+  };
   return { site, events, log };
 }
 
@@ -18,10 +24,14 @@ function file(listener: Listener) {
   return vi.fn(() => ({ default: listener }));
 }
 
-function listening(site: Site, listeners: Parameters<typeof defineProvider>[0]['listeners']) {
+function listening(site: Site, listeners: Record<string, ReturnType<typeof file>>) {
   return createApplication({
-    providers: [defineProvider({ name: 'example', listeners })],
+    providers: [defineProvider({ name: 'example', listeners: entries(listeners) })],
   }).listen(site);
+}
+
+function entries(listeners: Record<string, ReturnType<typeof file>>): ListenerEntry[] {
+  return Object.entries(listeners).map(([event, load]) => on(event, load));
 }
 
 describe('createApplication', () => {
@@ -52,14 +62,29 @@ describe('createApplication', () => {
     const { site, events } = createSite();
     const first = defineProvider({
       name: 'first',
-      listeners: {
-        published: [file(() => calls.push('first-a')), file(() => calls.push('first-b'))],
-        edited: file(() => calls.push('first-edited')),
-      },
+      listeners: [
+        on(
+          'published',
+          file(() => calls.push('first-a')),
+        ),
+        on(
+          'published',
+          file(() => calls.push('first-b')),
+        ),
+        on(
+          'edited',
+          file(() => calls.push('first-edited')),
+        ),
+      ],
     });
     const second = defineProvider({
       name: 'second',
-      listeners: { published: file(() => calls.push('second')) },
+      listeners: [
+        on(
+          'published',
+          file(() => calls.push('second')),
+        ),
+      ],
     });
     createApplication({ providers: [first, second] }).listen(site);
 
@@ -72,7 +97,12 @@ describe('createApplication', () => {
     const seen: unknown[] = [];
     const provider = defineProvider({
       name: 'example',
-      listeners: { published: file((site) => seen.push(site.id)) },
+      listeners: [
+        on(
+          'published',
+          file((site) => seen.push(site.id)),
+        ),
+      ],
     });
     const application = createApplication({ providers: [provider] });
     const a = createSite('a');
@@ -112,11 +142,18 @@ describe('createApplication', () => {
   it('logs a listener whose file cannot be loaded, without failing whoever emitted the event', () => {
     const { site, events, log } = createSite();
     const failure = new Error('Cannot find module');
-    listening(site, {
-      published: () => {
-        throw failure;
-      },
-    });
+    createApplication({
+      providers: [
+        defineProvider({
+          name: 'example',
+          listeners: [
+            on('published', () => {
+              throw failure;
+            }),
+          ],
+        }),
+      ],
+    }).listen(site);
 
     expect(() => events.emit('published')).not.toThrow();
     expect(log.error).toHaveBeenCalledExactlyOnceWith(failure);
@@ -151,8 +188,150 @@ describe('createApplication', () => {
     };
 
     expect(() =>
-      listening({ ...site, events }, { first: file(() => {}), second: file(() => {}) }),
+      listening(
+        { ...site, events: events as unknown as Events },
+        { first: file(() => {}), second: file(() => {}) },
+      ),
     ).toThrow('cannot subscribe');
     expect(calls).toEqual(['on first', 'on second', 'off first', 'off second']);
+  });
+
+  it('hands the bus a promise that settles when the listener does, for a bus that waits', async () => {
+    const { site, log } = createSite();
+    const failure = new Error('delivery failed');
+    const handlers: ((...args: unknown[]) => unknown)[] = [];
+    const events = {
+      on: (_: unknown, handler: (typeof handlers)[number]) => handlers.push(handler),
+      removeListener() {},
+    };
+    createApplication({
+      providers: [
+        defineProvider({
+          name: 'example',
+          listeners: [
+            on(
+              'saved',
+              file(async () => 'done'),
+            ),
+            on(
+              'saved',
+              file(() => Promise.reject(failure)),
+            ),
+          ],
+        }),
+      ],
+    }).listen({ ...site, events: events as unknown as Events });
+
+    await expect(handlers[0]!()).resolves.toBe('done');
+    await expect(handlers[1]!()).resolves.toBeUndefined();
+    expect(log.error).toHaveBeenCalledExactlyOnceWith(failure);
+  });
+
+  it('subscribes a listener to an event named by its class', () => {
+    class PostPublished {}
+    const { site } = createSite();
+    const subscribed: unknown[] = [];
+    const removed: unknown[] = [];
+    const events: Events = {
+      on: (event) => subscribed.push(event),
+      removeListener: (event) => removed.push(event),
+    };
+    const stop = createApplication({
+      providers: [
+        defineProvider({
+          name: 'example',
+          listeners: [
+            on(
+              PostPublished,
+              file(() => {}),
+            ),
+          ],
+        }),
+      ],
+    }).listen({ ...site, events });
+
+    stop();
+
+    expect(subscribed).toEqual([PostPublished]);
+    expect(removed).toEqual([PostPublished]);
+  });
+});
+
+describe('jobs', () => {
+  function runner() {
+    const handlers = new Map<string, () => unknown>();
+    const scheduled: [string, { cron: string }][] = [];
+    const jobs: Jobs = {
+      handle: (name, handler) => handlers.set(name, handler),
+      scheduleRecurring: (name, schedule) => scheduled.push([name, schedule]),
+    };
+    return { jobs, handlers, scheduled };
+  }
+
+  function work(job: Job) {
+    return vi.fn(() => ({ default: job }));
+  }
+
+  it('says what to run for every listed job, loading nothing until one runs', async () => {
+    const { site } = createSite();
+    const job = vi.fn(async () => 'cleaned');
+    const load = work(job);
+    const { jobs, handlers } = runner();
+    const application = createApplication({
+      providers: [
+        defineProvider({ name: 'example', jobs: { clean: { cron: '0 0 3 * * *', handle: load } } }),
+      ],
+    });
+
+    application.registerJobs(site, jobs);
+    expect([...handlers.keys()]).toEqual(['clean']);
+    expect(load).not.toHaveBeenCalled();
+
+    await expect(handlers.get('clean')!()).resolves.toBe('cleaned');
+    expect(job).toHaveBeenCalledExactlyOnceWith(site);
+  });
+
+  it('lets a job that fails reach the runner', async () => {
+    const { site } = createSite();
+    const failure = new Error('job failed');
+    const { jobs, handlers } = runner();
+    createApplication({
+      providers: [
+        defineProvider({
+          name: 'example',
+          jobs: { clean: { handle: work(() => Promise.reject(failure)) } },
+        }),
+      ],
+    }).registerJobs(site, jobs);
+
+    await expect(handlers.get('clean')!()).rejects.toBe(failure);
+  });
+
+  it('schedules only the jobs that recur', async () => {
+    const { jobs, scheduled } = runner();
+    const application = createApplication({
+      providers: [
+        defineProvider({
+          name: 'example',
+          jobs: {
+            clean: { cron: '0 0 3 * * *', handle: work(() => {}) },
+            import: { handle: work(() => {}) },
+          },
+        }),
+      ],
+    });
+
+    await application.scheduleJobs(jobs);
+
+    expect(scheduled).toEqual([['clean', { cron: '0 0 3 * * *' }]]);
+  });
+
+  it('refuses two jobs with one name, which the runner could not tell apart', () => {
+    const provider = (name: string) =>
+      defineProvider({ name, jobs: { clean: { handle: work(() => {}) } } });
+
+    expect(() => createApplication({ providers: [provider('a'), provider('b')] })).toThrow(
+      'Two jobs are both named "clean".',
+    );
   });
 });

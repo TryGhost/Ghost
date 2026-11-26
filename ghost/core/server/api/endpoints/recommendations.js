@@ -1,5 +1,3 @@
-const recommendations = require('../../services/recommendations').default;
-
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'recommendations',
@@ -11,8 +9,11 @@ const controller = {
     options: ['limit', 'page', 'include', 'filter', 'order'],
     permissions: true,
     validation: {},
-    async query(frame) {
-      return await recommendations.service.controller.browse(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      return await recommendationController(site).browse(frame);
     },
   },
 
@@ -23,8 +24,11 @@ const controller = {
     options: ['id'],
     permissions: true,
     validation: {},
-    async query(frame) {
-      return await recommendations.service.controller.read(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      return await recommendationController(site).read(frame);
     },
   },
 
@@ -36,8 +40,11 @@ const controller = {
     options: [],
     validation: {},
     permissions: true,
-    async query(frame) {
-      return await recommendations.service.controller.add(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      return await recommendationController(site).add(frame);
     },
   },
 
@@ -54,8 +61,11 @@ const controller = {
       // Everyone who has add permissions, can 'check'
       method: 'add',
     },
-    async query(frame) {
-      return await recommendations.service.controller.check(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      return await recommendationController(site).check(frame);
     },
   },
 
@@ -72,8 +82,11 @@ const controller = {
       },
     },
     permissions: true,
-    async query(frame) {
-      return await recommendations.service.controller.edit(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      return await recommendationController(site).edit(frame);
     },
   },
 
@@ -91,8 +104,11 @@ const controller = {
       },
     },
     permissions: true,
-    query(frame) {
-      return recommendations.service.controller.destroy(frame);
+    query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      return recommendationController(site).destroy(frame);
     },
   },
 };

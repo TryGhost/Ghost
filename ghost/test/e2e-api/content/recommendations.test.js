@@ -1,6 +1,9 @@
 const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
-const recommendationsService = require('../../../core/server/services/recommendations').default;
-const { Recommendation } = require('../../../core/server/services/recommendations/service');
+const {
+  recommendations: recommendationsFor,
+} = require('../../../domains/network/services/recommendation.service');
+const { site } = require('../../../bootstrap/site');
+const { Recommendation } = require('../../../domains/network/entities/recommendation.entity');
 const { anyObjectId, anyISODateTime } = matchers;
 const assert = require('node:assert/strict');
 
@@ -13,9 +16,9 @@ describe('Recommendations Content API', function () {
     await agent.authenticate();
 
     // Clear placeholders
-    for (const recommendation of await recommendationsService.service.controller.service.repository.getAll()) {
+    for (const recommendation of await recommendationsFor(site).repository.getAll()) {
       recommendation.delete();
-      await recommendationsService.service.controller.service.repository.save(recommendation);
+      await recommendationsFor(site).repository.save(recommendation);
     }
 
     // Add 7 recommendations using the repository
@@ -31,7 +34,7 @@ describe('Recommendations Content API', function () {
         createdAt: new Date(i * 5000), // Reliable ordering
       });
 
-      await recommendationsService.service.controller.service.repository.save(recommendation);
+      await recommendationsFor(site).repository.save(recommendation);
     }
   });
 

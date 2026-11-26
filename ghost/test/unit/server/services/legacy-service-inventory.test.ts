@@ -116,6 +116,12 @@ function assertFileWithin(root: string, relativePath: string) {
   assert.ok(statSync(resolved).isFile(), `Expected a file: ${relativePath}`);
 }
 
+// A test lives in ghost/test, or in the test folder of the domain it belongs to.
+function assertTestFile(test: string) {
+  assert.ok(/^(test|domains\/[^/]+\/test)\//.test(test), `Expected a test path: ${test}`);
+  assertFileWithin(coreRoot, test);
+}
+
 // Extract catalogue names only. Oxlint separately enforces the root's source shape.
 function declaredExtras(fileName: string): string[] {
   const source = ts.createSourceFile(
@@ -262,8 +268,7 @@ describe('legacy service inventory', function () {
           assertFileWithin(coreRoot, source);
         }
         for (const test of bug.tests ?? []) {
-          assert.ok(test.startsWith('test/'), `Expected a test path: ${test}`);
-          assertFileWithin(path.join(coreRoot, 'test'), test.slice('test/'.length));
+          assertTestFile(test);
         }
       }
     }
@@ -346,8 +351,7 @@ describe('legacy service inventory', function () {
           assertFileWithin(coreRoot, source);
         }
         for (const test of contract.tests) {
-          assert.ok(test.startsWith('test/'), `Expected a test path: ${test}`);
-          assertFileWithin(path.join(coreRoot, 'test'), test.slice('test/'.length));
+          assertTestFile(test);
         }
       }
 

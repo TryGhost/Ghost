@@ -4,7 +4,7 @@ import nock from 'nock';
 import sinon from 'sinon';
 import ghostRequest from '@tryghost/request';
 import { createLoggingFake } from '../../../../../test/utils/logging-utils';
-import { requestExportWith } from '../../../actions/request-export.action';
+import { RequestExport } from '../../../actions/request-export.action';
 
 describe('Request export action', function () {
   const webhookUrl = 'https://export-generator.example.com/api/generate/';
@@ -39,9 +39,9 @@ describe('Request export action', function () {
       ...overrides,
     };
 
+    const action = new RequestExport(dependencies as any);
     return {
-      requestExport: (input: Parameters<typeof requestExportWith>[1]) =>
-        requestExportWith(dependencies as any, input),
+      requestExport: (input: Parameters<RequestExport['handle']>[0]) => action.handle(input),
     };
   };
 

@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import { NotFoundError, InternalServerError } from '@tryghost/errors';
 
 import type { Site } from '#support/site';
-import { editIntegration, editIntegrationWith } from '../../../actions/edit-integration.action';
+import { EditIntegration, editIntegration } from '../../../actions/edit-integration.action';
 
 const legacyModels = require('../../../../../core/server/models');
 
@@ -12,15 +12,13 @@ describe('Edit integration action', function () {
   const sandbox = sinon.createSandbox();
   let IntegrationModel: { edit: sinon.SinonStub; findOne: sinon.SinonStub };
   let ApiKeyModel: { findOne: sinon.SinonStub; refreshSecret: sinon.SinonStub };
-  let edit: (
-    ...args: Parameters<typeof editIntegration> extends [Site, ...infer Rest] ? Rest : never
-  ) => ReturnType<typeof editIntegrationWith>;
+  let edit: EditIntegration['handle'];
 
   beforeEach(function () {
     IntegrationModel = { edit: sandbox.stub(), findOne: sandbox.stub() };
     ApiKeyModel = { findOne: sandbox.stub(), refreshSecret: sandbox.stub().resolves() };
-    edit = (data, options) =>
-      editIntegrationWith({ Integration: IntegrationModel, ApiKey: ApiKeyModel }, data, options);
+    const action = new EditIntegration({ Integration: IntegrationModel, ApiKey: ApiKeyModel });
+    edit = (data, options) => action.handle(data, options);
   });
 
   afterEach(function () {
@@ -32,7 +30,7 @@ describe('Edit integration action', function () {
     const legacyEdit = sandbox.stub(legacyModels.Integration, 'edit').resolves(result);
     const options = { id: 'integration-id' };
 
-    assert.equal(await editIntegration({} as Site, { name: 'Zapier' }, options), result);
+    assert.equal(await editIntegration({} as Site).handle({ name: 'Zapier' }, options), result);
 
     sinon.assert.calledOnceWithExactly(legacyEdit, { name: 'Zapier' }, options);
     sinon.assert.notCalled(IntegrationModel.edit);

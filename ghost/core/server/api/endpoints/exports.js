@@ -194,7 +194,7 @@ const controller = {
       const {
         requestExport,
       } = require('../../../../domains/hosting/actions/request-export.action');
-      await requestExport(site, {
+      await requestExport(site).handle({
         components,
         requestedByUserId: frame.options.context.user,
       });

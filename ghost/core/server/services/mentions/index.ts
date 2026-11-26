@@ -28,6 +28,11 @@ export default defineService('Mentions', () => {
     logging,
   });
   const metadata = new WebmentionMetadata({ oembedService });
+  // A recommendation arrives as a webmention; network says which address to describe for it.
+  metadata.addMapper(
+    require('../../../../domains/network/actions/map-recommendation-source.action')
+      .mapRecommendationSource,
+  );
   const discoveryService = new MentionDiscoveryService({ externalRequest, logging });
   const resourceService = new ResourceService({ urlUtils, urlService });
   const routingService = new RoutingService({

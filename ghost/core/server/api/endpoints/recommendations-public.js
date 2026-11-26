@@ -1,5 +1,3 @@
-const recommendations = require('../../services/recommendations').default;
-
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'recommendations',
@@ -11,8 +9,11 @@ const controller = {
     options: ['limit', 'order', 'page', 'filter'],
     permissions: true,
     validation: {},
-    async query(frame) {
-      return await recommendations.service.controller.browse(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      return await recommendationController(site).browse(frame);
     },
   },
 
@@ -30,8 +31,11 @@ const controller = {
     },
     permissions: true,
     statusCode: 204,
-    async query(frame) {
-      await recommendations.service.controller.trackClicked(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      await recommendationController(site).trackClicked(frame);
     },
   },
 
@@ -49,8 +53,11 @@ const controller = {
     },
     permissions: true,
     statusCode: 204,
-    async query(frame) {
-      await recommendations.service.controller.trackSubscribed(frame);
+    async query(frame, site) {
+      const {
+        recommendationController,
+      } = require('../../../../domains/network/http/recommendation.controller');
+      await recommendationController(site).trackSubscribed(frame);
     },
   },
 };

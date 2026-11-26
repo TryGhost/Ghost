@@ -4,6 +4,9 @@ const { sourceExclusions } = require('./tools/scripts/ci/service-dependency-reso
 
 // Service policy applies independently of inventory and migration status.
 const servicesRoot = 'ghost/core/server/services';
+// Where requests arrive: the API endpoints and the site's own routes.
+const httpLayer = ['^ghost/core/server/api/endpoints/', '^ghost/core/frontend/web/'];
+
 const serviceImplementations = {
   path: `^${servicesRoot}/([^/]+)(?:/|$)`,
   // Legacy JS roots remain wiring candidates; nested indexes are implementations.
@@ -18,6 +21,7 @@ const serviceRootsElsewhere = ['^ghost/core/server/auth/better-auth/index\\.ts$'
 // Explicit code-library and contract allowances, not application instances.
 // Keep each package or file named individually and explain additions here.
 const serviceDependencyAllowlist = [
+  '^ghost/domains/[^/]+/(data|events)/', // A domain's plain types and event classes, which hold nothing.
   '(^|/)node_modules/@tryghost/errors/|^@tryghost/errors$', // Error classes and formatting.
   '(^|/)node_modules/@tryghost/tpl/|^@tryghost/tpl$', // Message interpolation.
   '(^|/)node_modules/@tryghost/debug/|^@tryghost/debug$', // Namespaced developer tracing gated by the DEBUG environment variable; no configuration or application instance.
@@ -513,12 +517,23 @@ module.exports = {
     {
       name: 'domain-public-surface',
       comment:
-        'Code outside a domain uses only its actions, data and events. Bootstrap also imports its provider.',
+        'Code outside a domain uses only its actions, data and events. Bootstrap also imports its provider, and the HTTP layer its controllers.',
       severity: 'error',
-      from: { pathNot: ['^ghost/domains/', '^ghost/bootstrap/'] },
+      from: { pathNot: ['^ghost/domains/', '^ghost/bootstrap/', ...httpLayer] },
       to: {
         path: '^ghost/domains/[^/]+/',
         pathNot: '^ghost/domains/[^/]+/(actions|data|events)/',
+      },
+    },
+    {
+      name: 'http-layer-uses-controllers',
+      comment:
+        'The HTTP layer reaches a domain through its http folder or its actions, data and events.',
+      severity: 'error',
+      from: { path: httpLayer },
+      to: {
+        path: '^ghost/domains/[^/]+/',
+        pathNot: '^ghost/domains/[^/]+/(http|actions|data|events)/',
       },
     },
     {
@@ -531,6 +546,8 @@ module.exports = {
           '^ghost/bootstrap/',
           '^ghost/core/boot\\.js$',
           '^ghost/core/server/api/endpoints/utils/with-site\\.js$',
+          // The site's own routes are not handed the site yet.
+          '^ghost/core/frontend/web/site\\.js$',
         ],
       },
       to: { path: '^ghost/bootstrap/' },

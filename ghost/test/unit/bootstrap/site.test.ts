@@ -24,9 +24,8 @@ describe('The site', function () {
     assert.throws(() => site.id, /read before settings were loaded/);
   });
 
-  it('shares its config, logger and events with legacy code', function () {
+  it('shares its config and logger with legacy code', function () {
     assert.equal(site.config, require('../../../core/shared/config'));
     assert.equal(site.log, require('@tryghost/logging'));
-    assert.equal(site.events, require('../../../core/server/lib/common/events'));
   });
 });

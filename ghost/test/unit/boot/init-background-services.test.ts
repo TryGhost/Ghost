@@ -22,6 +22,7 @@ function createBackgroundHarness(
   const milestones = { initAndRun: sinon.stub() };
   const signingKeys = { extras: { scheduleCheckJob: sinon.stub().resolves() } };
   const authCleanup = { scheduleClearExpiredJob: sinon.stub().resolves() };
+  const application = { scheduleJobs: sinon.stub().resolves() };
   const giftJobs = {
     scheduleGiftCleanupJob: sinon.stub().resolves(),
     scheduleGiftReminderJob: sinon.stub().resolves(),
@@ -44,6 +45,7 @@ function createBackgroundHarness(
       './server/services/members/jobs': memberJobs,
       './server/services/signing-keys': { default: signingKeys },
       './server/auth/better-auth/cleanup': authCleanup,
+      '../bootstrap/app': application,
       './server/services/jobs-service': { getInstance: () => jobsInstance },
       './server/services/activitypub': { init: activity },
       './server/services/tinybird-sync': tinybirdSync,
@@ -69,6 +71,7 @@ function createBackgroundHarness(
     milestones,
     signingKeys,
     authCleanup,
+    application,
     giftJobs,
     memberJobs,
     remoteFlags,
@@ -89,6 +92,7 @@ const isolatedSteps: [string, (boot: BackgroundHarness) => sinon.SinonStub][] = 
     (boot) => boot.memberJobs.scheduleExpiredCompCleanupJob,
   ],
   ['expired auth row cleanup scheduling', (boot) => boot.authCleanup.scheduleClearExpiredJob],
+  ["scheduling of the providers' jobs", (boot) => boot.application.scheduleJobs],
   ['social web (ActivityPub) start', (boot) => boot.activity],
   ['Tinybird sync scheduling', (boot) => boot.tinybirdSync.scheduleJob],
   ['update check scheduling', (boot) => boot.updateCheck.scheduleJobs],
@@ -105,6 +109,7 @@ function backgroundSteps(boot: BackgroundHarness): sinon.SinonStub[] {
     boot.memberJobs.scheduleExpiredCompCleanupJob,
     boot.signingKeys.extras.scheduleCheckJob,
     boot.authCleanup.scheduleClearExpiredJob,
+    boot.application.scheduleJobs,
     boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob,
     boot.emailAnalyticsJobs.scheduleRecurringAutomationsJob,
     boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob,

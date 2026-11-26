@@ -21,7 +21,8 @@ const WebmentionMetadata = require('../../../../../core/server/services/mentions
 const MentionsAPI = require('../../../../../core/server/services/mentions/mentions-api');
 const BookshelfMentionRepository = require('../../../../../core/server/services/mentions/bookshelf-mention-repository');
 const MentionSendingService = require('../../../../../core/server/services/mentions/mention-sending-service');
-const MentionCreatedEvent = require('../../../../../core/server/services/mentions/mention-created-event');
+const MentionCreatedEvent =
+  require('../../../../../domains/network/events/mention-created.event').default;
 const ProcessWebmentionJob =
   require('../../../../../core/server/services/mentions/process-webmention-job').default;
 const SendWebmentionsJob =

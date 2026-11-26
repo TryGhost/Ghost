@@ -386,7 +386,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService = require('./server/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
   const newsletters = require('./server/services/newsletters').default;
   const statsService = require('./server/services/stats').default;
@@ -435,7 +434,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await audienceFeedback.init();
   // Members captures the ready Newsletters instance during initialization.
   await newsletters.init();
-  // Recommendations reads the ready Mentions instance during initialization.
+  // Later roots read the ready Mentions instance during initialization.
   await mentionsService.init();
   // Explore captures the ready Stats aggregate during initialization.
   await statsService.init();
@@ -471,7 +470,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     mediaInliner.init(),
     contentImport.init(),
     donationService.init(),
-    recommendationsService.init(),
     explorePingService.init(),
     users.init(),
     editorPresence.init(),
@@ -520,6 +518,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     signingKeys: signingKeys.service,
     authCleanup: require('./server/auth/better-auth/cleanup'),
   });
+  // The jobs that providers list. A job's file loads when the job first runs.
+  require('../bootstrap/app').registerJobs(jobsService);
   await jobsService.start();
   debug('End: Register job handlers');
 
@@ -603,6 +603,7 @@ async function initBackgroundServices({ config }) {
     () => require('./server/services/members/jobs').scheduleExpiredCompCleanupJob(jobsService),
     () => require('./server/services/signing-keys').default.extras.scheduleCheckJob(jobsService),
     () => require('./server/auth/better-auth/cleanup').scheduleClearExpiredJob(jobsService),
+    () => require('../bootstrap/app').scheduleJobs(jobsService),
   ];
   for (const scheduleJob of jobsBeforeActivityPub) {
     await runIsolated(scheduleJob);

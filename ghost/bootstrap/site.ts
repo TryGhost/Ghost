@@ -6,6 +6,7 @@
  * the API layer, for endpoints. Everything else is handed the site.
  */
 import type { Site } from '#support/site';
+import { events } from './events';
 
 export const site: Site = Object.freeze({
   // Every site has a site_uuid setting, seeded when its database is created.
@@ -22,7 +23,5 @@ export const site: Site = Object.freeze({
   get log() {
     return require('@tryghost/logging');
   },
-  get events() {
-    return require('../core/server/lib/common/events');
-  },
+  events,
 });

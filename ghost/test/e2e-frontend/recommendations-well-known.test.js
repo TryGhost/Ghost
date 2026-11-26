@@ -2,8 +2,11 @@ const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
-const recommendationsService = require('../../core/server/services/recommendations').default;
-const { Recommendation } = require('../../core/server/services/recommendations/service');
+const {
+  recommendations: recommendationsFor,
+} = require('../../domains/network/services/recommendation.service');
+const { site } = require('../../bootstrap/site');
+const { Recommendation } = require('../../domains/network/entities/recommendation.entity');
 
 describe('Recommendations well-known file', function () {
   let request;
@@ -18,9 +21,9 @@ describe('Recommendations well-known file', function () {
   });
 
   afterEach(async function () {
-    for (const recommendation of await recommendationsService.service.controller.service.repository.getAll()) {
+    for (const recommendation of await recommendationsFor(site).repository.getAll()) {
       recommendation.delete();
-      await recommendationsService.service.controller.service.repository.save(recommendation);
+      await recommendationsFor(site).repository.save(recommendation);
     }
   });
 
@@ -35,8 +38,8 @@ describe('Recommendations well-known file', function () {
       oneClickSubscribe: false,
       createdAt: new Date('2021-01-01T00:00:00.000Z'),
     });
-    await recommendationsService.service.controller.service.repository.save(recommendation);
-    return recommendationsService.service.controller.service.repository.getById(recommendation.id);
+    await recommendationsFor(site).repository.save(recommendation);
+    return recommendationsFor(site).repository.getById(recommendation.id);
   }
 
   it('serves the recommendations stored in the database', async function () {
@@ -64,7 +67,7 @@ describe('Recommendations well-known file', function () {
     assert.ok(before.text.includes(JSON.stringify('https://recommended.example.com/')));
 
     recommendation.delete();
-    await recommendationsService.service.controller.service.repository.save(recommendation);
+    await recommendationsFor(site).repository.save(recommendation);
 
     const after = await request.get('/.well-known/recommendations.json').expect(200);
     assert.equal(after.text, '[]');
@@ -80,7 +83,7 @@ describe('Recommendations well-known file', function () {
       .expect(304);
 
     recommendation.delete();
-    await recommendationsService.service.controller.service.repository.save(recommendation);
+    await recommendationsFor(site).repository.save(recommendation);
 
     await request
       .get('/.well-known/recommendations.json')

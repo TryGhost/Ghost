@@ -1,6 +1,7 @@
 const ObjectID = require('bson-objectid').default;
 const { ValidationError } = require('@tryghost/errors');
-const MentionCreatedEvent = require('./mention-created-event');
+const MentionCreatedEvent =
+  require('../../../../domains/network/events/mention-created.event').default;
 
 module.exports = class Mention {
   /** @type {Array} */

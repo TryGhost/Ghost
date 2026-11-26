@@ -78,7 +78,7 @@ const controller = {
       const {
         editIntegration,
       } = require('../../../../domains/apps/actions/edit-integration.action');
-      return editIntegration(site, data, options);
+      return editIntegration(site).handle(data, options);
     },
   },
   add: {

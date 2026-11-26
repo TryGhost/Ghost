@@ -282,11 +282,11 @@ module.exports = {
   },
 
   get recommendations() {
-    return apiFramework.pipeline(require('./recommendations'), localUtils);
+    return apiFramework.pipeline(withSite(require('./recommendations')), localUtils);
   },
 
   get incomingRecommendations() {
-    return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
+    return apiFramework.pipeline(withSite(require('./incoming-recommendations')), localUtils);
   },
 
   get searchIndex() {
@@ -378,7 +378,11 @@ module.exports = {
   },
 
   get recommendationsPublic() {
-    return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
+    return apiFramework.pipeline(
+      withSite(require('./recommendations-public')),
+      localUtils,
+      'content',
+    );
   },
 
   get searchIndexPublic() {
