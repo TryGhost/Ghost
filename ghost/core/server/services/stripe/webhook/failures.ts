@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { firstError } from '../../../lib/first-error';
 import { UNREADABLE_RESPONSE } from '../stripe-api-responses';
 
 /**
@@ -83,11 +84,13 @@ const Coded = z.object({ code: z.string() });
 const StripeTyped = z.object({ type: z.string() });
 
 /**
- * Classifies a webhook failure by the error's code, which Ghost sets when it knows the reason, or
- * by Stripe's error class. Any other error is `unclassified` and counts as Ghost's, so a failure
- * only stops counting against Ghost once the code that throws it sets a reason.
+ * Classifies a webhook failure by the error Ghost reads from what was thrown (see `firstError`):
+ * by its code, which Ghost sets when it knows the reason, or by Stripe's error class. Any other
+ * error is `unclassified` and counts as Ghost's, so a failure only stops counting against Ghost
+ * once the code that throws it sets a reason.
  */
-export function classifyFailure(err: unknown): Failure {
+export function classifyFailure(thrown: unknown): Failure {
+  const err = firstError(thrown);
   const code = Coded.safeParse(err);
   const stripeError = StripeTyped.safeParse(err);
   const reason =

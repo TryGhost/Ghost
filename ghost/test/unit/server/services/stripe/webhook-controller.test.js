@@ -122,8 +122,8 @@ describe('WebhookController', function () {
   }
 
   // One failure for each reason a failed event can have: the status Ghost responds with, and
-  // whether it reports the failure to Sentry. `fail` sets the failure up, and returns the error
-  // when it's the handler that throws it.
+  // whether it reports the failure to Sentry. `fail` sets the failure up and, when it's the
+  // handler that throws, returns the error Sentry gets.
   const failures = [
     {
       name: 'unclassified',
@@ -131,6 +131,22 @@ describe('WebhookController', function () {
       status: 500,
       reported: true,
       fail: () => failingWith(new Error('Unexpected error')),
+    },
+    {
+      name: 'unclassified, as a model’s validation failed with an array of errors',
+      reason: 'unclassified',
+      status: 422,
+      reported: true,
+      fail: () => {
+        const first = new errors.ValidationError({
+          message: 'Value in [newsletters.name] cannot be blank.',
+        });
+        failingWith([
+          first,
+          new errors.ValidationError({ message: 'Value in [newsletters.slug] cannot be blank.' }),
+        ]);
+        return first;
+      },
     },
     {
       name: 'unclassified, as Stripe refused a request Ghost made',
