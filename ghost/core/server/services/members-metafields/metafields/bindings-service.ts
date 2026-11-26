@@ -57,6 +57,8 @@ export interface RoutedPlans {
 export class MetafieldBindingsService<R extends ResourceKind> {
   private knex: Knex;
   private table: string;
+  /** The resource's name, which its log events are named after. */
+  private resourceName: string;
   private fields: FieldSource;
   private values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
 
@@ -73,6 +75,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
   }) {
     this.knex = knex;
     this.table = resource.tables.bindings;
+    this.resourceName = resource.name;
     this.fields = fields;
     this.values = values;
   }
@@ -271,7 +274,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
       if (!bound.success) {
         logging.warn(
           {
-            event: { name: 'members.metafields.binding_unreadable' },
+            event: { name: `${this.resourceName}.metafields.binding_unreadable` },
             err: bound.error,
             port: row.port,
           },
