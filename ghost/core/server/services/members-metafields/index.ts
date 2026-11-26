@@ -1,12 +1,12 @@
 import errors from '@tryghost/errors';
 import { ActionLog } from '../../lib/action-log/action-log';
-import { recordMemberDefinitionChanges } from '../../lib/action-log/custom-fields';
+import { recordDefinitionChanges } from '../../lib/action-log/custom-fields';
 import { limitService } from '../limits';
 import type { MetafieldDefinitionsService } from './metafields/definitions-service';
 import { MemberMetafieldActivity } from './member-activity';
 import type { MetafieldValuesService } from './metafields/values-service';
-import { MEMBERS_RESOURCE, type Members } from './members-resource';
-export { changedForMembers } from './members-resource';
+import { MEMBERS_RESOURCE } from './members-resource';
+export { MEMBERS_RESOURCE, changedForMembers } from './members-resource';
 import type { MetafieldBindingsService } from './metafields/bindings-service';
 import { resolveMaxDefinitions } from './config';
 import { definitionLimit } from './definition-limit';
@@ -21,7 +21,7 @@ export type { Definition } from './metafields/models';
 /** The members' fields as this site reads them, for every read here and in the domains that join them. */
 export type FieldSource = ResourceFieldSource;
 /** What each member holds for each field. */
-export type MemberMetafieldValues = MetafieldValuesService<Members>;
+export type MemberMetafieldValues = MetafieldValuesService;
 export type { MemberMetafieldActivity } from './member-activity';
 export {
   refusalError,
@@ -30,12 +30,12 @@ export {
   type Refusal,
 } from './metafields/values-service';
 /** Which member field each port another domain declares writes into. */
-export type MemberBindings = MetafieldBindingsService<Members>;
+export type MemberBindings = MetafieldBindingsService;
 /** The members' definitions, read and changed for every namespace. */
 export type MemberDefinitions = MetafieldDefinitionsService;
 export type { BoundField } from './metafields/bindings-service';
 export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
-export type { MetafieldChangeEvent, Members } from './members-resource';
+export type { MetafieldChangeEvent } from './members-resource';
 
 // Who is asking decides which fields a read or write reaches, by each namespace's access policy.
 // Every read and write takes one, so a new caller has to say who it is rather than get a default.
@@ -111,7 +111,7 @@ export function init(): void {
     definitionLimit: definitionLimit(getMaxDefinitions),
     maxDefinitions: getMaxDefinitions,
     // Each change to a definition is logged as a staff action inside the command that made it.
-    onDefinitionUpdated: recordMemberDefinitionChanges(new ActionLog()),
+    onDefinitionUpdated: recordDefinitionChanges(new ActionLog(), MEMBERS_RESOURCE.definitionsType),
     tracking: metafieldsTracking(MEMBERS_RESOURCE, { tracer, meter }),
     labs,
   }));

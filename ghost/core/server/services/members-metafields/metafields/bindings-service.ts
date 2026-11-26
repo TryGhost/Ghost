@@ -13,7 +13,7 @@ import {
   type FieldSource,
 } from './queries';
 import { GHOST, type Asking } from './callers';
-import type { MetafieldResource, ResourceKind } from './resource';
+import type { MetafieldResource } from './resource';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS, type MetafieldBindingRow } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
@@ -54,13 +54,13 @@ export interface RoutedPlans {
  * thing, and the binding resolves it to one of the publisher's fields on one resource. The
  * source declares its ports; this only records which field each one writes into.
  */
-export class MetafieldBindingsService<R extends ResourceKind> {
+export class MetafieldBindingsService {
   private knex: Knex;
   private table: string;
   /** The resource's name, which its log events are named after. */
   private resourceName: string;
   private fields: FieldSource;
-  private values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
+  private values: Pick<MetafieldValuesService, 'planOrRefuse'>;
 
   constructor({
     knex,
@@ -71,7 +71,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
     knex: Knex;
     resource: MetafieldResource;
     fields: FieldSource;
-    values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
+    values: Pick<MetafieldValuesService, 'planOrRefuse'>;
   }) {
     this.knex = knex;
     this.table = resource.tables.bindings;

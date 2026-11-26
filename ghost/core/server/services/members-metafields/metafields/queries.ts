@@ -13,7 +13,7 @@ import {
   type Namespaces,
   type RecordOf,
 } from './namespaces';
-import { recordsAreMembers, type MetafieldResource } from './resource';
+import type { MetafieldResource } from './resource';
 import { FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
 
 /**
@@ -343,7 +343,7 @@ export function fieldSource(
 
     levelOnEach(db, caller, recordColumn) {
       const me =
-        recordsAreMembers(resource) && caller.kind === 'member' && 'memberId' in caller
+        resource.recordsAreMembers && caller.kind === 'member' && 'memberId' in caller
           ? caller.memberId
           : null;
       return db.raw('case when ?? = ? then ?? else ?? end', [

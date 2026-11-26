@@ -44,7 +44,7 @@ import {
 } from './queries';
 import { DbLevel, atLeast, type RecordOf } from './namespaces';
 import type { Asking } from './callers';
-import { recordsAreMembers, type MetafieldResource, type ResourceKind } from './resource';
+import type { MetafieldResource } from './resource';
 import { readStoredField } from './stored-fields';
 import {
   VALUE_COLUMNS,
@@ -68,8 +68,12 @@ const HeldOptionRow = z.object({ path: z.string(), value_text: z.string() });
  */
 const UPSERT_CHUNK = 400;
 
-/** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
-type DbValueRow = z.infer<typeof DbMetafieldValue>;
+/**
+ * Derived, not restated, so a column changing shape in `schema.ts` changes here too. With the
+ * resource's id column, such as `member_id`, which the schema names for each resource.
+ */
+type DbValueRow = z.infer<typeof DbMetafieldValue> &
+  Record<MetafieldResource['foreignKey'], string>;
 
 /**
  * A change entry as it is written, except for the resource's id column: with its date already in
@@ -166,7 +170,7 @@ function typedFieldColumns(fields: string) {
 function storedValueColumns(resource: MetafieldResource, fields: string) {
   const values = resource.tables.values;
   return {
-    resource_id: `${values}.${resource.idColumn}`,
+    resource_id: `${values}.${resource.foreignKey}`,
     namespace: `${fields}.namespace`,
     key: `${fields}.key`,
     type: `${fields}.type`,
@@ -206,9 +210,9 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
  * definitions service because a value belongs to its member or post and a definition belongs to
  * the site's settings, which are different aggregates rather than different layers.
  */
-export class MetafieldValuesService<R extends ResourceKind> {
+export class MetafieldValuesService {
   protected knex: Knex;
-  protected resource: MetafieldResource<R>;
+  protected resource: MetafieldResource;
   private fields: FieldSource;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
@@ -220,8 +224,6 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   private valueKey: string[];
   private valuesInput: z.ZodType<Record<string, unknown>>;
-  /** Whether a member owns a record: on members, the record is the member. */
-  private memberOf: (resourceId: string) => string | null;
 
   constructor({
     knex,
@@ -231,7 +233,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
     tracking,
   }: {
     knex: Knex;
-    resource: MetafieldResource<R>;
+    resource: MetafieldResource;
     fields: FieldSource;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
@@ -245,12 +247,10 @@ export class MetafieldValuesService<R extends ResourceKind> {
     this.valueKey = z
       .object({
         '@@PRIMARY_KEY@@': z.array(
-          z.union([DbMetafieldValue.keyof(), z.literal(resource.idColumn)]),
+          z.union([DbMetafieldValue.keyof(), z.literal(resource.foreignKey)]),
         ),
       })
       .parse(schema[resource.tables.values])['@@PRIMARY_KEY@@'];
-    const ofMembers = recordsAreMembers(resource);
-    this.memberOf = (resourceId) => (ofMembers ? resourceId : null);
     // From the fields table's `key` column, so no key a site could hold is rejected.
     this.valuesInput = z.record(z.string().max(fields.maxLength.key * 2 + 1), z.unknown());
   }
@@ -349,7 +349,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
     // way every time.
     const valuesTable = this.resource.tables.values;
     const fieldsName = this.fields.name;
-    const recordColumn = `${valuesTable}.${this.resource.idColumn}`;
+    const recordColumn = `${valuesTable}.${this.resource.foreignKey}`;
     // Each field's type and settings come with its first row only: a list's settings would
     // otherwise come back once for every answer, and one read can cover a whole list or export.
     const fieldRow = executor.raw('row_number() over (partition by ??, ?? order by ??, ??)', [
@@ -538,7 +538,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
     }
 
     // A record still to be added belongs to no member yet, so no member's own policy reaches it.
-    const record = { member: resourceId === null ? null : this.memberOf(resourceId) };
+    const record = { member: resourceId === null ? null : this.resource.memberOf(resourceId) };
     const byIdentity = await this.allowedFieldsByIdentity(executor, identities, caller, record);
     const writes: PlannedWrite[] = [];
     // Gathered rather than thrown as they are found. A write names several values, and
@@ -676,7 +676,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
     origin: WriteOrigin,
   ): Promise<void> {
     const { writtenBy } = origin;
-    const { tables, idColumn } = this.resource;
+    const { tables, foreignKey } = this.resource;
     // Built first, then sent as whole statements: a handful per write rather
     // than one per part, under one timestamp, because a write happened once
     // however many rows record it. Rows are removed one statement each, for
@@ -715,7 +715,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
       rows.push(
         ...set.map(({ path, ...columns }): DbValueRow => ({
           ...fieldReference(field),
-          [idColumn]: resourceId,
+          [foreignKey]: resourceId,
           path,
           ...columns,
           written_by_type: writtenBy.type,
@@ -759,7 +759,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
     if (removals.length > 0) {
       const heldRows = await trx(tables.values)
         .select(this.valueKey)
-        .where(idColumn, resourceId)
+        .where(foreignKey, resourceId)
         .where((builder) => {
           for (const { field } of removals) {
             builder.orWhere((rowsOf) => rowsOf.where(fieldReference(field)));
@@ -799,7 +799,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
       // which sorts before every string the history pages through time with.
       created_at: toDatabaseDate(now),
     };
-    await trx(tables.changes).insert({ ...entry, [idColumn]: resourceId });
+    await trx(tables.changes).insert({ ...entry, [foreignKey]: resourceId });
   }
 
   /**

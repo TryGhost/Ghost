@@ -9,7 +9,7 @@ import {
   type Namespaces,
 } from './namespaces';
 import { fieldSource, type FieldSource } from './queries';
-import type { MetafieldResource, ResourceKind } from './resource';
+import type { MetafieldResource } from './resource';
 import type { MetafieldsTracking } from './tracking';
 import { MetafieldValuesService } from './values-service';
 
@@ -17,12 +17,12 @@ import { MetafieldValuesService } from './values-service';
  * Metafields on one resource: its namespaces, its fields as the site reads them, and the services
  * over its definitions, values and bindings. Each is built for that resource and only that one.
  */
-export interface Metafields<R extends ResourceKind> {
+export interface Metafields {
   namespaces: Namespaces;
   fields: FieldSource;
   definitions: MetafieldDefinitionsService;
-  values: MetafieldValuesService<R>;
-  bindings: MetafieldBindingsService<R>;
+  values: MetafieldValuesService;
+  bindings: MetafieldBindingsService;
 }
 
 /**
@@ -31,8 +31,8 @@ export interface Metafields<R extends ResourceKind> {
  * definition is recorded. Each write of values is recorded in the resource's change events table.
  * A namespace nobody registered has no policy, so nobody reaches its fields.
  */
-export function metafieldsFor<R extends ResourceKind>(
-  resource: MetafieldResource<R>,
+export function metafieldsFor(
+  resource: MetafieldResource,
   wiring: {
     knex: Knex;
     namespaces: readonly NamespaceRegistration[];
@@ -46,7 +46,7 @@ export function metafieldsFor<R extends ResourceKind>(
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
     labs: { isSet(flag: string): boolean };
   },
-): Metafields<R> {
+): Metafields {
   const { knex, tracking } = wiring;
   const namespaces = createNamespaces(wiring.namespaces, {
     definitionLimit: wiring.definitionLimit,

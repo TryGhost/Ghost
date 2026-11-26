@@ -249,6 +249,6 @@ export function metafieldsRelation(resource: MetafieldResource) {
     tableName: resource.tables.values,
     tableNameAs: RELATION,
     type: 'oneToOne',
-    joinFrom: resource.idColumn,
+    joinFrom: resource.foreignKey,
   } as const;
 }
