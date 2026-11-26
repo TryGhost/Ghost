@@ -66,6 +66,10 @@ export const ReviewHeader: React.FC<{ app: AppIconSource; children?: React.React
 /** Runs edge to edge, past the dialog's padding, to set the app apart from what it asks. */
 export const ReviewSeparator: React.FC = () => <Separator className="-mx-6 w-auto" />;
 
+/** Shown on a review that replaced the one the publisher was looking at. */
+export const REVIEW_CHANGED =
+  'This app has changed since you opened it. Review the latest version before continuing.';
+
 /** Why this review replaced the one the publisher was looking at. */
 export const NoticeBanner: React.FC<{ notice?: string }> = ({ notice }) =>
   notice ? (

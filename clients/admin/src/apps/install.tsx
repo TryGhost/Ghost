@@ -2,7 +2,7 @@ import React from 'react';
 import { AppsGate } from './components/apps-gate';
 import { AppsListing } from './apps';
 import { AskAdminDialog } from './components/ask-admin-dialog';
-import { InstallDialog } from './components/install-dialog/install-dialog';
+import { InstallDialog } from './components/review/install-dialog';
 import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 
 /**

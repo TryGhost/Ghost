@@ -55,7 +55,7 @@ export const Review: React.FC<ReviewProps> = ({
         reviewingUpdate={Boolean(installation)}
       />
       <DialogFooter>
-        <Button variant="outline" onClick={onClose}>
+        <Button disabled={isConfirming} variant="outline" onClick={onClose}>
           Cancel
         </Button>
         <Button disabled={isConfirming} onClick={onConfirm}>

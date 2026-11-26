@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@tryghost/shade/components';
 import { toast } from 'sonner';
 import { isOutdatedReviewCode } from '@tryghost/app-contracts';
 import { useNavigate } from '@tryghost/admin-x-framework';
@@ -8,13 +7,11 @@ import { AlreadyInstalled } from './already-installed';
 import { Failed } from './failed';
 import { Loading } from './loading';
 import { Review } from './review';
+import { ReviewDialog } from './review-dialog';
+import { REVIEW_CHANGED } from './review-header';
 import { type InstallFailure, apiErrorOf, installFailureOf } from '@/apps/lib/install-failure';
 import { appRoute } from '@/apps/lib/routes';
 import { useInstallFlow } from '@/apps/lib/use-install-flow';
-
-/** Shown on a review that replaced the one the publisher was looking at. */
-const CHANGED =
-  'This app has changed since you opened it. Review the latest version before continuing.';
 
 /** Ghost puts the review it fetched instead in a 409's `details`, which is typed `unknown`. */
 function isPreview(value: unknown): value is AppInstallationPreview {
@@ -84,7 +81,7 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
       if (isOutdatedReviewCode(code)) {
         // Only a changed manifest or installation can carry the current review; otherwise
         // fetch it.
-        setNotice(CHANGED);
+        setNotice(REVIEW_CHANGED);
         const details: unknown = apiError?.details;
         const sendsReview = code === 'APP_MANIFEST_CHANGED' || code === 'APP_INSTALLATION_CHANGED';
         if (sendsReview && isPreview(details)) {
@@ -147,23 +144,5 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
     content = <AlreadyInstalled notice={notice} preview={reviewed} onClose={leave} />;
   }
 
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) {
-          leave();
-        }
-      }}
-    >
-      {/* The review can be taller than a short screen; the backdrop then scrolls the whole dialog. */}
-      <DialogContent
-        className="max-w-lg overflow-x-hidden"
-        data-testid="app-install-dialog"
-        scroll="overlay"
-      >
-        {content}
-      </DialogContent>
-    </Dialog>
-  );
+  return <ReviewDialog onClose={leave}>{content}</ReviewDialog>;
 };
