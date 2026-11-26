@@ -1,6 +1,6 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const { GHOST, adminWriteOrigin, callerOf } = require('../../../members-metafields');
+const { GHOST, callerOf, writeOriginOf } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -502,7 +502,7 @@ module.exports = class MemberBREADService {
     // The only route to this branch is the authenticated Admin API, so an anonymous
     // request is a mistake somewhere upstream rather than a writer to invent a name
     // for. Refusing keeps every stored writer resolvable.
-    const origin = adminWriteOrigin(options.context);
+    const origin = writeOriginOf(callerOf(options.context));
     if (!origin) {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.metafieldsWithoutWriter),

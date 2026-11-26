@@ -33,7 +33,6 @@ export {
 export type MemberBindings = MetafieldBindingsService<Members>;
 /** The members' definitions, read and changed for every namespace. */
 export type MemberDefinitions = MetafieldDefinitionsService;
-export { adminWriteOrigin } from './write-origin';
 export type { BoundField } from './metafields/bindings-service';
 export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
 export type { MetafieldChangeEvent, Members } from './members-resource';
@@ -41,7 +40,7 @@ export type { MetafieldChangeEvent, Members } from './members-resource';
 // Who is asking decides which fields a read or write reaches, by each namespace's access policy.
 // Every read and write takes one, so a new caller has to say who it is rather than get a default.
 export { MEMBER_ACCESS, type MemberAccess } from '@tryghost/metafield-types';
-export { GHOST, callerOf, type Caller } from './metafields/callers';
+export { GHOST, callerOf, writeOriginOf, type Caller } from './metafields/callers';
 
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the

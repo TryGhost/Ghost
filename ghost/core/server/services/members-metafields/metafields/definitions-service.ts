@@ -32,7 +32,6 @@ import {
   type FieldSource,
 } from './queries';
 import { mintableKey } from './key';
-import type { RequestContext } from '../../../lib/actor';
 import {
   DefinitionAdded,
   DefinitionDeleted,
@@ -43,7 +42,7 @@ import {
 } from './changes';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
-import type { Asking } from './callers';
+import { actingContextOf, type Asking, type Caller } from './callers';
 
 const MAX_KEY_ITERATIONS = 1000;
 
@@ -256,14 +255,14 @@ export class MetafieldDefinitionsService {
    * opens its own.
    */
   async add(
-    caller: Asking,
-    context: RequestContext,
+    caller: Caller,
     namespace: Namespace,
     input: unknown,
     executor: Knex = this.knex,
   ): Promise<Definition[]> {
     // Before anything is tracked: a caller who may not manage the namespace never attempted it.
     this.namespaces.assertManageable(caller, namespace);
+    const context = actingContextOf(caller);
     return this.tracking.definition('create', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const requestedCount = Array.isArray(input) ? input.length : 0;
@@ -415,14 +414,14 @@ export class MetafieldDefinitionsService {
    * opens its own.
    */
   async reorder(
-    caller: Asking,
-    context: RequestContext,
+    caller: Caller,
     namespace: Namespace,
     input: unknown,
     executor: Knex = this.knex,
   ): Promise<Definition[]> {
     // Before anything is tracked: a caller who may not manage the namespace never attempted it.
     this.namespaces.assertManageable(caller, namespace);
+    const context = actingContextOf(caller);
     return this.tracking.definition('reorder', async () => {
       await this.namespaces.assertChangeable(namespace);
       const parsed = ReorderInput.safeParse(input);
@@ -628,8 +627,7 @@ export class MetafieldDefinitionsService {
   }
 
   async edit(
-    caller: Asking,
-    context: RequestContext,
+    caller: Caller,
     namespace: Namespace,
     key: Key,
     input: unknown,
@@ -637,6 +635,7 @@ export class MetafieldDefinitionsService {
   ): Promise<EditedDefinition> {
     // Before anything is tracked: a caller who may not manage the namespace never attempted it.
     this.namespaces.assertManageable(caller, namespace);
+    const context = actingContextOf(caller);
     return this.tracking.definition('edit', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const parsed = this.inputs.edit.safeParse(input);
@@ -772,14 +771,14 @@ export class MetafieldDefinitionsService {
    * reversible soft state (see `edit` with a status change).
    */
   async destroy(
-    caller: Asking,
-    context: RequestContext,
+    caller: Caller,
     namespace: Namespace,
     key: Key,
     executor: Knex = this.knex,
   ): Promise<void> {
     // Before anything is tracked: a caller who may not manage the namespace never attempted it.
     this.namespaces.assertManageable(caller, namespace);
+    const context = actingContextOf(caller);
     return this.tracking.definition('delete', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       await ensureTransaction(executor, async (trx) => {
