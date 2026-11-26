@@ -42,7 +42,7 @@ export class ScrollHandler {
     options: ScrollOptions;
     currentMousePosition: {clientX: number; clientY: number} | null;
     findScrollableElementFrame: number | null;
-    scrollableElement: HTMLElement | null;
+    scrollableElement: Element | null;
     scrollAnimationFrame: number | null;
     private _isSafari: boolean;
 
@@ -98,9 +98,8 @@ export class ScrollHandler {
         this.scrollAnimationFrame = null;
     }
 
-    getScrollableElement(target: Element | null): HTMLElement | null {
-        const element = getParentScrollableElement(target);
-        return element instanceof HTMLElement ? element : null;
+    getScrollableElement(target: Element | null): Element | null {
+        return getParentScrollableElement(target);
     }
 
     _scroll(): void {
@@ -120,9 +119,7 @@ export class ScrollHandler {
         const clientX = this.currentMousePosition.clientX;
         const clientY = this.currentMousePosition.clientY;
 
-        const {offsetHeight, offsetWidth} = scrollableElement;
-
-        const topPosition = rect.top + offsetHeight - clientY;
+        const topPosition = rect.bottom - clientY;
         const bottomPosition = clientY - rect.top;
 
         // Safari will automatically scroll when the mouse is outside of the window
@@ -133,7 +130,7 @@ export class ScrollHandler {
             scrollableElement.scrollTop -= speed;
         }
 
-        if (rect.left + offsetWidth - clientX < sensitivity) {
+        if (rect.right - clientX < sensitivity) {
             scrollableElement.scrollLeft += speed;
         } else if (clientX - rect.left < sensitivity) {
             scrollableElement.scrollLeft -= speed;
