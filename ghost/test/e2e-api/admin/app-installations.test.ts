@@ -2837,8 +2837,9 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
       });
 
       // The session can finish after the uninstall and find the app gone, which is fine here.
+      const principal = await ownerPrincipal();
       const session = service()
-        .startSession(installation.id)
+        .startSession(installation.id, principal)
         .catch(() => {});
       const paused = await Promise.race([
         applied.promise.then(() => true),
