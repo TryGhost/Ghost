@@ -65,6 +65,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
   '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
+  '^ghost/core/server/data/schema/schema\\.ts$', // The table definitions, as static data; no database access or application instances.
   '^ghost/core/server/lib/sortable\\.ts$', // Ordered reads, inserts and reorders for a schema-declared collection, on the caller's connection; no application instances.
   '^ghost/core/server/lib/db-errors\\.ts$', // Recognises the errors a database rejects a write with.
   '^ghost/core/server/lib/changes\\.ts$', // Base classes a service extends to declare the changes it reports; they hold data only, no application instances.

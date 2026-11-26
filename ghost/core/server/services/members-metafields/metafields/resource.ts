@@ -1,4 +1,5 @@
 import type { ObjectType, permissions } from '../../../auth/permissions/permissions-data';
+import type { TableName } from '../../../data/schema/schema';
 
 /** The staff permissions that cover managing fields: each grants adding, editing and deleting. */
 export type ManagingPermission = {
@@ -38,13 +39,14 @@ export type Asking<R extends ResourceKind> = R['Caller'] | { kind: CallerKind<R>
  */
 export interface MetafieldResource<R extends ResourceKind = ResourceKind> {
   name: R['Name'];
+  /** Each named as `schema.ts` defines it, so what the schema says of a table can be read. */
   tables: {
     /** The fields defined on this resource. */
-    fields: string;
+    fields: TableName;
     /** What each member or post holds for each field: a row per part of a value. */
-    values: string;
+    values: TableName;
     /** Which field each port another domain declares writes into. */
-    bindings: string;
+    bindings: TableName;
   };
   /** The column of the values that holds the id of the member or post. */
   idColumn: string;
