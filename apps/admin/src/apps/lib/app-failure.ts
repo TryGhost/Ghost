@@ -3,7 +3,7 @@ import {
   isAppFailureCode,
   isUnconfirmedAppCode,
 } from '@tryghost/app-contracts';
-import { getSettingValue, type Setting } from '@tryghost/admin-x-framework/api/settings';
+import { type Config, isLabsFlagOn } from '@tryghost/admin-x-framework/api/config';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { z } from 'zod';
 
@@ -68,38 +68,14 @@ const SITE_BLOCKS_APPS: Partial<Record<AppFailureCode, SiteBlocksApps>> = {
  * Ghost turns the apps routes away with a 404 that has no code while the `apps` flag is off. The
  * routes that start a session and renew its token answer an installation that doesn't exist with
  * `APP_NOT_INSTALLED`, so from them a 404 without a code may mean apps are off. Only the flag
- * says whether they are: see `appsFlagOn`.
+ * says whether they are: see `sessionStartFailure`.
  */
 export function isUncodedNotFound(error: unknown): boolean {
   const failure = failureOf(error);
   return failure?.type === 'NotFoundError' && failure.code === undefined;
 }
 
-const LabsSchema = z.object({ apps: z.boolean().optional() });
-
-/**
- * Whether the site's Labs settings have the `apps` flag on, or undefined when they can't be read.
- * They're where Admin's Labs screen turns it on and off.
- */
-export function appsFlagOn(settings: Setting[]): boolean | undefined {
-  const value = getSettingValue<unknown>(settings, 'labs');
-  if (value === null) {
-    return false;
-  }
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-  let json: unknown;
-  try {
-    json = JSON.parse(value);
-  } catch {
-    return undefined;
-  }
-  const labs = LabsSchema.safeParse(json);
-  return labs.success ? labs.data.apps === true : undefined;
-}
-
-/** A session start Ghost turned away because the `apps` flag is off, as the site's Labs show. */
+/** A session start Ghost turned away because the `apps` flag is off, as the site's config shows. */
 export class AppsTurnedOffError extends Error {
   constructor(options?: ErrorOptions) {
     super('Apps are turned off on this site', options);
@@ -107,21 +83,25 @@ export class AppsTurnedOffError extends Error {
 }
 
 /**
- * What a session start failed with. A 404 without a code is checked against the site's Labs,
- * read again since the flag would have changed after Admin loaded them, and stays the error it
- * is unless they show apps off.
+ * What a session start failed with. A 404 without a code is checked against the `apps` flag in the
+ * site's config, read again since the flag would have changed after Admin loaded it, and stays the
+ * error it is unless the config shows apps off. A config that can't be read, or has no Labs, can't
+ * say. URL overrides don't count: the question is whether Ghost has apps off.
  */
 export async function sessionStartFailure(
   error: unknown,
-  readSettings: () => Promise<Setting[] | undefined>,
+  readConfig: () => Promise<Config | undefined>,
 ): Promise<unknown> {
   if (!isUncodedNotFound(error)) {
     return error;
   }
-  const settings = await readSettings();
-  return settings && appsFlagOn(settings) === false
-    ? new AppsTurnedOffError({ cause: error })
-    : error;
+  let labs: Config['labs'] | undefined;
+  try {
+    labs = (await readConfig())?.labs;
+  } catch {
+    return error;
+  }
+  return labs && !isLabsFlagOn(labs, 'apps') ? new AppsTurnedOffError({ cause: error }) : error;
 }
 
 /** Why no app opens on this site, read from a failed session start. */

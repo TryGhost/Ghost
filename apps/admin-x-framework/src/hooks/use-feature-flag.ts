@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useBrowseConfig } from '../api/config';
+import { isLabsFlagOn, useBrowseConfig } from '../api/config';
 import { useFeatureFlagOverrides } from '../providers/feature-flag-overrides-context';
 import type { RequestOptions } from '../utils/api/fetch-api';
 
@@ -28,7 +28,7 @@ export const useFeatureFlags = ({
   const labs = config?.config.labs;
 
   return useCallback(
-    (flag: string) => labs?.[flag] === true || enabledFlags.includes(flag),
+    (flag: string) => isLabsFlagOn(labs, flag) || enabledFlags.includes(flag),
     [labs, enabledFlags],
   );
 };

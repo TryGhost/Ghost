@@ -635,15 +635,14 @@ describe('Managing apps', () => {
     const { sessionsApi } = await fakeAppPage(installation());
     let appsOn = true;
     sessionsApi.setAnswer(() => {
-      // Turned off elsewhere since Admin loaded its settings
+      // Turned off elsewhere since Admin loaded its config
       appsOn = false;
       return appsTurnedOff();
     });
 
     await renderAdminApp(APP_ROUTE, {
       boot: {
-        browseConfig: { response: configResponse({ labs }) },
-        browseSettings: { response: () => settingsResponse({ labs: { apps: appsOn } }) },
+        browseConfig: { response: () => configResponse({ labs: { ...labs, apps: appsOn } }) },
       },
     });
 
@@ -655,7 +654,7 @@ describe('Managing apps', () => {
     await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 
-  it('says an app couldn’t load, not that apps are off, when Ghost turns its session away with Labs showing them on', async () => {
+  it('says an app couldn’t load, not that apps are off, when Ghost turns its session away with the config showing them on', async () => {
     fakeInstallations([installation()]);
     const { sessionsApi } = await fakeAppPage(installation());
     sessionsApi.set(appsTurnedOff());
@@ -2122,12 +2121,8 @@ describe('Managing apps', () => {
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
       sessionsApi.set(appsTurnedOff());
-      // Turned off elsewhere: Admin still holds the settings it loaded with them on
-      fakeAdminEndpoint(
-        'GET',
-        /^\/settings\/\?group=/,
-        settingsResponse({ labs: { apps: false } }),
-      );
+      // Turned off elsewhere: Admin still holds the config it loaded with them on
+      fakeAdminEndpoint('GET', '/config/', configResponse({ labs: { apps: false } }));
 
       void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
 

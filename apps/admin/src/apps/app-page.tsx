@@ -29,12 +29,14 @@ import {
   useReadAppInstallation,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
+import type { ConfigResponseType } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
@@ -685,11 +687,7 @@ function useAppSession(installationId: string): {
   restart: () => void;
 } {
   const { mutateAsync: start } = useStartAppSession();
-  // Admin's copy of the settings is shared, and only read again here
-  const { refetch: refetchSettings } = useBrowseSettings({
-    enabled: false,
-    defaultErrorHandler: false,
-  });
+  const fetchApi = useFetchApi();
   const [generation, setGeneration] = useState(0);
 
   // One start per open and per restart. Each start is its own query that never goes stale, isn't
@@ -703,9 +701,11 @@ function useAppSession(installationId: string): {
       try {
         session = (await start(installationId)).app_sessions[0];
       } catch (failed) {
+        // Read past Admin's copy of the config, which gates Apps: refreshing it with apps off
+        // would turn this page into Admin's not found screen
         throw await sessionStartFailure(
           failed,
-          async () => (await refetchSettings()).data?.settings,
+          async () => (await fetchApi<ConfigResponseType>(apiUrl('/config/'))).config,
         );
       }
       return session ? { ...session, receivedAt: Date.now() } : null;

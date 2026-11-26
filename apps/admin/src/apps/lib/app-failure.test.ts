@@ -4,10 +4,9 @@ import {
   JSONError,
   SessionExpiredError,
 } from '@tryghost/admin-x-framework/errors';
-import type { Setting } from '@tryghost/admin-x-framework/api/settings';
+import type { Config } from '@tryghost/admin-x-framework/api/config';
 import {
   AppsTurnedOffError,
-  appsFlagOn,
   endsAppSession,
   failureOfResponse,
   isRefusedToken,
@@ -53,65 +52,46 @@ describe('siteBlocksApps', () => {
     expect(siteBlocksApps(apiError(409, 'APP_SESSION_ENDED'))).toBeUndefined();
   });
 
-  it('reads apps as turned off only once the site’s Labs show it', () => {
+  it('reads apps as turned off only once the site’s config shows it', () => {
     expect(siteBlocksApps(new AppsTurnedOffError())).toBe('off');
     expect(siteBlocksApps(apiError(404, null, 'NotFoundError'))).toBeUndefined();
   });
 });
 
-const labsSettings = (labs: unknown) => [{ key: 'labs', value: labs }] as Setting[];
-
-describe('appsFlagOn', () => {
-  it('reads the apps flag from the site’s Labs settings', () => {
-    expect(appsFlagOn(labsSettings('{"apps":true}'))).toBe(true);
-    expect(appsFlagOn(labsSettings('{"apps":false}'))).toBe(false);
-    expect(appsFlagOn(labsSettings('{}'))).toBe(false);
-    expect(appsFlagOn([])).toBe(false);
-    expect(appsFlagOn(labsSettings('not json'))).toBeUndefined();
-  });
-
-  it.each([
-    ['JSON that isn’t an object', 'null'],
-    ['a list', '[]'],
-    ['a flag that isn’t true or false', '{"apps":"false"}'],
-    ['a value that isn’t JSON text', { apps: false }],
-  ])('can’t read Labs settings with %s', (_, labs) => {
-    expect(appsFlagOn(labsSettings(labs))).toBeUndefined();
-  });
-});
+const withLabs = (labs: unknown) => ({ labs }) as Config;
 
 describe('sessionStartFailure', () => {
   const uncodedNotFound = apiError(404, null, 'NotFoundError');
 
-  it('reads a 404 without a code as apps turned off when the site’s Labs, read again, show it', async () => {
-    const readSettings = vi.fn(() => Promise.resolve(labsSettings('{"apps":false}')));
+  it('reads a 404 without a code as apps turned off when the site’s config, read again, shows it', async () => {
+    for (const labs of [{ apps: false }, {}, { apps: 'true' }]) {
+      const readConfig = vi.fn(() => Promise.resolve(withLabs(labs)));
 
-    const failure = await sessionStartFailure(uncodedNotFound, readSettings);
+      const failure = await sessionStartFailure(uncodedNotFound, readConfig);
 
-    expect(failure).toBeInstanceOf(AppsTurnedOffError);
-    expect((failure as Error).cause).toBe(uncodedNotFound);
-    expect(readSettings).toHaveBeenCalledOnce();
-  });
-
-  it('keeps a 404 without a code as it is while the Labs show apps on, or can’t be read', async () => {
-    for (const settings of [
-      labsSettings('{"apps":true}'),
-      labsSettings('not json'),
-      labsSettings('{"apps":0}'),
-      undefined,
-    ]) {
-      expect(await sessionStartFailure(uncodedNotFound, () => Promise.resolve(settings))).toBe(
-        uncodedNotFound,
-      );
+      expect(failure).toBeInstanceOf(AppsTurnedOffError);
+      expect((failure as Error).cause).toBe(uncodedNotFound);
+      expect(readConfig).toHaveBeenCalledOnce();
     }
   });
 
-  it('reads no settings for any other failure', async () => {
-    const readSettings = vi.fn(() => Promise.resolve(labsSettings('{"apps":false}')));
+  it('keeps a 404 without a code as it is while the config shows apps on, or can’t say', async () => {
+    for (const readConfig of [
+      () => Promise.resolve(withLabs({ apps: true })),
+      () => Promise.resolve(withLabs(undefined)),
+      () => Promise.resolve(undefined),
+      () => Promise.reject(new Error('offline')),
+    ]) {
+      expect(await sessionStartFailure(uncodedNotFound, readConfig)).toBe(uncodedNotFound);
+    }
+  });
+
+  it('reads no config for any other failure', async () => {
+    const readConfig = vi.fn(() => Promise.resolve(withLabs({ apps: false })));
     const notInstalled = apiError(404, 'APP_NOT_INSTALLED', 'NotFoundError');
 
-    expect(await sessionStartFailure(notInstalled, readSettings)).toBe(notInstalled);
-    expect(readSettings).not.toHaveBeenCalled();
+    expect(await sessionStartFailure(notInstalled, readConfig)).toBe(notInstalled);
+    expect(readConfig).not.toHaveBeenCalled();
   });
 });
 
