@@ -1,10 +1,17 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const oembedService = require('../../../../../core/server/services/oembed');
+const oembed = require('../../../../../core/server/services/oembed').default;
 const WebmentionMetadata = require('../../../../../core/server/services/mentions/webmention-metadata');
 
 describe('WebmentionMetadata', function () {
+  let oembedService;
+
+  beforeAll(async function () {
+    await oembed.init();
+    oembedService = oembed.service;
+  });
+
   afterEach(function () {
     sinon.restore();
   });

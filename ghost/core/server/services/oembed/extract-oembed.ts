@@ -3,6 +3,9 @@ import errors from '@tryghost/errors';
 import { OembedData } from './oembed-schema';
 import { USER_AGENT } from './user-agent';
 
+// Whether the extractor's provider list has an endpoint for a URL
+export { hasProvider } from '@extractus/oembed-extractor';
+
 type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
 
 /**

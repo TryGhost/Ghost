@@ -1,4 +1,4 @@
-const oembed = require('../../services/oembed');
+const oembed = require('../../services/oembed').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -14,7 +14,7 @@ const controller = {
     query({ data }) {
       const { url, type } = data;
 
-      return oembed.fetchOembedDataFromUrl(url, type);
+      return oembed.service.fetchOembedDataFromUrl(url, type);
     },
   },
 };

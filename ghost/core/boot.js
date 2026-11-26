@@ -380,6 +380,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
+  const oembed = require('./server/services/oembed').default;
   const mentionsService = require('./server/services/mentions').default;
   const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
@@ -437,6 +438,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await audienceFeedback.init();
   // Members captures the ready Newsletters instance during initialization.
   await newsletters.init();
+  // Mentions and Recommendations read the ready oEmbed instance during initialization.
+  await oembed.init();
   // Recommendations reads the ready Mentions instance during initialization.
   await mentionsService.init();
   // Explore captures the ready Stats aggregate during initialization.
