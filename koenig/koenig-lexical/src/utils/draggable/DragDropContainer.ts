@@ -11,9 +11,13 @@ import type {DraggableInfo, DraggableInfoSeed} from './ScrollHandler';
 // contained draggable/droppable elements and functions to call when events are
 // processed.
 
+export type IndicatorSide = 'left' | 'right' | 'top' | 'bottom';
+
+export type DroppablePosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
 export interface IndicatorPosition {
     direction: 'horizontal' | 'vertical';
-    position: string;
+    position: IndicatorSide;
     beforeElems: HTMLElement[];
     afterElems: HTMLElement[];
     insertIndex: number;
@@ -25,15 +29,15 @@ export interface DragDropContainerOptions {
     isDragEnabled?: boolean;
     createGhostElement?: (draggableInfo: DraggableInfo) => Node | undefined;
     getDraggableInfo?: (draggableElement: HTMLElement) => DraggableInfoSeed | false;
-    getIndicatorPosition?: (draggableInfo: DraggableInfo, droppableElem: Element, position: string) => IndicatorPosition | false;
+    getIndicatorPosition?: (draggableInfo: DraggableInfo, droppableElem: Element, position: DroppablePosition) => IndicatorPosition | false;
     onDragStart?: (draggableInfo: DraggableInfo) => void;
     onDragEnterContainer?: (draggableInfo: DraggableInfo) => void;
-    onDragEnterDroppable?: (droppableElem: Element, position: string) => void;
-    onDragOverDroppable?: (droppableElem: Element, position: string) => void;
+    onDragEnterDroppable?: (droppableElem: Element, position: DroppablePosition) => void;
+    onDragOverDroppable?: (droppableElem: Element, position: DroppablePosition) => void;
     onDragLeaveDroppable?: (droppableElem: Element) => void;
     onDragLeaveContainer?: (draggableInfo: DraggableInfo) => void;
     onDragEnd?: () => void;
-    onDrop?: (draggableInfo: DraggableInfo, droppableElem: Element | null, position: string | null) => boolean | void;
+    onDrop?: (draggableInfo: DraggableInfo, droppableElem: Element | null, position: DroppablePosition | null) => boolean | void;
     onDropEnd?: (draggableInfo: DraggableInfo, success: boolean) => void;
 }
 
@@ -79,19 +83,19 @@ export class DragDropContainer {
     }
 
     // should be overridden by passed in option
-    getIndicatorPosition(_draggableInfo: DraggableInfo, _droppableElem: Element, _position: string): IndicatorPosition | false {
+    getIndicatorPosition(_draggableInfo: DraggableInfo, _droppableElem: Element, _position: DroppablePosition): IndicatorPosition | false {
         return false;
     }
 
     // override these via constructor options
     onDragStart(_draggableInfo: DraggableInfo) { }
     onDragEnterContainer(_draggableInfo: DraggableInfo) { }
-    onDragEnterDroppable(_droppableElem: Element, _position: string) { }
-    onDragOverDroppable(_droppableElem: Element, _position: string) { }
+    onDragEnterDroppable(_droppableElem: Element, _position: DroppablePosition) { }
+    onDragOverDroppable(_droppableElem: Element, _position: DroppablePosition) { }
     onDragLeaveDroppable(_droppableElem: Element) { }
     onDragLeaveContainer(_draggableInfo: DraggableInfo) { }
     onDragEnd() { }
-    onDrop(_draggableInfo: DraggableInfo, _droppableElem: Element | null, _position: string | null): boolean { return false; }
+    onDrop(_draggableInfo: DraggableInfo, _droppableElem: Element | null, _position: DroppablePosition | null): boolean { return false; }
     onDropEnd(_draggableInfo: DraggableInfo, _success: boolean) { }
 
     // TODO: allow configuration for ghost element creation
