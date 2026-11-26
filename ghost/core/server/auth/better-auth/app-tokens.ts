@@ -35,8 +35,8 @@ export type AppTokenRefusal = 'client_unavailable' | 'user_not_found' | 'session
 
 /**
  * Whether app tokens can be issued here. The legacy engine runs no OAuth provider. Under
- * Better Auth the provider is registered at boot, only when the `apps` flag is on and its
- * tables exist, so turning the flag on needs a restart.
+ * Better Auth the provider is registered at boot, only when the `apps` flag is on, so
+ * turning the flag on needs a restart.
  */
 export type AppTokensAvailability = 'ready' | 'legacy_engine' | 'needs_restart';
 

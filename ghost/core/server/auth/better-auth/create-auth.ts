@@ -61,7 +61,7 @@ export type CreateAuthDeps = {
   getRequestOrigin(headers: Headers): string | null;
   /**
    * Registers the OAuth provider and jwt plugins, which issue app tokens. Plugins are
-   * fixed at boot, so this is the `apps` flag then, and only once their tables exist.
+   * fixed at boot, so this is the `apps` flag then.
    */
   apps: boolean;
 };

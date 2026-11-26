@@ -313,10 +313,9 @@ upload then never runs for an app request that can't succeed.
 ### Details
 
 - The provider and the `jwt` plugin it signs with are registered only when the
-  `apps` labs flag is on at boot and their tables exist, so a site that boots
-  without the flag sees no change to sign-in or session reads. Migrations
-  create the tables; boot logs a warning naming any that are missing, which
-  only happens on a database the migrations haven't run on.
+  `apps` labs flag is on at boot, so a site that boots without the flag sees
+  no change to sign-in or session reads. Boot runs the migrations, which
+  create their tables, before it builds Better Auth.
   Plugins are fixed at boot: turning the flag on or off takes effect at the
   next restart, and until then a site that turned it off keeps the provider's
   hooks. The `jwt` plugin sets no header on session reads.
