@@ -1134,6 +1134,7 @@ const schema = {
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     expiry_at: { type: 'dateTime', nullable: true },
+    '@@INDEXES@@': [['expiry_at']],
   },
   posts_products: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
