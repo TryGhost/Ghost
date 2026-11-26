@@ -16,9 +16,10 @@ import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryg
  *   one the Admin API only redirects, such as a path without its trailing `/`.
  * - `unsupported`: This site's version of Ghost doesn't have the call the app made yet. The
  *   SDK knows this from the calls Admin listed when it connected.
- * - `blocked`: Admin refused by policy, such as a request the allowlist doesn't allow, or a
- *   query with a parameter name in brackets or one that repeats, or a value with a `%` that
- *   doesn't start a valid escape. Write a literal `%` as `%25`.
+ * - `blocked`: Admin refused to send the request, such as a route none of the app's scopes
+ *   opens, a write that sets code injection, a query with a parameter name in brackets or
+ *   one that repeats, or a value with a `%` that doesn't start a valid escape. Write a literal
+ *   `%` as `%25`.
  * - `network_error`: Admin couldn't reach its own API.
  * - `rejected`: Admin refused for another reason. The message says why.
  *

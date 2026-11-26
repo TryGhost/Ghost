@@ -6,9 +6,9 @@ import type { AppExports, HostExports } from '../../src/bridge/index.ts';
 describe('the bridge entry point', () => {
   it('exposes the contract and nothing else', () => {
     expect(Object.keys(bridge).sort()).toEqual([
-      'ADMIN_API_ALLOWLIST',
       'APP_ERROR_CODES',
       'APP_PATH_MAX_LENGTH',
+      'APP_ROUTES',
       'ARGUMENT_MESSAGES',
       'AppPathSchema',
       'BRIDGE_ERROR_CODES',
@@ -28,6 +28,7 @@ describe('the bridge entry point', () => {
       'PathMoveSchema',
       'PlaceSchema',
       'QUERY_PARAMETER_LIMIT',
+      'SERVER_GAPS',
       'START_TIMEOUT_MS',
       'TITLE_MAX_LENGTH',
       'TitleSchema',
@@ -47,6 +48,8 @@ describe('the bridge entry point', () => {
       'normaliseAppPath',
       'readQuery',
       'scopeForField',
+      'scopesOpening',
+      'serverGapsFor',
     ]);
   });
 

@@ -2270,7 +2270,7 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
     });
 
-    it('refuses what the allowlist doesn’t allow without sending it', async () => {
+    it('refuses what the app routes don’t list, and what Ghost’s server doesn’t check yet, without sending it', async () => {
       await fakeAppPage(postsApp());
       // Faked so that a request that got through is recorded, rather than failing as unhandled.
       const tokenApi = fakeAdminEndpoint('GET', /^\/users\/.*\/token\//i, { apiKey: {} });

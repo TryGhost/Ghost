@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { ADMIN_API_ALLOWLIST, scopeForField } from '@tryghost/app-contracts/bridge';
+import { SERVER_GAPS, scopeForField } from '@tryghost/app-contracts/bridge';
 import { serializers } from '@tryghost/api-framework';
 
 // @ts-expect-error This module lacks type definitions.
@@ -17,14 +17,11 @@ import models from '../../../../../../core/server/models';
 type Serializer = { browse(apiConfig: unknown, frame: unknown): void };
 type Controller = Record<string, { validation?: { options?: { include?: { values: string[] } } } }>;
 
-/**
- * What Ghost includes for a request that names no `include`, as the Admin API reads it, given the
- * request's other options as its query parser reads them.
- */
-function defaultsOf(serializer: Serializer, query: Record<string, unknown> = {}): string[] {
+/** What Ghost includes for a request that names no `include`, as the Admin API reads it. */
+function defaultsOf(serializer: Serializer): string[] {
   const frame = {
     apiType: 'admin',
-    options: { context: { user: '1' }, ...query } as Record<string, unknown>,
+    options: { context: { user: '1' } } as Record<string, unknown>,
   };
   serializers.input.all.all({}, frame as never);
   serializer.browse({}, frame);
@@ -40,10 +37,13 @@ const includesOf = (controller: Controller) => [
   ),
 ];
 
-// The posts and pages in the bridge's allowlist: one map of includes and sort fields to the scope
-// each needs, and Ghost's defaults by resource.
-const fieldScopes = ADMIN_API_ALLOWLIST.post.fieldScopes!;
-const defaultIncludes = ADMIN_API_ALLOWLIST.post.defaultIncludes!;
+// The bridge's field rules for posts and pages: one map of includes and sort fields to the scope
+// each needs, and Ghost's defaults for each.
+const { fieldScopes } = SERVER_GAPS.postFields;
+const defaultIncludes = {
+  posts: SERVER_GAPS.postFields.defaultIncludes,
+  pages: SERVER_GAPS.pageFields.defaultIncludes,
+};
 
 /** The scope a field needs, as the bridge reads its map, or undefined when apps can't have it. */
 const scopeOf = (field: string) => scopeForField(fieldScopes, field);
@@ -51,9 +51,10 @@ const scopeOf = (field: string) => scopeForField(fieldScopes, field);
 // Relations apps can't include at all.
 const REFUSED = new Set(['authors.roles', 'post_revisions.author']);
 
-// Apps reach posts and pages through Admin's bridge, which holds how a post performed back for
-// apps approved for `post:readStats`. It does that from what it knows of Ghost's includes,
-// defaults and sorts, so a change to any of them must change the bridge too.
+// Ghost doesn't yet hold what reading a post returns to an app's scopes, so Admin's bridge holds
+// how a post performed back for apps approved for `post:readStats`. It does that from what it
+// knows of Ghost's includes, defaults and sorts, so a change to any of them must change the
+// bridge too.
 describe('the app bridge’s post and page fields', function () {
   for (const [resource, serializer] of [
     ['posts', postsInput],
@@ -67,24 +68,8 @@ describe('the app bridge’s post and page fields', function () {
     });
   }
 
-  // The bridge names the defaults only for a request that asks for no `fields`, as Ghost does.
-  it('adds no defaults for a request that asks for some fields', function () {
-    for (const serializer of [postsInput, pagesInput]) {
-      for (const fields of ['id,title', ' ', ['', '']]) {
-        const included = defaultsOf(serializer, { fields });
-        assert.deepEqual(
-          included.filter((relation) => scopeOf(relation) === 'post:readStats'),
-          [],
-          JSON.stringify(fields),
-        );
-      }
-      assert.notDeepEqual(
-        defaultsOf(serializer, { fields: '' }).filter(
-          (relation) => scopeOf(relation) === 'post:readStats',
-        ),
-        [],
-      );
-    }
+  it('holds pages to the same map as posts', function () {
+    assert.equal(SERVER_GAPS.pageFields.fieldScopes, fieldScopes);
   });
 
   it('knows every relation Ghost lets posts and pages include', function () {

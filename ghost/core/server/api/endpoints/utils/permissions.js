@@ -27,6 +27,15 @@ const singularOf = (docName) =>
   docName.match(/ies$/) ? docName.replace(/ies$/, 'y') : docName.replace(/s$/, '');
 
 /**
+ * The permission key the standard check asks for, such as `post:browse`.
+ *
+ * @param {{docName: string, method: string}} apiConfig - Docname & method of API ctrl, or the
+ * ones its `permissions` names in their place
+ * @return {string}
+ */
+const permissionKey = (apiConfig) => capabilityKey(singularOf(apiConfig.docName), apiConfig.method);
+
+/**
  * @description Handle requests, which need authentication.
  *
  * @param {Object} apiConfig - Docname & method of API ctrl
@@ -169,7 +178,7 @@ module.exports = {
       );
     }
     const config = Object.assign({ docName, method }, typeof own === 'object' ? own : {});
-    const key = capabilityKey(singularOf(config.docName), config.method);
+    const key = permissionKey(config);
     if (!scopesAllow(capabilities(principal).scopes, key)) {
       const err = noPermission();
       err.message = tpl(messages.noPermissionToCall, {
@@ -181,4 +190,5 @@ module.exports = {
   },
 
   APP_UNCHECKED_ALLOWLIST,
+  permissionKey,
 };

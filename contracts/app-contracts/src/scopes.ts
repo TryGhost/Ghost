@@ -1,7 +1,7 @@
 /**
  * The scope registry: every scope an app can ask for, defined once. Manifest validation,
- * Admin's review screen and the bridge's allowlist all read it, so no other copy of the list
- * exists.
+ * Admin's review screen and the bridge, for every route's scope and its include and sort rules,
+ * all read it, so no other copy of the list exists. Ghost's server holds an app's calls to the scopes it was approved for.
  *
  * A scope's permission key is the permission Platform uses in Core, `<resource>:<action>`, and
  * its resource is Platform's object type, exactly. The keys are provisional until Platform agrees

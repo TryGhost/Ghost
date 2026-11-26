@@ -1,9 +1,9 @@
 import type { AppPermissionKey } from '../scopes.ts';
-import { findAllowedAdminApiRoute, scopeForField, type AdminApiRouteGroup } from './allowlist.ts';
-import { refusedContent } from './content.ts';
+import { scopesOpening, serverGapsFor } from './app-routes.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
 import { readQuery, writeQuery } from './query.ts';
 import { isContainedPath, type FetchMethod } from './rules.ts';
+import { SERVER_GAPS, type ServerGap, type ServerGapName } from './server-gaps.ts';
 
 // The URL parser reads an escaped separator as part of one segment, but whatever decodes the
 // path next may read it as two segments.
@@ -14,6 +14,10 @@ const ENCODED_SEPARATOR = /%2f|%5c/i;
 // whose path or query mentions either could reach a route other than the one checked here.
 const GHOST_API = /ghost\/api/i;
 const VERSION_SEGMENT = /^(?:v2|v3|v4|canary)$/i;
+
+// The site's public details, for showing its branding. Ghost serves them without signing in, so
+// they need no scope, and reads no query parameters on them.
+const SITE = /^\/site\/?$/i;
 
 // Decodes every escape that's valid on its own, byte by byte, and leaves the rest. Only used
 // to look for the ASCII text above, so a byte of a longer character can decode to anything.
@@ -29,22 +33,28 @@ export interface AdminApiRequest {
 
 /**
  * The result of `checkAdminApiRequest`: the URL to request, the path within the API it reaches
- * and the allowlist group that allows it, or the code Admin refuses the request with. A refusal
- * as `blocked` says why in `detail`, naming the method and path, or what in the request was refused.
+ * and the server gaps the bridge covered on it, or the code Admin refuses the request with. A
+ * refusal as `blocked` says why in `detail`, naming the method and path, or what in the request
+ * was refused, and names the server gap that refused it in `gap`, when one did.
  */
 export type AdminApiRequestCheck =
   | {
       readonly url: URL;
       readonly pathname: string;
-      readonly group: AdminApiRouteGroup;
+      readonly gaps: readonly ServerGapName[];
       readonly problem?: undefined;
     }
   | { readonly problem: 'invalid_path' }
-  | { readonly problem: 'blocked'; readonly pathname: string; readonly detail: string };
+  | {
+      readonly problem: 'blocked';
+      readonly pathname: string;
+      readonly detail: string;
+      readonly gap?: ServerGapName;
+    };
 
 /**
- * Checks a request an app asks Admin to make against the Admin API root, such as
- * `https://site.example/ghost/api/admin/`, and against the allowlist, in one step.
+ * Resolves a request an app asks Admin to make against the Admin API root, such as
+ * `https://site.example/ghost/api/admin/`, and covers the gaps in what Ghost's server checks.
  *
  * A leading `/` means the API root, not the origin, so `/posts/?limit=5` is
  * `https://site.example/ghost/api/admin/posts/?limit=5`. The root may be written with or
@@ -54,17 +64,19 @@ export type AdminApiRequestCheck =
  * Absolute and protocol-relative URLs, paths that don't start with `/`, backslashes, `..` in
  * any spelling the URL parser understands, and escaped separators are all `invalid_path`.
  *
- * A path that stays under the root is `blocked` unless the allowlist has a route for where it
- * resolves to, with this method. It's also `blocked` when its path or query mentions `ghost/api`,
- * or its first segment is an old API version (`v4`), whatever the allowlist says; when its query
- * isn't one every parser reads alike (`readQuery`); when it carries a query parameter its group
- * doesn't list; when its group checks content and its body holds a field `refusedContent`
- * refuses; or when it needs a scope, by its route, an `include` or an `order`, that isn't among
- * `approvedScopes`: those of the installation the app runs as.
+ * A path that stays under the root is `blocked` when its path or query mentions `ghost/api`,
+ * or its first segment is an old API version (`v4`); when its query isn't one every parser reads
+ * alike (`readQuery`); when `APP_ROUTES` lists no route for it with this method, unless it reads
+ * the site's public details; when the installation wasn't approved for the scope its route is
+ * listed under; or when a server gap on the route refuses it.
  *
  * The query is never sent as the app spelled it. The bridge reads it strictly and writes its
- * own, one `name=value` for each parameter, so the parameters checked here are exactly the ones
- * the server reads.
+ * own, one `name=value` for each parameter, so the parameters the gaps acted on are exactly the
+ * ones the server reads.
+ *
+ * `approvedScopes` are those of the installation the app runs as, which the route's scope
+ * check and the include and sort gaps read. Every gap `APP_ROUTES` names for the route is applied, in order: the first to
+ * refuse the request ends it, and each of the others may rewrite its query.
  */
 export function checkAdminApiRequest(
   request: AdminApiRequest,
@@ -99,7 +111,8 @@ export function checkAdminApiRequest(
   // Slice against the root as normalised above, so a root written without its trailing `/`
   // can't shift the slice.
   const pathname = url.pathname.slice(root.pathname.length - 1);
-  const blocked = (detail: string) => ({ problem: 'blocked', pathname, detail }) as const;
+  const blocked = (detail: string, gap?: ServerGapName) =>
+    ({ problem: 'blocked', pathname, detail, ...(gap && { gap }) }) as const;
 
   const address = `${pathname}${url.search}`;
   const [first = ''] = decodeEscapes(pathname).split('/').filter(Boolean);
@@ -110,91 +123,32 @@ export function checkAdminApiRequest(
   ) {
     return blocked(`Apps can't use ${method} ${pathname}: it names an old API address`);
   }
-
   const read = readQuery(url.search);
   if ('refused' in read) {
     return blocked(`${read.refused} (${method} ${pathname})`);
   }
-  let query = read.parameters;
 
-  const allowed = findAllowedAdminApiRoute(pathname, method);
-  if (!allowed) {
+  const scopes = scopesOpening(pathname, method);
+  const site = method === 'GET' && SITE.test(pathname);
+  if (scopes.length === 0 && !site) {
     return blocked(`Apps can't use ${method} ${pathname}`);
   }
-  const { group, resource } = allowed;
-  const unapproved = (scope: AppPermissionKey | null, what: string) =>
-    scope !== null && !approvedScopes.has(scope)
-      ? blocked(`This app wasn't approved for ${scope}, which ${what} needs`)
-      : undefined;
-
-  const forRoute = unapproved(group.scope, `${method} ${pathname}`);
-  if (forRoute) {
-    return forRoute;
+  const unapproved = scopes.find((scope) => !approvedScopes.has(scope));
+  if (unapproved) {
+    return blocked(`This app wasn't approved for ${unapproved}, which ${method} ${pathname} needs`);
   }
 
-  const { allowedParameters } = group;
-  for (const name of query.keys()) {
-    if (!allowedParameters.includes(name)) {
-      return blocked(`Apps can't use the ${name} parameter on ${method} ${pathname}`);
+  let query = read.parameters;
+  const gaps: readonly ServerGapName[] = site ? ['noParameters'] : serverGapsFor(pathname, method);
+  for (const name of gaps) {
+    const gap: ServerGap = SERVER_GAPS[name];
+    const outcome = gap.apply({ method, pathname, query, body, approvedScopes });
+    if ('refused' in outcome) {
+      return blocked(outcome.refused, name);
     }
-  }
-
-  // Ghost splits both on commas and trims each part, and reads a sort as a field and a
-  // direction.
-  const { fieldScopes } = resource;
-  const included = (query.get('include') ?? '')
-    .split(',')
-    .map((part) => part.trim())
-    .filter(Boolean);
-  if (fieldScopes) {
-    for (const relation of included) {
-      const scope = scopeForField(fieldScopes, relation);
-      if (scope === undefined) {
-        return blocked(`Apps can't include ${relation} on ${method} ${pathname}`);
-      }
-      const refused = unapproved(scope, `including ${relation}`);
-      if (refused) {
-        return refused;
-      }
-    }
-    for (const part of (query.get('order') ?? '').split(',')) {
-      const [field = ''] = part.trim().split(/\s+/);
-      const refused = unapproved(scopeForField(fieldScopes, field) ?? null, `ordering by ${field}`);
-      if (refused) {
-        return refused;
-      }
-    }
-  }
-
-  // Ghost includes how a post performed by default, so a request that names nothing names what
-  // the app may have. Ghost leaves its defaults out when a request asks for some `fields`, so
-  // such a request is left alone and isn't sent relations it never asked for. A route that takes
-  // no `include`, such as a delete, is left alone too. `authors` needs no scope of its own, so
-  // what's named is never empty, which Ghost would refuse.
-  const defaults = resource.defaultIncludes?.[pathname.split('/')[1]?.toLowerCase() ?? ''];
-  const takesInclude = allowedParameters.includes('include');
-  const asksForFields = (query.get('fields') ?? '') !== '';
-  if (defaults && fieldScopes && takesInclude && !asksForFields && included.length === 0) {
-    const allowedDefaults = defaults.filter((relation) => {
-      const scope = scopeForField(fieldScopes, relation);
-      return scope === null || (scope !== undefined && approvedScopes.has(scope));
-    });
-    query = new Map(query).set('include', allowedDefaults.join(','));
-  }
-
-  if (group.checksContent && body !== undefined) {
-    let content: unknown;
-    try {
-      content = JSON.parse(body);
-    } catch {
-      return blocked(`Apps can only send JSON to ${method} ${pathname}`);
-    }
-    const refused = refusedContent(content);
-    if (refused) {
-      return blocked(`Apps can't send ${refused} to ${method} ${pathname}`);
-    }
+    ({ query } = outcome);
   }
 
   url.search = writeQuery(query);
-  return { url, pathname, group };
+  return { url, pathname, gaps };
 }
