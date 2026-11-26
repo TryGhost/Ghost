@@ -343,8 +343,8 @@ returns the URL to request, or the reason it refused. An app can only reach
 the routes in `ADMIN_API_ALLOWLIST`, and only the routes, includes and sorts
 its installation's approved scopes cover. Writes of posts, pages and tags are
 also checked for code injection and mobiledoc (`content.ts`). It all stands in
-for apps' own token until the server checks what an app does. The exact rules,
-and what the security review must look at, are in the header of
+for an app user token until Admin sends an app's calls with one. The exact
+rules, and what the security review must look at, are in the header of
 `src/bridge/allowlist.ts` and in `src/bridge/resolve.ts`.
 
 ```ts

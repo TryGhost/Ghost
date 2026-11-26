@@ -9,11 +9,12 @@ describe('updateUserLastSeenMiddleware', function () {
     sinon.restore();
   });
 
-  function createApp(user) {
+  function createApp(user, auth) {
     const app = express();
 
     app.use((req, res, next) => {
       req.user = user;
+      req.auth = auth;
       next();
     });
     app.use(updateUserLastSeenMiddleware);
@@ -51,6 +52,19 @@ describe('updateUserLastSeenMiddleware', function () {
 
       await request(createApp(fakeUser)).get('/').expect(204);
       sinon.assert.calledOnce(fakeUser.updateLastSeen);
+    });
+
+    it("doesn't update it for an app acting for the user", async function () {
+      const fakeLastSeen = moment().subtract(1, 'hours').toDate();
+      const fakeUser = {
+        get: sinon.stub().withArgs('last_seen').returns(fakeLastSeen),
+        updateLastSeen: sinon.stub().resolves(),
+      };
+
+      await request(createApp(fakeUser, { kind: 'app' }))
+        .get('/')
+        .expect(204);
+      sinon.assert.notCalled(fakeUser.updateLastSeen);
     });
 
     it('calls updateLastSeen on the req.user, calling next with err if error', async function () {

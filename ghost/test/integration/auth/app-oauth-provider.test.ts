@@ -444,7 +444,7 @@ describe("Better Auth's OAuth provider for apps", function () {
       assert.deepEqual(JSON.parse(ghostRow.metadata), JSON.parse(providerRow.metadata));
     });
 
-    it('issues a prefixed, opaque user token for an hour, with no refresh or ID token', async function () {
+    it('issues a prefixed, opaque app user token for an hour, with no refresh or ID token', async function () {
       const auth = build({ apps: true });
       const id = installationId();
       const session = await staffSession(auth);

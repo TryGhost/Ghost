@@ -3,10 +3,34 @@ const tpl = require('@tryghost/tpl');
 const auth = require('../../../../auth');
 const shared = require('../../../shared');
 const apiMw = require('../../middleware');
+const { routedMethod } = require('@tryghost/api-framework');
+const apiPermissions = require('../../../../api/endpoints/utils/permissions');
 
 const messages = {
   apiTokenBlocked: 'API tokens do not have permission to access this endpoint',
   staffTokenBlocked: 'Staff tokens are not allowed to access this endpoint',
+  appTokenBlocked: 'Apps are not allowed to access this endpoint',
+};
+
+/**
+ * The endpoints a token acting for a staff user may never call, whatever the user's role:
+ * deleting all content, transferring ownership and resetting authentication.
+ *
+ * @param {import('express').Request} req
+ */
+const isBlockedForStaffTokens = (req) => {
+  // Express matches routes case-insensitively but req.path preserves the
+  // original case. Normalise before comparing so a mixed-case URL can't
+  // slip past the blocklist while still routing to the lowercase handler.
+  // Match both with and without trailing slash since Express routes accept both
+  const path = req.path.toLowerCase();
+  const isDeleteAllContent = req.method === 'DELETE' && (path === '/db/' || path === '/db');
+  const isTransferOwnership =
+    req.method === 'PUT' && (path === '/users/owner/' || path === '/users/owner');
+  const isResetAuthentication =
+    req.method === 'POST' &&
+    (path === '/authentication/reset/' || path === '/authentication/reset');
+  return isDeleteAllContent || isTransferOwnership || isResetAuthentication;
 };
 
 /**
@@ -15,6 +39,19 @@ const messages = {
  * @param {import('express').NextFunction} next
  */
 const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
+  // CASE: an app acting for a staff user, held to the staff token blocklist, else skip to
+  // permission system
+  if (req.auth?.kind === 'app') {
+    if (isBlockedForStaffTokens(req)) {
+      return next(
+        new errors.NoPermissionError({
+          message: tpl(messages.appTokenBlocked),
+        }),
+      );
+    }
+    return next();
+  }
+
   // CASE: user is logged in with user auth, skip to permission system
   if (!req.api_key) {
     return next();
@@ -23,19 +60,7 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
   // CASE: user is requesting with staff token, check blocklist, else skip to permission system
   // Staff tokens have a user_id associated with them, integration tokens don't
   if (req.api_key?.get('user_id')) {
-    // Express matches routes case-insensitively but req.path preserves the
-    // original case. Normalise before comparing so a mixed-case URL can't
-    // slip past the blocklist while still routing to the lowercase handler.
-    // Match both with and without trailing slash since Express routes accept both
-    const path = req.path.toLowerCase();
-    const isDeleteAllContent = req.method === 'DELETE' && (path === '/db/' || path === '/db');
-    const isTransferOwnership =
-      req.method === 'PUT' && (path === '/users/owner/' || path === '/users/owner');
-    const isResetAuthentication =
-      req.method === 'POST' &&
-      (path === '/authentication/reset/' || path === '/authentication/reset');
-
-    if (isDeleteAllContent || isTransferOwnership || isResetAuthentication) {
+    if (isBlockedForStaffTokens(req)) {
       return next(
         new errors.NoPermissionError({
           message: tpl(messages.staffTokenBlocked),
@@ -101,6 +126,46 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
   );
 };
 
+/**
+ * The handlers a route runs for a request's method, picked as Express picks them: the layers for
+ * that verb or for every verb, with HEAD served by GET when the route has no HEAD of its own
+ *
+ * @param {{stack: {method?: string, handle: Function}[], methods: Record<string, boolean>}} route
+ * @param {string} method
+ */
+const routeHandlers = (route, method) => {
+  let verb = method.toLowerCase();
+  if (verb === 'head' && !route.methods.head) {
+    verb = 'get';
+  }
+  return route.stack
+    .filter((layer) => !layer.method || layer.method === verb)
+    .map((layer) => layer.handle);
+};
+
+/**
+ * Refuses an app the method its route ends in would refuse it on, before the route's own
+ * middleware runs: a rate limit keyed on the staff user the app acts for, or an upload being
+ * parsed and stored. The method is the last handler the route runs for the request's verb, from
+ * `http()`; a route ending in a controller outside the pipeline refuses apps. A route ending in
+ * anything else authenticates a router mounted after it, whose routes the pipeline guards, so
+ * the app goes on to them.
+ *
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
+const refuseAppEarly = function refuseAppEarly(req, res, next) {
+  if (req.auth?.kind !== 'app') {
+    return next();
+  }
+  const routed = req.route && routedMethod(routeHandlers(req.route, req.method).at(-1));
+  if (!routed) {
+    return next();
+  }
+  apiPermissions.refuseAppEarly(routed, req.auth).then(() => next(), next);
+};
+
 /** @typedef {import('express').RequestHandler} RequestHandler */
 
 /**
@@ -116,6 +181,7 @@ module.exports.authAdminApi = [
   shared.middleware.urlRedirects.adminSSLAndHostRedirect,
   shared.middleware.prettyUrls,
   tokenPermissionCheck,
+  refuseAppEarly,
 ];
 
 /**
@@ -145,3 +211,5 @@ module.exports.publicAdminApi = [
   shared.middleware.prettyUrls,
   tokenPermissionCheck,
 ];
+
+module.exports.routeHandlers = routeHandlers;

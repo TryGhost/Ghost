@@ -12,6 +12,7 @@ import { createIdentityChecker, readTrustedOrigins } from './identity-check';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
+export type { InstallationAccess } from './app-installations-repository';
 export type { Installation, InstallationWithHistory } from './codec';
 export type { AppInstallation } from './serializers';
 export type { AppInstallationPreview, AppSession } from './service';

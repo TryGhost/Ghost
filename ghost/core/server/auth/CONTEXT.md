@@ -35,8 +35,8 @@ _Avoid_: integration, plugin
 ### Credentials
 
 **Credential**:
-What a request presents to say who it is: a session cookie, an Admin API token
-or a Content API key.
+What a request presents to say who it is: a session cookie, an Admin API token,
+an app token or a Content API key.
 _Avoid_: login, secret
 
 **Admin API key**:
@@ -65,22 +65,25 @@ An access token Ghost issues to an app for calls to the Admin API. Each is
 opaque (a random string, not a JWT) and starts with `ghost_app_`. Which kind it
 is comes from the OAuth client it was issued to and whether it acts for a staff
 user, never from its text. Under the Better Auth engine, Ghost can issue and
-validate user tokens, but nothing hands one out yet and the Admin API doesn't
-accept them. The other kinds aren't built yet.
+validate app user tokens, and the Admin API accepts them, but nothing hands one
+out yet. The other kinds aren't built yet.
 _Avoid_: Admin API token, bearer token
 
-**User token**:
+**App user token**:
 The app token Admin holds for an app while a staff user has it open. A request
 with one is made by an app principal acting for that user, and the token ends
 no later than their session.
+_Avoid_: user token
 
-**Backend token**:
+**App backend token**:
 An app backend's own app token, for work with no staff user behind it. Not
 built yet. Earlier versions of this glossary called this the app token.
+_Avoid_: backend token
 
-**Exchanged user token**:
+**Exchanged app user token**:
 A short-lived app token a backend gets in exchange for an ID token, to act for
 the staff user the ID token names. Not built yet.
+_Avoid_: exchanged user token
 
 **ID token**:
 What tells an app's backend which staff user is asking: a signed JWT, not an
@@ -123,9 +126,9 @@ An integration, identified by an Admin API token or a Content API key.
 
 **App principal**:
 An app acting on the site, for a staff user or on its own. It names the app's
-installation, not the app, and always has scopes. Its shape is provisional,
-and nothing creates one yet: an app's calls through Admin today use the staff
-user's session, so they resolve to that user's principal.
+installation, not the app, and always has scopes. Its shape is provisional.
+An app user token resolves to one, but Admin still sends an app's calls with the
+staff user's session, so they resolve to that user's principal.
 
 **Acting for**:
 The staff user an app principal acts on behalf of, or no one when the app acts
@@ -278,8 +281,8 @@ _Avoid_: system context, admin context
 - `authorizeAdminApi` only refuses an Admin API request with no staff user or
   API key, or from an app with no staff user to act for. It doesn't authorize:
   what the request may do is the policy's decision.
-- The Admin API doesn't accept the `Bearer` scheme yet, so no credential here
-  is a bearer token.
+- The Admin API accepts the `Bearer` scheme only for app tokens. No other
+  credential here is sent with it.
 - Scopes narrower than a permission aren't built yet. They will have names of
   their own, never an existing permission key, so until they land every scope
   is a permission key or a wildcard.
@@ -288,4 +291,6 @@ _Avoid_: system context, admin context
   **approved scopes** of an installation in
   [App Installations](../services/app-installations/CONTEXT.md). Each is a
   permission key, never a wildcard, and **resource** there means an object
-  type. The policy doesn't check them yet: Admin's bridge holds an app to them.
+  type. For a request with an app user token, they cap the standard permission
+  checks through the policy. Admin still sends an app's calls with the staff
+  user's session, so its bridge holds an app to them there.
