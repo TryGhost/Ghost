@@ -9,6 +9,7 @@ import {
   allowUnhandledRequests,
   callAppFrame,
   callHostRaw,
+  configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -41,6 +42,7 @@ import {
   fakeInstallations,
   fakeSessionStart,
   imageSources,
+  SESSION_TOKEN,
   installation,
   labs,
   manifest,
@@ -95,6 +97,15 @@ const apiError = (status: number, message: string, code?: string) =>
     status,
     headers: { 'content-type': 'application/json' },
   });
+
+/** How Ghost turns away the apps routes while the `apps` flag is off: a 404 without a code. */
+const appsTurnedOff = () =>
+  new Response(
+    JSON.stringify({
+      errors: [{ type: 'NotFoundError', message: 'Resource could not be found.' }],
+    }),
+    { status: 404, headers: { 'content-type': 'application/json' } },
+  );
 
 /**
  * Sets `appFrameTimeouts.ready` to `ms` while `run` runs, or until `run` calls `restore` to give
@@ -581,6 +592,120 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(sessionsApi.requests).toHaveLength(2);
+  });
+
+  it('says apps need the new auth engine on a site that doesn’t run it, with no Try again', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'Apps need Ghost’s new auth engine.', 'APP_AUTH_ENGINE_UNSUPPORTED'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('app-needs-new-auth-engine'))
+      .toHaveTextContent('Apps need Ghost’s new auth engine');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+  });
+
+  it('says apps open after a restart when the apps flag was turned on since Ghost started', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'Apps can’t open until Ghost restarts.', 'APP_TOKENS_UNAVAILABLE'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('apps-need-restart'))
+      .toHaveTextContent('they open once Ghost restarts');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+
+    sessionsApi.set(installation());
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('says apps are turned off when Ghost turns the session away for that, with no Try again', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    let appsOn = true;
+    sessionsApi.setAnswer(() => {
+      // Turned off elsewhere since Admin loaded its config
+      appsOn = false;
+      return appsTurnedOff();
+    });
+
+    await renderAdminApp(APP_ROUTE, {
+      boot: {
+        browseConfig: { response: () => configResponse({ labs: { ...labs, apps: appsOn } }) },
+      },
+    });
+
+    await expect
+      .element(page.getByTestId('apps-turned-off'))
+      .toHaveTextContent('Apps are turned off on this site');
+    await expect.element(appsScreen.notInstalled()).not.toBeInTheDocument();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+  });
+
+  it('says an app couldn’t load, not that apps are off, when Ghost turns its session away with the config showing them on', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(appsTurnedOff());
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByText('Couldn’t load this app. Please try again.')).toBeVisible();
+    await expect.element(page.getByTestId('apps-turned-off')).not.toBeInTheDocument();
+    await expect.element(appsScreen.notInstalled()).not.toBeInTheDocument();
+  });
+
+  it('says the staff user doesn’t have access to apps when their role can’t read installations', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              type: 'NoPermissionError',
+              message: 'You do not have permission to read app_installations',
+            },
+          ],
+        }),
+        { status: 403, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByTestId('apps-access-denied')).toBeVisible();
+  });
+
+  it('says the staff user doesn’t have access to apps when Ghost refuses them a session', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(
+        403,
+        'Apps open only in a signed-in Administrator’s or Owner’s session.',
+        'APP_STAFF_SESSION_REQUIRED',
+      ),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('apps-access-denied'))
+      .toHaveTextContent('You don’t have access to apps');
+    await expect.element(page.getByText('Couldn’t load this app')).not.toBeInTheDocument();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
   // Uninstalling and installing it again from a link is how another developer's key gets pinned.
@@ -1929,6 +2054,107 @@ describe('Managing apps', () => {
       const { headers } = postsApi.requests[0];
       expect(headers['app-pragma']).toBe('no-cache');
       expect(headers['x-podcast-trace']).toBe('abc');
+      // The session's token, which the app's frame never sees
+      expect(headers.authorization).toBe(`Bearer ${SESSION_TOKEN.access_token}`);
+    });
+
+    it('renews a token Ghost refused and sends the request again, without reloading the app', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const renewApi = fakeAdminEndpoint('POST', `/apps/installations/${postsApp().id}/tokens/`, {
+        app_tokens: [{ ...SESSION_TOKEN, access_token: 'ghost_app_renewed' }],
+      });
+      const postsApi = fakeAdminEndpoint('GET', '/posts/?include=authors', ({ headers }) =>
+        headers.authorization === 'Bearer ghost_app_renewed'
+          ? { posts: [] }
+          : apiError(401, 'The app token is invalid or has expired.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const frame = appsScreen.frame().element();
+
+      const response = answer(await callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }));
+
+      expect(response.status).toBe(200);
+      expect(postsApi.requests).toHaveLength(2);
+      expect(renewApi.requests).toHaveLength(1);
+      expect(renewApi.requests[0].body).toEqual({
+        app_tokens: [{ revision: postsApp().revision }],
+      });
+      expect(appsScreen.frame().element()).toBe(frame);
+      expect(sessionsApi.requests).toHaveLength(1);
+    });
+
+    it('ends the session when Ghost refuses to renew its token', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        apiError(409, 'This app session has ended.', 'APP_SESSION_ENDED'),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'The app token is invalid or has expired.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      // The session ends while the call is out, taking the frame with it
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      // Ended as any session is: Admin starts a new one
+      await expect.poll(() => sessionsApi.requests.length).toBe(2);
+    });
+
+    it('shows apps are turned off when they were while it was open, renewing nothing more', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const renewApi = fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        appsTurnedOff(),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'Apps are not enabled on this site.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      sessionsApi.set(appsTurnedOff());
+      // Turned off elsewhere: Admin still holds the config it loaded with them on
+      fakeAdminEndpoint('GET', '/config/', configResponse({ labs: { apps: false } }));
+
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      await expect.element(page.getByTestId('apps-turned-off')).toBeVisible();
+      expect(renewApi.requests).toHaveLength(1);
+      expect(sessionsApi.requests).toHaveLength(2);
+    });
+
+    it('says the staff user doesn’t have access to apps once Ghost refuses them while it’s open', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const staffSessionRequired = apiError(
+        403,
+        'Apps open only in a signed-in Administrator’s or Owner’s session.',
+        'APP_STAFF_SESSION_REQUIRED',
+      );
+      fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        staffSessionRequired.clone(),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'The staff user behind the app token is not active.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      sessionsApi.set(staffSessionRequired);
+
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      await expect.element(page.getByTestId('apps-access-denied')).toBeVisible();
     });
 
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
@@ -2526,10 +2752,14 @@ describe('Managing apps', () => {
 
     const dialog = appsScreen.uninstallDialog();
     await expect.element(dialog).toHaveTextContent('Uninstall Podcast?');
-    // Ghost can't stop a copy that's already open elsewhere, so it doesn't say it does.
+    // A copy already open elsewhere closes on its own, not straight away
     await expect
       .element(dialog)
-      .toHaveTextContent('The app stops opening for everyone. Where it’s already open');
+      .toHaveTextContent(
+        'The app loses its access to your site straight away, and no one can open it. If someone has it open right now, it will close on its own within the hour.',
+      );
+    // Once it closes nothing of it runs, so the dialog doesn't say its other requests still work
+    await expect.element(dialog).not.toHaveTextContent('anywhere other than Ghost');
     await expect
       .element(appsScreen.integrationKeyNote())
       .toHaveTextContent('Settings › Integrations');

@@ -21,17 +21,22 @@ import {
   useRouterDestination,
 } from '@tryghost/admin-x-framework';
 import {
+  type ActiveAppSession,
   type AppInstallation,
   type AppSession,
+  isActiveAppSession,
   useBrowseAppInstallations,
   useReadAppInstallation,
   useStartAppSession,
 } from '@tryghost/admin-x-framework/api/app-installations';
+import type { ConfigResponseType } from '@tryghost/admin-x-framework/api/config';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
@@ -42,6 +47,7 @@ import { AppOverlay } from './components/app-overlay';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
+import { createAppTokenHolder } from './lib/app-token';
 import {
   appEntryPath,
   appFrameUrl,
@@ -50,10 +56,20 @@ import {
   isAppLocation,
 } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
+import { useAppTokenRenewal } from './lib/use-app-token-renewal';
 import { placeRoute } from './lib/bridge-places';
 import { supportLink } from './lib/developer';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
-import { isInstallationNotFound, sessionFailureOf, type SessionFailure } from './lib/not-found';
+import {
+  isUncodedNotFound,
+  refusesStaffUser,
+  sessionStartFailure,
+  siteBlocksApps,
+  type SiteBlocksApps,
+  sessionFailureOf,
+  type SessionFailure,
+} from './lib/app-failure';
+import { isInstallationNotFound } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -187,6 +203,9 @@ function useAppTitle(appName: string, title: string | undefined) {
   usePageTitle(title === undefined ? undefined : title ? `${title} · ${appName}` : appName);
 }
 
+/** A session with when it arrived, by `Date.now()`, which its token's lifetime counts from. */
+type ReceivedSession<Session extends AppSession = AppSession> = Session & { receivedAt: number };
+
 const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
 
 /**
@@ -195,8 +214,9 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
  * Only a read made during this session counts, and only a higher revision ends it. Revisions only
  * increase, so a read sent before the session started that arrives after it shows a lower revision.
  *
- * This only sees changes this tab reads. Changes made in another tab, or by another staff user, are
- * left to the app token that comes with Permissions and auth.
+ * This only sees changes this tab reads. Ghost catches the rest: the app's calls are refused once
+ * the installation isn't active, and renewing the token ends the session once its revision
+ * changed.
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
@@ -233,7 +253,7 @@ const NO_INSETS: SafeArea = { top: 0, right: 0, bottom: 0, left: 0 };
  * component renders the session's state and keeps the session updated with Admin's location.
  */
 const AppFrame: React.FC<{
-  session: AppSession;
+  session: ReceivedSession<ActiveAppSession>;
   site: SiteData;
   user: User;
   timezone: string;
@@ -242,6 +262,15 @@ const AppFrame: React.FC<{
 }> = ({ session, site, user, timezone, accentColor, onEnded }) => {
   const { installation } = session;
   useSessionEnd(session, onEnded);
+  // Owned by this session, like the frame's session below, and renewed in place, so a new token
+  // never reloads the frame.
+  const [tokenHolder] = useState(() =>
+    createAppTokenHolder({
+      token: session.token,
+      receivedAt: session.receivedAt,
+      onError: reportAppsError,
+    }),
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const { ghostVersion } = useFramework();
@@ -306,6 +335,7 @@ const AppFrame: React.FC<{
         apiRoot: new URL(apiUrl('/')),
         approvedScopes: approvedScopes(manifest.scopes),
         ghostVersion,
+        token: tokenHolder,
       }),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
@@ -337,6 +367,7 @@ const AppFrame: React.FC<{
   }
 
   useAppTitle(manifest.name, title);
+  useAppTokenRenewal(tokenHolder, { installation, running: status !== 'failed', onEnded });
 
   // Runs for every location, keyed by `location.key`. React Router commits in a transition, so a
   // location it commits can lag behind the app, which may have moved on since, and quick moves can
@@ -430,10 +461,10 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
  * either, so the app never starts without knowing who is using it. The host check applies
  * to the URL the frame starts from; `isGhostHost` describes what it doesn't cover.
  */
-const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
-  session,
-  onEnded,
-}) => {
+const ActiveApp: React.FC<{
+  session: ReceivedSession<ActiveAppSession>;
+  onEnded: () => void;
+}> = ({ session, onEnded }) => {
   const { installation } = session;
   const site = useBrowseSite({ defaultErrorHandler: false });
   const settings = useBrowseSettings({ defaultErrorHandler: false });
@@ -549,6 +580,84 @@ const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () =>
   );
 };
 
+const SITE_BLOCKS_APPS: Record<
+  SiteBlocksApps,
+  { testId: string; title: string; description: string; retry: boolean }
+> = {
+  'new-auth-engine': {
+    testId: 'app-needs-new-auth-engine',
+    title: 'Apps aren’t available on this site',
+    description:
+      'Apps need Ghost’s new auth engine, which this site doesn’t use yet. Your site isn’t affected.',
+    retry: false,
+  },
+  restart: {
+    testId: 'apps-need-restart',
+    title: 'Apps aren’t available on this site',
+    description:
+      'Apps were turned on after Ghost started, so they open once Ghost restarts. Your site isn’t affected.',
+    retry: true,
+  },
+  off: {
+    testId: 'apps-turned-off',
+    title: 'Apps are turned off on this site',
+    description: 'Apps can’t open while they’re turned off. Your site isn’t affected.',
+    retry: false,
+  },
+};
+
+/**
+ * Shown when no app opens on the site, whichever app it is. Nothing about the app is wrong. Only
+ * a restart that Ghost is waiting for clears without changing the site's setup, so that's the one
+ * reason with a Try again. With apps turned off, Admin's Apps screens can't load either, so the
+ * way back leads out of Apps.
+ */
+const AppsBlocked: React.FC<{ reason: SiteBlocksApps; onRetry: () => void }> = ({
+  reason,
+  onRetry,
+}) => {
+  const { testId, title, description, retry } = SITE_BLOCKS_APPS[reason];
+  return (
+    <Centered testId={testId}>
+      <EmptyIndicator
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              {reason === 'off' ? (
+                <Link to="/">Back to Admin</Link>
+              ) : (
+                <Link to="/apps">Back to Apps</Link>
+              )}
+            </Button>
+            {retry && <Button onClick={onRetry}>Try again</Button>}
+          </>
+        }
+        description={description}
+        title={title}
+      >
+        <LucideIcon.LayoutGrid />
+      </EmptyIndicator>
+    </Centered>
+  );
+};
+
+/** Shown when Ghost won't open apps for the staff user, whichever app it is. */
+const NoAppsAccess: React.FC = () => (
+  <Centered testId="apps-access-denied">
+    <EmptyIndicator
+      actions={
+        <Button variant="outline" asChild>
+          <Link to="/">Back to Admin</Link>
+        </Button>
+      }
+      description="Only Administrators and the Owner can open apps. Your site isn’t affected."
+      title="You don’t have access to apps"
+    >
+      <LucideIcon.Lock />
+    </EmptyIndicator>
+  </Centered>
+);
+
 const NotInstalled: React.FC = () => (
   <Centered testId="app-not-installed">
     <EmptyIndicator
@@ -572,21 +681,35 @@ const NotInstalled: React.FC = () => (
  */
 function useAppSession(installationId: string): {
   settled: boolean;
-  session?: AppSession;
+  session?: ReceivedSession;
   error?: unknown;
   /** Ends this session and starts a new one, for example after approving changes. */
   restart: () => void;
 } {
   const { mutateAsync: start } = useStartAppSession();
+  const fetchApi = useFetchApi();
   const [generation, setGeneration] = useState(0);
 
   // One start per open and per restart. Each start is its own query that never goes stale, isn't
   // retried, and is removed once nothing renders it.
   const { data, error, isPending } = useQuery({
     queryKey: ['app-session', installationId, generation],
-    // `null` when there's nothing to open, because a query can't return `undefined`.
-    queryFn: async (): Promise<AppSession | null> =>
-      (await start(installationId)).app_sessions[0] ?? null,
+    // `null` when there's nothing to open, because a query can't return `undefined`. Stamped as
+    // it arrives: the frame that holds its token can mount much later.
+    queryFn: async (): Promise<ReceivedSession | null> => {
+      let session: AppSession | undefined;
+      try {
+        session = (await start(installationId)).app_sessions[0];
+      } catch (failed) {
+        // Read past Admin's copy of the config, which gates Apps: refreshing it with apps off
+        // would turn this page into Admin's not found screen
+        throw await sessionStartFailure(
+          failed,
+          async () => (await fetchApi<ConfigResponseType>(apiUrl('/config/'))).config,
+        );
+      }
+      return session ? { ...session, receivedAt: Date.now() } : null;
+    },
     staleTime: Infinity,
     gcTime: 0,
     retry: false,
@@ -606,23 +729,28 @@ export const AppPage: React.FC = () => {
   const { installationId = '' } = useParams();
   const { settled, session, error, restart } = useAppSession(installationId);
   const installation = session?.installation;
-  const notFound = isInstallationNotFound(error);
   const failure = sessionFailureOf(error);
-  const appFailed = failure !== undefined;
+  const blocked = siteBlocksApps(error);
+  const denied = refusesStaffUser(error);
+  // A 404 without a code from this route isn't about the installation
+  const notFound = !isUncodedNotFound(error) && isInstallationNotFound(error);
+  // Admin's API layer is sending the publisher to sign in
+  const signingIn = error instanceof SessionExpiredError;
+  const appFailed = failure !== undefined || blocked !== undefined || denied;
   useEffect(() => {
-    if (error && !notFound && !appFailed) {
+    if (error && !notFound && !appFailed && !signingIn) {
       reportAppsError(error);
     }
-  }, [error, notFound, appFailed]);
+  }, [error, notFound, appFailed, signingIn]);
 
   let body: React.ReactNode;
-  if (!settled) {
+  if (!settled || signingIn) {
     body = (
-      <Centered>
+      <Centered testId={signingIn ? 'app-signing-in' : undefined}>
         <LoadingIndicator size="md" />
       </Centered>
     );
-  } else if (session && installation?.status === 'active') {
+  } else if (isActiveAppSession(session)) {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
     body = (
@@ -630,6 +758,10 @@ export const AppPage: React.FC = () => {
         <NeedsApproval installation={installation} onApproved={restart} />
       </WithAppFooter>
     );
+  } else if (blocked) {
+    body = <AppsBlocked reason={blocked} onRetry={restart} />;
+  } else if (denied) {
+    body = <NoAppsAccess />;
   } else if (failure) {
     body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {

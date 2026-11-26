@@ -152,7 +152,7 @@ verified staff session of an active Administrator or the Owner.
 _Avoid_: login, connection
 
 **App user token**:
-The app token an app's Admin API calls are to be sent with, issued by Better
+The app token Admin sends an app's Admin API calls with, issued by Better
 Auth's OAuth provider when a session starts. It acts for the staff user, is
 bound to their staff session and lasts an hour, or until the staff session
 ends if that's sooner. Every call checks the installation is active, the user is
@@ -168,8 +168,8 @@ _Avoid_: user token, app backend token (an app backend's own), access token
 **Renewal**:
 A new app user token for a session, without re-checking the app. Each renewal
 creates another token; nothing about the session is stored. A token says how
-long it lasts in
-seconds (`expires_in`), so renewal can be scheduled on the browser's own clock. It is refused
+long it lasts in seconds (`expires_in`), so Admin schedules renewal on its own
+clock. It is refused
 once the installation is suspended, uninstalled or at another revision than
 the session's, which ends the session.
 _Avoid_: refresh

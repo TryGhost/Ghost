@@ -11,5 +11,8 @@ under its resource, in the group of the registry scope that opens it. Every
 registry scope must open a route, an include or a sort. A new scope goes in the
 scope registry (`contracts/app-contracts/src/scopes.ts`) with its review
 wording. The bridge refuses a route, include or sort whose scope the running
-installation wasn't approved for, but it is still a stopgap: the server checking
-an app's own token is left to Permissions and auth.
+installation wasn't approved for. Ghost holds an app's token to its approved
+scopes on routes that check a permission and refuses it on the rest, except the
+site's public details. The allowlist still filters what an app can send more
+finely than a scope does, such as includes, query parameters and what a write
+may set.
