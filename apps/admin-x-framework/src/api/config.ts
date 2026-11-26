@@ -188,10 +188,6 @@ export const useBrowseConfig = createQuery<ConfigResponseType>({
 
 // Helpers
 
-/** Whether Labs has a flag on. Only boolean `true` counts, as Ghost's own check does. */
-export const isLabsFlagOn = (labs: Config['labs'] | undefined, flag: string): boolean =>
-  labs?.[flag] === true;
-
 export const isManagedEmail = (config: Config) => {
   return !!config?.hostSettings?.managedEmail?.enabled;
 };

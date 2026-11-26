@@ -3,7 +3,8 @@ import {
   isAppFailureCode,
   isUnconfirmedAppCode,
 } from '@tryghost/app-contracts';
-import { type Config, isLabsFlagOn } from '@tryghost/admin-x-framework/api/config';
+import type { Config } from '@tryghost/admin-x-framework/api/config';
+import { isLabsFlagOn } from '@tryghost/admin-x-framework/hooks';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { z } from 'zod';
 

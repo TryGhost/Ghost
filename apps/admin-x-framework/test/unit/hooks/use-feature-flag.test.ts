@@ -1,8 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { useFeatureFlag } from '../../../src/hooks/use-feature-flag';
 
-vi.mock('../../../src/api/config', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/api/config')>()),
+vi.mock('../../../src/api/config', () => ({
   useBrowseConfig: vi.fn(),
 }));
 vi.mock('../../../src/providers/feature-flag-overrides-context', () => ({
