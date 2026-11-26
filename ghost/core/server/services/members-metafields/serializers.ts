@@ -3,7 +3,7 @@ import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { type Identity, IdentitySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { parseRequest } from '../../lib/parse-request';
-import { Definition } from './metafields/models';
+import { Definition, storedAccessOf } from './metafields/models';
 
 const NamespaceRoute = z.object({ namespace: NamespaceSchema });
 
@@ -25,8 +25,10 @@ const MetafieldsResponse = z.object({ members_metafields: z.array(MetafieldDefin
 export const toMetafieldsResponse = z
   .array(Definition)
   .transform((fields): z.input<typeof MetafieldsResponse> => ({
-    members_metafields: fields.map(({ createdAt, updatedAt, ...field }) => ({
+    members_metafields: fields.map(({ createdAt, updatedAt, access, ...field }) => ({
       ...snakeKeys(field),
+      // The API names a field's member level whether or not the field sets one of its own.
+      access: { member: storedAccessOf(access) },
       created_at: createdAt.toISOString(),
       updated_at: updatedAt?.toISOString() ?? null,
     })),

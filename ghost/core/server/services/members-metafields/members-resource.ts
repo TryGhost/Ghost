@@ -1,36 +1,18 @@
 import { z } from 'zod';
 import type { MetafieldChangeEntry } from '@tryghost/metafield-types';
 import type { NewRow, SchemaTable } from '../../lib/db-types/tables';
-import type { Caller } from './callers';
 import type { EditedDefinition } from './metafields/definitions-service';
 import { metafieldsRelation } from './metafields/filter';
 import type { Definition } from './metafields/models';
 import type { Namespaces } from './metafields/namespaces';
-import type { MetafieldResource, ResourceKind } from './metafields/resource';
+import { metafieldResource } from './metafields/resource';
 import { FIELD_STATUS, DbMetafieldChangeEvent, type FieldsTable } from './metafields/schema';
 
 /**
- * What members bring to metafields: the APIs a request for a member's fields can come through,
- * and the permission staff manage the custom fields with.
+ * Members, the one resource that holds metafields so far. Its tables and `member_id` follow from
+ * the schema, and who may do what with its fields is each namespace's access policy.
  */
-export interface Members extends ResourceKind {
-  Name: 'members';
-  Caller: Caller;
-  StaffPermission: 'member_custom_field';
-}
-
-/** Members, the one resource that holds metafields so far. */
-export const MEMBERS_RESOURCE: MetafieldResource<Members> = {
-  name: 'members',
-  tables: {
-    fields: 'members_metafields',
-    values: 'members_metafield_values',
-    bindings: 'members_metafield_bindings',
-  },
-  idColumn: 'member_id',
-  // Each field stores what its member may do with it, which a publisher sets per field.
-  storedLevelFor: 'member',
-};
+export const MEMBERS_RESOURCE = metafieldResource('members');
 
 /**
  * The Member filter relation that exposes metafield values, so a member filter can ask about
@@ -44,21 +26,19 @@ export const METAFIELDS_RELATION = metafieldsRelation(MEMBERS_RESOURCE);
  * available, so availability can't differ between the two.
  */
 export function changedForMembers(
-  namespaces: Pick<Namespaces<Members>, 'canRead'>,
+  namespaces: Pick<Namespaces, 'canRead'>,
   { previous, next }: EditedDefinition,
 ): boolean {
   return readByMembers(namespaces, previous) !== readByMembers(namespaces, next);
 }
 
-function readByMembers(namespaces: Pick<Namespaces<Members>, 'canRead'>, definition: Definition) {
+function readByMembers(namespaces: Pick<Namespaces, 'canRead'>, definition: Definition) {
   return (
     definition.status === FIELD_STATUS.active &&
     namespaces.canRead(
       { kind: 'member' },
-      {
-        namespace: definition.namespace,
-        memberAccess: definition.access.member,
-      },
+      { namespace: definition.namespace, access: definition.access },
+      null,
     )
   );
 }

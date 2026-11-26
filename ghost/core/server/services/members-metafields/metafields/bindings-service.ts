@@ -12,7 +12,8 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import type { Asking, MetafieldResource, ResourceKind } from './resource';
+import { GHOST, type Asking } from './callers';
+import type { MetafieldResource } from './resource';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS, type MetafieldBindingRow } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
@@ -53,35 +54,30 @@ export interface RoutedPlans {
  * thing, and the binding resolves it to one of the publisher's fields on one resource. The
  * source declares its ports; this only records which field each one writes into.
  */
-export class MetafieldBindingsService<R extends ResourceKind> {
+export class MetafieldBindingsService {
   private knex: Knex;
   private table: string;
-  private fields: FieldSource<R>;
-  private values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
-  private internal: Asking<R>;
+  /** The resource's name, which its log events are named after. */
+  private resourceName: string;
+  private fields: FieldSource;
+  private values: Pick<MetafieldValuesService, 'planOrRefuse'>;
 
   constructor({
     knex,
     resource,
     fields,
     values,
-    internal,
   }: {
     knex: Knex;
     resource: MetafieldResource;
-    fields: FieldSource<R>;
-    values: Pick<MetafieldValuesService<R>, 'planOrRefuse'>;
-    /**
-     * The caller Ghost itself writes as. A port's values are planned as Ghost's, since the
-     * binding, not whoever sent them, is what admits them.
-     */
-    internal: Asking<R>;
+    fields: FieldSource;
+    values: Pick<MetafieldValuesService, 'planOrRefuse'>;
   }) {
     this.knex = knex;
     this.table = resource.tables.bindings;
+    this.resourceName = resource.name;
     this.fields = fields;
     this.values = values;
-    this.internal = internal;
   }
 
   private bindings(db: Knex) {
@@ -133,7 +129,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
    */
   async boundPorts(
     ports: readonly string[],
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Map<string, string | null>> {
     if (!ports.length) {
@@ -146,9 +142,10 @@ export class MetafieldBindingsService<R extends ResourceKind> {
     const bound = new Map<string, string | null>(binding.map((port) => [port, null]));
     // Read the way the caller's own reads ask for fields, so a port names exactly the fields the
     // caller holds values for.
-    const named = await this.fields
-      .definitions(executor, { caller, status: ACTIVE_ONLY })
-      .read.join(this.table, onField(this.fields.name, this.table))
+    const named = await (
+      await this.fields.definitions(executor, { caller, status: ACTIVE_ONLY })
+    ).read
+      .join(this.table, onField(this.fields.name, this.table))
       .whereIn(`${this.table}.port`, ports)
       .select(`${this.table}.port`, `${this.fields.name}.namespace`, `${this.fields.name}.key`);
     for (const row of named) {
@@ -217,7 +214,10 @@ export class MetafieldBindingsService<R extends ResourceKind> {
 
     const { writes, refusals } = await this.values.planOrRefuse(
       input,
-      this.internal,
+      // Planned as Ghost's, since the binding, not whoever sent the values, is what admits them.
+      // Ghost reaches its namespaces' fields on any record, so the record doesn't decide.
+      GHOST,
+      null,
       // Every value planned came through a port, so each refusal names one.
       (identity) => routed.get(identity)?.port ?? identity,
       executor,
@@ -275,7 +275,7 @@ export class MetafieldBindingsService<R extends ResourceKind> {
       if (!bound.success) {
         logging.warn(
           {
-            event: { name: 'members.metafields.binding_unreadable' },
+            event: { name: `${this.resourceName}.metafields.binding_unreadable` },
             err: bound.error,
             port: row.port,
           },

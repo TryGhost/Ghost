@@ -36,7 +36,7 @@ interface AdminAgent extends Agent {
 // Everything here is set up and checked through an API: the publisher's side through
 // the Admin API, the member's through the members API. Nothing reads or writes a
 // table, so none of this is pinned to how the fields happen to be stored, except the
-// fields in a namespace nobody registered, which no API can define yet.
+// fields in a namespace nobody registered, which no API can define or write.
 describe('Member Custom Fields Members API', function () {
   let adminAgent: AdminAgent;
   let membersAgent: MembersAgent;
@@ -595,9 +595,9 @@ describe('Member Custom Fields Members API', function () {
     });
   });
 
-  // No API defines a field outside `custom` yet, so these are written to the table, as an app's
-  // would be. Nobody registered their namespace, so a member reaches each the way they reach a
-  // custom field: by the field's member access.
+  // No API defines a field outside `custom` yet, so these are written to the tables, as an app's
+  // would be. Nobody registered their namespace, so it has no access policy, and nobody reaches
+  // them: not the member, whatever each field stores for them, and not staff.
   describe('fields in a namespace nobody registered', function () {
     const { knex } = require('../../../core/server/data/db');
 
@@ -614,16 +614,22 @@ describe('Member Custom Fields Members API', function () {
 
     beforeEach(async function () {
       await defineInShop('6600000000000000000000c1', 'loyalty_tier', 'read');
-      await defineInShop('6600000000000000000000c2', 'credit_limit', 'none');
-      await defineInShop('6600000000000000000000c3', 'nickname', 'write');
-      await adminAgent
-        .put(`members/${memberId}/`)
-        .body({
-          members: [
-            { metafields: { shop: { loyalty_tier: 'Gold', credit_limit: '500', nickname: 'Al' } } },
-          ],
-        })
-        .expectStatus(200);
+      await defineInShop('6600000000000000000000c2', 'nickname', 'write');
+      await knex('members_metafield_values').insert(
+        [
+          ['loyalty_tier', 'Gold'],
+          ['nickname', 'Al'],
+        ].map(([key, value]) => ({
+          metafield_namespace: 'shop',
+          metafield_key: key,
+          member_id: memberId,
+          path: '',
+          value_text: value,
+          written_by_type: 'import',
+          written_by_id: null,
+          created_at: new Date(),
+        })),
+      );
     });
 
     afterEach(async function () {
@@ -631,26 +637,32 @@ describe('Member Custom Fields Members API', function () {
       await knex('members_metafields').where('namespace', 'shop').del();
     });
 
-    it('shows a member the values their fields open to them, and nothing of the rest', async function () {
+    it('shows nobody its values, not the member and not staff', async function () {
       const { body } = await membersAgent.get('/api/member/').expectStatus(200);
-      assert.deepEqual(body.metafields.shop, { loyalty_tier: 'Gold', nickname: 'Al' });
-    });
-
-    it('lets a member write only the fields open to their writes', async function () {
-      await membersAgent
-        .put('/api/member/')
-        .body({ metafields: { shop: { nickname: 'Ally' } } })
-        .expectStatus(200);
-
-      const { body } = await membersAgent
-        .put('/api/member/')
-        .body({ metafields: { shop: { loyalty_tier: 'Platinum' } } })
-        .expectStatus(422);
-      assert.equal(body.errors[0].message, 'Cannot set custom field: shop.loyalty_tier');
+      assert.equal(Object.hasOwn(body.metafields, 'shop'), false);
 
       const stored = await readMemberAsStaff();
-      assert.equal(stored.metafields.shop.nickname, 'Ally');
-      assert.equal(stored.metafields.shop.loyalty_tier, 'Gold');
+      assert.equal(Object.hasOwn(stored.metafields, 'shop'), false);
+    });
+
+    it('lets nobody write its fields, which read as no field at all', async function () {
+      const { body: asMember } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { shop: { nickname: 'Ally' } } })
+        .expectStatus(422);
+      assert.equal(asMember.errors[0].message, 'Unknown custom field: shop.nickname');
+
+      const { body: asStaff } = await adminAgent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ metafields: { shop: { nickname: 'Ally' } } }] })
+        .expectStatus(422);
+      assert.equal(asStaff.errors[0].property, 'metafields.shop.nickname');
+      assert.match(asStaff.errors[0].context, /Unknown custom field: shop\.nickname/);
+
+      const held = await knex('members_metafield_values')
+        .where({ metafield_namespace: 'shop', metafield_key: 'nickname', member_id: memberId })
+        .first();
+      assert.equal(held.value_text, 'Al');
     });
   });
 

@@ -4517,7 +4517,7 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/callers.ts
+          - core/server/services/members-metafields/metafields/callers.ts
           - core/server/services/members-metafields/metafields/schema.ts
           - core/server/services/members-metafields/config.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
@@ -4536,7 +4536,9 @@ services:
       exports:
         summary: >-
           Named runtime exports are synchronous init, mutable namespaces/fields/definitions/values/bindings,
-          member access constants and adminWriteOrigin. fields is the
+          member access constants, and GHOST, callerOf and writeOriginOf, which say who is asking
+          and who a write is stored as, and MEMBERS_RESOURCE, which names members' tables and
+          definitions type. fields is the
           field source every read of a field goes through, reading a field in an unavailable
           namespace as archived. Service
           bindings are undefined before init; class methods depend on their receiver. Namespaces
@@ -4549,8 +4551,7 @@ services:
           rules and provenance; they do not pin the root export shape or init return timing.
         sources:
           - core/server/services/members-metafields/index.ts
-          - core/server/services/members-metafields/callers.ts
-          - core/server/services/members-metafields/write-origin.ts
+          - core/server/services/members-metafields/metafields/callers.ts
           - core/server/services/members-metafields/metafields/namespaces.ts
           - core/server/services/members-metafields/metafields/definitions-service.ts
           - core/server/services/members-metafields/metafields/values-service.ts

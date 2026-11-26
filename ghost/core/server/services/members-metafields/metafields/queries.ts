@@ -1,13 +1,14 @@
-import { unreachable } from '../../../lib/unreachable';
 import type { Knex } from 'knex';
 import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
 import { z } from 'zod';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
 import schema from '../../../data/schema/schema';
-import type { Grant, Grants, Namespaces } from './namespaces';
-import type { Asking, MetafieldResource, ResourceKind } from './resource';
-import { FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
+import type { Asking } from './callers';
+import { accessOf } from './models';
+import type { Namespaces, RecordOf } from './namespaces';
+import type { MetafieldResource } from './resource';
+import { DbFieldAccess, FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
 
 /**
  * The columns a field is read with, besides its status, which reads as its namespace allows.
@@ -37,45 +38,28 @@ export { knexify };
 // constraint stops a value row referencing one. Both filters are therefore applied in
 // code, and a query that forgets either is a silent bug.
 
+/** The fields a caller may read, by namespace, as the policies decided. */
+export type ReadableFields = ReadonlyMap<Namespace, readonly Key[]>;
+
 /**
- * Narrows a read of the fields to the ones `grants` reach: in each namespace someone owns, by its
- * owner's grant, and in every other namespace by the grant for those.
+ * Narrows a read of the fields to the ones named in `readable`, which the policies decided. A
+ * namespace with none of them is left out whole.
  */
-function readableBy<T extends Knex.QueryBuilder>(query: T, fieldsName: string, grants: Grants): T {
-  const namespaceColumn = `${fieldsName}.namespace`;
-  const owned = grants.owned.map(({ namespace }) => namespace);
-  const reached: Array<(where: Knex.QueryBuilder) => void> = [
-    ...grants.owned.map(
-      ({ namespace, grant }) =>
-        (where: Knex.QueryBuilder) =>
-          narrowTo(where.where(namespaceColumn, namespace), fieldsName, grant),
-    ),
-    (where: Knex.QueryBuilder) =>
-      narrowTo(where.whereNotIn(namespaceColumn, owned), fieldsName, grants.unowned),
-  ];
-  query.where((anyNamespace) => {
-    for (const narrow of reached) {
-      anyNamespace.orWhere(narrow);
+function readableBy<T extends Knex.QueryBuilder>(
+  query: T,
+  fieldsName: string,
+  readable: ReadableFields,
+): T {
+  query.where((anyField) => {
+    // An empty `IN` matches nothing, for a caller who can read no field at all.
+    anyField.whereIn(`${fieldsName}.namespace`, []);
+    for (const [namespace, keys] of readable) {
+      anyField.orWhere((inNamespace) =>
+        inNamespace.where(`${fieldsName}.namespace`, namespace).whereIn(`${fieldsName}.key`, keys),
+      );
     }
   });
   return query;
-}
-
-/** Narrows a read already scoped to some namespaces to the fields `grant` reaches in them. */
-function narrowTo(where: Knex.QueryBuilder, fieldsName: string, grant: Grant): void {
-  switch (grant.fields) {
-    case 'all':
-      return;
-    case 'none':
-      // An empty `IN` matches nothing.
-      where.whereIn(`${fieldsName}.namespace`, []);
-      return;
-    case 'by stored level':
-      where.whereIn(`${fieldsName}.member_access`, grant.levels);
-      return;
-    default:
-      unreachable(grant, 'grant');
-  }
 }
 
 /**
@@ -118,8 +102,13 @@ class ScopedDefinitions {
 export type DefinitionQuery = ScopedDefinitions;
 
 /** Which fields a definitions read is for, and who for. */
-export interface DefinitionScope<R extends ResourceKind> {
-  caller: Asking<R>;
+export interface DefinitionScope {
+  caller: Asking;
+  /**
+   * The record the read is for, which decides whether a member is its member. Without one, it is
+   * a question about definitions, answered as for the member's own record.
+   */
+  record?: RecordOf;
   status: StatusScope;
   /** One namespace's fields. Without it, every namespace's. */
   namespace?: Namespace;
@@ -138,17 +127,19 @@ export interface DefinitionScope<R extends ResourceKind> {
  * holds for every one of them. That includes the check before writing a value. Writes, and
  * the reads a change to the field list is compared with, name the table itself.
  */
-export interface FieldSource<R extends ResourceKind> {
+export interface FieldSource {
   /**
    * The name the fields are read under: their table's, so a column is qualified the same way
    * whether a read names the table or the fields as this reads them.
    */
   name: string;
   /**
-   * Narrows a read that joins the fields to the ones `caller` may read, as each namespace's
-   * owner grants them.
+   * The fields `caller` may read on `record`. Every field's own policy is read and laid over its
+   * namespace's, so the policies decide, in code, before any read of the fields is narrowed.
    */
-  readable<T extends Knex.QueryBuilder>(query: T, caller: Asking<R>): T;
+  readableFields(db: Knex, caller: Asking, record: RecordOf): Promise<ReadableFields>;
+  /** Narrows a read that joins the fields to the ones `readableFields` gave. */
+  readable<T extends Knex.QueryBuilder>(query: T, readable: ReadableFields): T;
   /** The longest name and key the fields table can store. */
   maxLength: { name: number; key: number };
   /**
@@ -162,7 +153,7 @@ export interface FieldSource<R extends ResourceKind> {
    */
   asRead(db: Knex, alias?: string): Knex.TableDescriptor;
   /** The fields `scope` names, in no particular order. */
-  definitions(db: Knex, scope: DefinitionScope<R>): DefinitionQuery;
+  definitions(db: Knex, scope: DefinitionScope): Promise<DefinitionQuery>;
   /**
    * The fields `keys` name in `namespace`, held against change until `trx` ends. The lock is
    * taken in the same statement as the read, on the rows as stored.
@@ -181,10 +172,10 @@ const FieldColumnLengths = z.object({
  * available reads as archived. Which namespaces aren't is asked on every read, as it can change
  * while Ghost runs.
  */
-export function fieldSource<R extends ResourceKind>(
+export function fieldSource(
   resource: MetafieldResource,
-  namespaces: Pick<Namespaces<R>, 'unavailable' | 'readable'>,
-): FieldSource<R> {
+  namespaces: Pick<Namespaces, 'unavailable' | 'canRead'>,
+): FieldSource {
   const tableName = resource.tables.fields;
   // The canonical schema, which the migrations and models also read, so these can't drift from
   // the database.
@@ -207,13 +198,33 @@ export function fieldSource<R extends ResourceKind>(
     );
   };
 
-  const source: FieldSource<R> = {
+  const source: FieldSource = {
     name: tableName,
 
     maxLength: { name: columns.name.maxlength, key: columns.key.maxlength },
 
-    readable(query, caller) {
-      return readableBy(query, tableName, namespaces.readable(caller));
+    async readableFields(db, caller, record) {
+      // Every field, whatever its status, as a policy says nothing about status. There are only
+      // ever a few per namespace, as many as its limit lets it hold.
+      const rows = await db(tableName).select('namespace', 'key', 'member_access');
+      const readable = new Map<Namespace, Key[]>();
+      for (const row of rows) {
+        // A row that can't be read as a field is left out, as every read of fields leaves it out.
+        const field = DbFieldAccess.safeParse(row);
+        if (!field.success) {
+          continue;
+        }
+        const { namespace, key } = field.data;
+        const access = accessOf(field.data.member_access);
+        if (namespaces.canRead(caller, { namespace, access }, record)) {
+          readable.set(namespace, [...(readable.get(namespace) ?? []), key]);
+        }
+      }
+      return readable;
+    },
+
+    readable(query, readable) {
+      return readableBy(query, tableName, readable);
     },
 
     table(db) {
@@ -224,7 +235,7 @@ export function fieldSource<R extends ResourceKind>(
       return asRead(db, db(tableName)).as(alias);
     },
 
-    definitions(db, scope) {
+    async definitions(db, scope) {
       let query = metafieldsTable(db, resource);
 
       // Applied while the query still reads the table by its name, then pointed at the fields as
@@ -249,7 +260,8 @@ export function fieldSource<R extends ResourceKind>(
         query = query.limit(scope.limit);
       }
 
-      return new ScopedDefinitions(source.readable(query, scope.caller));
+      const readable = await source.readableFields(db, scope.caller, scope.record ?? null);
+      return new ScopedDefinitions(source.readable(query, readable));
     },
 
     locked(trx, namespace, keys) {
