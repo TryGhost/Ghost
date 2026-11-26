@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DbDate } from '../../lib/db-types/date';
 import { maxBytes } from '../../lib/db-types/text';
 import { parseFilter } from '../../lib/filters';
 import { slugSchema } from '../../lib/slug';
@@ -104,5 +105,16 @@ export const Segment = z.object({
   name: z.string(),
   slug: SegmentSlug,
   filter: z.string(),
+  /**
+   * When the segment was added, to the second. A segment moved from the saved views setting has
+   * the time the migration that moved it ran, as the setting held no time for a view.
+   */
+  created_at: DbDate,
+  /**
+   * When the segment was last edited, to the second. It is `created_at` until the segment is
+   * first edited, so a segment has been edited when this is later than `created_at`. Only a
+   * segment's name can change, so this is when it was last renamed.
+   */
+  updated_at: DbDate,
 });
 export type Segment = z.infer<typeof Segment>;
