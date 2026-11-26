@@ -24,7 +24,6 @@ const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  */
 export const AppsListing: React.FC = () => {
   const { installations, isLoading, error, pins } = useInstalledApps();
-  // Until Admin knows whether apps can be used here, the page shows neither answer
   const availability = useAppsAvailability();
   const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);
 
@@ -40,7 +39,7 @@ export const AppsListing: React.FC = () => {
         </EmptyIndicator>
       </Centered>
     );
-  } else if (isLoading || availability === 'loading') {
+  } else if (isLoading) {
     body = (
       <Centered>
         <LoadingIndicator size="md" />

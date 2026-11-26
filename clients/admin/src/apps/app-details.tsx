@@ -355,20 +355,12 @@ export const AppDetails: React.FC = () => {
   const [uninstalling, setUninstalling] = useState(false);
   const { data: settingsData } = useBrowseSettings({});
   const timezone = getSiteTimezone(settingsData?.settings ?? []);
-  const {
-    data,
-    error,
-    isLoading: isInstallationLoading,
-    refetch,
-  } = useReadAppInstallation(installationId, {
+  const { data, error, isLoading, refetch } = useReadAppInstallation(installationId, {
     defaultErrorHandler: false,
   });
   const { pins } = useInstalledApps();
-  // What the page offers depends on whether apps can be used here, so it shows as loading
-  // until Admin knows, rather than without its actions and then with them
   const availability = useAppsAvailability();
-  const isLoading = isInstallationLoading || availability === 'loading';
-  const installation = isLoading ? undefined : data?.app_installations[0];
+  const installation = data?.app_installations[0];
   const actions = installation && installationActions(installation, availability, pins);
 
   if (isInstallationNotFound(error)) {

@@ -19,7 +19,9 @@ may set.
 
 Apps need Ghost's new auth engine. `useAppsAvailability` reads whether the site
 runs it from its config, as `supported`, `unsupported` or, until the config
-has loaded, `loading`. What can be done with an installation is one answer,
+has loaded, `loading`. Screens inside `AppsGate` never see `loading`, as the
+gate waits for the config; only the sidebar and search, outside it, need to
+handle it. What can be done with an installation is one answer,
 `installationActions` (`lib/installation-actions.ts`): ask it, wherever an
 installation is listed or shown, rather than combining status, availability
 and pins again. Where apps aren't supported, offer nothing that installs,

@@ -6,8 +6,10 @@ import type { AppsAvailability } from './installation-actions';
  * Ghost's new auth engine issues, so on a site running any other, Ghost refuses to preview,
  * install, approve or open one. An app installed earlier can still be listed and uninstalled.
  *
- * `loading` until the site's config has loaded, which is neither answer: nothing that depends
- * on it should show as available or as unavailable before then.
+ * `loading` until the site's config has loaded, which is neither answer. A screen inside
+ * `AppsGate` never sees it, as the gate renders nothing until the config loads. The sidebar and
+ * search sit outside the gate and see it while a session's URL override turns the `apps` flag on
+ * before the config has loaded, so they show nothing that depends on it until then.
  */
 export function useAppsAvailability(): AppsAvailability {
   const { data } = useBrowseConfig({ refetchOnMount: false });
