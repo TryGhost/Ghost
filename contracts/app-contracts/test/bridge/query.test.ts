@@ -51,7 +51,6 @@ describe('reading the query an app wrote', () => {
       'include+',
       'in-clude',
       'include;a',
-      '',
     ]) {
       expect(read(`?${name}=tags`), name).toBe(
         `Apps can't send a query parameter named ${name}: a name may only have letters, digits and _`,
@@ -60,9 +59,17 @@ describe('reading the query an app wrote', () => {
     expect(read('?Include_2=tags')).toEqual([['Include_2', 'tags']]);
   });
 
+  it('refuses a part with no name', () => {
+    for (const part of ['=x', '=']) {
+      expect(read(`?${part}`), part).toBe("Apps can't send a query parameter without a name");
+    }
+  });
+
   it('refuses a name every object already has, which a parser may drop', () => {
     for (const name of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
-      expect(read(`?${name}=x`), name).toMatch(/^Apps can't send a query parameter named /);
+      expect(read(`?${name}=x`), name).toBe(
+        `Apps can't send a query parameter named ${name}, which every object already has and a parser may drop`,
+      );
     }
   });
 

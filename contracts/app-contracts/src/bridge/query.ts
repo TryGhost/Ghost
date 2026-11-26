@@ -23,7 +23,7 @@ const NAME = /^\w+$/;
  * a query that every parser reads the same way, and refuses the rest:
  *
  * - a name must be plain word characters, so it has no brackets, raw or escaped, no escapes at
- *   all and no spaces;
+ *   all and no spaces, and it can't be empty;
  * - a name may appear once;
  * - a name can't be one every object already has, such as `__proto__`, which a parser may drop;
  * - a value's escapes must be well formed, and `+` in one is a space;
@@ -48,9 +48,17 @@ export function readQuery(search: string): { parameters: Query } | { refused: st
   for (const part of parts) {
     const split = part.indexOf('=');
     const name = split === -1 ? part : part.slice(0, split);
-    if (!NAME.test(name) || name in Object.prototype) {
+    if (name === '') {
+      return { refused: "Apps can't send a query parameter without a name" };
+    }
+    if (!NAME.test(name)) {
       return {
         refused: `Apps can't send a query parameter named ${name}: a name may only have letters, digits and _`,
+      };
+    }
+    if (name in Object.prototype) {
+      return {
+        refused: `Apps can't send a query parameter named ${name}, which every object already has and a parser may drop`,
       };
     }
     if (parameters.has(name)) {

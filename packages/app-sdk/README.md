@@ -44,9 +44,10 @@ if (ghost.scopes.includes('post:edit')) {
 ```
 
 Write each query parameter once, under a plain name: Admin won't send a name
-with brackets, such as `include[]=tags`, or one that repeats, and `fetch`
-rejects with the code `blocked`, so write `include=tags,authors`. Values can
-hold anything, escaped as usual.
+with brackets, such as `include[]=tags`, one that repeats, or one every
+JavaScript object already has, such as `constructor`, and `fetch` rejects with
+the code `blocked`, so write `include=tags,authors`. Values can hold anything,
+escaped as usual.
 
 ## Signing the manifest
 
