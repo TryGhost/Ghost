@@ -353,6 +353,45 @@ it('continues enforcing non-service boundaries in the same scan', (t) => {
   assert.match(result.stderr, /kernel-not-application/);
 });
 
+it('allows Better Auth values from subpaths and types from the root, but not values from the root', (t) => {
+  const auth = 'ghost/core/server/auth/better-auth';
+  const f = fixture(t, {
+    [`${auth}/subpath.ts`]: "import { APIError } from 'better-auth/api'; export default APIError;",
+    [`${auth}/typed.ts`]: "import type { User } from 'better-auth'; export type A = User;",
+    [`${auth}/value.ts`]: "import { APIError } from 'better-auth'; export default APIError;",
+  });
+  f.write(
+    'node_modules/better-auth/package.json',
+    JSON.stringify({
+      name: 'better-auth',
+      type: 'module',
+      exports: { '.': './dist/index.mjs', './api': './dist/api/index.mjs' },
+    }),
+  );
+  f.write('node_modules/better-auth/dist/index.mjs', 'export class APIError {}');
+  f.write('node_modules/better-auth/dist/api/index.mjs', 'export class APIError {}');
+  const root = 'node_modules/better-auth/dist/index.mjs';
+  const graph = f.graph('ghost/core');
+  assert.ok(labels(graph, `${auth}/typed.ts`, root)?.includes('type-only'));
+  assert.deepEqual(violations(graph), [
+    ['core-better-auth-via-subpaths', `${auth}/value.ts`, root],
+  ]);
+});
+
+it('names the file the installed Better Auth root entry point resolves to', () => {
+  // The rule matches the resolved file, so it would stop matching, silently, if an upgrade
+  // moved the root entry point.
+  const { forbidden } = createRequire(import.meta.url)(
+    path.join(repository, '.dependency-cruiser.cjs'),
+  ) as { forbidden: { name: string; to: { path: string } }[] };
+  const rule = forbidden.find(({ name }) => name === 'core-better-auth-via-subpaths');
+  assert.ok(rule);
+  const core = createRequire(path.join(repository, 'ghost/package.json'));
+  assert.match(core.resolve('better-auth'), new RegExp(rule.to.path));
+  assert.doesNotMatch(core.resolve('better-auth/api'), new RegExp(rule.to.path));
+  assert.doesNotMatch(core.resolve('better-auth/minimal'), new RegExp(rule.to.path));
+});
+
 it('rejects a defineService root outside the services directory unless it is a listed exception', (t) => {
   const helper = 'ghost/core/kernel/define-service.ts';
   const use = (depth: number) =>

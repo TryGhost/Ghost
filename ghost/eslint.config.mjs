@@ -215,27 +215,6 @@ export default tseslint.config(
     },
   },
   // ============================================================
-  // Better Auth: values come from a subpath, never the root entry point
-  // ============================================================
-  {
-    files: ['core/**/*.ts'],
-    rules: {
-      '@typescript-eslint/no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: 'better-auth',
-              allowTypeImports: true,
-              message:
-                "The root entry point loads Better Auth's Kysely adapter, which Ghost doesn't use, on every boot. Import values from a subpath, such as `better-auth/api` or `@better-auth/core/context`.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  // ============================================================
   // Browser-only admin-auth bridge scripts
   // ============================================================
   {

@@ -108,7 +108,7 @@ Some libraries are allowed only in one form:
 - **Better Auth:** import values from a subpath, such as `better-auth/api` or
   `@better-auth/core/context`. The root `better-auth` entry point also loads
   Better Auth's Kysely adapter, about 260 modules that Ghost never uses, each
-  time Ghost boots. Types may come from the root. ESLint checks this.
+  time Ghost boots. Types may come from the root.
 
 ## Where the rules are checked
 
@@ -133,6 +133,7 @@ type is not a runtime dependency:
 - `specialist-dependencies`;
 - `service-roots-in-services`;
 - `core-sharp-via-image-transform`;
+- `core-better-auth-via-subpaths`;
 - `public-apps-not-field-rules`.
 
 Every other rule, such as `kernel-not-application`, covers types as well.
