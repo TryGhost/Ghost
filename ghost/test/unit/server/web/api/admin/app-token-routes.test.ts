@@ -203,6 +203,19 @@ describe('The Admin API’s routes and app tokens', function () {
     assert.ok(adminApiRouter().stack.filter(({ route }) => route).length > 250);
   });
 
+  // Better Auth's own routes authenticate nobody, so every one of them refuses an app's token
+  it('starts every Better Auth route by refusing an app token', function () {
+    const { betterAuthRouter } = require(`${core}/server/web/api/endpoints/admin/better-auth`);
+    const router = betterAuthRouter({ handler: async () => new Response() }) as MountedRouter;
+    const routes = router.stack.filter(({ route }) => route);
+
+    assert.deepEqual(problems(router, 'Better Auth'), []);
+    assert.ok(routes.length > 0);
+    for (const { route } of routes) {
+      assert.equal(route?.stack[0]?.handle, refusal, String(route?.path));
+    }
+  });
+
   it('would notice a route, a router or a layer that did neither', function () {
     // Made by the module the routes file loaded, so this test knows it as that module does
     const authenticates = require(`${core}/server/auth/app-token`).createAppTokenAuthentication({});
