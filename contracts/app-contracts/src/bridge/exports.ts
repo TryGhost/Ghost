@@ -22,9 +22,10 @@ import type { FetchResponse, Layout, PathMove, Place, StartContext, Theme } from
 /** What Admin exposes to an app's page. Admin validates every argument; the frame is untrusted. */
 export interface HostExports {
   /**
-   * Calls the Admin API on the app's behalf, with the app session's token. A request whose path
-   * escapes the Admin API root, that the app routes don't list for the installation's scopes,
-   * or that a server gap refuses, never reaches the network.
+   * Calls the Admin API on the app's behalf, with the app session's token. Ghost's server
+   * decides whether the app's scopes cover the call. A request whose path escapes the Admin API
+   * root, that the app routes don't list, or that a server gap refuses, never reaches the
+   * network.
    */
   fetch(request: FetchRequest): Promise<FetchResponse>;
   /** Reports a new page title. Admin shows it as its own title while the page is open. */

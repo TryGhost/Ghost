@@ -162,11 +162,12 @@ bound to their staff session and lasts an hour, or until the staff session
 ends if that's sooner. Every call checks the installation is active, the user is
 active and the staff session still exists and is verified. The approved
 scopes as they are now, whatever the token or its OAuth client say, cap the
-standard permission checks the call meets; a route whose check is its own or
-none refuses apps, unless it's safe for any app. Admin's bridge still sends
-only the routes the app contracts list for the approved scopes, and refuses
-what the server doesn't check yet within them, such as script in a write; the
-app contracts list those server gaps. Only Admin holds the token; the app's
+standard permission checks the call meets, and a call they don't cover is
+refused as `APP_SCOPE_REQUIRED`. A route whose check is its own or none
+refuses apps, unless it's safe for any app, as `APP_NOT_ALLOWED`. Admin's
+bridge still sends only the routes the app contracts list, and refuses what
+the server doesn't check yet within them, such as script in a write; the app
+contracts list those server gaps. Only Admin holds the token; the app's
 frame never sees it. App tokens and their other kinds are defined in
 [Authentication and Authorization](../../auth/CONTEXT.md).
 _Avoid_: user token, app backend token (an app backend's own), access token

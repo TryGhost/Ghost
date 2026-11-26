@@ -105,6 +105,18 @@ describe('refusesStaffUser', () => {
     expect(refusesStaffUser(apiError(409, 'APP_SESSION_ENDED'))).toBe(false);
   });
 
+  // Ghost's refusals of an app, which say nothing about the staff user or the session
+  it.each(['APP_NOT_ALLOWED', 'APP_SCOPE_REQUIRED'])(
+    'doesn’t read %s as a refusal of the staff user, or as the end of a session',
+    (code) => {
+      const refused = apiError(403, code, 'NoPermissionError');
+      expect(refusesStaffUser(refused)).toBe(false);
+      expect(endsAppSession(refused)).toBe(false);
+      expect(sessionFailureOf(refused)).toBeUndefined();
+      expect(siteBlocksApps(refused)).toBeUndefined();
+    },
+  );
+
   it('leaves an expired staff session to Admin’s sign-in handling', () => {
     const expired = new SessionExpiredError(new Response(null, { status: 403 }), {
       errors: [{ type: 'NoPermissionError', message: 'Authorization failed' }],

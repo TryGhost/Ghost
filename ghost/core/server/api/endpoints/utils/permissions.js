@@ -5,12 +5,10 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const { capabilities, capabilityKey } = require('../../../auth/policy/capabilities');
 const { scopesAllow } = require('../../../auth/policy/scopes');
-const { noPermission } = require('../../../auth/policy/authorize');
+const { appNotAllowed, appScopeRequired } = require('../../../auth/app-token');
 
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
-  appsCannotCall: 'Apps do not have permission to {method} {docName}',
-  appsCannotCallOutside: 'Apps do not have permission to call this endpoint',
 };
 
 /**
@@ -87,10 +85,13 @@ const nonePublicAuth = async (apiConfig, frame) => {
     }
   } catch (err) {
     if (err instanceof errors.NoPermissionError) {
-      err.message = tpl(messages.noPermissionToCall, {
-        method: apiConfig.method,
-        docName: apiConfig.docName,
-      });
+      // An app refused for a scope keeps its message, which names the scope it lacked
+      if (err.code !== 'APP_SCOPE_REQUIRED') {
+        err.message = tpl(messages.noPermissionToCall, {
+          method: apiConfig.method,
+          docName: apiConfig.docName,
+        });
+      }
       throw err;
     }
 
@@ -143,12 +144,7 @@ module.exports = {
     if (APP_UNCHECKED_ALLOWLIST.has(`${apiConfig.docName}.${apiConfig.method}`)) {
       return;
     }
-    throw new errors.NoPermissionError({
-      message: tpl(messages.appsCannotCall, {
-        method: apiConfig.method,
-        docName: apiConfig.docName,
-      }),
-    });
+    throw appNotAllowed();
   },
 
   /**
@@ -167,7 +163,7 @@ module.exports = {
       return;
     }
     if (!routed.docName || !routed.method) {
-      throw new errors.NoPermissionError({ message: tpl(messages.appsCannotCallOutside) });
+      throw appNotAllowed();
     }
     const { permissions: own, docName, method } = routed;
     // A method with no permissions of its own is written as a single function, which checks none
@@ -180,12 +176,7 @@ module.exports = {
     const config = Object.assign({ docName, method }, typeof own === 'object' ? own : {});
     const key = permissionKey(config);
     if (!scopesAllow(capabilities(principal).scopes, key)) {
-      const err = noPermission();
-      err.message = tpl(messages.noPermissionToCall, {
-        method: config.method,
-        docName: config.docName,
-      });
-      throw err;
+      throw appScopeRequired(key);
     }
   },
 

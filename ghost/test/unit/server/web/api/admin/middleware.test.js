@@ -44,6 +44,7 @@ const createApp = ({ apiKey = null, user = null, auth = undefined } = {}) => {
       error: {
         message: err.message,
         statusCode: err.statusCode,
+        ...(err.code ? { code: err.code } : {}),
       },
     });
   });
@@ -145,6 +146,7 @@ describe('Admin API Middleware', function () {
       const blocked = {
         message: 'Apps are not allowed to access this endpoint',
         statusCode: 403,
+        code: 'APP_NOT_ALLOWED',
       };
 
       for (const [method, paths] of [
@@ -305,7 +307,9 @@ describe('Admin API Middleware', function () {
       app.use('/mounted', mounted);
       app.use((err, req, res, _next) => {
         void _next;
-        res.status(err.statusCode).json({ type: err.errorType, message: err.message });
+        res
+          .status(err.statusCode)
+          .json({ type: err.errorType, code: err.code, message: err.message });
       });
       return { app, ran };
     };
@@ -317,11 +321,13 @@ describe('Admin API Middleware', function () {
 
       await request(routes).get('/posts').expect(403).expect({
         type: 'NoPermissionError',
-        message: 'You do not have permission to browse posts',
+        code: 'APP_SCOPE_REQUIRED',
+        message: 'This app was not approved for the post:browse scope',
       });
       await request(routes).post('/import').expect(403).expect({
         type: 'NoPermissionError',
-        message: 'You do not have permission to importContent content_imports',
+        code: 'APP_SCOPE_REQUIRED',
+        message: 'This app was not approved for the content_import:importContent scope',
       });
       assert.deepEqual(ran, []);
     });
@@ -331,7 +337,8 @@ describe('Admin API Middleware', function () {
 
       await request(routes).post('/upload').expect(403).expect({
         type: 'NoPermissionError',
-        message: 'Apps do not have permission to upload posts',
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
       });
       assert.deepEqual(ran, []);
     });
@@ -354,7 +361,8 @@ describe('Admin API Middleware', function () {
       await request(routes).post('/any').expect(200);
       await request(routes).post('/multi').expect(403).expect({
         type: 'NoPermissionError',
-        message: 'Apps do not have permission to upload posts',
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
       });
       assert.deepEqual(ran, ['/multi', '/multi', '/any']);
     });
@@ -364,7 +372,8 @@ describe('Admin API Middleware', function () {
 
       await request(routes).post('/bare').expect(403).expect({
         type: 'NoPermissionError',
-        message: 'Apps do not have permission to bare posts',
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
       });
       assert.deepEqual(ran, []);
     });
@@ -374,11 +383,13 @@ describe('Admin API Middleware', function () {
 
       await request(routes).post('/outside').expect(403).expect({
         type: 'NoPermissionError',
-        message: 'Apps do not have permission to call this endpoint',
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
       });
       await request(routes).get('/missing').expect(403).expect({
         type: 'NoPermissionError',
-        message: 'Apps do not have permission to call this endpoint',
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
       });
       assert.deepEqual(ran, []);
     });

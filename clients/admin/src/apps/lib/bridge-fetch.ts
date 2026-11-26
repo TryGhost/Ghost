@@ -13,11 +13,12 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
 
 /**
  * Sends the requests an app asks for, only to the Admin API under `apiRoot`. `request` is already
- * validated. This function checks where its path leads and what it sends, and refuses a path that
- * leaves the API, a route the app routes don't list or list under a scope the installation wasn't
- * approved for, a query it can't write so that the server reads what it read, and what the
- * server doesn't check yet (the server gaps in the app contracts), before anything reaches the
- * network. The query it sends is one it wrote, never the app's spelling of it.
+ * validated. Ghost's server holds the app's token to the scopes it was approved for, and the app
+ * gets the server's answer, refusals included. This function refuses a path that leaves the API,
+ * a route the app routes don't list, a query it can't write so that the server reads what it
+ * read, and what the server doesn't check yet (the server gaps in the app contracts), before
+ * anything reaches the network. The query it sends is one it wrote, never the app's spelling of
+ * it.
  * It also drops headers that only Admin sets, so none of the app's headers can replace Admin's,
  * whatever reaches this function.
  *

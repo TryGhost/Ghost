@@ -49,9 +49,21 @@ export async function failureOfResponse(response: Response): Promise<Failure | u
   }
 }
 
-/** Ghost refused the call's app token, rather than the call itself. */
+/**
+ * Ghost refused the call's app token, rather than the call itself. A call Ghost refuses the app
+ * (`APP_NOT_ALLOWED`, `APP_SCOPE_REQUIRED`) was sent with a token Ghost accepted: its answer is
+ * the app's to read, and says nothing about the session.
+ */
 export function isRefusedToken(failure: Failure | undefined): boolean {
   return failure?.code === 'APP_TOKEN_INVALID';
+}
+
+/**
+ * Ghost's permission check refused the staff user, which it does without a code. A refusal with
+ * a code is about something else, such as an app's scopes.
+ */
+function refusesRole(failure: Failure | undefined): boolean {
+  return failure?.type === 'NoPermissionError' && failure.code === undefined;
 }
 
 /**
@@ -125,7 +137,7 @@ export function refusesStaffUser(error: unknown): boolean {
     return false;
   }
   const failure = failureOf(error);
-  return failure?.code === 'APP_STAFF_SESSION_REQUIRED' || failure?.type === 'NoPermissionError';
+  return failure?.code === 'APP_STAFF_SESSION_REQUIRED' || refusesRole(failure);
 }
 
 /** Codes that end an open app session: nothing it can do opens it again as it was. */
@@ -146,7 +158,7 @@ export function endsAppSession(error: unknown): boolean {
   const failure = failureOf(error);
   return (
     (failure?.code !== undefined && ENDS_SESSION.has(failure.code)) ||
-    failure?.type === 'NoPermissionError' ||
+    refusesRole(failure) ||
     isUncodedNotFound(error)
   );
 }

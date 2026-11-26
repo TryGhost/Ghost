@@ -140,8 +140,8 @@ The reviewed list of the Admin API routes each scope opens to an app
 test in Ghost holds it to the routes the server opens under each scope's key,
 in both directions, so opening a route to apps is one edit here that also says
 what the bridge covers on it. The bridge sends only the routes it lists, and
-the site's public details, and only for an installation approved for the scope
-a route is listed under.
+the site's public details; whether the installation was approved for a route's
+scope is the server's answer to give.
 _Avoid_: allowlist, route table
 
 **Scopes field**:
@@ -240,7 +240,11 @@ _Avoid_: route, link, URL
 **Fetch escape hatch**:
 The bridge's `fetch`, which calls the Admin API on the app's behalf with the
 app user token from its session, acting for the signed-in staff user. It takes
-an Admin API path, never a URL.
+an Admin API path, never a URL. Ghost's server holds the token to the
+installation's approved scopes, and the app gets the server's answer, refusals
+included. Ghost refuses an app with a 403 and a code of its own:
+`APP_SCOPE_REQUIRED` when the app wasn't approved for a scope the call needs,
+and `APP_NOT_ALLOWED` when no app may call the endpoint whatever its scopes.
 _Avoid_: proxy, API access, app token
 
 **Sent query**:

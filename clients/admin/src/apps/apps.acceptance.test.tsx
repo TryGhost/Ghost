@@ -2270,6 +2270,26 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
     });
 
+    // Ghost's server holds the token to the approved scopes, so the app gets its answer.
+    it('sends a call the installation wasn’t approved for, and returns the server’s refusal to the app', async () => {
+      await fakeAppPage(postsApp());
+      const refused = {
+        errors: [{ type: 'NoPermissionError', code: 'APP_SCOPE_REQUIRED', message: 'No' }],
+      };
+      const tiersApi = fakeAdminEndpoint('GET', '/tiers/', refused, { status: 403 });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      const response = answer(await callAppFrame(APP_ORIGIN, 'fetch', { path: '/tiers/' }));
+
+      expect(response.status).toBe(403);
+      expect(JSON.parse(response.body)).toEqual(refused);
+      expect(tiersApi.requests).toHaveLength(1);
+      expect(tiersApi.requests[0].headers.authorization).toMatch(/^Bearer ghost_app_/);
+      // The refusal is the app's to read, and its session goes on
+      await expect.element(appsScreen.frame()).toBeVisible();
+    });
+
     it('refuses what the app routes don’t list, and what Ghost’s server doesn’t check yet, without sending it', async () => {
       await fakeAppPage(postsApp());
       // Faked so that a request that got through is recorded, rather than failing as unhandled.
@@ -2285,8 +2305,6 @@ describe('Managing apps', () => {
         '/USERS/6500000000000000000000c3/Token',
         '/apps/installations/',
         '/members/',
-        // Not among the scopes the installation was approved for.
-        '/tiers/',
         // Core's rewrite for its old versioned addresses would send both of these to /db/.
         '/v4/db/?x=ghost/api/v4/admin/',
         '/dbv4//?x=ghost/api/v4/admin/',

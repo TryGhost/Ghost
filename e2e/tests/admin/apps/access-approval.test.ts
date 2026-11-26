@@ -64,9 +64,13 @@ test.describe('Ghost Admin - App access approval', () => {
     // Not how its posts performed, which Ghost includes by default but needs post:readStats. A
     // post's email is an object, or null, unlike an author's.
     await expect(appPage.app.result).not.toHaveText(/"email":(null|\{)|"count":\{/);
+    // Ghost's server refuses a route no approved scope covers, and the app gets its answer.
     await appPage.app.callAdminApi('/tags/');
+    await expect(appPage.app.result).toHaveText(/^403 \{"errors":\[\{"message":/);
+    // A related object needs its own scope too, which Admin still checks before sending.
+    await appPage.app.callAdminApi('/posts/?include=tags');
     await expect(appPage.app.result).toHaveText(
-      "blocked: This app wasn't approved for tag:browse, which GET /tags/ needs",
+      "blocked: This app wasn't approved for tag:browse, which including tags needs",
     );
 
     expect(await storedInstallation(page.request, installationId)).toMatchObject({

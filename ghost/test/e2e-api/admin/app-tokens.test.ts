@@ -5,14 +5,17 @@ import { join } from 'node:path';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import { generateTestAppKeys, type TestAppKeys } from '../../utils/app-identity';
-import { insertTestInstallation } from '../../utils/app-installations';
+import {
+  createTestStaffSession,
+  insertTestInstallation,
+  issueTestAppToken,
+} from '../../utils/app-installations';
 import {
   agentProvider,
   fixtureManager,
   mockManager,
   resetRateLimits,
 } from '../../utils/e2e-framework';
-import { SESSION_COOKIE_NAME as SESSION_COOKIE } from '../../../core/server/auth/better-auth/create-auth';
 
 const models = require('../../../core/server/models');
 // Required, not imported, so the stub reaches the copy Ghost loaded
@@ -35,27 +38,13 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
   };
   let keys: TestAppKeys;
   const knex = () => models.Base.knex;
-  const appTokens = () => require('../../../core/server/auth').appTokens;
   const owner = () => fixtureManager.get('users', 0);
 
   const installation = (scopes: string[], status: 'active' | 'suspended' = 'active') =>
     insertTestInstallation(knex(), { scopes, status, keys });
 
-  /**
-   * A new verified staff session for the user (the Owner unless named), and the cookies that sign
-   * a browser into it. Made directly, as signing in over HTTP is rate limited.
-   */
-  async function staffSession(userId: string = owner().id) {
-    const setCookies: string[] =
-      await require('../../../core/server/auth').staffSessions.createVerifiedSession(userId);
-    const cookies = setCookies.map((c) => c.split(';')[0]);
-    const sessionCookie = cookies.find((c) => c.startsWith(`${SESSION_COOKIE}=`));
-    assert.ok(sessionCookie);
-    const token = decodeURIComponent(sessionCookie.slice(SESSION_COOKIE.length + 1)).split('.')[0];
-    const session = await knex()('user_sessions').where({ token }).first();
-    assert.ok(session);
-    return { id: session.id as string, setCookies };
-  }
+  /** A new verified staff session for the user (the Owner unless named). */
+  const staffSession = (userId: string = owner().id) => createTestStaffSession(knex(), userId);
 
   /** Signs the agent into a new staff session of the Owner's, as a browser would be. */
   async function signInOwner() {
@@ -68,25 +57,13 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
    * An app user token for the installation, bound to a new staff session of the user's (the Owner
    * unless named).
    */
-  async function tokenFor(
+  const tokenFor = (
     installationId: string,
     {
-      clientScopes,
-      tokenScopes,
       userId = owner().id,
+      ...scopes
     }: { clientScopes: string[]; tokenScopes?: string[]; userId?: string },
-  ) {
-    const session = await staffSession(userId);
-    await appTokens().reconcileClient({ id: installationId, active: true, scopes: clientScopes });
-    const issued = await appTokens().issue({
-      installationId,
-      userId,
-      sessionId: session.id,
-      scopes: tokenScopes ?? clientScopes,
-    });
-    assert.ok('accessToken' in issued, `refused: ${JSON.stringify(issued)}`);
-    return { token: issued.accessToken as string, session };
-  }
+  ) => issueTestAppToken(knex(), { installationId, userId, ...scopes });
 
   const bearer = (token: string) => `Bearer ${token}`;
   const refusedAs = (body: { errors: Array<{ code: string }> }) => body.errors[0].code;
@@ -271,7 +248,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
       ['apps/installations/', 'Permission error, cannot list app_installations.'],
       [
         'members/metafields/custom/favourite/values/',
-        'You do not have permission to browse member',
+        'This app was not approved for the member:browse scope',
       ],
     ]) {
       const { body } = await agent
@@ -280,6 +257,45 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
         .expectStatus(403);
       assert.equal(body.errors[0].message, message, path);
     }
+  });
+
+  // Posts are checked by their model's own hook and tags by the policy core; the scopes cap both
+  it('says which scope an app lacked, with a code of its own', async function () {
+    const id = await installation(['post:browse']);
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+
+    for (const [path, scope] of [
+      ['tags/', 'tag:browse'],
+      [`posts/${fixtureManager.get('posts', 0).id}/`, 'post:read'],
+    ]) {
+      const { body } = await agent
+        .get(path)
+        .header('Authorization', bearer(token))
+        .expectStatus(403);
+      assert.equal(refusedAs(body), 'APP_SCOPE_REQUIRED', path);
+      assert.equal(body.errors[0].message, `This app was not approved for the ${scope} scope`);
+    }
+  });
+
+  // The scope would allow the call; the Editor's role doesn't
+  it('refuses a call the staff user’s role doesn’t allow as Ghost always has, without an app’s code', async function () {
+    const editor = await knex()('users')
+      .join('roles_users', 'users.id', 'roles_users.user_id')
+      .join('roles', 'roles.id', 'roles_users.role_id')
+      .where('roles.name', 'Editor')
+      .first('users.id');
+    assert.ok(editor, 'the fixtures have no Editor');
+    const scopes = ['integration:browse', 'post:browse'];
+    const id = await installation(scopes);
+    const { token } = await tokenFor(id, { clientScopes: scopes, userId: editor.id });
+
+    await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
+    const { body } = await agent
+      .get('integrations/')
+      .header('Authorization', bearer(token))
+      .expectStatus(403);
+    assert.equal(body.errors[0].type, 'NoPermissionError');
+    assert.equal(refusedAs(body), null);
   });
 
   it('holds a call to the installation’s scopes when its OAuth client is out of step', async function () {
@@ -549,6 +565,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
             const { body } = await send(path)
               .header('Authorization', bearer(token))
               .expectStatus(403);
+            assert.equal(refusedAs(body), 'APP_NOT_ALLOWED', `${method} ${path}`);
             assert.equal(
               body.errors[0].message,
               'Apps are not allowed to access this endpoint',
@@ -691,7 +708,12 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
         for (const { method, path, body } of refusedRoutes(owner().id)) {
           const request = (agent as any)[method](path).header('Authorization', bearer(token));
           const { body: response } = await (body ? request.body(body) : request).expectStatus(403);
-          assert.match(response.errors[0].message, /^Apps do not have permission/, path);
+          assert.equal(refusedAs(response), 'APP_NOT_ALLOWED', path);
+          assert.equal(
+            response.errors[0].message,
+            'Apps are not allowed to access this endpoint',
+            path,
+          );
         }
 
         const ownerAfter = await knex()('users').where({ id: owner().id }).first();

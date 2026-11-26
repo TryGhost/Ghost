@@ -26,7 +26,7 @@ function queryEcho() {
  * refuses it, or the parameters it held and the query it sends in their place.
  */
 function bridged(written: string) {
-  const check = checkAdminApiRequest({ path: `/tags/?${written}` }, ROOT, new Set(['tag:browse']));
+  const check = checkAdminApiRequest({ path: `/tags/?${written}` }, ROOT, new Set());
   if (check.problem) {
     assert.equal(check.problem, 'blocked', written);
     return { refused: true } as const;

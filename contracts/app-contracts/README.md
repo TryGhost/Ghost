@@ -341,16 +341,27 @@ sides read a path, a header or a refusal the same way.
 
 `fetch` takes an Admin API path, never a URL, and Admin sends it with the app
 user token from the app's session, which Ghost's server holds to the
-installation's approved scopes. `APP_ROUTES` in `src/bridge/app-routes.ts` is
-the reviewed list of the routes each scope opens to an app, with what the
-bridge still covers on each. Opening a route to apps is one edit there.
+installation's approved scopes. The app gets the server's answer. Ghost
+refuses an app with a 403 whose first error has a code of its own:
+
+| Code                 | Ghost refused the call because                                         |
+| -------------------- | ---------------------------------------------------------------------- |
+| `APP_SCOPE_REQUIRED` | the app wasn't approved for a scope the call needs; the error names it |
+| `APP_NOT_ALLOWED`    | no app may call the endpoint, whatever its scopes                      |
+
+A refusal because the staff user's role doesn't allow the call has no code,
+and a refused token is `401 APP_TOKEN_INVALID`, which Admin handles by
+renewing the token.
+
+`APP_ROUTES` in `src/bridge/app-routes.ts` is the reviewed list of the routes
+each scope opens to an app, with what the bridge still covers on each. Opening
+a route to apps is one edit there.
 
 Admin checks each request with
 `checkAdminApiRequest({ path, method, body }, apiRoot, approvedScopes)`, which
 returns the URL to request, or the reason it refused. It sends only a route
-`APP_ROUTES` lists, under a scope the installation was approved for, and the
-site's public details. What the server doesn't check yet within such a route,
-it covers: `SERVER_GAPS` in `src/bridge/server-gaps.ts` holds each gap as one
+`APP_ROUTES` lists, and the site's public details. What the server doesn't
+check yet within such a route, it covers: `SERVER_GAPS` in `src/bridge/server-gaps.ts` holds each gap as one
 unit, with the issue that moves it to the server and its own check or rewrite
 of the request: the parameters that email a post or take HTML as its content,
 those that re-render a post or convert it to Lexical, code injection and

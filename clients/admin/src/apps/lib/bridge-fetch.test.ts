@@ -39,13 +39,24 @@ describe('createAdminApiFetch', () => {
     token,
   });
 
-  it('refuses a call the installation wasn’t approved for, before sending anything', async () => {
-    await expect(adminApiFetch({ path: '/tiers/' }, session.signal)).rejects.toThrow(
-      "This app wasn't approved for product:browse, which GET /tiers/ needs",
-    );
+  // Ghost's server holds the token to the approved scopes, so the app gets its answer.
+  it('sends a call for a route the installation wasn’t approved for, and returns the server’s refusal', async () => {
+    const refusal = { errors: [{ type: 'NoPermissionError', message: 'No permission' }] };
+    fetchMock.mockImplementation(() => Promise.resolve(Response.json(refusal, { status: 403 })));
+
+    const response = await adminApiFetch({ path: '/tiers/' }, session.signal);
+
+    expect(response.status).toBe(403);
+    expect(JSON.parse(response.body)).toEqual(refusal);
+    expect((fetchMock.mock.calls[0]?.[0] as URL).href).toBe(`${API_ROOT}tiers/`);
+  });
+
+  it('refuses an include the installation wasn’t approved for, before sending anything', async () => {
     await expect(
       adminApiFetch({ path: '/posts/?include=count.clicks' }, session.signal),
-    ).rejects.toMatchObject({ code: 'blocked' });
+    ).rejects.toThrow(
+      "blocked: This app wasn't approved for post:readStats, which including count.clicks needs",
+    );
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -262,6 +273,20 @@ describe('createAdminApiFetch', () => {
       response,
     );
   });
+
+  // Ghost's refusals of the app itself are the app's to read
+  it.each(['APP_NOT_ALLOWED', 'APP_SCOPE_REQUIRED'])(
+    'returns a call Ghost refused as %s to the app as Ghost answered it',
+    async (code) => {
+      const body = JSON.stringify({ errors: [{ type: 'NoPermissionError', code, message: 'No' }] });
+      fetchMock.mockResolvedValue(new Response(body, { status: 403 }));
+
+      const answer = await adminApiFetch({ path: '/posts/' }, session.signal);
+
+      expect(answer).toMatchObject({ status: 403, body });
+      expect(fetchMock).toHaveBeenCalledOnce();
+    },
+  );
 
   it('gives the app the response its token source settled on', async () => {
     token.send.mockImplementation(async (call) => {

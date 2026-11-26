@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import { actionsMap, forRoles, type Permission } from './role-permissions';
 import { ANONYMOUS, type Principal, type RoleView, type UserView } from '../principal';
-import { authorize, noPermission, type Allowed } from '../policy/authorize';
+import { authorize, noPermission, outOfScope, type Allowed } from '../policy/authorize';
 import { capabilities, capabilityKey } from '../policy/capabilities';
 import { scopesAllow } from '../policy/scopes';
 import parseContext, { type ParsedContext } from './parse-context';
@@ -168,8 +168,9 @@ class CanThisResultBuilder {
         return Promise.resolve(actors).then(function (loadedPermissions) {
           // Scopes cap the hooks as they will cap row rules; unscoped principals pass
           const { scopes } = capabilities(principal);
-          if (!scopesAllow(scopes, capabilityKey(objType, actType))) {
-            return Promise.reject(noPermission());
+          const key = capabilityKey(objType, actType);
+          if (!scopesAllow(scopes, key)) {
+            return Promise.reject(outOfScope(principal, key));
           }
 
           // Offer a chance for the TargetModel to override the results
