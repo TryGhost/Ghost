@@ -332,7 +332,9 @@ export class AppInstallationsService {
    */
   async uninstall(context: RequestContext, id: string, executor: Knex = this.knex): Promise<void> {
     return ensureTransaction(executor, async (transacting) => {
-      const installation = await this.read(id, { executor: transacting });
+      // Read with a lock, so the installation reported as it was is the one this uninstalls: an
+      // approval can't land between the read and the uninstall.
+      const installation = await this.lockedInstallation(id, transacting);
 
       const ended = await this.repository.uninstall(id, { transacting });
       if (!ended) {
@@ -342,9 +344,21 @@ export class AppInstallationsService {
       await this.onAppInstallationUpdated(
         transacting,
         context,
-        new AppUninstalled(installation, await this.read(id, { executor: transacting })),
+        new AppUninstalled(installation, await this.lockedInstallation(id, transacting)),
       );
     });
+  }
+
+  /** The installation as the database holds it now, locked until `transacting` ends. */
+  private async lockedInstallation(
+    id: string,
+    transacting: Knex.Transaction,
+  ): Promise<Installation> {
+    const installation = await this.repository.findLocked(id, { transacting });
+    if (!installation) {
+      throw notFound();
+    }
+    return installation;
   }
 
   private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {

@@ -211,6 +211,25 @@ export class AppInstallationsRepository {
     return row ? z.decode(InstallationRow, row) : undefined;
   }
 
+  /**
+   * An installation by ID, uninstalled or not, with its row and its approved manifest's row
+   * locked until `transacting` ends, so nothing else changes the installation in between.
+   *
+   * On MySQL a plain read sees the database as it was at the transaction's first plain read,
+   * which in a caller's transaction can be before the installation last changed. A locking read
+   * sees what is committed now.
+   */
+  async findLocked(
+    id: string,
+    { transacting }: { transacting: Knex.Transaction },
+  ): Promise<Installation | undefined> {
+    const row = await this.withApprovedManifest(transacting)
+      .where('installation.id', id)
+      .forUpdate()
+      .first<z.input<typeof InstallationRow> | undefined>(INSTALLATION_COLUMNS);
+    return row ? z.decode(InstallationRow, row) : undefined;
+  }
+
   /** The app's current installation, if it has one. */
   async currentInstallationOf(appId: string): Promise<Installation | undefined> {
     const row = await this.withApprovedManifest()
