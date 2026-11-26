@@ -88,8 +88,12 @@ function granted(principal: Principal): ReadonlySet<Capability> {
         ? staffGrants(names(principal.actingFor.roles))
         : toKeys(principal.scopes);
     // A kind this doesn't know is granted nothing
-    default:
+    default: {
+      // Fails the type check until a new kind is handled above
+      const unhandled: never = principal;
+      void unhandled;
       return NONE;
+    }
   }
 }
 
@@ -106,8 +110,12 @@ function scopeLimit(principal: Principal): Capabilities['scopes'] {
     case 'integration':
       return principal.scopes ? toKeys(principal.scopes) : 'unlimited';
     // A kind this doesn't know is allowed nothing, rather than left unscoped
-    default:
+    default: {
+      // Fails the type check until a new kind is handled above
+      const unhandled: never = principal;
+      void unhandled;
       return NONE;
+    }
   }
 }
 
