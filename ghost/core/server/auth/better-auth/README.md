@@ -189,6 +189,78 @@ Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
 `better-auth` only: a user token for the staff user, bound to their staff
 session. Nothing issues one in a request yet.
 
+### How the pieces fit
+
+Ghost's own code reaches app tokens through one interface, `AppTokens`, which
+`auth.appTokens` returns. Everything that knows about OAuth clients or the
+provider's tables sits behind Ghost's `ghostApps` plugin. Nothing in Ghost
+calls `AppTokens` yet: its callers arrive with the Admin API's app token
+authentication and with app sessions. Security events already delete a user's
+app tokens.
+
+```mermaid
+flowchart TD
+    FACADE["app-tokens.ts<br/><b>AppTokens</b>, from auth.appTokens<br/>availability · reconcileClient · issue · validate"]
+
+    subgraph plugin["Inside Better Auth"]
+        APPS["plugins/apps.ts<br/><b>ghostApps</b> server-only endpoints<br/>reconcileAppClient · issueAppUserToken · validateAppToken"]
+        CLIENTS["plugins/app-clients.ts<br/>one user client per installation"]
+        PROVIDER["@better-auth/oauth-provider<br/>server API only, no routes mounted"]
+        EVENTS["Security events<br/>plugins/staff-lifecycle.ts,<br/>password change"]
+    end
+
+    TOKENS[("oauth_clients<br/>oauth_access_tokens")]
+    STAFF[("users<br/>user_sessions")]
+
+    FACADE -- "auth.api" --> APPS
+    APPS -- "reconcileAppUserClient" --> CLIENTS
+    APPS -- "issueTokens · validateAccessToken · getClient" --> PROVIDER
+    APPS -- "reads the user and staff session" --> STAFF
+    EVENTS -- "deleteAppTokens" --> CLIENTS
+    CLIENTS --> TOKENS
+    PROVIDER --> TOKENS
+```
+
+- **`AppTokens`** is the only way in. `availability` says whether tokens can
+  be used here at all. Until it's `ready`, `issue` throws, `validate` returns
+  null and `reconcileClient` does nothing.
+- **`ghostApps`** adds three endpoints that can only be called on the server.
+  They hold the checks the provider doesn't make, listed below.
+- **`app-clients.ts`** maps an installation to its OAuth client and back. It
+  keeps the client enabled or disabled to match the installation, and deletes
+  tokens.
+- **The provider** stores, issues and validates tokens. None of its routes is
+  mounted.
+
+### What issuing and validating check
+
+| Check                                                     | `issueAppUserToken` refuses with | `validateAppToken` |
+| --------------------------------------------------------- | -------------------------------- | ------------------ |
+| The provider knows the token, and it hasn't expired       | n/a                              | null               |
+| The client is the installation's user client, and enabled | `client_unavailable`             | null               |
+| The user exists                                           | `user_not_found`                 | n/a                |
+| The staff session exists and is the user's                | `session_unavailable`            | null               |
+| The staff session is verified and hasn't expired          | `session_unavailable`            | null               |
+
+An issued token lasts an hour, or until its staff session ends if that's
+sooner. Its scopes are the requested ones the client lists.
+
+### The types
+
+| Type                    | Where                    | What it is                                                       |
+| ----------------------- | ------------------------ | ---------------------------------------------------------------- |
+| `AppTokens`             | `app-tokens.ts`          | The interface Ghost's code uses for app tokens                   |
+| `AppTokensAvailability` | `app-tokens.ts`          | `ready`, `legacy_engine` or `needs_restart`                      |
+| `AppTokenInstallation`  | `app-tokens.ts`          | What a client is kept in step with: id, active, scopes           |
+| `AppTokenRequest`       | `app-tokens.ts`          | Who a token is for: installation, user, staff session, scopes    |
+| `IssuedAppToken`        | `app-tokens.ts`          | The token and how many seconds it lasts                          |
+| `AppTokenRefusal`       | `app-tokens.ts`          | Why none was issued: client, user or session                     |
+| `ValidatedAppToken`     | `app-tokens.ts`          | Who a valid token acts for, and its staff session                |
+| `AppClientInstallation` | `plugins/app-clients.ts` | `AppTokenInstallation` as `ghostApps`'s endpoint receives it     |
+| `AppClientOwner`        | `plugins/app-clients.ts` | Which installation a client belongs to, and which of its clients |
+
+### Details
+
 - The provider and the `jwt` plugin it signs with are registered only when the
   `apps` labs flag is on at boot and their in-development tables exist, so a
   site that boots without the flag sees no change to sign-in or session reads.
