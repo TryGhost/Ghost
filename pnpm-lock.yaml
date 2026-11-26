@@ -3562,6 +3562,9 @@ importers:
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:~
         version: link:../kg-unsplash-selector
+      '@types/jsdom':
+        specifier: 'catalog:'
+        version: 30.0.0
       '@types/lodash':
         specifier: 'catalog:'
         version: 4.17.27
@@ -3616,6 +3619,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: 'catalog:'
         version: 7.1.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
+      eslint-plugin-react-refresh:
+        specifier: 'catalog:'
+        version: 0.5.8(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-storybook:
         specifier: 'catalog:'
         version: 10.6.6(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
@@ -3661,9 +3667,6 @@ importers:
       prettier-plugin-organize-attributes:
         specifier: 1.0.0
         version: 1.0.0(prettier@3.9.10)
-      prop-types:
-        specifier: 15.8.1
-        version: 15.8.1
       react:
         specifier: 'catalog:'
         version: 18.3.1

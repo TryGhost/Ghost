@@ -2,11 +2,17 @@ import ImgBgIcon from '../../assets/icons/kg-img-bg.svg?react';
 import clsx from 'clsx';
 import {Tooltip} from './Tooltip';
 
+interface ImageUploadSwatchProps {
+    showBackgroundImage?: boolean;
+    onClickHandler?: () => void;
+    dataTestId?: string;
+}
+
 export const ImageUploadSwatch = ({
     showBackgroundImage,
     onClickHandler,
     dataTestId
-}) => {
+}: ImageUploadSwatchProps) => {
     return (
         <button
             className={clsx(

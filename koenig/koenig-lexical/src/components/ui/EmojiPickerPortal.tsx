@@ -1,10 +1,35 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext';
 import Picker from './EmojiPicker';
 import Portal from './Portal';
-import PropTypes from 'prop-types';
 import React from 'react';
 import defaultData from '@emoji-mart/data';
 import {useClickOutside} from '../../hooks/useClickOutside';
+
+interface EmojiPickerPortalProps {
+    onEmojiClick?: (emoji: {native: string}) => void;
+    onClickOutside?: () => void;
+    positionRef: React.RefObject<HTMLElement | null>;
+    data?: unknown;
+    autoFocus?: boolean;
+    dynamicWidth?: boolean;
+    emojiButtonRadius?: string;
+    emojiButtonSize?: number;
+    emojiSize?: number;
+    icons?: 'auto' | 'outline' | 'solid';
+    locale?: string;
+    maxFrequentRows?: number;
+    navPosition?: 'top' | 'bottom' | 'none';
+    noCountryFlags?: boolean;
+    noResultsEmoji?: string;
+    perLine?: number;
+    previewEmoji?: string | null;
+    previewPosition?: 'top' | 'bottom' | 'none';
+    searchPosition?: 'sticky' | 'static' | 'none';
+    set?: 'native' | 'apple' | 'facebook' | 'google' | 'twitter';
+    skin?: 1 | 2 | 3 | 4 | 5 | 6;
+    skinTonePosition?: 'preview' | 'search' | 'none';
+    [key: string]: unknown;
+}
 
 const EmojiPickerPortal = ({
     onEmojiClick,
@@ -30,16 +55,17 @@ const EmojiPickerPortal = ({
     skin = 1,
     skinTonePosition = 'preview',
     ...props
-}) => {
-    const [position, setPosition] = React.useState(null);
-    const pickerRef = React.useRef(null);
+}: EmojiPickerPortalProps) => {
+    const [position, setPosition] = React.useState<{x: number; y: number; isInDialog: boolean} | null>(null);
+    const pickerRef = React.useRef<HTMLDivElement>(null);
     const {darkMode} = React.useContext(KoenigComposerContext);
 
     // the picker renders in a portal so the trigger button sits outside of it,
     // include it here to avoid closing and immediately re-opening on trigger click
     const clickOutsideRefs = React.useMemo(() => [pickerRef, positionRef], [positionRef]);
 
-    useClickOutside(!!onClickOutside, clickOutsideRefs, onClickOutside);
+    const handleClickOutside = React.useCallback(() => onClickOutside?.(), [onClickOutside]);
+    useClickOutside(!!onClickOutside, clickOutsideRefs, handleClickOutside);
 
     const shiftPixels = 35; // how many pixels we want to move it up when it's at the bottom of the screen
     const handleScroll = React.useCallback(() => {
@@ -79,11 +105,11 @@ const EmojiPickerPortal = ({
     const {x, y, isInDialog} = position;
     const pickerLayer = isInDialog ? 'z-[10000]' : 'z-20';
 
-    const handleClick = (e) => {
+    const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
     };
 
-    const style = {
+    const style: React.CSSProperties = {
         left: x,
         top: y,
         position: 'fixed'
@@ -130,32 +156,3 @@ const EmojiPickerPortal = ({
 };
 
 export default EmojiPickerPortal;
-
-EmojiPickerPortal.propTypes = {
-    onEmojiClick: PropTypes.func.isRequired,
-    onClickOutside: PropTypes.func,
-    positionRef: PropTypes.object,
-    data: PropTypes.array,
-    autoFocus: PropTypes.bool,
-    dynamicWidth: PropTypes.bool,
-    emojiButtonColors: PropTypes.arrayOf(PropTypes.string),
-    emojiButtonRadius: PropTypes.string,
-    emojiButtonSize: PropTypes.number,
-    emojiSize: PropTypes.number,
-    emojiVersion: PropTypes.oneOf([1, 2, 3, 4, 5, 11, 12, 12.1, 13, 13.1, 14]),
-    exceptEmojis: PropTypes.arrayOf(PropTypes.string),
-    icons: PropTypes.oneOf(['auto', 'outline', 'solid']),
-    locale: PropTypes.oneOf(['en','ar','be','cs','de','es','fa','fi','fr','hi','it','ja','kr','nl','pl','pt','ru','sa','tr','uk','vi','zh']),
-    maxFrequentRows: PropTypes.number,
-    navPosition: PropTypes.oneOf(['top', 'bottom', 'none']),
-    noCountryFlags: PropTypes.bool,
-    noResultsEmoji: PropTypes.string,
-    perLine: PropTypes.number,
-    previewEmoji: PropTypes.string,
-    previewPosition: PropTypes.oneOf(['top', 'bottom', 'none']),
-    searchPosition: PropTypes.oneOf(['sticky', 'static', 'none']),
-    set: PropTypes.oneOf(['native', 'apple', 'facebook', 'google', 'twitter']),
-    setInstanceRef: PropTypes.func,
-    skin: PropTypes.oneOf([1, 2, 3, 4, 5, 6]),
-    skinTonePosition: PropTypes.oneOf(['preview', 'search', 'none'])
-};

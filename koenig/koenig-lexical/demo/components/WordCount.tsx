@@ -1,4 +1,4 @@
-const WordCount = ({wordCount, selectionWordCount, tkCount}) => {
+const WordCount = ({wordCount, selectionWordCount, tkCount}: {wordCount: number; selectionWordCount: number | null; tkCount: number}) => {
     return (
         <div className="absolute left-6 top-4 z-20 block cursor-pointer rounded bg-white px-2 py-1 font-mono text-sm tracking-tight text-grey-600 dark:bg-transparent">
             {selectionWordCount !== null && (

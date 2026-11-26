@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 
-const useAutoExpandTextArea = ({el, value}) => {
+const useAutoExpandTextArea = ({el, value}: {el: React.RefObject<HTMLTextAreaElement | null>; value: string}): void => {
     useEffect(() => {
         const element = el.current;
         if (element) {

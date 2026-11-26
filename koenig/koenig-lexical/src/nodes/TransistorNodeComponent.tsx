@@ -1,27 +1,34 @@
 import CardContext from '../context/CardContext';
-import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 // TODO: Re-enable when design tab is implemented
 // import {$getNodeByKey} from 'lexical';
-import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {CardSettingsPanel} from '../components/CardSettingsPanel';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
-import {TransistorCard} from '../components/ui/cards/TransistorCard.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {TransistorCard} from '../components/ui/cards/TransistorCard';
 import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 
+interface TransistorNodeComponentProps {
+    nodeKey: string;
+    accentColor: string;
+    backgroundColor: string;
+}
+
 export const TransistorNodeComponent = ({
+
     nodeKey,
     accentColor,
     backgroundColor
-}) => {
+}: TransistorNodeComponentProps) => {
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);

@@ -1,6 +1,7 @@
 import {VISIBILITY_SETTINGS} from '../../src/utils/visibility';
 import {expect} from 'vitest';
 import {getEmailEditorCardConfig} from '../../src/components/EmailEditor';
+import type {VisibilitySetting} from '../../src/utils/visibility';
 
 describe('getEmailEditorCardConfig', function () {
     it('defaults to EMAIL_ONLY visibility when no cardConfig is passed', function () {
@@ -34,13 +35,13 @@ describe('getEmailEditorCardConfig', function () {
     });
 
     it('falls back to EMAIL_ONLY for invalid values', function () {
-        const result = getEmailEditorCardConfig({visibilitySettings: 'garbage'});
+        const result = getEmailEditorCardConfig({visibilitySettings: 'garbage' as unknown as VisibilitySetting});
         expect(result.visibilitySettings).toBe(VISIBILITY_SETTINGS.EMAIL_ONLY);
     });
 
     it('restricts image widths to regular only', function () {
         const result = getEmailEditorCardConfig({image: {allowedWidths: ['wide', 'full']}});
-        expect(result.image.allowedWidths).toEqual(['regular']);
+        expect(result.image?.allowedWidths).toEqual(['regular']);
     });
 
     it('preserves other cardConfig properties', function () {

@@ -1,15 +1,25 @@
 import {E2E_PORT} from '../../playwright.config';
 import {ctrlOrCmd, dragMouse, focusEditor, initialize, insertCard, selectBackwards} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Locator, Page} from '@playwright/test';
 
-async function setEditable(page, editable) {
+interface SerializedNode {
+    type: string;
+    [key: string]: unknown;
+}
+
+interface SerializedState {
+    root: {children: SerializedNode[]};
+}
+
+async function setEditable(page: Page, editable: boolean) {
     await page.evaluate((value) => {
         window.lexicalEditor.setEditable(value);
     }, editable);
 }
 
 // waits for React to have rendered the change, which Lexical's own attribute shows
-async function setEditableAndRender(page, editable) {
+async function setEditableAndRender(page: Page, editable: boolean) {
     await setEditable(page, editable);
     const root = page.locator('[data-lexical-editor]').first();
     if (editable) {
@@ -21,9 +31,9 @@ async function setEditableAndRender(page, editable) {
 
 // the tab stays busy after the change, so the key arrives before React has rendered it. Modifiers
 // go down first and the key is sent once the change is made, then checked to have arrived in time
-async function pressBeforeReadOnlyRenders(page, shortcut) {
+async function pressBeforeReadOnlyRenders(page: Page, shortcut: string) {
     const modifiers = shortcut.split('+');
-    const key = modifiers.pop();
+    const key = modifiers.pop()!;
     for (const modifier of modifiers) {
         await page.keyboard.down(modifier);
     }
@@ -32,7 +42,7 @@ async function pressBeforeReadOnlyRenders(page, shortcut) {
     const arrivedInTime = page.evaluate(() => new Promise((resolve) => {
         window.addEventListener('keydown', () => {
             const root = document.querySelector('[data-lexical-editor]');
-            resolve(!window.lexicalEditor.isEditable() && root.getAttribute('contenteditable') === 'true');
+            resolve(!window.lexicalEditor.isEditable() && root!.getAttribute('contenteditable') === 'true');
         }, {capture: true, once: true});
         window.lexicalEditor.setEditable(false);
         console.log('read-only');
@@ -50,11 +60,11 @@ async function pressBeforeReadOnlyRenders(page, shortcut) {
     }
 }
 
-const documentJson = page => page.evaluate(() => JSON.stringify(window.lexicalEditor.getEditorState().toJSON().root.children));
-const documentTypes = async page => JSON.parse(await documentJson(page)).map(node => node.type).join(',');
-const text = value => ({detail: 0, format: 0, mode: 'normal', style: '', text: value, type: 'text', version: 1});
-const paragraph = (...children) => ({children: children.map(child => (typeof child === 'string' ? text(child) : child)), direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1});
-const withContent = children => `/#/?content=${encodeURIComponent(JSON.stringify({root: {children, direction: null, format: '', indent: 0, type: 'root', version: 1}}))}`;
+const documentJson = (page: Page) => page.evaluate(() => JSON.stringify((window.lexicalEditor.getEditorState().toJSON() as SerializedState).root.children));
+const documentTypes = async (page: Page) => (JSON.parse(await documentJson(page)) as SerializedNode[]).map(node => node.type).join(',');
+const text = (value: string) => ({detail: 0, format: 0, mode: 'normal', style: '', text: value, type: 'text', version: 1});
+const paragraph = (...children: Array<string | SerializedNode>) => ({children: children.map(child => (typeof child === 'string' ? text(child) : child)), direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1});
+const withContent = (children: SerializedNode[]) => `/#/?content=${encodeURIComponent(JSON.stringify({root: {children, direction: null, format: '', indent: 0, type: 'root', version: 1}}))}`;
 const SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="teal"/></svg>';
 const PNG = `http://localhost:${E2E_PORT}/Koenig-editor-1.png`;
 const imageCard = (fields = {}) => ({type: 'image', version: 1, src: PNG, width: 600, height: 300, title: '', alt: '', caption: '', cardWidth: 'regular', href: '', ...fields});
@@ -64,23 +74,24 @@ const callToActionCard = {type: 'call-to-action', version: 1, backgroundColor: '
 
 // a press and release where the pointer is, which is what reaches a control the
 // page says takes no pointer input
-async function pressAt(page, locator) {
-    const box = await locator.boundingBox();
+async function pressAt(page: Page, locator: Locator) {
+    const box = (await locator.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
     await page.mouse.up();
     await page.waitForTimeout(300);
 }
 
-function calloutText(page) {
+function calloutText(page: Page) {
     return page.evaluate(() => {
-        const callout = window.lexicalEditor.getEditorState().toJSON().root.children.find(child => child.type === 'callout');
-        return new DOMParser().parseFromString(callout.calloutText, 'text/html').body.textContent;
+        const state = window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<{type: string; calloutText?: string}>}};
+        const callout = state.root.children.find(child => child.type === 'callout')!;
+        return new DOMParser().parseFromString(callout.calloutText!, 'text/html').body.textContent;
     });
 }
 
 test.describe('Read-only', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -172,7 +183,7 @@ test.describe('Read-only', async () => {
         await expect(card).toHaveAttribute('data-kg-card-selected', 'false');
         // a control that does take focus while the editor is editable
         const takesFocus = await card.evaluate((element) => {
-            const button = element.querySelector('button');
+            const button = element.querySelector('button')!;
             button.focus();
             const focused = document.activeElement === button;
             button.blur();
@@ -249,15 +260,15 @@ test.describe('Read-only and back', () => {
         await setEditableAndRender(page, false);
 
         const paragraphs = page.locator('[data-lexical-editor]').first().locator('> p');
-        const first = await paragraphs.first().boundingBox();
-        const last = await paragraphs.last().boundingBox();
+        const first = (await paragraphs.first().boundingBox())!;
+        const last = (await paragraphs.last().boundingBox())!;
         await page.mouse.move(first.x + 1, first.y + first.height / 2);
         await page.mouse.down();
         await page.mouse.move(first.x + 40, first.y + first.height, {steps: 5});
         await page.mouse.move(last.x + 120, last.y + last.height / 2, {steps: 10});
         await page.mouse.up();
 
-        const selected = await page.evaluate(() => window.getSelection().toString());
+        const selected = await page.evaluate(() => window.getSelection()!.toString());
         expect(selected).toContain('Para one');
         expect(selected).toContain('Card text');
         expect(selected).toContain('Para two');
@@ -437,7 +448,7 @@ test.describe('Read-only and back', () => {
         expect(await documentJson(page)).toBe(before);
 
         // the input lets go of the file, or choosing the same one again later would tell the card nothing
-        expect(await page.locator('[data-kg-card="image"] input[type="file"]').evaluate(input => input.files.length)).toBe(0);
+        expect(await page.locator('[data-kg-card="image"] input[type="file"]').evaluate((input: HTMLInputElement) => input.files!.length)).toBe(0);
     });
 
     test('does not bring a card’s snippet name field back once editable again', async ({page}) => {
@@ -480,8 +491,8 @@ test.describe('Read-only document', () => {
         await setEditableAndRender(page, false);
         const before = await documentJson(page);
 
-        const anchor = await page.locator('[data-lexical-editor] a').first().boundingBox();
-        const second = await page.locator('[data-lexical-editor]').first().locator('> p').nth(1).boundingBox();
+        const anchor = (await page.locator('[data-lexical-editor] a').first().boundingBox())!;
+        const second = (await page.locator('[data-lexical-editor]').first().locator('> p').nth(1).boundingBox())!;
         await page.mouse.move(anchor.x + anchor.width / 2, anchor.y + anchor.height / 2);
         await page.mouse.down();
         // a drag starts only after a short hold
@@ -504,7 +515,7 @@ test.describe('Read-only document', () => {
             const dataTransfer = new DataTransfer();
             dataTransfer.setData('text/html', '<p>DROPPED</p>');
             const drop = new DragEvent('drop', {dataTransfer, bubbles: true, cancelable: true});
-            document.querySelector('[data-lexical-editor] > p').dispatchEvent(drop);
+            document.querySelector('[data-lexical-editor] > p')!.dispatchEvent(drop);
             return drop.defaultPrevented;
         });
         await page.waitForTimeout(300);
@@ -724,7 +735,7 @@ test.describe('Read-only document', () => {
         expect(await documentJson(page)).toBe(before);
 
         // a click that is not the pointer's, as assistive technology makes
-        await button.evaluate(element => element.click());
+        await button.evaluate((element: HTMLElement) => element.click());
         await page.waitForTimeout(300);
         expect(await documentJson(page)).toBe(before);
 

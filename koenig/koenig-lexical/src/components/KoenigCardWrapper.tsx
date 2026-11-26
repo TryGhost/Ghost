@@ -23,10 +23,10 @@ interface KoenigCardWrapperProps {
 const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}: KoenigCardWrapperProps) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
-    const [cardType, setCardType] = React.useState(null);
-    const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
+    const [cardType, setCardType] = React.useState<string | null>(null);
+    const [captionHasFocus, setCaptionHasFocus] = React.useState<boolean | null>(null);
     const [cardWidth, setCardWidth] = React.useState<CardWidth>(width || 'regular');
-    const containerRef = React.useRef(null);
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
     const skipClick = React.useRef(false);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
@@ -37,44 +37,45 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
 
     // the stylesheet takes the pointer from a read-only card, and new focus is refused here. Not
     // `inert`, which would also keep its text out of selections, find-in-page and screen readers
-    const refuseFocus = React.useCallback((event) => {
+    const refuseFocus = React.useCallback((event: React.FocusEvent<HTMLElement>) => {
         event.target.blur?.();
     }, []);
 
     // a control that had focus keeps it, so its keys and the clicks they make are refused. Shortcuts
     // pass once the card is no longer selected: until that renders, its editing controls would take them
-    const refuseInput = React.useCallback((event) => {
-        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
+    const refuseInput = React.useCallback((event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>) => {
+        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target as Node)) {
             return;
         }
 
-        const isShortcut = event.ctrlKey || event.metaKey || ['Shift', 'Control', 'Alt', 'Meta'].includes(event.key);
+        const key = 'key' in event ? event.key : undefined;
+        const isShortcut = event.ctrlKey || event.metaKey || (key !== undefined && ['Shift', 'Control', 'Alt', 'Meta'].includes(key));
         if (event.type !== 'click' && isShortcut && !isSelected) {
             return;
         }
 
         event.stopPropagation();
 
-        if (event.key !== 'Tab') {
+        if (key !== 'Tab') {
             event.preventDefault();
         }
     }, [editor, isSelected]);
 
     // a file chosen in a dialog that was opened before the document went read-only is not taken,
     // nor kept by the input, which would not report the same file chosen again
-    const refuseChange = React.useCallback((event) => {
-        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
+    const refuseChange = React.useCallback((event: React.FormEvent<HTMLDivElement>) => {
+        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target as Node)) {
             return;
         }
 
         event.stopPropagation();
 
-        if (event.target.type === 'file') {
+        if (event.target instanceof HTMLInputElement && event.target.type === 'file') {
             event.target.value = '';
         }
     }, [editor]);
 
-    const handleVisibilityToggle = React.useCallback((event) => {
+    const handleVisibilityToggle = React.useCallback((event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
@@ -83,7 +84,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     React.useLayoutEffect(() => {
         editor.getEditorState().read(() => {
             const cardNode = $getNodeByKey(nodeKey);
-            setCardType(cardNode.getType());
+            setCardType(cardNode?.getType() ?? null);
         });
 
         // We only do this for init
@@ -98,11 +99,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
-                    if (!skipClick.current && containerRef.current.contains(event.target)) {
+                    const target = event.target as HTMLElement | null;
+                    if (!skipClick.current && containerRef.current?.contains(target)) {
                         const cardNode = $getNodeByKey(nodeKey);
                         const clickedDifferentEditor = !cardNode;
-                        const clickedToolbar = event.target.closest('[data-kg-allow-clickthrough="false"]');
-                        const clickedSettingsPanel = event.target.closest('[data-kg-settings-panel]');
+                        const clickedToolbar = target?.closest('[data-kg-allow-clickthrough="false"]');
+                        const clickedSettingsPanel = target?.closest('[data-kg-settings-panel]');
 
                         if (isSelected && ($isKoenigCard(cardNode) && cardNode.hasEditMode() && !isEditing && !clickedToolbar && !clickedSettingsPanel)) {
                             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
@@ -112,7 +114,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
 
                         if (clickedDifferentEditor) {
                             // click is in a different editor
-                            return;
+                            return false;
                         }
 
                         return true;
@@ -148,7 +150,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
         }
     }, [cardWidth, containerRef, width]);
 
-    const setEditing = (shouldEdit) => {
+    const setEditing = (shouldEdit: boolean) => {
         // convert nodeKey to int
         if (shouldEdit) {
             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
@@ -160,7 +162,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     React.useEffect(() => {
         const container = containerRef.current;
 
-        function handleMousedown(event) {
+        function handleMousedown(event: MouseEvent) {
             if (!isSelected && !isEditing) {
                 editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey});
 
@@ -171,11 +173,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 // can cause an underlying cursor position change but inputs and
                 // textareas are different and we want the focus to move to them
                 // immediately when clicked
-                const targetTagName = event.target.tagName;
+                const target = event.target as HTMLElement | null;
+                const targetTagName = target?.tagName;
                 const allowedTagNames = ['INPUT', 'TEXTAREA'];
-                const allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+                const allowClickthrough = !!target?.closest('[data-kg-allow-clickthrough]');
 
-                if (!allowedTagNames.includes(targetTagName) && !allowClickthrough) {
+                if (!allowedTagNames.includes(targetTagName || '') && !allowClickthrough) {
                     event.preventDefault();
                 }
             }
@@ -184,13 +187,14 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
         // cards without an edit mode of their own (image, gallery) keep a
         // second click for captions and their own controls, so their settings
         // panel opens on double-click instead
-        function handleDoubleClick(event) {
-            if (isEditing || event.target.closest('[data-kg-card-toolbar], [data-kg-settings-panel], input, textarea')) {
+        function handleDoubleClick(event: MouseEvent) {
+            const target = event.target as Element;
+            if (isEditing || target.closest('[data-kg-card-toolbar], [data-kg-settings-panel], input, textarea')) {
                 return;
             }
 
             // double-clicking a word in a caption should select it, not open the panel
-            if (event.target.closest('[contenteditable]')?.getAttribute('contenteditable') === 'true') {
+            if (target.closest('[contenteditable]')?.getAttribute('contenteditable') === 'true') {
                 return;
             }
 

@@ -1,7 +1,9 @@
-import {buildCardMenu} from '../../src/utils/buildCardMenu';
+import {type CardMenuItem, buildCardMenu} from '../../src/utils/buildCardMenu';
 import {describe, expect, it} from 'vitest';
 
-const Icon = () => {};
+type CardMenuNodes = Parameters<typeof buildCardMenu>[0];
+
+const Icon: CardMenuItem['Icon'] = () => null;
 
 describe('buildCardMenu', function () {
     it('adds to Primary section by default', async function () {
@@ -20,7 +22,7 @@ describe('buildCardMenu', function () {
             }}]
         ];
 
-        const cardMenu = buildCardMenu(nodes);
+        const cardMenu = buildCardMenu(nodes as CardMenuNodes);
 
         expect(cardMenu.menu).deep.equal(new Map([
             ['Primary', [
@@ -61,7 +63,7 @@ describe('buildCardMenu', function () {
             }}]
         ];
 
-        const cardMenu = buildCardMenu(nodes);
+        const cardMenu = buildCardMenu(nodes as CardMenuNodes);
 
         expect(cardMenu.menu).deep.equal(new Map([
             ['Primary', [
@@ -103,7 +105,7 @@ describe('buildCardMenu', function () {
             }]}]
         ];
 
-        const cardMenu = buildCardMenu(nodes);
+        const cardMenu = buildCardMenu(nodes as CardMenuNodes);
 
         expect(cardMenu.menu).deep.equal(new Map([
             ['Primary', [
@@ -144,7 +146,7 @@ describe('buildCardMenu', function () {
                 }}]
             ];
 
-            const cardMenu = buildCardMenu(nodes, {query: ''});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {query: ''});
 
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Primary', [
@@ -186,7 +188,7 @@ describe('buildCardMenu', function () {
                 }}]
             ];
 
-            const cardMenu = buildCardMenu(nodes, {query: 't'});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {query: 't'});
 
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Primary', [
@@ -222,7 +224,7 @@ describe('buildCardMenu', function () {
                 }}]
             ];
 
-            const cardMenu = buildCardMenu(nodes, {query: 'mul'});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {query: 'mul'});
 
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Primary', [
@@ -259,7 +261,7 @@ describe('buildCardMenu', function () {
                 }}]
             ];
 
-            const cardMenu = buildCardMenu(nodes, {query: 'mul'});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {query: 'mul'});
 
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Secondary', [
@@ -295,7 +297,7 @@ describe('buildCardMenu', function () {
                 }}]
             ];
 
-            const cardMenu = buildCardMenu(nodes, {query: 'unknown'});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {query: 'unknown'});
 
             expect(cardMenu.menu).deep.equal(new Map());
             expect(cardMenu.maxItemIndex).to.equal(-1);
@@ -319,7 +321,7 @@ describe('buildCardMenu', function () {
                 }}]
             ];
 
-            const cardMenu = buildCardMenu(nodes, {query: 'Tw'});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {query: 'Tw'});
 
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Primary', [
@@ -336,7 +338,7 @@ describe('buildCardMenu', function () {
         });
 
         it('can pass function to matches', async function () {
-            const matchFn = (query, label) => label.includes(query);
+            const matchFn = (query: string, label: string) => label.includes(query);
             const nodes = [
                 ['one', {kgMenu: {
                     label: 'One wow',
@@ -354,7 +356,7 @@ describe('buildCardMenu', function () {
                 }}]
             ];
 
-            const cardMenu = buildCardMenu(nodes, {query: 'wow'});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {query: 'wow'});
 
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Primary', [
@@ -476,7 +478,7 @@ describe('buildCardMenu', function () {
         });
 
         it('can filter based on the post type', async function () {
-            const config = {post: {displayName: 'post'}}; 
+            const config = {post: {displayName: 'post'}};
             const nodes = [
                 ['one', {kgMenu: {
                     label: 'One',
@@ -491,7 +493,7 @@ describe('buildCardMenu', function () {
                     Icon,
                     insertCommand: 'insert_card_two'
                 }}]];
-            const cardMenu = buildCardMenu(nodes, {config});
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes, {config});
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Primary', [
                     {
@@ -520,7 +522,7 @@ describe('buildCardMenu', function () {
                     Icon,
                     insertCommand: 'insert_card_two'
                 }}]];
-            const cardMenu = buildCardMenu(nodes);
+            const cardMenu = buildCardMenu(nodes as CardMenuNodes);
             expect(cardMenu.menu).deep.equal(new Map([
                 ['Primary', [
                     {

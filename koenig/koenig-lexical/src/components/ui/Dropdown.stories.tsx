@@ -1,6 +1,7 @@
 import {Dropdown} from './Dropdown';
+import type {Meta, StoryFn} from '@storybook/react-vite';
 
-const story = {
+const story: Meta<typeof Dropdown> = {
     title: 'Generic/Dropdown',
     component: Dropdown,
     argTypes: {
@@ -14,16 +15,14 @@ const story = {
 };
 export default story;
 
-const Template = args => (
+const Template: StoryFn<typeof Dropdown> = args => (
     <div className="w-[240px]">
         <Dropdown {...args} />
     </div>
 );
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof Dropdown> = Template.bind({});
 Default.args = {
-    label: 'Visibility',
-    description: 'Visible for this audience when delivered by email. This card is not published on your site.',
     value: 'Free members',
     menu: [{label: 'Free members', name: 'Free members'}, {label: 'Paid members', name: 'Paid members'}]
 };

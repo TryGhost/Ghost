@@ -2,11 +2,13 @@ import path from 'path';
 import {assertHTML, createDataTransfer, ctrlOrCmd, dragMouse, focusEditor, getEditorState, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {BoundingBox} from '../../utils/e2e';
+import type {Locator, Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Gallery card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -345,7 +347,7 @@ test.describe('Gallery card', async () => {
         // Wait for upload to complete and images to be saved to node state
         // (preview images appear in the DOM before the upload finishes)
         await page.waitForFunction(() => {
-            const state = window.lexicalEditor.getEditorState().toJSON();
+            const state = window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<{type?: string; images?: unknown[]}>}};
             const gallery = state.root.children.find(c => c.type === 'gallery');
             return gallery && gallery.images && gallery.images.length === 2;
         }, {timeout: 5000});
@@ -411,7 +413,11 @@ test.describe('Gallery card', async () => {
     test.describe('dragging image cards onto a gallery with visibility', function () {
         const paidOnly = {web: {nonMember: false, memberSegment: 'status:-free'}, email: {memberSegment: 'status:-free'}};
 
-        async function loadGalleryAndImage(galleryVisibility, imageVisibility) {
+        type Visibility = typeof paidOnly;
+        type SerializedCard = {type: string; src?: string; visibility?: Visibility; images?: Array<{visibility?: Visibility}>};
+        type SerializedState = {root: {children: SerializedCard[]}};
+
+        async function loadGalleryAndImage(galleryVisibility: Visibility | null, imageVisibility: Visibility | null) {
             await focusEditor(page);
             await insertCard(page, {cardName: 'gallery'});
             await page.keyboard.press('Enter');
@@ -425,7 +431,7 @@ test.describe('Gallery card', async () => {
             await fileChooser.setFiles([filePath]);
 
             await page.waitForFunction(() => {
-                const state = window.lexicalEditor.getEditorState().toJSON();
+                const state = window.lexicalEditor.getEditorState().toJSON() as SerializedState;
                 const imageNode = state.root.children.find(c => c.type === 'image');
                 return imageNode && imageNode.src;
             }, {timeout: 5000});
@@ -433,7 +439,7 @@ test.describe('Gallery card', async () => {
             // set the audiences directly in the editor state
             await page.evaluate(({galleryVis, imageVis}) => {
                 const editor = window.lexicalEditor;
-                const json = editor.getEditorState().toJSON();
+                const json = editor.getEditorState().toJSON() as SerializedState;
                 for (const node of json.root.children) {
                     if (node.type === 'gallery' && galleryVis) {
                         node.visibility = galleryVis;
@@ -465,10 +471,10 @@ test.describe('Gallery card', async () => {
             await expect(page.locator('[data-kg-card="gallery"] [data-image]')).toHaveCount(1);
             await expect(page.locator('[data-kg-card="image"]')).toHaveCount(0);
 
-            const state = await getEditorState(page);
+            const state = await getEditorState(page) as SerializedState;
             const gallery = state.root.children.find(c => c.type === 'gallery');
-            expect(gallery.visibility).toEqual(paidOnly);
-            expect(gallery.images[0].visibility).toBeUndefined();
+            expect(gallery?.visibility).toEqual(paidOnly);
+            expect(gallery?.images?.[0].visibility).toBeUndefined();
         });
     });
 
@@ -488,7 +494,7 @@ test.describe('Gallery card', async () => {
         // Wait for upload to fully complete - the image node needs its src
         // set in the Lexical state (not just the preview) for drag-to-gallery to work
         await page.waitForFunction(() => {
-            const state = window.lexicalEditor.getEditorState().toJSON();
+            const state = window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<{type?: string; src?: string}>}};
             const imageNode = state.root.children.find(c => c.type === 'image');
             return imageNode && imageNode.src;
         }, {timeout: 5000});
@@ -500,7 +506,7 @@ test.describe('Gallery card', async () => {
         const imageBBox = await page.locator('[data-kg-card="image"]').nth(0).boundingBox();
         const galleryBBox = await page.locator('[data-kg-card="gallery"]').nth(0).boundingBox();
 
-        await dragMouse(page, imageBBox, galleryBBox, 'middle', 'middle', true, 100, 100);
+        await dragMouse(page, imageBBox!, galleryBBox!, 'middle', 'middle', true, 100, 100);
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
@@ -535,7 +541,10 @@ test.describe('Gallery card', async () => {
     });
 
     test.describe('dragging images between galleries', function () {
-        const galleryImages = numbers => numbers.map(n => ({
+        type SerializedGallery = {type: string; images: Array<{fileName: string}>};
+        type SerializedState = {root: {children: SerializedGallery[]}};
+
+        const galleryImages = (numbers: number[]) => numbers.map(n => ({
             row: 0,
             fileName: `retreat-${n}.jpg`,
             src: `/content/images/2023/04/retreat-${n}.jpg`,
@@ -543,12 +552,12 @@ test.describe('Gallery card', async () => {
             height: 2160
         }));
 
-        const fileNames = gallery => gallery.images.map(image => image.fileName);
+        const fileNames = (gallery: SerializedGallery) => gallery.images.map(image => image.fileName);
 
-        const rightHalf = bbox => ({...bbox, x: bbox.x + bbox.width / 2, width: bbox.width / 2});
+        const rightHalf = (bbox: BoundingBox | null) => bbox && ({...bbox, x: bbox.x + bbox.width / 2, width: bbox.width / 2});
 
         // selects the first gallery and drags one of its images onto the right half of `target`
-        async function dragFromFirstGallery(imageIndex, target) {
+        async function dragFromFirstGallery(imageIndex: number, target: Locator) {
             const firstGallery = page.locator('[data-kg-card="gallery"]').nth(0);
             await firstGallery.click();
             await expect(firstGallery).toHaveAttribute('data-kg-card-selected', 'true');
@@ -559,7 +568,7 @@ test.describe('Gallery card', async () => {
             await dragMouse(page, imageBBox, rightHalf(targetBBox), 'middle', 'middle', true, 100, 100);
         }
 
-        async function initializeContent(children) {
+        async function initializeContent(children: Array<Record<string, unknown>>) {
             const contentParam = encodeURIComponent(JSON.stringify({
                 root: {
                     children,
@@ -574,7 +583,7 @@ test.describe('Gallery card', async () => {
             await initialize({page, uri: `/#/?content=${contentParam}`});
         }
 
-        async function initializeGalleries(...galleries) {
+        async function initializeGalleries(...galleries: number[][]) {
             await initializeContent(galleries.map(numbers => ({type: 'gallery', version: 1, images: galleryImages(numbers)})));
         }
 
@@ -585,11 +594,11 @@ test.describe('Gallery card', async () => {
             await dragFromFirstGallery(0, firstGallery.locator('[data-image]').nth(1));
 
             await page.waitForFunction(() => {
-                const state = window.lexicalEditor.getEditorState().toJSON();
+                const state = window.lexicalEditor.getEditorState().toJSON() as SerializedState;
                 return state.root.children[0].images[0].fileName === 'retreat-2.jpg';
             }, {timeout: 5000});
 
-            const editorState = await getEditorState(page);
+            const editorState = await getEditorState(page) as SerializedState;
 
             expect(fileNames(editorState.root.children[0])).toEqual(['retreat-2.jpg', 'retreat-1.jpg']);
             expect(fileNames(editorState.root.children[1])).toEqual(['retreat-1.jpg', 'retreat-2.jpg']);
@@ -602,11 +611,11 @@ test.describe('Gallery card', async () => {
             await dragFromFirstGallery(0, secondGallery.locator('[data-image]').nth(0));
 
             await page.waitForFunction(() => {
-                const state = window.lexicalEditor.getEditorState().toJSON();
+                const state = window.lexicalEditor.getEditorState().toJSON() as SerializedState;
                 return state.root.children[1].images.length === 2;
             }, {timeout: 5000});
 
-            const editorState = await getEditorState(page);
+            const editorState = await getEditorState(page) as SerializedState;
 
             expect(fileNames(editorState.root.children[0])).toEqual(['retreat-2.jpg']);
             expect(fileNames(editorState.root.children[1])).toEqual(['retreat-3.jpg', 'retreat-1.jpg']);
@@ -632,11 +641,11 @@ test.describe('Gallery card', async () => {
             await dragMouse(page, imageCardBBox, rightHalf(targetBBox), 'middle', 'middle', true, 100, 100);
 
             await page.waitForFunction(() => {
-                const state = window.lexicalEditor.getEditorState().toJSON();
+                const state = window.lexicalEditor.getEditorState().toJSON() as SerializedState;
                 return !state.root.children.some(node => node.type === 'image');
             }, {timeout: 5000});
 
-            const editorState = await getEditorState(page);
+            const editorState = await getEditorState(page) as SerializedState;
 
             expect(editorState.root.children.map(node => node.type)).toEqual(['gallery', 'gallery']);
             expect(fileNames(editorState.root.children[0])).toEqual(['retreat-1.jpg', 'Koenig-editor-1.png', 'retreat-2.jpg']);
@@ -668,7 +677,7 @@ test.describe('Gallery card', async () => {
         // (preview images appear in the DOM before the upload completes and
         // updates the node, so we need to poll the serialized state directly)
         await page.waitForFunction(() => {
-            const state = window.lexicalEditor.getEditorState().toJSON();
+            const state = window.lexicalEditor.getEditorState().toJSON() as {root: {children: Array<{type?: string; images?: unknown[]}>}};
             const gallery = state.root.children.find(c => c.type === 'gallery');
             return gallery && gallery.images && gallery.images.length === 9;
         }, {timeout: 5000});

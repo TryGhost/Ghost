@@ -1,11 +1,27 @@
 import DeleteIcon from '../../../../assets/icons/kg-trash.svg?react';
 import React from 'react';
 import WandIcon from '../../../../assets/icons/kg-wand.svg?react';
-import {IconButton} from '../../IconButton.jsx';
-import {MediaPlaceholder} from '../../MediaPlaceholder.jsx';
-import {ProgressBar} from '../../ProgressBar.jsx';
+import {IconButton} from '../../IconButton';
+import {MediaPlaceholder} from '../../MediaPlaceholder';
+import {ProgressBar} from '../../ProgressBar';
 import {TextInput} from '../../TextInput';
-import {openFileSelection} from '../../../../utils/openFileSelection.js';
+import {createFileInputChangeEventFromBlob} from '../../../../utils/createFileInputChangeEvent';
+import {openFileSelection} from '../../../../utils/openFileSelection';
+import type {OpenImageEditor} from '../../../../hooks/usePinturaEditor';
+
+interface ProductCardImageProps {
+    imgSrc?: string;
+    imgAlt?: string;
+    imgUploader?: {isLoading?: boolean; progress?: number; errors?: {message: string}[]};
+    imgDragHandler?: {isDraggedOver?: boolean; setRef?: React.Ref<HTMLDivElement>};
+    onImgChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onImgAltChange?: (alt: string) => void;
+    imgMimeTypes?: string[];
+    onRemoveImage?: () => void;
+    isPinturaEnabled?: boolean;
+    openImageEditor?: OpenImageEditor;
+    isEditing?: boolean;
+}
 
 export function ProductCardImage({
     imgSrc,
@@ -19,8 +35,8 @@ export function ProductCardImage({
     isPinturaEnabled,
     openImageEditor,
     isEditing
-}) {
-    const fileInputRef = React.useRef(null);
+}: ProductCardImageProps) {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isEditingAlt, setIsEditingAlt] = React.useState(false);
 
     // always close the alt input when leaving edit mode or when the image goes away
@@ -30,17 +46,17 @@ export function ProductCardImage({
         }
     }, [isEditing, imgSrc]);
 
-    const onRemove = (e) => {
+    const onRemove = (e: React.MouseEvent) => {
         e.stopPropagation(); // prevents card from losing selected state
-        onRemoveImage();
+        onRemoveImage?.();
     };
 
-    const toggleIsEditingAlt = (e) => {
+    const toggleIsEditingAlt = (e: React.MouseEvent) => {
         e.stopPropagation(); // prevents card from losing editing state
         setIsEditingAlt(!isEditingAlt);
     };
 
-    const handleAltChange = (e) => {
+    const handleAltChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onImgAltChange?.(e.target.value);
     };
 
@@ -48,7 +64,7 @@ export function ProductCardImage({
     const showAltToggle = isEditing && !showPlaceholder;
     const showAltInput = showAltToggle && isEditingAlt;
     const progressStyle = {
-        width: `${imgUploader.progress?.toFixed(0)}%`
+        width: `${(imgUploader.progress ?? 0).toFixed(0)}%`
     };
 
     return (
@@ -68,10 +84,10 @@ export function ProductCardImage({
                                     size='small'
                                 />
 
-                                <form onChange={onImgChange}>
+                                <form onChange={onImgChange as unknown as React.FormEventHandler}>
                                     <input
                                         ref={fileInputRef}
-                                        accept={imgMimeTypes.join(',')}
+                                        accept={imgMimeTypes?.join(',')}
                                         hidden={true}
                                         name="image-input"
                                         type='file'
@@ -105,14 +121,10 @@ export function ProductCardImage({
                                     isEditing && isPinturaEnabled && (
                                         <>
                                             <div className="absolute right-16 top-5 flex opacity-0 transition-all group-hover/image:opacity-100">
-                                                <IconButton dataTestId="replace-product-image" Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
-                                                    image: imgSrc,
-                                                    handleSave: (editedImage) => {
-                                                        onImgChange({
-                                                            target: {
-                                                                files: [editedImage]
-                                                            }
-                                                        });
+                                                <IconButton dataTestId="replace-product-image" Icon={WandIcon} label="Edit" onClick={() => openImageEditor?.({
+                                                    image: imgSrc || '',
+                                                    handleSave: (editedImage: Blob) => {
+                                                        onImgChange?.(createFileInputChangeEventFromBlob(editedImage));
                                                     }
                                                 })} />
                                             </div>

@@ -1,14 +1,15 @@
 import {$createProductNode, ProductNode} from '../../src/nodes/ProductNode';
-const {createHeadlessEditor} = require('@lexical/headless');
+import {createHeadlessEditor} from '@lexical/headless';
+import type {Klass, LexicalEditor, LexicalNode} from 'lexical';
 
-const editorNodes = [ProductNode];
+const editorNodes = [ProductNode] as unknown as Klass<LexicalNode>[];
 
 describe('ProductNode', function () {
-    let editor;
-    let dataset;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
 
-    const editorTest = testFn => function () {
-        let resolve, reject;
+    const editorTest = (testFn: () => void) => function () {
+        let resolve: (value?: unknown) => void, reject: (reason?: unknown) => void;
         const promise = new Promise((resolve_, reject_) => {
             resolve = resolve_;
             reject = reject_;
@@ -42,7 +43,7 @@ describe('ProductNode', function () {
         };
     });
 
-    describe('load and export testing', function () {     
+    describe('load and export testing', function () {
         it('handles titles with extra br', editorTest(function () {
             dataset.productTitle = '<span>Product title!</span> <br><span>Hello part 2</span>';
             const productNode = $createProductNode(dataset);

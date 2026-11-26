@@ -1,13 +1,26 @@
-import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
+import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
-import UnsplashModal from './file-selectors/UnsplashModal.jsx';
+import UnsplashModal from './file-selectors/UnsplashModal';
 import generateEditorState from '../../utils/generateEditorState';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {useIsDocumentEditable} from '../../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
+interface UnsplashPluginProps {
+    nodeKey: string;
+    isModalOpen?: boolean;
+}
+
+interface UnsplashImage {
+    src: string;
+    height: number;
+    width: number;
+    caption: string;
+    alt: string;
+}
+
+const UnsplashPlugin = ({nodeKey, isModalOpen = true}: UnsplashPluginProps) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const [isOpen, setIsOpen] = React.useState(isModalOpen);
@@ -17,12 +30,12 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
         if (nodeKey) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.remove();
+                node?.remove();
             });
         }
     };
 
-    const insertImageToNode = async (image) => {
+    const insertImageToNode = async (image: UnsplashImage) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             if (!$isKoenigCard(node)) {
@@ -33,11 +46,12 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
             node.width = image.width;
             node.caption = image.caption;
             node.alt = image.alt;
+            const captionEditor = node.__captionEditor as import('lexical').LexicalEditor;
             const editorState = generateEditorState({
-                editor: node.__captionEditor,
+                editor: captionEditor,
                 initialHtml: `${image.caption}`
             });
-            node.__captionEditor.setEditorState(editorState);
+            captionEditor.setEditorState(editorState);
             const nodeSelection = $createNodeSelection();
             nodeSelection.add(node.getKey());
             $setSelection(nodeSelection);
@@ -54,7 +68,7 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
         <UnsplashModal
             unsplashConf={cardConfig.unsplash}
             onClose={onClose}
-            onImageInsert={insertImageToNode}
+            onImageInsert={insertImageToNode as (image: unknown) => void}
         />
     );
 };

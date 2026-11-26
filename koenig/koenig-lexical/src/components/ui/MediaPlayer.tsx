@@ -1,8 +1,14 @@
 import PlayIcon from '../../assets/icons/kg-play.svg?react';
-import PropTypes from 'prop-types';
 import UnmuteIcon from '../../assets/icons/kg-unmute.svg?react';
 
-export function MediaPlayer({type, duration, theme, ...args}) {
+export interface MediaPlayerProps {
+    type?: string;
+    duration?: string;
+    theme?: 'light' | 'dark';
+    [key: string]: unknown;
+}
+
+export function MediaPlayer({type: _type, duration, theme, ...args}: MediaPlayerProps) {
     return (
         <div className="mt-auto flex w-full items-center py-2" {...args}>
             <PlayIcon className={`mr-2 size-[1.4rem] ${theme === 'light' ? 'fill-white' : 'fill-black dark:fill-white'}`} />
@@ -25,7 +31,3 @@ export function MediaPlayer({type, duration, theme, ...args}) {
         </div>
     );
 }
-
-MediaPlayer.propTypes = {
-    theme: PropTypes.oneOf(['light', 'dark'])
-};

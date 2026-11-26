@@ -164,21 +164,22 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
                     className="absolute left-[-6rem] size-5 cursor-pointer text-grey"
                     data-testid="visibility-indicator"
                     style={{
-                        left: position.left,
+                        left: (position as {left?: string}).left,
                         top: position.top
                     }}
-                    onClick={onIndicatorClick}
+                    onClick={onIndicatorClick as React.MouseEventHandler<SVGSVGElement>}
                 />
             </div>
         );
     } else if (IndicatorIcon) {
+        const Icon = IndicatorIcon as React.ComponentType<React.SVGProps<SVGSVGElement>>;
         indicatorIcon = (
             <div className="sticky top-0 lg:top-8">
-                <IndicatorIcon
+                <Icon
                     aria-label={`${cardType} indicator`}
                     className="absolute left-[-6rem] size-5 text-grey"
                     style={{
-                        left: position.left,
+                        left: (position as {left?: string}).left,
                         top: position.top
                     }}
                 />

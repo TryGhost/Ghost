@@ -5,11 +5,11 @@ import {
     parseVisibilityToToggles,
     serializeOptionsToVisibility
 } from '../../../src/utils/visibility';
-import type {Visibility} from '@tryghost/kg-default-nodes/visibility';
+import type {RenderedVisibility, Visibility} from '@tryghost/kg-default-nodes/visibility';
 
 describe('parseVisibilityToToggles', function () {
     it('should return correct truthy toggles based on the visibility object', function () {
-        const visibility = {
+        const visibility: RenderedVisibility = {
             web: {
                 nonMember: true,
                 memberSegment: 'status:free,status:-free'
@@ -35,7 +35,7 @@ describe('parseVisibilityToToggles', function () {
     });
 
     it('should return correct falsy toggles based on the visibility object', function () {
-        const visibility = {
+        const visibility: RenderedVisibility = {
             web: {
                 nonMember: false,
                 memberSegment: ''
@@ -61,7 +61,7 @@ describe('parseVisibilityToToggles', function () {
     });
 
     it('handles partial member segments', function () {
-        const visibility = {
+        const visibility: RenderedVisibility = {
             web: {
                 nonMember: false,
                 memberSegment: 'status:free'
@@ -135,7 +135,7 @@ describe('getVisibilityOptions', function () {
     });
 
     it('updates option checked values based on visibility', function () {
-        const visibility = {
+        const visibility: RenderedVisibility = {
             web: {
                 nonMember: false,
                 memberSegment: 'status:free'
@@ -202,7 +202,7 @@ describe('getVisibilityOptions', function () {
 
 describe('serializeOptionsToVisibility', function () {
     it('preserves hidden group visibility values', function () {
-        const existingVisibility = {
+        const existingVisibility: RenderedVisibility = {
             web: {
                 nonMember: false,
                 memberSegment: 'status:free,status:-free'

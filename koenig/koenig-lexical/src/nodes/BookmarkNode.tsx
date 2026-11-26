@@ -1,18 +1,24 @@
 import BookmarkCardIcon from '../assets/icons/kg-card-type-bookmark.svg?react';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {BookmarkNode as BaseBookmarkNode} from '@tryghost/kg-default-nodes';
+import {BookmarkNode as BaseBookmarkNode, type BookmarkData} from '@tryghost/kg-default-nodes';
 import {BookmarkNodeComponent} from './BookmarkNodeComponent';
-import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
+import {KoenigCardWrapper, MINIMAL_NODES} from '../index';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_BOOKMARK_COMMAND = createCommand();
+export type BookmarkNodeData = BookmarkData & {
+    captionEditor?: unknown;
+    title?: string;
+};
+
+export const INSERT_BOOKMARK_COMMAND = createCommand<BookmarkNodeData>();
 
 export class BookmarkNode extends BaseBookmarkNode {
-    __captionEditor;
-    __captionEditorInitialState;
-    __createdWithUrl;
+    __captionEditor!: LexicalEditor;
+    __captionEditorInitialState: unknown;
+    __createdWithUrl: boolean;
 
     static kgMenu = [{
         label: 'Bookmark',
@@ -29,7 +35,7 @@ export class BookmarkNode extends BaseBookmarkNode {
         return BookmarkCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: BookmarkNodeData = {}, key?: string) {
         super(dataset, key);
 
         this.__createdWithUrl = !!dataset.url && !dataset.metadata;
@@ -63,7 +69,7 @@ export class BookmarkNode extends BaseBookmarkNode {
             this.__captionEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__captionEditor, null);
                 const cleanedHtml = cleanBasicHtml(html);
-                json.caption = cleanedHtml;
+                json.caption = cleanedHtml ?? "";
             });
         }
 
@@ -76,7 +82,7 @@ export class BookmarkNode extends BaseBookmarkNode {
                 <BookmarkNodeComponent
                     author={this.author}
                     captionEditor={this.__captionEditor}
-                    captionEditorInitialState={this.__captionEditorInitialState}
+                    captionEditorInitialState={this.__captionEditorInitialState as string | undefined}
                     createdWithUrl={this.__createdWithUrl}
                     description={this.description}
                     icon={this.icon}
@@ -91,10 +97,10 @@ export class BookmarkNode extends BaseBookmarkNode {
     }
 }
 
-export const $createBookmarkNode = (dataset) => {
+export const $createBookmarkNode = (dataset: BookmarkNodeData) => {
     return new BookmarkNode(dataset);
 };
 
-export function $isBookmarkNode(node) {
+export function $isBookmarkNode(node: unknown): node is BookmarkNode {
     return node instanceof BookmarkNode;
 }

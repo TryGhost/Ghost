@@ -5,18 +5,38 @@ import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
-import {HeaderNode as BaseHeaderNode, type CardWidth, normalizeCardWidth} from '@tryghost/kg-default-nodes';
+import {HeaderNode as BaseHeaderNode, normalizeCardWidth, type CardWidth, type HeaderData} from '@tryghost/kg-default-nodes';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import type {LexicalEditor} from 'lexical';
 
-export const INSERT_HEADER_COMMAND = createCommand();
+type Alignment = 'left' | 'center';
+type BackgroundSize = 'cover' | 'contain';
+type Layout = 'regular' | 'wide' | 'full' | 'split';
+type HeaderSize = 'small' | 'medium' | 'large';
+type HeaderStyle = 'dark' | 'light' | 'accent' | 'image';
+
+export type HeaderNodeData = HeaderData & {
+    headerTextEditor?: LexicalEditor;
+    headerTextEditorInitialState?: unknown;
+    subheaderTextEditor?: LexicalEditor;
+    subheaderTextEditorInitialState?: unknown;
+};
+
+interface HeaderMenuConfig {
+    deprecated?: {
+        headerV1?: boolean;
+    };
+}
+
+export const INSERT_HEADER_COMMAND = createCommand<HeaderNodeData>();
 
 export class HeaderNode extends BaseHeaderNode {
-    __headerTextEditor;
-    __subheaderTextEditor;
-    __headerTextEditorInitialState;
-    __subheaderTextEditorInitialState;
+    __headerTextEditor!: LexicalEditor;
+    __subheaderTextEditor!: LexicalEditor;
+    __headerTextEditorInitialState: unknown;
+    __subheaderTextEditorInitialState: unknown;
 
     // We keep Header v1 here for testing and backwards compatibility
     // we keep it hidden in the Menu in Ghost but visible in the Demo to ensure it remains tested till we full deprecate it in the future
@@ -31,7 +51,7 @@ export class HeaderNode extends BaseHeaderNode {
             insertParams: () => ({
                 version: 1
             }),
-            isHidden: ({config}) => {
+            isHidden: ({config}: {config?: HeaderMenuConfig}) => {
                 return config?.deprecated?.headerV1 ?? true;
             },
             shortcut: '/header'
@@ -54,7 +74,7 @@ export class HeaderNode extends BaseHeaderNode {
         return HeaderCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: HeaderNodeData = {}, key?: string) {
         super(dataset, key);
 
         setupNestedEditor(this, '__headerTextEditor', {editor: dataset.headerTextEditor, nodes: MINIMAL_NODES});
@@ -126,13 +146,13 @@ export class HeaderNode extends BaseHeaderNode {
                         buttonUrl={this.buttonUrl}
                         header={this.header}
                         headerTextEditor={this.__headerTextEditor}
-                        headerTextEditorInitialState={this.__headerTextEditorInitialState}
+                        headerTextEditorInitialState={this.__headerTextEditorInitialState as string | undefined}
                         nodeKey={this.getKey()}
-                        size={this.size}
+                        size={this.size as HeaderSize}
                         subheader={this.subheader}
                         subheaderTextEditor={this.__subheaderTextEditor}
-                        subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
-                        type={this.style}
+                        subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState as string | undefined}
+                        type={this.style as HeaderStyle}
                     />
                 </KoenigCardWrapper>
             );
@@ -143,12 +163,12 @@ export class HeaderNode extends BaseHeaderNode {
                 <KoenigCardWrapper nodeKey={this.getKey()} width={this.getCardWidth()}>
                     <HeaderNodeComponent
                         accentColor={this.accentColor}
-                        alignment={this.alignment}
+                        alignment={this.alignment as Alignment}
                         backgroundColor={this.backgroundColor}
                         backgroundImageHeight={this.backgroundImageHeight}
                         backgroundImageSrc={this.backgroundImageSrc}
                         backgroundImageWidth={this.backgroundImageWidth}
-                        backgroundSize={this.backgroundSize}
+                        backgroundSize={this.backgroundSize as BackgroundSize}
                         buttonColor={this.buttonColor}
                         buttonEnabled={this.buttonEnabled}
                         buttonText={this.buttonText}
@@ -156,14 +176,13 @@ export class HeaderNode extends BaseHeaderNode {
                         buttonUrl={this.buttonUrl}
                         header={this.header}
                         headerTextEditor={this.__headerTextEditor}
-                        headerTextEditorState={this.__headerTextEditorInitialState}
+                        headerTextEditorInitialState={this.__headerTextEditorInitialState as string | undefined}
                         isSwapped={this.swapped}
-                        layout={this.layout}
+                        layout={this.layout as Layout}
                         nodeKey={this.getKey()}
                         subheader={this.subheader}
                         subheaderTextEditor={this.__subheaderTextEditor}
-                        subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState}
-                        subheaderTextEditorState={this.__subheaderTextEditorInitialState}
+                        subheaderTextEditorInitialState={this.__subheaderTextEditorInitialState as string | undefined}
                         textColor={this.textColor}
                     />
                 </KoenigCardWrapper>
@@ -180,10 +199,10 @@ export class HeaderNode extends BaseHeaderNode {
     }
 }
 
-export const $createHeaderNode = (dataset) => {
+export const $createHeaderNode = (dataset: HeaderNodeData = {}) => {
     return new HeaderNode(dataset);
 };
 
-export function $isHeaderNode(node) {
+export function $isHeaderNode(node: unknown): node is HeaderNode {
     return node instanceof HeaderNode;
 }

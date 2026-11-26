@@ -1,10 +1,17 @@
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import MarkdownEditor from './MarkdownCard/MarkdownEditor';
-import PropTypes from 'prop-types';
 import {render as markdownRender} from '@tryghost/kg-markdown-html-renderer';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
-export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUploader, unsplashConf}) {
+interface MarkdownCardProps {
+    markdown?: string;
+    updateMarkdown?: (value: string) => void;
+    isEditing?: boolean;
+    imageUploader: (type: string) => unknown;
+    unsplashConf?: unknown;
+}
+
+export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUploader, unsplashConf}: MarkdownCardProps) {
     return (
         <>
             {isEditing
@@ -24,7 +31,7 @@ export function MarkdownCard({markdown = '', updateMarkdown, isEditing, imageUpl
     );
 }
 
-function MarkdownDisplay({markdown}) {
+function MarkdownDisplay({markdown}: {markdown: string}) {
     const markdownHtml = markdownRender(markdown);
     const sanitizedHtml = sanitizeHtml(markdownHtml, {replaceJS: true});
 
@@ -36,15 +43,3 @@ function MarkdownDisplay({markdown}) {
         </div>
     );
 }
-
-MarkdownCard.propTypes = {
-    markdown: PropTypes.string,
-    updateMarkdown: PropTypes.func,
-    isEditing: PropTypes.bool,
-    imageUploader: PropTypes.func,
-    unsplashConf: PropTypes.object
-};
-
-MarkdownDisplay.propTypes = {
-    markdown: PropTypes.string
-};
