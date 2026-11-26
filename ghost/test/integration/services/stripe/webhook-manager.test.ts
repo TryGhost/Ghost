@@ -371,4 +371,20 @@ describe('Stripe webhook: Ghosts serving one site', function () {
     assert.equal(event.id, 'evt_1');
     sinon.assert.notCalled(ghost.readSecret);
   });
+
+  it('deletes the webhook another Ghost stored when it stops', async function () {
+    stripe.webhookEndpoints.push({
+      id: 'we_new',
+      url: HANDLER_URL,
+      api_version: StripeAPI.API_VERSION,
+      secret: 'whsec_new',
+    });
+    await store({ webhook_id: 'we_new', secret: 'whsec_new' });
+    const ghost = createGhost(OLD);
+
+    assert.equal(await ghost.manager.stop(), true);
+
+    assert.deepEqual(endpoints(), []);
+    assert.deepEqual(await stored(), NOTHING);
+  });
 });

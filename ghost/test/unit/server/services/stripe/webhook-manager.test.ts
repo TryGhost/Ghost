@@ -24,6 +24,7 @@ describe('WebhookManager', function () {
     get: sinon.SinonStub;
     getForUpdate: sinon.SinonStub;
     readSecret: sinon.SinonStub;
+    readWebhookId: sinon.SinonStub;
     save: sinon.SinonStub;
     transaction: sinon.SinonStub;
   };
@@ -44,6 +45,7 @@ describe('WebhookManager', function () {
       get: sinon.stub().resolves(STORED),
       getForUpdate: sinon.stub().resolves(STORED),
       readSecret: sinon.stub().resolves(STORED.secret),
+      readWebhookId: sinon.stub().resolves(STORED.webhook_id),
       save: sinon.stub().resolves(),
       transaction: sinon.stub().callsFake((fn) => fn(transacting)),
     };
@@ -185,6 +187,18 @@ describe('WebhookManager', function () {
       sinon.assert.notCalled(api.updateWebhookEndpoint);
       sinon.assert.notCalled(api.createWebhookEndpoint);
       assert.equal(manager.webhookSecret, 'whsec_config');
+    });
+  });
+
+  describe('stop', function () {
+    it('deletes the webhook stored in the database, not the one it loaded', async function () {
+      store.readWebhookId.resolves('we_theirs');
+      const manager = createManager();
+
+      assert.equal(await manager.stop(), true);
+
+      sinon.assert.calledOnceWithExactly(api.deleteWebhookEndpoint, 'we_theirs');
+      sinon.assert.calledOnceWithExactly(store.save, NOTHING);
     });
   });
 
