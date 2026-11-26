@@ -238,6 +238,26 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     await agent.get('tags/').header('Authorization', bearer(token)).expectStatus(403);
   });
 
+  it('leaves an app on a router authenticated in front to its method’s own check', async function () {
+    const id = await installation(['post:browse']);
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+
+    // No app scope opens these yet, so the method's standard check is what answers
+    for (const [path, message] of [
+      ['apps/installations/', 'Permission error, cannot list app_installations.'],
+      [
+        'members/metafields/custom/favourite/values/',
+        'You do not have permission to browse member',
+      ],
+    ]) {
+      const { body } = await agent
+        .get(path)
+        .header('Authorization', bearer(token))
+        .expectStatus(403);
+      assert.equal(body.errors[0].message, message, path);
+    }
+  });
+
   it('holds a call to the installation’s scopes when its OAuth client is out of step', async function () {
     const id = await installation(['post:browse']);
     const { token } = await tokenFor(id, { clientScopes: ['post:browse', 'tag:browse'] });
@@ -632,6 +652,8 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
       { method: 'get', path: 'featurebase/token/' },
       { method: 'post', path: 'slack/test/' },
       { method: 'delete', path: 'session/' },
+      // Mounts a method the API doesn't have
+      { method: 'get', path: 'config/featurebase/' },
     ];
 
     for (const withCookie of [false, true]) {
@@ -660,5 +682,12 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
         }
       });
     }
+
+    it('still signs a staff user out', async function () {
+      const signedIn = await signInOwner();
+
+      await agent.delete('session/').expectStatus(204);
+      assert.equal(await knex()('user_sessions').where({ id: signedIn.id }).first(), undefined);
+    });
   });
 });

@@ -51,9 +51,8 @@ module.exports = {
     return apiFramework.pipeline(require('./integrations'), localUtils);
   },
 
-  // @TODO: transform
   get session() {
-    return require('./session');
+    return apiFramework.pipeline(require('./session'), localUtils);
   },
 
   get schedules() {

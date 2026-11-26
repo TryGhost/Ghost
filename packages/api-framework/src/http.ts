@@ -7,12 +7,16 @@ import { apiConfigOf, type ControllerMethod } from './pipeline.ts';
 
 const debug = createDebug('http');
 
-const routed = new WeakMap<HttpHandler, ControllerMethod>();
+const routed = new WeakMap<HttpHandler, ControllerMethod | undefined>();
 
 /** The controller method an `http()` handler runs */
 export interface RoutedMethod {
-  /** The method itself, which two routes mounting it share */
-  controller: ControllerMethod;
+  /**
+   * The method itself, which two routes mounting it share; undefined when `http()` was given
+   * none, as for a method the controller doesn't have
+   */
+  controller: ControllerMethod | undefined;
+  /** Undefined unless the pipeline built the method */
   docName?: string;
   method?: string;
   /**
@@ -24,14 +28,15 @@ export interface RoutedMethod {
 
 /**
  * The controller method a handler from `http()` runs, for middleware that must decide on the
- * request before the route's other middleware does. Undefined for any other handler.
+ * request before the route's other middleware does. Undefined for any handler `http()` didn't
+ * return.
  */
 export function routedMethod(handler: unknown): RoutedMethod | undefined {
-  const apiImpl = typeof handler === 'function' ? routed.get(handler as HttpHandler) : undefined;
-  if (!apiImpl) {
+  if (typeof handler !== 'function' || !routed.has(handler as HttpHandler)) {
     return undefined;
   }
-  return { controller: apiImpl, ...apiConfigOf(apiImpl), permissions: apiImpl.permissions };
+  const apiImpl = routed.get(handler as HttpHandler);
+  return { controller: apiImpl, ...apiConfigOf(apiImpl), permissions: apiImpl?.permissions };
 }
 
 export interface GhostRequest {

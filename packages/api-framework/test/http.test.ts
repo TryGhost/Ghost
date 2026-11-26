@@ -359,6 +359,15 @@ describe('HTTP', function () {
       });
     });
 
+    it('knows a handler from http() of a method the API does not have', function () {
+      const handler = shared.http(undefined as never);
+
+      assert.deepEqual(shared.routedMethod(handler), {
+        controller: undefined,
+        permissions: undefined,
+      });
+    });
+
     it('knows nothing of any other handler', function () {
       assert.equal(
         shared.routedMethod(() => {}),

@@ -129,18 +129,3 @@ export function unlessAppToken(handler: RequestHandler): RequestHandler {
     return handler(req, res, next);
   };
 }
-
-/**
- * Refuses a request an app token authenticated, for a route outside the API pipeline, whose
- * permission stage refuses apps on every route without a standard check.
- */
-export function refuseAppToken(action: string): RequestHandler {
-  return function refuseForAppToken(req: Request, _res: Response, next: NextFunction) {
-    if ((req as Request & AuthenticatedRequest).auth?.kind === 'app') {
-      return next(
-        new errors.NoPermissionError({ message: `Apps do not have permission to ${action}` }),
-      );
-    }
-    return next();
-  };
-}

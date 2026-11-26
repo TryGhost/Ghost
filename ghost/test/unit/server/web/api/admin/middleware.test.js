@@ -271,6 +271,7 @@ describe('Admin API Middleware', function () {
       },
       { permissions: { handle: async () => {}, handleUnchecked: async () => {} } },
     );
+    const outside = () => Promise.resolve({ ran: true });
 
     /** An app holding `scopes`, on routes whose middleware records that it ran */
     const createRoutes = (auth) => {
@@ -294,6 +295,14 @@ describe('Admin API Middleware', function () {
         .get(refuseAppEarly, sideEffect, http(controller.browse))
         .post(refuseAppEarly, sideEffect, http(controller.upload));
       app.route('/any').all(refuseAppEarly, sideEffect, http(controller.browse));
+      app.post('/outside', refuseAppEarly, sideEffect, http(outside));
+      app.get('/missing', refuseAppEarly, sideEffect, http(undefined));
+      // As the Admin API authenticates a router mounted after it
+      const mounted = express.Router();
+      mounted.get('/posts', http(controller.browse));
+      mounted.post('/upload', http(controller.upload));
+      app.all(['/mounted', '/mounted/*'], refuseAppEarly);
+      app.use('/mounted', mounted);
       app.use((err, req, res, _next) => {
         void _next;
         res.status(err.statusCode).json({ type: err.errorType, message: err.message });
@@ -360,6 +369,28 @@ describe('Admin API Middleware', function () {
       assert.deepEqual(ran, []);
     });
 
+    it('refuses an app on a controller outside the pipeline, before the route runs', async function () {
+      const { app: routes, ran } = createRoutes(app(['post:browse']));
+
+      await request(routes).post('/outside').expect(403).expect({
+        type: 'NoPermissionError',
+        message: 'Apps do not have permission to call this endpoint',
+      });
+      await request(routes).get('/missing').expect(403).expect({
+        type: 'NoPermissionError',
+        message: 'Apps do not have permission to call this endpoint',
+      });
+      assert.deepEqual(ran, []);
+    });
+
+    it('lets an app through a route in front of a mounted router to the method its scopes allow', async function () {
+      const { app: routes } = createRoutes(app(['post:browse']));
+
+      await request(routes).get('/mounted/posts').expect(200);
+      // Left to the mounted route's permission stage, which this test stubs
+      await request(routes).post('/mounted/upload').expect(200);
+    });
+
     it('leaves a route that does not end in http() to its own checks', async function () {
       const { app: routes, ran } = createRoutes(app([]));
 
@@ -373,7 +404,8 @@ describe('Admin API Middleware', function () {
 
         await request(routes).get('/posts').expect(200);
         await request(routes).post('/upload').expect(200);
-        assert.deepEqual(ran, ['/posts', '/upload']);
+        await request(routes).post('/outside').expect(200);
+        assert.deepEqual(ran, ['/posts', '/upload', '/outside']);
       }
     });
   });

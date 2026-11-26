@@ -147,7 +147,9 @@ const routeHandlers = (route, method) => {
  * Refuses an app the method its route ends in would refuse it on, before the route's own
  * middleware runs: a rate limit keyed on the staff user the app acts for, or an upload being
  * parsed and stored. The method is the last handler the route runs for the request's verb, from
- * `http()`.
+ * `http()`; a route ending in a controller outside the pipeline refuses apps. A route ending in
+ * anything else authenticates a router mounted after it, whose routes the pipeline guards, so
+ * the app goes on to them.
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res

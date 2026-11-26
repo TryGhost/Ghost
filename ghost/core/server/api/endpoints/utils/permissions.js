@@ -10,12 +10,15 @@ const { noPermission } = require('../../../auth/policy/authorize');
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
   appsCannotCall: 'Apps do not have permission to {method} {docName}',
+  appsCannotCallOutside: 'Apps do not have permission to call this endpoint',
 };
 
 /**
  * The methods an app may call although they check no permission or check their own, so the
  * scopes an app was approved for can't limit them. A method is listed here only when it is safe
- * for any app, whatever its scopes; every other such method refuses apps. None is yet.
+ * for any app, whatever its scopes; every other such method refuses apps. None is yet. A
+ * controller outside the pipeline has no name to list, so it runs through `pipeline()` first,
+ * which for methods written as single functions adds only this check.
  */
 const APP_UNCHECKED_ALLOWLIST = new Set();
 
@@ -144,14 +147,18 @@ module.exports = {
    * permission stage would refuse it whatever the request: one it may not call unchecked, or one
    * whose standard check needs a scope the app wasn't approved for. Rate limits and uploads on
    * the route then never act for a request that can't succeed. The error is the one the stage
-   * would throw; the role and row checks still run in the stage.
+   * would throw; the role and row checks still run in the stage. A controller outside the
+   * pipeline has no permission stage and no name the allowlist could hold, so it refuses apps.
    *
    * @param {import('@tryghost/api-framework').RoutedMethod} routed
    * @param {Object} principal - The request's principal
    */
   async refuseAppEarly(routed, principal) {
-    if (principal?.kind !== 'app' || !routed.docName || !routed.method) {
+    if (principal?.kind !== 'app') {
       return;
+    }
+    if (!routed.docName || !routed.method) {
+      throw new errors.NoPermissionError({ message: tpl(messages.appsCannotCallOutside) });
     }
     const { permissions: own, docName, method } = routed;
     // A method with no permissions of its own is written as a single function, which checks none

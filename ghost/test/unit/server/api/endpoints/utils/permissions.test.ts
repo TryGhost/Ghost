@@ -4,6 +4,7 @@ import errors from '@tryghost/errors';
 const permissions = require('../../../../../../core/server/api/endpoints/utils/permissions');
 const routes = require('../../../../../../core/server/web/api/endpoints/admin/routes');
 const {
+  authAdminApi,
   routeHandlers,
 } = require('../../../../../../core/server/web/api/endpoints/admin/middleware');
 // Required, not imported, so it is the copy the routes registered their handlers with
@@ -43,24 +44,16 @@ const REFUSED_FOR_APPS = [
   'presence.leave',
   'presence.poll',
   'schedules.publish',
-  // Mounted without authentication, so no app reaches it
+  // All but session.delete are mounted without authentication, so no app reaches them
+  'session.add',
+  'session.delete',
+  'session.sendVerification',
+  'session.verify',
   'site.read',
   'slack.sendTest',
   'users.readStaffToken',
   'users.regenerateStaffToken',
   'users.transferOwnership',
-];
-
-/**
- * Routes ending in a controller outside the API pipeline, whose permission stage never sees them,
- * by method and path
- */
-const OUTSIDE_PIPELINE = [
-  // Only DELETE /session authenticates, and its route refuses apps
-  'DELETE /session',
-  'POST /session',
-  'POST /session/verify',
-  'PUT /session/verify',
 ];
 
 /**
@@ -72,9 +65,6 @@ const AUTHENTICATING_MOUNTS = [
   'ALL /members/metafields,/members/metafields/*',
 ];
 
-/** Routes whose `http()` wraps a method the API doesn't have, so they answer only errors */
-const MOUNTING_NOTHING = ['GET /config/featurebase'];
-
 /** Middleware the routers run on every request, which acts for no one */
 const ROUTER_MIDDLEWARE = ['corsCaching', 'corsMiddleware', 'expressNoop', 'labsEnabledMw'];
 
@@ -84,17 +74,35 @@ type AdminApiMethod = {
   impl: { permissions?: unknown };
 };
 
+const isUnchecked = ({ impl }: AdminApiMethod) =>
+  impl.permissions === undefined ||
+  impl.permissions === false ||
+  typeof impl.permissions === 'function';
+
+/** One verb of a route, as Express runs it */
+type MountedRoute = {
+  /** By verb and path */
+  name: string;
+  route: { stack: any[]; methods: Record<string, boolean> };
+  /** The request method that reaches it */
+  verb: string;
+};
+
 type MountedRoutes = {
   /** Every pipeline method a route ends in, once per method */
   methods: AdminApiMethod[];
-  /** Routes ending in a controller outside the pipeline */
-  outside: string[];
+  /** Routes ending in `http()` whose handler names no pipeline method */
+  outside: MountedRoute[];
+  /** Routes ending in `http()`, of either kind */
+  controllers: MountedRoute[];
+  /** Routes ending in a pipeline method that checks no standard permission */
+  unchecked: MountedRoute[];
   /** Routes ending in no controller */
-  unrouted: string[];
-  /** Routes ending in `http()` of a method that doesn't exist */
-  empty: string[];
+  unrouted: MountedRoute[];
   /** Routes in a mounted router that run anything before their controller */
   guardedLate: string[];
+  /** Routes in a mounted router ending in `http()` whose handler names no pipeline method */
+  outsideMounted: string[];
   /** Other middleware the routers run, by name */
   middleware: string[];
 };
@@ -107,34 +115,43 @@ function mountedRoutes(adminApi: { stack: any[] } = routes()): MountedRoutes {
   const found: MountedRoutes = {
     methods: [],
     outside: [],
+    controllers: [],
+    unchecked: [],
     unrouted: [],
-    empty: [],
     guardedLate: [],
+    outsideMounted: [],
     middleware: [],
   };
   const methods = new Map<unknown, AdminApiMethod>();
 
   /** One verb of a route, by the handlers Express runs for it */
-  const classify = (route: string, handlers: any[], mounted: boolean) => {
+  const classify = (mountedRoute: MountedRoute, handlers: any[], mounted: boolean) => {
     const routed = routedMethod(handlers.at(-1));
     if (!routed) {
-      // A handler from http() whose method is undefined
-      found[handlers.at(-1).name === 'Http' ? 'empty' : 'unrouted'].push(route);
+      found.unrouted.push(mountedRoute);
       return;
     }
+    found.controllers.push(mountedRoute);
     // Authenticated by the route the router is mounted after, whose refusal can't see the method
     if (mounted && handlers.length > 1) {
-      found.guardedLate.push(route);
+      found.guardedLate.push(mountedRoute.name);
     }
-    // A method written as a single function declares no permissions, and checks none
-    if (!routed.docName || routed.permissions === undefined) {
-      found.outside.push(route);
+    if (!routed.docName) {
+      found.outside.push(mountedRoute);
+      // Only the pipeline refuses an app on a mounted route
+      if (mounted) {
+        found.outsideMounted.push(mountedRoute.name);
+      }
       return;
     }
-    methods.set(routed.controller, {
+    const method = {
       name: `${routed.docName}.${routed.method}`,
       impl: { permissions: routed.permissions },
-    });
+    };
+    methods.set(routed.controller, method);
+    if (isUnchecked(method)) {
+      found.unchecked.push(mountedRoute);
+    }
   };
 
   const walk = (router: { stack: any[] }, mounted: boolean) => {
@@ -149,9 +166,14 @@ function mountedRoutes(adminApi: { stack: any[] } = routes()): MountedRoutes {
       }
       const path = [layer.route.path].flat().join(',');
       // A route serving several verbs runs a different chain for each
-      for (const verb of Object.keys(layer.route.methods)) {
-        const route = `${verb === '_all' ? 'ALL' : verb.toUpperCase()} ${path}`;
-        classify(route, routeHandlers(layer.route, verb), mounted);
+      for (const method of Object.keys(layer.route.methods)) {
+        const verb = method === '_all' ? 'GET' : method.toUpperCase();
+        const name = `${method === '_all' ? 'ALL' : verb} ${path}`;
+        classify(
+          { name, route: layer.route, verb },
+          routeHandlers(layer.route, method === '_all' ? 'get' : method),
+          mounted,
+        );
       }
     }
   };
@@ -161,8 +183,19 @@ function mountedRoutes(adminApi: { stack: any[] } = routes()): MountedRoutes {
   return found;
 }
 
-const isUnchecked = ({ impl }: AdminApiMethod) =>
-  impl.permissions === false || typeof impl.permissions === 'function';
+const refuseAppEarly = authAdminApi.find(
+  (handler: { name: string }) => handler.name === 'refuseAppEarly',
+);
+
+/** What the Admin API's early refusal does with a request to a route: the error, or none */
+const refusalOf = (route: MountedRoute, auth: unknown) =>
+  new Promise((resolve) => {
+    refuseAppEarly({ auth, route: route.route, method: route.verb }, {}, resolve);
+  });
+
+/** Whether the route runs the Admin API's authentication, and the early refusal with it */
+const authenticates = (route: MountedRoute) =>
+  routeHandlers(route.route, route.verb).includes(refuseAppEarly);
 
 describe('API permissions for apps', function () {
   const app = { kind: 'app' };
@@ -182,14 +215,45 @@ describe('API permissions for apps', function () {
   });
 
   it('can classify everything the Admin API mounts', function () {
-    const { outside, unrouted, empty, guardedLate, middleware } = mountedRoutes();
+    const { unrouted, guardedLate, outsideMounted, middleware } = mountedRoutes();
 
-    assert.deepEqual(outside.sort(), [...OUTSIDE_PIPELINE].sort());
-    assert.deepEqual(unrouted.sort(), [...AUTHENTICATING_MOUNTS].sort());
-    assert.deepEqual(empty, MOUNTING_NOTHING);
+    assert.deepEqual(unrouted.map(({ name }) => name).sort(), [...AUTHENTICATING_MOUNTS].sort());
     // Refusing an app before a route's own middleware needs the route to name its method
     assert.deepEqual(guardedLate, []);
+    assert.deepEqual(outsideMounted, []);
     assert.deepEqual([...new Set(middleware)].sort(), ROUTER_MIDDLEWARE);
+  });
+
+  describe('refusing an app before a route runs', function () {
+    const staff = { kind: 'user' };
+
+    it('refuses an app on every authenticated route ending in a controller outside the pipeline', async function () {
+      const { outside } = mountedRoutes();
+
+      for (const route of outside.filter(authenticates)) {
+        assert.ok((await refusalOf(route, app)) instanceof errors.NoPermissionError, route.name);
+      }
+    });
+
+    it('refuses an app on every authenticated route ending in a method it may not call unchecked', async function () {
+      for (const route of mountedRoutes().unchecked.filter(authenticates)) {
+        assert.ok((await refusalOf(route, app)) instanceof errors.NoPermissionError, route.name);
+      }
+    });
+
+    it('lets an app through each route that authenticates a mounted router', async function () {
+      for (const route of mountedRoutes().unrouted) {
+        assert.equal(await refusalOf(route, app), undefined, route.name);
+      }
+    });
+
+    it('leaves a staff user to every route', async function () {
+      const { controllers, unrouted } = mountedRoutes();
+
+      for (const route of [...controllers, ...unrouted].filter(authenticates)) {
+        assert.equal(await refusalOf(route, staff), undefined, route.name);
+      }
+    });
   });
 
   describe('walking a router', function () {
@@ -216,14 +280,46 @@ describe('API permissions for apps', function () {
       assert.deepEqual(methods.map(({ name }) => name).sort(), ['things.add', 'things.browse']);
     });
 
-    it('puts a method written as a single function outside the pipeline', function () {
+    it('counts a method written as a single function as checking no standard permission', function () {
       const router = express.Router();
       router.get('/things/bare', http(controller.bare));
+
+      const { methods } = mountedRoutes(router);
+
+      assert.deepEqual(
+        methods.filter(isUnchecked).map(({ name }) => name),
+        ['things.bare'],
+      );
+    });
+
+    it('puts a route whose http() names no pipeline method outside the pipeline', function () {
+      const router = express.Router();
+      router.get(
+        '/plain',
+        http(() => ({})),
+      );
+      router.get('/missing', http(undefined));
 
       const { methods, outside } = mountedRoutes(router);
 
       assert.deepEqual(methods, []);
-      assert.deepEqual(outside, ['GET /things/bare']);
+      assert.deepEqual(
+        outside.map(({ name }) => name),
+        ['GET /plain', 'GET /missing'],
+      );
+    });
+
+    it('finds a mounted route outside the pipeline, which only the pipeline could refuse', function () {
+      const router = express.Router();
+      const mounted = express.Router();
+      router.all(['/mounted', '/mounted/*'], ...authAdminApi);
+      router.use('/mounted', mounted);
+      mounted.get(
+        '/plain',
+        http(() => ({})),
+      );
+
+      assert.deepEqual(mountedRoutes(router).outsideMounted, ['GET /plain']);
     });
   });
 

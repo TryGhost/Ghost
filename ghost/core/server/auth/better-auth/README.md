@@ -276,7 +276,7 @@ flowchart TD
     READ -- yes --> PRINCIPAL["Principal: kind 'app',<br/>acting for the staff user,<br/>with the installation's scopes"]
     PRINCIPAL --> BLOCK{"On the staff token<br/>blocklist?"}
     BLOCK -- yes --> R403["403 no permission"]
-    BLOCK -- no --> EARLY{"refuseAppEarly:<br/>could the method's permission<br/>check ever allow this app?"}
+    BLOCK -- no --> EARLY{"refuseAppEarly:<br/>is the route's method in the pipeline,<br/>and could its permission check<br/>ever allow this app?"}
     EARLY -- no --> R403
     EARLY -- yes --> ROUTE["The route's own middleware:<br/>rate limits, uploads"]
     ROUTE --> PIPE{"API pipeline permission stage:<br/>standard check, capped by<br/>the scopes and the user's role"}
@@ -287,10 +287,11 @@ flowchart TD
 The scopes only cap the standard permission check. A method whose check is
 its own, or that has none, would see only the staff user. So apps are refused
 there unless the method is on the allowlist in
-`api/endpoints/utils/permissions.js`, which is empty. `refuseAppEarly` makes
-that refusal, and the one for a scope the app wasn't approved for, before the
-route's own middleware runs. A rate limit or an upload then never runs for an
-app request that can't succeed.
+`api/endpoints/utils/permissions.js`, which is empty. A controller outside the
+pipeline has no permission stage at all, so apps are refused there too.
+`refuseAppEarly` makes those refusals, and the one for a scope the app wasn't
+approved for, before the route's own middleware runs. A rate limit or an
+upload then never runs for an app request that can't succeed.
 
 ### The types
 
@@ -378,18 +379,29 @@ app request that can't succeed.
   its own or none would see the staff user the app acts for, so the API
   pipeline refuses apps on every such method (403) unless it's on the
   allowlist in `api/endpoints/utils/permissions.js`, which is for methods safe
-  for any app whatever its scopes and holds none yet. The session routes run
-  outside the pipeline, and `DELETE /session` refuses apps itself. A unit test
-  lists every such method the Admin API mounts, so a new one is refused until
-  someone decides otherwise.
-- The Admin API refuses an app on those methods, and on a method whose
-  standard check needs a scope the app wasn't approved for, before the
+  for any app whatever its scopes and holds none yet. The session controller
+  runs through the pipeline for this alone: its methods are single functions,
+  which the pipeline runs with no other stage. A unit test lists every such
+  method the Admin API mounts, so a new one is refused until someone decides
+  otherwise.
+- A route ending in a controller outside the pipeline, which has no permission
+  stage and no name the allowlist could hold, refuses apps (403). That includes
+  a route whose `http()` mounts a method the API doesn't have. To let an app
+  call one, run it through `pipeline()` first. A unit test drives the refusal
+  over every route the Admin API mounts, and fails on a route in a mounted
+  router that ends outside the pipeline, which nothing could refuse.
+- The Admin API refuses an app on those methods and routes, and on a method
+  whose standard check needs a scope the app wasn't approved for, before the
   route's own middleware runs (`refuseAppEarly` in the Admin API's
-  `authAdminApi`). A rate limit keyed on the staff user the app acts for, or
-  an upload being parsed and stored, never acts for an app request that
-  can't succeed, so an app can't spend the user's budget. The error is the
-  one the pipeline would give. An app approved for the scope goes on to the
-  route and spends the budget as the user would.
+  `authAdminApi`). It reads the method from the route's last handler, which
+  `routedMethod` recognises for every handler `http()` returns. A route ending
+  in anything else is a `router.all` that authenticates a router mounted after
+  it; the app goes on, and the mounted route's method decides. A rate limit
+  keyed on the staff user the app acts for, or an upload being parsed and
+  stored, never acts for an app request that can't succeed, so an app can't
+  spend the user's budget. The error is the one the pipeline would give. An
+  app approved for the scope goes on to the route and spends the budget as
+  the user would.
 - Reconciling an installation that isn't active disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event
