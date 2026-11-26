@@ -309,6 +309,7 @@ describe('Members filtered by segment', function () {
       await models.Base.knex('segments').insert({
         id: nested,
         name: 'Nested',
+        slug: 'nested',
         filter: `segment:${segments.vip}`,
         sort_order: 99,
         created_at: new Date(),

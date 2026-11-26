@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { setTimeout as sleep } from 'node:timers/promises';
+import ObjectID from 'bson-objectid';
 import type { SpanDocument } from '../../../core/server/lib/tracing/create-tracer';
 
 const {
@@ -15,7 +17,7 @@ const { anyContentLength, anyContentVersion, anyErrorId, anyEtag, anyLocationFor
   matchers;
 const { cacheInvalidateHeaderNotSet } = assertions;
 
-type Segment = { id: string; name: string; filter: string };
+type Segment = { id: string; name: string; slug: string; filter: string };
 
 type ApiResponse = {
   headers: Record<string, string | undefined>;
@@ -153,6 +155,40 @@ describe('Segments Admin API', function () {
     property: 'name',
   };
   const NAME_EMPTY = { property: 'body.segments.0.name', message: 'Name cannot be empty' };
+  const SLUG_TAKEN = {
+    type: 'ValidationError',
+    context: 'A segment with this slug already exists',
+    property: 'slug',
+  };
+  const SLUG_UNUSABLE = {
+    type: 'ValidationError',
+    context:
+      "A filter can't name a segment by this slug, as it reads the slug as something else, such as a number or a date",
+    property: 'slug',
+  };
+  const SLUG_FORMAT =
+    'Slug can only contain lowercase letters and digits, in words joined by single hyphens';
+
+  /**
+   * Waits until a statement on the segments table waits for a lock another transaction holds,
+   * such as an insert of a slug that another transaction has inserted and not yet committed.
+   */
+  async function lockWaitOnSegments() {
+    for (let tries = 0; tries < 250; tries += 1) {
+      const [rows]: [{ waiting: number }[]] = await models.Base.knex.raw(
+        `SELECT COUNT(*) AS waiting
+           FROM performance_schema.data_lock_waits waits
+           JOIN performance_schema.data_locks locks
+             ON locks.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+          WHERE locks.OBJECT_SCHEMA = DATABASE() AND locks.OBJECT_NAME = 'segments'`,
+      );
+      if (rows[0].waiting > 0) {
+        return;
+      }
+      await sleep(20);
+    }
+    assert.fail('Nothing waited for a lock on the segments table');
+  }
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
@@ -320,6 +356,121 @@ describe('Segments Admin API', function () {
       assert.deepEqual(await browse(), [segment]);
     });
 
+    it('adds a segment under the slug it is given', async function () {
+      const segment = await add('VIP', 'label:vip', { slug: 'customers' });
+
+      assert.equal(segment.slug, 'customers');
+      assert.deepEqual(await browse(), [segment]);
+    });
+
+    it('rejects a slug another segment has', async function () {
+      await add('VIP', 'label:vip');
+
+      assert.deepEqual(
+        await addError({ name: 'Gold', filter: 'label:gold', slug: 'vip' }),
+        SLUG_TAKEN,
+      );
+      assert.equal((await browse()).length, 1);
+    });
+
+    it("rejects a slug a filter can't name a segment by", async function () {
+      // The filter parser reads these as a number and as no value
+      for (const slug of ['2024', 'null']) {
+        assert.deepEqual(
+          await addError({ name: 'Gold', filter: 'label:gold', slug }),
+          SLUG_UNUSABLE,
+        );
+      }
+      const outOfFormat: [unknown, string][] = [
+        ['Not a slug', SLUG_FORMAT],
+        ['VIP', SLUG_FORMAT],
+        ['a'.repeat(192), 'Slug cannot be longer than 191 characters'],
+        [null, 'Slug must be a string'],
+      ];
+      for (const [slug, message] of outOfFormat) {
+        assert.deepEqual(
+          await addBodyError({ segments: [{ name: 'Gold', filter: 'label:gold', slug }] }),
+          { property: 'body.segments.0.slug', message },
+        );
+      }
+      assert.deepEqual(await browse(), []);
+    });
+
+    it('mints a slug from the name, which the filter parser reads back without quotes', async function () {
+      // Each name with the slug it mints, in the order they are added
+      const slugs = [
+        ['All paid', 'all-paid'],
+        ['All paid!', 'all-paid-2'],
+        ['Café crème', 'cafe-creme'],
+        ['日本語', 'ri-ben-yu'],
+        ["Sam's list", 'sams-list'],
+        ['--Gold members!!', 'gold-members'],
+        ['🎉', 'segment'],
+        ['🎉🎉', 'segment-2'],
+        ['2024', 'segment-2024'],
+        ['007', 'segment-007'],
+        ['Null', 'segment-null'],
+        ['True', 'segment-true'],
+        ['FALSE', 'segment-false'],
+        ['now -1d', 'segment-now-1d'],
+        [`${'a'.repeat(185)} bcdef`, 'a'.repeat(185)],
+        [`${'a'.repeat(185)} bcdeg`, `${'a'.repeat(185)}-2`],
+      ];
+
+      for (const [name] of slugs) {
+        await add(name, 'status:free');
+      }
+
+      assert.deepEqual(
+        (await browse()).map(({ name, slug }) => [name, slug]),
+        slugs,
+      );
+    });
+
+    it('gives a segment the next slug when another request takes its slug at the same time', async function () {
+      // Another request adds a segment whose name mints the same slug, and commits it once this
+      // request has read which slugs are taken and is waiting to insert its own.
+      const other = await models.Base.knex.transaction();
+      let adding: Promise<ApiResponse> | undefined;
+      try {
+        await other('segments').insert({
+          id: ObjectID().toHexString(),
+          name: 'All paid!',
+          slug: 'all-paid',
+          filter: 'status:paid',
+          sort_order: 0,
+          created_at: new Date(),
+        });
+        adding = Promise.resolve(
+          agent
+            .post('segments/')
+            .body({ segments: [{ name: 'All paid', filter: 'status:paid' }] })
+            .expectStatus(201),
+        );
+        await lockWaitOnSegments();
+        await other.commit();
+
+        const { body } = await adding;
+        assert.equal(body.segments[0].slug, 'all-paid-2');
+      } finally {
+        if (!other.isCompleted()) {
+          await other.rollback();
+        }
+        // The request waits on `other`, so once `other` has ended it finishes. It is awaited
+        // here, so that it can't add a segment after this test has failed and been cleaned up.
+        await adding?.catch(() => {});
+      }
+      assert.deepEqual(
+        (await browse())
+          .map(({ name, slug }) => ({ name, slug }))
+          .sort((a, b) => a.slug.localeCompare(b.slug)),
+        [
+          { name: 'All paid!', slug: 'all-paid' },
+          { name: 'All paid', slug: 'all-paid-2' },
+        ],
+      );
+    });
+
     it('accepts a filter it does not check against members', async function () {
       assert.equal((await add('Odd', 'not a real field:yes')).filter, 'not a real field:yes');
     });
@@ -332,13 +483,54 @@ describe('Segments Admin API', function () {
       assert.deepEqual(await browse(), [first, second]);
     });
 
-    it('gives a segment a new id when it is added again after being deleted', async function () {
+    it('rejects a slug it is given that another request takes at the same time', async function () {
+      // Another request adds a segment with the slug, and commits it once this request has read
+      // which slugs are taken and is waiting to insert its own.
+      const other = await models.Base.knex.transaction();
+      let adding: Promise<ApiResponse> | undefined;
+      try {
+        await other('segments').insert({
+          id: ObjectID().toHexString(),
+          name: 'Customers',
+          slug: 'customers',
+          filter: 'status:paid',
+          sort_order: 0,
+          created_at: new Date(),
+        });
+        adding = Promise.resolve(
+          agent
+            .post('segments/')
+            .body({ segments: [{ name: 'VIP', filter: 'label:vip', slug: 'customers' }] })
+            .expectStatus(422),
+        );
+        await lockWaitOnSegments();
+        await other.commit();
+
+        const { body } = await adding;
+        const [{ type, context, property }] = body.errors;
+        assert.deepEqual({ type, context, property }, SLUG_TAKEN);
+      } finally {
+        if (!other.isCompleted()) {
+          await other.rollback();
+        }
+        // The request waits on `other`, so once `other` has ended it finishes. It is awaited
+        // here, so that it can't add a segment after this test has failed and been cleaned up.
+        await adding?.catch(() => {});
+      }
+      assert.deepEqual(
+        (await browse()).map(({ name, slug }) => ({ name, slug })),
+        [{ name: 'Customers', slug: 'customers' }],
+      );
+    });
+
+    it('gives a segment a new id and the same slug when it is added again after being deleted', async function () {
       const first = await add('VIP', 'label:vip');
       await agent.delete(`segments/${first.id}/`).expectStatus(204);
 
       const second = await add('VIP', 'label:vip');
 
       assert.notEqual(second.id, first.id);
+      assert.equal(second.slug, 'vip');
     });
 
     it('rejects a name that another request takes at the same time', async function () {
@@ -401,7 +593,7 @@ describe('Segments Admin API', function () {
         .matchBodySnapshot(oneSegment);
     });
 
-    it('keeps the segment in its place and its id the same', async function () {
+    it('keeps the segment in its place, and its id and its slug the same', async function () {
       await add('Free', 'status:free');
       const paid = await add('Paid', 'status:paid');
       await add('Comped', 'status:comped');
@@ -409,6 +601,7 @@ describe('Segments Admin API', function () {
       const renamed = await rename(paid.id, 'Paying');
 
       assert.equal(renamed.id, paid.id);
+      assert.equal(renamed.slug, 'paid');
       assert.deepEqual(
         (await browse()).map((segment) => segment.name),
         ['Free', 'Paying', 'Comped'],
@@ -457,7 +650,36 @@ describe('Segments Admin API', function () {
         .expectStatus(422)
         .matchHeaderSnapshot(writeHeaders)
         .matchBodySnapshot(errorBody);
-      assert.deepEqual(await browse(), [{ id, name: 'VIP', filter: 'label:vip' }]);
+      assert.deepEqual(await browse(), [{ id, name: 'VIP', slug: 'vip', filter: 'label:vip' }]);
+    });
+
+    it('rejects a different slug, and changes nothing', async function () {
+      const { id } = await add('VIP', 'label:vip');
+      await add('Gold', 'label:gold');
+
+      assert.deepEqual(await renameError(id, { name: 'Very important', slug: 'gold' }), {
+        type: 'ValidationError',
+        context: "A segment's slug cannot be changed",
+        property: 'slug',
+      });
+      assert.deepEqual(await renameBodyError(id, { name: 'Very important', slug: 'Gold!' }), {
+        property: 'body.segments.0.slug',
+        message:
+          'Slug can only contain lowercase letters and digits, in words joined by single hyphens',
+      });
+      for (const slug of [null, 7, ['vip'], { slug: 'vip' }]) {
+        assert.deepEqual(await renameBodyError(id, { name: 'Very important', slug }), {
+          property: 'body.segments.0.slug',
+          message: 'Slug must be a string',
+        });
+      }
+      assert.deepEqual(
+        (await browse()).map(({ name, slug }) => ({ name, slug })),
+        [
+          { name: 'VIP', slug: 'vip' },
+          { name: 'Gold', slug: 'gold' },
+        ],
+      );
     });
 
     it('rejects a field it does not know, rather than renaming the segment', async function () {
@@ -467,7 +689,7 @@ describe('Segments Admin API', function () {
         property: 'body.segments.0',
         message: 'Unrecognized key: "fliter"',
       });
-      assert.deepEqual(await browse(), [{ id, name: 'VIP', filter: 'label:vip' }]);
+      assert.deepEqual(await browse(), [{ id, name: 'VIP', slug: 'vip', filter: 'label:vip' }]);
     });
 
     it('returns a 404 for an id no segment has', async function () {
@@ -561,8 +783,11 @@ describe('Segments Admin API', function () {
       await add('Free', 'status:free');
 
       await addError({ name: 'vip', filter: 'label:gold' });
+      await addError({ name: 'Gold', filter: 'label:gold', slug: 'vip' });
+      await addError({ name: 'Gold', filter: 'label:gold', slug: '2024' });
       await renameError(id, { name: 'Free' });
       await renameError(id, { name: 'VIP', filter: 'label:gold' });
+      await renameError(id, { name: 'VIP', slug: 'free' });
       await agent
         .put(`segments/${UNKNOWN_ID}/`)
         .body({ segments: [{ name: 'Gold' }] })
@@ -573,10 +798,15 @@ describe('Segments Admin API', function () {
         error: { type },
         labels: { rejection },
       });
-      expect(failedSpans('add')).toMatchObject([rejected('ValidationError', 'name_taken')]);
+      expect(failedSpans('add')).toMatchObject([
+        rejected('ValidationError', 'name_taken'),
+        rejected('ValidationError', 'slug_taken'),
+        rejected('ValidationError', 'slug_unusable'),
+      ]);
       expect(failedSpans('edit')).toMatchObject([
         rejected('ValidationError', 'name_taken'),
         rejected('ValidationError', 'filter_changed'),
+        rejected('ValidationError', 'slug_changed'),
         rejected('NotFoundError', 'not_found'),
       ]);
       expect(failedSpans('delete')).toMatchObject([rejected('NotFoundError', 'not_found')]);

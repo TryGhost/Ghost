@@ -6,7 +6,7 @@ import fs from 'fs-extra';
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const { knex } = require('../../../core/server/data/db');
 
-type Segment = { id: string; name: string; filter: string };
+type Segment = { id: string; name: string; slug: string; filter: string };
 type Setting = { key: string; value: unknown };
 type ExportData = { segments?: unknown[]; settings: Setting[] };
 type Export = { db: [{ meta: { version: string }; data: ExportData }] };
@@ -52,11 +52,19 @@ describe('Segments in a site export and import', function () {
 
   const names = async () => (await browse()).map(({ name }) => name);
 
-  async function add(name: string, filter: string) {
-    await agent
+  async function add(name: string, filter: string): Promise<Segment> {
+    const { body } = await agent
       .post('segments/')
       .body({ segments: [{ name, filter }] })
       .expectStatus(201);
+    return body.segments[0];
+  }
+
+  async function rename(id: string, name: string) {
+    await agent
+      .put(`segments/${id}/`)
+      .body({ segments: [{ name }] })
+      .expectStatus(200);
   }
 
   async function removeSegments() {
@@ -119,18 +127,20 @@ describe('Segments in a site export and import', function () {
   it('brings the segments of an exported site back, in their order', async function () {
     await saveSharedViews(JSON.stringify([postsView]));
     await add('Free', 'status:free');
-    await add('VIP', 'label:vip');
+    // A rename keeps the slug, so this segment's slug is no longer the one its name mints.
+    const vip = await add('VIP', 'label:vip');
+    await rename(vip.id, 'Very important');
     const exported = await exportSavedViews();
     await removeSegments();
 
     const problems = await importData(exported);
 
-    // An imported segment is a new segment, so its id is not compared.
+    // An imported segment is a new segment, so its id is not compared. It keeps its slug.
     assert.deepEqual(
-      (await browse()).map(({ name, filter }) => ({ name, filter })),
+      (await browse()).map(({ name, slug, filter }) => ({ name, slug, filter })),
       [
-        { name: 'Free', filter: 'status:free' },
-        { name: 'VIP', filter: 'label:vip' },
+        { name: 'Free', slug: 'free', filter: 'status:free' },
+        { name: 'Very important', slug: 'vip', filter: 'label:vip' },
       ],
     );
     assert.deepEqual(await postsViews(), [postsView]);
@@ -162,14 +172,46 @@ describe('Segments in a site export and import', function () {
 
     await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
 
+    // A saved member view has no slug, so each gets one minted from its name.
     assert.deepEqual(
-      (await browse()).map(({ name, filter }) => ({ name, filter })),
+      (await browse()).map(({ name, slug, filter }) => ({ name, slug, filter })),
       [
-        { name: 'VIP', filter: 'label:vip' },
-        { name: 'Free', filter: 'status:free' },
+        { name: 'VIP', slug: 'vip', filter: 'label:vip' },
+        { name: 'Free', slug: 'free', filter: 'status:free' },
       ],
     );
     assert.deepEqual(await postsViews(), [postsView]);
+  });
+
+  it('keeps the slug a segment had, unless another segment has it or it is not a slug', async function () {
+    await add('Very important', 'label:vip');
+
+    await importData({
+      segments: [
+        { name: 'VIP', slug: 'customers', filter: 'label:vip', sort_order: 0 },
+        { name: 'Gold', slug: 'very-important', filter: 'label:gold', sort_order: 1 },
+        { name: 'Platinum', slug: 'customers', filter: 'label:platinum', sort_order: 2 },
+        { name: 'Silver', slug: 'Not a slug', filter: 'label:silver', sort_order: 3 },
+        { name: 'Bronze', slug: '2024', filter: 'label:bronze', sort_order: 4 },
+        { name: 'Copper', slug: null, filter: 'label:copper', sort_order: 5 },
+        { name: 'Free', filter: 'status:free', sort_order: 6 },
+      ],
+      settings: [],
+    });
+
+    assert.deepEqual(
+      (await browse()).map(({ name, slug }) => ({ name, slug })),
+      [
+        { name: 'Very important', slug: 'very-important' },
+        { name: 'VIP', slug: 'customers' },
+        { name: 'Gold', slug: 'gold' },
+        { name: 'Platinum', slug: 'platinum' },
+        { name: 'Silver', slug: 'silver' },
+        { name: 'Bronze', slug: 'bronze' },
+        { name: 'Copper', slug: 'copper' },
+        { name: 'Free', slug: 'free' },
+      ],
+    );
   });
 
   it('numbers a segment whose name the site has for another filter', async function () {

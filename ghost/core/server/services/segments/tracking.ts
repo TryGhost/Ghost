@@ -10,6 +10,10 @@ import type { Tracer } from '../../lib/tracing/tracer';
  * - `name_taken`: another segment already has the name, or a name the database counts as the
  *   same.
  * - `filter_changed`: the request has a filter that isn't the segment's own.
+ * - `slug_changed`: the request has a slug that isn't the segment's own.
+ * - `slug_taken`: another segment has the slug the new segment was given.
+ * - `slug_unusable`: a filter can't name a segment by the slug the new segment was given.
+ * - `no_free_slug`: every slug minted from the new segment's name is taken.
  * - `filter_names_segment`: the new segment's filter names a segment.
  *
  * Any other error is a failure.
@@ -18,6 +22,10 @@ export type SegmentRejection =
   | 'not_found'
   | 'name_taken'
   | 'filter_changed'
+  | 'slug_changed'
+  | 'slug_taken'
+  | 'slug_unusable'
+  | 'no_free_slug'
   | 'filter_names_segment';
 
 /** What a command that changes a segment reports. */

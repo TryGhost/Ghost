@@ -9,6 +9,8 @@ import { createMutation, createQuery } from '../utils/api/hooks';
 const SegmentSchema = z.object({
   id: z.string(),
   name: z.string(),
+  // A server from before segments had slugs leaves it out.
+  slug: z.string().optional(),
   filter: z.string(),
 });
 

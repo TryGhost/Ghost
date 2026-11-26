@@ -79,7 +79,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/auto-filling-map\\.ts$', // Map that fills missing keys from a caller-supplied factory.
   '^ghost/core/server/lib/member-signup-contexts\\.ts$', // Member signup context constants and one predicate.
   '^ghost/core/server/lib/truncate-characters\\.ts$', // Cuts a string to a column's length in characters; no application instances.
-  '^ghost/core/server/lib/slug\\.ts$', // What a slug is, and minting slugs people type, such as custom field keys, from names; no application instances.
+  '^ghost/core/server/lib/slug\\.ts$', // What a slug is, and minting slugs people type, such as custom field keys and segment slugs, from names; no application instances.
   '^ghost/core/server/lib/filters/index\\.ts$', // Parses filter text, rewrites the parsed filter with caller-supplied steps and compiles it onto the caller's query builder; no application instances or I/O.
   '^ghost/core/shared/errify\\.ts$', // Turns any thrown value into an Error.
   '^ghost/core/shared/timing-safe-string-equal\\.ts$', // Constant-time string comparison.
@@ -222,9 +222,13 @@ const specialistDependencies = [
 
   // Content and rendering.
   {
-    // Transliterating names to ASCII, to mint slugs such as custom field keys.
+    // Transliterating names to ASCII, to mint slugs such as custom field keys and segment slugs.
+    // The migration that gives existing segments their slugs keeps its own copy of the minting.
     dependency: npm('unidecode'),
-    owners: [core('server/lib/slug.ts')],
+    owners: [
+      core('server/lib/slug.ts'),
+      core('server/data/migrations/versions/6.80/2026-11-26-01-02-18-backfill-segment-slugs.ts'),
+    ],
   },
   {
     // Converting Mobiledoc and Lexical content.
@@ -286,6 +290,8 @@ const specialistDependencies = [
     dependency: npm('@tryghost/nql-lang'),
     owners: [
       core('server/lib/filters/'),
+      // Checks that each slug it mints reads back as itself in a filter.
+      core('server/data/migrations/versions/6.80/2026-11-26-01-02-18-backfill-segment-slugs.ts'),
       core('frontend/helpers/get.js'),
       core('server/api/endpoints/utils/serializers/input/tiers.js'),
     ],

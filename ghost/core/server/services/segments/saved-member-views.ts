@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { normalizeName } from './rejections';
+import { normalizeName } from './models';
 
 // Versions of Ghost from before segments had a table stored each segment as an entry of the
 // `shared_views` setting: a saved view of the members list with a filter, beside the posts
@@ -8,8 +8,17 @@ import { normalizeName } from './rejections';
 // that those versions can import it. This is what such an entry is, for the export and the
 // import to share.
 
-/** A segment as an export holds one. */
-const ExportedSegment = z.object({ name: z.string(), filter: z.string() });
+/**
+ * A segment as an export holds one. A row of the segments table has the slug the segment had on
+ * the site it was exported from, which an import keeps when it is free; a saved member view in
+ * the setting has none.
+ */
+const ExportedSegment = z.object({
+  name: z.string(),
+  filter: z.string(),
+  // A slug that isn't text is left out rather than leaving the segment out.
+  slug: z.string().optional().catch(undefined),
+});
 export type ExportedSegment = z.infer<typeof ExportedSegment>;
 
 /**

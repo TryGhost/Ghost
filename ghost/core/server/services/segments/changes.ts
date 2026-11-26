@@ -4,7 +4,7 @@ import type { Segment } from './models';
 /** A segment was added after the others. */
 export class SegmentAdded extends Added('SegmentAdded')<Segment> {}
 
-/** A segment's name changed. Its id and its filter stay the same. */
+/** A segment's name changed. Its id, its slug and its filter stay the same. */
 export class SegmentRenamed extends Edited('SegmentRenamed')<Segment> {}
 
 /** A segment was deleted. */
