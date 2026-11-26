@@ -32,9 +32,10 @@ const { posts } = await response.json();
 ```
 
 Your app's manifest lists the permissions it needs as `scopes`, and an
-Administrator approves them when installing it. Ghost refuses any Admin API
-call they don't cover, with a `403` response. `ghost.scopes` holds the
-permission keys your app was approved for on this site:
+Administrator approves them when installing it. Admin refuses any Admin API
+call they don't cover: `ghost.fetch` rejects with a `GhostAppError` whose code
+is `blocked`. `ghost.scopes` holds the permission keys your app was approved
+for on this site:
 
 ```ts
 if (ghost.scopes.includes('post:edit')) {
