@@ -2,7 +2,9 @@ import { unreachable } from '../../../lib/unreachable';
 import type { Knex } from 'knex';
 import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
+import { z } from 'zod';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
+import schema from '../../../data/schema/schema';
 import type { Grant, Grants, Namespaces } from './namespaces';
 import type { Asking, MetafieldResource, ResourceKind } from './resource';
 import { FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
@@ -168,6 +170,12 @@ export interface FieldSource<R extends ResourceKind> {
   locked(trx: Knex.Transaction, namespace: Namespace, keys: readonly Key[]): Knex.QueryBuilder;
 }
 
+/** How long a field's name and key can be, as the schema defines the columns they are kept in. */
+const FieldColumnLengths = z.object({
+  name: z.object({ maxlength: z.number() }),
+  key: z.object({ maxlength: z.number() }),
+});
+
 /**
  * The fields as a site reads them: as stored, except that a field in a namespace that isn't
  * available reads as archived. Which namespaces aren't is asked on every read, as it can change
@@ -180,7 +188,7 @@ export function fieldSource<R extends ResourceKind>(
   const tableName = resource.tables.fields;
   // The canonical schema, which the migrations and models also read, so these can't drift from
   // the database.
-  const columns = require('../../../data/schema').tables[tableName];
+  const columns = FieldColumnLengths.parse(schema[tableName]);
   const asRead = (db: Knex, rows: Knex.QueryBuilder) => {
     const unavailable = namespaces.unavailable();
     return rows.select(

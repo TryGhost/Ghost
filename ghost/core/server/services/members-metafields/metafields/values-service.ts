@@ -27,6 +27,7 @@ import {
   type SingleWriteOrigin,
   type WriteOrigin,
 } from './schema';
+import schema from '../../../data/schema/schema';
 import type { MetafieldsTracking } from './tracking';
 import { ValuesWritten, type OnValuesWritten } from './changes';
 import { ensureTransaction, transactionOf } from '../../../lib/ensure-transaction';
@@ -225,10 +226,13 @@ export class MetafieldValuesService<R extends ResourceKind> {
     this.tracking = tracking;
     this.onValuesWritten = onValuesWritten;
 
-    const schema = require('../../../data/schema').tables;
     this.valueKey = z
-      .array(z.union([DbMetafieldValue.keyof(), z.literal(resource.idColumn)]))
-      .parse(schema[resource.tables.values]['@@PRIMARY_KEY@@']);
+      .object({
+        '@@PRIMARY_KEY@@': z.array(
+          z.union([DbMetafieldValue.keyof(), z.literal(resource.idColumn)]),
+        ),
+      })
+      .parse(schema[resource.tables.values])['@@PRIMARY_KEY@@'];
     // From the fields table's `key` column, so no key a site could hold is rejected.
     this.valuesInput = z.record(z.string().max(fields.maxLength.key * 2 + 1), z.unknown());
   }
