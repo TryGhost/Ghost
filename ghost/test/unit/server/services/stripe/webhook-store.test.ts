@@ -83,6 +83,13 @@ describe('WebhookStore', function () {
     assert.equal(await store.readSecret(), 'whsec_saved');
   });
 
+  it('reads the webhook id from the database, not the settings cache', async function () {
+    settingsCache.get.returns('we_cached');
+    await store.save({ webhook_id: 'we_saved', secret: 'whsec_saved' });
+
+    assert.equal(await store.readWebhookId(), 'we_saved');
+  });
+
   it('creates and saves a webhook on SQLite without lock SQL', async function () {
     const api = {
       createWebhookEndpoint: sinon.stub().resolves({ id: 'we_created', secret: 'whsec_created' }),

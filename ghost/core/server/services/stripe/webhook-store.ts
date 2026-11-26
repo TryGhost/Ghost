@@ -64,7 +64,16 @@ export class WebhookStore {
    * settings cache loaded.
    */
   async readSecret(): Promise<string | null> {
-    const setting = await this.#deps.Settings.findOne({ key: WEBHOOK_SECRET_SETTING });
+    return this.#read(WEBHOOK_SECRET_SETTING);
+  }
+
+  /** The stored webhook id from the database, for the same reason as `readSecret`. */
+  async readWebhookId(): Promise<string | null> {
+    return this.#read(WEBHOOK_ID_SETTING);
+  }
+
+  async #read(key: string): Promise<string | null> {
+    const setting = await this.#deps.Settings.findOne({ key });
     return asString(setting?.get('value'));
   }
 

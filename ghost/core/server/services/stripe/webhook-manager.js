@@ -58,6 +58,9 @@ module.exports = class WebhookManager {
   /**
    * Deletes the Stripe Webhook Endpoint and saves null values for the webhook ID and secret.
    *
+   * The ID is read from the database, because another Ghost may have replaced the webhook since
+   * this Ghost's settings cache loaded.
+   *
    * @returns {Promise<boolean>}
    */
   async stop() {
@@ -66,9 +69,9 @@ module.exports = class WebhookManager {
     }
 
     try {
-      const existingWebhook = await this.StripeWebhook.get();
-      if (existingWebhook.webhook_id) {
-        await this.api.deleteWebhookEndpoint(existingWebhook.webhook_id);
+      const webhookId = await this.StripeWebhook.readWebhookId();
+      if (webhookId) {
+        await this.api.deleteWebhookEndpoint(webhookId);
       }
       await this.StripeWebhook.save({
         webhook_id: null,
