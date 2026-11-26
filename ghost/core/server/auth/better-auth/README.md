@@ -421,8 +421,10 @@ upload then never runs for an app request that can't succeed.
   hasn't expired. The middleware then reads the installation (it must be
   active) and the user again, and takes the scopes from the installation's
   approved manifest. The user must have one of the active staff statuses in
-  `shared/staff-status.ts`, `warn-*` included, the same list issuing reads, so
-  no user gets a token that every call refuses. The `apps` flag is read per request. A
+  `shared/staff-status.ts`, `warn-*` included. Issuing, the session gate and
+  the sign-in checks read the same list, so no user gets a token that every
+  call refuses or keeps a session the gate would end. The `apps` flag is read
+  per request. A
   refused token, or a Bearer credential that looks like an app token but is
   malformed, answers `401 APP_TOKEN_INVALID` and never falls back to the
   cookie; a failure to read the installation or the user is an error, not a

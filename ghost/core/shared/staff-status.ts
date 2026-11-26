@@ -1,6 +1,7 @@
 /**
- * The statuses of a staff user who may sign in and act, which the `User` model reads as its
- * active states. A `warn-*` user has failed some sign-ins and isn't locked yet.
+ * The statuses of a staff user who may sign in and act. The `User` model reads them as its
+ * active states, and Better Auth's session gate and sign-in checks read them too. A `warn-*`
+ * user has failed some sign-ins and isn't locked yet.
  */
 export const ACTIVE_STAFF_STATUSES: readonly string[] = [
   'active',
