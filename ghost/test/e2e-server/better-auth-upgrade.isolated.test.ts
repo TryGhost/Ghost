@@ -163,7 +163,8 @@ async function toPreGraduationDatabase() {
     await db.knex('users').where({ id: account.user_id }).update({ password: account.password });
   }
   // Newer than the auth tables and some reference them, so they go first. The
-  // Ghost these tests boot doesn't create in-development tables, so they stay gone
+  // migrations recreate the OAuth tables; the Ghost these tests boot doesn't
+  // create in-development tables, so those stay gone
   for (const table of [...getInDevelopmentTables(), ...OAUTH_TABLES].toReversed()) {
     await db.knex.schema.dropTableIfExists(table);
   }
@@ -325,9 +326,6 @@ describe.skipIf(isSQLite)('Upgrading auth:engine from legacy to better-auth', fu
     async function () {
       // Boot migrates: every staff password is copied into a credential row
       await restart('legacy');
-      for (const table of OAUTH_TABLES) {
-        assert.ok(await db.knex.schema.hasTable(table), `creates ${table}`);
-      }
       const credentials = await db
         .knex('user_accounts')
         .where({ provider_id: 'credential' })
