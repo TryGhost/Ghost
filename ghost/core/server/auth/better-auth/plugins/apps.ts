@@ -24,12 +24,6 @@ import {
 import { APP_TOKEN_PREFIX } from '../../app-token-prefix';
 import { appTokenRequestSchema, type AppTokenRefusal, type ValidatedAppToken } from '../app-tokens';
 
-/** The tables the provider and jwt plugins need; neither is registered without them. */
-export const APP_OAUTH_TABLES: readonly string[] = [
-  ...Object.values(ghostOAuthProviderSchema).map(({ modelName }) => modelName),
-  ghostJwtSchema.jwks.modelName,
-];
-
 export type AppProviderOptions = {
   /** Better Auth's `baseURL`: the admin origin */
   adminOrigin: string;
