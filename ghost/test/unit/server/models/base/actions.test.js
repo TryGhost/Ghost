@@ -276,14 +276,51 @@ describe('Unit: models/base/plugins/actions', function () {
 
         assert.equal(action.actor_id, 'abcd1234');
         assert.equal(action.actor_type, 'user');
-        assert.equal(action.context.app_id, 'installation');
+        assert.equal(action.context.app_installation_id, 'installation');
       });
 
       it('records the app on bulk actions', function () {
         const action = TestModel.getBulkAction('deleted', 2, { context: appContext('abcd1234') });
 
         assert.equal(action.actor_id, 'abcd1234');
-        assert.equal(action.context.app_id, 'installation');
+        assert.equal(action.context.app_installation_id, 'installation');
+      });
+
+      it("doesn't let a model's own context stand in for the app", function () {
+        const OwnedModel = Base.Model.extend({
+          tableName: 'test_models',
+          actionsCollectCRUD: true,
+          actionsResourceType: 'test_resource',
+          actionsExtraContext: ['app_installation_id'],
+        });
+        const testModel = OwnedModel.forge({ id: '1234ef', app_installation_id: 'owner' });
+
+        const byApp = testModel.getAction('added', { context: appContext('abcd1234') });
+        const byStaff = testModel.getAction('added', { context: { user: 'abcd1234' } });
+
+        assert.equal(byApp.context.app_installation_id, 'installation');
+        assert.equal(Object.hasOwn(byStaff.context, 'app_installation_id'), false);
+      });
+
+      it("doesn't let a model's bulk context stand in for the app", function () {
+        const OwnedModel = Base.Model.extend(
+          {
+            tableName: 'test_models',
+            actionsCollectCRUD: true,
+            actionsResourceType: 'test_resource',
+          },
+          {
+            getBulkActionExtraContext() {
+              return { app_installation_id: 'owner' };
+            },
+          },
+        );
+
+        const byApp = OwnedModel.getBulkAction('deleted', 2, { context: appContext('abcd1234') });
+        const byStaff = OwnedModel.getBulkAction('deleted', 2, { context: { user: 'abcd1234' } });
+
+        assert.equal(byApp.context.app_installation_id, 'installation');
+        assert.equal(Object.hasOwn(byStaff.context, 'app_installation_id'), false);
       });
 
       it('records no app for other principals', function () {
@@ -292,7 +329,7 @@ describe('Unit: models/base/plugins/actions', function () {
           context: { user: 'abcd1234', principal: { kind: 'user', method: 'session' } },
         });
 
-        assert.equal(Object.hasOwn(action.context, 'app_id'), false);
+        assert.equal(Object.hasOwn(action.context, 'app_installation_id'), false);
       });
     });
 
