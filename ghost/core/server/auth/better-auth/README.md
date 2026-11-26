@@ -433,7 +433,7 @@ upload then never runs for an app request that can't succeed.
   refusal. The principal is `kind: 'app'` with method `app_user_token`,
   acting for the staff user.
 - Ghost refuses an app in two ways of its own, both 403s with a code, built in
-  `auth/app-token.ts`: `APP_SCOPE_REQUIRED` when the app wasn't approved for a
+  `auth/policy/app-refusals.ts`: `APP_SCOPE_REQUIRED` when the app wasn't approved for a
   scope the call needs, and `APP_NOT_ALLOWED` when no app may call the
   endpoint whatever its scopes. A refusal because of the staff user's role
   stays Ghost's generic one. The message names the scope, but Ghost words a

@@ -129,30 +129,3 @@ export function unlessAppToken(handler: RequestHandler): RequestHandler {
     return handler(req, res, next);
   };
 }
-
-/**
- * How Ghost refuses an app's call for a reason that is the app's, not the staff user's it acts
- * for. Both are 403s, each with a code, so an app's developer can tell them from Ghost's other
- * refusals and they can be found in the logs:
- *
- * - `APP_NOT_ALLOWED`: no app may call the endpoint, whatever its scopes.
- * - `APP_SCOPE_REQUIRED`: the app wasn't approved for a scope the endpoint needs.
- *
- * A refusal because the staff user's role doesn't allow the call stays Ghost's generic one.
- */
-
-/** The refusal of an app on an endpoint no app may call, whatever its scopes. */
-export function appNotAllowed() {
-  return new errors.NoPermissionError({
-    message: 'Apps are not allowed to access this endpoint',
-    code: 'APP_NOT_ALLOWED',
-  });
-}
-
-/** The refusal of an app that wasn't approved for the scope a permission check needs. */
-export function appScopeRequired(permissionKey: string) {
-  return new errors.NoPermissionError({
-    message: `This app was not approved for the ${permissionKey} scope`,
-    code: 'APP_SCOPE_REQUIRED',
-  });
-}

@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import { appScopeRequired } from '../app-token';
 import type { Principal } from '../principal';
+import { appScopeRequired } from './app-refusals';
 import { capabilities, capabilityKey, type Capability } from './capabilities';
 import { rowRules } from './rules';
 import { scopesAllow } from './scopes';

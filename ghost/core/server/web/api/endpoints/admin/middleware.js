@@ -5,7 +5,7 @@ const shared = require('../../../shared');
 const apiMw = require('../../middleware');
 const { routedMethod } = require('@tryghost/api-framework');
 const apiPermissions = require('../../../../api/endpoints/utils/permissions');
-const { appNotAllowed } = require('../../../../auth/app-token');
+const { appNotAllowed } = require('../../../../auth/policy/app-refusals');
 
 const messages = {
   apiTokenBlocked: 'API tokens do not have permission to access this endpoint',

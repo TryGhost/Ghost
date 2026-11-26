@@ -5,7 +5,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const { capabilities, capabilityKey } = require('../../../auth/policy/capabilities');
 const { scopesAllow } = require('../../../auth/policy/scopes');
-const { appNotAllowed, appScopeRequired } = require('../../../auth/app-token');
+const { appNotAllowed, appScopeRequired } = require('../../../auth/policy/app-refusals');
 
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
