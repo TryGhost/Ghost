@@ -68,8 +68,10 @@ export const normalizeName = (name: string) => name.trim().toLowerCase();
 export const MAX_FILTER_BYTES = 65535;
 
 /**
- * The NQL filter that selects a segment's members. It isn't checked against the members'
- * fields, so any filter Admin can save is accepted.
+ * The NQL filter that selects a segment's members, as a request gives it and an import reads it:
+ * text that isn't empty and fits the column. It isn't checked against the members' fields, so
+ * any filter Admin can save is accepted. A filter a segment is saved with also has to satisfy
+ * `isParseableFilter`.
  */
 export const SegmentFilter = z
   .string({ error: 'Filter must be a string' })
@@ -79,6 +81,22 @@ export const SegmentFilter = z
   })
   .brand('SegmentFilter');
 export type SegmentFilter = z.infer<typeof SegmentFilter>;
+
+/**
+ * Whether the filter parser that reads every members filter can read `filter`: whether it is
+ * valid NQL. Only its syntax is checked, so a key that is no member field passes. A filter is
+ * checked when a segment is saved with it, not when a stored segment is read: a stored filter
+ * that fails, such as one saved before the check or one the migration moved from the saved views
+ * setting, keeps loading, and fails only when a members query uses it.
+ */
+export function isParseableFilter(filter: SegmentFilter): boolean {
+  try {
+    parseFilter(filter);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /** A named filter over members. */
 export const Segment = z.object({

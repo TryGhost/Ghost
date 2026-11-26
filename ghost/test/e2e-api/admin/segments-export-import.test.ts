@@ -11,7 +11,7 @@ type Setting = { key: string; value: unknown };
 type ExportData = { segments?: unknown[]; settings: Setting[] };
 type Export = { db: [{ meta: { version: string }; data: ExportData }] };
 
-type Problem = { help: string; message: string };
+type Problem = { help: string; message: string; context: string };
 
 type ApiRequest = Promise<{
   body: { segments: Segment[]; settings: Setting[]; problems: Problem[] } & Export;
@@ -347,6 +347,58 @@ describe('Segments in a site export and import', function () {
     assert.match(
       problems.find(({ help }) => help === 'Segment')?.message ?? '',
       /names another segment/,
+    );
+  });
+
+  it('skips a segment whose filter is not valid NQL, and imports the rest under their own names', async function () {
+    const problems = await importData({
+      segments: [
+        { name: 'VIP', filter: 'label:vip+', sort_order: 0 },
+        { name: 'VIP', filter: 'label:vip', sort_order: 1 },
+        { name: 'Free', filter: 'status:free', sort_order: 2 },
+      ],
+      settings: [],
+    });
+
+    // The skipped segment doesn't take its name, so the next segment with it isn't numbered.
+    assert.deepEqual(
+      (await browse()).map(({ name, filter }) => ({ name, filter })),
+      [
+        { name: 'VIP', filter: 'label:vip' },
+        { name: 'Free', filter: 'status:free' },
+      ],
+    );
+    assert.deepEqual(
+      problems
+        .filter(({ help }) => help === 'Segment')
+        .map(({ message, context }) => ({ message, segment: JSON.parse(context) })),
+      [
+        {
+          message: 'Segment was not imported because its filter is not valid NQL.',
+          segment: { name: 'VIP', filter: 'label:vip+' },
+        },
+      ],
+    );
+  });
+
+  it('reports a segment the site has as had, even when its filter is not valid NQL', async function () {
+    // As a version that didn't check a filter's syntax could have saved it
+    await knex('segments').insert({
+      id: '0123456789abcdef01234567',
+      name: 'Legacy',
+      slug: 'legacy',
+      filter: 'status:paid+',
+      sort_order: 0,
+      created_at: new Date(),
+    });
+    const exported = await exportSavedViews();
+
+    const problems = await importData(exported);
+
+    assert.deepEqual(await names(), ['Legacy']);
+    assert.deepEqual(
+      problems.filter(({ help }) => help === 'Segment').map(({ message }) => message),
+      ['Segment was not imported because the site already has it.'],
     );
   });
 

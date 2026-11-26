@@ -33,6 +33,16 @@ export class NameTakenError extends SegmentError {
   }
 }
 
+/** A filter a segment would be saved with isn't valid NQL: the members filter parser can't read it. */
+export class FilterUnparseableError extends SegmentError {
+  readonly reason = 'filter_unparseable';
+  readonly code = 'SEGMENT_FILTER_UNPARSEABLE';
+
+  constructor() {
+    super({ message: "A segment's filter is not valid NQL.", property: 'filter' });
+  }
+}
+
 /** A new segment's filter names a segment, which a segment's filter can't. */
 export class FilterNamesSegmentError extends SegmentError {
   readonly reason = 'filter_names_segment';
