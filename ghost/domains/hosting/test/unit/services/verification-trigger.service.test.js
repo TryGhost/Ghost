@@ -1,9 +1,8 @@
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
-const DomainEvents = require('@tryghost/domain-events');
 
-const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
-const { MemberCreatedEvent } = require('../../../../core/shared/events');
+const { VerificationTrigger } = require('../../../services/verification-trigger.service');
+const { MemberCreatedEvent } = require('../../../../../core/shared/events');
 
 const createEventsPage = ({ total, limit = total, dataLength = total }) => {
   return {
@@ -129,10 +128,6 @@ const createMemberCreatedEvent = (source) =>
   );
 
 describe('Import threshold', function () {
-  beforeEach(function () {
-    sinon.stub(DomainEvents, 'subscribe');
-  });
-
   afterEach(function () {
     sinon.restore();
   });
@@ -177,12 +172,6 @@ describe('Import threshold', function () {
 });
 
 describe('Email verification flow', function () {
-  let domainEventsStub;
-
-  beforeEach(function () {
-    domainEventsStub = sinon.stub(DomainEvents, 'subscribe');
-  });
-
   afterEach(function () {
     sinon.restore();
   });
@@ -324,9 +313,7 @@ describe('Email verification flow', function () {
   });
 
   it('Queries recent API signup events when an API member is created', async function () {
-    domainEventsStub.restore();
-
-    const { eventStub, webhookStub } = createVerificationTrigger({
+    const { trigger, eventStub, webhookStub } = createVerificationTrigger({
       getApiTriggerThreshold: () => 2,
       isVerified: false,
       eventStub: createEventRepositoryStub({
@@ -335,7 +322,7 @@ describe('Email verification flow', function () {
       }),
     });
 
-    DomainEvents.dispatch(
+    await trigger.handleMemberCreated(
       MemberCreatedEvent.create(
         {
           memberId: 'hello!',
@@ -345,7 +332,6 @@ describe('Email verification flow', function () {
         new Date(),
       ),
     );
-    await DomainEvents.allSettled();
 
     sinon.assert.calledTwice(eventStub);
     assertRecentSourceQuery(eventStub.firstCall, 'api');
@@ -353,27 +339,11 @@ describe('Email verification flow', function () {
     sinon.assert.notCalled(webhookStub);
   });
 
-  it('Does not trigger when site is already verified', async function () {
-    domainEventsStub.restore();
-
-    const { eventStub } = createVerificationTrigger({
-      getApiTriggerThreshold: () => 2,
-      isVerified: true,
-    });
-
-    DomainEvents.dispatch(
-      MemberCreatedEvent.create(
-        {
-          memberId: 'hello!',
-          source: 'api',
-          batchId: 'batch-id',
-        },
-        new Date(),
-      ),
-    );
-    await DomainEvents.allSettled();
-
-    sinon.assert.notCalled(eventStub);
+  // That a verified site is not checked when a member is created is now the listener's
+  // to decide, and its test says so. The trigger says whether the site is verified.
+  it('Says whether the site is already verified', function () {
+    assert.equal(createVerificationTrigger({ isVerified: true }).trigger.isVerified(), true);
+    assert.equal(createVerificationTrigger({ isVerified: false }).trigger.isVerified(), false);
   });
 
   it('Queries recent import and member counts when checking the import threshold', async function () {
@@ -472,7 +442,7 @@ describe('Email verification flow', function () {
       }),
     });
 
-    await trigger._handleMemberCreatedEvent(createMemberCreatedEvent('admin'));
+    await trigger.handleMemberCreated(createMemberCreatedEvent('admin'));
 
     sinon.assert.calledTwice(eventStub);
     assertRecentSourceQuery(eventStub.firstCall, 'admin');
@@ -494,7 +464,7 @@ describe('Email verification flow', function () {
       }),
     });
 
-    await trigger._handleMemberCreatedEvent(createMemberCreatedEvent('api'));
+    await trigger.handleMemberCreated(createMemberCreatedEvent('api'));
 
     sinon.assert.calledTwice(eventStub);
     assertRecentSourceQuery(eventStub.firstCall, 'api');
@@ -515,7 +485,7 @@ describe('Email verification flow', function () {
       }),
     });
 
-    await trigger._handleMemberCreatedEvent(createMemberCreatedEvent('api'));
+    await trigger.handleMemberCreated(createMemberCreatedEvent('api'));
 
     sinon.assert.notCalled(webhookStub);
   });
@@ -532,7 +502,7 @@ describe('Email verification flow', function () {
       }),
     });
 
-    await trigger._handleMemberCreatedEvent(createMemberCreatedEvent('admin'));
+    await trigger.handleMemberCreated(createMemberCreatedEvent('admin'));
 
     sinon.assert.calledOnce(webhookStub);
     assert.deepEqual(webhookStub.lastCall.firstArg, {
@@ -553,7 +523,7 @@ describe('Email verification flow', function () {
       }),
     });
 
-    await trigger._handleMemberCreatedEvent(createMemberCreatedEvent('admin'));
+    await trigger.handleMemberCreated(createMemberCreatedEvent('admin'));
 
     sinon.assert.notCalled(webhookStub);
   });
@@ -573,10 +543,6 @@ describe('Email verification flow', function () {
 });
 
 describe('Removed recipients threshold', function () {
-  beforeEach(function () {
-    sinon.stub(DomainEvents, 'subscribe');
-  });
-
   afterEach(function () {
     sinon.restore();
   });

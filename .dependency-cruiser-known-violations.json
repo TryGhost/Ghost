@@ -1371,16 +1371,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/verification-trigger.js",
-    "to": "packages/domain-events/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/verification-trigger.js",
-    "to": "ghost/core/shared/events/index.js"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/verification/verification-webhook-service.ts",
     "to": "@tryghost/logging"
   },

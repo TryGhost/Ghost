@@ -9,13 +9,10 @@ const MembersStats = require('./stats/members-stats');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
-const models = require('../../models');
 const { GhostMailer } = require('../../lib/mail');
 const jobsService = require('../jobs-service');
 const tiersService = require('../tiers').default;
 const giftService = require('../gifts');
-const VerificationTrigger = require('../verification-trigger');
-const { verificationWebhookService } = require('../verification/verification-webhook-service');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
 const RequestIntegrityTokenProvider = require('./request-integrity-token-provider');
@@ -44,7 +41,6 @@ const membersStats = new MembersStats({
 });
 
 let membersApi;
-let verificationTrigger;
 
 const buildImporterDeps = ({ stripeAPIService }) => {
   // Required here, not statically: boot builds the metafields services before this
@@ -95,54 +91,13 @@ const buildImporterDeps = ({ stripeAPIService }) => {
   };
 };
 
-const countRecentEmailRecipients = async (since) => {
-  const result = await db
-    .knex('emails')
-    .sum('email_count', { as: 'count' })
-    .where('created_at', '>', since)
-    .first();
-
-  return Number(result?.count) || 0;
-};
-
-// Matched on address, not member id, so changing a member's email counts as removing them.
-// The limit lets a clear case stop early rather than scanning every recipient
-const countRemovedEmailRecipients = async (since, limit) => {
-  const rows = await db
-    .knex('email_recipients as er')
-    .distinct('er.member_email')
-    .join('emails as e', 'e.id', 'er.email_id')
-    .leftJoin('members as m', 'm.email', 'er.member_email')
-    .where('e.created_at', '>', since)
-    .whereNull('m.id')
-    .limit(limit);
-
-  return rows.length;
-};
-
-const initVerificationTrigger = () => {
-  return new VerificationTrigger({
-    getApiTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.apiThreshold,
-    getAdminTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.adminThreshold,
-    getImportTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.importThreshold,
-    getRemovedRecipientsThreshold: () =>
-      config.get('hostSettings')?.emailVerification?.removedRecipientsThreshold,
-    isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
-    isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
-    setVerificationRequired: (value) => settingsCache.set('email_verification_required', { value }),
-    sendVerificationWebhook: verificationWebhookService.sendVerificationWebhook.bind(
-      verificationWebhookService,
-    ),
-    membersStats,
-    Settings: models.Settings,
-    eventRepository: membersApi.events,
-    countRecentEmailRecipients,
-    countRemovedEmailRecipients,
-  });
-};
-
 module.exports = {
-  async init() {
+  /**
+   * @param {object} deps
+   * @param {{checkVerificationRequired(options?: {newsletterSend?: boolean}): Promise<boolean>, testImportThreshold(): Promise<void>}} deps.verificationTrigger
+   *   Email verification, which the hosting domain owns. Boot hands it over, made for the site.
+   */
+  async init({ verificationTrigger }) {
     const stripeService = require('../stripe');
     const createMembersApiInstance = require('./api');
     const env = config.get('env');
@@ -180,9 +135,6 @@ module.exports = {
       getMembersApi: () => module.exports.api,
     });
 
-    if (!verificationTrigger) {
-      verificationTrigger = initVerificationTrigger();
-    }
     module.exports.verificationTrigger = verificationTrigger;
 
     const importerDeps = buildImporterDeps({ stripeAPIService: stripeService.api });

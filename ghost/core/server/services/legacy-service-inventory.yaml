@@ -3988,7 +3988,7 @@ services:
           - core/server/services/members/import-export/index.ts
           - core/server/services/members/jobs/index.js
           - core/server/services/members/single-use-token-provider.js
-          - core/server/services/verification-trigger.js
+          - domains/hosting/services/verification-trigger.service.ts
           - core/server/services/settings/settings-service.js
           - core/server/services/newsletters/index.ts
           - core/server/services/member-welcome-emails/index.ts
@@ -4157,7 +4157,7 @@ services:
         sources:
           - core/server/services/members/members-api/members-api.js
           - core/server/services/members/members-api/services/payments-service.js
-          - core/server/services/verification-trigger.js
+          - domains/hosting/services/verification-trigger.service.ts
           - core/server/services/members/single-use-token-provider.js
           - core/server/services/members/members-api/repositories/member-repository.js
           - core/server/lib/after-commit.ts
@@ -8989,7 +8989,7 @@ services:
       reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
       sources:
         - core/server/services/verification/verification-webhook-service.ts
-        - core/server/services/verification-trigger.js
+        - domains/hosting/services/verification-trigger.service.ts
         - core/server/services/members/service.js
         - core/server/services/email-service/email-service.js
         - core/server/api/endpoints/members.js
@@ -9011,7 +9011,7 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/verification/verification-webhook-service.ts
-          - core/server/services/verification-trigger.js
+          - domains/hosting/services/verification-trigger.service.ts
           - core/server/services/members/service.js
           - core/server/lib/signed-webhook.ts
     entryPoints:
@@ -9065,14 +9065,14 @@ services:
           transport behavior; trigger units use an injected webhook callback.
         sources:
           - core/server/services/members/service.js
-          - core/server/services/verification-trigger.js
+          - domains/hosting/services/verification-trigger.service.ts
           - core/server/services/members/import-export/import/importer.ts
           - core/server/services/email-service/email-service.js
           - core/server/api/endpoints/members.js
         tests:
           - test/e2e-api/admin/members.test.js
           - test/legacy/api/admin/members-importer.test.js
-          - test/unit/server/services/verification-trigger.test.js
+          - domains/hosting/test/unit/services/verification-trigger.service.test.js
       startup:
         summary: >-
           The sender is usable immediately after import and has no readiness/configuration
@@ -9099,7 +9099,7 @@ services:
           the importing consumer; singleton identity, restart and overlapping sends are not.
         sources:
           - core/server/services/verification/verification-webhook-service.ts
-          - core/server/services/verification-trigger.js
+          - domains/hosting/services/verification-trigger.service.ts
           - core/server/services/members/service.js
         tests:
           - test/legacy/api/admin/members-importer.test.js
@@ -9134,7 +9134,7 @@ services:
         sources:
           - core/server/services/verification/verification-webhook-service.ts
           - core/server/lib/signed-webhook.ts
-          - core/server/services/verification-trigger.js
+          - domains/hosting/services/verification-trigger.service.ts
           - core/server/ghost-server.ts
           - package.json
         tests: []
@@ -9152,10 +9152,10 @@ services:
         sources:
           - core/server/services/verification/verification-webhook-service.ts
           - core/server/lib/signed-webhook.ts
-          - core/server/services/verification-trigger.js
+          - domains/hosting/services/verification-trigger.service.ts
         tests:
           - test/unit/server/services/verification/verification-webhook-service.test.ts
-          - test/unit/server/services/verification-trigger.test.js
+          - domains/hosting/test/unit/services/verification-trigger.service.test.js
     unverified: []
     blockers:
       - >-
@@ -9178,224 +9178,6 @@ services:
         Keep current source/config snapshots distinct from a future reload design. Feature
         schema validation and stricter input handling can change warn/false/reject behavior;
         introducing them during lifecycle migration needs separate compatibility evidence.
-  verification-trigger.js:
-    kind: file
-    disposition: review
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    migration:
-      complexity: complex
-      modelImpact: fits
-      reason: >-
-        Review this together with the verification sender. Member-list thresholds and signup
-        events feed a site-wide email-verification gate used by imports, welcome email and
-        newsletter delivery. Members currently constructs and retains the trigger, but that
-        does not settle the capability's owner. A retained collaborator fits the chosen owner
-        factory; preserve subscription cleanup and retained Email consumers when moving it.
-      reviewedAt: 59c26cfc276946844e0694416ead8549eb637479
-      sources:
-        - core/server/services/verification-trigger.js
-        - core/server/services/members/service.js
-        - core/server/services/email-service/email-service-wrapper.js
-        - core/server/services/email-service/email-service.js
-        - core/server/api/endpoints/members.js
-      dependencies:
-        complexity: straightforward
-        reason: >-
-          Members already constructs this collaborator with live thresholds, persistence, statistics
-          and a bound sender, and Email captures that same trigger. Its remaining external runtime
-          imports are DomainEvents and MemberCreatedEvent, so dependency injection itself is
-          bounded. Moving the trigger or deciding its lifecycle owner remains a separate ownership
-          task; a new initializer should not be inferred from this classification.
-        preparation:
-          - >-
-            Inject the member-event registration capability from the chosen owner while retaining
-            the live state/threshold callbacks and single retained trigger shared with Email.
-          - >-
-            Coordinate its placement with the verification sender before changing imports; preserve
-            the existing Members-to-Email readiness dependency.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
-        sources:
-          - core/server/services/verification-trigger.js
-          - core/server/services/members/service.js
-          - core/server/services/email-service/email-service-wrapper.js
-    entryPoints:
-      - verification-trigger.js
-    notes: >-
-      Ownership remains under review with the verification sender. Member signup/import and
-      removed-recipient checks drive site-wide email-verification state and sending restrictions.
-      Members currently constructs the trigger and Email retains it; these construction and
-      consumer relationships do not settle the final owner. Preserve thresholds, event
-      subscriptions, delivery-before-persistence and caller-specific failure behavior; concurrent
-      triggers and listener cleanup remain open contracts. No source has moved.
-    contracts:
-      exports:
-        summary: >-
-          CommonJS exports the VerificationTrigger constructor, not a singleton or init API.
-          Instances expose async getImportThreshold, checkVerificationRequired,
-          testImportThreshold and testRemovedRecipientsThreshold plus underscore methods,
-          callback fields and threshold getters. Methods require their receiver except the
-          constructor-bound event handler. checkVerificationRequired returns true when
-          sending requires verification; getImportThreshold has no production caller found.
-        sources:
-          - core/server/services/verification-trigger.js
-          - core/server/services/members/service.js
-        tests:
-          - test/unit/server/services/verification-trigger.test.js
-      construction:
-        summary: >-
-          Members is the only runtime constructor found. After constructing its API it
-          creates the trigger once, retaining that API's event repository, shared Settings,
-          live configuration/cache callbacks, recipient queries and a bound webhook sender.
-          The constructor synchronously subscribes to MemberCreatedEvent only if unverified
-          then; it does not query counts or send a request. Tests usually stub subscription
-          and construct the class directly, with two cases exercising actual dispatch.
-        sources:
-          - core/server/services/verification-trigger.js
-          - core/server/services/members/service.js
-          - core/server/services/verification/verification-webhook-service.ts
-        tests:
-          - test/unit/server/services/verification-trigger.test.js
-      consumers:
-        summary: >-
-          Members exports the retained trigger and closes over it for inline/deferred imports.
-          Import bookkeeping checks thresholds after row writes. Member-add HTTP calls check
-          before adding and disables welcome mail when required. EmailService retains the
-          trigger and checks with newsletterSend true before sending. MemberCreatedEvent
-          reaches the bound API/admin handler after member signup-event persistence; transactional
-          dispatch waits for commit. HTTP tests cover real member creation, intercepted signed
-          webhook requests and newsletter blocking;
-          importer failure tests instead inject a throwing trigger.
-        sources:
-          - core/server/services/members/service.js
-          - core/server/services/members/import-export/import/importer.ts
-          - core/server/api/endpoints/members.js
-          - core/server/services/email-service/email-service-wrapper.js
-          - core/server/services/email-service/email-service.js
-          - core/server/services/members/members-api/repositories/member-repository.js
-          - core/server/services/verification-trigger.js
-        tests:
-          - test/e2e-api/admin/members.test.js
-          - test/integration/services/email-service/batch-sending.test.js
-          - test/unit/server/services/email-service/email-service.test.js
-          - test/unit/server/services/members/import-export/import/error-handling.test.ts
-      startup:
-        summary: >-
-          Boot invokes members.init before emailService.init in the required service batch.
-          Members synchronously publishes the trigger before its later Stripe migration await,
-          so email construction can capture it. No trigger readiness guard exists; callbacks
-          assume settings, models and the members event repository are usable. Later members
-          initialization failure can leave the published trigger and subscription in place.
-          Existing HTTP coverage uses complete boot, not this partial-initialization boundary.
-        sources:
-          - core/boot.js
-          - core/server/services/members/service.js
-          - core/server/services/email-service/email-service-wrapper.js
-          - core/server/services/verification-trigger.js
-        tests:
-          - test/e2e-api/admin/members.test.js
-      lifetime:
-        summary: >-
-          The private members variable retains one trigger across repeated init; its exported
-          property can be replaced without changing the import closures or EmailService's
-          retained reference. No reset/unsubscribe exists. Initial verified state determines
-          subscription presence permanently for that instance. Later verification/config
-          changes affect callbacks but do not add or remove the listener. The required-setting
-          check suppresses already completed triggers; it is not a pending-request guard,
-          so overlapping events/checks can send before either writes the setting.
-        sources:
-          - core/server/services/members/service.js
-          - core/server/services/verification-trigger.js
-          - core/server/services/email-service/email-service.js
-          - core/server/ghost-server.ts
-        tests: []
-      configuration:
-        summary: >-
-          Thresholds and verified/required state are read live through callbacks. Only finite
-          numeric thresholds enable checks; comparisons trigger strictly above the boundary.
-          API/admin use recent source totals against max(configured threshold, all-time
-          source-member signup-event total),
-          with a pagination-based current-event adjustment. Imports compare recent imports
-          against max(configured threshold, that signup-event total minus recent imports); the separate
-          getImportThreshold helper does not subtract imports. These event totals are not a
-          count of current members. Removed-recipient checks run
-          only for newsletter sends, use a cheap recent-volume bound, then count distinct
-          addresses absent from members up to threshold plus one. Recent query windows use 30
-          days. Unit tests pin threshold arithmetic and query arguments against fake totals;
-          HTTP tests pin selected triggering outcomes, not the real signup
-          query meaning, every date boundary or all removed-recipient query semantics.
-        sources:
-          - core/server/services/verification-trigger.js
-          - core/server/services/members/service.js
-          - core/server/services/members/members-api/repositories/event-repository.js
-        tests:
-          - test/unit/server/services/verification-trigger.test.js
-          - test/e2e-api/admin/members.test.js
-      resources:
-        summary: >-
-          An unverified instance owns a bound listener retained by shared DomainEvents. Queries
-          borrow shared database/model/repository owners; the webhook sender uses shared HTTP
-          infrastructure with a 30-second request timeout and explicit retry-limit options.
-          The trigger creates no timer or dedicated connection and retains no cancellation,
-          pending-work queue or shutdown hook. DomainEvents catches/logs handler rejections;
-          allSettled tracks test delivery only and is not a production drain. Dispatch units
-          use fake repositories and HTTP tests intercept delivery; neither establishes
-          timeout/retry behavior or resource cleanup.
-        sources:
-          - core/server/services/verification-trigger.js
-          - core/server/services/members/service.js
-          - core/server/services/verification/verification-webhook-service.ts
-          - core/server/lib/signed-webhook.ts
-          - core/server/ghost-server.ts
-          - package.json
-        tests:
-          - test/unit/server/services/verification-trigger.test.js
-          - test/e2e-api/admin/members.test.js
-      failures:
-        summary: >-
-          False or rejected webhook delivery resolves needsVerification false without writing
-          the setting. Successful delivery is followed by awaited Settings.edit, then an
-          explicit synchronous cache update; persistence/cache errors reject after delivery
-          without compensation. Optional throwOnTrigger produces EMAIL_VERIFICATION_NEEDED
-          after state change, but current runtime callers request no throw. Count/callback
-          errors reject direct callers; event delivery logs them. Import bookkeeping reports
-          failures while keeping committed rows/results, whereas HTTP/email checks propagate.
-          Unit tests prove payloads, no-write delivery failures and exact setting/cache arguments,
-          not persistence failures, concurrency or atomic state publication.
-        sources:
-          - core/server/services/verification-trigger.js
-          - core/server/services/members/import-export/import/importer.ts
-          - core/server/api/endpoints/members.js
-          - core/server/services/email-service/email-service.js
-        tests:
-          - test/unit/server/services/verification-trigger.test.js
-          - test/unit/server/services/members/import-export/import/error-handling.test.ts
-          - test/e2e-api/admin/members.test.js
-    unverified: []
-    blockers:
-      - >-
-        Pin retained trigger identity, members-to-email boot ordering, construction failure
-        and repeated boot/cleanup. Test initially verified then unverified and the reverse:
-        subscription presence is captured at construction while the decisions read live state.
-      - >-
-        Characterize simultaneous events, import completion and newsletter checks through
-        webhook delivery and setting/cache publication. No shared promise or atomic guard
-        establishes single delivery. Existing HTTP cases settle events between operations.
-      - >-
-        Restore precise first-crossing coverage. The member HTTP test adds another member
-        past the threshold and accepts an inexact reported count. Its sibling-writer race
-        explanation predates the repository awaiting signup-event persistence before dispatch;
-        it is not evidence of that race today. Pin transactional publication and pagination
-        behavior with current production composition, rather than preserving stale commentary.
-      - >-
-        Cover successful delivery followed by Settings.edit or cache-update failure, changed
-        verification state while delivery is pending, malformed callbacks and retry behavior.
-        Assert direct request, event-handler and import-bookkeeping outcomes separately;
-        source-only failure channels are not all exercised by the existing delivery tests.
-      - >-
-        Establish event-listener and in-flight request/query ownership before relocation or
-        lifecycle disposal. A raw DomainEvents listener cannot be removed through a trigger
-        API today; test-only allSettled and a request timeout do not establish shutdown drain.
   webhooks:
     kind: directory
     disposition: migrate

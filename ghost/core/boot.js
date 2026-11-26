@@ -357,6 +357,23 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
+/**
+ * Email verification as legacy services use it: asked with no site. The hosting
+ * domain's actions are handed the site here, where boot may reach for it.
+ * @param {import('#support/site').Site} site
+ */
+function emailVerificationFor(site) {
+  return {
+    checkVerificationRequired: (options) =>
+      require('../domains/hosting/actions/check-verification-required.action').checkVerificationRequired(
+        site,
+        options,
+      ),
+    testImportThreshold: () =>
+      require('../domains/hosting/actions/test-import-threshold.action').testImportThreshold(site),
+  };
+}
+
 async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
   debug('Begin: initServices');
 
@@ -442,7 +459,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await Promise.all([
     identityTokens.init(),
     staffService.init(),
-    members.init(),
+    // Email verification belongs to the hosting domain. Members and email still use it,
+    // and neither is handed the site, so boot makes it for the site and hands it over.
+    members.init({ verificationTrigger: emailVerificationFor(require('../bootstrap/site').site) }),
     tiers.init(),
     tagsPublic.init(),
     postsPublic.init(),
