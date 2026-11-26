@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import type {
   AppInstallation,
   AppInstallationPreview,
@@ -54,7 +54,22 @@ const existing = (
   changes,
 });
 
-/** An Admin API error, as Ghost serialises it. */
+/** Where the site's installation was approved from, before this install link moved it. */
+const PREVIOUS_URL = 'https://old.example.com/ghost-app.json';
+
+/** The site's installation of the app as approved at `PREVIOUS_URL`, moving to this install link. */
+const moving = (
+  changes: NonNullable<AppInstallationPreview['installation']>['changes'],
+  status: AppInstallation['status'] = 'active',
+) => ({
+  ...existing(
+    [{ kind: 'field', path: 'manifest_url', requires_approval: true }, ...changes],
+    status,
+  ),
+  manifest_url: PREVIOUS_URL,
+  manifest: manifest({ manifest_url: PREVIOUS_URL }),
+});
+
 /**
  * An error as Ghost answers a preview, install or approval with. Its error handler replaces
  * the server's `message` with a generic one, and puts it at the start of `context`.
@@ -171,6 +186,36 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
   });
 
+  it('keeps the review open until Ghost has answered the install', async () => {
+    const installations = fakeInstallations();
+    fakePreview(previewResponse(preview()));
+    let finishInstall!: () => void;
+    const answered = new Promise<void>((resolve) => {
+      finishInstall = resolve;
+    });
+    const installApi = fakeAdminEndpoint('POST', '/apps/installations/', async () => {
+      await answered;
+      installations.set([installation()]);
+      return { app_installations: [installation()] };
+    });
+    await fakeAppPage(installation());
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+    await appsScreen.installButton().click();
+    await expect.poll(() => installApi.requests.length).toBe(1);
+
+    await expect.element(appsScreen.cancelButton()).toBeDisabled();
+    await userEvent.keyboard('{Escape}');
+    // Nothing shows that closing was ignored, so give a close time to leave the install link.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+    await expect.element(appsScreen.installDialog()).toBeVisible();
+    finishInstall();
+
+    await expect.poll(currentRoute).toBe('/apps/installation-1');
+  });
+
   it('says when an app asks for no access', async () => {
     fakeInstallations();
     fakePreview(previewResponse(preview()));
@@ -185,19 +230,22 @@ describe('Installing an app', () => {
     await expect(appsScreen.accessItems()).toHaveCount(0);
   });
 
-  it('marks what changed in access in the list when approving an installed app’s changes', async () => {
-    fakeInstallations([installation()]);
+  it('marks what changed in access in the list when approving an installed app’s move', async () => {
+    fakeInstallations([installation({ manifest_url: PREVIOUS_URL })]);
     fakePreview(
       previewResponse(
         preview({
           manifest: manifest({ scopes: SCOPES }),
           digest: 'digest-2',
           installation: {
-            ...existing([
+            ...moving([
               { kind: 'scope', scope: 'post:edit', change: 'added' },
               { kind: 'scope', scope: 'product:browse', change: 'removed' },
             ]),
-            manifest: manifest({ scopes: ['post:browse', 'tag:browse', 'product:browse'] }),
+            manifest: manifest({
+              manifest_url: PREVIOUS_URL,
+              scopes: ['post:browse', 'tag:browse', 'product:browse'],
+            }),
           },
         }),
       ),
@@ -214,7 +262,8 @@ describe('Installing an app', () => {
       .element(appsScreen.removedAccess())
       .toHaveTextContent('No longer requiresTiersList your tiers and their prices.');
     // Access isn't repeated among the field-by-field changes.
-    await expect(appsScreen.changes()).toHaveCount(0);
+    await expect(appsScreen.changes()).toHaveCount(1);
+    await expect.element(appsScreen.changes()).toHaveTextContent('Install link');
   });
 
   it('shows the app’s own icon from the copy Ghost would store, never from the app', async () => {
@@ -295,8 +344,8 @@ describe('Installing an app', () => {
     ).toEqual(['digest-1', 'digest-2']);
   });
 
-  it('reviews what changed for an app the site already has, and approves it in place', async () => {
-    fakeInstallations([installation()]);
+  it('reviews what changed for an app the site has elsewhere, and approves it in place', async () => {
+    fakeInstallations([installation({ manifest_url: PREVIOUS_URL })]);
     const renamed = manifest({
       name: 'Podcasts',
       description: 'New words.',
@@ -307,7 +356,7 @@ describe('Installing an app', () => {
         preview({
           manifest: renamed,
           digest: 'digest-2',
-          installation: existing([
+          installation: moving([
             { kind: 'field', path: 'description', requires_approval: false },
             { kind: 'field', path: 'name', requires_approval: true },
             { kind: 'field', path: 'author.name', requires_approval: true },
@@ -332,7 +381,7 @@ describe('Installing an app', () => {
         'Make sure you trust Podcast Network. Ghost does not review apps such as Podcasts. Only approve changes from developers you trust.',
       );
     // Every changed field is shown, including the description that needs no approval on its own.
-    await expect(appsScreen.changes()).toHaveCount(3);
+    await expect(appsScreen.changes()).toHaveCount(4);
     await expect
       .element(appsScreen.changes().nth(0))
       .toHaveTextContent('NameWas: PodcastNow: Podcasts');
@@ -342,6 +391,9 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.changes().nth(2))
       .toHaveTextContent('DeveloperWas: Example AudioNow: Podcast Network');
+    await expect
+      .element(appsScreen.changes().nth(3))
+      .toHaveTextContent(`Install linkWas: ${PREVIOUS_URL}Now: ${MANIFEST_URL}`);
 
     await appsScreen.approveChangesButton().click();
 
@@ -493,22 +545,36 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.problems()).toHaveTextContent('flattened JWS');
   });
 
-  it('says when the app is already installed and nothing changed', async () => {
-    fakeInstallations([installation()]);
-    fakePreview(previewResponse(preview({ installation: existing([]) })));
+  // The app's page starts a session, which reviews what waits for approval.
+  it('says an app installed from this link is installed, and opens its page, whatever has changed', async () => {
+    const suspended = installation({ status: 'suspended' });
+    fakeInstallations([suspended]);
+    fakePreview(
+      previewResponse(
+        preview({
+          manifest: manifest({ name: 'Podcasts' }),
+          digest: 'digest-2',
+          installation: existing(
+            [{ kind: 'field', path: 'name', requires_approval: true }],
+            'suspended',
+          ),
+        }),
+      ),
+    );
+    await fakeAppPage(suspended);
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect
-      .element(appsScreen.installDialog())
-      .toHaveTextContent('Podcast is already installed');
-    await appsScreen.doneButton().click();
+    const dialog = appsScreen.installDialog();
+    await expect.element(dialog).toHaveTextContent('Podcast is already installed');
+    await expect.element(appsScreen.approveChangesButton()).not.toBeInTheDocument();
+    await appsScreen.openButton().click();
 
-    await expect.poll(currentRoute).toBe('/apps');
-    await expect(appsScreen.installDialog()).toHaveCount(0);
+    await expect.poll(currentRoute).toBe('/apps/installation-1');
+    await expect.element(appsScreen.appPage()).toBeVisible();
   });
 
-  it('checks again when someone else installed the app in the meantime', async () => {
+  it('checks again when someone else installed the app in the meantime, and offers to open it', async () => {
     fakeInstallations();
     let previews = 0;
     fakePreview(() => {
@@ -529,19 +595,24 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
     await appsScreen.installButton().click();
 
-    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
-    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    await expect
+      .element(appsScreen.installDialog())
+      .toHaveTextContent('Podcast is already installed');
+    await expect.element(appsScreen.openButton()).toBeVisible();
+    // Nothing is left to review, so nothing says to review it again.
+    await expect.element(appsScreen.notice()).not.toBeInTheDocument();
+    await expect.element(appsScreen.approveChangesButton()).not.toBeInTheDocument();
     expect(previews).toBe(2);
   });
 
   it('reviews where the installation stands when someone else changed it in the meantime', async () => {
-    fakeInstallations([installation()]);
+    fakeInstallations([installation({ manifest_url: PREVIOUS_URL })]);
     const previewApi = fakePreview(
       previewResponse(
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
+          installation: moving([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );
@@ -579,7 +650,7 @@ describe('Installing an app', () => {
   });
 
   it('checks again when the installation changed and Ghost sent no review', async () => {
-    fakeInstallations([installation()]);
+    fakeInstallations([installation({ manifest_url: PREVIOUS_URL })]);
     let previews = 0;
     fakePreview(() => {
       previews += 1;
@@ -587,7 +658,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
+          installation: moving([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       );
     });
@@ -607,13 +678,7 @@ describe('Installing an app', () => {
     let previews = 0;
     fakePreview(() => {
       previews += 1;
-      return previewResponse(
-        previews === 1
-          ? preview({
-              installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
-            })
-          : preview(),
-      );
+      return previewResponse(previews === 1 ? preview({ installation: moving([]) }) : preview());
     });
     fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () =>
       apiError(409, { type: 'ConflictError', code: 'APP_INSTALLATION_UNINSTALLED' }),
@@ -627,13 +692,13 @@ describe('Installing an app', () => {
   });
 
   it('says it couldn’t approve the changes when the app is no longer valid', async () => {
-    fakeInstallations([installation()]);
+    fakeInstallations([installation({ manifest_url: PREVIOUS_URL })]);
     fakePreview(
       previewResponse(
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
+          installation: moving([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );
@@ -694,6 +759,32 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
     finishRetry();
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t install this app');
+  });
+
+  it('reviews another app from its own link after an install failed, rather than offering the retry', async () => {
+    fakeInstallations();
+    const otherUrl = 'https://notes.example.com/ghost-app.json';
+    const other = manifest({ id: 'com.example.notes', name: 'Notes' });
+    fakePreview(({ body }) => {
+      const [asked] = (body as { app_installation_previews: { manifest_url: string }[] })
+        .app_installation_previews;
+      const reviewed =
+        asked.manifest_url === otherUrl
+          ? preview({ manifest_url: otherUrl, manifest: other })
+          : preview();
+      return previewResponse(reviewed);
+    });
+    fakeAdminEndpoint('POST', '/apps/installations/', () =>
+      apiError(500, { type: 'InternalServerError', code: 'UNEXPECTED_ERROR' }),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+    await appsScreen.installButton().click();
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t install this app');
+    window.location.hash = `#/apps/install?manifest=${encodeURIComponent(otherUrl)}`;
+
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('Notes');
+    await expect.element(appsScreen.installButton()).toBeVisible();
   });
 
   it('retries the install, not the check, when installing fails', async () => {

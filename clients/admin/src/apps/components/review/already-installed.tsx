@@ -7,27 +7,31 @@ import {
   DialogTitle,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
-import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
-import { NoticeBanner } from './review-header';
+import type { PreviewedInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from '@/apps/components/app-icon';
 
-/** The site has this app already, exactly as reviewed: nothing to do. */
+/**
+ * The site has this app from this install link, so there's nothing to install. Its page shows the
+ * app, or the review of whatever waits for approval.
+ */
 export const AlreadyInstalled: React.FC<{
-  preview: AppInstallationPreview;
-  notice?: string;
+  installation: PreviewedInstallation;
   onClose: () => void;
-}> = ({ preview, notice, onClose }) => (
+  onOpen: () => void;
+}> = ({ installation, onClose, onOpen }) => (
   <>
     <DialogHeader className="gap-3">
       <Inline gap="md">
-        <AppIcon app={preview} size="lg" />
-        <DialogTitle>{preview.manifest.name} is already installed</DialogTitle>
+        <AppIcon app={installation} size="lg" />
+        <DialogTitle>{installation.manifest.name} is already installed</DialogTitle>
       </Inline>
-      <DialogDescription>Nothing has changed since it was approved.</DialogDescription>
+      <DialogDescription>There’s nothing to install. You can open it from here.</DialogDescription>
     </DialogHeader>
-    <NoticeBanner notice={notice} />
     <DialogFooter>
-      <Button onClick={onClose}>Done</Button>
+      <Button variant="outline" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button onClick={onOpen}>Open</Button>
     </DialogFooter>
   </>
 );

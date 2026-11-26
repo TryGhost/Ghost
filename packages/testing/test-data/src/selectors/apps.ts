@@ -47,7 +47,6 @@ export const installButton = 'Install';
 export const approveChangesButton = 'Approve changes';
 export const tryAgainButton = 'Try again';
 export const okButton = 'OK';
-export const doneButton = 'Done';
 export const cancelButton = 'Cancel';
 export const uninstallButton = 'Uninstall';
 export const reviewChangesLink = 'Review changes';

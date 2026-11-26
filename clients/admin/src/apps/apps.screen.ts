@@ -67,11 +67,12 @@ export const appsScreen = {
   approveChangesButton: () => button(sel.approveChangesButton),
   tryAgainButton: () => button(sel.tryAgainButton),
   okButton: () => button(sel.okButton),
-  doneButton: () => button(sel.doneButton),
   cancelButton: () => button(sel.cancelButton),
   uninstallButton: () => button(sel.uninstallButton),
   reviewChangesLink: () => page.getByRole('link', { name: sel.reviewChangesLink, exact: true }),
   // The same words as the link, as a button where there is nothing to link to yet.
   reviewChangesButton: () => button(sel.reviewChangesLink),
   openLink: () => page.getByRole('link', { name: sel.openLink, exact: true }),
+  // The same words as the link, as a button in a dialog.
+  openButton: () => button(sel.openLink),
 };
