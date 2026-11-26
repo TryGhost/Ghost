@@ -61,7 +61,7 @@ export const APP_SCOPES = {
   'post:destroy': { resource: 'post', wording: 'Delete posts and pages.' },
   'post:readStats': {
     resource: 'post',
-    wording: 'See how each post performed, by email, in signups and in feedback.',
+    wording: 'See how each post performed, in web visits, by email, in signups and in feedback.',
   },
   'tag:browse': { resource: 'tag', wording: 'List and search tags.' },
   'tag:read': { resource: 'tag', wording: 'Read any tag.' },
