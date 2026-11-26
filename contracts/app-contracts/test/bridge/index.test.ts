@@ -27,6 +27,7 @@ describe('the bridge entry point', () => {
       'OverlayOptionsSchema',
       'PathMoveSchema',
       'PlaceSchema',
+      'QUERY_PARAMETER_LIMIT',
       'START_TIMEOUT_MS',
       'TITLE_MAX_LENGTH',
       'TitleSchema',
@@ -44,6 +45,7 @@ describe('the bridge entry point', () => {
       'isTheme',
       'methodAllowsBody',
       'normaliseAppPath',
+      'readQuery',
       'scopeForField',
     ]);
   });

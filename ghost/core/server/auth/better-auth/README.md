@@ -441,7 +441,14 @@ upload then never runs for an app request that can't succeed.
   runs through the pipeline for this alone: its methods are single functions,
   which the pipeline runs with no other stage. A unit test lists every such
   method the Admin API mounts, so a new one is refused until someone decides
-  otherwise. Admin's bridge allowlist still filters what an app can send.
+  otherwise. Admin's bridge allowlist still filters what an app can send. It
+  doesn't copy how Ghost parses a query: it reads an app's query strictly and
+  sends one it wrote itself, and
+  `test/unit/server/web/api/admin/app-bridge-query.test.ts` shows the parser
+  Ghost's Express apps are set up with reads back exactly what the bridge
+  held. A change to that parser (its options in `shared/express.js`, the
+  Admin API's query middleware, or an Express or `qs` upgrade) has to keep it
+  passing.
 - A route ending in a controller outside the pipeline, which has no permission
   stage and no name the allowlist could hold, refuses apps (403). That includes
   a route whose `http()` mounts a method the API doesn't have. To let an app

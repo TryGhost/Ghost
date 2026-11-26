@@ -36,16 +36,51 @@ describe('checking an Admin API request', () => {
   it('resolves a leading / against the API root, not the origin', () => {
     expect(resolved('/tags/')).toBe('https://site.example/ghost/api/admin/tags/');
     expect(resolved('/tags/?limit=5&filter=tag:news')).toBe(
-      'https://site.example/ghost/api/admin/tags/?limit=5&filter=tag:news',
+      'https://site.example/ghost/api/admin/tags/?limit=5&filter=tag%3Anews',
     );
     expect(landsOn('/')).toBe('/');
     expect(landsOn('/a:b/')).toBe('/a:b/');
   });
 
-  it('keeps an encoded value in the query string as it is', () => {
+  it('sends a query it wrote itself, each value escaped whole', () => {
     expect(resolved("/tags/?filter=canonical_url:'https%3A%2F%2Fexample.com%2F'")).toBe(
-      'https://site.example/ghost/api/admin/tags/?filter=canonical_url:%27https%3A%2F%2Fexample.com%2F%27',
+      'https://site.example/ghost/api/admin/tags/?filter=canonical_url%3A%27https%3A%2F%2Fexample.com%2F%27',
     );
+    expect(resolved('/tags/?limit=5&&filter=a+b&page')).toBe(
+      'https://site.example/ghost/api/admin/tags/?limit=5&filter=a%20b&page=',
+    );
+  });
+
+  // Ghost's query parser reads each of these names as `newsletter`, `email_segment`, `source`
+  // or `include`, and makes a list of a name that repeats, which a URL parser doesn't.
+  it('refuses a query it can’t write so that every parser reads the same', () => {
+    const id = '5ddc9141c35e7700383b2937';
+    for (const [method, path] of [
+      ['PUT', `/posts/${id}/?news%6cetter=weekly`],
+      ['PUT', `/posts/${id}/?[newsletter]=weekly`],
+      ['PUT', `/posts/${id}/?%5Bnewsletter%5D=weekly`],
+      ['PUT', `/posts/${id}/?[email_segment]=all`],
+      ['POST', '/posts/?[source]=html'],
+      ['PUT', `/posts/${id}/?newsletter[]=weekly`],
+      ['PUT', `/posts/${id}/?newsletter%5Ba%5D=weekly`],
+      ['PUT', `/posts/${id}/?include[]=tags`],
+      ['GET', '/posts/?include[]=email'],
+    ] as const) {
+      expect(check(path, method), `${method} ${path}`).toMatchObject({
+        problem: 'blocked',
+        detail: expect.stringMatching(/: a name may only have letters, digits and _ \(/),
+      });
+    }
+    for (const path of ['/posts/?include=tags&include=sentiment', '/posts/?fields=&fields=']) {
+      expect(check(path), path).toMatchObject({
+        problem: 'blocked',
+        detail: expect.stringMatching(/ parameter more than once \(GET \/posts\/\)$/),
+      });
+    }
+    expect(check('/tags/?filter=%E0%A4%A')).toMatchObject({
+      problem: 'blocked',
+      detail: "Apps can't send a filter parameter with a malformed escape in it (GET /tags/)",
+    });
   });
 
   it('returns a new URL, leaving the root alone', () => {
@@ -200,15 +235,6 @@ describe('checking an Admin API request', () => {
       ['PUT', `/pages/${id}/?email_segment=status:free`, 'email_segment'],
       ['POST', '/posts/?source=html', 'source'],
       ['POST', '/pages/?SOURCE=html', 'SOURCE'],
-      ['PUT', `/posts/${id}/?news%6cetter=weekly`, 'newsletter'],
-      // Ghost's query parser reads each of these as `newsletter`, `email_segment` or `source`.
-      ['PUT', `/posts/${id}/?[newsletter]=weekly`, '[newsletter]'],
-      ['PUT', `/posts/${id}/?%5Bnewsletter%5D=weekly`, '[newsletter]'],
-      ['PUT', `/posts/${id}/?[email_segment]=all`, '[email_segment]'],
-      ['POST', '/posts/?[source]=html', '[source]'],
-      ['PUT', `/posts/${id}/?newsletter[]=weekly`, 'newsletter[]'],
-      ['PUT', `/posts/${id}/?newsletter%5Ba%5D=weekly`, 'newsletter[a]'],
-      ['PUT', `/posts/${id}/?include[]=tags`, 'include[]'],
       ['PUT', `/posts/${id}/?newsletter`, 'newsletter'],
       ['PUT', `/posts/${id}/?force_rerender=true`, 'force_rerender'],
       ['PUT', `/posts/${id}/?anything=else`, 'anything'],
@@ -274,11 +300,10 @@ describe('checking an Admin API request', () => {
     // Asking for some fields, Ghost adds no defaults, so neither does the bridge.
     expect(include('/posts/?fields=id,title')).toBeNull();
     expect(include('/posts/?fields=%20')).toBeNull();
-    expect(include('/posts/?fields=&fields=')).toBeNull();
-    // The rest of the query keeps the spelling the app sent.
+    // The rest of the query is sent as the bridge read it.
     const result = check("/posts/?filter=slug:'a%2Cb'&include=&limit=5");
     expect(result.problem === undefined && result.url.search).toBe(
-      '?filter=slug:%27a%2Cb%27&limit=5&include=tags,authors,tiers,newsletter',
+      '?filter=slug%3A%27a%2Cb%27&include=tags%2Cauthors%2Ctiers%2Cnewsletter&limit=5',
     );
     // Writes answer with the post too, and other routes take no include.
     const id = '5ddc9141c35e7700383b2937';
@@ -380,7 +405,7 @@ describe('checking an Admin API request', () => {
     const cases = [
       ['GET', '/posts/?include=email', 'including email'],
       ['GET', '/posts/?include=tags,count.clicks', 'including count.clicks'],
-      ['GET', '/posts/?include=tags&include=sentiment', 'including sentiment'],
+      ['GET', '/posts/?include=tags,sentiment', 'including sentiment'],
       ['GET', `/posts/${id}/?include=tags, count.signups`, 'including count.signups'],
       ['GET', '/pages/?include=count.paid_conversions', 'including count.paid_conversions'],
       [

@@ -247,6 +247,18 @@ user token to the approved scopes; the allowlist filters more finely than a
 scope.
 _Avoid_: permissions, blocklist, denylist
 
+**Sent query**:
+The query the bridge sends with an app's request, which it writes itself:
+one `name=value` for each parameter, the value escaped whole. It never passes
+on the app's spelling. Query parsers disagree about brackets, escapes in names
+and names that repeat, and Ghost's reads them unlike a URL parser, so the
+bridge reads an app's query strictly and refuses one it can't write so that
+every parser reads the same: a name must be plain word characters and appear
+once, a value's escapes must be well formed, and there are at most 100
+parameters. Values are free. A test in Ghost shows its parser reads back
+exactly what the bridge held.
+_Avoid_: normalised query, raw query
+
 **Feature name**:
 A name in the connect message's list for something an Admin supports beyond
 its exports: a newer argument field, or a newer place an app may send. Every

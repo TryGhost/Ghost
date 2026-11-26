@@ -116,7 +116,8 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * - `invalid_argument`: an argument Admin does not take.
  * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
  *   the Admin API only responds to with a redirect, such as a path without its trailing `/`.
- * - `blocked`: a request the allowlist doesn't allow, or a write it refuses.
+ * - `blocked`: a request the allowlist doesn't allow, a write it refuses, or a query Admin
+ *   can't write so that the server reads what Admin read, such as a parameter name in brackets.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
  */

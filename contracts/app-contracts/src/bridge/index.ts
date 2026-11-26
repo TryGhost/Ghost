@@ -27,6 +27,7 @@ export { HelloMessageSchema, type HelloMessage } from './messages.ts';
 export { APP_PATH_MAX_LENGTH, AppPathSchema, PathMoveSchema, type AppPath } from './paths.ts';
 export { OverlayOptionsSchema, type OverlayOptions } from './overlay.ts';
 export { PlaceSchema } from './places.ts';
+export { QUERY_PARAMETER_LIMIT, readQuery, type Query } from './query.ts';
 export {
   checkAdminApiRequest,
   type AdminApiRequest,

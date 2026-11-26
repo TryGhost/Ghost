@@ -43,6 +43,11 @@ if (ghost.scopes.includes('post:edit')) {
 }
 ```
 
+Write each query parameter once, under a plain name: Admin won't send a name
+with brackets, such as `include[]=tags`, or one that repeats, and `fetch`
+rejects with the code `blocked`, so write `include=tags,authors`. Values can
+hold anything, escaped as usual.
+
 ## Signing the manifest
 
 Use the Vite plugin (`@tryghost/app-sdk/vite`) to sign your app's manifest
