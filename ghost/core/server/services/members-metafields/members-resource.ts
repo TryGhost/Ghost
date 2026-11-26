@@ -20,6 +20,7 @@ export const MEMBERS_RESOURCE: MetafieldResource<Members> = {
     fields: 'members_metafields',
     values: 'members_metafield_values',
     bindings: 'members_metafield_bindings',
+    changes: 'members_metafield_change_events',
   },
   idColumn: 'member_id',
 };

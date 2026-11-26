@@ -57,7 +57,7 @@ export let namespaces: Namespaces | undefined;
 export let fields: FieldSource | undefined;
 export let definitions: MemberDefinitions | undefined;
 export let values: MemberMetafieldValues | undefined;
-/** The activity feed members' metafield writes leave. */
+/** The activity feed of members' metafield writes. */
 export let activity: MemberMetafieldActivity | undefined;
 export let bindings: MemberBindings | undefined;
 
@@ -98,7 +98,7 @@ export function init(): void {
   const getMaxDefinitions = () =>
     resolveMaxDefinitions(config.get('members:metafields:maxDefinitions'));
 
-  // Each write of a member's values is recorded on the member's activity feed, inside the write.
+  // The activity feed reads the entries each write of a member's values leaves.
   activity = new MemberMetafieldActivity({ knex });
   // A field type still in development can be created only where its Labs flag is on.
   const labs = require('../../../shared/labs');
@@ -112,7 +112,6 @@ export function init(): void {
     maxDefinitions: getMaxDefinitions,
     // Each change to a definition is logged as a staff action inside the command that made it.
     onDefinitionUpdated: recordMemberDefinitionChanges(new ActionLog()),
-    onValuesWritten: activity.record,
     tracking: metafieldsTracking({ tracer, meter }),
     labs,
   }));

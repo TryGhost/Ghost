@@ -27,6 +27,8 @@ export interface MetafieldResource<R extends ResourceKind = ResourceKind> {
     values: TableName;
     /** Which field each port another domain declares writes into. */
     bindings: TableName;
+    /** An entry for each write of a member's or post's values: who wrote which fields, and where. */
+    changes: TableName;
   };
   /** The column of the values that holds the id of the member or post. */
   idColumn: string;
