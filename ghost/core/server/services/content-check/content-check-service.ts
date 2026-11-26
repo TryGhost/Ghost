@@ -135,6 +135,40 @@ export class ContentCheckService {
     this.events.removeListener('settings.title.edited', this.listener);
   }
 
+  #nonEmptyString(value: unknown): string | null {
+    return typeof value === 'string' && value.length > 0 ? value : null;
+  }
+
+  #parseSiteId(siteId: unknown): string | null {
+    const asString =
+      typeof siteId === 'string'
+        ? siteId
+        : typeof siteId === 'number' && Number.isFinite(siteId)
+          ? String(siteId)
+          : null;
+    return asString !== null && /^\d+$/.test(asString) ? asString : null;
+  }
+
+  #normalizeSiteCreatedAt(siteCreatedAt: unknown): string | null {
+    const raw = this.#nonEmptyString(siteCreatedAt);
+    if (raw === null) {
+      return null;
+    }
+    const createdAtMs = Date.parse(raw);
+    if (Number.isNaN(createdAtMs)) {
+      return null;
+    }
+    return new Date(createdAtMs).toISOString();
+  }
+
+  #parseMaxSiteAgeDays(maxSiteAgeDays: unknown): number | null {
+    return typeof maxSiteAgeDays === 'number' &&
+      Number.isFinite(maxSiteAgeDays) &&
+      maxSiteAgeDays > 0
+      ? maxSiteAgeDays
+      : null;
+  }
+
   #readContentCheckConfig(): {
     webhookUrl: string | null;
     webhookSecret: string | null;
@@ -142,32 +176,18 @@ export class ContentCheckService {
     siteCreatedAt: string | null;
     maxSiteAgeDays: number | null;
   } {
-    const webhookUrl = this.config.get('hostSettings:contentCheck:webhookUrl');
-    const webhookSecret = this.config.get('hostSettings:contentCheck:webhookSecret');
-    const siteId = this.config.get('hostSettings:siteId');
-    const siteCreatedAt = this.config.get('hostSettings:contentCheck:siteCreatedAt');
-    const maxSiteAgeDays = this.config.get('hostSettings:contentCheck:maxSiteAgeDays');
-
     return {
-      webhookUrl: typeof webhookUrl === 'string' && webhookUrl.length > 0 ? webhookUrl : null,
-      webhookSecret:
-        typeof webhookSecret === 'string' && webhookSecret.length > 0 ? webhookSecret : null,
-      siteId:
-        typeof siteId === 'string' && siteId.length > 0
-          ? siteId
-          : typeof siteId === 'number' && Number.isFinite(siteId)
-            ? String(siteId)
-            : null,
-      siteCreatedAt:
-        typeof siteCreatedAt === 'string' &&
-        siteCreatedAt.length > 0 &&
-        !Number.isNaN(Date.parse(siteCreatedAt))
-          ? siteCreatedAt
-          : null,
-      maxSiteAgeDays:
-        typeof maxSiteAgeDays === 'number' && Number.isFinite(maxSiteAgeDays) && maxSiteAgeDays > 0
-          ? maxSiteAgeDays
-          : null,
+      webhookUrl: this.#nonEmptyString(this.config.get('hostSettings:contentCheck:webhookUrl')),
+      webhookSecret: this.#nonEmptyString(
+        this.config.get('hostSettings:contentCheck:webhookSecret'),
+      ),
+      siteId: this.#parseSiteId(this.config.get('hostSettings:siteId')),
+      siteCreatedAt: this.#normalizeSiteCreatedAt(
+        this.config.get('hostSettings:contentCheck:siteCreatedAt'),
+      ),
+      maxSiteAgeDays: this.#parseMaxSiteAgeDays(
+        this.config.get('hostSettings:contentCheck:maxSiteAgeDays'),
+      ),
     };
   }
 }

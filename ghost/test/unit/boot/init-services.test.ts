@@ -24,6 +24,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const memberWelcomeEmails = sinon.stub().resolves();
   const indexnow = sinon.stub().resolves();
   const indexnowStop = sinon.stub().resolves();
+  const contentCheck = sinon.stub().resolves();
+  const contentCheckStop = sinon.stub().resolves();
   const slack = sinon.stub().resolves();
   const slackStop = sinon.stub().resolves();
   // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
@@ -81,6 +83,9 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/webhooks': { listen: webhooks },
       './server/services/indexnow-ping': { default: { init: indexnow, stop: indexnowStop } },
+      './server/services/content-check': {
+        default: { init: contentCheck, stop: contentCheckStop },
+      },
       './server/services/slack-ping': { default: { init: slack, stop: slackStop } },
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
@@ -112,6 +117,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     webhooks,
     indexnow,
     indexnowStop,
+    contentCheck,
+    contentCheckStop,
     slack,
     slackStop,
     register,
@@ -251,6 +258,7 @@ it('registers the webhook listeners once, after mentions initialization', async 
 
 for (const [label, init, stop] of [
   ['IndexNow', 'indexnow', 'indexnowStop'],
+  ['Content Check', 'contentCheck', 'contentCheckStop'],
   ['Slack ping', 'slack', 'slackStop'],
 ] as const) {
   it(`registers ${label} stop as a server cleanup task once it has initialized`, async function () {
@@ -323,6 +331,7 @@ for (const dependency of [
   'webhooks',
   'staff',
   'indexnow',
+  'contentCheck',
   'slack',
 ] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {

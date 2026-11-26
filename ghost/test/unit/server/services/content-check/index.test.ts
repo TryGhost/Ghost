@@ -115,8 +115,11 @@ describe('Content Check service root', function () {
     const send = sandbox.stub(service, 'sendTitleChanged').resolves();
     const model = titleModel(SAMPLE_TITLE);
     events.emit(EVENT_NAME, model);
+    events.emit(EVENT_NAME, model, { importing: false });
     events.emit(EVENT_NAME, model, { importing: true });
-    sinon.assert.calledOnceWithExactly(send, model);
+    sinon.assert.calledTwice(send);
+    sinon.assert.calledWithExactly(send.firstCall, model);
+    sinon.assert.calledWithExactly(send.secondCall, model);
   });
 
   it('removes a failed partial subscription and retries cleanly', async function () {
@@ -218,6 +221,37 @@ describe('Content Check service root', function () {
     assert.equal(JSON.parse(requestOptions.body).siteId, '123456');
   });
 
+  it('normalizes siteCreatedAt to UTC ISO before signing', async function () {
+    getConfig
+      .withArgs('hostSettings:contentCheck:siteCreatedAt')
+      .returns('2026-10-15T10:00:00.000+00:00');
+    const service = await initRoot();
+    const request = sandbox.stub(service, 'request').resolves(null);
+    const send = sandbox.spy(service, 'sendTitleChanged');
+
+    await emitTitle(send);
+
+    sinon.assert.calledOnce(request);
+    const [, requestOptions] = request.firstCall.args as [string, { body: string }];
+    const body = JSON.parse(requestOptions.body);
+    assert.equal(body.siteCreatedAt, '2026-10-15T10:00:00.000Z');
+    assert.match(body.siteId, /^\d+$/);
+    assert.match(body.siteCreatedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  });
+
+  it('does not request when siteId is not digits-only', async function () {
+    const service = await initRoot();
+    const request = sandbox.stub(service, 'request').resolves(null);
+    const send = sandbox.spy(service, 'sendTitleChanged');
+
+    for (const siteId of [1.5, '1.5', 'abc', 1e21, Infinity, NaN, null, {}]) {
+      getConfig.withArgs('hostSettings:siteId').returns(siteId);
+      await emitTitle(send);
+      sinon.assert.notCalled(request);
+    }
+    assert.equal(loggedWarning.callCount, 8);
+  });
+
   it('does not request when config is incomplete', async function () {
     getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns('');
     const service = await initRoot();
@@ -228,34 +262,74 @@ describe('Content Check service root', function () {
     sinon.assert.notCalled(request);
     sinon.assert.notCalled(loggedWarning);
 
+    getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns(undefined);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    sinon.assert.notCalled(loggedWarning);
+
     getConfig.withArgs('hostSettings:contentCheck:webhookUrl').returns(WEBHOOK_URL);
     getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns('');
     await emitTitle(send);
     sinon.assert.notCalled(request);
     sinon.assert.calledOnce(loggedWarning);
 
-    getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns(WEBHOOK_SECRET);
-    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(undefined);
+    getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns(null);
     await emitTitle(send);
     sinon.assert.notCalled(request);
     sinon.assert.calledTwice(loggedWarning);
 
-    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(0);
+    getConfig.withArgs('hostSettings:contentCheck:webhookSecret').returns(WEBHOOK_SECRET);
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(undefined);
     await emitTitle(send);
     sinon.assert.notCalled(request);
     sinon.assert.calledThrice(loggedWarning);
+
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(0);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 4);
+
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(-1);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 5);
+
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(NaN);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 6);
+
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(Infinity);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 7);
+
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns('30');
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 8);
 
     getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(MAX_SITE_AGE_DAYS);
     getConfig.withArgs('hostSettings:siteId').returns(undefined);
     await emitTitle(send);
     sinon.assert.notCalled(request);
-    assert.equal(loggedWarning.callCount, 4);
+    assert.equal(loggedWarning.callCount, 9);
 
     getConfig.withArgs('hostSettings:siteId').returns(SITE_ID);
     getConfig.withArgs('hostSettings:contentCheck:siteCreatedAt').returns('not-a-date');
     await emitTitle(send);
     sinon.assert.notCalled(request);
-    assert.equal(loggedWarning.callCount, 5);
+    assert.equal(loggedWarning.callCount, 10);
+
+    getConfig.withArgs('hostSettings:contentCheck:siteCreatedAt').returns('');
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 11);
+
+    getConfig.withArgs('hostSettings:contentCheck:siteCreatedAt').returns(null);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 12);
   });
 
   it('swallows rejected sendTitleChanged from the event handler', async function () {
