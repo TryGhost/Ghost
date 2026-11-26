@@ -95,13 +95,19 @@ describe('Stripe webhook: Ghosts serving one site', function () {
     };
   }
 
-  function holdNextUpdate(): () => void {
+  /** Holds back Stripe's answer to the next update, after Stripe has made the update. */
+  function holdNextUpdateAnswer() {
+    const made = Promise.withResolvers<void>();
     const held = Promise.withResolvers<void>();
-    beforeUpdate = async () => {
-      beforeUpdate = null;
+    stripe.beforeDelivery = async (request: { method: string; id?: string }) => {
+      if (operationOf(request) !== 'update') {
+        return;
+      }
+      stripe.beforeDelivery = null;
+      made.resolve();
       await held.promise;
     };
-    return held.resolve;
+    return { made: made.promise, send: held.resolve };
   }
 
   async function store(webhook: StoredWebhook) {
@@ -259,14 +265,16 @@ describe('Stripe webhook: Ghosts serving one site', function () {
     await store(OLD);
     const updating = createGhost(OLD);
     const replacing = createGhost(OLD);
-    const answerUpdate = holdNextUpdate();
+    const answer = holdNextUpdateAnswer();
     const updated = updating.manager.start();
+    await answer.made;
     fail('update', 1);
 
     await replacing.manager.start();
-    answerUpdate();
+    answer.send();
     await updated;
 
+    sinon.assert.notCalled(updating.transaction);
     sinon.assert.notCalled(updating.save);
     await assertOneNewWebhook([replacing]);
   });

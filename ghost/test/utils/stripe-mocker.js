@@ -178,6 +178,14 @@ class StripeMocker {
    */
   beforeReply = null;
 
+  /**
+   * Awaited after Stripe has handled a request and before its answer is sent, so a test can make an
+   * answer arrive late.
+   *
+   * @type {((request: {method: string, resource?: string, id?: string, action?: string}) => Promise<void>) | null}
+   */
+  beforeDelivery = null;
+
   nockInterceptors = [];
 
   static defaultCheckoutBranding() {
@@ -215,6 +223,7 @@ class StripeMocker {
     this.failures = [];
     this.requests = [];
     this.beforeReply = null;
+    this.beforeDelivery = null;
     this.checkoutBranding = StripeMocker.defaultCheckoutBranding();
     this.failCheckoutExpiry = false;
     this.refuseCheckoutDesign = false;
@@ -576,10 +585,14 @@ class StripeMocker {
       if (failure?.times) {
         failure.times -= 1;
       }
-      if (failure?.reply instanceof Error) {
-        return callback(failure.reply);
+      const failed = failure?.reply instanceof Error;
+      const reply = failure ? failure.reply : answer(parts);
+      const deliver = () => (failed ? callback(reply) : callback(null, reply));
+
+      if (!this.beforeDelivery) {
+        return deliver();
       }
-      callback(null, failure ? failure.reply : answer(parts));
+      this.beforeDelivery(request).then(deliver, callback);
     };
 
     if (!this.beforeReply) {
