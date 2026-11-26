@@ -2,6 +2,8 @@ import clsx from 'clsx';
 import React from 'react';
 import ShadeProvider from '@/providers/shade-provider';
 import type { ControlShape } from '@/providers/shade-context';
+import { useHasSafeArea, useSafeAreaSlide } from '@/lib/safe-area';
+import { cn } from '@/lib/utils';
 
 /**
  * The className is used to scope the styles of the app to the app's namespace.
@@ -9,6 +11,11 @@ import type { ControlShape } from '@/providers/shade-context';
  * in order to work correctly.
  */
 export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub';
+
+const SAFE_AREA_PADDING = cn(
+  'pt-[var(--ghost-safe-area-inset-top,0px)] pr-[var(--ghost-safe-area-inset-right,0px)]',
+  'pb-[var(--ghost-safe-area-inset-bottom,0px)] pl-[var(--ghost-safe-area-inset-left,0px)]',
+);
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   darkMode: boolean;
@@ -31,11 +38,16 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   children,
   ...props
 }) => {
-  const appClassName = clsx('shade', className);
+  const root = React.useRef<HTMLDivElement>(null);
+  const inApp = useHasSafeArea();
+  useSafeAreaSlide(root);
+  // Last, so a className's own padding wins.
+  const appClassName = cn('shade', SAFE_AREA_PADDING, className);
 
   return (
     <div
-      className={appClassName}
+      ref={root}
+      className={inApp ? appClassName : clsx('shade', className)}
       {...props}
       data-admin7-design={admin7Design}
       data-admin7-mobile={admin7Mobile}

@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 
 import { build, type Rolldown } from 'vite';
 import { testWorkerCount } from '@internal/cfg-test-workers';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
 import type { PluginOption } from 'vite';
@@ -286,6 +286,17 @@ const resetModuleRoutes: BrowserCommand<[]> = async ({ context }) => {
   await Promise.all(matchers.map((matcher) => context.unroute(matcher)));
 };
 
+// Specs that need cross-site frames in their own process, as desktop Chrome runs them. Playwright's
+// Chromium does that only with `--site-per-process`.
+const OUT_OF_PROCESS_FRAME_SPECS = [
+  // In one process, Admin's document still hears the pointer over an app's frame.
+  'src/apps/app-page-frame.acceptance.test.tsx',
+];
+
+// Web Share is off in Playwright's Chromium, so without it `navigator.canShare` doesn't exist to
+// report whether an app's frame may share.
+const CHROMIUM_ARGS = ['--enable-blink-features=WebShare'];
+
 export default defineConfig({
   plugins: [tailwindcss() as PluginOption, svgr(), react()],
   server: {
@@ -339,9 +350,7 @@ export default defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      // Web Share is off in Playwright's Chromium, so without it `navigator.canShare` doesn't exist
-      // to report whether an app's frame may share.
-      provider: playwright({ launchOptions: { args: ['--enable-blink-features=WebShare'] } }),
+      provider: playwright({ launchOptions: { args: CHROMIUM_ARGS } }),
       commands: {
         bundleAppSdk,
         bundleFrameScript,
@@ -357,7 +366,20 @@ export default defineConfig({
         resetModuleRoutes,
         resetFakeFrameOrigins,
       },
-      instances: [{ browser: 'chromium' }],
+      instances: [
+        {
+          browser: 'chromium',
+          exclude: [...configDefaults.exclude, ...OUT_OF_PROCESS_FRAME_SPECS],
+        },
+        {
+          browser: 'chromium',
+          name: 'acceptance (chromium, frames out of process)',
+          include: OUT_OF_PROCESS_FRAME_SPECS,
+          provider: playwright({
+            launchOptions: { args: [...CHROMIUM_ARGS, '--site-per-process'] },
+          }),
+        },
+      ],
       // Failure screenshots land in __screenshots__/ (gitignored).
       screenshotFailures: true,
       // Match the e2e suite's desktop viewport — the admin chrome

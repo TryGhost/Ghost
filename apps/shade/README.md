@@ -66,11 +66,16 @@ import {Button} from '@tryghost/shade/components';
 import './styles.css';
 
 createRoot(document.getElementById('root')!).render(
-    <ShadeApp darkMode={false} className="min-h-dvh p-6">
-        <Button>Save changes</Button>
+    <ShadeApp darkMode={false} className="min-h-dvh">
+        <div className="p-6">
+            <Button>Save changes</Button>
+        </div>
     </ShadeApp>
 );
 ```
+
+In a Ghost app, `ShadeApp` pads the app by the safe area Admin leaves it, so pad inside
+`ShadeApp` rather than on it: padding of its own replaces the safe area's.
 
 `ShadeApp` supplies the `.shade` container and providers. For dark mode, add
 `.dark` to `document.documentElement` and pass the same state to `ShadeApp` so

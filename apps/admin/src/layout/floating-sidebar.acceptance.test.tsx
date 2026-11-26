@@ -10,6 +10,9 @@ import {
   fakeAdminEndpoint,
   fakeAdminStats,
   fakeEndpoint,
+  fakeNewsletters,
+  fakePosts,
+  fakeSnippets,
   fakeTags,
   renderAdminApp,
   type RenderAdminAppOptions,
@@ -330,6 +333,75 @@ describe('Floating sidebar (admin7Design)', () => {
       animation.play();
     }
     await expect.poll(morphStates).toEqual(['finished']);
+  });
+
+  it('opens on hover only once the pointer has been outside it, though it comes straight from beyond the window', async () => {
+    fakeTags([]);
+    const moveTo = (x: number, y: number) =>
+      userEvent.hover(page.elementLocator(document.documentElement), {
+        position: { x, y },
+        force: true,
+      });
+    await moveTo(-10, 300);
+    await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
+    await expect.poll(sidebarScreen.floatingState).toBe('closed');
+    const circle = sidebarScreen
+      .shellNav()
+      .element()
+      .querySelector('[data-slot=floating-sidebar]')!
+      .getBoundingClientRect();
+    const x = circle.left + circle.width / 2;
+    const settle = () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
+
+    await moveTo(x, circle.top + circle.height / 2);
+    await moveTo(x + 2, circle.top + circle.height / 2);
+    await moveTo(x, circle.bottom + 160);
+    await settle();
+    expect(sidebarScreen.floatingState()).toBe('closed');
+
+    await userEvent.hover(sidebarScreen.shellMain());
+    await moveTo(x, circle.bottom + 160);
+    await expect.poll(sidebarScreen.floatingState).toBe('open');
+  });
+
+  it('waits for the pointer to move and come to rest before opening under it, back from the editor', async () => {
+    fakeTags([]);
+    fakePosts([]);
+    fakeSnippets([]);
+    fakeNewsletters([]);
+    const moveTo = (x: number, y: number) =>
+      userEvent.hover(page.elementLocator(document.documentElement), {
+        position: { x, y },
+        force: true,
+      });
+    await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
+    await expect.poll(sidebarScreen.floatingState).toBe('closed');
+    await userEvent.hover(sidebarScreen.shellMain());
+    const circle = sidebarScreen
+      .shellNav()
+      .element()
+      .querySelector('[data-slot=floating-sidebar]')!
+      .getBoundingClientRect();
+    const x = circle.left + circle.width / 2;
+    const y = circle.top + circle.height / 2;
+    await moveTo(x, y);
+    await sidebarScreen.createPostLink().click();
+    await expect.poll(currentRoute).toMatch(/^\/editor\//);
+
+    await moveTo(x, y);
+    window.history.back();
+    await expect.poll(currentRoute).toBe('/tags');
+    await expect.poll(sidebarScreen.floatingState).toBe('closed');
+    await new Promise((resolve) => {
+      setTimeout(resolve, 400);
+    });
+    expect(sidebarScreen.floatingState()).toBe('closed');
+
+    await moveTo(x + 2, y);
+    await expect.poll(sidebarScreen.floatingState).toBe('open');
   });
 
   it('opens the closed circle on focus or click and closes it with Escape', async () => {

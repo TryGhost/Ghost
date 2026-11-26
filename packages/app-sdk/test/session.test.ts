@@ -698,6 +698,52 @@ describe('the context', () => {
   });
 });
 
+describe('safe area', () => {
+  const insets = () =>
+    ['top', 'right', 'bottom', 'left'].map((edge) =>
+      document.documentElement.style.getPropertyValue(`--ghost-safe-area-inset-${edge}`),
+    );
+
+  beforeEach(() => {
+    document.documentElement.removeAttribute('style');
+  });
+
+  it("sets Admin's safe area as CSS variables on the page's root before the app starts", async () => {
+    frame();
+    admin = new FakeAdmin(hostExports());
+    let atStart: string[] = [];
+    const connecting = sdk.connect().then((ghost) => {
+      atStart = insets();
+      return ghost;
+    });
+    admin.connect();
+    await admin.start(startContext());
+    await connecting;
+
+    expect(atStart).toEqual(['0px', '0px', '57px', '285px']);
+  });
+
+  it('follows the layout as Admin changes it', async () => {
+    const { admin: fake } = await started();
+
+    await fake.thread.imports.layoutChanged({
+      safeArea: { top: 0, right: 24, bottom: 57.5, left: 24 },
+    });
+
+    expect(insets()).toEqual(['0px', '24px', '57.5px', '24px']);
+  });
+
+  it('refuses a layout it does not understand, keeping the one it has', async () => {
+    const { admin: fake } = await started();
+    for (const layout of [null, {}, { safeArea: { top: 0, right: 0, bottom: -1, left: 0 } }]) {
+      await expect(fake.thread.imports.layoutChanged(layout as never)).rejects.toThrow(
+        "invalid_argument: Ghost sent a layout this SDK doesn't understand",
+      );
+    }
+    expect(insets()).toEqual(['0px', '0px', '57px', '285px']);
+  });
+});
+
 describe('theme', () => {
   it("follows Admin's theme and notifies subscribers", async () => {
     const { admin: fake, ghost } = await started();

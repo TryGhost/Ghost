@@ -7,6 +7,13 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ShadeScope } from '@/shade-scope';
 import { ShadeContext, type ControlShape } from '@/providers/shade-context';
 
+const safeAreaOffset = (offset: number) => ({
+  top: `calc(${offset}px + var(--ghost-safe-area-inset-top, 0px))`,
+  right: `calc(${offset}px + var(--ghost-safe-area-inset-right, 0px))`,
+  bottom: `calc(${offset}px + var(--ghost-safe-area-inset-bottom, 0px))`,
+  left: `calc(${offset}px + var(--ghost-safe-area-inset-left, 0px))`,
+});
+
 const ToasterPortal = () => {
   const [mounted, setMounted] = useState(false);
 
@@ -25,6 +32,8 @@ const ToasterPortal = () => {
               success: <Icon.SuccessFill className="text-green" />,
               info: <Icon.InfoFill className="text-text-tertiary" />,
             }}
+            mobileOffset={safeAreaOffset(16)}
+            offset={safeAreaOffset(24)}
             position="bottom-left"
             toastOptions={{
               classNames: {
@@ -34,7 +43,8 @@ const ToasterPortal = () => {
               },
               style: {
                 alignItems: 'flex-start',
-                maxWidth: '290px',
+                maxWidth:
+                  'min(290px, calc(100vw - 32px - var(--ghost-safe-area-inset-left, 0px) - var(--ghost-safe-area-inset-right, 0px)))',
               },
             }}
             closeButton

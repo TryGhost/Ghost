@@ -169,6 +169,19 @@ export type Theme = {
   accent_color: string;
 };
 
+const SAFE_AREA_EDGES = ['top', 'right', 'bottom', 'left'] as const;
+
+/**
+ * How far in from each edge of the page's frame Admin's chrome floats over the page, in CSS
+ * pixels. What the publisher must see or reach stays inside it; a backdrop can fill the frame.
+ */
+export type SafeArea = Record<(typeof SAFE_AREA_EDGES)[number], number>;
+
+/** How Admin lays out the page's frame. */
+export type Layout = {
+  safeArea: SafeArea;
+};
+
 /**
  * What Admin sends an app's page when the session starts. An older SDK ignores fields a newer
  * Admin adds rather than refusing them, so they don't stop it from starting.
@@ -203,6 +216,8 @@ export type StartContext = {
    * frame at it, so it's where the page already is, unless the page's server redirected it.
    */
   path: string;
+  /** Sent again with `layoutChanged` whenever it changes. */
+  layout: Layout;
 };
 
 // `Place` is written out rather than inferred from its schema, so the SDK's declarations, which
@@ -303,6 +318,20 @@ export function isTheme(value: unknown): value is Theme {
   );
 }
 
+export function isSafeArea(value: unknown): value is SafeArea {
+  return (
+    isRecord(value) &&
+    SAFE_AREA_EDGES.every((edge) => {
+      const inset = value[edge];
+      return typeof inset === 'number' && Number.isFinite(inset) && inset >= 0;
+    })
+  );
+}
+
+export function isLayout(value: unknown): value is Layout {
+  return isRecord(value) && isSafeArea(value.safeArea);
+}
+
 export function isStartContext(value: unknown): value is StartContext {
   return (
     isRecord(value) &&
@@ -312,7 +341,8 @@ export function isStartContext(value: unknown): value is StartContext {
     isRecord(value.session) &&
     Number.isSafeInteger(value.session.revision) &&
     (value.session.revision as number) >= 0 &&
-    isContainedPath(value.path)
+    isContainedPath(value.path) &&
+    isLayout(value.layout)
   );
 }
 
