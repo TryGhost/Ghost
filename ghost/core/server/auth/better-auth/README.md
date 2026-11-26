@@ -487,7 +487,8 @@ upload then never runs for an app request that can't succeed.
   mounted route's method decides. A rate limit keyed on the staff user the app
   acts for, or an upload being parsed and stored, never acts for an app
   request that can't succeed, so an app can't spend the user's budget. The
-  error is the one the pipeline would give. An app approved for the scope goes
+  code is the one the pipeline would give, but the message may not be: the
+  pipeline words a refusal of a standard action itself. An app approved for the scope goes
   on to the route and spends the budget as the user would.
 - Reconciling an installation that isn't active (suspension at session
   start, uninstall) disables its client and

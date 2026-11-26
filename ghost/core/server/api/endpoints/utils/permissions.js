@@ -85,7 +85,8 @@ const nonePublicAuth = async (apiConfig, frame) => {
     }
   } catch (err) {
     if (err instanceof errors.NoPermissionError) {
-      // An app refused for a scope keeps its message, which names the scope it lacked
+      // An app refused for a scope keeps its message here, which names the scope it lacked. Ghost's
+      // error handler still words a refusal of a standard action itself, with this as its context
       if (err.code !== 'APP_SCOPE_REQUIRED') {
         err.message = tpl(messages.noPermissionToCall, {
           method: apiConfig.method,
@@ -151,8 +152,9 @@ module.exports = {
    * @description Refuses an app, ahead of the route's other middleware, on a method whose
    * permission stage would refuse it whatever the request: one it may not call unchecked, or one
    * whose standard check needs a scope the app wasn't approved for. Rate limits and uploads on
-   * the route then never act for a request that can't succeed. The error is the one the stage
-   * would throw; the role and row checks still run in the stage. A controller outside the
+   * the route then never act for a request that can't succeed. Its code is the one the stage
+   * would give; its message may not be, as the stage words some refusals itself. The role and row
+   * checks still run in the stage. A controller outside the
    * pipeline has no permission stage and no name the allowlist could hold, so it refuses apps.
    *
    * @param {import('@tryghost/api-framework').RoutedMethod} routed
