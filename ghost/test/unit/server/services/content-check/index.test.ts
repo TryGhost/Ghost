@@ -239,6 +239,32 @@ describe('Content Check service root', function () {
     await emitTitle(send);
     sinon.assert.notCalled(request);
     sinon.assert.calledTwice(loggedWarning);
+
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(0);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    sinon.assert.calledThrice(loggedWarning);
+
+    getConfig.withArgs('hostSettings:contentCheck:maxSiteAgeDays').returns(MAX_SITE_AGE_DAYS);
+    getConfig.withArgs('hostSettings:siteId').returns(undefined);
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 4);
+
+    getConfig.withArgs('hostSettings:siteId').returns(SITE_ID);
+    getConfig.withArgs('hostSettings:contentCheck:siteCreatedAt').returns('not-a-date');
+    await emitTitle(send);
+    sinon.assert.notCalled(request);
+    assert.equal(loggedWarning.callCount, 5);
+  });
+
+  it('swallows rejected sendTitleChanged from the event handler', async function () {
+    const service = await initRoot();
+    const send = sandbox.stub(service, 'sendTitleChanged').rejects(new Error('boom'));
+
+    assert.doesNotThrow(() => events.emit(EVENT_NAME, titleModel(SAMPLE_TITLE)));
+    await send.lastCall.returnValue.catch(() => {});
+    sinon.assert.calledOnce(send);
   });
 
   it('skips empty, null, and whitespace-only titles', async function () {

@@ -94,7 +94,7 @@ export class ContentCheckService {
       }
 
       const createdAtMs = Date.parse(siteCreatedAt);
-      if (Number.isNaN(createdAtMs) || Date.now() - createdAtMs >= maxSiteAgeDays * DAY_MS) {
+      if (Date.now() - createdAtMs >= maxSiteAgeDays * DAY_MS) {
         return;
       }
 
