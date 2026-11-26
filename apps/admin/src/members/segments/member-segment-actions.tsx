@@ -75,6 +75,33 @@ export function MemberSegmentActions({
     return null;
   }
 
+  // Making a segment before there is a filter: the button still says what the bar is for, but
+  // a name can't be saved without conditions, so it takes the publisher to the missing step
+  // instead. A filter that isn't finished, such as one with no value, filters nothing, so the
+  // cursor goes to its empty value. With no filter at all, the bar's Filter menu opens.
+  if (!segment && !filter) {
+    return (
+      <FilterBar.Action
+        variant="outline"
+        onClick={(event) => {
+          const bar =
+            event.currentTarget.closest('[data-slot="filter-bar"]') ??
+            event.currentTarget.closest('[data-list-page="header"]');
+          const emptyValue = [...(bar?.querySelectorAll<HTMLInputElement>('input') ?? [])].find(
+            (input) => input.value === '',
+          );
+          if (emptyValue) {
+            emptyValue.focus();
+            return;
+          }
+          bar?.querySelector<HTMLButtonElement>('[data-slot="filters-add"]')?.click();
+        }}
+      >
+        Save segment
+      </FilterBar.Action>
+    );
+  }
+
   if (!segment) {
     return (
       <SaveSegmentPopover
