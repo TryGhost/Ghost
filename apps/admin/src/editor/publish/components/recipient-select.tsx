@@ -26,8 +26,8 @@ const TIER_SEGMENT_PREFIX = 'tier:';
 const LABELS_GROUP = 'Labels';
 // POC (poc/segments-ui): saved segments, listed beside tiers and labels to see how they look
 // here. A segment is named in the recipient filter by its id, the way the Admin API will take it.
-// This branch's server doesn't read that yet, so with a segment chosen the recipient count is
-// unknown and the post can't be sent.
+// The server counts such a filter with the segmentEmails flag on (DYA-295), but a post's email
+// recipients can't name a segment yet, so a post sent to one is refused (DYA-265).
 const SEGMENTS_GROUP = 'Segments';
 const savedSegmentToken = (id: string) => `segment:'${id}'`;
 

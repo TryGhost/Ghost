@@ -3,7 +3,6 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { useCountableFilter } from '@/members/api';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import {
   publishBackToDashboard,
@@ -66,7 +65,7 @@ export function CompleteStep({
   completedAt,
   onRevertToDraft,
 }: CompleteStepProps) {
-  const { count } = useMembersCount(useCountableFilter(state.fullRecipientFilter), {
+  const { count } = useMembersCount(state.fullRecipientFilter, {
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const emailOnly = captured.willOnlyEmail;

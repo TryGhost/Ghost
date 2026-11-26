@@ -3,7 +3,6 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getRecipientType } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
-import { useCountableFilter } from '@/members/api';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { PublishPhaseIcon } from '@/posts/api';
 import { FailureBanner } from './failure-banner';
@@ -50,7 +49,7 @@ export function ConfirmStep({
   onConfirm,
   onBack,
 }: ConfirmStepProps) {
-  const { count } = useMembersCount(useCountableFilter(state.fullRecipientFilter), {
+  const { count } = useMembersCount(state.fullRecipientFilter, {
     requestOptions: EDITOR_REQUEST_OPTIONS,
   });
   const publishType = confirmPublishType(captured);
