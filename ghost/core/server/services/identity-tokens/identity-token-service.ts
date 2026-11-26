@@ -12,13 +12,17 @@ export class IdentityTokenService {
     this.issuer = issuer;
   }
 
-  async getTokenForUser(email: string, role?: string) {
+  async getTokenForUser(email: string, role?: string, audience?: string) {
     const claims: Record<string, string> = {
       sub: email,
     };
 
     if (typeof role === 'string') {
       claims.role = role;
+    }
+
+    if (typeof audience === 'string') {
+      claims.aud = audience;
     }
 
     const { privateKey, kid, legacy } = await this.signingKeys.getSigningKey();

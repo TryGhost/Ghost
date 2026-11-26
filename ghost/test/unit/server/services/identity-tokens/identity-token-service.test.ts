@@ -57,6 +57,25 @@ m+HAlDNOZe7ryiuK7dj04wY2qoO/kCsxO9bR1M8LGRWFIHd4e8ExGWn5Qxk0/9X+
     assert.equal(claims.role, 'Legend');
     assert.equal(claims.iss, 'issuer.com');
     assert.equal(decode(token, { complete: true })?.header.kid, kid);
+    assert.equal(Object.hasOwn(claims, 'aud'), false);
+  });
+
+  it('Sets aud only when an audience is given', async function () {
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    });
+    const service = new IdentityTokenService(staticSigningKeys(privateKey), 'issuer.com');
+
+    const token = await service.getTokenForUser('egg@ghost.org', 'Legend', 'support');
+
+    const claims = verify(token, publicKey, { algorithms: ['RS256'], audience: 'support' });
+
+    assert.equal(typeof claims === 'string' ? null : claims.aud, 'support');
+    assert.throws(() => verify(token, publicKey, { algorithms: ['RS256'], audience: 'billing' }), {
+      name: 'JsonWebTokenError',
+    });
   });
 
   // @TODO: Ghost 7.0 - remove with legacy key support

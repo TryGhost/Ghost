@@ -47,8 +47,37 @@ describe('Identities API', function () {
         .then((decoded) => {
           assert.equal(decoded.sub, 'jbloggs@example.com');
           assert.equal(decoded.role, 'Owner');
+          assert.equal(Object.hasOwn(decoded, 'aud'), false);
         });
     });
+
+    it('Signs the requested audience as aud', async function () {
+      const res = await request
+        .get(localUtils.API.getApiQuery(`identities/?audience=support`))
+        .set('Origin', config.get('url'))
+        .expect(200);
+
+      const decoded = await verifyJWKS(
+        `${request.app}/ghost/.well-known/jwks.json`,
+        res.body.identities[0].token,
+      );
+      assert.equal(decoded.aud, 'support');
+      assert.equal(decoded.sub, 'jbloggs@example.com');
+    });
+
+    for (const query of [
+      'audience=support,billing',
+      'audience=support&audience=billing',
+      'audience=',
+      'audience=Support',
+    ]) {
+      it(`Rejects ${query}`, async function () {
+        await request
+          .get(localUtils.API.getApiQuery(`identities/?${query}`))
+          .set('Origin', config.get('url'))
+          .expect(422);
+      });
+    }
   });
 
   describe('As Administrator', function () {
