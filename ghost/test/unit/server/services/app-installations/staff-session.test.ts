@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import type { Principal } from '../../../../../core/server/auth/principal';
 import { tables } from '../../../../../core/server/data/schema';
-import { isActiveStaffStatus } from '../../../../../core/shared/staff-status';
+import {
+  ACTIVE_STAFF_STATUSES,
+  isActiveStaffStatus,
+} from '../../../../../core/shared/staff-status';
 import { staffSessionOf } from '../../../../../core/server/services/app-installations/staff-session';
 
 function sessionPrincipal({
@@ -54,6 +57,10 @@ describe('staffSessionOf', function () {
         assert.throws(() => staffSessionOf(sessionPrincipal({ status })), refused, status);
       }
     }
+  });
+
+  it('shares a list of active statuses that nothing can change', function () {
+    assert.ok(Object.isFrozen(ACTIVE_STAFF_STATUSES));
   });
 
   it('refuses other roles', function () {
