@@ -225,8 +225,8 @@ _Avoid_: route, link, URL
 
 **Fetch escape hatch**:
 The bridge's `fetch`, which calls the Admin API as the signed-in staff user on
-the app's behalf. It stands in for a user token until apps have
-permissions, and takes an Admin API path, never a URL.
+the app's behalf. It stands in for a user token until Admin sends an app's
+calls with one, and takes an Admin API path, never a URL.
 _Avoid_: proxy, API access, app token
 
 **Allowlist**:
@@ -241,8 +241,8 @@ approved for: a related object needs its own scope, and how a post performed
 needs `post:read_stats`. When an app names no `include` and no `fields`, the
 bridge names the includes it may have, as Ghost's defaults include how a post
 performed. Writes of posts, pages and tags are also checked so they can't send
-email, set code injection or write mobiledoc. It stands in for apps' own token:
-the server checks nothing an app does through the bridge.
+email, set code injection or write mobiledoc. Until Admin sends an app's calls
+with a user token, the server checks nothing an app does through the bridge.
 _Avoid_: permissions, blocklist, denylist
 
 **Feature name**:
