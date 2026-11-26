@@ -106,9 +106,9 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
 /**
  * The codes a refused call carries across the channel. The structured clone that carries an
  * error keeps only its message, so the refusing side puts the code at the start of the
- * message, as in `blocked: Apps can't use GET /db/`, and the other side parses it back out. Codes
- * are only ever added: an SDK that doesn't know a code treats the whole message as a generic
- * refusal.
+ * message, as in `blocked: Apps can't use PUT /posts/bulk/`, and the other side parses it back
+ * out. Codes are only ever added: an SDK that doesn't know a code treats the whole message as a
+ * generic refusal.
  *
  * The host codes, which Admin refuses the page's calls with:
  *

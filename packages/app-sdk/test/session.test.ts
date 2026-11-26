@@ -326,7 +326,7 @@ describe('a refused argument', () => {
 
 describe('when Admin refuses a call', () => {
   it.each([
-    ['blocked', 'Apps can’t use /db/'],
+    ['blocked', 'Apps can’t use PUT /posts/bulk/'],
     ['invalid_path', 'Expected an Admin API path within the Admin API'],
     ['invalid_argument', 'Expected a method of: GET'],
     ['network_error', 'Couldn’t reach the Admin API: TypeError'],
@@ -336,7 +336,7 @@ describe('when Admin refuses a call', () => {
     host.fetch.mockRejectedValue(new Error(`${code}: ${detail}`));
     const { ghost } = await started(host);
 
-    const error = await ghost.fetch('/db/').catch((caught: unknown) => caught);
+    const error = await ghost.fetch('/posts/').catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(sdk.GhostAppError);
     expect(error).toMatchObject({ code, message: detail });
     expect(ghost.connected).toBe(true);
