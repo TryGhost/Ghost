@@ -11,6 +11,9 @@
 import { sortableBy } from './lib/sortable';
 import type { TableDefinition } from './types';
 
+// Declared `as const`, below, so every value keeps its literal type, such as a column's type,
+// whether it is nullable and the values its `isIn` lists. Types can then be derived from the
+// definitions.
 const schema = {
   newsletters: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -3085,7 +3088,7 @@ const schema = {
     submitted_at: { type: 'dateTime', nullable: true },
     '@@INDEXES@@': [['submitted_at', 'available_at']],
   },
-} satisfies Record<string, TableDefinition>;
+} as const satisfies Record<string, TableDefinition>;
 
 export default schema;
 
