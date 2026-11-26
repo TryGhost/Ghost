@@ -314,8 +314,7 @@ upload then never runs for an app request that can't succeed.
 
 - The provider and the `jwt` plugin it signs with are registered only when the
   `apps` labs flag is on at boot, so a site that boots without the flag sees
-  no change to sign-in or session reads. Boot runs the migrations, which
-  create their tables, before it builds Better Auth.
+  no change to sign-in or session reads.
   Plugins are fixed at boot: turning the flag on or off takes effect at the
   next restart, and until then a site that turned it off keeps the provider's
   hooks. The `jwt` plugin sets no header on session reads.
@@ -589,17 +588,12 @@ changed there, so reset the database (`pnpm reset:db`).
 
 `verifications.attempts` counts wrong device verification codes.
 
-The OAuth provider's and `jwt` plugin's tables (`oauth_*`) are created by a
-6.80 migration and mapped in `ghost-models.ts`. They take the provider's schema
-whole, although app tokens use only clients and access tokens. Their token rows
-cascade with their user and staff session. They hold clients, tokens and
-signing keys, so like the other auth tables they are left out of exports by
-default and an import never restores them. On a development database that had
-the in-development copies, the migration replaces them, discarding their rows.
+The OAuth provider's and `jwt` plugin's tables (`oauth_*`) are mapped in
+`ghost-models.ts`. Their token rows cascade with their user and staff session.
 
 `user_two_factors`, the `twoFactor` plugin's model, is still an in-development
 table, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
-like the other auth tables it is left out of exports by default.
+like the other three it is left out of exports by default.
 
 ## Columns `users` does not have
 
