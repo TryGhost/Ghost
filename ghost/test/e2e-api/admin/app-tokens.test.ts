@@ -65,7 +65,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
   }
 
   /**
-   * A user token for the installation, bound to a new staff session of the user's (the Owner
+   * An app user token for the installation, bound to a new staff session of the user's (the Owner
    * unless named).
    */
   async function tokenFor(

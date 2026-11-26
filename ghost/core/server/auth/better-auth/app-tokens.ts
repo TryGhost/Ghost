@@ -9,7 +9,7 @@ export interface AppTokenInstallation {
   scopes: readonly string[];
 }
 
-/** A user token for an app, bound to the staff session it is issued in. */
+/** An app user token, bound to the staff session it is issued in. */
 export const appTokenRequestSchema = z.object({
   installationId: z.string(),
   userId: z.string(),
@@ -20,7 +20,7 @@ export const appTokenRequestSchema = z.object({
 
 export type AppTokenRequest = z.infer<typeof appTokenRequestSchema>;
 
-/** A user token, as issued. */
+/** An app user token, as issued. */
 export interface IssuedAppToken {
   accessToken: string;
   /** Seconds from when it was issued; never past the end of the staff session */
@@ -64,8 +64,8 @@ export interface AppTokens {
   reconcileClient(installation: AppTokenInstallation): Promise<void>;
   issue(request: AppTokenRequest): Promise<IssuedAppToken | { refused: AppTokenRefusal }>;
   /**
-   * Null unless the token is an active user token of an app's, issued in a staff session that
-   * still exists, is verified and hasn't expired
+   * Null unless the token is an active app user token, issued in a staff session that still
+   * exists, is verified and hasn't expired
    */
   validate(token: string): Promise<ValidatedAppToken | null>;
 }

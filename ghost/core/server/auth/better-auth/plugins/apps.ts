@@ -106,7 +106,7 @@ export const ghostApps = (providerOptions: OAuthOptions<Scope[]> | null) =>
       ),
 
       /**
-       * A user token for an installation's user client, bound to a staff session of the
+       * An app user token for an installation's user client, bound to a staff session of the
        * user's that is verified and unexpired, and lasting no longer than it. The provider
        * checks no scopes when issuing, so `scopes` must already be narrowed to the
        * installation's approved scopes; any the client doesn't list are dropped. The client's
@@ -163,7 +163,7 @@ export const ghostApps = (providerOptions: OAuthOptions<Scope[]> | null) =>
         },
       ),
 
-      /** Who an app token acts for, or null unless it is an active user token of an app's. */
+      /** Who an app token acts for, or null unless it is an active app user token. */
       validateAppToken: createAuthEndpoint.serverOnly(
         { method: 'POST', body: z.object({ token: z.string() }) },
         async (ctx) => {
@@ -206,7 +206,7 @@ export const ghostApps = (providerOptions: OAuthOptions<Scope[]> | null) =>
 
 /**
  * What validation needs of an introspected token. A JWT access token has an audience; apps never
- * get one. User tokens are always issued with a user and a staff session.
+ * get one. App user tokens are always issued with a user and a staff session.
  */
 const appUserTokenPayloadSchema = z.object({
   active: z.literal(true),
@@ -227,7 +227,7 @@ const staffSessionRowSchema = z.object({
 
 type StaffSessionRow = z.infer<typeof staffSessionRowSchema>;
 
-// The provider's default user token lifetime
+// The provider's default app user token lifetime
 const DEFAULT_ACCESS_TOKEN_SECONDS = 3600;
 
 async function findStaffSession(

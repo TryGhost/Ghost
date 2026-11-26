@@ -187,7 +187,7 @@ whose password hasn't changed since still carry their old hash there, unread.
 ## App tokens
 
 Apps are to get app tokens from `@better-auth/oauth-provider`, under
-`better-auth` only: a user token for the staff user, bound to their staff
+`better-auth` only: an app user token for the staff user, bound to their staff
 session. The Admin API accepts one as `Authorization: Bearer`; nothing issues
 one in a request yet.
 
@@ -321,8 +321,8 @@ upload then never runs for an app request that can't succeed.
 - Boot reads the flag before remote flags load, so it must come from config
   or the Labs setting. A flag turned on only through remote flags never
   registers the provider, however often Ghost restarts.
-- Opaque access tokens carry the `ghost_app_` prefix. User tokens last the
-  provider's default hour, or until their staff session ends if that's
+- Opaque access tokens carry the `ghost_app_` prefix. App user tokens last
+  the provider's default hour, or until their staff session ends if that's
   sooner. The provider registers no scopes, `openid`
   included, so it issues no ID tokens; an ID token would last 5 minutes. No
   refresh token is issued. Nobody manages clients through the provider's
@@ -347,16 +347,16 @@ upload then never runs for an app request that can't succeed.
   logout for clients that registered a URI (none does).
 - `ghostApps` (`plugins/apps.ts`, with `plugins/app-clients.ts`) is the one
   place that knows the provider's table layout. Its server-only endpoints
-  reconcile an installation's user client and issue and validate user tokens;
-  one codec maps a client row to its installation and kind. The user client
-  is unowned, public, and lists only a marker grant and no redirect URIs, and
-  its id is lowercase because MySQL compares client ids case-insensitively.
-  With every provider route disabled it can call none of them,
-  `/oauth2/revoke` included, which would take a public client's id alone, and
-  even on the server the token endpoint serves no grant it has.
-  `test/integration/auth/app-oauth-provider.test.ts` compares its row with
-  what the provider's own create-client writes, so an upgrade that changes the
-  layout fails a test.
+  reconcile an installation's user client and issue and validate app user
+  tokens; one codec maps a client row to its installation and kind. The user
+  client is unowned, public, and lists only a marker grant and no redirect URIs,
+  and its id is lowercase because MySQL compares client ids case-insensitively.
+  With every provider route disabled it can call none of them, `/oauth2/revoke`
+  included, which would take a public client's id alone, and even on the server
+  the token endpoint serves no grant it has.
+  `test/integration/auth/app-oauth-provider.test.ts` compares its row with what
+  the provider's own create-client writes, so an upgrade that changes the layout
+  fails a test.
 - The provider checks no scopes when issuing, so Ghost holds a token to the
   installation's approved scopes and the client's.
 - `issueAppUserToken` issues and `validateAppToken` accepts a token only
