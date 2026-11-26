@@ -84,12 +84,7 @@ export class ContentCheckService {
       const siteCreatedAtRaw = this.config.get('hostSettings:contentCheck:siteCreatedAt');
       const maxSiteAgeDaysRaw = this.config.get('hostSettings:contentCheck:maxSiteAgeDays');
 
-      const siteId =
-        typeof siteIdRaw === 'string'
-          ? siteIdRaw
-          : typeof siteIdRaw === 'number'
-            ? String(siteIdRaw)
-            : '';
+      const siteId = typeof siteIdRaw === 'string' ? siteIdRaw : '';
       const webhookSecretValue = typeof webhookSecret === 'string' ? webhookSecret : '';
       const siteCreatedAt = this.#normalizeSiteCreatedAt(siteCreatedAtRaw);
 
@@ -154,19 +149,10 @@ export class ContentCheckService {
   }
 
   #normalizeSiteCreatedAt(value: unknown): string | null {
-    if (typeof value === 'string' && value.length > 0) {
-      const parsed = Date.parse(value);
-      if (Number.isNaN(parsed)) {
-        return null;
-      }
-      return new Date(parsed).toISOString();
+    if (typeof value !== 'string' || value.length === 0) {
+      return null;
     }
-
-    if (value instanceof Date && !Number.isNaN(value.getTime())) {
-      return value.toISOString();
-    }
-
-    return null;
+    return Number.isNaN(Date.parse(value)) ? null : value;
   }
 
   #readMaxSiteAgeDays(value: unknown): number | null {
