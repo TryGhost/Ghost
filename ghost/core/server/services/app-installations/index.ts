@@ -15,7 +15,7 @@ import { AppInstallationsService } from './service';
 export type { InstallationAccess } from './app-installations-repository';
 export type { Installation, InstallationWithHistory } from './codec';
 export type { AppInstallation } from './serializers';
-export type { AppInstallationPreview, AppSession } from './service';
+export type { AppInstallationPreview, AppSession, AppSessionToken } from './service';
 
 /**
  * The apps slice of config, parsed here as the config guide asks of a feature's keys.
@@ -92,6 +92,7 @@ export default defineService('App Installations', () => {
   appsConfig();
   const { knex } = require('../../data/db');
   const externalRequest = require('../../lib/request-external');
+  const auth = require('../../auth');
 
   const fetchFromApp = createAppFetcher({
     request: externalRequest,
@@ -119,5 +120,8 @@ export default defineService('App Installations', () => {
       getManifestRules,
     }),
     fetchIcon: createIconFetcher({ fetchFromApp, logging }),
+    // Better Auth's OAuth provider issues app tokens; it says whether it can on this site
+    appTokens: auth.appTokens,
+    logging,
   });
 });

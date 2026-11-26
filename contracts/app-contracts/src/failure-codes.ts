@@ -32,6 +32,18 @@ export const OUTDATED_REVIEW_CODES = [
   'APP_INSTALLATION_UNINSTALLED',
 ] as const;
 
+/** Ghost ended or refused an app session's tokens; nothing the app did. */
+export const APP_SESSION_CODES = [
+  /** The site runs the legacy auth engine, which can't issue app tokens. */
+  'APP_AUTH_ENGINE_UNSUPPORTED',
+  /** Only a verified staff session of an Administrator or the Owner gets app tokens. */
+  'APP_STAFF_SESSION_REQUIRED',
+  /** A renewal found the installation suspended, or changed since the session started. */
+  'APP_SESSION_ENDED',
+  /** The apps flag was turned on since Ghost started; apps open after a restart. */
+  'APP_TOKENS_UNAVAILABLE',
+] as const;
+
 /**
  * Admin can only explain a code listed here; any other shows as an unknown error. A Ghost
  * core test checks the list against the codes the app installations service throws.
@@ -41,6 +53,7 @@ export const APP_FAILURE_CODES = [
   ...UNCONFIRMED_APP_CODES,
   ...UNUSABLE_MANIFEST_CODES,
   ...OUTDATED_REVIEW_CODES,
+  ...APP_SESSION_CODES,
   /** Also once uninstalled. */
   'APP_NOT_INSTALLED',
   /** A session failed because of the app, for a reason with no code of its own. */

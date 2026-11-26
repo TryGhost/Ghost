@@ -80,9 +80,12 @@ export function appClientOwnerOf(client: {
   return appClientId(owner) === client.clientId ? owner : null;
 }
 
-/** The user client row Ghost keeps for an installation, in the provider's model. */
+/**
+ * The user client row Ghost keeps for an installation, in the provider's model. Its metadata
+ * names the installation by its id in lowercase, as stored, however the caller wrote it.
+ */
 export function appUserClient({ installationId, active, scopes }: AppClientInstallation) {
-  const owner: AppClientOwner = { installationId, kind: 'user' };
+  const owner: AppClientOwner = { installationId: installationId.toLowerCase(), kind: 'user' };
   return {
     clientId: appClientId(owner),
     disabled: !active,

@@ -363,6 +363,10 @@ module.exports = {
     return apiFramework.pipeline(require('./app-sessions'), localUtils);
   },
 
+  get appTokens() {
+    return apiFramework.pipeline(require('./app-tokens'), localUtils);
+  },
+
   get giftLinks() {
     return apiFramework.pipeline(require('./gift-links'), localUtils);
   },

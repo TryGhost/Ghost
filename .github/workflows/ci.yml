@@ -2424,7 +2424,8 @@ jobs:
             shardIndex: 1
             shardTotal: 1
           # The staff auth flows under auth:engine=better-auth, until the legacy
-          # engine goes (docs/plans/better-auth-migration.md §7)
+          # engine goes (docs/plans/better-auth-migration.md §7), and the apps that
+          # open, which need it for their tokens
           - projectName: Better Auth
             projects: main
             analytics: 'false'
@@ -2438,6 +2439,9 @@ jobs:
               tests/admin/settings/danger-zone.test.ts
               tests/admin/settings/staff.test.ts
               tests/admin/settings/staff-invites.test.ts
+              tests/admin/apps/access-approval.test.ts
+              tests/admin/apps/install-lifecycle.test.ts
+              tests/admin/apps/manifest-updates.test.ts
             shardIndex: 1
             shardTotal: 1
     steps:

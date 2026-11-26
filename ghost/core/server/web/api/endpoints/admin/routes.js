@@ -255,6 +255,7 @@ module.exports = function apiRoutes() {
   appsRouter.get('/installations/:id', http(api.appInstallations.read));
   appsRouter.put('/installations/:id', http(api.appInstallations.edit));
   appsRouter.post('/installations/:id/sessions', http(api.appSessions.start));
+  appsRouter.post('/installations/:id/tokens', http(api.appTokens.add));
   appsRouter.delete('/installations/:id', http(api.appInstallations.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));

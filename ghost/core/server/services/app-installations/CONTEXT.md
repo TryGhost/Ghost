@@ -144,10 +144,45 @@ _Avoid_: accept, update
 
 **App session**:
 One run of an installed app in Admin, started when Admin opens one of its
-pages. Starting a session re-checks the app and returns the installation. The
-session is pinned to the installation's revision at that point. Nothing is
-stored and no token is issued; the session ends when the revision changes.
-_Avoid_: login, token, connection
+pages. Starting a session re-checks the app and returns the installation and,
+for an active one, an app user token. The session is pinned to the installation's
+revision at that point. Nothing about the session is stored; it ends when the
+revision changes. Sessions open only on the `better-auth` auth engine, for a
+verified staff session of an active Administrator or the Owner.
+_Avoid_: login, connection
+
+**App user token**:
+The app token an app's Admin API calls are to be sent with, issued by Better
+Auth's OAuth provider when a session starts. It acts for the staff user, is
+bound to their staff session and lasts an hour, or until the staff session
+ends if that's sooner. Every call checks the installation is active, the user is
+active and the staff session still exists and is verified. The approved
+scopes as they are now, whatever the token or its OAuth client say, cap the
+standard permission checks the call meets; a route whose check is its own or
+none refuses apps, unless it's safe for any app. Admin's bridge allowlist
+still filters what an app can send. Only Admin holds the token; the app's
+frame never sees it. App tokens and their other kinds are defined in
+[Authentication and Authorization](../../auth/CONTEXT.md).
+_Avoid_: user token, app backend token (an app backend's own), access token
+
+**Renewal**:
+A new app user token for a session, without re-checking the app. Each renewal
+creates another token; nothing about the session is stored. A token says how
+long it lasts in
+seconds (`expires_in`), so renewal can be scheduled on the browser's own clock. It is refused
+once the installation is suspended, uninstalled or at another revision than
+the session's, which ends the session.
+_Avoid_: refresh
+
+**OAuth client**:
+The provider's record of an installation, which its app user tokens are issued
+to. Install, approval, uninstall and session start bring it in step with the
+installation, outside the installation's transaction: the installation is the
+authority on every call, so a client out of step grants nothing. A client of
+an installation that isn't active is disabled and its tokens deleted. A token
+refused for an active installation's client brings the client in step and is
+issued once more, so renewal can't stall on a client left out of step.
+_Avoid_: app, integration
 
 **Re-check**:
 Fetching an installed app's manifest again from its approved manifest URL when

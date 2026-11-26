@@ -117,8 +117,8 @@ authenticated ahead of the key check.
 - `plugins/apps.ts`: `ghostApps`, and the OAuth provider and `jwt` plugins
   that issue app tokens. `plugins/app-clients.ts` holds the user client's row
   and keeps it in step with its installation. See [App tokens](#app-tokens).
-- `app-tokens.ts`: the interface to app tokens, which the Admin API
-  validates them through, over `ghostApps`'s server-only endpoints. It loads
+- `app-tokens.ts`: the interface the app installations service and the Admin
+  API use for app tokens, over `ghostApps`'s server-only endpoints. It loads
   under either engine and answers whether app tokens are available: `ready`,
   `legacy_engine`, or `needs_restart` while the provider isn't registered.
   Until they're `ready` it issues and validates nothing, and its other writes
@@ -186,25 +186,26 @@ whose password hasn't changed since still carry their old hash there, unread.
 
 ## App tokens
 
-Apps are to get app tokens from `@better-auth/oauth-provider`, under
-`better-auth` only: an app user token for the staff user, bound to their staff
-session. The Admin API accepts one as `Authorization: Bearer`; nothing issues
-one in a request yet.
+Apps open only under `better-auth`. When an app session starts, Ghost issues
+the staff user an app user token for the app from `@better-auth/oauth-provider`,
+bound to their staff session, which the Admin API accepts as
+`Authorization: Bearer`.
 
 ### How the pieces fit
 
 Ghost's own code reaches app tokens through one interface, `AppTokens`, which
 `auth.appTokens` returns. Everything that knows about OAuth clients or the
-provider's tables sits behind Ghost's `ghostApps` plugin. The Admin API's
-app token middleware validates tokens through it. Nothing in Ghost issues a
-token or reconciles a client yet: those callers arrive with app sessions.
-Security events delete a user's app tokens.
+provider's tables sits behind Ghost's `ghostApps` plugin. The app
+installations service issues tokens and keeps clients in step through it. The
+Admin API's app token middleware validates tokens through it. Security events
+delete a user's app tokens.
 
 ```mermaid
 flowchart TD
     subgraph ghost["Ghost's own code"]
         MW["auth/app-token.ts<br/>Admin API middleware"]
-        INST["services/app-installations<br/>readAccess: status and approved scopes"]
+        INST["services/app-installations<br/>session start, renewal,<br/>installation changes, readAccess"]
+        SESS["services/app-installations/session-tokens.ts<br/><b>AppSessionTokens</b><br/>issue · renew · keepClientInStep"]
     end
 
     FACADE["app-tokens.ts<br/><b>AppTokens</b>, from auth.appTokens<br/>availability · reconcileClient · issue · validate"]
@@ -221,6 +222,8 @@ flowchart TD
 
     MW -- "validate" --> FACADE
     MW -- "readAccess" --> INST
+    INST --> SESS
+    SESS -- "availability · issue · reconcileClient" --> FACADE
     FACADE -- "auth.api" --> APPS
     APPS -- "reconcileAppUserClient" --> CLIENTS
     APPS -- "issueTokens · validateAccessToken · getClient" --> PROVIDER
@@ -232,6 +235,9 @@ flowchart TD
 
 - **`auth/app-token.ts`** turns a valid token into the request's principal.
   It reads the installation and the user again on every call.
+- **`AppSessionTokens`** decides who gets a token, issues one when an app
+  session starts or renews, and keeps each installation's client in step
+  after every change to it.
 - **`AppTokens`** is the only way in. `availability` says whether tokens can
   be used here at all. Until it's `ready`, `issue` throws, `validate` returns
   null and `reconcileClient` does nothing.
@@ -255,6 +261,39 @@ flowchart TD
 
 An issued token lasts an hour, or until its staff session ends if that's
 sooner. Its scopes are the requested ones the client lists.
+
+### How an app session gets a token
+
+Admin starts an app session when it opens an app's page. A session's token
+is renewed with the revision the session started with. Both issue a new
+token; nothing about the session is stored.
+
+```mermaid
+flowchart TD
+    START["POST /apps/installations/:id/sessions<br/>start a session"] --> STAFF
+    RENEW["POST /apps/installations/:id/tokens<br/>renew, with the session's revision"] --> STAFF
+    STAFF{"Tokens ready, and a verified<br/>staff session of an active<br/>Administrator or Owner?"}
+    STAFF -- no --> REFUSE["409 or 403, no token"]
+    STAFF -- yes --> ACTIVE{"Installation active,<br/>and on renewal still at<br/>the session's revision?"}
+    ACTIVE -- no --> NONE["No token"]
+    ACTIVE -- yes --> ISSUE["AppTokens.issue<br/>with the approved manifest's scopes"]
+    ISSUE --> AGAIN{"Installation read again:<br/>still active?"}
+    AGAIN -- no --> RECONCILE["reconcileClient:<br/>disables the client,<br/>deletes its tokens"]
+    RECONCILE --> NONE
+    AGAIN -- yes --> REVISION{"On renewal, still at<br/>the session's revision?"}
+    REVISION -- no --> NONE
+    REVISION -- yes --> TOKEN["access_token and expires_in<br/>for Admin"]
+```
+
+Starting a session re-checks the app's manifest and reconciles the client
+before it issues. If `issue` is refused because the client is out of step
+with an installation that is still active, the client is reconciled from a
+fresh read and the token issued once more.
+
+Every change to an installation, such as approval, suspension or uninstall,
+reconciles its client once the change commits. A failed reconcile is logged,
+not thrown: every call re-checks the installation, so a client out of step
+grants nothing, and the next run heals it.
 
 ### What happens to a request with an app token
 
@@ -295,20 +334,23 @@ upload then never runs for an app request that can't succeed.
 
 ### The types
 
-| Type                        | Where                        | What it is                                                        |
-| --------------------------- | ---------------------------- | ----------------------------------------------------------------- |
-| `AppTokens`                 | `app-tokens.ts`              | The interface Ghost's code uses for app tokens                    |
-| `AppTokensAvailability`     | `app-tokens.ts`              | `ready`, `legacy_engine` or `needs_restart`                       |
-| `AppTokenInstallation`      | `app-tokens.ts`              | What a client is kept in step with: id, active, scopes            |
-| `AppTokenRequest`           | `app-tokens.ts`              | Who a token is for: installation, user, staff session, scopes     |
-| `IssuedAppToken`            | `app-tokens.ts`              | The token and how many seconds it lasts                           |
-| `AppTokenRefusal`           | `app-tokens.ts`              | Why none was issued: client, user or session                      |
-| `ValidatedAppToken`         | `app-tokens.ts`              | Who a valid token acts for, and its staff session                 |
-| `AppClientInstallation`     | `plugins/app-clients.ts`     | `AppTokenInstallation` as `ghostApps`'s endpoint receives it      |
-| `AppClientOwner`            | `plugins/app-clients.ts`     | Which installation a client belongs to, and which of its clients  |
-| `InstallationAccess`        | `services/app-installations` | An installation's id, status and approved scopes                  |
-| `Principal` (`kind: 'app'`) | `auth/principal.ts`          | What the rest of the Admin API sees for an app's request          |
-| `RoutedMethod`              | `@tryghost/api-framework`    | The controller method a route runs, which `refuseAppEarly` checks |
+| Type                        | Where                                          | What it is                                                          |
+| --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| `AppTokens`                 | `app-tokens.ts`                                | The interface Ghost's code uses for app tokens                      |
+| `AppTokensAvailability`     | `app-tokens.ts`                                | `ready`, `legacy_engine` or `needs_restart`                         |
+| `AppTokenInstallation`      | `app-tokens.ts`                                | What a client is kept in step with: id, active, scopes              |
+| `AppTokenRequest`           | `app-tokens.ts`                                | Who a token is for: installation, user, staff session, scopes       |
+| `IssuedAppToken`            | `app-tokens.ts`                                | The token and how many seconds it lasts                             |
+| `AppTokenRefusal`           | `app-tokens.ts`                                | Why none was issued: client, user or session                        |
+| `ValidatedAppToken`         | `app-tokens.ts`                                | Who a valid token acts for, and its staff session                   |
+| `AppClientInstallation`     | `plugins/app-clients.ts`                       | `AppTokenInstallation` as `ghostApps`'s endpoint receives it        |
+| `AppClientOwner`            | `plugins/app-clients.ts`                       | Which installation a client belongs to, and which of its clients    |
+| `InstallationAccess`        | `services/app-installations`                   | An installation's id, status and approved scopes                    |
+| `Principal` (`kind: 'app'`) | `auth/principal.ts`                            | What the rest of the Admin API sees for an app's request            |
+| `AppSessionTokens`          | `services/app-installations/session-tokens.ts` | Issues and renews an app session's token, and keeps clients in step |
+| `StaffSession`              | `services/app-installations/staff-session.ts`  | The staff user and staff session an app session's tokens are for    |
+| `AppSessionToken`           | `services/app-installations/serializers.ts`    | What Admin gets: `access_token` and `expires_in`                    |
+| `RoutedMethod`              | `@tryghost/api-framework`                      | The controller method a route runs, which `refuseAppEarly` checks   |
 
 ### Details
 
@@ -325,9 +367,10 @@ upload then never runs for an app request that can't succeed.
   the provider's default hour, or until their staff session ends if that's
   sooner. The provider registers no scopes, `openid`
   included, so it issues no ID tokens; an ID token would last 5 minutes. No
-  refresh token is issued. Nobody manages clients through the provider's
-  endpoints (`clientPrivileges` refuses every action), and none registers
-  itself.
+  refresh token is issued; a session renews through Ghost
+  (`POST /apps/installations/:id/tokens/`). Nobody manages clients through the
+  provider's endpoints (`clientPrivileges` refuses every action), and none
+  registers itself.
 - Neither plugin's routes are mounted. Ghost issues and validates app tokens
   through the provider's server API, so every path either plugin declares is
   in `disabledPaths` (`appOAuthDisabledPaths`): token, authorize,
@@ -402,7 +445,8 @@ upload then never runs for an app request that can't succeed.
   spend the user's budget. The error is the one the pipeline would give. An
   app approved for the scope goes on to the route and spends the budget as
   the user would.
-- Reconciling an installation that isn't active disables its client and
+- Reconciling an installation that isn't active (suspension at session
+  start, uninstall) disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens
   too, so none issued while it was disabled comes back. Each security event
   under [Revocation](#revocation) deletes the user's, but nothing depends on

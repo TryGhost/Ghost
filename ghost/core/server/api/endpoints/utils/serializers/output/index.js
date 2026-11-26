@@ -52,6 +52,10 @@ module.exports = {
     return require('./app-sessions');
   },
 
+  get app_tokens() {
+    return require('./app-tokens');
+  },
+
   get segments() {
     return require('./segments');
   },

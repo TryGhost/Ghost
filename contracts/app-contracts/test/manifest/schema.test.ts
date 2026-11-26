@@ -414,6 +414,15 @@ describe('scopes', () => {
     }
   });
 
+  // Ghost's OAuth provider would otherwise put them in an app's token
+  it('refuses the OAuth scopes that would get an ID token or a refresh token', () => {
+    for (const key of ['openid', 'offline_access', 'profile', 'email']) {
+      expect(errorsOf(withScopes([key]))).toEqual([
+        { path: 'scopes[0]', message: expect.stringContaining('permission key Ghost knows') },
+      ]);
+    }
+  });
+
   it('refuses a permission key listed twice, and anything but a list of keys', () => {
     expect(errorsOf(withScopes(['post:read', 'post:read']))).toEqual([
       { path: 'scopes[1]', message: 'Expected post:read only once' },
