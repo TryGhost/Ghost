@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import type { MemberAccess } from '../../services/members-metafields/callers';
+import { MEMBER_ACCESS, type MemberAccess } from '@tryghost/metafield-types';
 import type {
   DefinitionChange,
   OnDefinitionUpdated,
@@ -68,12 +68,12 @@ const EDITS: { [Property in keyof Definition]: EditOf } = {
   settings: (previous, next) =>
     isDeepStrictEqual(previous.settings, next.settings) ? [] : [fieldAction('edited', next)],
   access: (previous, next) =>
-    previous.access.member === next.access.member
+    memberAccessOf(previous) === memberAccessOf(next)
       ? []
       : [
           fieldAction('edited', next, {
-            member_access: next.access.member,
-            previous_member_access: previous.access.member,
+            member_access: memberAccessOf(next),
+            previous_member_access: memberAccessOf(previous),
           }),
         ],
   // Stored with events of their own, which History reads as "archived" and "restored".
@@ -90,6 +90,11 @@ const EDITS: { [Property in keyof Definition]: EditOf } = {
   // Changes with every edit, and says nothing an action's own time does not.
   updatedAt: NOT_LOGGED,
 };
+
+/** A field's member level as History names it: `none` when the field sets none of its own. */
+function memberAccessOf(field: Definition): MemberAccess {
+  return field.access.member ?? MEMBER_ACCESS.none;
+}
 
 /**
  * The actions for one edit of a field: one for each thing about the field that the edit changed,

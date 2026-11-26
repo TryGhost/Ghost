@@ -352,9 +352,11 @@ describe('Webhooks service root', function () {
       events.emit('member.added', memberModel(), {});
 
       const body = JSON.parse((await received).body);
-      // Read as Ghost itself, which reaches every field, as staff do.
+      // Read as Ghost itself, which reaches the namespaces it owns, as custom fields are.
       sinon.assert.calledOnceWithExactly(readMetafieldsForMember, 'member-id', {
-        kind: 'internal',
+        kind: 'app',
+        installationId: 'ghost',
+        actingFor: null,
       });
       assert.equal(body.member.current.email, 'member@example.com');
       assert.deepEqual(body.member.current.metafields, { custom: { favourite_colour: 'teal' } });

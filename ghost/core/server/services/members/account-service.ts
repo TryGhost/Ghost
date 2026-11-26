@@ -143,10 +143,11 @@ export class MemberAccountService {
     const writes =
       data.metafields === undefined
         ? []
-        : await this.#metafieldValues.planWrite(this.#metafieldValues.unwrapWire(data.metafields), {
-            kind: 'member',
+        : await this.#metafieldValues.planWrite(
+            this.#metafieldValues.unwrapWire(data.metafields),
+            { kind: 'member', memberId },
             memberId,
-          });
+          );
 
     // Saved through the members service, like a staff edit, so the change reaches webhooks.
     await this.#memberBREADService.updateWithMetafields(

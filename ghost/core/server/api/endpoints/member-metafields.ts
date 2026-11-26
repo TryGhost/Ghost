@@ -3,8 +3,6 @@ import { actingContext } from '../../lib/actor';
 import { booted, callerOf, changedForMembers } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
-const permissionsService = require('../../auth/permissions');
-
 interface MemberMetafieldOptions {
   namespace: string;
   key: string;
@@ -27,20 +25,20 @@ type WriteFrame = Frame<{
 
 // Reading a definition needs no permission. A definition says only that the site collects
 // a shoe size, and every signed-in member is already shown the whole list, so there is
-// nothing here to keep from staff. Managing them is the namespace owner's, and with
-// `permissions: true` the framework would check against the Bookshelf model named after
-// the resource — these fields have no Bookshelf model, so each writing handler asks the
-// permissions service directly.
-
-/**
- * Whether the caller may manage the route's namespace, asked of whoever owns it. The
- * namespace is settled first, as which one is being written to decides whose authority
- * applies.
- */
-async function canManage(frame: ReadFrame, action: 'add' | 'edit' | 'destroy', key?: string) {
-  const { owner } = booted().namespaces.owned(namespaceRoute(frame.options).namespace);
-  return permissionsService.canThis(frame.options.context)[action][owner.staff](key);
-}
+// nothing here to keep from staff.
+//
+// Managing them takes the custom fields permission, checked the standard way, so an app is held
+// to the scopes it was approved for. Administrators and the Admin Integration role hold it. Which
+// namespaces a caller may manage is each namespace's policy, which the definitions service checks.
+// The namespace is settled first, so a request for one nobody registered is told so rather than
+// sent after a permission that wouldn't help.
+const managing = (method: 'add' | 'edit' | 'destroy') => ({
+  docName: 'member_custom_field',
+  method,
+  before(frame: ReadFrame) {
+    booted().namespaces.registered(namespaceRoute(frame.options).namespace);
+  },
+});
 
 const noCacheInvalidation = { cacheInvalidate: false };
 
@@ -88,11 +86,10 @@ const controller = {
     headers: noCacheInvalidation,
     options: ['namespace'],
     validation: { options: { namespace: { required: true } } },
-    permissions(frame: WriteFrame) {
-      return canManage(frame, 'add');
-    },
+    permissions: managing('add'),
     query(frame: WriteFrame) {
       return booted().definitions.add(
+        callerOf(frame.options.context),
         actingContext(frame.options.context),
         namespaceRoute(frame.options).namespace,
         frame.data.members_metafields,
@@ -104,11 +101,10 @@ const controller = {
     headers: noCacheInvalidation,
     options: ['namespace'],
     validation: { options: { namespace: { required: true } } },
-    permissions(frame: WriteFrame) {
-      return canManage(frame, 'edit');
-    },
+    permissions: managing('edit'),
     query(frame: WriteFrame) {
       return booted().definitions.reorder(
+        callerOf(frame.options.context),
         actingContext(frame.options.context),
         namespaceRoute(frame.options).namespace,
         frame.data.members_metafields,
@@ -120,12 +116,11 @@ const controller = {
     headers: noCacheInvalidation,
     options: ['namespace', 'key'],
     validation: { options: { namespace: { required: true }, key: { required: true } } },
-    permissions(frame: WriteFrame) {
-      return canManage(frame, 'edit', frame.options.key);
-    },
+    permissions: managing('edit'),
     async query(frame: WriteFrame) {
       const field = fieldRoute(frame.options);
       const edited = await booted().definitions.edit(
+        callerOf(frame.options.context),
         actingContext(frame.options.context),
         field.namespace,
         field.key,
@@ -148,9 +143,7 @@ const controller = {
     headers: noCacheInvalidation,
     options: ['namespace', 'key'],
     validation: { options: { namespace: { required: true }, key: { required: true } } },
-    permissions(frame: WriteFrame) {
-      return canManage(frame, 'destroy', frame.options.key);
-    },
+    permissions: managing('destroy'),
     async query(frame: WriteFrame) {
       const field = fieldRoute(frame.options);
       // Deleting a field deletes its bindings, and tiers list to anyone a requirement only while
@@ -160,6 +153,7 @@ const controller = {
         frame.setHeader('X-Cache-Invalidate', '/*');
       }
       await booted().definitions.destroy(
+        callerOf(frame.options.context),
         actingContext(frame.options.context),
         field.namespace,
         field.key,

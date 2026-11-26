@@ -13,6 +13,7 @@ const {
 } = require('../../../../../shared/events');
 const ObjectId = require('bson-objectid').default;
 const { NotFoundError } = require('@tryghost/errors');
+const { GHOST } = require('../../../members-metafields');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const { hasActiveOffer } = require('../utils/has-active-offer');
@@ -1270,7 +1271,7 @@ module.exports = class MemberRepository {
       // Read as Ghost itself, as what it finds is what the site's webhooks are sent.
       const previousMetafields = await this._metafieldValues.getValuesFor(
         member.id,
-        { kind: 'internal' },
+        GHOST,
         transacting,
       );
       // require: false so concurrent deletes don't throw "No Rows Deleted"

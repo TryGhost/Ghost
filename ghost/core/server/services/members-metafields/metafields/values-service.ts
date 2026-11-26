@@ -39,8 +39,10 @@ import {
   type FieldSource,
 } from './queries';
 import { MemberAccessSchema } from '@tryghost/metafield-types';
-import type { Namespaces } from './namespaces';
-import type { Asking, MetafieldResource, ResourceKind } from './resource';
+import type { Namespaces, RecordOf } from './namespaces';
+import { accessOf } from './models';
+import type { Asking } from './callers';
+import { recordsAreMembers, type MetafieldResource, type ResourceKind } from './resource';
 import { readStoredField } from './stored-fields';
 import {
   VALUE_COLUMNS,
@@ -184,9 +186,9 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
  */
 export class MetafieldValuesService<R extends ResourceKind> {
   protected knex: Knex;
-  protected resource: MetafieldResource;
-  private fields: FieldSource<R>;
-  private namespaces: Pick<Namespaces<R>, 'canWrite'>;
+  protected resource: MetafieldResource<R>;
+  private fields: FieldSource;
+  private namespaces: Pick<Namespaces, 'canWrite'>;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
@@ -198,6 +200,8 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   private valueKey: string[];
   private valuesInput: z.ZodType<Record<string, unknown>>;
+  /** Whether a member owns a record: on members, the record is the member. */
+  private memberOf: (resourceId: string) => string | null;
 
   constructor({
     knex,
@@ -209,10 +213,10 @@ export class MetafieldValuesService<R extends ResourceKind> {
     onValuesWritten,
   }: {
     knex: Knex;
-    resource: MetafieldResource;
-    fields: FieldSource<R>;
+    resource: MetafieldResource<R>;
+    fields: FieldSource;
     /** Whose grant decides what a caller may write, namespace by namespace. */
-    namespaces: Pick<Namespaces<R>, 'canWrite'>;
+    namespaces: Pick<Namespaces, 'canWrite'>;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
     /** Called with each write, inside its transaction. */
@@ -233,6 +237,8 @@ export class MetafieldValuesService<R extends ResourceKind> {
         ),
       })
       .parse(schema[resource.tables.values])['@@PRIMARY_KEY@@'];
+    const ofMembers = recordsAreMembers(resource);
+    this.memberOf = (resourceId) => (ofMembers ? resourceId : null);
     // From the fields table's `key` column, so no key a site could hold is rejected.
     this.valuesInput = z.record(z.string().max(fields.maxLength.key * 2 + 1), z.unknown());
   }
@@ -244,7 +250,8 @@ export class MetafieldValuesService<R extends ResourceKind> {
   private async allowedFieldsByIdentity(
     executor: Knex,
     identities: string[],
-    caller: Asking<R>,
+    caller: Asking,
+    record: RecordOf,
   ): Promise<Map<string, AllowedField>> {
     // A write names whole fields, so an identity naming a part is one no field answers to.
     const keysByNamespace = new Map<Namespace, Key[]>();
@@ -258,11 +265,12 @@ export class MetafieldValuesService<R extends ResourceKind> {
     if (keysByNamespace.size === 0) {
       return new Map();
     }
-    const rows = await this.fields
-      .definitions(executor, { caller, status: ACTIVE_ONLY })
-      .read.where((query) => {
+    const rows = await (
+      await this.fields.definitions(executor, { caller, status: ACTIVE_ONLY, record })
+    ).read
+      .where((query: Knex.QueryBuilder) => {
         for (const [namespace, keys] of keysByNamespace) {
-          query.orWhere((inNamespace) =>
+          query.orWhere((inNamespace: Knex.QueryBuilder) =>
             inNamespace.where('namespace', namespace).whereIn('key', keys),
           );
         }
@@ -299,7 +307,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async getValuesFor(
     resourceId: string,
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
     return (await this.getValuesForMany([resourceId], caller, executor)).get(resourceId);
@@ -310,13 +318,10 @@ export class MetafieldValuesService<R extends ResourceKind> {
    * whose settings can't be read is read with its type's defaults, and one that can't be read even
    * so is left out, and its values with it.
    */
-  private async typedFields(
-    executor: Knex,
-    caller: Asking<R>,
-  ): Promise<Map<string, TypedSettings>> {
-    const rows = await this.fields
-      .definitions(executor, { caller, status: ACTIVE_ONLY })
-      .read.select(...TYPED_FIELD_COLUMNS);
+  private async typedFields(executor: Knex, caller: Asking): Promise<Map<string, TypedSettings>> {
+    const rows = await (
+      await this.fields.definitions(executor, { caller, status: ACTIVE_ONLY })
+    ).read.select(...TYPED_FIELD_COLUMNS);
     const typedFields = new Map<string, TypedSettings>();
     for (const row of rows) {
       const field = readStoredField(row, DbTypedField, {
@@ -337,24 +342,41 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async getValuesForMany(
     resourceIds: string[],
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (resourceIds.length === 0) {
       return new Map();
     }
+    // A member reaches a record as its member only when it is theirs, so their own record is read
+    // apart from any other.
+    if (caller.kind === 'member' && 'memberId' in caller) {
+      const own = resourceIds.filter((id) => this.memberOf(id) === caller.memberId);
+      const others = resourceIds.filter((id) => this.memberOf(id) !== caller.memberId);
+      if (own.length > 0 && others.length > 0) {
+        const [ofOwn, ofOthers] = await Promise.all([
+          this.getValuesForMany(own, caller, executor),
+          this.getValuesForMany(others, caller, executor),
+        ]);
+        return new Map([...ofOwn, ...ofOthers]);
+      }
+    }
+    // Every id here is the caller's own record or none is, so one record stands for them all.
+    const [first] = resourceIds;
+    const record = { member: first === undefined ? null : this.memberOf(first) };
 
     // Not ordered by field: these rows become an object keyed by field, and an object
     // cannot carry an order. `path` is ordered so composite parts assemble the same
     // way every time.
     const valuesTable = this.resource.tables.values;
+    const readable = await this.fields.readableFields(executor, caller, record);
     const rows = await this.fields
       .readable(
         executor(valuesTable).join(
           this.fields.asRead(executor),
           onField(this.fields.name, valuesTable),
         ),
-        caller,
+        readable,
       )
       .whereIn(`${valuesTable}.${this.resource.idColumn}`, resourceIds)
       .where(`${this.fields.name}.status`, FIELD_STATUS.active)
@@ -457,17 +479,25 @@ export class MetafieldValuesService<R extends ResourceKind> {
   }
 
   /**
-   * Resolve input into the writes it implies, writing nothing. Returned so a caller can
-   * validate before opening a transaction it would otherwise have to unwind, then apply
-   * the same plan without re-resolving it. A value the site won't accept refuses the whole
-   * write, with every refusal at once.
+   * Resolve input into the writes it implies on the record `resourceId` names, writing nothing,
+   * or on a record still to be added when it names none. Returned so a caller can validate before
+   * opening a transaction it would otherwise have to unwind, then apply the same plan to that
+   * record without re-resolving it. A value the site won't accept refuses the whole write, with
+   * every refusal at once.
    */
   async planWrite(
     input: unknown,
-    caller: Asking<R>,
+    caller: Asking,
+    resourceId: string | null,
     executor: Knex = this.knex,
   ): Promise<PlannedWrite[]> {
-    const { writes, refusals } = await this.planOrRefuse(input, caller, undefined, executor);
+    const { writes, refusals } = await this.planOrRefuse(
+      input,
+      caller,
+      resourceId,
+      undefined,
+      executor,
+    );
     const [first, ...rest] = refusals;
     if (first) {
       throw refusalError(first, rest);
@@ -489,7 +519,8 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async planOrRefuse(
     input: unknown,
-    caller: Asking<R>,
+    caller: Asking,
+    resourceId: string | null,
     named?: (identity: string) => string,
     executor: Knex = this.knex,
   ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
@@ -508,7 +539,9 @@ export class MetafieldValuesService<R extends ResourceKind> {
       });
     }
 
-    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, caller);
+    // A record still to be added belongs to no member yet, so no member's own policy reaches it.
+    const record = { member: resourceId === null ? null : this.memberOf(resourceId) };
+    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, caller, record);
     const writes: PlannedWrite[] = [];
     // Gathered rather than thrown as they are found. A write names several values, and
     // a composite is several again, so refusing at the first leaves someone correcting
@@ -527,7 +560,13 @@ export class MetafieldValuesService<R extends ResourceKind> {
 
       // A different refusal from the unknown-field one above: this caller can
       // already see the field, so naming it discloses nothing.
-      if (!this.namespaces.canWrite(caller, field)) {
+      if (
+        !this.namespaces.canWrite(
+          caller,
+          { namespace: field.namespace, access: accessOf(field.memberAccess) },
+          record,
+        )
+      ) {
         refusals.push({
           message: `Cannot set custom field: ${nameOf(identity)}`,
           property: propertyOf(identity),
@@ -780,13 +819,13 @@ export class MetafieldValuesService<R extends ResourceKind> {
    */
   async heldValues(
     field: FieldIdentity,
-    caller: Asking<R>,
+    caller: Asking,
     executor: Knex = this.knex,
   ): Promise<string[]> {
     const values = this.resource.tables.values;
-    const [row] = await this.fields
-      .definitions(executor, { caller, status: ACTIVE_ONLY, field })
-      .read.select(...TYPED_FIELD_COLUMNS);
+    const [row] = await (
+      await this.fields.definitions(executor, { caller, status: ACTIVE_ONLY, field })
+    ).read.select(...TYPED_FIELD_COLUMNS);
     // A field that can't be read even with its type's defaults is treated as missing, as the
     // definitions read treats it.
     const typed =

@@ -1,19 +1,36 @@
 import errors from '@tryghost/errors';
 import { unreachable } from '../../../lib/unreachable';
 import type { Namespace } from '@tryghost/metafield-types/identity';
-import { MEMBER_ACCESS, type MemberAccess } from '@tryghost/metafield-types';
-import type { Asking, CallerKind, ResourceKind } from './resource';
+import type { Asking } from './callers';
+import type { DefinitionAccess } from './models';
 
 /**
- * Who manages a namespace's fields: defines, renames, reorders, archives, restores and deletes
- * them. Staff do, through one of Ghost's permissions.
+ * Who an access policy can give a level to. Each is either a kind of caller or how the caller
+ * stands to what is being asked for:
  *
- * An app owning its own namespace will be another kind of owner, and not a permission at all:
- * the caller has to *be* that app rather than hold a role.
+ * - `owner`: the app that owns the namespace. Ghost owns the namespaces it registers.
+ * - `staff`: any staff user.
+ * - `integration`: any integration.
+ * - `member`: the member a record belongs to. On members, that is the member themselves. A question
+ *   about definitions, which names no record, is answered as it would be for the member's own.
+ * - `anonymous`: anyone at all, signed in or not.
  */
-export interface Owner<R extends ResourceKind> {
-  staff: R['StaffPermission'];
-}
+export type Subject = 'owner' | 'staff' | 'integration' | 'member' | 'anonymous';
+
+/**
+ * What a subject may do with a namespace. Each level includes the ones before it: whoever can
+ * write values can read them, and whoever can manage the namespace, by adding, editing, ordering
+ * and deleting its definitions, can write them.
+ */
+export type Level = 'none' | 'read' | 'write' | 'manage';
+
+const LEVELS: readonly Level[] = ['none', 'read', 'write', 'manage'];
+
+/** The level each subject has. A subject left out has none. Plain data, so it can be stored. */
+export type AccessPolicy = { readonly [S in Subject]?: Level };
+
+/** Every namespace's policy starts here: its owner manages it, and nobody else has anything. */
+export const OWNER_MANAGES: AccessPolicy = { owner: 'manage' };
 
 /**
  * Whether a namespace can be used at all. While it can't, each of its fields reads as archived
@@ -39,113 +56,79 @@ export interface CountLimit {
 /** Something holding a namespace's fields back. Each kind is applied where it bites, below. */
 export type NamespaceLimit = AvailabilityLimit | CountLimit;
 
-/** What a caller may do with values: nothing, read them, or read and write them. */
-export type Level = MemberAccess;
-
 /**
- * What each caller may do with a namespace's values, as data: a caller left out gets nothing.
- * The namespace's owner decides it, as reaching another's fields is a grant of the owner's, not a
- * property of the field or of the caller.
- *
- * It is the base each definition in the namespace lays its own level over: the caller a resource
- * stores a level for on every definition gets that definition's level instead.
+ * A namespace as it is registered: the app that owns it, its limits, and its access policy, laid
+ * over `OWNER_MANAGES`. Whatever puts fields in a namespace registers it, and this domain applies
+ * the rules, so it never has to know whose namespace it is or why its rules are what they are.
  */
-export type Access<R extends ResourceKind> = { [Kind in CallerKind<R>]?: Level };
-
-/**
- * Which of a namespace's fields a caller's level reaches: all of them, none of them, or the ones
- * whose stored level is one of `levels`. Worked out from the data above for each read.
- */
-export type Grant =
-  | { fields: 'all' }
-  | { fields: 'none' }
-  | { fields: 'by stored level'; levels: readonly Level[] };
-
-/**
- * A namespace as it is registered: its owner, its limits and its access. Whatever puts
- * fields in a namespace registers it, and this domain applies the rules, so it never has to know
- * whose namespace it is or why its limits are what they are.
- */
-export interface NamespaceRegistration<R extends ResourceKind> {
+export interface NamespaceRegistration {
   namespace: Namespace;
-  owner: Owner<R>;
+  /** The installation id of the app that owns the namespace, `GHOST_APP_ID` for Ghost's own. */
+  owner: string;
   /** Every limit on the namespace. They stack: each one applies. */
   limits: readonly NamespaceLimit[];
-  access: Access<R>;
+  /** Who else may manage the namespace, write its values or read them. */
+  access: AccessPolicy;
 }
 
-/** A namespace and what one caller is granted of its fields. */
-export interface NamespaceGrant {
+/**
+ * What a read or write of values is about: the member its record belongs to, or null on a
+ * resource whose records aren't members. A question about definitions has no record at all.
+ */
+export type RecordOf = { member: string | null } | null;
+
+/** A definition as the policy reads it: its namespace, and its own policy. */
+export interface PolicyField {
   namespace: Namespace;
-  grant: Grant;
+  access: DefinitionAccess;
 }
 
-/** What one caller is granted of the fields in each namespace. */
-export interface Grants {
-  /** Each namespace someone owns, with its owner's grant. */
-  owned: NamespaceGrant[];
-  /** Every namespace nobody owns. */
-  unowned: Grant;
-}
-
-export interface Namespaces<R extends ResourceKind> {
-  /** The registration of a namespace someone owns. Nobody owns any other, so no field can be defined there. */
-  owned(namespace: Namespace): NamespaceRegistration<R>;
+export interface Namespaces {
+  /**
+   * Registers a namespace while Ghost runs, as installing an app will. Ghost's own are given when
+   * it boots. Refuses one already registered.
+   */
+  register(registration: NamespaceRegistration): void;
+  /** Takes a namespace's registration away, after which nothing in it can be reached. */
+  unregister(namespace: Namespace): void;
+  /** A registered namespace. Nobody registered any other, so nothing in it can be reached. */
+  registered(namespace: Namespace): NamespaceRegistration;
   /** The namespaces unavailable right now, whose fields read as archived. */
   unavailable(): Namespace[];
   /** Refuses any change to the namespace's fields its limits don't allow. */
   assertChangeable(namespace: Namespace): Promise<void>;
   /** Refuses adding `adding` fields to the `held` the namespace already has. */
   assertRoom(namespace: Namespace, held: number, adding: number): Promise<void>;
-  /** What `caller` may read in each namespace. */
-  readable(caller: Asking<R>): Grants;
-  /** Whether `caller` may read `field`, by its namespace's grant, whatever the field's status. */
-  canRead(caller: Asking<R>, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
-  /** Whether `caller` may write the values of `field`, by its namespace's grant. */
-  canWrite(caller: Asking<R>, field: { namespace: Namespace; memberAccess: MemberAccess }): boolean;
+  /** Refuses a caller who may not manage the namespace's definitions. */
+  assertManageable(caller: Asking, namespace: Namespace): void;
+  /** Whether `caller` may read `field` on `record`, whatever the field's status. */
+  canRead(caller: Asking, field: PolicyField, record: RecordOf): boolean;
+  /** Whether `caller` may write the values of `field` on `record`. */
+  canWrite(caller: Asking, field: PolicyField, record: RecordOf): boolean;
 }
 
 /**
  * The namespaces fields can be defined in, each with its registration.
  *
- * A namespace is settled before any question about the caller. Asking the caller first gets
- * the order wrong in a way that shows: a request to define a field in a namespace nobody owns
- * would be refused for want of a permission, telling the caller to go and get one, when no
- * permission would have helped.
+ * A namespace is settled before its policy is asked about the caller. Asking the policy first gets
+ * the order wrong in a way that shows: a request to define a field in a namespace nobody
+ * registered would be refused as though a level were missing, when no level would have helped.
  */
-export function createNamespaces<R extends ResourceKind>(
-  registrations: readonly NamespaceRegistration<R>[],
+export function createNamespaces(
+  registrations: readonly NamespaceRegistration[],
   {
-    unowned,
     definitionLimit,
-    storedLevelFor,
   }: {
-    /**
-     * Who reaches the fields of a namespace nobody owns. Nobody can define a field in one, but a
-     * field can still be stored there, as an app's is.
-     */
-    unowned: Access<R>;
     /** How many fields each namespace may hold, counted for each namespace alone. */
     definitionLimit: CountLimit;
-    /** The caller each definition stores its own level for, laid over its namespace's. */
-    storedLevelFor: CallerKind<R> | undefined;
   },
-): Namespaces<R> {
+): Namespaces {
   const byNamespace = new Map(
     registrations.map((registration) => [registration.namespace, registration]),
   );
-  const accessOf = (namespace: Namespace) => byNamespace.get(namespace)?.access ?? unowned;
+  const everyRegistration = () => [...byNamespace.values()];
 
-  // A definition's level for a caller, or else its namespace's, or else none. Every definition
-  // stores a level for `storedLevelFor`, so that caller always gets the definition's.
-  const grantFor = (access: Access<R>, caller: Asking<R>, needs: readonly Level[]): Grant => {
-    if (caller.kind === storedLevelFor) {
-      return { fields: 'by stored level', levels: needs };
-    }
-    return needs.includes(access[caller.kind] ?? MEMBER_ACCESS.none) ? ALL : NONE;
-  };
-
-  const owned = (namespace: Namespace): NamespaceRegistration<R> => {
+  const registered = (namespace: Namespace): NamespaceRegistration => {
     const registration = byNamespace.get(namespace);
     if (!registration) {
       throw new errors.ValidationError({
@@ -156,35 +139,53 @@ export function createNamespaces<R extends ResourceKind>(
     return registration;
   };
 
+  // A definition in a namespace nobody registered has no policy, so nobody has any level for it.
+  const levelIn = (caller: Asking, field: PolicyField, record: RecordOf): Level => {
+    const registration = byNamespace.get(field.namespace);
+    return registration ? levelFor(registration, field.access, caller, record) : 'none';
+  };
+
   return {
-    owned,
-
-    readable(caller) {
-      return {
-        owned: registrations.map(({ namespace, access }) => ({
-          namespace,
-          grant: grantFor(access, caller, READS),
-        })),
-        unowned: grantFor(unowned, caller, READS),
-      };
+    register(registration) {
+      if (byNamespace.has(registration.namespace)) {
+        throw new errors.IncorrectUsageError({
+          message: `The "${registration.namespace}" namespace is already registered.`,
+        });
+      }
+      byNamespace.set(registration.namespace, registration);
     },
 
-    canRead(caller, field) {
-      return reaches(grantFor(accessOf(field.namespace), caller, READS), field);
+    unregister(namespace) {
+      byNamespace.delete(namespace);
     },
 
-    canWrite(caller, field) {
-      return reaches(grantFor(accessOf(field.namespace), caller, WRITES), field);
+    registered,
+
+    assertManageable(caller, namespace) {
+      // Managing is the namespace's to grant, so no definition's own policy is laid over it.
+      if (!atLeast(levelFor(registered(namespace), {}, caller, null), 'manage')) {
+        throw new errors.NoPermissionError({
+          message: `You do not have permission to manage the fields in the "${namespace}" namespace.`,
+        });
+      }
+    },
+
+    canRead(caller, field, record) {
+      return atLeast(levelIn(caller, field, record), 'read');
+    },
+
+    canWrite(caller, field, record) {
+      return atLeast(levelIn(caller, field, record), 'write');
     },
 
     unavailable() {
-      return registrations
+      return everyRegistration()
         .filter(({ limits }) => limits.some(makesUnavailable))
         .map(({ namespace }) => namespace);
     },
 
     async assertChangeable(namespace) {
-      for (const limit of owned(namespace).limits) {
+      for (const limit of registered(namespace).limits) {
         switch (limit.kind) {
           case 'availability':
             if (!limit.isAvailable()) {
@@ -203,7 +204,7 @@ export function createNamespaces<R extends ResourceKind>(
     async assertRoom(namespace, held, adding) {
       // The namespace's own limits first, so a namespace switched off says so rather than that
       // it is full.
-      for (const limit of [...owned(namespace).limits, definitionLimit]) {
+      for (const limit of [...registered(namespace).limits, definitionLimit]) {
         switch (limit.kind) {
           case 'availability':
             if (!limit.isAvailable()) {
@@ -221,23 +222,64 @@ export function createNamespaces<R extends ResourceKind>(
   };
 }
 
-const ALL: Grant = { fields: 'all' };
-const NONE: Grant = { fields: 'none' };
-/** The levels that let a caller read values, and the one that lets it write them. */
-const READS: readonly Level[] = [MEMBER_ACCESS.read, MEMBER_ACCESS.write];
-const WRITES: readonly Level[] = [MEMBER_ACCESS.write];
+function atLeast(level: Level, needs: Level): boolean {
+  return LEVELS.indexOf(level) >= LEVELS.indexOf(needs);
+}
 
-function reaches(grant: Grant, field: { memberAccess: MemberAccess }): boolean {
-  switch (grant.fields) {
-    case 'all':
-      return true;
-    case 'none':
-      return false;
-    case 'by stored level':
-      return grant.levels.includes(field.memberAccess);
+function highest(levels: readonly Level[]): Level {
+  return levels.reduce<Level>((best, level) => (atLeast(best, level) ? best : level), 'none');
+}
+
+/**
+ * The subjects a caller is, in a namespace with this owner, on `record`. Everyone is `anonymous`,
+ * since a level for anyone is a level for every caller.
+ */
+function subjectsOf(caller: Asking, owner: string, record: RecordOf): Subject[] {
+  const subjects: Subject[] = ['anonymous'];
+  switch (caller.kind) {
+    case 'staff':
+    case 'integration':
+      subjects.push(caller.kind);
+      break;
+    case 'app':
+      if ('installationId' in caller && caller.installationId === owner) {
+        subjects.push('owner');
+      }
+      break;
+    case 'member':
+      // A kind alone, asking what any member can see, or a question with no record, asks as the
+      // record's member would. Otherwise the record has to be this member's.
+      if (record === null || ('memberId' in caller && record.member === caller.memberId)) {
+        subjects.push('member');
+      }
+      break;
+    case 'anonymous':
+      break;
     default:
-      return unreachable(grant, 'grant');
+      unreachable(caller, 'caller');
   }
+  return subjects;
+}
+
+/** A namespace's policy: its owner manages it, with its registration's access laid over that. */
+function policyOf(registration: NamespaceRegistration): AccessPolicy {
+  return { ...OWNER_MANAGES, ...registration.access };
+}
+
+/**
+ * The one rule access is decided by: a definition's policy is its namespace's with its own laid
+ * over it, and the caller has the highest level any of its subjects has in it.
+ */
+function levelFor(
+  registration: NamespaceRegistration,
+  own: DefinitionAccess,
+  caller: Asking,
+  record: RecordOf,
+): Level {
+  const policy: AccessPolicy = { ...policyOf(registration), ...own };
+  return highest(
+    subjectsOf(caller, registration.owner, record).map((subject) => policy[subject] ?? 'none'),
+  );
 }
 
 function makesUnavailable(limit: NamespaceLimit): boolean {

@@ -35,6 +35,16 @@ export const DB_METAFIELD_COLUMNS = {
 };
 
 /**
+ * What a definition's row says about who may reach it: its identity and the level it stores for
+ * its own policy, which the policy is read from before anything else about it.
+ */
+export const DbFieldAccess = z.object({
+  namespace: NamespaceSchema,
+  key: KeySchema,
+  member_access: MemberAccessSchema,
+});
+
+/**
  * A field with nothing to set up stores null as its settings, which reads back as none. Such a
  * field has no settings to write at all, so the column's default stands in for them.
  */

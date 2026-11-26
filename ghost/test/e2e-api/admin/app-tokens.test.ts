@@ -258,6 +258,34 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     }
   });
 
+  // Custom fields are Ghost's, so an app holding the scope to manage them is still refused by their
+  // namespace's policy, which only lets its owner, staff and integrations manage it.
+  it('holds an app managing custom fields to its scopes, then to the namespace’s policy', async function () {
+    const add = (token: string) =>
+      agent
+        .post('members/metafields/custom/')
+        .header('Authorization', bearer(token))
+        .body({ members_metafields: [{ name: 'Loyalty tier', type: 'short_text' }] })
+        .expectStatus(403);
+
+    const unscoped = await tokenFor(await installation(['post:browse']), {
+      clientScopes: ['post:browse'],
+    });
+    // Refused for the scope it lacks, before the namespace is asked anything.
+    const { body: noScope } = await add(unscoped.token);
+    assert.equal(noScope.errors[0].type, 'NoPermissionError');
+    assert.doesNotMatch(`${noScope.errors[0].context}`, /namespace/);
+
+    const scoped = await tokenFor(await installation(['member_custom_field:add']), {
+      clientScopes: ['member_custom_field:add'],
+    });
+    const { body: notOwner } = await add(scoped.token);
+    assert.equal(
+      notOwner.errors[0].context,
+      'You do not have permission to manage the fields in the "custom" namespace.',
+    );
+  });
+
   it('holds a call to the installation’s scopes when its OAuth client is out of step', async function () {
     const id = await installation(['post:browse']);
     const { token } = await tokenFor(id, { clientScopes: ['post:browse', 'tag:browse'] });

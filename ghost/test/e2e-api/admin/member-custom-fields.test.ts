@@ -16,6 +16,29 @@ const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
 const settingsService = require('../../../core/server/services/settings/settings-service');
+const metafields = require('../../../core/server/services/members-metafields');
+const {
+  CUSTOM_FIELDS_ACCESS,
+} = require('../../../core/server/services/members-metafields/custom-fields/namespace');
+const {
+  GHOST_APP_ID,
+} = require('../../../core/server/services/members-metafields/metafields/callers');
+
+/**
+ * Registers `shop` as a second namespace Ghost owns, reached as custom fields are, until the
+ * returned function takes it away. The API defines fields only in `custom`, so a test writes the
+ * other namespace's fields straight to the table, as an app's would be.
+ */
+function registerShop(): () => void {
+  const { namespaces } = metafields.booted();
+  namespaces.register({
+    namespace: 'shop',
+    owner: GHOST_APP_ID,
+    limits: [],
+    access: CUSTOM_FIELDS_ACCESS,
+  });
+  return () => namespaces.unregister('shop');
+}
 
 describe('Member Custom Fields Admin API', function () {
   let agent: {
@@ -602,9 +625,17 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
-  // The API defines fields only in `custom`, so the other namespace's field is written
-  // straight to the table, as an app's would be.
   describe('Fields in another namespace', function () {
+    let unregisterShop: () => void;
+
+    beforeAll(function () {
+      unregisterShop = registerShop();
+    });
+
+    afterAll(function () {
+      unregisterShop();
+    });
+
     beforeEach(async function () {
       await models.Base.knex('members_metafields').insert({
         id: '6600000000000000000000a1',
@@ -3245,33 +3276,35 @@ describe('Member Custom Fields Admin API', function () {
         );
       });
 
-      // The host's limit is custom fields' alone, so it says nothing about the fields an app
-      // defines in its own namespace. Written straight to the table, as an app's would be.
+      // The host's limit is custom fields' alone, so it says nothing about the fields in another
+      // namespace.
       it('says nothing about fields in another namespace', async function () {
-        await models.Base.knex('members_metafields').insert({
-          id: '6600000000000000000000e1',
-          namespace: 'shop',
-          key: 'company',
-          name: 'Company',
-          type: 'short_text',
-          created_at: new Date(),
-        });
+        const unregisterShop = registerShop();
+        try {
+          await models.Base.knex('members_metafields').insert({
+            id: '6600000000000000000000e1',
+            namespace: 'shop',
+            key: 'company',
+            name: 'Company',
+            type: 'short_text',
+            created_at: new Date(),
+          });
 
-        const memberId = await createMember();
-        await agent
-          .put(`members/${memberId}/`)
-          .body({ members: [{ metafields: { shop: { company: 'Acme' } } }] })
-          .expectStatus(200);
-        const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
-        assert.deepEqual(body.members[0].metafields, { shop: { company: 'Acme' } });
+          const memberId = await createMember();
+          await agent
+            .put(`members/${memberId}/`)
+            .body({ members: [{ metafields: { shop: { company: 'Acme' } } }] })
+            .expectStatus(200);
+          const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+          assert.deepEqual(body.members[0].metafields, { shop: { company: 'Acme' } });
 
-        // Refused because nobody can define fields there through this API, not because of a
-        // limit that doesn't apply to them.
-        const { body: refused } = await agent
-          .post('members/metafields/shop/')
-          .body({ members_metafields: [{ name: 'Industry', type: 'short_text' }] })
-          .expectStatus(422);
-        assert.equal(refused.errors[0].property, 'namespace');
+          await agent
+            .post('members/metafields/shop/')
+            .body({ members_metafields: [{ name: 'Industry', type: 'short_text' }] })
+            .expectStatus(201);
+        } finally {
+          unregisterShop();
+        }
       });
 
       it('403s the create endpoint, with the host copy', async function () {
