@@ -29,6 +29,7 @@ function createBackgroundHarness(
   const memberJobs = {
     scheduleTokenCleanupJob: sinon.stub().resolves(),
     scheduleExpiredCompCleanupJob: sinon.stub().resolves(),
+    runExpiredCompCleanupJob: sinon.stub().resolves(),
   };
   const remoteFlags = { init: sinon.stub() };
   const jobsInstance = { keepsJobsUntilSettled: () => keepsJobsUntilSettled };
@@ -81,6 +82,7 @@ type BackgroundHarness = ReturnType<typeof createBackgroundHarness>;
 // Each step logs its own failure, so one failed registration cannot stop the steps after it.
 const isolatedSteps: [string, (boot: BackgroundHarness) => sinon.SinonStub][] = [
   ['interrupted-send recovery', (boot) => boot.recovery],
+  ['expired complimentary cleanup boot run', (boot) => boot.memberJobs.runExpiredCompCleanupJob],
   ['gift cleanup scheduling', (boot) => boot.giftJobs.scheduleGiftCleanupJob],
   ['gift reminder scheduling', (boot) => boot.giftJobs.scheduleGiftReminderJob],
   ['member token cleanup scheduling', (boot) => boot.memberJobs.scheduleTokenCleanupJob],
@@ -99,6 +101,7 @@ function backgroundSteps(boot: BackgroundHarness): sinon.SinonStub[] {
     boot.themes.loadInactiveThemes,
     boot.recovery,
     boot.giftRecovery,
+    boot.memberJobs.runExpiredCompCleanupJob,
     boot.giftJobs.scheduleGiftCleanupJob,
     boot.giftJobs.scheduleGiftReminderJob,
     boot.memberJobs.scheduleTokenCleanupJob,
@@ -286,6 +289,7 @@ it('passes the shared jobs instance to each job registration', async function ()
   await boot.init();
 
   for (const schedule of [
+    boot.memberJobs.runExpiredCompCleanupJob,
     boot.giftJobs.scheduleGiftCleanupJob,
     boot.giftJobs.scheduleGiftReminderJob,
     boot.memberJobs.scheduleTokenCleanupJob,

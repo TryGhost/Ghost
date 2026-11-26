@@ -602,6 +602,12 @@ async function initBackgroundServices({ config }) {
   const giftService = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
+  // Catch-up run of the daily expired comped cleanup, in case the process was not
+  // running at its scheduled time.
+  await runIsolated(() =>
+    require('./server/services/members/jobs').runExpiredCompCleanupJob(jobsService),
+  );
+
   // These run before activitypub.init for the same reason as the send recovery above: gifts,
   // reminders, tokens, expired comped subscriptions, signing keys and expired auth rows would
   // otherwise go unhandled for the life of the process if an unrelated background service fails.
