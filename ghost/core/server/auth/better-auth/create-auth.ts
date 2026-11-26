@@ -7,7 +7,8 @@ import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
 import { ghostSso } from './plugins/sso';
-import { appOAuthDisabledPaths, appOAuthPlugins } from './plugins/apps';
+import { appOAuthDisabledPaths, appOAuthPlugins, ghostApps } from './plugins/apps';
+import { deleteAppTokens } from './plugins/app-clients';
 import {
   DEVICE_TRUST_COOKIE,
   ghostDeviceVerification,
@@ -108,6 +109,7 @@ export function createAuth(deps: CreateAuthDeps) {
   // The cookie lives on the admin origin, so its security follows the admin URL
   const ssl = urlUtils.isSSL(adminOrigin);
   const appPlugins = deps.apps ? appOAuthPlugins({ adminOrigin }) : [];
+  const [, appProvider] = appPlugins;
 
   return betterAuth({
     // Also Better Auth's only trusted origin, matching the legacy login-CSRF check
@@ -172,10 +174,12 @@ export function createAuth(deps: CreateAuthDeps) {
         }
       }),
       after: createAuthMiddleware(async (ctx) => {
-        // So a rollback to legacy can't revive them, as revokeUserSessions does
+        // As revokeUserSessions does: so a rollback to legacy can't revive them, and the app
+        // tokens go with the sessions
         const changed = ctx.path === ROUTES.changePassword && ctx.context.newSession;
         if (changed && !isAPIError(ctx.context.returned)) {
           await deps.db('sessions').where({ user_id: changed.user.id }).del();
+          await deleteAppTokens(ctx.context, { userId: changed.user.id });
         }
 
         // Server-side `auth.api` calls have no request and keep their tokens
@@ -240,6 +244,7 @@ export function createAuth(deps: CreateAuthDeps) {
         emailLimiter: deps.limiters.verificationEmail,
         sendCode: deps.sendDeviceVerificationCode,
       }),
+      ghostApps(appProvider?.options ?? null),
       ...appPlugins,
     ],
     telemetry: { enabled: false },

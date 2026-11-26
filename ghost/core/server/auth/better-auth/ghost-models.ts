@@ -120,6 +120,8 @@ export const ghostCreateDefaults: Record<
 /**
  * Pass as `oauthProvider({ schema: ghostOAuthProviderSchema })`. Maps the
  * provider's models onto Ghost's `oauth_*` tables.
+ * `test/integration/auth/app-oauth-provider.test.ts` writes and reads through it, and compares
+ * Ghost's client row with the one the provider's own create-client writes.
  */
 export const ghostOAuthProviderSchema = {
   oauthClient: {

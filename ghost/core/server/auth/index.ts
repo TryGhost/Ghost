@@ -43,6 +43,12 @@ export = {
     return require('./better-auth/staff-sessions').default();
   },
 
+  // App tokens from Better Auth's OAuth provider; under either engine, as it says whether apps
+  // can get tokens
+  get appTokens(): ReturnType<typeof import('./better-auth/app-tokens').default> {
+    return require('./better-auth/app-tokens').default();
+  },
+
   // Stripe Connect's OAuth state; only under auth:engine better-auth
   get stripeConnectState(): ReturnType<
     typeof import('./better-auth/stripe-connect-state').default
