@@ -185,7 +185,7 @@ whose password hasn't changed since still carry their old hash there, unread.
 
 ## App tokens
 
-Apps are to get Admin API tokens from `@better-auth/oauth-provider`, under
+Apps are to get app tokens from `@better-auth/oauth-provider`, under
 `better-auth` only: a user token for the staff user, bound to their staff
 session. Nothing issues one in a request yet.
 

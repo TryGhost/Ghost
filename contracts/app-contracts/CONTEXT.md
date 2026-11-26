@@ -225,7 +225,7 @@ _Avoid_: route, link, URL
 
 **Fetch escape hatch**:
 The bridge's `fetch`, which calls the Admin API as the signed-in staff user on
-the app's behalf. It stands in for an app's own token until apps have
+the app's behalf. It stands in for a user token until apps have
 permissions, and takes an Admin API path, never a URL.
 _Avoid_: proxy, API access, app token
 

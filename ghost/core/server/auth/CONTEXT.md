@@ -60,6 +60,32 @@ _Avoid_: staff key
 The key that identifies an integration to the Content API. It is not a secret.
 _Avoid_: content token
 
+**App token**:
+An access token Ghost issues to an app for calls to the Admin API. Each is
+opaque (a random string, not a JWT) and starts with `ghost_app_`. Which kind it
+is comes from the OAuth client it was issued to and whether it acts for a staff
+user, never from its text. Under the Better Auth engine, Ghost can issue and
+validate user tokens, but nothing hands one out yet and the Admin API doesn't
+accept them. The other kinds aren't built yet.
+_Avoid_: Admin API token, bearer token
+
+**User token**:
+The app token Admin holds for an app while a staff user has it open. A request
+with one is made by an app principal acting for that user, and the token ends
+no later than their session.
+
+**Backend token**:
+An app backend's own app token, for work with no staff user behind it. Not
+built yet. Earlier versions of this glossary called this the app token.
+
+**Exchanged user token**:
+A short-lived app token a backend gets in exchange for an ID token, to act for
+the staff user the ID token names. Not built yet.
+
+**ID token**:
+What tells an app's backend which staff user is asking: a signed JWT, not an
+app token. Not built yet.
+
 ### Principals
 
 **Authentication**:
@@ -263,12 +289,3 @@ _Avoid_: system context, admin context
   [App Installations](../services/app-installations/CONTEXT.md). Each is a
   permission key, never a wildcard, and **resource** there means an object
   type. The policy doesn't check them yet: Admin's bridge holds an app to them.
-- These names are reserved for app credentials that aren't built yet, so they
-  aren't coined twice:
-  - **User token**: what Admin holds for an app while a staff user has it
-    open. It acts for that user and ends with their session.
-  - **App token**: an app backend's own token, for work with no staff user
-    behind it.
-  - **ID token**: what tells an app's backend which staff user is asking.
-  - **Exchanged user token**: what a backend gets for an ID token, to act for
-    that staff user.
