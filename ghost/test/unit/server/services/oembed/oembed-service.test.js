@@ -175,9 +175,7 @@ describe('oembed-service', function () {
     // requested, whatever it would answer.
     const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"><title>Example</title></head></html>`;
 
-    const mockPage = () => {
-      nock('https://www.example.com').get('/').reply(200, pageHtml);
-    };
+    const mockPage = () => nock('https://www.example.com').get('/').reply(200, pageHtml);
 
     const responses = [
       {
@@ -237,7 +235,7 @@ describe('oembed-service', function () {
     });
 
     it('rejects an embed request as an unknown provider without requesting the endpoint', async function () {
-      mockPage();
+      const page = mockPage();
       const endpoint = nock('https://www.example.com')
         .get('/oembed')
         .reply(200, { version: '1.0', ...responses[0] });
@@ -249,7 +247,23 @@ describe('oembed-service', function () {
           message: 'No provider found for supplied URL.',
         },
       );
+      assert.equal(page.isDone(), true);
       assert.equal(endpoint.isDone(), false);
+    });
+
+    it('logs an unexpected bookmark fallback failure and rejects as an unknown provider', async function () {
+      mockPage();
+      const failure = new Error('favicon lookup failed');
+      sinon.stub(oembedService, 'findFallbackFavicon').rejects(failure);
+
+      await assert.rejects(oembedService.fetchOembedDataFromUrl('https://www.example.com'), {
+        name: 'ValidationError',
+        message: 'No provider found for supplied URL.',
+      });
+      sinon.assert.calledOnce(logging.error);
+      const logged = logging.error.firstCall.args[0];
+      assert.equal(logged.message, 'Encountered error when fetching oembed');
+      assert.match(logged.stack, /^Error: favicon lookup failed/);
     });
   });
 

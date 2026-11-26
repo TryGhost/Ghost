@@ -874,7 +874,8 @@ class OEmbedService {
       // <link type="application/json+oembed"> endpoint is untrusted, so it
       // is never requested and the page falls back to a bookmark instead
       if (!type) {
-        return this.fetchBookmarkData(url, body, 'bookmark');
+        // awaited so unexpected failures reach the catch below
+        return await this.fetchBookmarkData(url, body, 'bookmark');
       }
 
       return this.unknownProvider(url);

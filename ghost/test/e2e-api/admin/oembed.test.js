@@ -651,18 +651,18 @@ describe('Oembed API', function () {
     it('skips fetching IPv6 addresses', async function () {
       dnsPromises.lookup.restore();
       sinon.stub(dnsPromises, 'lookup').callsFake(function (hostname) {
-        if (hostname === '[2607:f0d0:1002:51::4]') {
-          return Promise.resolve({ address: '192.168.0.1' });
+        if (hostname === '[fd00::1]') {
+          return Promise.resolve({ address: 'fd00::1' });
         } else {
           return Promise.resolve({ address: '123.123.123.123' });
         }
       });
 
-      const pageMock = nock('http://[2607:f0d0:1002:51::4]:9999')
+      const pageMock = nock('http://[fd00::1]:9999')
         .get('/')
         .reply(200, '<html><head><title>Title</title></head></html>');
 
-      const url = encodeURIComponent('http://[2607:f0d0:1002:51::4]:9999');
+      const url = encodeURIComponent('http://[fd00::1]:9999');
       await request
         .get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
         .set('Origin', config.get('url'))
