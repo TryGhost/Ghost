@@ -5,20 +5,28 @@ import type {ComponentType} from 'react';
 
 // the partial info produced by a container's `getDraggableInfo` callback before
 // the handler merges in the live `element`/`mousePosition` to form a DraggableInfo
-export interface DraggableInfoSeed {
-    type?: string;
-    cardName?: string;
-    nodeKey?: string;
-    dataset?: Record<string, unknown>;
+export interface CardDraggableInfoSeed {
+    type: 'card';
+    nodeKey: string;
+    cardName: string;
+    dataset: Record<string, unknown>;
     Icon?: ComponentType<{className?: string}>;
 }
 
-export interface DraggableInfo extends DraggableInfoSeed {
+export interface ImageDraggableInfoSeed {
+    type: 'image';
+    dataset: Record<string, unknown>;
+}
+
+// containers that don't describe their draggables return an empty seed
+export type DraggableInfoSeed = CardDraggableInfoSeed | ImageDraggableInfoSeed | {type?: undefined};
+
+export type DraggableInfo = DraggableInfoSeed & {
     element: HTMLElement;
     mousePosition: {x: number; y: number};
     target?: Element | null;
     insertIndex?: number;
-}
+};
 
 export const defaultOptions = {
     speed: 8,

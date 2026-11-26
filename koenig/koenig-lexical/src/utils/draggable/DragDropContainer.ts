@@ -118,7 +118,7 @@ export class DragDropContainer {
             ghostElement = this._createGhostElement(draggableInfo);
         }
 
-        if (!ghostElement && (draggableInfo.type === 'image' || draggableInfo.cardName === 'image')) {
+        if (!ghostElement && (draggableInfo.type === 'image' || (draggableInfo.type === 'card' && draggableInfo.cardName === 'image'))) {
             const image = draggableInfo.element.querySelector('img');
             if (image) {
                 const aspectRatio = image.width / image.height;
