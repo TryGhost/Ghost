@@ -64,9 +64,9 @@ _Avoid_: content token
 An access token Ghost issues to an app for calls to the Admin API. Each is
 opaque (a random string, not a JWT) and starts with `ghost_app_`. Which kind it
 is comes from the OAuth client it was issued to and whether it acts for a staff
-user, never from its text. Under the Better Auth engine, Ghost can issue and
-validate app user tokens, and the Admin API accepts them, but nothing hands one
-out yet. The other kinds aren't built yet.
+user, never from its text. Under the Better Auth engine, Ghost issues app user
+tokens to app sessions, and the Admin API accepts them. The other kinds aren't
+built yet.
 _Avoid_: Admin API token, bearer token
 
 **App user token**:

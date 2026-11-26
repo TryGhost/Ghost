@@ -691,7 +691,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     });
   });
 
-  // A token for a staff user comes only from a staff session, never from an app's own token
+  // A user token comes only from a staff session, never from a request made with an app token
   describe('on the app session routes', function () {
     const routes = [
       { name: 'renewing a token', path: (id: string) => `apps/installations/${id}/tokens/` },
