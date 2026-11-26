@@ -56,7 +56,6 @@ const BACKUP_TABLES = [
   'members_current_subscription',
   'members_subscription_created_events',
   'members_newsletters',
-  'members_metafields',
   'members_metafield_values',
   'members_metafield_bindings',
   'mentions',
@@ -123,6 +122,7 @@ const TABLES_ALLOWLIST = [
   'offer_redemptions',
   'snippets',
   'segments',
+  'members_metafields',
 ];
 
 // NOTE: these are non-core settings keys which should never end up in the export file

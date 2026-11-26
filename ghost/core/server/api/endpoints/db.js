@@ -22,7 +22,8 @@ const controller = {
     validation: {
       options: {
         include: {
-          values: exporter.BACKUP_TABLES,
+          // A table an export holds anyway is accepted too, as it once had to be asked for.
+          values: [...exporter.BACKUP_TABLES, ...exporter.TABLES_ALLOWLIST],
         },
       },
     },
@@ -46,7 +47,8 @@ const controller = {
     validation: {
       options: {
         include: {
-          values: exporter.BACKUP_TABLES,
+          // A table an export holds anyway is accepted too, as it once had to be asked for.
+          values: [...exporter.BACKUP_TABLES, ...exporter.TABLES_ALLOWLIST],
         },
       },
     },

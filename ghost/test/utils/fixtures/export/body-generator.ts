@@ -176,6 +176,7 @@ const exportedBodyLatest = () => {
             data: {
                 benefits: [],
                 custom_theme_settings: [],
+                members_metafields: [],
                 newsletters: [],
                 offer_redemptions: [],
                 offers: [],
