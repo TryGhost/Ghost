@@ -9,6 +9,7 @@ import type { Tracer } from '../../lib/tracing/tracer';
  * - `not_found`: no segment has the id in the request.
  * - `name_taken`: another segment already has the name, or a name the database counts as the
  *   same.
+ * - `filter_unparseable`: the filter the segment would be saved with isn't valid NQL.
  * - `filter_changed`: the request has a filter that isn't the segment's own.
  * - `slug_changed`: the request has a slug that isn't the segment's own.
  * - `slug_taken`: another segment has the slug the new segment was given.
@@ -21,6 +22,7 @@ import type { Tracer } from '../../lib/tracing/tracer';
 export type SegmentRejection =
   | 'not_found'
   | 'name_taken'
+  | 'filter_unparseable'
   | 'filter_changed'
   | 'slug_changed'
   | 'slug_taken'

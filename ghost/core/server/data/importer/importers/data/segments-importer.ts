@@ -4,6 +4,7 @@ import segments from '../../../../services/segments';
 import { filterNamesSegment } from '../../../../services/segments/expansion';
 import { NameTakenError, SlugRejectedError } from '../../../../services/segments/errors';
 import {
+  isParseableFilter,
   MAX_NAME_LENGTH,
   normalizeName,
   type Segment,
@@ -112,7 +113,8 @@ export class SegmentsImporter {
    * A segment the site already has is not added again, so a file can be imported twice: the
    * site has it when a segment has its filter under its name, or under its name with a number,
    * which is how an import stores a segment whose name was taken. A segment that can't be one,
-   * such as one with an empty name, is left out. A segment whose name is taken by a segment
+   * such as one with an empty name or a filter that isn't valid NQL, is left out and reported as
+   * a problem, and the import goes on. A segment whose name is taken by a segment
    * with another filter is added with a number, such as "VIP (2)", because nobody can be asked
    * for another name during an import. Every segment whose own name is free keeps it, so a
    * segment only gets a number when the site, or an earlier segment in the file, has its name.
@@ -168,6 +170,11 @@ export class SegmentsImporter {
         this.skipped(segment, 'Segment was not imported because its filter names another segment.');
       } else if (isHeld(segment.name, filter.data)) {
         this.skipped(segment, 'Segment was not imported because the site already has it.');
+      } else if (!isParseableFilter(filter.data)) {
+        // After `isHeld`, as a stored segment can have a filter that isn't valid NQL. Before
+        // names are numbered, as the service would reject it, so a segment that is left out
+        // takes no name from one that is added.
+        this.skipped(segment, 'Segment was not imported because its filter is not valid NQL.');
       } else {
         hold(numbered(segment.name, 1), filter.data);
         wanted.push({ segment, filter: filter.data });

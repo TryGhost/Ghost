@@ -12,6 +12,7 @@ import { filterNamesSegment } from './expansion';
 import {
   FilterChangedError,
   FilterNamesSegmentError,
+  FilterUnparseableError,
   NameTakenError,
   NoFreeSlugError,
   type SegmentError,
@@ -20,6 +21,7 @@ import {
   SlugUnusableError,
 } from './errors';
 import {
+  isParseableFilter,
   normalizeName,
   readsBackInFilter,
   Segment,
@@ -161,13 +163,16 @@ export class SegmentsService {
   /**
    * Adds a segment after the others, and returns it. Its slug is the one `input` gives, or else
    * the first slug minted from its name that no other segment has. Fails with a ValidationError
-   * when another segment has the name, when its filter names a segment, or when `input` gives a
-   * slug that a filter can't name or that another segment has. Another segment can have the same
-   * filter.
+   * when another segment has the name, when its filter isn't valid NQL or names a segment, or
+   * when `input` gives a slug that a filter can't name or that another segment has. Another
+   * segment can have the same filter.
    */
   add(context: RequestContext, input: NewSegment, executor: Knex = this.knex): Promise<Segment> {
     return this.tracking.change('add', (attempt) =>
       ensureTransaction(executor, async (trx) => {
+        if (!isParseableFilter(input.filter)) {
+          reject(attempt, new FilterUnparseableError());
+        }
         // Expansion replaces a segment with its filter once, without recursing, so a segment's
         // filter can't name another segment
         if (filterNamesSegment(input.filter)) {
@@ -195,9 +200,11 @@ export class SegmentsService {
   /**
    * Renames the segment with `id`, and returns it. Its slug stays as it is. Fails with a
    * NotFoundError when there's no such segment, and with a ValidationError when another segment
-   * has the name, or when `input` has a filter or a slug other than the segment's own, because a
-   * segment's filter and slug can't change. A rename to the name the segment already has changes
-   * nothing, so nothing is written or reported.
+   * has the name, when `input` has a filter other than the segment's own that isn't valid NQL, or
+   * when `input` has a filter or a slug other than the segment's own, because a segment's filter
+   * and slug can't change. The segment's own filter is accepted back as it is stored, even when
+   * it isn't valid NQL, as a stored filter can be. A rename to the name the segment already has
+   * changes nothing, so nothing is written or reported.
    */
   edit(
     context: RequestContext,
@@ -208,7 +215,12 @@ export class SegmentsService {
     return this.tracking.change('edit', (attempt) =>
       ensureTransaction(executor, async (trx) => {
         const previous = (await this.lock(id, trx)) ?? notFound(attempt);
+        // Another filter is checked as a new segment's is, so one that isn't valid NQL is
+        // rejected for its syntax rather than for being a change
         if (input.filter !== undefined && input.filter !== previous.filter) {
+          if (!isParseableFilter(input.filter)) {
+            reject(attempt, new FilterUnparseableError());
+          }
           reject(attempt, new FilterChangedError());
         }
         if (input.slug !== undefined && input.slug !== previous.slug) {

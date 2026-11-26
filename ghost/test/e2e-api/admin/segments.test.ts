@@ -171,6 +171,28 @@ describe('Segments Admin API', function () {
   };
   const SLUG_FORMAT =
     'Slug can only contain lowercase letters and digits, in words joined by single hyphens';
+  const FILTER_UNPARSEABLE = {
+    type: 'ValidationError',
+    code: 'SEGMENT_FILTER_UNPARSEABLE',
+    context: "A segment's filter is not valid NQL.",
+    property: 'filter',
+  };
+  /** Filters the members filter parser can't read: cut off, unclosed and missing a colon. */
+  const UNPARSEABLE_FILTERS = ['status:paid+', 'label:[vip', 'status paid'];
+
+  /**
+   * Stores a segment in the table as a version that didn't check a filter's syntax could have
+   * saved it, and returns it.
+   */
+  async function storeSegment(segment: Omit<Segment, 'id'>): Promise<Segment> {
+    const stored = { id: ObjectID().toHexString(), ...segment };
+    await models.Base.knex('segments').insert({
+      ...stored,
+      sort_order: 0,
+      created_at: new Date(),
+    });
+    return stored;
+  }
 
   /**
    * Waits until a statement on the segments table waits for a lock another transaction holds,
@@ -221,6 +243,14 @@ describe('Segments Admin API', function () {
         .expectStatus(200)
         .matchHeaderSnapshot(readHeaders)
         .matchBodySnapshot(oneSegment);
+    });
+
+    it('lists and returns a stored segment whose filter is not valid NQL', async function () {
+      const stored = await storeSegment({ name: 'Broken', slug: 'broken', filter: 'status:paid+' });
+
+      assert.deepEqual(await browse(), [stored]);
+      const { body } = await agent.get(`segments/${stored.id}/`).expectStatus(200);
+      assert.deepEqual(body.segments, [stored]);
     });
   });
 
@@ -315,7 +345,7 @@ describe('Segments Admin API', function () {
 
     it('rejects a filter longer than the table holds', async function () {
       // The column holds 65535 bytes, and "é" is two bytes.
-      assert.equal((await add('Long', 'x'.repeat(65535))).filter.length, 65535);
+      assert.equal((await add('Long', `label:${'x'.repeat(65529)}`)).filter.length, 65535);
       assert.deepEqual(
         await addBodyError({ segments: [{ name: 'Longer', filter: 'é'.repeat(32768) }] }),
         {
@@ -500,7 +530,14 @@ describe('Segments Admin API', function () {
     });
 
     it('accepts a filter it does not check against members', async function () {
-      assert.equal((await add('Odd', 'not a real field:yes')).filter, 'not a real field:yes');
+      assert.equal((await add('Odd', 'not_a_real_field:yes')).filter, 'not_a_real_field:yes');
+    });
+
+    it('rejects a filter that is not valid NQL', async function () {
+      for (const filter of UNPARSEABLE_FILTERS) {
+        assert.deepEqual(await addError({ name: 'Broken', filter }), FILTER_UNPARSEABLE);
+      }
+      assert.deepEqual(await browse(), []);
     });
 
     it('adds a segment with a filter another segment has, as a segment of its own', async function () {
@@ -681,6 +718,27 @@ describe('Segments Admin API', function () {
       assert.deepEqual(await browse(), [{ id, name: 'VIP', slug: 'vip', filter: 'label:vip' }]);
     });
 
+    it('rejects a different filter that is not valid NQL for its syntax', async function () {
+      const { id } = await add('VIP', 'label:vip');
+
+      for (const filter of UNPARSEABLE_FILTERS) {
+        assert.deepEqual(await renameError(id, { name: 'VIP', filter }), FILTER_UNPARSEABLE);
+      }
+      assert.deepEqual(await browse(), [{ id, name: 'VIP', slug: 'vip', filter: 'label:vip' }]);
+    });
+
+    it('renames a stored segment whose filter is not valid NQL, given that filter back', async function () {
+      const stored = await storeSegment({ name: 'Broken', slug: 'broken', filter: 'status:paid+' });
+
+      const { body } = await agent
+        .put(`segments/${stored.id}/`)
+        .body({ segments: [{ ...stored, name: 'Still broken' }] })
+        .expectStatus(200);
+
+      assert.deepEqual(body.segments, [{ ...stored, name: 'Still broken' }]);
+      assert.deepEqual(await browse(), body.segments);
+    });
+
     it('rejects a different slug, and changes nothing', async function () {
       const { id } = await add('VIP', 'label:vip');
       await add('Gold', 'label:gold');
@@ -850,6 +908,22 @@ describe('Segments Admin API', function () {
       expect(failedSpans('add')).toMatchObject([
         { error: { type: 'SEGMENT_NAME_TAKEN' }, labels: { rejection: 'name_taken' } },
       ]);
+    });
+
+    it('records a filter that is not valid NQL as a rejection', async function () {
+      const { id } = await add('VIP', 'label:vip');
+
+      await addError({ name: 'Gold', filter: 'label:gold+' });
+      await renameError(id, { name: 'VIP', filter: 'label:gold+' });
+
+      const unparseable = [
+        {
+          error: { type: 'SEGMENT_FILTER_UNPARSEABLE' },
+          labels: { rejection: 'filter_unparseable' },
+        },
+      ];
+      expect(failedSpans('add')).toMatchObject(unparseable);
+      expect(failedSpans('edit')).toMatchObject(unparseable);
     });
 
     it('marks a rename to the same name as unchanged', async function () {
