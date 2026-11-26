@@ -115,6 +115,17 @@ describe('connect', () => {
     expect(ghost.connected).toBe(true);
   });
 
+  it('lists a scope this SDK doesn’t know, which a later Ghost may grant', async () => {
+    frame();
+    const fake = admin();
+    const connecting = sdk.connect();
+    fake.connect();
+    await fake.start(startContext({ scopes: ['post:browse', 'member:browse'] }));
+    const ghost = await connecting;
+
+    expect(ghost.scopes.includes('member:browse')).toBe(true);
+  });
+
   it('sends the hello to the embedding origin when the browser exposes it', async () => {
     Object.defineProperty(window.location, 'ancestorOrigins', {
       value: [ADMIN_ORIGIN],

@@ -231,8 +231,11 @@ export type StartContext = {
    * lists them, such as `post:browse`. Ghost holds every call the app makes to these, so an app
    * reads them to know what it may call without trying. They stay the same for the session: a
    * change to them is a new revision, which ends it.
+   *
+   * Typed as the keys this package knows or any other string, as the SDK reads the start
+   * context forward-compatibly: an app granted a key added in a later Ghost still sees it.
    */
-  scopes: AppPermissionKey[];
+  scopes: (AppPermissionKey | (string & Record<never, never>))[];
   /**
    * The app's route, taken from Admin's URL, so a reload or a shared link opens the same page:
    * the path, query and fragment of the frame's URL on the app's origin. Admin loads a new

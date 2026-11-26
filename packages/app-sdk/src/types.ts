@@ -27,9 +27,10 @@ export type Session = Readonly<StartContext['session']>;
 
 /**
  * The permission keys the app was approved for on this site, as its manifest's `scopes` lists
- * them, such as `post:browse`.
+ * them, such as `post:browse`. A key this SDK doesn't know is still listed, so an app granted
+ * a key added in a later Ghost sees it.
  */
-export type Scopes = readonly AppPermissionKey[];
+export type Scopes = Readonly<StartContext['scopes']>;
 
 export interface ConnectOptions {
   /** How long to wait for Admin to start the app, in milliseconds. Defaults to 10 seconds. */
