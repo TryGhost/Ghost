@@ -385,7 +385,11 @@ describe('Content Check service root', function () {
     sinon.assert.calledOnce(send);
     await send.lastCall.returnValue;
     sinon.assert.notCalled(request);
-    sinon.assert.calledOnceWithExactly(loggedError, error);
+    sinon.assert.calledOnceWithExactly(
+      loggedError,
+      { err: error },
+      'Failed to prepare content check webhook',
+    );
   });
 
   it('returns from the event handler while the request is still unresolved', async function () {

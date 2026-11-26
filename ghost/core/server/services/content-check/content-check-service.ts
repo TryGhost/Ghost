@@ -121,7 +121,7 @@ export class ContentCheckService {
         this.logging.error(`Failed to send content check webhook to "${sanitizedUrl}": ${message}`);
       }
     } catch (error) {
-      this.logging.error(error as Error);
+      this.logging.error({ err: error }, 'Failed to prepare content check webhook');
     }
   }
 
