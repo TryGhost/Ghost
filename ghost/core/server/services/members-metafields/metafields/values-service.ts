@@ -397,7 +397,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
       } catch (err) {
         logging.warn(
           {
-            event: { name: 'members.metafields.value_unreadable' },
+            event: { name: this.tracking.named('value_unreadable') },
             err,
             metafieldNamespace: row.namespace,
             metafieldKey: row.key,
@@ -435,7 +435,7 @@ export class MetafieldValuesService<R extends ResourceKind> {
     for (const { namespace, key, members } of misshapen.values()) {
       logging.warn(
         {
-          event: { name: 'members.metafields.value_misshapen' },
+          event: { name: this.tracking.named('value_misshapen') },
           metafieldNamespace: namespace,
           metafieldKey: key,
           members,

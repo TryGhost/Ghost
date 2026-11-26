@@ -112,7 +112,7 @@ export function init(): void {
     maxDefinitions: getMaxDefinitions,
     // Each change to a definition is logged as a staff action inside the command that made it.
     onDefinitionUpdated: recordMemberDefinitionChanges(new ActionLog()),
-    tracking: metafieldsTracking({ tracer, meter }),
+    tracking: metafieldsTracking(MEMBERS_RESOURCE, { tracer, meter }),
     labs,
   }));
 }

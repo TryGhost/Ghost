@@ -28,7 +28,7 @@ export function readStoredField<Field>(
   const outcome = withDefaults.success ? 'defaulted_settings' : 'left_out';
   logging.warn(
     {
-      event: { name: 'members.metafields.field_unreadable' },
+      event: { name: tracking.named('field_unreadable') },
       err: asStored.error,
       metafieldNamespace: row.namespace,
       metafieldKey: row.key,
