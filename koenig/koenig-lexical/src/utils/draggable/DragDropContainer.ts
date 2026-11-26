@@ -11,17 +11,25 @@ import type {DraggableInfo, DraggableInfoSeed} from './ScrollHandler';
 // contained draggable/droppable elements and functions to call when events are
 // processed.
 
-export type IndicatorSide = 'left' | 'right' | 'top' | 'bottom';
-
 export type DroppablePosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
-export interface IndicatorPosition {
-    direction: 'horizontal' | 'vertical';
-    position: IndicatorSide;
+interface IndicatorPositionBase {
     beforeElems: HTMLElement[];
     afterElems: HTMLElement[];
     insertIndex: number;
 }
+
+interface VerticalIndicatorPosition extends IndicatorPositionBase {
+    direction: 'vertical';
+    position: 'top' | 'bottom';
+}
+
+interface HorizontalIndicatorPosition extends IndicatorPositionBase {
+    direction: 'horizontal';
+    position: 'left' | 'right';
+}
+
+export type IndicatorPosition = VerticalIndicatorPosition | HorizontalIndicatorPosition;
 
 export interface DragDropContainerOptions {
     draggableSelector: string;
