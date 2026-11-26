@@ -198,10 +198,13 @@ Ghost's own code reaches app tokens through one interface, `AppTokens`, which
 provider's tables sits behind Ghost's `ghostApps` plugin. The app
 installations service issues tokens and keeps clients in step through it. The
 Admin API's app token middleware validates tokens through it. Security events
-delete a user's app tokens.
+delete a user's app tokens. Admin holds an app session's token and sends the
+app's calls with it.
 
 ```mermaid
 flowchart TD
+    ADMIN["Admin<br/>apps/lib/app-token.ts<br/>holds, sends and renews the token"]
+
     subgraph ghost["Ghost's own code"]
         MW["auth/app-token.ts<br/>Admin API middleware"]
         INST["services/app-installations<br/>session start, renewal,<br/>installation changes, readAccess"]
@@ -220,6 +223,8 @@ flowchart TD
     TOKENS[("oauth_clients<br/>oauth_access_tokens")]
     STAFF[("users<br/>user_sessions")]
 
+    ADMIN -- "start session · renew" --> INST
+    ADMIN -- "Bearer ghost_app_…" --> MW
     MW -- "validate" --> FACADE
     MW -- "readAccess" --> INST
     INST --> SESS
@@ -233,6 +238,8 @@ flowchart TD
     PROVIDER --> TOKENS
 ```
 
+- **Admin** keeps the token outside React state, so renewing it never reloads
+  the app's frame.
 - **`auth/app-token.ts`** turns a valid token into the request's principal.
   It reads the installation and the user again on every call.
 - **`AppSessionTokens`** decides who gets a token, issues one when an app
@@ -264,9 +271,11 @@ sooner. Its scopes are the requested ones the client lists.
 
 ### How an app session gets a token
 
-Admin starts an app session when it opens an app's page. A session's token
-is renewed with the revision the session started with. Both issue a new
-token; nothing about the session is stored.
+Admin starts an app session when it opens an app's page. While the app runs,
+Admin renews the token about ten minutes before it expires, and at once when
+a call is refused because the token expired. A renewal names the revision the
+session started with. Both issue a new token; nothing about the session is
+stored.
 
 ```mermaid
 flowchart TD
@@ -351,6 +360,7 @@ upload then never runs for an app request that can't succeed.
 | `StaffSession`              | `services/app-installations/staff-session.ts`  | The staff user and staff session an app session's tokens are for    |
 | `AppSessionToken`           | `services/app-installations/serializers.ts`    | What Admin gets: `access_token` and `expires_in`                    |
 | `RoutedMethod`              | `@tryghost/api-framework`                      | The controller method a route runs, which `refuseAppEarly` checks   |
+| `AppTokenHolder`            | `apps/admin/src/apps/lib/app-token.ts`         | Admin's holder of an app session's token, which renews it           |
 
 ### Details
 
