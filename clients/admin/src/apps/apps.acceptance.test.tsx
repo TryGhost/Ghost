@@ -2273,29 +2273,40 @@ describe('Managing apps', () => {
     // Ghost's server decides what an app may call, so the app gets its answer.
     it('sends any Admin API path on, and returns the server’s refusal to the app', async () => {
       await fakeAppPage(postsApp());
-      const refused = { errors: [{ type: 'NoPermissionError', message: 'No permission' }] };
-      const tokenApi = fakeAdminEndpoint('GET', /^\/users\/.*\/token\//i, refused, { status: 403 });
-      const tiersApi = fakeAdminEndpoint('GET', '/tiers/', refused, { status: 403 });
-      const bulkDelete = fakeAdminEndpoint('DELETE', '/posts/?filter=tag%3Anews', refused, {
+      const refused = (code: string, message: string) => ({
+        errors: [{ type: 'NoPermissionError', code, message }],
+      });
+      const notAllowed = refused('APP_NOT_ALLOWED', 'Apps are not allowed to access this endpoint');
+      const scopeRequired = refused(
+        'APP_SCOPE_REQUIRED',
+        'This app was not approved for the product:browse scope',
+      );
+      const tokenApi = fakeAdminEndpoint('GET', /^\/users\/.*\/token\//i, notAllowed, {
+        status: 403,
+      });
+      const tiersApi = fakeAdminEndpoint('GET', '/tiers/', scopeRequired, { status: 403 });
+      const bulkDelete = fakeAdminEndpoint('DELETE', '/posts/?filter=tag%3Anews', notAllowed, {
         status: 403,
       });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
-      for (const request of [
-        { path: '/users/6500000000000000000000c3/token/' },
+      for (const [request, body] of [
+        [{ path: '/users/6500000000000000000000c3/token/' }, notAllowed],
         // Not among the scopes the installation was approved for.
-        { path: '/tiers/' },
-        { path: '/posts/?filter=tag:news', method: 'DELETE' },
+        [{ path: '/tiers/' }, scopeRequired],
+        [{ path: '/posts/?filter=tag:news', method: 'DELETE' }, notAllowed],
       ] as const) {
         const response = answer(await callAppFrame(APP_ORIGIN, 'fetch', request));
         expect(response.status, request.path).toBe(403);
-        expect(JSON.parse(response.body), request.path).toEqual(refused);
+        expect(JSON.parse(response.body), request.path).toEqual(body);
       }
       expect(tokenApi.requests).toHaveLength(1);
       expect(tiersApi.requests).toHaveLength(1);
       expect(bulkDelete.requests).toHaveLength(1);
       expect(tiersApi.requests[0].headers.authorization).toMatch(/^Bearer ghost_app_/);
+      // The refusals are the app's to read, and its session goes on
+      await expect.element(appsScreen.frame()).toBeVisible();
     });
 
     it('refuses what Ghost’s server doesn’t check yet without sending it', async () => {
