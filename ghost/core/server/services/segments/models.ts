@@ -27,7 +27,7 @@ export const MAX_SLUG_LENGTH = 191;
 export const SegmentSlug = z
   .string({ error: 'Slug must be a string' })
   .max(MAX_SLUG_LENGTH, { error: `Slug cannot be longer than ${MAX_SLUG_LENGTH} characters` })
-  .pipe(slugSchema('-'));
+  .pipe(slugSchema('-', 'Slug'));
 export type SegmentSlug = z.infer<typeof SegmentSlug>;
 
 /**

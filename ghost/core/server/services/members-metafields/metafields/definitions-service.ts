@@ -34,10 +34,12 @@ import {
 import type { FieldKey } from './key';
 import type { RequestContext } from '../../../lib/actor';
 import {
+  isSlug,
   mintSlug,
   numberedSlugs,
   type Numbering,
   type Slug,
+  slugSchema,
   withRoomForNumber,
 } from '../../../lib/slug';
 import {
@@ -59,13 +61,10 @@ const MAX_KEY_ITERATIONS = 1000;
 // object from JSON.parse. A key naming a member of Object.prototype reads back as
 // inherited rather than absent wherever one of those objects is indexed.
 //
-// Derived rather than listed, from the format a key may take rather than from how one
-// is minted: a caller can state a key instead of deriving it from a name, so what has
-// to be reserved is every prototype name a well-formed key could spell. The ones that
-// carry a capital cannot be spelled at all and need no reserving; `constructor` and
-// `__proto__` can.
-const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter(
-  (name) => KeySchema.safeParse(name).success,
+// Derived rather than listed, from the format of a key being written, minted or given: an
+// underscore slug. The only prototype name an underscore slug can spell is `constructor`.
+const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter((name) =>
+  isSlug(name, '_'),
 );
 
 const FieldAccess = z.object({ member: MemberAccessSchema });
@@ -100,11 +99,14 @@ function definitionInputs(maxLength: { name: number; key: number }) {
     .min(1, { message: 'Custom field name is required.' })
     .max(maxLength.name, { message: 'Custom field name is too long.' });
 
-  // A key as it is given, rather than derived from the name: one the fields table can store.
-  const key = z
+  // A key a caller gives with a new definition, rather than one derived from the name: an
+  // underscore slug, as a minted key is, that the fields table can store. Only a key written is
+  // held to the slug's format. A key that is read or addressed is held to `KeySchema`, which also
+  // accepts keys such as `a__b` that a field created before this rule can have.
+  const givenKey = z
     .string()
     .max(maxLength.key, { message: 'Custom field key is too long.' })
-    .pipe(KeySchema);
+    .pipe(slugSchema('_', 'A custom field key'));
 
   return {
     // A key is optional: without one, it is derived from the name. The type is checked with the
@@ -114,7 +116,7 @@ function definitionInputs(maxLength: { name: number; key: number }) {
     add: z
       .array(
         withTypedSettings(
-          { name, key: key.optional(), access: FieldAccess.optional() },
+          { name, key: givenKey.optional(), access: FieldAccess.optional() },
           WRITTEN_SETTINGS,
         ),
       )
@@ -145,9 +147,9 @@ function definitionInputs(maxLength: { name: number; key: number }) {
 
 /**
  * The key a definition was given, or, when it was given none, the base to mint one from: its
- * name minted as an underscore slug.
+ * name minted. Both are underscore slugs, as every key written is.
  */
-type KeyToTake = { given: Key } | { base: Slug<'_'> };
+type KeyToTake = { given: Slug<'_'> } | { base: Slug<'_'> };
 
 /** A definition as it was before an edit, and as the edit left it. */
 export interface EditedDefinition {
@@ -323,7 +325,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
           // them rather than all sharing the end of the list.
           const firstSortOrder = await this.nextSortOrder(trx, namespace);
 
-          const keys: FieldKey[] = [];
+          const keys: Slug<'_'>[] = [];
           for (const [index, field] of fields.entries()) {
             await this.assertNameAvailable(trx, namespace, field.name);
             const key = await this.takeKey(
@@ -385,7 +387,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
     db: Knex,
     field: {
       namespace: Namespace;
-      key: FieldKey;
+      key: Slug<'_'>;
       name: string;
       typed: TypedSettings;
       memberAccess: MemberAccess;
@@ -551,7 +553,7 @@ export class MetafieldDefinitionsService<R extends ResourceKind> {
     namespace: Namespace,
     keyed: KeyToTake,
     context?: string,
-  ): Promise<FieldKey> {
+  ): Promise<Slug<'_'>> {
     if ('base' in keyed) {
       return this.mintKey(db, namespace, keyed.base);
     }
