@@ -55,6 +55,11 @@ An adapter should only set `dedupesByIdempotencyKey` once every job in its
 queue carries a key. A job queued without one is invisible to the dedupe, so
 the first boot would add a keyed twin beside it.
 
+Gift flush jobs are the exception: they gained their key on adapters that
+already set the flag, so the first boot adds a twin beside each. The twin is
+harmless, as each delivery and reminder is claimed before it is sent, so the
+second callback finds nothing to send.
+
 ## Consumers
 
 - `services/post-scheduling` — one job per scheduled post or page.

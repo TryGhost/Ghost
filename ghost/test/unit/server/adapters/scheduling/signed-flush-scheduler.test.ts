@@ -93,7 +93,7 @@ describe('SignedFlushScheduler', function () {
 
       const [firstJob] = first.adapter.schedule.getCall(0).args;
       const [secondJob] = second.adapter.schedule.getCall(0).args;
-      assert.match(firstJob.extra.idempotencyKey, /^ghost-gift_delivery-[0-9a-f]{64}$/);
+      assert.match(firstJob.extra.idempotencyKey, /^ghost-gift-delivery-[0-9a-f]{64}$/);
       assert.equal(secondJob.extra.idempotencyKey, firstJob.extra.idempotencyKey);
     });
 

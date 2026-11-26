@@ -2,6 +2,7 @@ import logging from '@tryghost/logging';
 import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey, InternalKeys } from '../../services/internal-keys';
 import { buildSignedJob } from './build-signed-job';
+import type { SchedulingAdapter } from './error-capture';
 import { getSchedulerIdempotencyKey } from './get-scheduler-idempotency-key';
 
 // The default scheduling adapter can ping up to 50ms before the scheduled
@@ -16,7 +17,7 @@ function normalizeTime(time: number): number {
 
 interface SignedFlushSchedulerOptions {
   apiUrl: string;
-  adapter: SchedulerAdapter & { dedupesByIdempotencyKey?: boolean };
+  adapter: SchedulerAdapter & Pick<SchedulingAdapter, 'dedupesByIdempotencyKey'>;
   internalKeys: InternalKeys;
   // Admin API path segments of the flush endpoint the armed callback hits
   // (e.g. ['gifts', 'flush_deliveries']).
@@ -167,7 +168,7 @@ export class SignedFlushScheduler {
       key,
       getIdempotencyKey: (url) =>
         getSchedulerIdempotencyKey({
-          namespace: this.#name,
+          namespace: this.#name.replaceAll('_', '-'),
           date: new Date(time + delayMs),
           url,
         }),
