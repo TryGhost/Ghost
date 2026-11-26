@@ -118,11 +118,11 @@ describe('Segments Admin API', function () {
     return body.segments[0];
   }
 
-  /** The type, message and property of the validation error that `request` is rejected with. */
+  /** The type, code, message and property of the validation error `request` is rejected with. */
   async function validationError(request: ApiRequest) {
     const { body } = await request.expectStatus(422);
-    const [{ type, context, property }] = body.errors;
-    return { type, context, property };
+    const [{ type, code, context, property }] = body.errors;
+    return { type, code, context, property };
   }
 
   const addError = (segment: Record<string, unknown>) =>
@@ -151,17 +151,20 @@ describe('Segments Admin API', function () {
 
   const NAME_TAKEN = {
     type: 'ValidationError',
-    context: 'A view with this name already exists',
+    code: 'SEGMENT_NAME_TAKEN',
+    context: 'A segment with this name already exists',
     property: 'name',
   };
   const NAME_EMPTY = { property: 'body.segments.0.name', message: 'Name cannot be empty' };
   const SLUG_TAKEN = {
     type: 'ValidationError',
+    code: 'SEGMENT_SLUG_TAKEN',
     context: 'A segment with this slug already exists',
     property: 'slug',
   };
   const SLUG_UNUSABLE = {
     type: 'ValidationError',
+    code: 'SEGMENT_SLUG_UNUSABLE',
     context:
       "A filter can't name a segment by this slug, as it reads the slug as something else, such as a number or a date",
     property: 'slug',
@@ -427,6 +430,31 @@ describe('Segments Admin API', function () {
       );
     });
 
+    it('rejects a segment when every slug its name mints is taken', async function () {
+      // A name mints its slug, and then that slug with -2 and so on up to -1000.
+      const taken = ['vip', ...Array.from({ length: 999 }, (_, index) => `vip-${index + 2}`)];
+      await models.Base.knex.batchInsert(
+        'segments',
+        taken.map((slug, index) => ({
+          id: ObjectID().toHexString(),
+          name: `Taken ${index}`,
+          slug,
+          filter: 'label:vip',
+          sort_order: index,
+          created_at: new Date(),
+        })),
+        500,
+      );
+
+      assert.deepEqual(await addError({ name: 'VIP', filter: 'label:vip' }), {
+        type: 'ValidationError',
+        code: 'SEGMENT_NO_FREE_SLUG',
+        context: 'Could not mint a unique slug for this segment.',
+        property: 'slug',
+      });
+      assert.equal((await browse()).length, taken.length);
+    });
+
     it('gives a segment the next slug when another request takes its slug at the same time', async function () {
       // Another request adds a segment whose name mints the same slug, and commits it once this
       // request has read which slugs are taken and is waiting to insert its own.
@@ -507,8 +535,8 @@ describe('Segments Admin API', function () {
         await other.commit();
 
         const { body } = await adding;
-        const [{ type, context, property }] = body.errors;
-        assert.deepEqual({ type, context, property }, SLUG_TAKEN);
+        const [{ type, code, context, property }] = body.errors;
+        assert.deepEqual({ type, code, context, property }, SLUG_TAKEN);
       } finally {
         if (!other.isCompleted()) {
           await other.rollback();
@@ -542,7 +570,7 @@ describe('Segments Admin API', function () {
 
       const rejected = responses.flatMap(({ body }) => body.errors ?? []);
       assert.deepEqual(
-        rejected.map(({ type, context, property }) => ({ type, context, property })),
+        rejected.map(({ type, code, context, property }) => ({ type, code, context, property })),
         [NAME_TAKEN],
       );
       assert.deepEqual(
@@ -659,6 +687,7 @@ describe('Segments Admin API', function () {
 
       assert.deepEqual(await renameError(id, { name: 'Very important', slug: 'gold' }), {
         type: 'ValidationError',
+        code: 'SEGMENT_SLUG_CHANGED',
         context: "A segment's slug cannot be changed",
         property: 'slug',
       });
@@ -798,15 +827,16 @@ describe('Segments Admin API', function () {
         error: { type },
         labels: { rejection },
       });
+      // A span records an error's code as its type, when the error has one.
       expect(failedSpans('add')).toMatchObject([
-        rejected('ValidationError', 'name_taken'),
-        rejected('ValidationError', 'slug_taken'),
-        rejected('ValidationError', 'slug_unusable'),
+        rejected('SEGMENT_NAME_TAKEN', 'name_taken'),
+        rejected('SEGMENT_SLUG_TAKEN', 'slug_taken'),
+        rejected('SEGMENT_SLUG_UNUSABLE', 'slug_unusable'),
       ]);
       expect(failedSpans('edit')).toMatchObject([
-        rejected('ValidationError', 'name_taken'),
-        rejected('ValidationError', 'filter_changed'),
-        rejected('ValidationError', 'slug_changed'),
+        rejected('SEGMENT_NAME_TAKEN', 'name_taken'),
+        rejected('SEGMENT_FILTER_CHANGED', 'filter_changed'),
+        rejected('SEGMENT_SLUG_CHANGED', 'slug_changed'),
         rejected('NotFoundError', 'not_found'),
       ]);
       expect(failedSpans('delete')).toMatchObject([rejected('NotFoundError', 'not_found')]);
@@ -818,7 +848,7 @@ describe('Segments Admin API', function () {
       await addError({ name: 'Café', filter: 'label:accent' });
 
       expect(failedSpans('add')).toMatchObject([
-        { error: { type: 'ValidationError' }, labels: { rejection: 'name_taken' } },
+        { error: { type: 'SEGMENT_NAME_TAKEN' }, labels: { rejection: 'name_taken' } },
       ]);
     });
 

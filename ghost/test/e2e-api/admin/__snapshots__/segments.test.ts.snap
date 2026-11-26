@@ -219,8 +219,8 @@ exports[`Segments Admin API POST /segments/ rejects a name another segment has, 
 Object {
   "errors": Array [
     Object {
-      "code": null,
-      "context": "A view with this name already exists",
+      "code": "SEGMENT_NAME_TAKEN",
+      "context": "A segment with this name already exists",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -250,7 +250,7 @@ exports[`Segments Admin API PUT /segments/:id/ rejects a different filter, and c
 Object {
   "errors": Array [
     Object {
-      "code": null,
+      "code": "SEGMENT_FILTER_CHANGED",
       "context": "A segment's filter cannot be changed",
       "details": null,
       "ghostErrorCode": null,
