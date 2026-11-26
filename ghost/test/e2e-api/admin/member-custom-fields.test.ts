@@ -553,11 +553,11 @@ describe('Member Custom Fields Admin API', function () {
         .expectStatus(status);
 
     it('adds a definition under the key it is given', async function () {
-      const { body } = await addKeyed(201, { name: 'Favourite topic', key: 'topic' });
-      assert.equal(body.members_metafields[0].key, 'topic');
+      const { body } = await addKeyed(201, { name: 'Delivery notes', key: 'shipping_notes' });
+      assert.equal(body.members_metafields[0].key, 'shipping_notes');
 
-      const read = await agent.get('members/metafields/custom/topic/').expectStatus(200);
-      assert.equal(read.body.members_metafields[0].name, 'Favourite topic');
+      const read = await agent.get('members/metafields/custom/shipping_notes/').expectStatus(200);
+      assert.equal(read.body.members_metafields[0].name, 'Delivery notes');
     });
 
     it('refuses a key an archived definition already has', async function () {
@@ -592,13 +592,83 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(body.errors[0].property, 'key');
     });
 
-    it('refuses a key that cannot be a key, or that the fields table cannot store', async function () {
-      const malformed = await addKeyed(422, { name: 'Topic', key: 'Favourite-topic' });
-      assert.equal(malformed.body.errors[0].property, 'key');
+    // A key given with a new field is written, so it has to be an underscore slug, as a minted
+    // key is: no separator at either end and none doubled, although a key that is read can have
+    // them.
+    it('refuses a key that is not a slug, or that the fields table cannot store', async function () {
+      for (const key of ['_vip_', 'a__b', 'vip_', 'VIP', 'a-b', '']) {
+        const malformed = await addKeyed(422, { name: 'Topic', key });
+        assert.equal(malformed.body.errors[0].property, 'key', JSON.stringify(key));
+        assert.match(
+          malformed.body.errors[0].context,
+          /A custom field key can only contain lowercase letters and digits, in words joined by single underscores/,
+        );
+      }
 
       const long = await addKeyed(422, { name: 'Topic', key: 'k'.repeat(1000) });
       assert.equal(long.body.errors[0].property, 'key');
       assert.match(long.body.errors[0].context, /Custom field key is too long\./);
+    });
+  });
+
+  // A key given with a new field has to be a slug, but a field can have a key that is only a key,
+  // such as `a__b`, from before that rule. Everything that reads or addresses a key still takes it.
+  describe('A key that is not a slug', function () {
+    const KEY = 'a__b';
+
+    const listedKeys = async (): Promise<string[]> =>
+      (await agent.get('members/metafields/custom/').expectStatus(200)).body.members_metafields.map(
+        (field: { key: string }) => field.key,
+      );
+
+    beforeEach(async function () {
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000c1',
+        namespace: 'custom',
+        key: KEY,
+        name: 'Legacy',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+    });
+
+    it('is listed, read, renamed and given back on an edit', async function () {
+      assert.deepEqual(await listedKeys(), [KEY]);
+      await agent.get(`members/metafields/custom/${KEY}/`).expectStatus(200);
+
+      const { body } = await agent
+        .put(`members/metafields/custom/${KEY}/`)
+        .body({ members_metafields: [{ name: 'Legacy renamed', key: KEY }] })
+        .expectStatus(200);
+      assert.equal(body.members_metafields[0].key, KEY);
+      assert.equal(body.members_metafields[0].name, 'Legacy renamed');
+    });
+
+    it("holds a member's value, which a filter and the export find", async function () {
+      const memberId = await createMember();
+      await setValues(memberId, { [KEY]: 'Ghost' });
+      assert.deepEqual(await readValues(memberId), { [KEY]: 'Ghost' });
+
+      const filter = encodeURIComponent(
+        `metafields.identity:'custom.${KEY}'+metafields.value:'Ghost'`,
+      );
+      const { body } = await agent.get(`members/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.members.map((member: { id: string }) => member.id),
+        [memberId],
+      );
+
+      const exported = await agent.get('members/upload/?limit=all').expectStatus(200);
+      const [header, ...rows]: string[] = exported.text.trim().split(/\r?\n/);
+      assert.ok(header.split(',').includes(`metafields.custom.${KEY}`), header);
+      assert.ok(rows.some((row) => row.includes('Ghost')));
+    });
+
+    it('is archived and deleted', async function () {
+      await setStatus(KEY, 'archived');
+      await agent.delete(`members/metafields/custom/${KEY}/`).expectStatus(204);
+
+      await agent.get(`members/metafields/custom/${KEY}/`).expectStatus(404);
     });
   });
 

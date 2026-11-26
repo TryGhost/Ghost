@@ -57,9 +57,9 @@ const SEPARATOR_WORDS: Record<Separator, string> = { _: 'underscores', '-': 'hyp
 /**
  * A schema that reads a string from outside, such as a filter's value, an import file's slug or a
  * request's body, as a slug with `separator`: in the format a minted slug has, or else an issue
- * that says what a slug can contain.
+ * that says what `noun`, the name the caller gives the slug, such as "Slug", can contain.
  */
-export function slugSchema<S extends Separator>(separator: S) {
+export function slugSchema<S extends Separator>(separator: S, noun: string) {
   return z.string().transform((value, context): Slug<S> => {
     if (isSlug(value, separator)) {
       return value;
@@ -67,7 +67,7 @@ export function slugSchema<S extends Separator>(separator: S) {
     context.issues.push({
       code: 'custom',
       input: value,
-      message: `Slug can only contain lowercase letters and digits, in words joined by single ${SEPARATOR_WORDS[separator]}`,
+      message: `${noun} can only contain lowercase letters and digits, in words joined by single ${SEPARATOR_WORDS[separator]}`,
     });
     return z.NEVER;
   });

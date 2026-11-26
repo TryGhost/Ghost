@@ -27,9 +27,9 @@ describe('Slug format', function () {
   });
 
   it('reads a string from outside as a slug, or says what a slug can contain', function () {
-    assert.equal(slugSchema('-').parse('all-paid'), 'all-paid');
+    assert.equal(slugSchema('-', 'Slug').parse('all-paid'), 'all-paid');
 
-    const result = slugSchema('_').safeParse('all-paid');
+    const result = slugSchema('_', 'Slug').safeParse('all-paid');
     assert.equal(result.success, false);
     assert.equal(
       result.error?.issues[0].message,
