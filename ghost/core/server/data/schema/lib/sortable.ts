@@ -23,9 +23,20 @@ export interface SortableDefinition {
 /** The column `sortableBy` gives a table for its rows' positions. */
 const POSITION_COLUMN = 'sort_order';
 
+/**
+ * How the position column is defined, kept as literal types like the columns `schema.ts` writes
+ * out, so a type derived from the schema reads this column as it reads any other.
+ */
+const POSITION = {
+  type: 'integer',
+  nullable: false,
+  unsigned: true,
+  defaultTo: 0,
+} as const satisfies IntegerColumn;
+
 /** What `sortableBy` adds to a table's definition: the position column and the declaration. */
 interface SortableColumns<Order> {
-  [POSITION_COLUMN]: IntegerColumn;
+  [POSITION_COLUMN]: typeof POSITION;
   '@@SORTABLE@@': Order & { column: typeof POSITION_COLUMN };
 }
 
@@ -43,7 +54,7 @@ export function sortableBy<const Order extends Omit<SortableDefinition, 'column'
   order: Order,
 ): SortableColumns<Order> {
   return {
-    [POSITION_COLUMN]: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    [POSITION_COLUMN]: { ...POSITION },
     '@@SORTABLE@@': { ...order, column: POSITION_COLUMN },
   };
 }
