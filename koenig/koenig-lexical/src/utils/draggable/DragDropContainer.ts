@@ -31,25 +31,28 @@ interface HorizontalIndicatorPosition extends IndicatorPositionBase {
 
 export type IndicatorPosition = VerticalIndicatorPosition | HorizontalIndicatorPosition;
 
-export interface DragDropContainerOptions {
+export interface DragDropContainerCallbacks {
+    getDraggableInfo(draggableElement: HTMLElement): DraggableInfoSeed | false;
+    getIndicatorPosition(draggableInfo: DraggableInfo, droppableElem: Element, position: DroppablePosition): IndicatorPosition | false;
+    onDragStart(draggableInfo: DraggableInfo): void;
+    onDragEnterContainer(draggableInfo: DraggableInfo): void;
+    onDragEnterDroppable(droppableElem: Element, position: DroppablePosition): void;
+    onDragOverDroppable(droppableElem: Element, position: DroppablePosition): void;
+    onDragLeaveDroppable(droppableElem: Element): void;
+    onDragLeaveContainer(draggableInfo: DraggableInfo): void;
+    onDragEnd(): void;
+    onDrop(draggableInfo: DraggableInfo, droppableElem: Element | null, position: DroppablePosition | null): boolean;
+    onDropEnd(draggableInfo: DraggableInfo, success: boolean): void;
+}
+
+export interface DragDropContainerOptions extends Partial<DragDropContainerCallbacks> {
     draggableSelector: string;
     droppableSelector: string;
     isDragEnabled?: boolean;
     createGhostElement?: (draggableInfo: DraggableInfo) => HTMLElement | undefined;
-    getDraggableInfo?: (draggableElement: HTMLElement) => DraggableInfoSeed | false;
-    getIndicatorPosition?: (draggableInfo: DraggableInfo, droppableElem: Element, position: DroppablePosition) => IndicatorPosition | false;
-    onDragStart?: (draggableInfo: DraggableInfo) => void;
-    onDragEnterContainer?: (draggableInfo: DraggableInfo) => void;
-    onDragEnterDroppable?: (droppableElem: Element, position: DroppablePosition) => void;
-    onDragOverDroppable?: (droppableElem: Element, position: DroppablePosition) => void;
-    onDragLeaveDroppable?: (droppableElem: Element) => void;
-    onDragLeaveContainer?: (draggableInfo: DraggableInfo) => void;
-    onDragEnd?: () => void;
-    onDrop?: (draggableInfo: DraggableInfo, droppableElem: Element | null, position: DroppablePosition | null) => boolean | void;
-    onDropEnd?: (draggableInfo: DraggableInfo, success: boolean) => void;
 }
 
-export class DragDropContainer {
+export class DragDropContainer implements DragDropContainerCallbacks {
     element: HTMLElement;
     draggables: HTMLElement[] = [];
     droppables: HTMLElement[] = [];
