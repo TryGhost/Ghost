@@ -73,6 +73,18 @@ export class SlugChangedError extends SegmentError {
   }
 }
 
+export class OrderOutOfDateError extends SegmentError {
+  readonly reason = 'order_out_of_date';
+  readonly code = 'SEGMENT_ORDER_OUT_OF_DATE';
+
+  constructor() {
+    super({
+      message: 'The order must name every segment exactly once. Reload and try again.',
+      property: 'id',
+    });
+  }
+}
+
 /** A new segment can't have the slug it was given, or no slug could be minted for it. */
 export abstract class SlugRejectedError extends SegmentError {
   constructor(message: string) {

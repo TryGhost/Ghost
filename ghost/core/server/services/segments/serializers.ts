@@ -37,6 +37,11 @@ export const SegmentEditBody = z
   })
   .transform(({ name, slug, filter }): SegmentEdit => ({ name, slug, filter }));
 
+// Only each segment's id is read, so segments can be sent back as the API returns them.
+export const SegmentOrderBody = z
+  .object({ segments: z.array(z.object({ id: z.string({ error: 'Id must be a string' }) })) })
+  .transform(({ segments }) => segments.map(({ id }) => id));
+
 // Names every field of a segment, so a field added to a segment fails to compile here until the
 // response says whether to return it.
 const SegmentResource = z.object({

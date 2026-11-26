@@ -33,6 +33,7 @@ type ApiResponse = {
     }[];
     errors: {
       type: string;
+      message: string;
       code: string | null;
       context: string | null;
       property: string | null;
@@ -118,6 +119,17 @@ describe('Segments Admin API', function () {
     return body.segments[0];
   }
 
+  const reorder = (ids: string[]) =>
+    agent.put('segments/').body({ segments: ids.map((id) => ({ id })) });
+
+  // The error handler moves the message of a browse, read, add, edit or delete into the error's
+  // context, and leaves a reorder's message where it is.
+  async function reorderError(body: object) {
+    const { body: response } = await agent.put('segments/').body(body).expectStatus(422);
+    const [{ type, code, message, property, details }] = response.errors;
+    return { type, code, message, property, issue: details?.[0].message ?? null };
+  }
+
   /** The type, code, message and property of the validation error `request` is rejected with. */
   async function validationError(request: ApiRequest) {
     const { body } = await request.expectStatus(422);
@@ -193,6 +205,14 @@ describe('Segments Admin API', function () {
     });
     return stored;
   }
+
+  const ORDER_OUT_OF_DATE = {
+    type: 'ValidationError',
+    code: 'SEGMENT_ORDER_OUT_OF_DATE',
+    message: 'The order must name every segment exactly once. Reload and try again.',
+    property: 'id',
+    issue: null,
+  };
 
   /**
    * Waits until a statement on the segments table waits for a lock another transaction holds,
@@ -789,6 +809,125 @@ describe('Segments Admin API', function () {
     });
   });
 
+  describe('PUT /segments/', function () {
+    const names = async () => (await browse()).map((segment) => segment.name);
+
+    it('puts the segments in the order given, and returns them in it', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      const comped = await add('Comped', 'status:comped');
+
+      await reorder([comped.id, free.id, paid.id])
+        .expectStatus(200)
+        .expect(cacheInvalidateHeaderNotSet())
+        .matchHeaderSnapshot(writeHeaders)
+        .matchBodySnapshot({
+          segments: [{ id: anyObjectId }, { id: anyObjectId }, { id: anyObjectId }],
+        });
+      assert.deepEqual(await names(), ['Comped', 'Free', 'Paid']);
+    });
+
+    it('accepts the segments as GET returns them', async function () {
+      await add('Free', 'status:free');
+      await add('Paid', 'status:paid');
+      const segments = (await browse()).reverse();
+
+      const { body } = await agent.put('segments/').body({ segments }).expectStatus(200);
+
+      assert.deepEqual(body.segments, segments);
+      assert.deepEqual(await browse(), segments);
+    });
+
+    it('lists a segment added after a reorder last', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      await reorder([paid.id, free.id]).expectStatus(200);
+
+      await add('Comped', 'status:comped');
+
+      assert.deepEqual(await names(), ['Paid', 'Free', 'Comped']);
+    });
+
+    it('does not return a segment another request deletes at the same time', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      const comped = await add('Comped', 'status:comped');
+      // Another request deletes a segment, and commits once this reorder is waiting for it.
+      const other = await models.Base.knex.transaction();
+      let reordering: Promise<ApiResponse> | undefined;
+      try {
+        await other('segments').where('id', comped.id).del();
+        reordering = Promise.resolve(reorder([paid.id, free.id]).expectStatus(200));
+        await lockWaitOnSegments();
+        await other.commit();
+
+        const { body } = await reordering;
+        assert.deepEqual(
+          body.segments.map(({ name }) => name),
+          ['Paid', 'Free'],
+        );
+      } finally {
+        if (!other.isCompleted()) {
+          await other.rollback();
+        }
+        // So that it can't change the segments after this test has failed and been cleaned up.
+        await reordering?.catch(() => {});
+      }
+      assert.deepEqual(await names(), ['Paid', 'Free']);
+    });
+
+    it('rejects an order that leaves a segment out, names one twice or names a deleted one, and changes nothing', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      const deleted = await add('Comped', 'status:comped');
+      await agent.delete(`segments/${deleted.id}/`).expectStatus(204);
+
+      await reorder([paid.id])
+        .expectStatus(422)
+        .matchHeaderSnapshot(writeHeaders)
+        .matchBodySnapshot(errorBody);
+      for (const ids of [
+        [],
+        [paid.id, free.id, free.id],
+        [paid.id, free.id, deleted.id],
+        [paid.id, UNKNOWN_ID],
+      ]) {
+        assert.deepEqual(
+          await reorderError({ segments: ids.map((id) => ({ id })) }),
+          ORDER_OUT_OF_DATE,
+        );
+      }
+      assert.deepEqual(await names(), ['Free', 'Paid']);
+    });
+
+    it('rejects a segment without its id', async function () {
+      await add('Free', 'status:free');
+
+      assert.deepEqual(await reorderError({ segments: [{ name: 'Free' }] }), {
+        type: 'ValidationError',
+        code: null,
+        message: 'Validation failed for body.',
+        property: 'body.segments.0.id',
+        issue: 'Id must be a string',
+      });
+      assert.deepEqual(await names(), ['Free']);
+    });
+
+    // When a segment was last edited is a column of the table that the API doesn't return yet.
+    it('leaves when each segment was last edited as it was', async function () {
+      const lastEdited = () =>
+        models.Base.knex('segments').orderBy('id').select('id', 'updated_at');
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      await rename(paid.id, 'Paying');
+      const before = await lastEdited();
+
+      await reorder([paid.id, free.id]).expectStatus(200);
+
+      assert.deepEqual(await lastEdited(), before);
+    });
+  });
+
   describe('DELETE /segments/:id/', function () {
     it('removes the segment', async function () {
       await add('Free', 'status:free');
@@ -825,6 +964,7 @@ describe('Segments Admin API', function () {
 
       const { id } = await add('VIP', 'label:vip');
       await rename(id, 'Gold');
+      await reorder([id]).expectStatus(200);
       await agent.delete(`segments/${id}/`).expectStatus(204);
 
       assert.equal(await storedSharedViews(), stored);
@@ -841,7 +981,7 @@ describe('Segments Admin API', function () {
   describe('spans', function () {
     let metrics: { tracked(name: string): SpanDocument[] };
 
-    type Command = 'add' | 'edit' | 'delete';
+    type Command = 'add' | 'edit' | 'reorder' | 'delete';
     const spans = (command: Command) => metrics.tracked(`segments.${command}`);
     const failedSpans = (command: Command) =>
       spans(command).filter(({ event }) => event.outcome === 'failure');
@@ -854,12 +994,13 @@ describe('Segments Admin API', function () {
       mockManager.restore();
     });
 
-    it('records a successful span for each add, rename and delete', async function () {
+    it('records a successful span for each add, rename, reorder and delete', async function () {
       const { id } = await add('VIP', 'label:vip');
       await rename(id, 'Gold');
+      await reorder([id]).expectStatus(200);
       await agent.delete(`segments/${id}/`).expectStatus(204);
 
-      for (const command of ['add', 'edit', 'delete'] as const) {
+      for (const command of ['add', 'edit', 'reorder', 'delete'] as const) {
         expect(spans(command)).toMatchObject([{ event: { outcome: 'success' }, labels: {} }]);
         assert.deepEqual(spans(command)[0].labels, {});
       }
@@ -880,6 +1021,7 @@ describe('Segments Admin API', function () {
         .body({ segments: [{ name: 'Gold' }] })
         .expectStatus(404);
       await agent.delete(`segments/${UNKNOWN_ID}/`).expectStatus(404);
+      await reorder([id]).expectStatus(422);
 
       const rejected = (type: string, rejection: string) => ({
         error: { type },
@@ -898,6 +1040,9 @@ describe('Segments Admin API', function () {
         rejected('NotFoundError', 'not_found'),
       ]);
       expect(failedSpans('delete')).toMatchObject([rejected('NotFoundError', 'not_found')]);
+      expect(failedSpans('reorder')).toMatchObject([
+        rejected('SEGMENT_ORDER_OUT_OF_DATE', 'order_out_of_date'),
+      ]);
     });
 
     it('records a name the database counts as taken as a rejection', async function () {
@@ -938,9 +1083,13 @@ describe('Segments Admin API', function () {
 
     it('records no span for a request that fails body validation, or for a read', async function () {
       await addBodyError({ segments: [{ name: '', filter: 'label:vip' }] });
+      await reorderError({ segments: [{ name: 'VIP' }] });
       await browse();
 
-      assert.deepEqual([...spans('add'), ...spans('edit'), ...spans('delete')], []);
+      assert.deepEqual(
+        [...spans('add'), ...spans('edit'), ...spans('reorder'), ...spans('delete')],
+        [],
+      );
     });
   });
 
@@ -1019,11 +1168,12 @@ describe('Segments Admin API', function () {
       await agent.loginAsOwner();
     });
 
-    it('lets an administrator add, rename and remove segments', async function () {
+    it('lets an administrator add, rename, reorder and remove segments', async function () {
       await agent.loginAsAdmin();
 
       const { id } = await add('VIP', 'label:vip');
       await rename(id, 'Gold');
+      await reorder([id]).expectStatus(200);
       await agent.delete(`segments/${id}/`).expectStatus(204);
       assert.deepEqual(await browse(), []);
     });
@@ -1051,6 +1201,7 @@ describe('Segments Admin API', function () {
         .put(`segments/${id}/`)
         .body({ segments: [{ name: 'Gold' }] })
         .expectStatus(403);
+      await reorder([id]).expectStatus(403);
       await agent.delete(`segments/${id}/`).expectStatus(403);
     });
 

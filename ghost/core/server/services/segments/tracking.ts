@@ -16,6 +16,7 @@ import type { Tracer } from '../../lib/tracing/tracer';
  * - `slug_unusable`: a filter can't name a segment by the slug the new segment was given.
  * - `no_free_slug`: every slug minted from the new segment's name is taken.
  * - `filter_names_segment`: the new segment's filter names a segment.
+ * - `order_out_of_date`: a new order doesn't name every segment exactly once.
  *
  * Any other error is a failure.
  */
@@ -28,7 +29,8 @@ export type SegmentRejection =
   | 'slug_taken'
   | 'slug_unusable'
   | 'no_free_slug'
-  | 'filter_names_segment';
+  | 'filter_names_segment'
+  | 'order_out_of_date';
 
 /** What a command that changes a segment reports. */
 export interface SegmentChangeAttempt {
@@ -45,6 +47,7 @@ export interface SegmentChangeAttempt {
 const CHANGE_SPANS = {
   add: 'segments.add',
   edit: 'segments.edit',
+  reorder: 'segments.reorder',
   delete: 'segments.delete',
 } as const;
 

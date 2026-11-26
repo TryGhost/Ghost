@@ -5,7 +5,7 @@ Segments covers named filters over members, which Admin's members list shows as 
 ## Language
 
 **Segment**:
-A named NQL filter that selects members, listed in the order it was saved.
+A named NQL filter that selects members, listed in the site's order of segments.
 _Avoid_: Saved member view, when talking about the server
 
 **Saved member view**:
@@ -26,6 +26,10 @@ Segments are rows of the `segments` table, in the order of the table's sortable 
 
 A segment's filter has to be valid NQL when the segment is saved with it: the parser that reads every members filter has to be able to read it. Its keys aren't checked against the members' fields. A segment is checked when it is added and when an edit gives a filter other than its own, and an import leaves out a segment whose filter fails and reports it. A stored segment isn't checked when it is read, so one whose filter fails keeps loading and listing, and an edit can give its filter back unchanged: a segment saved before the check can have one, and so can a saved member view the migration moved to the table. Such a filter fails only when a members query uses the segment.
 
+## Order
+
+Every list of segments is in the site's order. A segment is added after the others, and a reorder puts them all in a new order, given as every segment's id in the order wanted. A reorder that leaves a segment out, names one twice or names one that doesn't exist was made from an out-of-date list, and is rejected without changing anything. A reorder changes only the order, so no segment's `updated_at` moves, and anyone who can edit a segment can reorder them.
+
 ## Slugs
 
 A segment's slug is minted from its name as a custom field's key is (`server/lib/slug.ts`), with a hyphen between words where a key has an underscore: the name is transliterated to ASCII and lowercased, invisible characters and apostrophes are dropped, and each run of other characters becomes one hyphen, with none at either end. The result is cut to leave room for a number within the column. A minted slug is one the filter parser reads back as itself when a members filter holds it without quotes, as `segment:<slug>`, and the parser decides that: a name that mints something the parser reads as something else, such as `2024` (a number), `null`, `true` or `now-1d` (a date), gets `segment-` in front, and a name that mints nothing, such as a name of emoji, gets `segment`. When another segment has the slug, the new segment gets `-2`, `-3` and so on. A stored slug, a slug a request gives and a slug a filter names are checked for their format only, so a change to the filter parser can't make a stored segment unreadable.
@@ -42,7 +46,7 @@ No lock keeps writers apart. The table's unique indexes reject a name or a slug 
 
 ## Changes
 
-Each command reports one change: `SegmentAdded`, `SegmentRenamed` or `SegmentDeleted`, with the whole segment before and after. The service root records each one in History as an action on the segment (added, edited or deleted), with the segment's name. Changes made while segments were stored in the `shared_views` setting were recorded as edits of that setting, and those entries stay as they are. A rename to the name a segment already has changes nothing and reports nothing.
+Each command reports one change: `SegmentAdded`, `SegmentRenamed` or `SegmentDeleted`, with the whole segment before and after. The service root records each one in History as an action on the segment (added, edited or deleted), with the segment's name. A reorder reports nothing, so History doesn't record it: the order is a visual preference, and dragging segments around would fill History with entries. Changes made while segments were stored in the `shared_views` setting were recorded as edits of that setting, and those entries stay as they are. A rename to the name a segment already has changes nothing and reports nothing.
 
 ## Not this
 
