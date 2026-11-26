@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Grid, Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { useSidebarShowsAllSegments } from '@/members/api';
+import { useCanChangeMemberViews, useSidebarShowsAllSegments } from '@/members/api';
 import { NavMenuItem } from './nav-menu-item';
 import { NavSavedViews } from './nav-saved-views';
 import { useMemberSidebarViews } from './member-sidebar-views';
+import { SortableMemberViewRows, SortableMemberViews } from './sortable-member-views';
 
 /** How many segments the sidebar shows before it folds the rest away. */
 const SHOWN_WHEN_FOLDED = 5;
@@ -21,10 +22,15 @@ const SHOWN_WHEN_FOLDED = 5;
  *
  * A list is folded only when that hides two segments or more: a row standing for one hidden
  * segment would take the room that segment needs.
+ *
+ * Staff who can change segments drag them into the site's order. While the rest are folded
+ * away, the rows in view are the ones that can be dragged.
  */
 export function NavMemberViews() {
   const memberViews = useMemberSidebarViews();
   const { showsAll, setShowsAll } = useSidebarShowsAllSegments();
+  const canReorder = useCanChangeMemberViews();
+  const Rows = canReorder ? SortableMemberViewRows : NavSavedViews;
 
   const folds = memberViews.length > SHOWN_WHEN_FOLDED + 1;
   // While the rest are folded away, the segment on screen joins the first few so it still
@@ -44,9 +50,9 @@ export function NavMemberViews() {
     }
   }, [showsAll, folds]);
 
-  return (
+  const list = (
     <>
-      <NavSavedViews views={first} />
+      <Rows views={first} />
       {folds && (
         <>
           {/* The same motion as the sidebar's lists opening and closing (Admin 7's). */}
@@ -67,7 +73,7 @@ export function NavMemberViews() {
               )}
               gap="none"
             >
-              <NavSavedViews views={rest} />
+              <Rows views={rest} />
             </Stack>
           </Grid>
           <NavMenuItem.SubmenuButton
@@ -82,5 +88,13 @@ export function NavMemberViews() {
         </>
       )}
     </>
+  );
+
+  return canReorder ? (
+    <SortableMemberViews views={memberViews} visible={showsAll ? memberViews : first}>
+      {list}
+    </SortableMemberViews>
+  ) : (
+    list
   );
 }

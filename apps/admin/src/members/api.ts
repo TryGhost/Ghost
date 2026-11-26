@@ -14,7 +14,7 @@ export {
   normalizeSharedViewName,
   parseAllSharedViewsJSON,
 } from './shared-views';
-export { useMemberViews } from './hooks/use-member-views';
+export { useCanChangeMemberViews, useMemberViews } from './hooks/use-member-views';
 export { useSidebarShowsAllSegments } from './segments/poc-store';
 export { SegmentPicker } from './segments/segment-picker';
 export { type SegmentSuggestion, useSegmentSuggestions } from './segments/segment-suggestions';

@@ -99,6 +99,52 @@ export const useEditSegment = createMutation<
   },
 });
 
+const useReorderSegmentsRequest = createMutation<SegmentsResponseType, string[]>({
+  method: 'PUT',
+  path: () => '/segments/',
+  body: (ids) => ({ segments: ids.map((id) => ({ id })) }),
+  parseResponse: parseSegmentsResponse,
+  invalidateQueries: changedDataTypes,
+  updateQueries: {
+    dataType,
+    update: (newData, currentData) => changeCachedSegments(currentData, () => newData.segments),
+  },
+});
+
+/**
+ * POC (poc/segments-ui): puts every segment in the order of the ids given, the site's order for
+ * every list of them. The cached list takes the new order at once, so a dragged row stays where
+ * it was dropped, and goes back to the server's if the request fails.
+ */
+export const useReorderSegments = () => {
+  const queryClient = useQueryClient();
+  const { mutateAsync, ...rest } = useReorderSegmentsRequest();
+
+  const reorder = useCallback(
+    async (ids: string[]) => {
+      const rank = new Map(ids.map((id, index) => [id, index]));
+      queryClient.setQueriesData({ queryKey: [dataType] }, (currentData: unknown) =>
+        changeCachedSegments(currentData, (segments) =>
+          [...segments].sort(
+            (a, b) =>
+              (rank.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+              (rank.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+          ),
+        ),
+      );
+      try {
+        return await mutateAsync(ids);
+      } catch (error) {
+        void queryClient.invalidateQueries({ queryKey: [dataType] });
+        throw error;
+      }
+    },
+    [mutateAsync, queryClient],
+  );
+
+  return { ...rest, reorder };
+};
+
 export const useDeleteSegment = createMutation<void, string>({
   method: 'DELETE',
   path: (id) => `/segments/${encodeURIComponent(id)}/`,
