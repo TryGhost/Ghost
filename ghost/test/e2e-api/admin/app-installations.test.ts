@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { transactionsWaitingOn } from '../../utils/lock-waits';
 import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import nock from 'nock';
@@ -173,15 +174,7 @@ describe('App installations Admin API', function () {
     work.then(done, done);
     const deadline = Date.now() + 5000;
     while (!settled && Date.now() < deadline) {
-      const [[{ waiting }]] = await models.Base.knex.raw(`
-        SELECT COUNT(*) AS waiting
-        FROM performance_schema.data_lock_waits AS waits
-        JOIN performance_schema.data_locks AS requested
-          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
-        WHERE requested.OBJECT_SCHEMA = DATABASE()
-          AND requested.OBJECT_NAME = 'app_installations'
-      `);
-      if (waiting > 0) {
+      if ((await transactionsWaitingOn(models.Base.knex, 'app_installations')) > 0) {
         return true;
       }
       await new Promise((resolve) => {
