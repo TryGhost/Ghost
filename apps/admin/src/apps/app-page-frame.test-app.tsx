@@ -7,6 +7,11 @@ import { connect } from '@tryghost/app-sdk';
 import { ShadeApp } from '@tryghost/shade/app';
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -125,11 +130,11 @@ const hooks: TestAppHooks = {
 };
 (window as unknown as { __app: TestAppHooks }).__app = hooks;
 
-void connect().then(() => {
+void connect().then((ghost) => {
   const root = document.createElement('div');
   document.body.append(root);
   createRoot(root).render(
-    <ShadeApp darkMode={false}>
+    <ShadeApp darkMode={false} overlay={ghost.overlay}>
       <div className="fixed inset-0 -z-10 bg-background" id="backdrop" />
       <Container
         className="relative flex min-h-[calc(100dvh-var(--ghost-safe-area-inset-top,0px)-var(--ghost-safe-area-inset-bottom,0px))] flex-col"
@@ -138,6 +143,15 @@ void connect().then(() => {
       >
         <h1 id="title">Podcast</h1>
         <div className="flex items-center justify-between gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button id="open-dialog">Open dialog</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>Episode</DialogTitle>
+              <DialogDescription>An episode’s details</DialogDescription>
+            </DialogContent>
+          </Dialog>
           <div className="flex gap-2">
             <Select defaultValue="weekly">
               <SelectTrigger id="open-select">

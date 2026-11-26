@@ -1,13 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
+import { render } from 'vitest-browser-react';
+import { type AppOverlay, ShadeApp } from '@tryghost/shade/app';
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  Dialog,
+  DialogContent,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DialogDescription,
+  DialogTitle,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
   Select,
   SelectContent,
   SelectItem,
@@ -23,7 +37,8 @@ import { ListPage } from '@tryghost/shade/page-templates';
 import { renderInApp } from '@test-utils/acceptance';
 
 /*
- * Shade's surfaces in an app's safe area, set as `--ghost-safe-area-inset-*` on `<html>`.
+ * Shade's surfaces in an app's safe area, set as `--ghost-safe-area-inset-*` on `<html>`. A fake
+ * overlay in this document stands in for the app's.
  */
 
 const WINDOW = { width: 1280, height: 720 };
@@ -39,6 +54,12 @@ const setInsets = (insets: typeof INSETS | undefined) => {
       document.documentElement.style.removeProperty(name);
     }
   }
+};
+
+let root: HTMLDivElement;
+const overlay: AppOverlay = {
+  container: () => root,
+  hold: () => ({ setOpen: () => {}, release: () => {} }),
 };
 
 /** Waits out the opening animations, which scale and slide what they open. */
@@ -61,10 +82,13 @@ const INSIDE = { top: true, right: true, bottom: true, left: true };
 
 beforeEach(async () => {
   await page.viewport(WINDOW.width, WINDOW.height);
+  root = document.createElement('div');
+  document.body.append(root);
 });
 
 afterEach(() => {
   setInsets(undefined);
+  root.remove();
   window.scrollTo(0, 0);
 });
 
@@ -143,6 +167,94 @@ const Headers = () => (
 );
 
 describe('outside an app, with no safe area', () => {
+  it('leaves a dialog centred on the window, 8vmin from its top', async () => {
+    await renderInApp(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const dialog = box(byRole('dialog'));
+    expect(Math.round(dialog.left + dialog.width / 2)).toBe(WINDOW.width / 2);
+    expect(Math.round(dialog.top)).toBe(Math.round(0.08 * WINDOW.height));
+  });
+
+  it('leaves an alert dialog centred on the window, a fifth of the way down', async () => {
+    await renderInApp(
+      <AlertDialog open>
+        <AlertDialogContent>
+          <AlertDialogTitle>Title</AlertDialogTitle>
+          <AlertDialogDescription>Description</AlertDialogDescription>
+        </AlertDialogContent>
+      </AlertDialog>,
+    );
+    await settle();
+
+    const dialog = box(byRole('alertdialog'));
+    expect(Math.round(dialog.left + dialog.width / 2)).toBe(WINDOW.width / 2);
+    expect(Math.round(dialog.top + 0.2 * dialog.height)).toBe(Math.round(0.2 * WINDOW.height));
+  });
+
+  it('leaves a dialog that scrolls as a page does scrolling the whole window', async () => {
+    await renderInApp(
+      <Dialog open>
+        <DialogContent scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <div style={{ height: 2000 }} />
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const scroller = box(document.querySelector('[data-slot=dialog-overlay]')!);
+    expect([scroller.top, scroller.right, scroller.bottom, scroller.left]).toEqual([
+      0,
+      WINDOW.width,
+      WINDOW.height,
+      0,
+    ]);
+    const dialog = box(byRole('dialog'));
+    expect(Math.round(dialog.top)).toBe(Math.round(0.08 * WINDOW.height));
+  });
+
+  it('leaves a left sheet against the window’s left edge, its full height', async () => {
+    await renderInApp(
+      <Sheet open>
+        <SheetContent side="left">
+          <SheetTitle>Title</SheetTitle>
+          <SheetDescription>Description</SheetDescription>
+        </SheetContent>
+      </Sheet>,
+    );
+    await settle();
+
+    const sheet = box(byRole('dialog'));
+    expect([sheet.top, sheet.left, sheet.bottom]).toEqual([0, 0, WINDOW.height]);
+  });
+
+  it('leaves a sheet against the window’s right edge, its full height, with its close button', async () => {
+    await renderInApp(
+      <Sheet open>
+        <SheetContent>
+          <SheetTitle>Title</SheetTitle>
+          <SheetDescription>Description</SheetDescription>
+        </SheetContent>
+      </Sheet>,
+    );
+    await settle();
+
+    const sheet = box(byRole('dialog'));
+    expect([sheet.top, sheet.right, sheet.bottom]).toEqual([0, WINDOW.width, WINDOW.height]);
+    expect(sheet.width).toBe(384);
+    const close = box(page.getByRole('button', { name: 'Close' }).element());
+    expect([close.top, WINDOW.width - close.right]).toEqual([16, 16]);
+  });
+
   it('leaves a select item-aligned, as asked', async () => {
     await renderInApp(<ItemAlignedSelect />);
     await settle();
@@ -211,5 +323,374 @@ describe('in an app’s page, with Admin 7’s safe area', () => {
       INSETS.top,
     );
     expect(Math.round(box(byTestId('list-page-header')).top)).toBe(INSETS.top);
+  });
+});
+
+describe('in an app’s overlay, with Admin 7’s safe area', () => {
+  beforeEach(() => setInsets(INSETS));
+
+  const inOverlay = (children: React.ReactNode) =>
+    render(
+      <ShadeApp className="shade-admin" darkMode={false} overlay={overlay}>
+        {children}
+      </ShadeApp>,
+    );
+
+  it('keeps a dialog centred on the window while it fits', async () => {
+    await inOverlay(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const dialog = box(byRole('dialog'));
+    expect(root.contains(byRole('dialog'))).toBe(true);
+    expect(Math.round(dialog.left + dialog.width / 2)).toBe(WINDOW.width / 2);
+    // Where Admin's own dialogs sit.
+    expect(Math.round(dialog.top)).toBe(Math.round(0.08 * WINDOW.height));
+    expect(insideSafeArea(dialog)).toEqual(INSIDE);
+  });
+
+  it('moves a wide dialog only as far as it must, and bounds a tall one, which scrolls', async () => {
+    await inOverlay(
+      <Dialog open>
+        <DialogContent className="max-w-4xl">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <div style={{ height: 2000 }} />
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const element = byRole('dialog');
+    const dialog = box(element);
+    expect(Math.round(dialog.left)).toBe(INSETS.left);
+    expect(insideSafeArea(dialog)).toEqual(INSIDE);
+    expect(element.scrollHeight).toBeGreaterThan(element.clientHeight);
+    expect(dialog.bottom).toBeLessThan(WINDOW.height - INSETS.bottom);
+  });
+
+  it('scrolls a dialog that scrolls as a page does inside the safe area', async () => {
+    await inOverlay(
+      <Dialog open>
+        <DialogContent className="max-w-4xl" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <div style={{ height: 2000 }} />
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const scroller = box(document.querySelector('[data-slot=dialog-scroller]')!);
+    expect([scroller.top, scroller.right, scroller.bottom, scroller.left]).toEqual([
+      INSETS.top,
+      WINDOW.width - INSETS.right,
+      WINDOW.height - INSETS.bottom,
+      INSETS.left,
+    ]);
+    const dialog = box(byRole('dialog'));
+    expect(dialog.left).toBeGreaterThanOrEqual(INSETS.left);
+    expect(dialog.right).toBeLessThanOrEqual(WINDOW.width - INSETS.right);
+    expect(Math.round(dialog.top)).toBe(Math.max(Math.round(0.08 * WINDOW.height), INSETS.top));
+  });
+
+  it('keeps a tall alert dialog between the safe area’s top and bottom', async () => {
+    await inOverlay(
+      <AlertDialog open>
+        <AlertDialogContent>
+          <AlertDialogTitle>Title</AlertDialogTitle>
+          <AlertDialogDescription>Description</AlertDialogDescription>
+          <div style={{ height: 2000 }} />
+        </AlertDialogContent>
+      </AlertDialog>,
+    );
+    await settle();
+
+    expect(insideSafeArea(box(byRole('alertdialog')))).toEqual(INSIDE);
+  });
+
+  it.each(['top', 'right', 'bottom', 'left'] as const)(
+    'docks a %s sheet at the safe area’s edge, with its close button on it',
+    async (side) => {
+      await inOverlay(
+        <Sheet open>
+          <SheetContent side={side}>
+            <SheetTitle>Title</SheetTitle>
+            <SheetDescription>Description</SheetDescription>
+          </SheetContent>
+        </Sheet>,
+      );
+      await settle();
+
+      const sheet = box(byRole('dialog'));
+      expect(insideSafeArea(sheet)).toEqual(INSIDE);
+      const edge = {
+        top: sheet.top - INSETS.top,
+        right: WINDOW.width - INSETS.right - sheet.right,
+        bottom: WINDOW.height - INSETS.bottom - sheet.bottom,
+        left: sheet.left - INSETS.left,
+      };
+      expect(Math.round(edge[side])).toBe(0);
+      const close = box(page.getByRole('button', { name: 'Close' }).element());
+      expect(close.left).toBeGreaterThanOrEqual(sheet.left);
+      expect(close.right).toBeLessThanOrEqual(sheet.right);
+      expect(close.top).toBeGreaterThanOrEqual(sheet.top);
+      expect(close.bottom).toBeLessThanOrEqual(sheet.bottom);
+    },
+  );
+
+  it('bounds a tall top sheet by the safe area, which it scrolls inside', async () => {
+    await inOverlay(
+      <Sheet open>
+        <SheetContent side="top">
+          <SheetTitle>Title</SheetTitle>
+          <SheetDescription>Description</SheetDescription>
+          <div style={{ height: 2000 }} />
+        </SheetContent>
+      </Sheet>,
+    );
+    await settle();
+
+    const element = byRole('dialog');
+    expect(insideSafeArea(box(element))).toEqual(INSIDE);
+    expect(element.scrollHeight).toBeGreaterThan(element.clientHeight);
+  });
+
+  it('keeps the close button on a sheet that opens in the overlay without holding it', async () => {
+    await inOverlay(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <Sheet modal={false} open>
+            <SheetContent side="left">
+              <SheetTitle>Sheet</SheetTitle>
+              <SheetDescription>Description</SheetDescription>
+            </SheetContent>
+          </Sheet>
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const sheet = [...document.querySelectorAll('[role=dialog]')].find((element) =>
+      element.textContent?.includes('Sheet'),
+    )!;
+    expect(root.contains(sheet)).toBe(true);
+    const sheetBox = box(sheet);
+    const close = box(sheet.querySelector('button')!);
+    expect(close.left).toBeGreaterThanOrEqual(sheetBox.left);
+    expect(close.right).toBeLessThanOrEqual(sheetBox.right);
+    expect(close.top).toBeGreaterThanOrEqual(sheetBox.top);
+  });
+
+  it('sticks a footer in a dialog at the dialog’s bottom, not above it by the safe area', async () => {
+    await inOverlay(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <LongPage />
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const row = page.getByText('Save').element().parentElement!;
+    // No more than the dialog's own bottom padding.
+    expect(box(byRole('dialog')).bottom - box(row).bottom).toBeLessThanOrEqual(25);
+  });
+
+  it('scrolls a long sheet’s close button into view as focus wraps round to it', async () => {
+    await inOverlay(
+      <Sheet open>
+        <SheetContent>
+          <SheetTitle>Title</SheetTitle>
+          <SheetDescription>Description</SheetDescription>
+          <div style={{ height: 2000 }} />
+          <button type="button">Last</button>
+        </SheetContent>
+      </Sheet>,
+    );
+    await settle();
+    const sheet = byRole('dialog');
+    page.getByText('Last').element().focus();
+    sheet.scrollTop = sheet.scrollHeight;
+
+    await userEvent.tab();
+
+    const close = page.getByRole('button', { name: 'Close' }).element();
+    expect(document.activeElement).toBe(close);
+    expect(box(close).top).toBeGreaterThanOrEqual(box(sheet).top);
+  });
+
+  it('lets a long menu scroll within the safe area, so its last item can be reached', async () => {
+    await inOverlay(
+      <DropdownMenu open>
+        <DropdownMenuTrigger style={{ position: 'fixed', left: 600, top: 300 }}>
+          Menu
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          {Array.from({ length: 40 }, (_, index) => (
+            <DropdownMenuItem key={index}>Item {index + 1}</DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+    await settle();
+
+    const menu = byRole('menu');
+    expect(insideSafeArea(box(menu))).toEqual(INSIDE);
+    expect(menu.scrollHeight).toBeGreaterThan(menu.clientHeight);
+  });
+
+  it('opens a popover above its trigger rather than beneath the safe area’s bottom', async () => {
+    await inOverlay(
+      <Popover open>
+        <PopoverTrigger
+          style={{ position: 'fixed', left: 600, top: WINDOW.height - INSETS.bottom - 30 }}
+        >
+          Open
+        </PopoverTrigger>
+        <PopoverContent>
+          <div style={{ height: 10 }}>Popover</div>
+        </PopoverContent>
+      </Popover>,
+    );
+    await settle();
+
+    const content = page.getByText('Popover').element().closest('[role=dialog]')!;
+    const popover = box(content);
+    const trigger = box(page.getByText('Open').element());
+    expect(WINDOW.height - trigger.bottom).toBeGreaterThan(popover.height + 8);
+    expect(content.getAttribute('data-side')).toBe('top');
+    expect(popover.bottom).toBeLessThanOrEqual(trigger.top);
+  });
+});
+
+describe('in an app’s page, where a dialog renders while the overlay loads', () => {
+  beforeEach(() => setInsets(INSETS));
+
+  const inPage = (children: React.ReactNode) =>
+    render(
+      <ShadeApp
+        className="shade-admin"
+        darkMode={false}
+        overlay={{ ...overlay, container: () => undefined }}
+      >
+        {children}
+      </ShadeApp>,
+    );
+
+  it('keeps a tall dialog inside the safe area, scrolling inside', async () => {
+    await inPage(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <div style={{ height: 2000 }} />
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const element = byRole('dialog');
+    expect(root.contains(element)).toBe(false);
+    expect(insideSafeArea(box(element))).toEqual(INSIDE);
+    expect(element.scrollHeight).toBeGreaterThan(element.clientHeight);
+  });
+
+  it('lets a dialog that scrolls as a page does scroll its end clear of the chrome', async () => {
+    await inPage(
+      <Dialog open>
+        <DialogContent className="max-w-4xl" scroll="overlay">
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <div style={{ height: 2000 }} />
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    const backdrop = box(document.querySelector('[data-slot=dialog-overlay]')!);
+    expect([backdrop.top, backdrop.right, backdrop.bottom, backdrop.left]).toEqual([
+      0,
+      WINDOW.width,
+      WINDOW.height,
+      0,
+    ]);
+    const scroller = document.querySelector('[data-slot=dialog-scroller]')!;
+    const scrollerBox = box(scroller);
+    expect([scrollerBox.top, scrollerBox.right, scrollerBox.bottom, scrollerBox.left]).toEqual([
+      INSETS.top,
+      WINDOW.width - INSETS.right,
+      WINDOW.height - INSETS.bottom,
+      INSETS.left,
+    ]);
+    scroller.scrollTop = scroller.scrollHeight;
+    const dialog = box(byRole('dialog'));
+    expect(dialog.left).toBeGreaterThanOrEqual(INSETS.left);
+    expect(dialog.right).toBeLessThanOrEqual(WINDOW.width - INSETS.right);
+    expect(dialog.bottom).toBeLessThanOrEqual(WINDOW.height - INSETS.bottom);
+  });
+
+  it('keeps a sheet’s close button on the sheet', async () => {
+    await inPage(
+      <Sheet open>
+        <SheetContent>
+          <SheetTitle>Title</SheetTitle>
+          <SheetDescription>Description</SheetDescription>
+        </SheetContent>
+      </Sheet>,
+    );
+    await settle();
+
+    const element = byRole('dialog');
+    expect(root.contains(element)).toBe(false);
+    const sheet = box(element);
+    const close = box(page.getByRole('button', { name: 'Close' }).element());
+    expect(close.right).toBeLessThanOrEqual(sheet.right);
+    expect(close.top).toBeGreaterThanOrEqual(sheet.top);
+  });
+
+  it.each(['', 'sm:max-w-[420px]'])(
+    'keeps a side sheet no wider than a narrow safe area, with className "%s"',
+    async (className) => {
+      setInsets({ ...INSETS, left: 1000 });
+      await inPage(
+        <Sheet open>
+          <SheetContent className={className} side="left">
+            <SheetTitle>Title</SheetTitle>
+            <SheetDescription>Description</SheetDescription>
+          </SheetContent>
+        </Sheet>,
+      );
+      await settle();
+
+      const sheet = box(byRole('dialog'));
+      expect(sheet.left).toBe(1000);
+      expect(sheet.right).toBeLessThanOrEqual(WINDOW.width - INSETS.right);
+    },
+  );
+
+  it('keeps a dialog inside the safe area in an app that passes no overlay to ShadeApp', async () => {
+    await renderInApp(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <div style={{ height: 2000 }} />
+        </DialogContent>
+      </Dialog>,
+    );
+    await settle();
+
+    expect(insideSafeArea(box(byRole('dialog')))).toEqual(INSIDE);
   });
 });

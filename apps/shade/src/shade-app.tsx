@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
+import { type AppOverlay, AppOverlayContext } from '@/lib/app-overlay';
 import ShadeProvider from '@/providers/shade-provider';
 import type { ControlShape } from '@/providers/shade-context';
 import { useHasSafeArea, useSafeAreaSlide } from '@/lib/safe-area';
@@ -27,6 +28,8 @@ export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   admin7Design?: boolean;
   /** Temporary Admin mobile-hardening flag. Standalone surfaces stay off by default. */
   admin7Mobile?: boolean;
+  /** In a Ghost app, where dialogs and sheets render. Pass the app SDK's `ghost.overlay`. */
+  overlay?: AppOverlay;
 }
 
 const ShadeApp: React.FC<ShadeAppProps> = ({
@@ -34,6 +37,7 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   controlShape,
   admin7Design = true,
   admin7Mobile = false,
+  overlay,
   className,
   children,
   ...props
@@ -58,7 +62,7 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
         controlShape={controlShape}
         darkMode={darkMode}
       >
-        {children}
+        <AppOverlayContext.Provider value={overlay}>{children}</AppOverlayContext.Provider>
       </ShadeProvider>
     </div>
   );

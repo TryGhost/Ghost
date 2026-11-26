@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
 import { ShadeScope } from '@/shade-scope';
@@ -12,7 +13,9 @@ const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
 const DropdownMenuGroup = DropdownMenuPrimitive.Group;
 
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+const DropdownMenuPortal = (props: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) => (
+  <DropdownMenuPrimitive.Portal container={usePortalContainer()} {...props} />
+);
 
 const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 
@@ -51,7 +54,7 @@ const DropdownMenuSubContent = React.forwardRef<
         'z-50 min-w-[8rem] overflow-hidden rounded-menu border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
         className,
       )}
-      {...safeAreaCollision(collisionBoundary)}
+      {...safeAreaCollision(collisionBoundary, usePortalContainer())}
       onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
       {...props}
     />
@@ -63,7 +66,7 @@ const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, onEscapeKeyDown, sideOffset = 4, collisionBoundary, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
+  <DropdownMenuPrimitive.Portal container={usePortalContainer()}>
     <ShadeScope>
       <DropdownMenuPrimitive.Content
         ref={ref}
@@ -73,7 +76,7 @@ const DropdownMenuContent = React.forwardRef<
           'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
           className,
         )}
-        {...safeAreaCollision(collisionBoundary)}
+        {...safeAreaCollision(collisionBoundary, usePortalContainer())}
         sideOffset={sideOffset}
         onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
         {...props}

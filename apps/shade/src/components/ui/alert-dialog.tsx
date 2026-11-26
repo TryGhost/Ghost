@@ -1,13 +1,23 @@
 import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
+import {
+  overlayTint,
+  SAFE_AREA_DIALOG_HEIGHT,
+  SAFE_AREA_DIALOG_X,
+  useHostedModal,
+  useModalOpen,
+} from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import type { ButtonProps } from '@/components/ui/button';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { useShade } from '@/providers/shade-context';
 import { ShadeScope } from '@/shade-scope';
 
-const AlertDialog = AlertDialogPrimitive.Root;
+const AlertDialog = (props: React.ComponentProps<typeof AlertDialogPrimitive.Root>) => {
+  const [rootProps, provideOpen] = useModalOpen(props);
+  return provideOpen(<AlertDialogPrimitive.Root {...rootProps} />);
+};
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
@@ -20,7 +30,8 @@ const AlertDialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Overlay
     className={cn(
-      'fixed inset-0 z-[1100] transform-gpu bg-black/30 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 dark:bg-black/60',
+      'fixed inset-0 z-[1100] transform-gpu data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
+      overlayTint('dialog'),
       className,
     )}
     {...props}
@@ -38,21 +49,37 @@ type AlertDialogContentProps = React.ComponentPropsWithoutRef<
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   AlertDialogContentProps
->(({ className, overlayClassName, ...props }, ref) => (
-  <AlertDialogPortal>
-    <ShadeScope>
-      <AlertDialogOverlay className={overlayClassName} onClick={(e) => e.stopPropagation()} />
-      <AlertDialogPrimitive.Content
-        ref={ref}
-        className={cn(
-          'fixed top-[20%] left-[50%] z-[1100] grid w-full max-w-lg translate-x-[-50%] translate-y-[-20%] gap-6 bg-surface-elevated-2 p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-[18%] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-[18%] sm:rounded-lg',
-          className,
+>(({ className, overlayClassName, children, ...props }, ref) => {
+  const { container, inApp, overlayStyle, ref: contentRef, wrap } = useHostedModal('dialog', ref);
+  return (
+    <AlertDialogPortal container={container}>
+      <ShadeScope>
+        <AlertDialogOverlay
+          className={overlayClassName}
+          style={overlayStyle}
+          onClick={(e) => e.stopPropagation()}
+        />
+        {wrap(
+          <AlertDialogPrimitive.Content
+            ref={contentRef}
+            className={cn(
+              'fixed top-[20%] left-[50%] z-[1100] grid max-w-lg translate-y-[-20%] gap-6 bg-surface-elevated-2 p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-[18%] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-[18%] sm:rounded-lg',
+              SAFE_AREA_DIALOG_X,
+              // Moves up only as far as it must to stay between the safe area's top and bottom.
+              inApp && SAFE_AREA_DIALOG_HEIGHT,
+              inApp &&
+                'translate-y-[clamp(var(--ghost-safe-area-inset-top,0px)_-_20dvh,-20%,80dvh_-_var(--ghost-safe-area-inset-bottom,0px)_-_1rem_-_100%)]',
+              className,
+            )}
+            {...props}
+          >
+            {children}
+          </AlertDialogPrimitive.Content>,
         )}
-        {...props}
-      />
-    </ShadeScope>
-  </AlertDialogPortal>
-));
+      </ShadeScope>
+    </AlertDialogPortal>
+  );
+});
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
 const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
