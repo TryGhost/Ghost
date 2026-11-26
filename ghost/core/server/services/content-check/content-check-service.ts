@@ -74,23 +74,14 @@ export class ContentCheckService {
 
   async sendTitleChanged(model: SettingsModel): Promise<void> {
     try {
-      const webhookUrl = this.config.get('hostSettings:contentCheck:webhookUrl');
-      if (typeof webhookUrl !== 'string' || webhookUrl.length === 0) {
+      const { webhookUrl, webhookSecret, siteId, siteCreatedAt, maxSiteAgeDays } =
+        this.#readContentCheckConfig();
+
+      if (!webhookUrl) {
         return;
       }
 
-      const webhookSecret = this.config.get('hostSettings:contentCheck:webhookSecret');
-      const siteIdRaw = this.config.get('hostSettings:siteId');
-      const siteCreatedAtRaw = this.config.get('hostSettings:contentCheck:siteCreatedAt');
-      const maxSiteAgeDaysRaw = this.config.get('hostSettings:contentCheck:maxSiteAgeDays');
-
-      const siteId = typeof siteIdRaw === 'string' ? siteIdRaw : '';
-      const webhookSecretValue = typeof webhookSecret === 'string' ? webhookSecret : '';
-      const siteCreatedAt = this.#normalizeSiteCreatedAt(siteCreatedAtRaw);
-
-      const maxSiteAgeDays = this.#readMaxSiteAgeDays(maxSiteAgeDaysRaw);
-
-      if (!webhookSecretValue || !siteId || !siteCreatedAt || maxSiteAgeDays === null) {
+      if (!webhookSecret || !siteId || !siteCreatedAt || maxSiteAgeDays === null) {
         this.logging.warn(
           'Content check webhook is misconfigured: hostSettings:contentCheck:webhookUrl is set but webhookSecret, siteId, siteCreatedAt, or maxSiteAgeDays is missing.',
         );
@@ -118,7 +109,7 @@ export class ContentCheckService {
 
       const requestOptions = buildSignedWebhookRequest({
         payload,
-        secret: webhookSecretValue,
+        secret: webhookSecret,
       });
 
       const sanitizedUrl = sanitizeWebhookUrl(webhookUrl);
@@ -148,17 +139,34 @@ export class ContentCheckService {
     this.events.removeListener('settings.title.edited', this.listener);
   }
 
-  #normalizeSiteCreatedAt(value: unknown): string | null {
-    if (typeof value !== 'string' || value.length === 0) {
-      return null;
-    }
-    return Number.isNaN(Date.parse(value)) ? null : value;
-  }
+  #readContentCheckConfig(): {
+    webhookUrl: string | null;
+    webhookSecret: string | null;
+    siteId: string | null;
+    siteCreatedAt: string | null;
+    maxSiteAgeDays: number | null;
+  } {
+    const webhookUrl = this.config.get('hostSettings:contentCheck:webhookUrl');
+    const webhookSecret = this.config.get('hostSettings:contentCheck:webhookSecret');
+    const siteId = this.config.get('hostSettings:siteId');
+    const siteCreatedAt = this.config.get('hostSettings:contentCheck:siteCreatedAt');
+    const maxSiteAgeDays = this.config.get('hostSettings:contentCheck:maxSiteAgeDays');
 
-  #readMaxSiteAgeDays(value: unknown): number | null {
-    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
-      return value;
-    }
-    return null;
+    return {
+      webhookUrl: typeof webhookUrl === 'string' && webhookUrl.length > 0 ? webhookUrl : null,
+      webhookSecret:
+        typeof webhookSecret === 'string' && webhookSecret.length > 0 ? webhookSecret : null,
+      siteId: typeof siteId === 'string' && siteId.length > 0 ? siteId : null,
+      siteCreatedAt:
+        typeof siteCreatedAt === 'string' &&
+        siteCreatedAt.length > 0 &&
+        !Number.isNaN(Date.parse(siteCreatedAt))
+          ? siteCreatedAt
+          : null,
+      maxSiteAgeDays:
+        typeof maxSiteAgeDays === 'number' && Number.isFinite(maxSiteAgeDays) && maxSiteAgeDays > 0
+          ? maxSiteAgeDays
+          : null,
+    };
   }
 }
