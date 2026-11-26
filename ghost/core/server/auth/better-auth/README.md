@@ -442,7 +442,8 @@ upload then never runs for an app request that can't succeed.
   the code is what to read.
 - The scopes cap the standard permission checks a call meets, through the
   policy core, on top of the user's role: `canThis` and `authorize` answer
-  `APP_SCOPE_REQUIRED`, naming the scope. A method whose permission check is
+  `APP_SCOPE_REQUIRED`, naming the scope, or `APP_NOT_ALLOWED` for a key the
+  scope registry doesn't list, which no approval can grant. A method whose permission check is
   its own or none would see the staff user the app acts for, so the API
   pipeline refuses apps on every such method (`APP_NOT_ALLOWED`) unless it's
   on the allowlist in `api/endpoints/utils/permissions.js`, which is for
@@ -477,7 +478,8 @@ upload then never runs for an app request that can't succeed.
   which nothing could refuse.
 - The Admin API refuses an app on those methods and routes, and on a method
   whose standard check needs a scope the app wasn't approved for
-  (`APP_SCOPE_REQUIRED`), before the route's own middleware runs
+  (`APP_SCOPE_REQUIRED`, or `APP_NOT_ALLOWED` for a key no scope grants),
+  before the route's own middleware runs
   (`refuseAppEarly` in the Admin API's `authAdminApi`). It reads the method
   from the route's last handler, which `routedMethod` recognises for every
   handler `http()` returns. A route ending in anything else is a `router.all`

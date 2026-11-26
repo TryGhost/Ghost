@@ -243,12 +243,18 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     const id = await installation(['post:browse']);
     const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
 
-    // No app scope opens these yet, so the method's standard check is what answers
-    for (const [path, message] of [
-      ['apps/installations/', 'Permission error, cannot list app_installations.'],
+    // No app scope opens these yet, so the API pipeline refuses them as no app may call them: the
+    // first checks its own permissions, and the second needs `member:browse`, which no scope grants
+    for (const [path, message, code] of [
+      [
+        'apps/installations/',
+        'Permission error, cannot list app_installations.',
+        'APP_NOT_ALLOWED',
+      ],
       [
         'members/metafields/custom/favourite/values/',
-        'This app was not approved for the member:browse scope',
+        'You do not have permission to browse member',
+        'APP_NOT_ALLOWED',
       ],
     ]) {
       const { body } = await agent
@@ -256,6 +262,7 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
         .header('Authorization', bearer(token))
         .expectStatus(403);
       assert.equal(body.errors[0].message, message, path);
+      assert.equal(refusedAs(body), code, path);
     }
   });
 

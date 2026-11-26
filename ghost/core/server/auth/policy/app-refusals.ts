@@ -1,3 +1,4 @@
+import { isAppPermissionKey } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 
 // How Ghost refuses an app's call for a reason that is the app's, not the staff user's it acts
@@ -19,4 +20,13 @@ export function appScopeRequired(permissionKey: string) {
     message: `This app was not approved for the ${permissionKey} scope`,
     code: 'APP_SCOPE_REQUIRED',
   });
+}
+
+/**
+ * The refusal of an app whose scopes don't allow `permissionKey`: `APP_SCOPE_REQUIRED` when the
+ * key is a scope an app can be approved for, and `APP_NOT_ALLOWED` when it isn't, as no approval
+ * can grant it.
+ */
+export function appOutOfScope(permissionKey: string) {
+  return isAppPermissionKey(permissionKey) ? appScopeRequired(permissionKey) : appNotAllowed();
 }

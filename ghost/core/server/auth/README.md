@@ -45,8 +45,9 @@ scopes allow, and `authorize` checks one, then any row rule in
 `policy/rules/`, throwing when it is refused. `canThis` refuses a key the
 scopes lack, then passes the grant to the model `permissible` hooks as flags
 until each hook becomes a row rule. An app refused for its scopes, by either,
-is told which scope it lacked, as `403 APP_SCOPE_REQUIRED`; every other
-refusal is the generic one. A principal of a kind the policy doesn't know is
+is told which scope it lacked, as `403 APP_SCOPE_REQUIRED`, or, for a key
+no scope grants, that no app may take the action, as `403 APP_NOT_ALLOWED`;
+every other refusal is the generic one. A principal of a kind the policy doesn't know is
 granted nothing and its scopes allow nothing.
 
 The [previous inventory audit](https://github.com/TryGhost/Ghost/tree/2700a443fe1ff989630efbdb5e8355f066959bbf/ghost/core/server/services/legacy-service-inventory.yaml#L5789)

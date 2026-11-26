@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { Principal } from '../principal';
-import { appScopeRequired } from './app-refusals';
+import { appOutOfScope } from './app-refusals';
 import { capabilities, capabilityKey, type Capability } from './capabilities';
 import { rowRules } from './rules';
 import { scopesAllow } from './scopes';
@@ -28,10 +28,11 @@ export function noPermission() {
 
 /**
  * The refusal of a key the principal's scopes don't allow. An app's says which scope it lacked,
- * with a code of its own; a refusal because of the user's role is never this one.
+ * or that no app may take the action when the key is no scope, with a code of its own; a refusal
+ * because of the user's role is never this one.
  */
 export function outOfScope(principal: Principal, key: Capability) {
-  return principal.kind === 'app' ? appScopeRequired(key) : noPermission();
+  return principal.kind === 'app' ? appOutOfScope(key) : noPermission();
 }
 
 /**

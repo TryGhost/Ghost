@@ -324,10 +324,17 @@ describe('Admin API Middleware', function () {
         code: 'APP_SCOPE_REQUIRED',
         message: 'This app was not approved for the post:browse scope',
       });
+      assert.deepEqual(ran, []);
+    });
+
+    // No approval can grant a key the scope registry doesn't list
+    it('refuses an app on a method whose key is no scope as one no app may call', async function () {
+      const { app: routes, ran } = createRoutes(app(['tag:browse']));
+
       await request(routes).post('/import').expect(403).expect({
         type: 'NoPermissionError',
-        code: 'APP_SCOPE_REQUIRED',
-        message: 'This app was not approved for the content_import:importContent scope',
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
       });
       assert.deepEqual(ran, []);
     });

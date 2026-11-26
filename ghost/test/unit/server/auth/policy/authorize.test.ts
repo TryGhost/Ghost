@@ -175,6 +175,14 @@ describe('Authorization policy', function () {
       });
     });
 
+    it('tells an app it may not take an action no scope grants', async function () {
+      await assert.rejects(authorize(appPrincipal(['Owner'], ['tag:browse']), 'browse', 'member'), {
+        ...noPermission,
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
+      });
+    });
+
     it('keeps the generic refusal for a role that lacks the key, and for any other principal’s scopes', async function () {
       const generic = { ...noPermission, code: null };
       await assert.rejects(

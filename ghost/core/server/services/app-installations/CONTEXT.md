@@ -163,7 +163,8 @@ ends if that's sooner. Every call checks the installation is active, the user is
 active and the staff session still exists and is verified. The approved
 scopes as they are now, whatever the token or its OAuth client say, cap the
 standard permission checks the call meets, and a call they don't cover is
-refused as `APP_SCOPE_REQUIRED`. A route whose check is its own or none
+refused as `APP_SCOPE_REQUIRED`, or as `APP_NOT_ALLOWED` when no scope can
+grant what it needs. A route whose check is its own or none
 refuses apps, unless it's safe for any app, as `APP_NOT_ALLOWED`. Admin's
 bridge still sends only the routes the app contracts list, and refuses what
 the server doesn't check yet within them, such as script in a write; the app

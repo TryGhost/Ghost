@@ -6,8 +6,8 @@ with no older-Core fallbacks or tests. Origin, framing and identity checks
 still apply.
 
 Ghost holds an app's token to the installation's approved scopes on routes
-that check a permission (`403 APP_SCOPE_REQUIRED`) and refuses it on the rest
-(`403 APP_NOT_ALLOWED`). The app gets those answers: neither code says
+that check a permission a scope names (`403 APP_SCOPE_REQUIRED`) and refuses
+it on the rest (`403 APP_NOT_ALLOWED`). The app gets those answers: neither code says
 anything about the app's session. To open a route to apps, give it a
 permission key in Core that a scope names, and add it under that scope in
 `APP_ROUTES` (`contracts/app-contracts/src/bridge/app-routes.ts`), the

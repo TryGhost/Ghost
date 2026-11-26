@@ -5,7 +5,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const { capabilities, capabilityKey } = require('../../../auth/policy/capabilities');
 const { scopesAllow } = require('../../../auth/policy/scopes');
-const { appNotAllowed, appScopeRequired } = require('../../../auth/policy/app-refusals');
+const { appNotAllowed, appOutOfScope } = require('../../../auth/policy/app-refusals');
 
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
@@ -176,7 +176,7 @@ module.exports = {
     const config = Object.assign({ docName, method }, typeof own === 'object' ? own : {});
     const key = permissionKey(config);
     if (!scopesAllow(capabilities(principal).scopes, key)) {
-      throw appScopeRequired(key);
+      throw appOutOfScope(key);
     }
   },
 
