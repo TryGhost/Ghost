@@ -13,6 +13,12 @@ import { isConsoleAllowed, resetConsoleAllowed } from './console-guard';
 // resolution. Must run before any Ghost source is required below.
 require('tsx/cjs');
 
+// Register tsx's ESM hook too. tsx leaves a dynamic import() as a real ESM
+// import, and Node's own loader does not try the .ts extension, so without
+// this a lazy import('./file') fails with ERR_MODULE_NOT_FOUND in any file
+// reached by require(). Dev (--import=tsx) already registers both hooks.
+require('tsx/esm');
+
 // Compile Ghost's own source as strict mode, so writes sloppy mode would drop
 // silently fail the test instead. Must also run before any Ghost source is
 // required. See ./strict-mode.ts.

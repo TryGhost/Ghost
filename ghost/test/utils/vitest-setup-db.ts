@@ -27,6 +27,10 @@ const chalk = require('chalk');
 // run before any Ghost source is required below.
 require('tsx/cjs');
 
+// Register tsx's ESM hook too, so a lazy import('./file') of a .ts source
+// resolves in files reached by require() — see ./vitest-setup.ts.
+require('tsx/esm');
+
 // Compile Ghost's own source as strict mode — see ./vitest-setup.ts.
 require('./strict-mode').enableStrictMode();
 
