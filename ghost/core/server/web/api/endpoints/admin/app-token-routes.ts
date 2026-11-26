@@ -1,4 +1,5 @@
 import { METHODS } from 'node:http';
+import errors from '@tryghost/errors';
 import type { IRoute, RequestHandler, Router } from 'express';
 import { authenticatesAppTokens, refuseUnauthenticatedAppToken } from '../../../../auth/app-token';
 
@@ -32,9 +33,10 @@ function refusingFirst(handlers: unknown[]): unknown[] {
  *
  * - `router.get(path, …)` and the other verbs make their route with `router.route(path)`, as
  *   `router.route(path).get(…)` does by hand, so the route that makes is the one wrapped.
- * - Anything mounted at a path with `router.use(path, …)`, and a router mounted with or without
- *   one, has the refusal ahead of it. A router's own routes are open to a token only once
- *   something ahead of the router has authenticated it: see `mountAuthenticated`.
+ * - Anything mounted at a path with `router.use(path, …)` has the refusal ahead of it. A
+ *   router's own routes are open to a token only once something ahead of the router has
+ *   authenticated it: see `mountAuthenticated`. A router mounted without a path throws, as the
+ *   refusal ahead of it would close every route mounted after it.
  *
  * Middleware mounted with `router.use(…)` and no path is left alone: it runs for every request
  * and passes it on, so it has to be safe for one that carries an app token nothing has
@@ -66,10 +68,16 @@ export function refuseAppTokensByDefault<T extends Router>(router: T): T {
     }
     const atPath = typeof first !== 'function';
     const handlers = args.slice(atPath ? 1 : 0);
-    if (!atPath && !handlers.flat(Infinity).some(isRouter)) {
-      return use.apply(this, args);
+    if (atPath) {
+      return use.apply(this, [args[0], ...refusingFirst(handlers)]);
     }
-    return use.apply(this, [...(atPath ? [args[0]] : []), ...refusingFirst(handlers)]);
+    // A refusal ahead of it would be at `/`, closing every route mounted after it to apps
+    if (handlers.flat(Infinity).some(isRouter)) {
+      throw new errors.IncorrectUsageError({
+        message: 'Mount a router at a path on a router that refuses app tokens by default',
+      });
+    }
+    return use.apply(this, args);
   };
 
   return router;

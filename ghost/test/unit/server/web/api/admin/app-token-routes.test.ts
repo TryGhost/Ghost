@@ -101,7 +101,7 @@ describe('Refusing app tokens by default on a router', function () {
     router.use(handler);
     router.use([handler, limiter]);
     router.use('/child', limiter, child);
-    router.use(other);
+    router.use('/other', other);
     router.use('/terminal', handler);
     router.use(['/a', '/b'], authenticate, handler);
 
@@ -120,6 +120,18 @@ describe('Refusing app tokens by default on a router', function () {
       authenticate,
       handler,
     ]);
+  });
+
+  // A refusal ahead of it would be at `/`, so it would close every later route to apps
+  it('won’t mount a router without a path', function () {
+    const router: Router = refuseAppTokensByDefault(express.Router('test'));
+    for (const mount of [
+      () => router.use(express.Router('child')),
+      () => router.use(handler, express.Router('child')),
+      () => router.use([[express.Router('child')]] as unknown as RequestHandler[]),
+    ]) {
+      assert.throws(mount, /Mount a router at a path/);
+    }
   });
 
   it('mounts a router behind a chain that runs as a route ahead of it', function () {
