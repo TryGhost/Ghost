@@ -67,6 +67,10 @@ test.describe('Ghost Admin - App access approval', () => {
     // Ghost's server refuses a route no approved scope covers, and the app gets its answer.
     await appPage.app.callAdminApi('/tags/');
     await expect(appPage.app.result).toHaveText(/^403 \{"errors":\[\{"message":/);
+    await expect(appPage.app.result).toContainText('"code":"APP_SCOPE_REQUIRED"');
+    await expect(appPage.app.result).toContainText(
+      '"message":"This app was not approved for the tag:browse scope"',
+    );
     // A related object needs its own scope too, which Admin still checks before sending.
     await appPage.app.callAdminApi('/posts/?include=tags');
     await expect(appPage.app.result).toHaveText(
