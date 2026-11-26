@@ -1844,6 +1844,31 @@ describe('oembed-service', function () {
       sinon.assert.calledOnceWithExactly(loggingStub, failure);
       assert.equal(result.metadata.thumbnail, 'https://example.com/cover.png');
     });
+
+    it('logs the cause of an unexpected fetch failure and rejects as an unknown provider', async function () {
+      const loggingStub = logging.error;
+      const failure = new Error('socket hang up');
+      const service = new OembedService({
+        imageTransform,
+        logging,
+        config: {
+          get() {
+            return true;
+          },
+        },
+        externalRequest: sinon.stub().rejects(failure),
+      });
+
+      await assert.rejects(service.fetchOembedDataFromUrl('https://example.com/page', 'mention'), {
+        name: 'ValidationError',
+        message: 'No provider found for supplied URL.',
+        context: 'https://example.com/page',
+      });
+      sinon.assert.calledOnce(loggingStub);
+      const logged = loggingStub.firstCall.args[0];
+      assert.equal(logged.message, 'Encountered error when fetching oembed');
+      assert.match(logged.stack, /^Error: socket hang up/);
+    });
   });
 
   describe('fetchBookmarkData favicon selection', function () {
