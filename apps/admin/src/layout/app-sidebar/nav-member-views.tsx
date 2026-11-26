@@ -31,6 +31,10 @@ export function NavMemberViews() {
   const { showsAll, setShowsAll } = useSidebarShowsAllSegments();
   const canReorder = useCanChangeMemberViews();
   const Rows = canReorder ? SortableMemberViewRows : NavSavedViews;
+  // Folded away, the rest are still on the page at no height, just above "Show N more". As drop
+  // targets they would be the nearest to a row dragged down there, and they aren't among the
+  // rows being sorted, so the list would snap back and the drop would land past the fold.
+  const RestRows = showsAll ? Rows : NavSavedViews;
 
   const folds = memberViews.length > SHOWN_WHEN_FOLDED + 1;
   // While the rest are folded away, the segment on screen joins the first few so it still
@@ -68,12 +72,13 @@ export function NavMemberViews() {
           >
             <Stack
               className={cn(
-                'min-h-0 overflow-hidden transition-opacity duration-150 motion-reduce:transition-none',
+                // Visible while a row in it is dragged, so it can move up past the fold.
+                'min-h-0 overflow-hidden transition-opacity duration-150 motion-reduce:transition-none [&:has([data-dragging])]:overflow-visible',
                 showsAll ? 'opacity-100' : 'opacity-0',
               )}
               gap="none"
             >
-              <Rows views={rest} />
+              <RestRows views={rest} />
             </Stack>
           </Grid>
           <NavMenuItem.SubmenuButton

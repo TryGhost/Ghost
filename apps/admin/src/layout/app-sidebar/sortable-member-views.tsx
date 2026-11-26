@@ -3,8 +3,6 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
-  DragOverlay,
-  type DragStartEvent,
   MouseSensor,
   TouchSensor,
   type UniqueIdentifier,
@@ -21,7 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useReorderSegments } from '@tryghost/admin-x-framework/api/segments';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { cn } from '@tryghost/shade/utils';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { type NavSavedView, NavSavedViews } from './nav-saved-views';
 
 /**
@@ -44,7 +42,6 @@ export function SortableMemberViews({
 }) {
   const { reorder } = useReorderSegments();
   const handleError = useHandleError();
-  const [dragging, setDragging] = useState<NavSavedView | null>(null);
   const sensors = useSensors(
     // The distance leaves a click without movement to open the segment. The mouse and touch
     // sensors swallow the click that ends a drag, so a drop never opens it.
@@ -72,12 +69,7 @@ export function SortableMemberViews({
     };
   }, [views]);
 
-  const handleDragStart = ({ active }: DragStartEvent) => {
-    setDragging(views.find((view) => view.key === active.id) ?? null);
-  };
-
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    setDragging(null);
     if (!over || active.id === over.id) {
       return;
     }
@@ -95,9 +87,7 @@ export function SortableMemberViews({
       accessibility={{ announcements, screenReaderInstructions: { draggable: '' } }}
       collisionDetection={closestCenter}
       sensors={sensors}
-      onDragCancel={() => setDragging(null)}
       onDragEnd={handleDragEnd}
-      onDragStart={handleDragStart}
     >
       <SortableContext
         items={visible.map((view) => view.key)}
@@ -105,15 +95,6 @@ export function SortableMemberViews({
       >
         {children}
       </SortableContext>
-      {/* The row under the pointer, drawn above the sidebar, so the folded list's clipping
-          can't cut it off. */}
-      <DragOverlay>
-        {dragging && (
-          <ul className="cursor-grabbing list-none rounded-md bg-sidebar shadow-md">
-            <NavSavedViews views={[dragging]} />
-          </ul>
-        )}
-      </DragOverlay>
     </DndContext>
   );
 }
@@ -123,10 +104,16 @@ function SortableRow({ view }: { view: NavSavedView }) {
     id: view.key,
   });
 
+  // The row itself moves with the pointer, and the others make room for it. A copy drawn over
+  // the page (dnd-kit's DragOverlay) is placed with `position: fixed`, which the Admin 7
+  // sidebar's blur and transform turn relative to the sidebar, so it showed out of place.
   return (
     <div
       ref={setNodeRef}
-      className={cn(isDragging && 'opacity-40')}
+      className={cn(
+        isDragging && 'relative z-10 cursor-grabbing [&_a]:bg-sidebar-accent [&_a]:shadow-sm',
+      )}
+      data-dragging={isDragging || undefined}
       // Up and down only: the sidebar is one column.
       style={{
         transform: CSS.Translate.toString(transform && { ...transform, x: 0 }),
