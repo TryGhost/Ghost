@@ -10,6 +10,7 @@ import {
 } from './principal';
 import { findActiveStaffUser } from './staff-users';
 import { APP_TOKEN_PREFIX } from './app-token-prefix';
+import { appNotAllowed } from './policy/app-refusals';
 import type { ValidatedAppToken } from './better-auth/app-tokens';
 import type { InstallationAccess } from '../services/app-installations';
 
@@ -41,6 +42,15 @@ export interface AppTokenDeps {
 
 function refused(message: string) {
   return new errors.UnauthorizedError({ message, code: 'APP_TOKEN_INVALID' });
+}
+
+// Every handler `createAppTokenAuthentication` has made, so a route can be asked whether it
+// runs one
+const authentications = new WeakSet<object>();
+
+/** Whether a route handler is app token authentication. */
+export function authenticatesAppTokens(handler: unknown): boolean {
+  return typeof handler === 'function' && authentications.has(handler);
 }
 
 /**
@@ -88,7 +98,7 @@ export function createAppTokenAuthentication(deps: AppTokenDeps): RequestHandler
     };
   }
 
-  return async function authenticateAppToken(req: Request, _res: Response, next: NextFunction) {
+  async function authenticateAppToken(req: Request, _res: Response, next: NextFunction) {
     const claimed = appTokenOf(req.headers?.authorization);
     if (!claimed) {
       return next();
@@ -103,7 +113,9 @@ export function createAppTokenAuthentication(deps: AppTokenDeps): RequestHandler
     } catch (err) {
       next(err);
     }
-  };
+  }
+  authentications.add(authenticateAppToken);
+  return authenticateAppToken;
 }
 
 /**
@@ -128,4 +140,23 @@ export function unlessAppToken(handler: RequestHandler): RequestHandler {
     }
     return handler(req, res, next);
   };
+}
+
+/**
+ * Refuses a request that carries an app token nothing has authenticated: one on a route that
+ * takes whoever calls, such as signing in or asking for a password reset. Such a route would
+ * otherwise treat the app as the browser it runs in, so the app's attempts would count against
+ * the publisher's rate limits and send staff their emails. Whether the token is valid makes no
+ * difference: no app may call the route.
+ *
+ * It goes ahead of everything else on a route, its rate limiters included. The Admin API's
+ * routers add it to every route that doesn't start with app token authentication (see
+ * `web/api/endpoints/admin/app-token-routes.ts`).
+ */
+export function refuseUnauthenticatedAppToken(req: Request, _res: Response, next: NextFunction) {
+  const authenticated = (req as Request & AuthenticatedRequest).auth?.kind === 'app';
+  if (!authenticated && appTokenOf(req.headers?.authorization)) {
+    return next(appNotAllowed());
+  }
+  return next();
 }

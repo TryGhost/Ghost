@@ -446,29 +446,12 @@ upload then never runs for an app request that can't succeed.
   scope registry doesn't list, which no approval can grant. A method whose permission check is
   its own or none would see the staff user the app acts for, so the API
   pipeline refuses apps on every such method (`APP_NOT_ALLOWED`) unless it's
-  on the allowlist in `api/endpoints/utils/permissions.js`, which is for
-  methods safe for any app whatever its scopes and holds none yet. The session
+  on the allowlist in `api/endpoints/utils/permissions.js`, which holds only
+  methods safe for any app whatever its scopes (`site.read`). The session
   controller runs through the pipeline for this alone: its methods are single
   functions, which the pipeline runs with no other stage. A unit test lists
   every such method the Admin API mounts, so a new one is refused until
-  someone decides otherwise. Admin's bridge still sends only the routes the
-  app contracts list, whatever the app's scopes (`APP_ROUTES` in
-  `contracts/app-contracts/src/bridge/app-routes.ts`), which
-  `test/unit/server/web/api/admin/app-routes.test.ts` holds to the routes the
-  Admin API mounts under each scope's key, in both directions, and refuses or
-  rewrites what the server doesn't check yet within them (the server gaps in
-  `contracts/app-contracts/src/bridge/server-gaps.ts`).
-  `test/e2e-api/admin/app-server-gaps.test.ts` sends what each gap acts on
-  twice, through the bridge's check and as written to the server, and fails
-  when the bridge no longer acts on it by that gap or the server stops
-  accepting it, which is when the gap goes. The bridge doesn't copy how Ghost
-  parses a query: it reads an app's query strictly and sends one it wrote
-  itself, and
-  `test/unit/server/web/api/admin/app-bridge-query.test.ts` shows the parser
-  Ghost's Express apps are set up with reads back exactly what the bridge
-  held. A change to that parser (its options in `shared/express.js`, the
-  Admin API's query middleware, or an Express or `qs` upgrade) has to keep it
-  passing.
+  someone decides otherwise.
 - A route ending in a controller outside the pipeline, which has no permission
   stage and no name the allowlist could hold, refuses apps
   (`APP_NOT_ALLOWED`). That includes a route whose `http()` mounts a method
@@ -490,6 +473,63 @@ upload then never runs for an app request that can't succeed.
   code is the one the pipeline would give, but the message may not be: the
   pipeline words a refusal of a standard action itself. An app approved for the scope goes
   on to the route and spends the budget as the user would.
+- A route that authenticates nobody (signing in, verifying a device, asking
+  for or completing a password reset, invitations, setup) would take an app
+  for the browser it runs in: its wrong passwords would count against the
+  publisher's IP and it could send staff their reset emails. So a route is
+  open to a request carrying an app token only when app token authentication
+  is the first thing it runs, as it is in the chains for private and for
+  public endpoints. Every other route answers `APP_NOT_ALLOWED`, whether the
+  token is valid or not, ahead of everything else on it, its rate limiters
+  included. `refuseAppTokensByDefault` in
+  `web/api/endpoints/admin/app-token-routes.ts` decides as each route is
+  mounted, however it is mounted, so a route added without authentication,
+  or with something ahead of it, is closed to apps with nothing to remember.
+  A router mounted under the Admin API's goes behind `mountAuthenticated`,
+  which runs the chain as a route ahead of the mount. So these are closed to
+  apps: the routes authenticated by a key in the URL, Better Auth's own
+  routes under `/auth/*`, and the six authenticated routes that run a rate
+  limiter before authenticating (sending a test email, and host-managed
+  upgrades), where an app's call is refused before it is counted. `GET /site`
+  is the public route open to apps: its chain authenticates an app's token
+  first, so `site.read` sees an app, and a refused token answers
+  `401 APP_TOKEN_INVALID` there too. Under the `legacy` engine nothing
+  authenticates an app token, so every route refuses a request carrying one.
+  `test/unit/server/web/api/admin/app-token-routes.test.ts` reads the mounted
+  router's stack and fails on a route, a router or a layer that neither
+  refuses an app token nor authenticates it first, and
+  `test/e2e-api/admin/app-scopes.test.ts` sends a token to every such route
+  and shows nothing is left behind or counted against a rate limit.
+- The permission checks are the only gate on what an app may call: Admin's
+  bridge sends any Admin API path on. A scope opens every route that checks
+  its permission key, so a key apps can hold must cover nothing an app
+  shouldn't reach. Where one did, the routes got keys of their own, granted to
+  the roles that could call them before: `post:readStats`, `stat:browse` and
+  `post:export` out of `post:browse`, and `post:bulkDestroy` out of
+  `post:destroy`. No scope names the last three, so every app is refused.
+  `APP_ROUTES` in `contracts/app-contracts/src/bridge/app-routes.ts` is the
+  reviewed list of the routes each scope opens.
+  `test/unit/server/web/api/admin/app-routes.test.ts` holds it to the routes
+  the Admin API mounts under each scope's key, in both directions, so opening
+  a route to apps, or closing one, fails until the list is reviewed, and
+  `test/e2e-api/admin/app-scopes.test.ts` shows an app holding every scope is
+  refused the routes that return or create credentials or lasting access.
+- What the server doesn't check yet within a route an app may call, Admin's
+  bridge still refuses or rewrites: the server gaps in the app contracts
+  (`contracts/app-contracts/src/bridge/server-gaps.ts`), which `APP_ROUTES`
+  names for each route. `test/e2e-api/admin/app-server-gaps.test.ts` sends
+  what each gap acts on twice, through the bridge's check and as written to
+  the server, and fails when the bridge no longer acts on it by that gap or
+  the server stops accepting it, which is when the gap goes. The bridge
+  doesn't copy how Ghost parses a query: it reads an app's query strictly and
+  sends one it wrote itself, and
+  `test/unit/server/web/api/admin/app-bridge-query.test.ts` shows the parser
+  Ghost's Express apps are set up with reads back exactly what the bridge
+  held. A change to that parser (its options in `shared/express.js`, the
+  Admin API's query middleware, or an Express or `qs` upgrade) has to keep it
+  passing. `test/e2e-api/admin/app-bridge-requests.test.ts` sends requests
+  through the bridge's check to the Admin API and fails when an answer holds
+  something the app has no scope for.
 - Reconciling an installation that isn't active (suspension at session
   start, uninstall) disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens

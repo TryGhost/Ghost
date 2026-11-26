@@ -197,11 +197,15 @@ module.exports.authAdminApiWithUrl = [
 ];
 
 /**
- * Middleware for public admin endpoints
+ * Middleware for public admin endpoints, which take whoever calls. An app's token is still
+ * authenticated, so the endpoint sees an app and not an anonymous caller; the Admin API's router
+ * refuses a request carrying one on every route without this chain or the one for private
+ * endpoints.
  *
  * @type {RequestHandler[]}
  */
 module.exports.publicAdminApi = [
+  ...auth.authenticate.authenticatePublicAdminApi,
   apiMw.cors,
   shared.middleware.urlRedirects.adminSSLAndHostRedirect,
   shared.middleware.prettyUrls,

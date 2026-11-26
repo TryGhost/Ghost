@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { APP_ROUTES, scopesOpening, serverGapsFor } from '../../src/bridge/app-routes.ts';
+import { APP_ROUTES, serverGapsFor } from '../../src/bridge/app-routes.ts';
 import { FETCH_METHODS, type FetchMethod } from '../../src/bridge/rules.ts';
 import { SERVER_GAPS } from '../../src/bridge/server-gaps.ts';
 import { APP_PERMISSION_KEYS } from '../../src/scopes.ts';
@@ -56,7 +56,7 @@ describe('finding the gaps on a request', () => {
     expect(gaps('GET', '/tags/')).toEqual([]);
   });
 
-  it('finds none on a route it doesn’t name', () => {
+  it('finds none on a route it doesn’t name, which the server decides', () => {
     for (const [method, path] of [
       ['GET', '/db/'],
       ['DELETE', '/posts/'],
@@ -92,31 +92,5 @@ describe('finding the gaps on a request', () => {
       expect(gaps('POST', path), path).toContain('scriptInContent');
     }
     expect(gaps('GET', `/Posts/SLUG/welcome`)).toEqual(['postFields']);
-  });
-});
-
-describe('finding the scopes a request needs', () => {
-  it('names the scope a route is listed under, for its method only', () => {
-    expect(scopesOpening('/posts/', 'GET')).toEqual(['post:browse']);
-    expect(scopesOpening('/posts/', 'POST')).toEqual(['post:add']);
-    expect(scopesOpening(`/Pages/${ID}`, 'PUT')).toEqual(['post:edit']);
-    expect(scopesOpening(`/stats/posts/${ID}/stats/`, 'GET')).toEqual(['post:readStats']);
-    expect(scopesOpening('/search-index/users/', 'GET')).toEqual(['user:browse']);
-  });
-
-  it('names each scope once when a path matches more than one route', () => {
-    expect(scopesOpening('/posts/bulk/', 'PUT')).toEqual(['post:edit']);
-  });
-
-  it('names none for a route that isn’t listed', () => {
-    for (const [method, path] of [
-      ['GET', '/db/'],
-      ['DELETE', '/posts/'],
-      ['GET', '/site/'],
-      ['GET', `/posts/${ID}/copy/`],
-      ['GET', '/'],
-    ] as const) {
-      expect(scopesOpening(path, method), `${method} ${path}`).toEqual([]);
-    }
   });
 });

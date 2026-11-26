@@ -116,11 +116,10 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * - `invalid_argument`: an argument Admin does not take.
  * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
  *   the Admin API only responds to with a redirect, such as a path without its trailing `/`.
- * - `blocked`: a request Admin won't send: a route the app routes don't list; one it refuses to
- *   cover a gap in what Ghost's server checks, such as a write that sets code injection; or one
- *   whose query it can't write so that the server reads what Admin read, such as a parameter
- *   name in brackets. A request the server refuses is answered with the server's own response,
- *   not this code.
+ * - `blocked`: a request Admin won't send: one it refuses to cover a gap in what Ghost's
+ *   server checks, such as a write that sets code injection, or one whose query it can't write
+ *   so that the server reads what Admin read, such as a parameter name in brackets. A request
+ *   the server refuses is answered with the server's own response, not this code.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
  */

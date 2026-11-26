@@ -5,13 +5,13 @@
  * in it has sent a hello from the right origin. This entry point holds what both sides agree
  * on: the two window messages that set up the channel, the calls each side exposes, the
  * validation Admin applies to every argument from the untrusted frame, and what the fetch
- * escape hatch may reach and what it still refuses because Ghost's server doesn't yet
- * (`checkAdminApiRequest`, the app routes and the server gaps).
+ * escape hatch still refuses because Ghost's server doesn't yet (`checkAdminApiRequest` and the
+ * server gaps).
  *
  * The root entry point also exports the zod-free rules in `rules.ts`, for the SDK.
  */
 
-export { APP_ROUTES, scopesOpening, serverGapsFor } from './app-routes.ts';
+export { APP_ROUTES, serverGapsFor } from './app-routes.ts';
 export type { AppExports, HostExports } from './exports.ts';
 export {
   FETCH_BODY_MAX_BYTES,

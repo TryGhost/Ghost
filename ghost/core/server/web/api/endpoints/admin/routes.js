@@ -5,6 +5,7 @@ const auth = require('../../../../auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const { mountAuthenticated, refuseAppTokensByDefault } = require('./app-token-routes');
 
 // Better Auth loads only under its engine
 function betterAuthAdminOrigin() {
@@ -25,11 +26,14 @@ const isBetterAuth = auth.isBetterAuth;
  * @returns {import('express').Router}
  */
 module.exports = function apiRoutes() {
-  const router = express.Router('admin api');
+  // A route refuses a request carrying an app token, ahead of anything else on it, unless app
+  // token authentication is the first thing it runs
+  const router = refuseAppTokensByDefault(express.Router('admin api'));
 
   router.use(apiMw.cors);
 
   // ## Public
+  // Takes whoever calls, and an app as an app: the chain authenticates an app's token first
   router.get('/site', mw.publicAdminApi, http(api.site.read));
 
   // ## Configuration
@@ -213,13 +217,8 @@ module.exports = function apiRoutes() {
   // guarded by being there, which is the safer way round to forget.
   //
   // Mounted before /members/:id so the literal path is not captured as an id.
-  //
-  // Authenticated as a route here rather than inside the mount: mounting strips the path
-  // from req.url, and the check on integration keys names the resource from its first
-  // segment, so inside it would see "custom" instead of "members" and refuse them.
   const metafieldsRouter = express.Router('admin api members metafields');
-  router.all(['/members/metafields', '/members/metafields/*'], mw.authAdminApi);
-  router.use('/members/metafields', metafieldsRouter);
+  mountAuthenticated(router, '/members/metafields', mw.authAdminApi, metafieldsRouter);
 
   // Reading is deliberately open: Admin asks every site for its definitions, and for the values
   // members hold of a list field it filters by, to draw screens it renders either way, and a site
@@ -242,12 +241,8 @@ module.exports = function apiRoutes() {
   // ## Apps
   // Everything about apps sits behind the private `apps` flag, asked once here so a route
   // added below is guarded by being there.
-  //
-  // Authenticated as a route here rather than inside the mount, for the same reason as
-  // the members metafields router above.
   const appsRouter = express.Router('admin api apps');
-  router.all(['/apps', '/apps/*'], mw.authAdminApi);
-  router.use('/apps', appsRouter);
+  mountAuthenticated(router, '/apps', mw.authAdminApi, appsRouter);
   appsRouter.use(labs.enabledMiddleware('apps'));
 
   appsRouter.post('/installations/preview', http(api.appInstallationPreviews.add));

@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import type { Request, Response } from 'express';
 import {
+  authenticatesAppTokens,
   createAppTokenAuthentication,
+  refuseUnauthenticatedAppToken,
   unlessAppToken,
   type AppTokenDeps,
 } from '../../../../core/server/auth/app-token';
@@ -160,5 +162,44 @@ describe('App token authentication', function () {
     handler({} as never, {} as Response, next);
 
     assert.equal(called, 1);
+  });
+
+  it('refuses a request carrying an app token nothing authenticated, valid or not', function () {
+    const answers = (requests: object[]) =>
+      requests.map((req) => {
+        let error: unknown = 'not called';
+        refuseUnauthenticatedAppToken(req as never, {} as Response, (err?: unknown) => {
+          error = err;
+        });
+        return error as { statusCode?: number; code?: string; message?: string } | undefined;
+      });
+
+    for (const error of answers([
+      { headers: { authorization: 'Bearer ghost_app_abc' } },
+      { headers: { authorization: 'bearer  GHOST_APP_abc def' } },
+      { headers: { authorization: 'Bearer ghost_app_abc' }, auth: { kind: 'staff' } },
+    ])) {
+      assert.equal(error?.statusCode, 403);
+      assert.equal(error?.code, 'APP_NOT_ALLOWED');
+      assert.equal(error?.message, 'Apps are not allowed to access this endpoint');
+    }
+
+    assert.deepEqual(
+      answers([
+        { headers: {} },
+        {},
+        { headers: { authorization: 'Bearer ghost_pat_abc' } },
+        { headers: { authorization: 'Ghost abc' } },
+        { headers: { authorization: 'Bearer ghost_app_abc' }, auth: { kind: 'app' } },
+      ]),
+      [undefined, undefined, undefined, undefined, undefined],
+    );
+  });
+
+  it('knows its own handlers from any other', function () {
+    assert.ok(authenticatesAppTokens(createAppTokenAuthentication(deps())));
+    assert.ok(!authenticatesAppTokens(refuseUnauthenticatedAppToken));
+    assert.ok(!authenticatesAppTokens(unlessAppToken(() => undefined)));
+    assert.ok(!authenticatesAppTokens(undefined));
   });
 });

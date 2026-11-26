@@ -178,13 +178,17 @@ describe('createAdminApiFetch', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it('refuses a route the app routes don’t list, or a path that leaves the API, without sending it', async () => {
-    await expect(adminApiFetch({ path: '/db/' }, session.signal)).rejects.toThrow(
-      "blocked: Apps can't use GET /db/",
-    );
+  it('refuses what Ghost’s server doesn’t check yet, or a path that leaves the API, without sending it', async () => {
     await expect(
-      adminApiFetch({ path: '/posts/?filter=tag:news', method: 'DELETE' }, session.signal),
-    ).rejects.toThrow("blocked: Apps can't use DELETE /posts/");
+      adminApiFetch(
+        {
+          path: '/posts/bulk/?filter=tag:news',
+          method: 'PUT',
+          body: '{"bulk":{"action":"feature"}}',
+        },
+        session.signal,
+      ),
+    ).rejects.toThrow("blocked: Apps can't use PUT /posts/bulk/");
     await expect(
       adminApiFetch({ path: '/v4/db/?x=ghost/api/v4/admin/' }, session.signal),
     ).rejects.toThrow(/^blocked: /);

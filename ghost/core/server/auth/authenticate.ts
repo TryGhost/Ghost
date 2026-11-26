@@ -13,6 +13,11 @@ import * as members from './members';
 
 export interface Authenticate {
   authenticateAdminApi: RequestHandler[];
+  /**
+   * For the Admin API's public endpoints, which take whoever calls: nobody has to be
+   * authenticated, but an app's token is, so an app is still an app there.
+   */
+  authenticatePublicAdminApi: RequestHandler[];
   authenticateAdminApiWithUrl: RequestHandler[];
   authenticateContentApi: RequestHandler[];
 }
@@ -27,6 +32,8 @@ const legacy: Authenticate = {
     unlessKeyed(sessionAuthenticate),
     legacyAdminApi,
   ],
+  // Apps get no tokens under this engine
+  authenticatePublicAdminApi: [],
   authenticateAdminApiWithUrl: [apiKeyAuth.admin.authenticateWithUrl, fromApiKey('admin_api_key')],
 
   authenticateContentApi: [
@@ -54,13 +61,16 @@ function createBetterAuth(): Authenticate {
     findActiveUser: findActiveStaffUser,
   });
 
+  const authenticateAppToken = appTokenAuthentication();
+
   return {
     // An app token authenticates on its own; the key check and the cookie never see it
     authenticateAdminApi: [
-      appTokenAuthentication(),
+      authenticateAppToken,
       unlessAppToken(apiKeyAuth.admin.authenticate),
       unlessAppToken(resolver.adminApi),
     ],
+    authenticatePublicAdminApi: [authenticateAppToken],
     authenticateAdminApiWithUrl: [apiKeyAuth.admin.authenticateWithUrl, resolver.adminApiWithUrl],
     authenticateContentApi: [
       apiKeyAuth.content.authenticateContentApiKey,

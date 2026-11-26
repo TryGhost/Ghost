@@ -49,7 +49,6 @@ const REFUSED_FOR_APPS = [
   'session.delete',
   'session.sendVerification',
   'session.verify',
-  'site.read',
   'slack.sendTest',
   'users.readStaffToken',
   'users.regenerateStaffToken',
@@ -65,8 +64,17 @@ const AUTHENTICATING_MOUNTS = [
   'ALL /members/metafields,/members/metafields/*',
 ];
 
-/** Middleware the routers run on every request, which acts for no one */
-const ROUTER_MIDDLEWARE = ['corsCaching', 'corsMiddleware', 'expressNoop', 'labsEnabledMw'];
+/**
+ * Middleware the routers run on every request, which acts for no one, and the refusal of an
+ * app token nothing authenticated, which goes ahead of a mounted router
+ */
+const ROUTER_MIDDLEWARE = [
+  'corsCaching',
+  'corsMiddleware',
+  'expressNoop',
+  'labsEnabledMw',
+  'refuseUnauthenticatedAppToken',
+];
 
 type AdminApiMethod = {
   /** By its controller's `docName`, as the permission stage and the allowlist name it */

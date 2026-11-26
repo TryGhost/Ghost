@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 
 import { APP_PERMISSION_KEYS, isAppPermissionKey } from '@tryghost/app-contracts';
-import { APP_ROUTES, checkAdminApiRequest, scopesOpening } from '@tryghost/app-contracts/bridge';
+import { APP_ROUTES, checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
 
 import { adminApiRouter, adminApiRoutes, examplePath } from '../../../../../utils/admin-api-routes';
 
 const ROUTES: Record<string, Record<string, readonly string[]>> = APP_ROUTES;
 
-// On Ghost's server a scope opens every route whose permission check is the scope's key. The
-// app contracts hold the reviewed list of those routes, with what Admin's bridge still covers on
-// each, so that list has to be exactly the routes Ghost opens.
+// Ghost's permissions are the only gate on what an app may call: a scope opens every route
+// whose permission check is the scope's key. The app contracts hold the reviewed list of those
+// routes, with what Admin's bridge still covers on each, so that list has to be exactly the
+// routes Ghost opens.
 describe('The routes an app’s scopes open', function () {
   const routes = adminApiRoutes();
 
@@ -29,17 +30,29 @@ describe('The routes an app’s scopes open', function () {
   }
 
   // The bridge reads `:id` as any one segment, so a route Ghost mounts ahead of a listed `:id`
-  // route, such as `GET /posts/export`, reaches the bridge as the listed route. Each such route
-  // is named here, and the server refuses it to every app, as its key is no scope; a change to
-  // its key, or a new route like it, fails here until it is reviewed.
-  it('leaves no other route reached as a listed one, but those the server refuses to apps', function () {
-    const listed = new Set(Object.values(ROUTES).flatMap((opened) => Object.keys(opened)));
+  // route, such as `GET /posts/export`, reaches the bridge as the listed route, and gets its
+  // gaps. Each such route is named here, and the server refuses it to every app, as its key is no
+  // scope; a change to its key, or a new route like it, fails here until it is reviewed.
+  it('leaves no other route read as a listed one, but those the server refuses to apps', function () {
+    const listed = Object.values(ROUTES).flatMap((opened) => Object.keys(opened));
+    const segments = (path: string) => path.split('/').filter(Boolean);
+    const readAs = (route: string, entry: string) => {
+      const [method = '', path = ''] = route.split(' ');
+      const [listedMethod = '', listedPath = ''] = entry.split(' ');
+      const example = segments(examplePath(path));
+      const pattern = segments(listedPath);
+      return (
+        method === listedMethod &&
+        example.length === pattern.length &&
+        pattern.every(
+          (fixed, index) =>
+            fixed.startsWith(':') || fixed.toLowerCase() === example[index]?.toLowerCase(),
+        )
+      );
+    };
     const reachedAsListed = routes
-      .filter(({ route }) => !listed.has(route))
-      .filter(({ route }) => {
-        const [method = '', path = ''] = route.split(' ');
-        return scopesOpening(`${examplePath(path)}/`, method as 'GET').length > 0;
-      });
+      .filter(({ route }) => !listed.includes(route))
+      .filter(({ route }) => listed.some((entry) => readAs(route, entry)));
 
     assert.deepEqual(reachedAsListed.map(({ route }) => route).sort(), ['GET /posts/export']);
     for (const { route, permissionKey } of reachedAsListed) {
