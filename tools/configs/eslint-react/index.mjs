@@ -124,7 +124,7 @@ const reactCompilerRules = {
  * @returns {import('eslint').Linter.Config[]}
  *
  * @example
- * // apps/<app>/eslint.config.js — Vite TS React + Tailwind v4 + shade restriction
+ * // clients/<app>/eslint.config.js — Vite TS React + Tailwind v4 + shade restriction
  * import {reactAppConfig} from '@internal/cfg-eslint-react';
  * export default reactAppConfig({
  *   tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
@@ -132,7 +132,7 @@ const reactCompilerRules = {
  * });
  *
  * @example
- * // apps/announcement-bar/eslint.config.js — vanilla JS React
+ * // clients/announcement-bar/eslint.config.js — vanilla JS React
  * import {reactAppConfig} from '@internal/cfg-eslint-react';
  * export default reactAppConfig({
  *   typescript: false,

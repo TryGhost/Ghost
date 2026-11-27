@@ -96,10 +96,10 @@ describe('Admin task inputs', () => {
     it(`${target} tracks Admin dependencies and fixtures`, async () => {
       const { files } = await inputs(target);
       for (const prefix of [
-        'apps/admin/src/',
-        'apps/admin/test-utils/',
-        'apps/admin-x-framework/src/',
-        'apps/shade/src/',
+        'clients/admin/src/',
+        'clients/admin/test-utils/',
+        'clients/admin-x-framework/src/',
+        'clients/shade/src/',
         'packages/testing/test-data/',
         'packages/metafield-csv/',
         'koenig/kg-default-nodes/',
@@ -110,8 +110,8 @@ describe('Admin task inputs', () => {
         );
       }
       for (const file of [
-        'apps/admin/tsconfig.app.json',
-        'apps/admin/vitest.acceptance.config.ts',
+        'clients/admin/tsconfig.app.json',
+        'clients/admin/vitest.acceptance.config.ts',
         'pnpm-lock.yaml',
         'pnpm-workspace.yaml',
       ]) {
@@ -126,7 +126,7 @@ describe('Admin task inputs', () => {
       assert.ok(files.includes('ghost/core/frontend/src/cards/js/video.js'));
       assert.ok(files.includes('tools/scripts/build/hash-vite-env.ts'));
       assert.ok(
-        runtime.includes('node tools/scripts/build/hash-vite-env.ts --directory=apps/admin'),
+        runtime.includes('node tools/scripts/build/hash-vite-env.ts --directory=clients/admin'),
       );
       assert.ok(runtime.includes('node -v'));
       assert.ok(runtime.some((command) => command.includes('process.platform')));
@@ -172,7 +172,7 @@ describe('Admin task inputs', () => {
         'inputs',
         `@internal/scripts:${target}`,
       ]);
-      for (const file of ['apps/admin/package.json', '.github/workflows/ci.yml']) {
+      for (const file of ['clients/admin/package.json', '.github/workflows/ci.yml']) {
         assert.ok(files.includes(file), `${target}: ${file}`);
         const affected = await nxJson<string[]>([
           'show',

@@ -34,7 +34,7 @@ setup, development variants, and troubleshooting.
 
 ```text
 Ghost/
-├── apps/              # Admin and public frontend apps
+├── clients/           # Admin and public frontend clients
 │   ├── admin/          # React Admin
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments

@@ -32,7 +32,7 @@ type safety or enforce conversion of intentional JavaScript tooling.
 
 Files are grouped by their nearest package manifest. Tests and tooling use path
 and filename conventions; these categories are approximate. Production is split
-into frontend (`apps/`, Koenig's three editor UI packages, and Core's
+into frontend (`clients/`, Koenig's three editor UI packages, and Core's
 `core/frontend/public/` browser scripts) and backend (remaining server code and
 library packages, including libraries shared with the frontend). Core's
 `core/frontend/` routing and rendering code executes on the server and therefore

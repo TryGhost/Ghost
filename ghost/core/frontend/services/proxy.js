@@ -57,7 +57,7 @@ module.exports = {
       ) {
         const sanitizedCaption = sanitizeHtml(resource.feature_image_caption, {
           // Links and inline formatting. Admin's post history preview keeps the
-          // same list (apps/admin/src/editor/settings/sanitize-caption.ts).
+          // same list (clients/admin/src/editor/settings/sanitize-caption.ts).
           allowedTags: [
             'a',
             'b',

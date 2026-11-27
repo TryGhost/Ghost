@@ -173,7 +173,7 @@ test('valid Ghost errors and unrelated violations pass without warnings', () => 
 test('native errors remain allowed outside the migrated scopes', () => {
   for (const filename of [
     'ghost/test/example.js',
-    'apps/admin/example.ts',
+    'clients/admin/example.ts',
     'packages/example/src/index.ts',
   ]) {
     const result = lint("throw new Error('outside scope');", filename);
@@ -334,12 +334,12 @@ test('filename rules preserve options and exported-file exceptions', () => {
 
 test('Admin path checks cover strings and templates but exclude tests', () => {
   for (const source of ["const url = '/ghost/api/admin/';", 'const url = `/ghost/${path}`;']) {
-    assert.equal(lint(source, 'apps/admin/src/example.tsx').status, 1);
-    assert.equal(lint(source, 'apps/admin/src/example.test.tsx').status, 0);
-    assert.equal(lint(source, 'apps/admin/test-utils/example.tsx').status, 0);
+    assert.equal(lint(source, 'clients/admin/src/example.tsx').status, 1);
+    assert.equal(lint(source, 'clients/admin/src/example.test.tsx').status, 0);
+    assert.equal(lint(source, 'clients/admin/test-utils/example.tsx').status, 0);
   }
   assert.equal(
-    lint('const url = getGhostPaths().adminRoot;', 'apps/admin/src/example.tsx').status,
+    lint('const url = getGhostPaths().adminRoot;', 'clients/admin/src/example.tsx').status,
     0,
   );
 });
@@ -403,7 +403,11 @@ test('ported but previously disabled rules stay off', () => {
 test('Oxlint directives suppress migrated rules without ESLint exceptions', () => {
   for (const [filename, rule, source] of [
     ['ghost/core/server/example.js', customPrefix + 'ghost-tpl-usage', "tpl('bad');"],
-    ['apps/admin/src/example.tsx', 'local/no-hardcoded-ghost-paths', "const url = '/ghost/api/';"],
+    [
+      'clients/admin/src/example.tsx',
+      'local/no-hardcoded-ghost-paths',
+      "const url = '/ghost/api/';",
+    ],
     ['e2e/tests/example.test.ts', 'local/no-unsafe-reset-environment', 'resetEnvironment();'],
   ]) {
     assert.equal(lint(`// oxlint-disable-next-line ${rule}\n${source}`, filename!).status, 0);
@@ -804,7 +808,7 @@ test('limits canonical type checks to Ghost Core and its tests', () => {
   const source = 'type Logging = { info(message: string): void };';
   assert.equal(lint(source, `${canonicalFile}.ts`).status, 1);
   assert.equal(lint(source, 'ghost/test/utils/example.ts').status, 1);
-  assert.equal(lint(source, 'apps/admin/src/example.ts').status, 0);
+  assert.equal(lint(source, 'clients/admin/src/example.ts').status, 0);
 });
 
 test('treats sinon stubs as callable logger members', () => {

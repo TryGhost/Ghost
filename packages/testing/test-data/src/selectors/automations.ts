@@ -1,6 +1,6 @@
 /**
  * Automations screen selector strings, consumed by the admin screen helpers
- * and the e2e page objects. Source of truth: apps/admin/src/automations.
+ * and the e2e page objects. Source of truth: clients/admin/src/automations.
  */
 
 // testids

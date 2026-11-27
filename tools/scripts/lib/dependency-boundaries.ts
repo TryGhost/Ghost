@@ -184,7 +184,7 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     process.execPath,
     [
       cli,
-      ...(files.length ? files : ['ghost/core', 'apps']),
+      ...(files.length ? files : ['ghost/core', 'clients']),
       '--config',
       '.dependency-cruiser.cjs',
       '--output-type',

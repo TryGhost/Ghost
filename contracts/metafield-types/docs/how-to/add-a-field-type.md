@@ -18,14 +18,14 @@ explains why.
    with follows from its shape.
 2. Register the flag as a private feature: add it to `PRIVATE_FEATURES` in Ghost's
    [`labs.js`](../../../../ghost/core/shared/labs.js), and give it a toggle in Admin's
-   [`private-features.tsx`](../../../../apps/admin/src/settings/advanced/labs/private-features.tsx).
-3. In Admin's [`fieldTypePresentation`](../../../../apps/admin-x-framework/src/api/member-custom-fields.ts),
+   [`private-features.tsx`](../../../../clients/admin/src/settings/advanced/labs/private-features.tsx).
+3. In Admin's [`fieldTypePresentation`](../../../../clients/admin-x-framework/src/api/member-custom-fields.ts),
    give it a name and an icon. A record also gives a label for each part and says which
    parts take a full row of the form.
 4. A record also takes a message for a write that names none of its parts, in
    `RECORD_EMPTY` in [`src/index.ts`](../../src/index.ts), and a label for each part and the
    rows they are drawn in, in Portal's
-   [`RECORD_FORMS`](../../../../apps/portal/src/components/common/member-custom-fields.tsx).
+   [`RECORD_FORMS`](../../../../clients/portal/src/components/common/member-custom-fields.tsx).
    Portal's labels are translated like any other string.
 5. Add its id to the `type` column's list in Ghost's
    [`schema.ts`](../../../../ghost/core/server/data/schema/schema.ts), which doesn't import this

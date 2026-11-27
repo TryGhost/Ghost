@@ -299,7 +299,7 @@ test('generated output passes real lint, boundary and inventory checks with no r
     path.join(root, 'tools/configs/oxlint/node_modules'),
   );
   symlinkSync(path.join(repo, 'ghost/node_modules'), path.join(root, 'ghost/node_modules'));
-  mkdirSync(path.join(root, 'apps'));
+  mkdirSync(path.join(root, 'clients'));
   writeFileSync(path.join(root, '.dependency-cruiser-known-violations.json'), '[]');
   // No legacy entries: the generated service is the only one, and it is not listed.
   writeFileSync(path.join(root, inventoryPath), inventory());

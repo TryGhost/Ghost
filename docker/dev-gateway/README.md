@@ -33,18 +33,18 @@ Ghost is configured via environment variables in `compose.dev.yaml` to load publ
 
 The Caddyfile defines these routing rules:
 
-| Path Pattern                                                                                  | Target                          | Purpose                                                                                     |
-| --------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
-| `/ghost/api/*`                                                                                | Ghost backend                   | Ghost API (bypasses admin dev server)                                                       |
-| `/.ghost/activitypub/*`                                                                       | ActivityPub server (port 8080)  | _Optional:_ ActivityPub API (requires AP project running)                                   |
-| `/.well-known/webfinger`                                                                      | ActivityPub server (port 8080)  | _Optional:_ WebFinger for federation                                                        |
-| `/.well-known/nodeinfo`                                                                       | ActivityPub server (port 8080)  | _Optional:_ NodeInfo for federation                                                         |
-| `/.well-known/atproto-did`                                                                    | ActivityPub server (port 8080)  | _Optional:_ atproto DID, for domain handles on Bluesky                                      |
-| `/ghost/assets/{portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/*` | `apps/<name>/umd` (file_server) | Public app widgets — served from disk, rebuilt on change by each app's `vite build --watch` |
-| `/ghost/assets/*`                                                                             | Admin dev server (port 5174)    | Other admin assets — rewritten to `/__admin-dev__/assets/*`                                 |
-| `/__admin-dev__/*`                                                                            | Admin dev server (port 5174)    | Vite internals (HMR, modules, refresh runtime, dev-only assets)                             |
-| `/ghost`, `/ghost/`                                                                           | Admin dev server (port 5174)    | Admin HTML entry — rewritten to `/__admin-dev__/`                                           |
-| `/ghost/*` (deep links)                                                                       | Ghost backend                   | Express middleware redirects deep links to `/ghost/#/<path>`                                |
-| Everything else                                                                               | Ghost backend                   | Main Ghost application                                                                      |
+| Path Pattern                                                                                  | Target                             | Purpose                                                                                     |
+| --------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| `/ghost/api/*`                                                                                | Ghost backend                      | Ghost API (bypasses admin dev server)                                                       |
+| `/.ghost/activitypub/*`                                                                       | ActivityPub server (port 8080)     | _Optional:_ ActivityPub API (requires AP project running)                                   |
+| `/.well-known/webfinger`                                                                      | ActivityPub server (port 8080)     | _Optional:_ WebFinger for federation                                                        |
+| `/.well-known/nodeinfo`                                                                       | ActivityPub server (port 8080)     | _Optional:_ NodeInfo for federation                                                         |
+| `/.well-known/atproto-did`                                                                    | ActivityPub server (port 8080)     | _Optional:_ atproto DID, for domain handles on Bluesky                                      |
+| `/ghost/assets/{portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/*` | `clients/<name>/umd` (file_server) | Public app widgets — served from disk, rebuilt on change by each app's `vite build --watch` |
+| `/ghost/assets/*`                                                                             | Admin dev server (port 5174)       | Other admin assets — rewritten to `/__admin-dev__/assets/*`                                 |
+| `/__admin-dev__/*`                                                                            | Admin dev server (port 5174)       | Vite internals (HMR, modules, refresh runtime, dev-only assets)                             |
+| `/ghost`, `/ghost/`                                                                           | Admin dev server (port 5174)       | Admin HTML entry — rewritten to `/__admin-dev__/`                                           |
+| `/ghost/*` (deep links)                                                                       | Ghost backend                      | Express middleware redirects deep links to `/ghost/#/<path>`                                |
+| Everything else                                                                               | Ghost backend                      | Main Ghost application                                                                      |
 
 **Note:** The Admin port listed is the host port its dev server runs on by default. Public apps have no dev-server port — Caddy reads their build output straight off disk.

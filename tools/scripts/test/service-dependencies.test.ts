@@ -58,7 +58,7 @@ function fixture(t: TestContext, files: Record<string, string>) {
     'tools/scripts/package.json': '{"type":"module"}',
     'tools/configs/oxlint/package.json': '{"type":"module"}',
     '.dependency-cruiser-known-violations.json': '[]',
-    'apps/empty.ts': 'export {};',
+    'clients/empty.ts': 'export {};',
     [config]: 'export const enabled = true; export interface Config {}',
     ...files,
   })) {
@@ -1677,17 +1677,17 @@ it('resolves the approved workspace export to source without a build and keeps o
 
 it('preserves app boundaries and the test-selector allowance after workspace exports resolve', (t) => {
   const f = fixture(t, {
-    'apps/shade/src/forbidden.ts': "import '@tryghost/admin-x-framework/helpers';",
-    'apps/admin-x-framework/src/forbidden.ts': "import '@tryghost/activitypub/api';",
-    'apps/admin-x-framework/src/root.ts': "import '@tryghost/activitypub';",
-    'apps/portal/src/forbidden.ts': "import '@tryghost/shade/primitives';",
-    'apps/portal/src/test-data.ts': "import '@tryghost/test-data';",
-    'apps/portal/src/selectors.ts': "import '@tryghost/test-data/selectors/member';",
+    'clients/shade/src/forbidden.ts': "import '@tryghost/admin-x-framework/helpers';",
+    'clients/admin-x-framework/src/forbidden.ts': "import '@tryghost/activitypub/api';",
+    'clients/admin-x-framework/src/root.ts': "import '@tryghost/activitypub';",
+    'clients/portal/src/forbidden.ts': "import '@tryghost/shade/primitives';",
+    'clients/portal/src/test-data.ts': "import '@tryghost/test-data';",
+    'clients/portal/src/selectors.ts': "import '@tryghost/test-data/selectors/member';",
   });
   for (const [name, directory, subpath, target] of [
-    ['@tryghost/admin-x-framework', 'apps/admin-x-framework', './helpers', 'helpers.ts'],
-    ['@tryghost/activitypub', 'apps/activitypub', './api', 'index.ts'],
-    ['@tryghost/shade', 'apps/shade', './primitives', 'primitives.ts'],
+    ['@tryghost/admin-x-framework', 'clients/admin-x-framework', './helpers', 'helpers.ts'],
+    ['@tryghost/activitypub', 'clients/activitypub', './api', 'index.ts'],
+    ['@tryghost/shade', 'clients/shade', './primitives', 'primitives.ts'],
     ['@tryghost/test-data', 'packages/testing/test-data', '.', 'index.ts'],
   ] as const) {
     f.write(
@@ -1712,35 +1712,43 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
     f.link(directory, `node_modules/${name}`);
   }
   f.write('packages/testing/test-data/src/selectors/member.ts', 'export const member = "member";');
-  const graph = f.graph('apps');
+  const graph = f.graph('clients');
   const expected = [
     [
       'framework-not-feature-apps',
-      'apps/admin-x-framework/src/forbidden.ts',
-      'apps/activitypub/src/index.ts',
+      'clients/admin-x-framework/src/forbidden.ts',
+      'clients/activitypub/src/index.ts',
     ],
-    ['framework-not-feature-apps', 'apps/admin-x-framework/src/root.ts', '@tryghost/activitypub'],
+    [
+      'framework-not-feature-apps',
+      'clients/admin-x-framework/src/root.ts',
+      '@tryghost/activitypub',
+    ],
     [
       'no-test-data-in-production-source',
-      'apps/portal/src/test-data.ts',
+      'clients/portal/src/test-data.ts',
       'packages/testing/test-data/src/index.ts',
     ],
-    ['public-apps-not-admin-libs', 'apps/portal/src/forbidden.ts', 'apps/shade/src/primitives.ts'],
-    ['shade-is-leaf', 'apps/shade/src/forbidden.ts', 'apps/admin-x-framework/src/helpers.ts'],
+    [
+      'public-apps-not-admin-libs',
+      'clients/portal/src/forbidden.ts',
+      'clients/shade/src/primitives.ts',
+    ],
+    ['shade-is-leaf', 'clients/shade/src/forbidden.ts', 'clients/admin-x-framework/src/helpers.ts'],
   ];
   assert.deepEqual(violations(graph), expected);
   assert.ok(
     edges(graph).some(
       ([from, , to]) =>
-        from === 'apps/portal/src/selectors.ts' &&
+        from === 'clients/portal/src/selectors.ts' &&
         to === 'packages/testing/test-data/src/selectors/member.ts',
     ),
   );
-  const output = 'apps/activitypub/dist/activitypub.js';
+  const output = 'clients/activitypub/dist/activitypub.js';
   f.write(output, "import '../../../packages/output-only/index.js';");
-  f.write('apps/activitypub/dist/unreferenced.js', 'export {};');
+  f.write('clients/activitypub/dist/unreferenced.js', 'export {};');
   f.write('packages/output-only/index.js', 'export {};');
-  const built = f.graph('apps');
+  const built = f.graph('clients');
   assert.deepEqual(
     violations(built),
     expected.map(([rule, from, to]) => [rule, from, to === '@tryghost/activitypub' ? output : to]),
@@ -1748,7 +1756,7 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
   assert.ok(
     edges(built).some(
       ([from, specifier, to]) =>
-        from === 'apps/admin-x-framework/src/root.ts' &&
+        from === 'clients/admin-x-framework/src/root.ts' &&
         specifier === '@tryghost/activitypub' &&
         to === output,
     ),
@@ -1756,7 +1764,7 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
   assert.deepEqual(built.modules.find(({ source }) => source === output)?.dependencies, []);
   assert.ok(!built.modules.some(({ source }) => source === 'packages/output-only/index.js'));
   assert.ok(
-    !built.modules.some(({ source }) => source === 'apps/activitypub/dist/unreferenced.js'),
+    !built.modules.some(({ source }) => source === 'clients/activitypub/dist/unreferenced.js'),
   );
 });
 

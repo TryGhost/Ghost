@@ -53,11 +53,11 @@ Cross-workspace asset assembly, build-cache inputs and post-build artifacts.
 Build steps for the `ghost/` server workspace's own browser assets stay in
 [ghost/scripts](../../ghost/scripts/README.md).
 
-| Current file                                                       | Purpose                                                      | Caller                                        |
-| ------------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
-| [assemble-admin-assets.ts](./build/assemble-admin-assets.ts)       | Assemble Admin and isolated editor-renderer assets for Ghost | Admin build / app-local pnpm assemble:assets  |
-| [hash-vite-env.ts](./build/hash-vite-env.ts)                       | Hash Vite environment files into the build cache input       | Admin Nx runtime input --directory=apps/admin |
-| [upload-sentry-sourcemaps.ts](./build/upload-sentry-sourcemaps.ts) | Upload tagged bundle source maps after the build             | Post-build CI upload with release identifier  |
+| Current file                                                       | Purpose                                                      | Caller                                           |
+| ------------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------ |
+| [assemble-admin-assets.ts](./build/assemble-admin-assets.ts)       | Assemble Admin and isolated editor-renderer assets for Ghost | Admin build / app-local pnpm assemble:assets     |
+| [hash-vite-env.ts](./build/hash-vite-env.ts)                       | Hash Vite environment files into the build cache input       | Admin Nx runtime input --directory=clients/admin |
+| [upload-sentry-sourcemaps.ts](./build/upload-sentry-sourcemaps.ts) | Upload tagged bundle source maps after the build             | Post-build CI upload with release identifier     |
 
 #### Admin asset assembly
 

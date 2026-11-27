@@ -1,6 +1,6 @@
 packages:
   - 'ghost'
-  - 'apps/*'
+  - 'clients/*'
   - 'e2e'
   - 'koenig/*'
   - 'packages/**'

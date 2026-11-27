@@ -23,7 +23,7 @@ function normalizePermissions(directory: string): void {
 
 /** Assemble Admin and its isolated embed renderer from their build outputs. */
 export function assembleAdminAssets(root: string): void {
-  const reactDist = join(root, 'apps/admin/dist');
+  const reactDist = join(root, 'clients/admin/dist');
   const renderer = join(root, 'koenig/koenig-lexical/dist/embed-renderer');
   const built = join(root, 'ghost/core/built');
   const destination = join(built, 'admin');
