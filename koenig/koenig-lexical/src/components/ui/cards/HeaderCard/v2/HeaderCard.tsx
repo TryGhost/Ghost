@@ -24,6 +24,8 @@ import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
 import {useEffect, useState} from 'react';
 // Header Card Version 2
 export function HeaderCard({alignment,
+    visibilitySettings = null,
+    showVisibilitySettings = false,
     buttonEnabled,
     buttonText,
     buttonUrl,
@@ -229,6 +231,172 @@ export function HeaderCard({alignment,
         }
     };
 
+    const designSettings = (
+        <>
+            <ButtonGroupSetting
+                buttons={layoutChildren}
+                label='Layout'
+                selectedName={layout}
+                onClick={handleLayout}
+            />
+
+            {
+                layout === 'split' && (
+                    <ToggleSetting
+                        dataTestId='header-swapped'
+                        isChecked={isSwapped}
+                        label='Flip Layout'
+                        onChange={toggleSwapped}
+                    />
+
+                )
+            }
+
+            <ButtonGroupSetting
+                buttons={alignmentChildren}
+                label='Alignment'
+                selectedName={alignment}
+                onClick={handleAlignment}
+            />
+
+            <ColorPickerSetting
+                dataTestId='header-background-color'
+                eyedropper={layout === 'split'}
+                hasTransparentOption={true}
+                isExpanded={backgroundColorPickerExpanded}
+                label='Background'
+                swatches={[
+                    (layout !== 'split' && {
+                        title: 'Image',
+                        customContent: (
+                            <button
+                                className={clsx(
+                                    `group relative flex size-6 shrink-0 items-center justify-center rounded-full border border-grey-300 bg-grey-100 text-black`,
+                                    showBackgroundImage && 'outline outline-2 outline-green'
+                                )}
+                                data-testid="header-background-image-toggle"
+                                title="Image"
+                                type="button"
+                                onClick={() => {
+                                    handleShowBackgroundImage();
+                                    setBackgroundColorPickerExpanded(false);
+                                    setButtonColorPickerExpanded(false);
+                                }}
+                            >
+                                <ImgBgIcon className="size-[1.4rem]" />
+                                <Tooltip label='Image' />
+                            </button>
+                        )
+                    }),
+                    {title: 'Black', hex: '#000000'},
+                    {title: 'Grey', hex: '#F0F0F0'},
+                    {title: 'Brand color', accent: true}
+                ].filter(Boolean)}
+                value={(showBackgroundImage && layout !== 'split') ? 'image' : backgroundColor}
+                onPickerChange={color => handleBackgroundColor(color, matchingTextColor(color))}
+                onSwatchChange={(color) => {
+                    handleBackgroundColor(color, matchingTextColor(color));
+                    setBackgroundColorPickerExpanded(false);
+                }}
+                onTogglePicker={(isExpanded) => {
+                    if (isExpanded) {
+                        if (layout !== 'split') {
+                            handleHideBackgroundImage();
+                        }
+
+                        if (backgroundColor) {
+                            handleBackgroundColor(backgroundColor, matchingTextColor(backgroundColor));
+                        }
+                    }
+
+                    setBackgroundColorPickerExpanded(isExpanded);
+                    if (isExpanded) {
+                        setButtonColorPickerExpanded(!isExpanded);
+                    }
+                }}
+            >
+                <MediaUploadSetting
+                    alt='Background image'
+                    borderStyle={'rounded'}
+                    className={clsx(
+                        'min-w-[296px]',
+                        (!showBackgroundImage || layout === 'split') && 'hidden'
+                    )}
+                    errors={fileUploader?.errors}
+                    hideLabel={layout !== 'split'}
+                    icon='file'
+                    imgClassName='w-full'
+                    isDraggedOver={imageDragHandler?.isDraggedOver}
+                    isLoading={isLoading}
+                    isPinturaEnabled={isPinturaEnabled}
+                    label='Image'
+                    mimeTypes={['image/*']}
+                    openImageEditor={openImageEditor}
+                    placeholderRef={imageDragHandler?.setRef}
+                    progress={progress}
+                    setFileInputRef={setFileInputRef}
+                    size='xsmall'
+                    src={backgroundImageSrc}
+                    stacked={true}
+                    onFileChange={onFileChange}
+                    onRemoveMedia={() => {
+                        handleClearBackgroundImage();
+                        handleTextColor(matchingTextColor(backgroundColor));
+                    }}
+                />
+            </ColorPickerSetting>
+
+            {/* Button settings */}
+            <ToggleSetting
+                dataTestId='header-button-toggle'
+                isChecked={buttonEnabled}
+                label='Button'
+                onChange={toggleButton}
+            />
+            {buttonEnabled && (
+                <>
+                    <ColorPickerSetting
+                        dataTestId='header-button-color'
+                        eyedropper={layout === 'split'}
+                        isExpanded={buttonColorPickerExpanded}
+                        label='Button Color'
+                        swatches={[
+                            {title: 'White', hex: '#ffffff'},
+                            {title: 'Black', hex: '#000000'},
+                            {title: 'Brand color', accent: true}
+                        ]}
+                        value={buttonColor}
+                        onPickerChange={color => handleButtonColor(color, matchingTextColor(color))}
+                        onSwatchChange={(color) => {
+                            handleButtonColor(color, matchingTextColor(color));
+                            setButtonColorPickerExpanded(false);
+                        }}
+                        onTogglePicker={(isExpanded) => {
+                            setButtonColorPickerExpanded(isExpanded);
+                            if (isExpanded) {
+                                setBackgroundColorPickerExpanded(!isExpanded);
+                            }
+                        }}
+                    />
+                    <InputSetting
+                        dataTestId='header-button-text'
+                        label='Button text'
+                        placeholder='Add button text'
+                        value={buttonText}
+                        onBlur={handleButtonTextBlur}
+                        onChange={handleButtonText}
+                    />
+                    <InputUrlSetting
+                        dataTestId='header-button-url'
+                        label='Button URL'
+                        value={buttonUrl}
+                        onChange={handleButtonUrl}
+                    />
+                </>
+            )}
+        </>
+    );
+
     return (
         <>
             <div className='flex w-full font-sans text-black transition-colors ease-in-out' data-testid={'header-card-container'} style={wrapperStyle()}>
@@ -368,168 +536,12 @@ export function HeaderCard({alignment,
             </div>
 
             {isEditing && (
-                <SettingsPanel cardWidth={layout} className="mt-0">
-                    <ButtonGroupSetting
-                        buttons={layoutChildren}
-                        label='Layout'
-                        selectedName={layout}
-                        onClick={handleLayout}
-                    />
-
-                    {
-                        layout === 'split' && (
-                            <ToggleSetting
-                                dataTestId='header-swapped'
-                                isChecked={isSwapped}
-                                label='Flip Layout'
-                                onChange={toggleSwapped}
-                            />
-
-                        )
-                    }
-
-                    <ButtonGroupSetting
-                        buttons={alignmentChildren}
-                        label='Alignment'
-                        selectedName={alignment}
-                        onClick={handleAlignment}
-                    />
-
-                    <ColorPickerSetting
-                        dataTestId='header-background-color'
-                        eyedropper={layout === 'split'}
-                        hasTransparentOption={true}
-                        isExpanded={backgroundColorPickerExpanded}
-                        label='Background'
-                        swatches={[
-                            (layout !== 'split' && {
-                                title: 'Image',
-                                customContent: (
-                                    <button
-                                        className={clsx(
-                                            `group relative flex size-6 shrink-0 items-center justify-center rounded-full border border-grey-300 bg-grey-100 text-black`,
-                                            showBackgroundImage && 'outline outline-2 outline-green'
-                                        )}
-                                        data-testid="header-background-image-toggle"
-                                        title="Image"
-                                        type="button"
-                                        onClick={() => {
-                                            handleShowBackgroundImage();
-                                            setBackgroundColorPickerExpanded(false);
-                                            setButtonColorPickerExpanded(false);
-                                        }}
-                                    >
-                                        <ImgBgIcon className="size-[1.4rem]" />
-                                        <Tooltip label='Image' />
-                                    </button>
-                                )
-                            }),
-                            {title: 'Black', hex: '#000000'},
-                            {title: 'Grey', hex: '#F0F0F0'},
-                            {title: 'Brand color', accent: true}
-                        ].filter(Boolean)}
-                        value={(showBackgroundImage && layout !== 'split') ? 'image' : backgroundColor}
-                        onPickerChange={color => handleBackgroundColor(color, matchingTextColor(color))}
-                        onSwatchChange={(color) => {
-                            handleBackgroundColor(color, matchingTextColor(color));
-                            setBackgroundColorPickerExpanded(false);
-                        }}
-                        onTogglePicker={(isExpanded) => {
-                            if (isExpanded) {
-                                if (layout !== 'split') {
-                                    handleHideBackgroundImage();
-                                }
-
-                                if (backgroundColor) {
-                                    handleBackgroundColor(backgroundColor, matchingTextColor(backgroundColor));
-                                }
-                            }
-
-                            setBackgroundColorPickerExpanded(isExpanded);
-                            if (isExpanded) {
-                                setButtonColorPickerExpanded(!isExpanded);
-                            }
-                        }}
-                    >
-                        <MediaUploadSetting
-                            alt='Background image'
-                            borderStyle={'rounded'}
-                            className={clsx(
-                                'min-w-[296px]',
-                                (!showBackgroundImage || layout === 'split') && 'hidden'
-                            )}
-                            errors={fileUploader?.errors}
-                            hideLabel={layout !== 'split'}
-                            icon='file'
-                            imgClassName='w-full'
-                            isDraggedOver={imageDragHandler?.isDraggedOver}
-                            isLoading={isLoading}
-                            isPinturaEnabled={isPinturaEnabled}
-                            label='Image'
-                            mimeTypes={['image/*']}
-                            openImageEditor={openImageEditor}
-                            placeholderRef={imageDragHandler?.setRef}
-                            progress={progress}
-                            setFileInputRef={setFileInputRef}
-                            size='xsmall'
-                            src={backgroundImageSrc}
-                            stacked={true}
-                            onFileChange={onFileChange}
-                            onRemoveMedia={() => {
-                                handleClearBackgroundImage();
-                                handleTextColor(matchingTextColor(backgroundColor));
-                            }}
-                        />
-                    </ColorPickerSetting>
-
-                    {/* Button settings */}
-                    <ToggleSetting
-                        dataTestId='header-button-toggle'
-                        isChecked={buttonEnabled}
-                        label='Button'
-                        onChange={toggleButton}
-                    />
-                    {buttonEnabled && (
-                        <>
-                            <ColorPickerSetting
-                                dataTestId='header-button-color'
-                                eyedropper={layout === 'split'}
-                                isExpanded={buttonColorPickerExpanded}
-                                label='Button Color'
-                                swatches={[
-                                    {title: 'White', hex: '#ffffff'},
-                                    {title: 'Black', hex: '#000000'},
-                                    {title: 'Brand color', accent: true}
-                                ]}
-                                value={buttonColor}
-                                onPickerChange={color => handleButtonColor(color, matchingTextColor(color))}
-                                onSwatchChange={(color) => {
-                                    handleButtonColor(color, matchingTextColor(color));
-                                    setButtonColorPickerExpanded(false);
-                                }}
-                                onTogglePicker={(isExpanded) => {
-                                    setButtonColorPickerExpanded(isExpanded);
-                                    if (isExpanded) {
-                                        setBackgroundColorPickerExpanded(!isExpanded);
-                                    }
-                                }}
-                            />
-                            <InputSetting
-                                dataTestId='header-button-text'
-                                label='Button text'
-                                placeholder='Add button text'
-                                value={buttonText}
-                                onBlur={handleButtonTextBlur}
-                                onChange={handleButtonText}
-                            />
-                            <InputUrlSetting
-                                dataTestId='header-button-url'
-                                label='Button URL'
-                                value={buttonUrl}
-                                onChange={handleButtonUrl}
-                            />
-                        </>
-                    )}
+                <SettingsPanel
+                    cardWidth={layout}
+                    showVisibilitySettings={showVisibilitySettings}
+                    visibilitySettings={visibilitySettings}
+                >
+                    {designSettings}
                 </SettingsPanel>
             )}
         </>
@@ -537,6 +549,8 @@ export function HeaderCard({alignment,
 }
 
 HeaderCard.propTypes = {
+    visibilitySettings: PropTypes.node,
+    showVisibilitySettings: PropTypes.bool,
     alignment: PropTypes.oneOf(['left', 'center']),
     buttonColor: PropTypes.string,
     buttonText: PropTypes.string,

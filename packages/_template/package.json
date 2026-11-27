@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/{{NAME}}",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "description": "{{DESCRIPTION}}",
   "license": "MIT",

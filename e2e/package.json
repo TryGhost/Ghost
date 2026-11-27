@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/e2e",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "author": "Ghost Foundation",
   "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
@@ -16,7 +16,6 @@
     "build:docker": "docker build -f Dockerfile.e2e --build-arg GHOST_IMAGE=${GHOST_E2E_BASE_IMAGE:?Set GHOST_E2E_BASE_IMAGE} -t ${GHOST_E2E_IMAGE:-ghost-e2e:local} ..",
     "pretest": "test -n \"$CI\" || echo 'Tip: run pnpm dev or pnpm --filter @tryghost/e2e infra:up before running tests'",
     "infra:up": "bash ./scripts/infra-up.sh",
-    "infra:down": "bash ./scripts/infra-down.sh",
     "tinybird:sync": "node ./scripts/sync-tinybird-state.mjs",
     "stripe:provision": "node --experimental-strip-types ./scripts/provision-stripe-environment.ts",
     "stripe:fixtures": "tsx ./scripts/capture-stripe-fixtures.ts",
@@ -35,13 +34,16 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@faker-js/faker": "catalog:",
+    "@internal/cfg-test-workers": "workspace:*",
     "@playwright/test": "catalog:",
+    "@tryghost/adapter-base-upgrade": "workspace:*",
+    "@tryghost/app-sdk": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",
     "@tryghost/metafield-types": "workspace:*",
     "@tryghost/test-data": "workspace:*",
-    "@types/dockerode": "4.0.1",
+    "@types/dockerode": "4.0.2",
     "@types/express": "catalog:",
     "@typescript/native": "catalog:",
     "busboy": "1.6.0",
@@ -49,10 +51,10 @@
     "dotenv": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-no-relative-import-paths": "1.6.1",
-    "eslint-plugin-playwright": "2.10.4",
+    "eslint-plugin-no-relative-import-paths": "1.7.3",
+    "eslint-plugin-playwright": "2.12.2",
     "express": "catalog:",
-    "knex": "3.1.0",
+    "knex": "catalog:",
     "stripe": "8.222.0",
     "tsx": "catalog:",
     "typescript": "catalog:",
@@ -65,7 +67,7 @@
         "dependsOn": [
           "build"
         ],
-        "cache": true
+        "cache": false
       }
     }
   }

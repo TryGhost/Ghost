@@ -1,6 +1,6 @@
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { HomePage, PublicPage } from '@/public-pages';
-import { MemberDetailsPage, MembersPage } from '@/admin-pages';
+import { MemberDetailsPage, MembersListPage } from '@/admin-pages';
 import { Page } from '@playwright/test';
 import { PostFactory, createPostFactory } from '@/data-factory';
 import { expect, signupViaPortal, test } from '@/helpers/playwright';
@@ -33,7 +33,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     const homePage = new HomePage(page);
     await expect(homePage.accountButton).toBeVisible();
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.clickMemberByEmail(emailAddress);
 
@@ -51,11 +51,13 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     const homePage = new HomePage(page);
     await homePage.goto();
     await homePage.linkWithPostName(post.title).click();
+    // signupViaPortal navigates home, which would cancel a post visit not yet recorded
+    await homePage.waitForPathInMemberHistory(`/${post.slug}/`);
     const { emailAddress, name } = await signupViaPortal(page);
 
     await finishSignupByMagicLinkInEmail(page, emailAddress);
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.clickMemberByEmail(emailAddress);
 
@@ -73,11 +75,13 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     const homePage = new HomePage(page);
     await homePage.goto('/', { referer: 'https://www.google.com', waitUntil: 'domcontentloaded' });
     await homePage.linkWithPostName(post.title).click();
+    // signupViaPortal navigates home, which would cancel a post visit not yet recorded
+    await homePage.waitForPathInMemberHistory(`/${post.slug}/`);
     const { emailAddress, name } = await signupViaPortal(page);
 
     await finishSignupByMagicLinkInEmail(page, emailAddress);
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.clickMemberByEmail(emailAddress);
 
@@ -98,7 +102,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
 
     await finishSignupByMagicLinkInEmail(page, emailAddress);
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.clickMemberByEmail(emailAddress);
 
@@ -119,7 +123,7 @@ test.describe('Ghost Public - Member Signup - Types', () => {
 
     await finishSignupByMagicLinkInEmail(page, emailAddress);
 
-    const membersPage = new MembersPage(page);
+    const membersPage = new MembersListPage(page);
     await membersPage.goto();
     await membersPage.clickMemberByEmail(emailAddress);
 

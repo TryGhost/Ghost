@@ -1,0 +1,17 @@
+{
+  "id": "0000000000000000000000000000000000000000000000000000000000000000",
+  "state": "done",
+  "component": "ghost",
+  "fromVersion": "6.68.0",
+  "toVersion": "6.72.0",
+  "createdAt": "2026-10-14T20:01:02Z",
+  "updatedAt": "2026-10-14T20:04:40Z",
+  "diagnostics": [
+    {
+      "source": "ghost-docker",
+      "code": "backup",
+      "severity": "info",
+      "message": "Before the update, the site was backed up to `backups/20261014-200103`."
+    }
+  ]
+}

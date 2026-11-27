@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/bookmark-renderer', function () {
     // NOTE: Bookmark cards serialize everything other than the url in a metadata object.
@@ -27,12 +27,12 @@ describe('renderers/bookmark-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-bookmark-card kg-card-hascaption">
                     <a class="kg-bookmark-container" href="https://www.ghost.org/">
                         <div class="kg-bookmark-content">
@@ -82,12 +82,12 @@ describe('renderers/bookmark-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div>
                     <!--[if !mso !vml]-->
                     <figure class="kg-card kg-bookmark-card kg-card-hascaption">
@@ -182,6 +182,30 @@ describe('renderers/bookmark-renderer', function () {
 
             // Check that caption is not escaped
             assert.ok(result.html.includes('<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'));
+        });
+
+        it('renders URLs containing special characters', function () {
+            const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+            const badThumbnail = 'https://example.org/it\'s "a" thumbnail.png';
+            const result = renderForEmail(getTestData({url: badUrl, icon: badUrl, thumbnail: badThumbnail}));
+            const doc = createDocument(result.html);
+            // The Outlook markup is inside conditional comments, so parse those too
+            const walker = doc.createTreeWalker(doc.body, 128);
+            const links = Array.from(doc.querySelectorAll('a'));
+            while (walker.nextNode()) {
+                links.push(...createDocument((walker.currentNode as Comment).data).querySelectorAll('a'));
+            }
+
+            assert.ok(links.length > 1);
+            for (const link of links) {
+                assert.equal(link.getAttribute('href'), badUrl);
+            }
+            assert.equal(doc.querySelector('.kg-bookmark-icon')?.getAttribute('src'), badUrl);
+
+            const thumbnail = doc.querySelector<HTMLElement>('.kg-bookmark-thumbnail');
+            assert.ok(thumbnail);
+            assert.equal(thumbnail.querySelector('img')?.getAttribute('src'), badThumbnail);
+            assert.equal(thumbnail.getAttribute('style'), 'background-image: url(\'https://example.org/it%27s%20%22a%22%20thumbnail.png\')');
         });
 
         it('decodes pre-encoded entities before escaping', function () {

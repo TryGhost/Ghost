@@ -1,10 +1,13 @@
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {cssUrl} from '../../utils/css-url.js';
 import {escapeHtml} from '../../utils/escape-html.js';
 import {truncateHtml} from '../../utils/truncate.js';
 
 interface BookmarkNodeData {
+    visibility?: Visibility;
     url: string;
     title: string;
     description: string;
@@ -27,9 +30,9 @@ export function renderBookmarkNode(node: BookmarkNodeData, options: RenderOption
     }
 
     if (options.target === 'email') {
-        return emailTemplate(node, document);
+        return renderWithVisibility(emailTemplate(node, document), node.visibility, options);
     } else {
-        return frontendTemplate(node, document);
+        return renderWithVisibility(frontendTemplate(node, document), node.visibility, options);
     }
 }
 
@@ -40,9 +43,9 @@ function emailTemplate(node: BookmarkNodeData, document: Document) {
     // Description is escaped in truncateHtml, keep raw input here to avoid double-escaping entities.
     const description = node.description || '';
 
-    const icon = node.icon;
-    const url = node.url;
-    const thumbnail = node.thumbnail;
+    const icon = escapeHtml(node.icon);
+    const url = escapeHtml(node.url);
+    const thumbnail = escapeHtml(node.thumbnail);
     const caption = node.caption;
 
     const element = document.createElement('div');
@@ -61,7 +64,7 @@ function emailTemplate(node: BookmarkNodeData, document: Document) {
                             ${author ? `<span class="kg-bookmark-publisher" src="${author}">${author}</span>` : ''}
                         </div>
                     </div>
-                    ${thumbnail ? `<div class="kg-bookmark-thumbnail" style="background-image: url('${thumbnail}')">
+                    ${thumbnail ? `<div class="kg-bookmark-thumbnail" style="background-image: ${cssUrl(node.thumbnail)}">
                         <img src="${thumbnail}" alt="" onerror="this.style.display='none'"></div>` : ''}
                 </a>
                 ${caption ? `<figcaption>${caption}</figcaption>` : ''}

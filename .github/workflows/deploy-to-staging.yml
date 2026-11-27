@@ -10,7 +10,7 @@ name: Deploy to Staging
 # See: https://www.notion.so/ghost/Proposal-Per-site-admin-versioning-31951439c03081daa133eb0215642202
 
 on:
-  pull_request_target:
+  pull_request:
     types: [labeled]
 
 jobs:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Dispatch to Ghost-Moya
         if: steps.recheck.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           repository: TryGhost/Ghost-Moya

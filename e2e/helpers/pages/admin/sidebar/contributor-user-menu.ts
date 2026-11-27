@@ -4,7 +4,7 @@ import { Locator, Page } from '@playwright/test';
 
 /**
  * Contributors get a floating avatar menu instead of the admin sidebar
- * (apps/admin/src/layout/admin-layout.tsx).
+ * (clients/admin/src/layout/admin-layout.tsx).
  */
 export class ContributorUserMenu extends AdminPage {
   public readonly trigger: Locator;

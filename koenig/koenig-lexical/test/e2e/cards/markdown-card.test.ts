@@ -3,6 +3,7 @@ import {
     assertHTML,
     assertRootChildren,
     createSnippet,
+    ctrlOrCmd,
     focusEditor,
     html,
     initialize,
@@ -46,6 +47,55 @@ test.describe('Markdown card', async () => {
     test.afterAll(async () => {
         await page.close();
     });
+
+    for (const dark of [false, true]) {
+        test(`owns Markdown toolbar and selection colours in ${dark ? 'dark' : 'light'} mode`, async function () {
+            await initialize({page, uri: `/#/?content=false&darkMode=${dark}`});
+            // Editor hosts don't define these variables. Poison them to catch an
+            // accidental dependency on them.
+            await page.evaluate(() => {
+                for (const name of ['lightgrey', 'blue', 'yellow', 'orange']) {
+                    document.documentElement.style.setProperty(`--${name}`, '#ff00ff');
+                }
+            });
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'markdown'});
+            await focusMarkdownEditor(page);
+            await page.keyboard.type('Selected Markdown\n**Bold text** and https://example.com');
+            await page.keyboard.press('ControlOrMeta+A');
+
+            const separator = page.locator('.markdown-editor .editor-toolbar i.separator').first();
+            await expect(separator).toHaveCSS('border-left-style', 'solid');
+            await expect(separator).toHaveCSS('border-left-width', '1px');
+            await expect(separator).toHaveCSS('border-left-color', dark ? 'rgb(124, 139, 154)' : 'rgb(206, 212, 217)');
+            const selectedText = page.locator('.markdown-editor .CodeMirror-selectedtext').first();
+            await expect(selectedText).toBeVisible();
+            const selectionBackgrounds = page.locator('.markdown-editor .CodeMirror-selected');
+            await expect(selectionBackgrounds.first()).toBeVisible();
+            for (const background of await selectionBackgrounds.all()) {
+                await expect(background).toHaveCSS('background-color', dark ? 'rgb(35, 69, 83)' : 'rgb(185, 234, 255)');
+            }
+            // CodeMirror paints the full-height highlight behind the marked text.
+            // Painting a second highlight on the spans leaves the old layer visible
+            // around their edges, looking like a light underline in dark mode.
+            for (const text of await page.locator('.markdown-editor .CodeMirror-selectedtext').all()) {
+                await expect(text).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+                await expect(text).toHaveCSS('color', dark ? 'rgb(244, 245, 246)' : 'rgb(21, 23, 26)');
+                await expect(text).toHaveCSS('text-decoration-line', 'none');
+            }
+            await page.locator('.markdown-editor textarea').last().evaluate(element => element.blur());
+            await expect(page.locator('.markdown-editor .CodeMirror-focused')).toHaveCount(0);
+            for (const background of await selectionBackgrounds.all()) {
+                await expect(background).toHaveCSS('background-color', dark ? 'rgb(35, 69, 83)' : 'rgb(185, 234, 255)');
+            }
+
+            await page.evaluate(() => {
+                for (const name of ['lightgrey', 'blue', 'yellow', 'orange']) {
+                    document.documentElement.style.removeProperty(`--${name}`);
+                }
+            });
+        });
+    }
 
     test('can import serialized markdown card node', async function () {
         await page.evaluate(() => {
@@ -165,6 +215,51 @@ test.describe('Markdown card', async () => {
 
         await page.click('button[aria-label="Close dialog"]');
         await expect(await page.getByTestId('markdown-help-dialog')).not.toBeVisible();
+    });
+
+    test('goes back to writing in the markdown editor once the help guide closes', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('/');
+        await page.click('[data-kg-card-menu-item="Markdown"]');
+        await focusMarkdownEditor(page);
+        const line = page.locator('[data-kg-card="markdown"] .CodeMirror-line');
+
+        // Closed with its button
+        await page.click('a[title="Markdown Guide"]');
+        await expect(page.getByTestId('markdown-help-dialog')).toBeVisible();
+        await page.click('button[aria-label="Close dialog"]');
+        await expect(page.getByTestId('markdown-help-dialog')).not.toBeVisible();
+        await page.keyboard.type('abc');
+        await expect(line).toContainText('abc');
+
+        // Closed with Escape
+        await page.click('a[title="Markdown Guide"]');
+        await expect(page.getByTestId('markdown-help-dialog')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.getByTestId('markdown-help-dialog')).not.toBeVisible();
+        await page.keyboard.type('xyz');
+        await expect(line).toContainText('abcxyz');
+    });
+
+    test('can copy from the markdown help guide', async function () {
+        await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+        await focusEditor(page);
+        await page.keyboard.type('/');
+        await page.click('[data-kg-card-menu-item="Markdown"]');
+        await focusMarkdownEditor(page);
+
+        // A word from the guide, copied by keyboard
+        await page.click('a[title="Markdown Guide"]');
+        const dialog = page.getByTestId('markdown-help-dialog');
+        await expect(dialog).toBeVisible();
+        await dialog.getByText('Emphasize', {exact: true}).dblclick();
+        await page.keyboard.press(`${ctrlOrCmd(page)}+KeyC`);
+        await page.keyboard.press('Escape');
+        await expect(dialog).not.toBeVisible();
+
+        // Pasted where the writer went back to
+        await page.keyboard.press(`${ctrlOrCmd(page)}+KeyV`);
+        await expect(page.locator('[data-kg-card="markdown"] .CodeMirror-line')).toContainText('Emphasize');
     });
 
     test('adds extra paragraph when markdown is inserted at end of document', async function () {

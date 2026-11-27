@@ -17,15 +17,10 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * exported, and imported back. The HTTP API tests cover the server behaviour; this pins the
  * two things only the browser exercises -- the export -> import loop end to end, and the
  * mapping step both auto-detecting an exported column and taking a hand-picked target.
- *
- * Behind two flags: membersImportRedesign serves the mapping step this drives, and
- * membersCustomFields is what lets the test define the fields in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Members import with custom fields', () => {
-  test.use({ labs: { membersImportRedesign: true, membersCustomFields: true } });
-
   test('an exported custom field value round-trips back through import, auto-mapped', async ({
     page,
   }) => {

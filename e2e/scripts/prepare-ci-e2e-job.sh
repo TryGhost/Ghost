@@ -40,6 +40,11 @@ run_bg() {
 # overlap with the app/docker builds.
 run_bg "runtime-preflight" bash "$REPO_ROOT/e2e/scripts/prepare-ci-e2e-build-mode.sh"
 
+# The Apps tests' fixture app loads the app SDK as built from the checkout. The shards install
+# only the E2E package's dependencies, which leave out Nx, so pnpm builds the SDK and the
+# packages it depends on, in order.
+run_bg "app-sdk" pnpm --filter '@tryghost/app-sdk...' run build
+
 if [[ "$SKIP_IMAGE_BUILD" == "true" ]]; then
     echo "Using prebuilt E2E image; skipping app and Docker image build."
 else

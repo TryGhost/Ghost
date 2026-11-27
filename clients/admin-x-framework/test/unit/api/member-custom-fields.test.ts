@@ -1,0 +1,309 @@
+import {
+  type CompositePartRuns,
+  type FieldTypePresentation,
+  type MemberCustomField,
+  formatMemberCustomFieldValue,
+  memberCustomFieldCsvColumns,
+  memberCustomFieldParts,
+} from '../../../src/api/member-custom-fields';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { FIELD_STRUCTURES } from '@tryghost/metafield-types/structure';
+import { ALL_FIELD_FIXTURES, type AnyFieldFixture } from '@tryghost/metafield-types/test/fixtures';
+import { LucideIcon } from '@tryghost/shade/utils';
+
+// Compile-time cases: the build failing is the assertion. Each `@ts-expect-error` fails the
+// build if the case it names stops being an error. Directives sit immediately above the
+// property where TypeScript reports the error.
+const composite = { line1: 'a', line2: 'b', city: 'c', state: 'd', postal_code: 'e', country: 'f' };
+const icon = LucideIcon.MapPin;
+
+const fullRowParts = ['line1', 'line2'] as const;
+
+const labelled: FieldTypePresentation<'address'> = {
+  label: 'Address',
+  icon,
+  fullRowParts,
+  partLabels: composite,
+};
+
+const missingPart: FieldTypePresentation<'address'> = {
+  label: 'Address',
+  icon,
+  fullRowParts,
+  // @ts-expect-error a composite missing one of the parts the type declares
+  partLabels: { line1: 'a', line2: 'b', city: 'c', state: 'd', country: 'f' },
+};
+
+const unknownPart: FieldTypePresentation<'address'> = {
+  label: 'Address',
+  icon,
+  fullRowParts,
+  // @ts-expect-error a composite naming a part the type does not declare
+  partLabels: { ...composite, county: 'g' },
+};
+
+// @ts-expect-error a composite with no part labels at all
+const unlabelled: FieldTypePresentation<'address'> = { label: 'Address', icon, fullRowParts };
+
+const unknownFullRow: FieldTypePresentation<'address'> = {
+  label: 'Address',
+  icon,
+  // @ts-expect-error a full-row part the type does not declare
+  fullRowParts: ['line3'],
+  partLabels: composite,
+};
+
+const scalarWithParts: FieldTypePresentation<'short_text'> = {
+  label: 'Short text',
+  icon,
+  // @ts-expect-error a type whose value is one thing has no parts to name
+  partLabels: { line1: 'a' },
+};
+
+// A run is how the one-line form is told which parts read together. It names parts rather
+// than listing them all, so a part *added* upstream needs no entry — but a part renamed or
+// removed upstream has to be caught, or the run would silently stop fusing anything.
+const fusedRun: CompositePartRuns = { address: [['state', 'postal_code']] };
+
+// @ts-expect-error a run naming a part the type does not declare
+const unknownFusedPart: CompositePartRuns = { address: [['state', 'postcode']] };
+
+// @ts-expect-error a scalar type has no parts to run together
+const scalarWithRun: CompositePartRuns = { short_text: [['line1']] };
+
+export {
+  labelled,
+  missingPart,
+  unknownPart,
+  unlabelled,
+  unknownFullRow,
+  scalarWithParts,
+  fusedRun,
+  unknownFusedPart,
+  scalarWithRun,
+};
+
+const field = ({
+  key = 'nickname',
+  name = 'Nickname',
+  type = 'short_text',
+}: {
+  key?: string;
+  name?: string;
+  type?: 'short_text' | 'address';
+}): MemberCustomField => ({
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse(key),
+  name,
+  type,
+  status: 'active',
+  // The server reads a field with no access set as closed to members, so a case that says
+  // nothing about access gets the field the API would return for one.
+  access: { member: 'none' },
+  created_at: '2026-07-01T00:00:00.000Z',
+  updated_at: null,
+});
+
+describe('member custom fields api helpers', () => {
+  describe('memberCustomFieldCsvColumns', () => {
+    it('gives a scalar field one target labelled by its name', () => {
+      expect(memberCustomFieldCsvColumns([field({ key: 'nickname', name: 'Nickname' })])).toEqual([
+        {
+          label: 'Nickname',
+          fieldName: 'Nickname',
+          value: 'metafields.custom.nickname',
+          type: 'short_text',
+        },
+      ]);
+    });
+
+    it('expands a composite field into one target per part', () => {
+      const columns = memberCustomFieldCsvColumns([
+        field({ key: 'shipping_address', name: 'Shipping Address', type: 'address' }),
+      ]);
+
+      expect(columns).toEqual([
+        {
+          label: 'Shipping Address (Address line 1)',
+          fieldName: 'Shipping Address',
+          partLabel: 'Address line 1',
+          value: 'metafields.custom.shipping_address.line1',
+          type: 'address',
+        },
+        {
+          label: 'Shipping Address (Address line 2)',
+          fieldName: 'Shipping Address',
+          partLabel: 'Address line 2',
+          value: 'metafields.custom.shipping_address.line2',
+          type: 'address',
+        },
+        {
+          label: 'Shipping Address (City)',
+          fieldName: 'Shipping Address',
+          partLabel: 'City',
+          value: 'metafields.custom.shipping_address.city',
+          type: 'address',
+        },
+        {
+          label: 'Shipping Address (State)',
+          fieldName: 'Shipping Address',
+          partLabel: 'State',
+          value: 'metafields.custom.shipping_address.state',
+          type: 'address',
+        },
+        {
+          label: 'Shipping Address (Postal code)',
+          fieldName: 'Shipping Address',
+          partLabel: 'Postal code',
+          value: 'metafields.custom.shipping_address.postal_code',
+          type: 'address',
+        },
+        {
+          label: 'Shipping Address (Country)',
+          fieldName: 'Shipping Address',
+          partLabel: 'Country',
+          value: 'metafields.custom.shipping_address.country',
+          type: 'address',
+        },
+      ]);
+    });
+
+    it('keeps a bracketed name whole alongside its part', () => {
+      const columns = memberCustomFieldCsvColumns([
+        field({ key: 'address_home', name: 'Address (Home)', type: 'address' }),
+      ]);
+
+      // Found rather than indexed: what this is about is the label, not the position
+      // of a part in the address.
+      expect(columns.find((column) => column.partLabel === 'City')).toEqual({
+        label: 'Address (Home) (City)',
+        fieldName: 'Address (Home)',
+        partLabel: 'City',
+        value: 'metafields.custom.address_home.city',
+        type: 'address',
+      });
+    });
+
+    it('returns no targets for an empty field set', () => {
+      expect(memberCustomFieldCsvColumns([])).toEqual([]);
+    });
+  });
+
+  describe('memberCustomFieldParts', () => {
+    // The null is the contract a caller branches on to tell a composite from a
+    // scalar, so it is pinned by name rather than only through the CSV columns.
+    it('has no parts for a scalar type', () => {
+      expect(memberCustomFieldParts('short_text')).toBeNull();
+      expect(memberCustomFieldParts('long_text')).toBeNull();
+    });
+
+    it("carries each part's key, label, leaf and layout, in schema order", () => {
+      // Each part's leaf is the catalog's, whatever a leaf is made of.
+      const { parts } = FIELD_STRUCTURES.address;
+      expect(memberCustomFieldParts('address')).toEqual([
+        { key: 'line1', label: 'Address line 1', leaf: parts.line1, fullRow: true },
+        { key: 'line2', label: 'Address line 2', leaf: parts.line2, fullRow: true },
+        { key: 'city', label: 'City', leaf: parts.city, fullRow: false },
+        { key: 'state', label: 'State', leaf: parts.state, fullRow: false },
+        { key: 'postal_code', label: 'Postal code', leaf: parts.postal_code, fullRow: false },
+        { key: 'country', label: 'Country', leaf: parts.country, fullRow: false },
+      ]);
+    });
+  });
+
+  describe('formatMemberCustomFieldValue', () => {
+    // A value a member holds, of any type, reads as a line and never as nothing.
+    it.each(
+      ALL_FIELD_FIXTURES.map((fixture): [string, AnyFieldFixture] => [fixture.field.type, fixture]),
+    )(
+      'reads every held %s value as a line, and nothing held as none',
+      (_type, { field: fixtureField, values }) => {
+        for (const value of values) {
+          expect(formatMemberCustomFieldValue(fixtureField, value), JSON.stringify(value)).not.toBe(
+            '',
+          );
+        }
+        expect(formatMemberCustomFieldValue(fixtureField, undefined)).toBe('');
+      },
+    );
+
+    it('returns a scalar value as it stands', () => {
+      expect(formatMemberCustomFieldValue({ type: 'short_text' }, 'Editor')).toBe('Editor');
+      expect(formatMemberCustomFieldValue({ type: 'long_text' }, 'A longer note')).toBe(
+        'A longer note',
+      );
+    });
+
+    it('formats a full address as one readable line', () => {
+      expect(
+        formatMemberCustomFieldValue(
+          { type: 'address' },
+          {
+            line1: '1 Main St',
+            line2: '12 apt B',
+            city: 'New York',
+            state: 'NY',
+            postal_code: '00001',
+            country: 'US',
+          },
+        ),
+      ).toBe('1 Main St, 12 apt B, New York, NY 00001, United States');
+    });
+
+    it('leaves a country code it cannot name in the line as it stands', () => {
+      expect(
+        formatMemberCustomFieldValue({ type: 'address' }, { city: 'Berlin', country: 'XX' }),
+      ).toBe('Berlin, XX');
+    });
+
+    // The property this is built for. A part added to a type upstream has to appear in
+    // the line on its own, because the alternative is a value that is collected, stored,
+    // exported and filtered on while being invisible in every summary. Asserted through
+    // the catalog rather than against a hardcoded list, so it keeps holding as the
+    // catalog grows.
+    it('includes every part a type declares, in the order it declares them', () => {
+      const parts = memberCustomFieldParts('address') ?? [];
+      expect(parts.length).toBeGreaterThan(0);
+      const value = Object.fromEntries(parts.map(({ key }) => [key, key]));
+
+      const line = formatMemberCustomFieldValue({ type: 'address' }, value);
+
+      for (const { key } of parts) {
+        expect(line, `${key} is missing from the line`).toContain(key);
+      }
+      // Separators aside, the parts read in the order the type declares them.
+      expect(line.split(/,\s|\s/)).toEqual(parts.map(({ key }) => key));
+    });
+
+    it('pairs state and postal code, and drops missing parts cleanly', () => {
+      expect(
+        formatMemberCustomFieldValue(
+          { type: 'address' },
+          {
+            line1: '1 Main St',
+            city: 'Berlin',
+            postal_code: '10115',
+            country: 'DE',
+          },
+        ),
+      ).toBe('1 Main St, Berlin, 10115, Germany');
+      expect(formatMemberCustomFieldValue({ type: 'address' }, { city: 'Berlin' })).toBe('Berlin');
+    });
+
+    // A surface renders its own placeholder, so every unreadable value has to reduce to
+    // the same empty string rather than leaking a raw object or the word "undefined".
+    it('formats an empty or unreadable value as an empty string', () => {
+      expect(formatMemberCustomFieldValue({ type: 'address' }, {})).toBe('');
+      expect(formatMemberCustomFieldValue({ type: 'address' }, null)).toBe('');
+      expect(formatMemberCustomFieldValue({ type: 'address' }, undefined)).toBe('');
+      expect(formatMemberCustomFieldValue({ type: 'address' }, ['a', 'b'])).toBe('');
+    });
+
+    // The type decides which shape is readable, so a value of the other shape is not
+    // read at all rather than being coerced into a line that misrepresents it.
+    it('reads only the shape its type declares', () => {
+      expect(formatMemberCustomFieldValue({ type: 'address' }, '1 Main St, Berlin')).toBe('');
+      expect(formatMemberCustomFieldValue({ type: 'short_text' }, { line1: '1 Main St' })).toBe('');
+    });
+  });
+});

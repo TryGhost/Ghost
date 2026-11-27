@@ -135,6 +135,7 @@ After the subtree commit, add focused integration commits that:
 - switch Ghost consumers to `workspace:*`;
 - update the lockfile with `pnpm`;
 - minimally adapt configuration and tests to work in Ghost;
+- update the service boundary rules that name the package;
 - retain runtime behavior for the later modernization PR.
 
 Before editing package metadata, map each source `workspace:*` dependency to
@@ -157,6 +158,26 @@ global override changes an imported package's required version, add the
 narrowest package-scoped override that preserves the source release and record
 why it is needed.
 
+A non-frozen `pnpm install` can re-resolve the Node runtime pinned in the root
+`devEngines`, which downloads from `unofficial-builds.nodejs.org`. Confirm that
+host is reachable before the lockfile step. Where a restricted sandbox blocks
+it, the install fails and `--offline` does not help. In that case only:
+
+1. edit `pnpm-lock.yaml` by hand to match the manifest changes;
+2. validate the result with `pnpm install --frozen-lockfile`;
+3. say in the PR that the lockfile was hand-edited and that CI, or a
+   regeneration on an unrestricted machine, must confirm it.
+
+Once the package is a workspace package, dependency-cruiser reports imports of
+it by resolved path, such as `packages/<package>/index.js`, instead of by npm
+name. Rules keyed on the npm name stop matching and known violations go stale.
+Search `.dependency-cruiser.cjs` and `.dependency-cruiser-known-violations.json`
+for the npm name and update each match to the workspace path as well, keeping
+the same decision and the same set of violations. Put this in its own
+integration commit, run `pnpm lint:boundaries`, and compare
+`pnpm gx services report` with its output on `main`: the migration must not
+change the totals or allow anything new.
+
 If the package is legacy JavaScript or CommonJS, read
 [`references/legacy-integration.md`](references/legacy-integration.md)
 completely before creating integration commits.
@@ -167,11 +188,27 @@ history crosses into the source repository before opening the PR.
 Before opening the PR, also verify the source split is reachable from the branch
 tip, the consumer resolves the workspace package through its production import
 path, package lint and tests pass through Nx, relevant consumer tests pass, the
-repository formatting check passes, the full build passes, and the Ghost
-archive contains the internal package. Record the exact commit IDs and commands
-in the handoff. Keep mechanical formatting in a focused integration commit so
-the subtree commit remains an exact history import and reviewers can distinguish
-format-only changes from behavioral adaptation.
+repository formatting check passes, `pnpm lint` passes including
+`lint:boundaries`, the full build passes, and the Ghost archive contains the
+internal package. Record the exact commit IDs and commands in the handoff. Keep
+mechanical formatting in a focused integration commit so the subtree commit
+remains an exact history import and reviewers can distinguish format-only
+changes from behavioral adaptation.
+
+Database-backed consumer suites need MySQL, which `pnpm dev` starts through
+Docker. When Docker is unavailable, do not report those suites as passing or
+silently skip them: name the consumer tests that were not run in the PR body,
+state that CI must cover them, and confirm they passed in CI before the merge
+checkpoint.
+
+`pnpm archive` can leave compiled `.js` and `.mjs` files under `ghost/` as
+untracked files. Like the archive itself, they are verification artifacts.
+Check `git status --short` afterward and stage integration files by path, never
+with `git add -A`.
+
+The pre-commit changeset check is a non-blocking reminder and can crash instead
+of reporting. A crash is not a pass: record that the changeset requirement was
+not checked locally and let CI's version-bump check decide.
 
 Open the history-import PR with a title beginning `[Don't merge]`. Put a
 prominent warning at the top of its body that squash and rebase merges destroy
@@ -196,9 +233,14 @@ method:
 - rebase merge cannot preserve the subtree merge topology.
 
 Make CI green and run the guarded script with `--dry-run` as part of the
-automated preparation. Resolve preflight failures that are within the import's
-scope. Once it passes, stop and ask a human Ghost repository administrator to
-run this command from the Ghost repository root:
+automated preparation. The script rejects draft PRs in both modes, so the dry
+run can pass only after the PR is marked ready for review. While the PR is a
+draft, report the dry run as a remaining step rather than as a failure, and do
+not hand off a `--confirm` command. Marking the PR ready is the contributor's
+decision; keep the `[Don't merge]` prefix and warning when it happens. Resolve
+preflight failures that are within the import's scope. Once it passes, stop and
+ask a human Ghost repository administrator to run this command from the Ghost
+repository root:
 
 ```bash
 .agents/skills/migrate-internal-package/scripts/merge-history-pr \

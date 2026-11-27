@@ -1,0 +1,11 @@
+{
+  "name": "@internal/cfg-typescript",
+  "version": "private",
+  "private": true,
+  "description": "Shared TypeScript configs for internal ESM-only Ghost packages and Vite-bundled browser apps",
+  "license": "MIT",
+  "files": [
+    "browser.json",
+    "esm.json"
+  ]
+}

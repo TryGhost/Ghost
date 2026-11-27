@@ -1,3 +1,4 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -15,11 +16,10 @@ describe('ToggleNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -72,7 +72,8 @@ describe('ToggleNode', function () {
             const toggleNodeDataset = toggleNode.getDataset();
 
             expect(toggleNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -116,6 +117,7 @@ describe('ToggleNode', function () {
             const json = toggleNode.exportJSON();
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'toggle',
                 version: 1,
                 heading: dataset.heading,
@@ -161,7 +163,7 @@ describe('ToggleNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders', editorTest(function () {
+        it('renders', editorTest(async function () {
             const payload = {
                 heading: 'Heading',
                 content: 'Content'
@@ -170,7 +172,7 @@ describe('ToggleNode', function () {
             const result = toggleNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
-            assertPrettifiesTo(element.outerHTML, html`
+            await assertPrettifiesTo(element.outerHTML, html`
             <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                 <div class="kg-toggle-heading">
                     <h4 class="kg-toggle-heading-text">Heading</h4>
@@ -185,7 +187,7 @@ describe('ToggleNode', function () {
             `);
         }));
 
-        it('renders for email target', editorTest(function () {
+        it('renders for email target', editorTest(async function () {
             const payload = {
                 heading: 'Heading',
                 content: 'Content'
@@ -199,7 +201,7 @@ describe('ToggleNode', function () {
             const result = toggleNode.exportDOM(editor, {...exportOptions, ...options});
             const element = result.element as HTMLElement;
 
-            assertPrettifiesTo(element.outerHTML, html`
+            await assertPrettifiesTo(element.outerHTML, html`
                 <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
                     <tbody>
                         <tr>

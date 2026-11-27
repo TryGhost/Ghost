@@ -1,0 +1,312 @@
+import validator from 'validator';
+import { SEPARATOR } from '@tryghost/metafield-types/identity';
+import { MAX_OPTIONS, optionKey, optionText } from '@tryghost/metafield-types/structure';
+import type { ListSuggestion } from '@/shared/member-custom-fields/create-custom-field-popover';
+import {
+  isMetafieldColumn,
+  splitListCell,
+  type MemberCustomFieldCsvColumn,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
+
+/** What auto-detection is allowed to map a column onto. */
+type DetectionOptions = {
+  importMemberTier?: boolean;
+  // Custom field CSV columns offered as mapping targets (see memberCustomFieldCsvColumns);
+  // none where the site has custom fields switched off.
+  customFieldColumns?: MemberCustomFieldCsvColumn[];
+};
+
+export const FIELD_MAPPINGS = [
+  { label: 'Email', value: 'email' },
+  { label: 'Name', value: 'name' },
+  { label: 'Note', value: 'note' },
+  { label: 'Subscribed to emails', value: 'subscribed_to_emails' },
+  { label: 'Stripe Customer ID', value: 'stripe_customer_id' },
+  { label: 'Complimentary plan', value: 'complimentary_plan' },
+  { label: 'Labels', value: 'labels' },
+  { label: 'Created at', value: 'created_at' },
+  { label: 'Gift ID', value: 'gift_id' },
+];
+
+export const IMPORT_TIER_FIELD_MAPPING = { label: 'Tier', value: 'import_tier' };
+
+const SUPPORTED_TYPES = [
+  'email',
+  'name',
+  'note',
+  'subscribed_to_emails',
+  'complimentary_plan',
+  'stripe_customer_id',
+  'labels',
+  'created_at',
+  'gift_id',
+];
+
+function getSupportedTypes({
+  importMemberTier = false,
+  customFieldColumns = [],
+}: DetectionOptions = {}): string[] {
+  return [
+    ...SUPPORTED_TYPES,
+    ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : []),
+    ...customFieldColumns.map((column) => column.value),
+  ];
+}
+
+/**
+ * Everything a column can be imported as, before custom fields. They are offered from their own
+ * section of the picker rather than folded in here, so this stays the list Ghost always has.
+ */
+export function getFieldMappings({
+  importMemberTier = false,
+}: { importMemberTier?: boolean } = {}) {
+  return [...FIELD_MAPPINGS, ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : [])];
+}
+
+const AUTO_DETECTED_TYPES = ['email'];
+
+export class MembersFieldMapping {
+  private _mapping: Record<string, string | null>;
+
+  constructor(mapping: Record<string, string>) {
+    this._mapping = {};
+    if (mapping) {
+      for (const [key, value] of Object.entries(mapping)) {
+        this._mapping[value] = key;
+      }
+    }
+  }
+
+  get(key: string): string | null {
+    return this._mapping[key] ?? null;
+  }
+
+  toJSON(): Record<string, string | null> {
+    return { ...this._mapping };
+  }
+
+  getKeyByValue(searchedValue: string): string | null {
+    for (const [key, value] of Object.entries(this._mapping)) {
+      if (value === searchedValue) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  updateMapping(from: string, to: string | null): MembersFieldMapping {
+    const newMapping = new MembersFieldMapping({});
+    newMapping._mapping = { ...this._mapping };
+
+    if (to) {
+      for (const key in newMapping._mapping) {
+        if (newMapping._mapping[key] === to) {
+          newMapping._mapping[key] = null;
+        }
+      }
+    }
+
+    newMapping._mapping[from] = to;
+    return newMapping;
+  }
+}
+
+/**
+ * Locate 10 non-empty cells from the start/middle(ish)/end of each column (30 non-empty values in total).
+ * If the data contains 30 rows or fewer, all rows should be validated.
+ */
+/**
+ * Every column the file has.
+ *
+ * Papaparse omits keys for a row carrying fewer cells than the header rather than padding it
+ * out, so the first row is only the full set for a rectangular file. A hand-edited or partly
+ * exported CSV whose first row is short would otherwise have its remaining columns go
+ * undetected — and a column nothing names is carried through by the importer, so it would be
+ * imported without ever appearing to the publisher.
+ *
+ * `__parsed_extra` is where papaparse collects the overflow of a row with more cells than
+ * headers. It is not a column and no mapping can name it.
+ */
+export function columnsOf(data: Record<string, string>[]): string[] {
+  const keys = new Set<string>();
+  for (const row of data) {
+    for (const key of Object.keys(row)) {
+      if (key !== '__parsed_extra') {
+        keys.add(key);
+      }
+    }
+  }
+  return [...keys];
+}
+
+export function sampleData(
+  data: Record<string, string>[],
+  validationSampleSize = 30,
+): Record<string, string>[] {
+  if (!data || data.length <= validationSampleSize) {
+    return data;
+  }
+
+  const validatedSet: Record<string, string>[] = [];
+  const sampleKeys = columnsOf(data);
+
+  sampleKeys.forEach((key) => {
+    const nonEmptyKeyEntries = data.filter((entry) => entry[key] && entry[key].trim() !== '');
+    let sampledEntries: Record<string, string>[] = [];
+
+    if (nonEmptyKeyEntries.length <= validationSampleSize) {
+      sampledEntries = nonEmptyKeyEntries;
+    } else {
+      const headSize = Math.floor(validationSampleSize / 3);
+      const tailSize = headSize;
+      const middleSize = validationSampleSize - headSize - tailSize;
+
+      const head = nonEmptyKeyEntries.slice(0, headSize);
+      const tail = tailSize > 0 ? nonEmptyKeyEntries.slice(-tailSize) : [];
+      const middleStart = Math.max(
+        0,
+        Math.floor(nonEmptyKeyEntries.length / 2) - Math.floor(middleSize / 2),
+      );
+      const middle = nonEmptyKeyEntries.slice(middleStart, middleStart + middleSize);
+
+      sampledEntries = [...head, ...middle, ...tail].slice(0, validationSampleSize);
+    }
+
+    sampledEntries.forEach((entry, index) => {
+      if (!validatedSet[index]) {
+        validatedSet[index] = {};
+      }
+      validatedSet[index][key] = entry[key];
+    });
+  });
+
+  return validatedSet;
+}
+
+/**
+ * Detects supported data types and auto-detects email by value.
+ *
+ * Returned mapping object contains mappings accepted by the members upload API.
+ */
+export function detectFieldTypes(
+  data: Record<string, string>[],
+  options: DetectionOptions = {},
+): Record<string, string> {
+  const sampledData = sampleData(data);
+  const mapping: Record<string, string> = {};
+  const supportedTypes = getSupportedTypes(options);
+
+  // Match column headers against supported types using all headers from the
+  // original data. sampleData only keeps keys with non-empty values, so
+  // entirely-empty columns (e.g. an empty "note" column) would be missed if
+  // we only checked sampled entries. A custom field column auto-maps to itself here;
+  // isMetafieldColumn holds it apart from the fuzzy core-field heuristics below.
+  if (data.length > 0) {
+    for (const key of columnsOf(data)) {
+      if (!mapping.name && /name/i.test(key) && !isMetafieldColumn(key)) {
+        mapping.name = key;
+        continue;
+      }
+
+      if (!mapping[key] && supportedTypes.includes(key) && !AUTO_DETECTED_TYPES.includes(key)) {
+        mapping[key] = key;
+      }
+    }
+  }
+
+  // Detect value-based types (email) from sampled data.
+  let i = 0;
+  while (i <= sampledData.length - 1) {
+    if (mapping.email) {
+      break;
+    }
+
+    const entry = sampledData[i];
+    for (const [key, value] of Object.entries(entry)) {
+      if (!mapping.email && value && validator.isEmail(value) && !isMetafieldColumn(key)) {
+        mapping.email = key;
+      }
+    }
+
+    i += 1;
+  }
+
+  return mapping;
+}
+
+export function formatImportError(error: string): string {
+  return error
+    .replace('Value in [members.email] cannot be blank.', 'Missing email address')
+    .replace(
+      'Value in [members.note] exceeds maximum length of 2000 characters.',
+      'Note is too long',
+    )
+    .replace(
+      'Value in [members.subscribed] must be one of true, false, 0 or 1.',
+      'Value of "Subscribed to emails" must be "true" or "false"',
+    )
+    .replace('Validation (isEmail) failed for email', 'Invalid email address')
+    .replace(
+      // Runs to the end: this is handed one reason, and Stripe puts the customer id
+      // after the colon.
+      /No such customer:[\s\S]*/,
+      'Could not find Stripe customer',
+    );
+}
+
+/**
+ * The field name to suggest for a column no defined field matches.
+ *
+ * A namespaced column comes from a Ghost export, so it carries a namespace that is noise
+ * to a publisher and a key that was machine-minted from a name in the first place: both
+ * are stripped back towards what someone would have typed. A column from anywhere else is
+ * already the publisher's own wording, so only its separators and first letter are
+ * touched. It is a starting point either way, and the form lets them edit it.
+ */
+export function suggestedFieldName(column: string): string {
+  // A custom field column is `metafields.<namespace>.<key>[.<part>]`. The name being
+  // suggested is the field's, so only the key segment is kept: the part is asked for
+  // separately. Read as text rather than as an identity: a column someone typed need not
+  // follow the key rule, and its key segment is still the best name on offer.
+  const [, , key] = isMetafieldColumn(column) ? column.split(SEPARATOR) : [];
+  const words = (key ?? column).replace(/[._-]+/g, ' ').trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * What a column's cells say about a list made from it. Its options are every different answer
+ * once, in the order they first appear, split where a cell holds several the way the import reads
+ * them. Several answers are allowed when any cell holds more than one, and such a column starts
+ * out as a list. A column that can't be made a list says why: one with more different answers
+ * than a list can offer, or with two answers that differ only by case, which a list can't both
+ * offer. Either way the import would refuse rows for answers the list couldn't hold, since an
+ * answer has to match an option exactly.
+ */
+export function listSuggestionFor(cells: readonly string[]): ListSuggestion {
+  const found = new Set<string>();
+  // Each option a list could offer, by the text two options are compared by, as first written.
+  const spellings = new Map<string, string>();
+  let multiple = false;
+  for (const cell of cells) {
+    const answers = splitListCell(cell).map(optionText);
+    multiple ||= answers.length > 1;
+    for (const answer of answers) {
+      const spelled = spellings.get(optionKey(answer));
+      if (spelled !== undefined && spelled !== answer) {
+        return {
+          kind: 'refused',
+          reason: `A list can’t offer both “${spelled}” and “${answer}”, and this column holds both.`,
+        };
+      }
+      spellings.set(optionKey(answer), answer);
+      found.add(answer);
+      if (found.size > MAX_OPTIONS) {
+        return {
+          kind: 'refused',
+          reason: `A list offers at most ${MAX_OPTIONS} options, and this column holds more different answers than that.`,
+        };
+      }
+    }
+  }
+  return { kind: 'list', settings: { options: [...found], multiple }, startAsList: multiple };
+}

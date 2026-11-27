@@ -1,8 +1,8 @@
 ---
 name: Shade component decision
-description: Decide which Shade layer (Token, Primitive, Component, Recipe, Pattern) a new piece of UI belongs in — and whether it should be added to Shade at all. Trigger when creating new files in apps/shade/src/components, or proposing to add a new Shade component.
+description: Decide which Shade layer (Token, Primitive, Component, Recipe, Pattern) a new piece of UI belongs in — and whether it should be added to Shade at all. Trigger when creating new files in clients/shade/src/components, or proposing to add a new Shade component.
 autoTrigger:
-  - fileEdit: "apps/shade/src/components/**/*.{ts,tsx}"
+  - fileEdit: "clients/shade/src/components/**/*.{ts,tsx}"
 ---
 
 # Shade — pick the right layer (and decide whether to add to Shade at all)
@@ -54,21 +54,23 @@ Each layer can use anything **below** it. The reverse is forbidden.
 
 ## Common misclassifications
 
-| Tempting                                                 | Actually                                | Why                                                               |
-| -------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------- |
-| Add a `variant="kpi"` to `Card`                          | New Pattern `KpiCard`                   | Product-specific shape, generic Component shouldn't know about it |
-| Add `<MembersFilterBar>` to patterns                     | Keep local in `apps/admin/src/settings` | Single-surface name                                               |
-| Add a one-off class string as a recipe                   | Inline it in the one component          | Recipes are for shared rules across ≥ 2 components                |
-| Add a `useQuery`-driven `<MembersList>` to patterns      | Keep local — patterns are state-free    | Bring-your-own state                                              |
-| Wrap a `<div className="flex gap-3">` as a new primitive | Use `Inline gap="md"`                   | Already covered                                                   |
+| Tempting                                                 | Actually                                   | Why                                                               |
+| -------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| Add a `variant="kpi"` to `Card`                          | New Pattern `KpiCard`                      | Product-specific shape, generic Component shouldn't know about it |
+| Add `<MembersFilterBar>` to patterns                     | Keep local in `clients/admin/src/settings` | Single-surface name                                               |
+| Add a one-off class string as a recipe                   | Inline it in the one component             | Recipes are for shared rules across ≥ 2 components                |
+| Add a `useQuery`-driven `<MembersList>` to patterns      | Keep local — patterns are state-free       | Bring-your-own state                                              |
+| Wrap a `<div className="flex gap-3">` as a new primitive | Use `Inline gap="md"`                      | Already covered                                                   |
 
 ## When you've decided
 
 - New **Component** or **Pattern** → also see the `shade-new-component` skill for the file/story/state checklist.
-- New **Recipe** → no JSX, follow the `recipeClasses` + `recipe()` shape (see `apps/shade/src/components/ui/input-surface.ts`).
-- New **Token** → add to `apps/shade/theme-variables.css` (semantic + dark-mode override) or `apps/shade/tailwind.theme.css` (raw `@theme`). Never an ad-hoc CSS variable in a component file.
+- New **Recipe** → no JSX, follow the `recipeClasses` + `recipe()` shape (see `clients/shade/src/components/ui/input-surface.ts`).
+- New **Token** → add to `clients/shade/theme-variables.css` (semantic + dark-mode override) or `clients/shade/tailwind.theme.css` (raw `@theme`). Never an ad-hoc CSS variable in a component file.
 
 ## Source of truth
 
-Storybook → Overview / Layers owns the layer model and promotion rules.
-Overview / Contributing owns the implementation requirements.
+[Layers](../../../clients/shade/CONTRIBUTING.md#layers) in Shade's
+`CONTRIBUTING.md` owns the layer model and promotion rules. The rest of
+[`CONTRIBUTING.md`](../../../clients/shade/CONTRIBUTING.md) owns the
+implementation requirements.

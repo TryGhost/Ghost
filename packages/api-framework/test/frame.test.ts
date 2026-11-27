@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { expectTypeOf } from 'vitest';
 import * as shared from '../src/index.ts';
+import type { Controller, Frame } from '../src/index.ts';
 
 describe('Frame', function () {
   it('constructor', function () {
@@ -18,7 +20,84 @@ describe('Frame', function () {
     ]);
   });
 
+  it('provides default and endpoint-specific value types', function () {
+    const frame = new shared.Frame();
+    expectTypeOf(frame.data.id).toEqualTypeOf<string | undefined>();
+    expectTypeOf(frame.options.id).toEqualTypeOf<string | undefined>();
+
+    type ReadFrame = Frame<{
+      data: { id: string };
+      options: { include?: string };
+    }>;
+
+    const controller = {
+      read: {
+        query(readFrame: ReadFrame) {
+          expectTypeOf(readFrame.data.id).toEqualTypeOf<string>();
+          expectTypeOf(readFrame.options.include).toEqualTypeOf<string | undefined>();
+        },
+      },
+    } satisfies Controller<{ read: ReadFrame }>;
+
+    expectTypeOf(controller.read.query).parameter(0).toEqualTypeOf<ReadFrame>();
+  });
+
   describe('fn: configure', function () {
+    it('eagerly copies the working body by default', function () {
+      let reads = 0;
+      const payload = { value: 'original' };
+      const body = {
+        get payload() {
+          reads += 1;
+          return payload;
+        },
+      };
+      const frame = new shared.Frame({ body });
+      frame.configure({});
+      assert.equal(reads, 1);
+      payload.value = 'changed';
+      assert.deepEqual(frame.data.payload, { value: 'original' });
+      assert.equal(reads, 1);
+    });
+
+    it('defers the working-body copy until data is read and reuses it', function () {
+      let reads = 0;
+      const payload = { value: 'original' };
+      const body = {
+        get payload() {
+          reads += 1;
+          return payload;
+        },
+      };
+      const frame = new shared.Frame({ body });
+      frame.configure({}, { deferBodyClone: true });
+      assert.equal(reads, 0);
+
+      const data = frame.data;
+      assert.equal(reads, 1);
+      assert.notEqual(data.payload, payload);
+      Object.assign(data.payload as object, { value: 'working' });
+      assert.equal(frame.data, data);
+      assert.equal(reads, 1);
+      assert.equal(payload.value, 'original');
+    });
+
+    it('can replace deferred data without copying the original body', function () {
+      let reads = 0;
+      const body = {
+        get payload() {
+          reads += 1;
+          return 'original';
+        },
+      };
+      const frame = new shared.Frame({ body });
+      frame.configure({}, { deferBodyClone: true });
+      const replacement = { payload: 'replacement' };
+      frame.data = replacement;
+      assert.equal(frame.data, replacement);
+      assert.equal(reads, 0);
+    });
+
     it('no transform', function () {
       const original = {
         context: { user: 'id' },

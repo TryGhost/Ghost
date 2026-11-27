@@ -1,0 +1,844 @@
+// The Ghost Boot Sequence
+// -----------------------
+// - This is intentionally one big file at the moment, so that we don't have to follow boot logic all over the place
+// - This file is FULL of debug statements so we can see timings for the various steps because the boot needs to be as fast as possible
+// - As we manage to break the codebase down into distinct components for e.g. the frontend, their boot logic can be offloaded to them
+// - app.js is separate as the first example of each component having it's own app.js file colocated with it, instead of inside of server/web
+//
+// IMPORTANT:
+// ----------
+// The only global requires here should be overrides + debug so we can monitor timings with DEBUG = ghost: boot * node ghost
+require('./server/overrides');
+const debug = require('@tryghost/debug')('boot');
+// END OF GLOBAL REQUIRES
+
+/**
+ * Helper class to create consistent log messages
+ */
+class BootLogger {
+  /**
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} logging
+   * @param {{metric: (name: string, time: number) => unknown}} metrics
+   * @param {number} startTime
+   */
+  constructor(logging, metrics, startTime) {
+    this.logging = logging;
+    this.metrics = metrics;
+    this.startTime = startTime;
+  }
+  /**
+   * @param {string} message
+   * @returns {void}
+   */
+  log(message) {
+    const { logging, startTime } = this;
+    logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
+  }
+  /**
+   * @param {string} name
+   * @param {number} [initialTime]
+   * @returns {void}
+   */
+  metric(name, initialTime) {
+    const { metrics, startTime } = this;
+
+    if (!initialTime) {
+      initialTime = startTime;
+    }
+
+    metrics.metric(name, Date.now() - initialTime);
+  }
+}
+
+/**
+ * Helper function to handle sending server ready notifications
+ * @param {string} [error]
+ */
+function notifyServerReady(error) {
+  const notify = require('./server/notify');
+
+  if (error) {
+    debug('Notifying server ready (error)');
+    notify.notifyServerReady(error);
+  } else {
+    debug('Notifying server ready (success)');
+    notify.notifyServerReady();
+  }
+}
+
+/**
+ * Get the Database into a ready state
+ * - DatabaseStateManager handles doing all this for us
+ *
+ * @param {object} options
+ * @param {object} options.config
+ * @returns {Promise<string|null>} a warning to log once boot completes
+ */
+async function initDatabase({ config }) {
+  const DatabaseStateManager = require('./server/data/db/database-state-manager');
+  const dbStateManager = new DatabaseStateManager({
+    knexMigratorFilePath: config.get('paths:appRoot'),
+  });
+  await dbStateManager.makeReady();
+
+  const databaseInfo = require('./server/data/db/info');
+  await databaseInfo.init();
+
+  return dbStateManager.warning;
+}
+
+/**
+ * Core is intended to be all the bits of Ghost that are fundamental and we can't do anything without them!
+ * (There's more to do to make this true)
+ * @param {object} options
+ * @param {object} options.ghostServer
+ * @param {object} options.config
+ */
+async function initCore({ ghostServer, config }) {
+  debug('Begin: initCore');
+
+  // Validate configured adapters up-front so misconfiguration fails at boot
+  // rather than on first lazy use (e.g. first image upload or scheduled job)
+  debug('Begin: adapters');
+  const adapterManager = require('./server/services/adapter-manager').default;
+  adapterManager.init();
+  debug('End: adapters');
+
+  // Limit image processing to the configured image formats before anything
+  // can process an image
+  debug('Begin: image upload config');
+  const { applyImageUploadConfig } = require('./server/lib/image/image-upload-config');
+  applyImageUploadConfig(config.get('uploads'));
+  debug('End: image upload config');
+
+  // URL Utils is a bit slow, put it here so the timing is visible separate from models
+  debug('Begin: Load urlUtils');
+  require('./shared/url-utils');
+  debug('End: Load urlUtils');
+
+  // Limit service is booted before settings, so that limits are available for calculated settings
+  debug('Begin: limits');
+  const limits = require('./server/services/limits');
+  await limits.init();
+  debug('End: limits');
+
+  // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
+  debug('Begin: settings');
+  const settings = require('./server/services/settings/settings-service');
+  await settings.init();
+  await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
+  debug('End: settings');
+
+  // Signing keys come from settings and must be ready before anything signs or serves a JWKS
+  debug('Begin: signing keys');
+  const signingKeys = require('./server/services/signing-keys').default;
+  await signingKeys.init();
+  debug('End: signing keys');
+
+  debug('Begin: Internal Keys Service');
+  const internalKeys = require('./server/services/internal-keys').default;
+  await internalKeys.init();
+  debug('End: Internal Keys Service');
+
+  debug('Begin: i18n');
+  const i18n = require('./shared/i18n');
+  await i18n.init({ events: require('./server/lib/common/events') });
+  debug('End: i18n');
+
+  // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
+  // Better Auth itself.
+  if (require('./server/auth').isBetterAuth) {
+    debug('Begin: Better Auth');
+    await require('./server/auth').betterAuth.init();
+    debug('End: Better Auth');
+  }
+
+  // Gift links service: wires the (knex-backed) repository once the DB is ready.
+  debug('Begin: Gift Links Service');
+  const giftLinksService = require('./server/services/gift-links').default;
+  await giftLinksService.init();
+  debug('End: Gift Links Service');
+
+  // Member metafields service: knex-backed, wired once the DB is ready.
+  debug('Begin: Member Metafields Service');
+  const memberMetafieldsService = require('./server/services/members-metafields');
+  memberMetafieldsService.init();
+  debug('End: Member Metafields Service');
+
+  // App installations service: knex-backed, wired once the DB is ready.
+  debug('Begin: App Installations Service');
+  const appInstallationsService = require('./server/services/app-installations').default;
+  await appInstallationsService.init();
+  debug('End: App Installations Service');
+
+  debug('Begin: Export Requests Service');
+  const exportRequests = require('./server/services/export-requests').default;
+  await exportRequests.init();
+  debug('End: Export Requests Service');
+
+  debug('Begin: Invites Service');
+  const invites = require('./server/services/invites').default;
+  await invites.init();
+  debug('End: Invites Service');
+
+  debug('Begin: Integrations Service');
+  const integrations = require('./server/services/integrations').default;
+  await integrations.init();
+  debug('End: Integrations Service');
+
+  // Stripe Checkout config service: knex-backed, wired once the DB is ready.
+  debug('Begin: Stripe Checkout Config Service');
+  const stripeCheckoutConfig = require('./server/services/stripe-checkout-config').default;
+  await stripeCheckoutConfig.init();
+  debug('End: Stripe Checkout Config Service');
+
+  if (ghostServer) {
+    // Jobs Service allows parts of Ghost to run in the background
+    debug('Begin: Jobs Service');
+    const jobsService = require('./server/services/jobs-service');
+
+    ghostServer.registerCleanupTask(async () => {
+      await jobsService.shutdown({ timeoutMs: config.get('server:shutdownTimeout') });
+    }, 'Jobs Service (in-memory)');
+    debug('End: Jobs Service');
+  }
+
+  debug('End: initCore');
+}
+
+/**
+ * These are services required by Ghost's frontend.
+ * @param {object} options
+ * @param {BootLogger} options.bootLogger
+
+ */
+async function initServicesForFrontend({ bootLogger }) {
+  debug('Begin: initServicesForFrontend');
+
+  debug('Begin: Routing Settings');
+  const routeSettings = require('./server/services/route-settings');
+  await routeSettings.init();
+  debug('End: Routing Settings');
+
+  debug('Begin: Redirects');
+  const customRedirects = require('./server/services/custom-redirects');
+  await customRedirects.init();
+  debug('End: Redirects');
+
+  debug('Begin: Link Redirects');
+  const linkRedirects = require('./server/services/link-redirection').default;
+  await linkRedirects.init();
+  debug('End: Link Redirects');
+
+  debug('Begin: Themes');
+  // Custom theme settings must be initialized before any theme activation occurs
+  const customThemeSettingsService = require('./server/services/custom-theme-settings').default;
+  await customThemeSettingsService.init();
+
+  const themeService = require('./server/services/themes');
+  const themeServiceStart = Date.now();
+  await themeService.init();
+  bootLogger.metric('theme-service-init', themeServiceStart);
+  debug('End: Themes');
+
+  debug('Begin: Offers');
+  const offers = require('./server/services/offers');
+  await offers.init();
+  debug('End: Offers');
+
+  debug('End: initServicesForFrontend');
+}
+
+/**
+ * Frontend is intended to be just Ghost's frontend
+ */
+function initFrontend() {
+  debug('Begin: initFrontend');
+
+  const helperService = require('./frontend/services/helpers');
+  helperService.init();
+
+  debug('End: initFrontend');
+}
+
+/**
+ * At the moment we load our express apps all in one go, they require themselves and are co-located
+ * What we want is to be able to optionally load various components and mount them
+ * So eventually this function should go away
+ * @param {Object} options
+ * @param {boolean} options.backend
+ * @param {boolean} options.frontend
+ * @param {Object} options.config
+ */
+async function initExpressApps({ frontend, backend, config }) {
+  debug('Begin: initExpressApps');
+
+  const parentApp = require('./server/web/parent/app')();
+  const vhost = require('@tryghost/mw-vhost');
+
+  // Mount the express apps on the parentApp
+  if (backend) {
+    // ADMIN + API
+    const backendApp = require('./server/web/parent/backend')();
+    parentApp.use(vhost(config.getBackendMountPath(), backendApp));
+  }
+
+  if (frontend) {
+    // SITE + MEMBERS
+    const urlService = require('./server/services/url');
+    const frontendApp = require('./server/web/parent/frontend')({ urlService });
+    parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
+  }
+
+  debug('End: initExpressApps');
+  return parentApp;
+}
+
+/**
+ * Initialize prometheus client
+ */
+function initPrometheusClient({ config }) {
+  if (config.get('prometheus:enabled')) {
+    debug('Begin: initPrometheusClient');
+    const prometheusClient = require('./shared/prometheus-client');
+    debug('End: initPrometheusClient');
+    return prometheusClient;
+  }
+  return null;
+}
+
+/**
+ * Dynamic routing is generated from the routes.yaml file
+ * When Ghost's DB and core are loaded, we can access this file and call routing.routingManager.start
+ * However this _must_ happen after the express Apps are loaded, hence why this is here and not in initFrontend
+ * Routing is currently tightly coupled between the frontend and backend
+ *
+ * Runs on every boot, not just a frontend one: it both mounts routers on the
+ * site app and tells the URL service about them, and only the first needs a
+ * frontend. The APIs, the email service and webhooks all build URLs, so a
+ * backend-only boot that skipped this resolved every resource to /404/.
+ */
+async function initDynamicRouting({ frontend }) {
+  debug('Begin: Dynamic Routing');
+  const routing = require('./frontend/services/routing');
+  const routeSettingsModule = require('./server/services/route-settings');
+  const urlService = require('./server/services/url');
+  const bridge = require('./bridge');
+  bridge.init();
+
+  // With a frontend, initFrontend has already called this to build the site
+  // app's router. Without one there is nothing to mount, but the URL service
+  // still has to be handed to RouterManager before the routers register — so
+  // call the same init and discard the express router it returns.
+  if (!frontend) {
+    routing.routerManager.init({ urlService });
+  }
+
+  await routeSettingsModule.service.start({
+    routerManager: routing.routerManager,
+    urlService,
+  });
+
+  debug('End: Dynamic Routing');
+}
+
+/**
+ * The app service cannot be loaded unless the frontend is enabled
+ * In future, the logic to determine whether this should be loaded should be in the service loader
+ */
+async function initAppService() {
+  debug('Begin: App Service');
+  const appService = require('./frontend/services/apps');
+  await appService.init();
+  debug('End: App Service');
+}
+
+/**
+ * Services are components that make up part of Ghost and need initializing on boot
+ * These services should all be part of core, frontend services should be loaded with the frontend
+ * We are working towards this being a service loader, with the ability to make certain services optional
+ */
+async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
+  debug('Begin: initServices');
+
+  debug('Begin: Services');
+  const identityTokens = require('./server/services/identity-tokens');
+  const stripe = require('./server/services/stripe');
+  const members = require('./server/services/members');
+  const tiers = require('./server/services/tiers').default;
+  const indexnow = require('./server/services/indexnow-ping').default;
+  const upgrades = require('./server/services/upgrades').default;
+  const slack = require('./server/services/slack-ping').default;
+  const webhooks = require('./server/services/webhooks');
+  const postScheduling = require('./server/services/post-scheduling').default;
+  const comments = require('./server/services/comments').default;
+  const staffService = require('./server/services/staff').default;
+  const memberAttribution = require('./server/services/member-attribution').default;
+  const membersEvents = require('./server/services/members-events');
+  const linkTracking = require('./server/services/link-tracking');
+  const audienceFeedback = require('./server/services/audience-feedback').default;
+  const emailSuppressionList = require('./server/services/email-suppression-list');
+  const emailService = require('./server/services/email-service');
+  const emailAnalytics = require('./server/services/email-analytics');
+  const oembed = require('./server/services/oembed').default;
+  const mentionsService = require('./server/services/mentions').default;
+  const tagsPublic = require('./server/services/tags-public').default;
+  const postsPublic = require('./server/services/posts-public').default;
+  const mediaInliner = require('./server/services/media-inliner').default;
+  const contentImport = require('./server/services/content-import');
+  const donationService = require('./server/services/donations').default;
+  const giftService = require('./server/services/gifts');
+  const machinePaymentsService = require('./server/services/machine-payments');
+  const recommendationsService = require('./server/services/recommendations').default;
+  const emailAddressService = require('./server/services/email-address');
+  const newsletters = require('./server/services/newsletters').default;
+  const statsService = require('./server/services/stats').default;
+  const explorePingService = require('./server/services/explore-ping').default;
+  const users = require('./server/services/users').default;
+  const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
+  const editorPresence = require('./server/services/editor-presence').default;
+  const segments = require('./server/services/segments').default;
+  const domainEvents = require('@tryghost/domain-events');
+  const { automationsService } = require('./server/services/automations');
+  const automationsApi = require('./server/services/automations/automations-api');
+  const adapterManager = require('./server/services/adapter-manager').default;
+  const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
+
+  const assert = require('node:assert/strict');
+  const metrics = require('@tryghost/metrics');
+  const db = require('./server/data/db');
+  const models = require('./server/models');
+  const urlUtils = require('./shared/url-utils').default;
+  const settingsCache = require('./shared/settings-cache');
+  const internalKeys = require('./server/services/internal-keys').default.service;
+  const { checkouts } = require('./server/services/stripe-checkout-config').default.service;
+
+  // Initialize things that other services depend on first.
+  emailAddressService.init();
+  const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
+  const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
+  schedulerAdapter.run();
+  await stripe.init();
+  giftService.init({
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+    checkouts,
+  });
+  const giftDeliveryService = giftService.deliveryService;
+  assert(giftDeliveryService, 'Gift delivery service should be initialized');
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(async () => {
+      await stripe.shutdown();
+    }, 'Stripe');
+  }
+
+  await memberAttribution.init();
+  // Email captures Audience Feedback's ready link service during initialization.
+  await audienceFeedback.init();
+  // Members captures the ready Newsletters instance during initialization.
+  await newsletters.init();
+  // Mentions and Recommendations read the ready oEmbed instance during initialization.
+  await oembed.init();
+  // Recommendations reads the ready Mentions instance during initialization.
+  await mentionsService.init();
+  // Explore captures the ready Stats aggregate during initialization.
+  await statsService.init();
+
+  await Promise.all([
+    identityTokens.init(),
+    staffService.init(),
+    members.init(),
+    tiers.init(),
+    tagsPublic.init(),
+    postsPublic.init(),
+    membersEvents.init(),
+    indexnow.init(),
+    upgrades.init(),
+    slack.init(),
+    emailService.init({ ghostServer, jobsService }),
+    emailAnalytics.init({
+      automationsApi,
+      config,
+      db,
+      domainEvents,
+      emailSuppressionList,
+      giftDeliveryService,
+      membersRepository: members.api.members,
+      models,
+      metrics,
+      prometheusClient,
+      settingsCache,
+    }),
+    webhooks.listen(),
+    comments.init(),
+    linkTracking.init(),
+    emailSuppressionList.init(),
+    mediaInliner.init(),
+    contentImport.init(),
+    donationService.init(),
+    recommendationsService.init(),
+    explorePingService.init(),
+    users.init(),
+    editorPresence.init(),
+    machinePaymentsService.init(),
+    segments.init(),
+  ]);
+  // Members filters can name saved segments, which the members model reads from the segments service
+  const labs = require('./shared/labs');
+  models.Member.readSegmentsWith({
+    isEnabled: () => labs.isSet('memberSegments'),
+    browse: (criteria, executor) => segments.service.browse(criteria, executor),
+  });
+  if (ghostServer) {
+    // Each releases what its start acquired; the next boot in this process starts it again.
+    ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+    ghostServer.registerCleanupTask(() => slack.stop(), 'Slack ping');
+  }
+  // Member welcome emails captures the ready Email address and Link tracking instances during
+  // initialization, and automation polling sends through it once jobs start.
+  await memberWelcomeEmails.init();
+
+  debug('Begin: Register job handlers');
+  const registerJobHandlers =
+    require('./server/services/jobs-service/register-job-handlers').default;
+  const memberJobs = require('./server/services/members/jobs');
+  const membersService = require('./server/services/members');
+  const tinybirdSync = require('./server/services/tinybird-sync');
+  const updateCheck = require('./server/services/update-check');
+  const signingKeys = require('./server/services/signing-keys').default;
+  memberJobs.init();
+  const siteImporter = require('./server/data/importer').init({ jobsService });
+  assert(giftService.service, 'Gift service should be initialized');
+  assert(mentionsService.service.controller, 'Mentions controller should be initialized');
+  assert(mentionsService.service.sendingService, 'Mentions sending service should be initialized');
+  assert(membersService.handleImportJob, 'Members service should be initialized');
+  assert(emailService.service, 'Email service should be initialized');
+  registerJobHandlers({
+    gifts: emailAnalytics.getGifts(),
+    automationAnalytics: emailAnalytics.getAutomations(),
+    newsletters: emailAnalytics.getNewsletters(),
+    jobsService,
+    memberJobs,
+    giftService: giftService.service,
+    mediaInliner: mediaInliner.service,
+    mentionsController: mentionsService.service.controller,
+    mentionsSendingService: mentionsService.service.sendingService,
+    membersService,
+    emailService: emailService.service,
+    siteImporter,
+    tinybirdSync,
+    contentImport,
+    updateCheck,
+    signingKeys: signingKeys.service,
+    authCleanup: require('./server/auth/better-auth/cleanup'),
+  });
+  await jobsService.start();
+  debug('End: Register job handlers');
+
+  automationsService.init({
+    domainEvents,
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+    siteUuid: settingsCache.get('site_uuid'),
+  });
+
+  if (schedulerAdapter.rescheduleOnBoot) {
+    await postScheduling.rescheduleAll();
+  }
+
+  debug('End: Services');
+
+  debug('End: initServices');
+}
+
+/**
+ * Runs one background startup step, logging its failure instead of throwing, so that a step
+ * which fails cannot stop the steps after it.
+ * @param {() => unknown} step
+ * @returns {Promise<void>}
+ */
+async function runIsolated(step) {
+  try {
+    await step();
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+}
+
+/**
+ * Kick off recurring jobs and background services
+ * These are things that happen on boot, but we don't need to wait for them to finish
+ * Later, this might be a service hook
+
+ * @param {object} options
+ * @param {object} options.config
+ */
+async function initBackgroundServices({ config }) {
+  debug('Begin: initBackgroundServices');
+
+  // Load all inactive themes
+  const themeService = require('./server/services/themes');
+  themeService.loadInactiveThemes();
+
+  // we don't want to kick off background services that will interfere with tests
+  if (process.env.NODE_ENV.startsWith('test')) {
+    return;
+  }
+
+  const jobsService = require('./server/services/jobs-service').getInstance();
+
+  // Resume any newsletter sends interrupted by a prior container shutdown.
+  // Runs before activitypub.init so an activitypub failure can't disable recovery.
+  // An outbox that keeps jobs until they settle hands interrupted sends over
+  // again itself, and this scan can't tell whether another process owns a send.
+  if (!jobsService.keepsJobsUntilSettled()) {
+    await runIsolated(() =>
+      require('./server/services/email-service').service.resumeInterruptedSends(),
+    );
+  }
+
+  // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
+  // sends sequentially and must not hold up the remaining background services.
+  const giftService = require('./server/services/gifts');
+  giftService.recoverPendingDeliveries();
+
+  // Catch-up run of the daily expired comped cleanup, in case the process was not
+  // running at its scheduled time.
+  await runIsolated(() =>
+    require('./server/services/members/jobs').runExpiredCompCleanupJob(jobsService),
+  );
+
+  // These run before activitypub.init for the same reason as the send recovery above: gifts,
+  // reminders, tokens, expired comped subscriptions, signing keys, expired auth rows and email
+  // analytics would otherwise go unhandled for the life of the process if an unrelated background
+  // service fails.
+  // Each is scheduled in turn and isolated from the others.
+  const jobsBeforeActivityPub = [
+    () => require('./server/services/gifts/jobs').scheduleGiftCleanupJob(jobsService),
+    () => require('./server/services/gifts/jobs').scheduleGiftReminderJob(jobsService),
+    () => require('./server/services/members/jobs').scheduleTokenCleanupJob(jobsService),
+    () => require('./server/services/members/jobs').scheduleExpiredCompCleanupJob(jobsService),
+    () => require('./server/services/signing-keys').default.extras.scheduleCheckJob(jobsService),
+    () => require('./server/auth/better-auth/cleanup').scheduleClearExpiredJob(jobsService),
+    () => require('./server/services/email-analytics/jobs').scheduleRecurringJobs(),
+  ];
+  for (const scheduleJob of jobsBeforeActivityPub) {
+    await runIsolated(scheduleJob);
+  }
+
+  // Isolated like the jobs around it: a failed start is logged and the work below still starts.
+  await runIsolated(() => require('./server/services/activitypub').init());
+
+  const jobsAfterActivityPub = [
+    () => require('./server/services/tinybird-sync').scheduleJob(jobsService),
+    () => require('./server/services/update-check').scheduleJobs(jobsService),
+  ];
+  for (const scheduleJob of jobsAfterActivityPub) {
+    await runIsolated(scheduleJob);
+  }
+
+  // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
+  const remoteFlags = require('./server/services/remote-flags');
+  remoteFlags.init(config);
+
+  const milestonesService = require('./server/services/milestones');
+  milestonesService.initAndRun();
+
+  debug('End: initBackgroundServices');
+}
+
+/**
+ * ----------------------------------
+ * Boot Ghost - The magic starts here
+ * ----------------------------------
+ *
+ * - This function is written with async/await so you can read, line by line, what happens on boot
+ * - All the functions above handle init/boot logic for a single component
+
+ * @returns {Promise<object>} ghostServer
+ */
+async function bootGhost({ backend = true, frontend = true, server = true } = {}) {
+  // Metrics
+  const startTime = Date.now();
+  debug('Begin Boot');
+
+  // We need access to these variables in both the try and catch block
+  let bootLogger;
+  let config;
+  let flushLogsAndMetrics;
+  let ghostServer;
+  let logging;
+  let metrics;
+
+  // These require their own try-catch block and error format, because we can't log an error if logging isn't working
+  try {
+    // Step 0 - Load config and logging - fundamental required components
+    // Version is required by logging, sentry & Migration config & so is fundamental to booting
+    // However, it involves reading package.json so its slow & it's here for visibility on that slowness
+    debug('Begin: Load version info');
+    require('@tryghost/version');
+    debug('End: Load version info');
+
+    // Loading config must be the first thing we do, because it is required for absolutely everything
+    debug('Begin: Load config');
+    config = require('./shared/config');
+    debug('End: Load config');
+
+    // Logging is also used absolutely everywhere
+    debug('Begin: Load logging');
+    logging = require('@tryghost/logging');
+    metrics = require('@tryghost/metrics');
+    flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
+    bootLogger = new BootLogger(logging, metrics, startTime);
+    debug('End: Load logging');
+
+    // At this point logging is required, so we can handle errors better
+
+    // Add a process handler to capture and log unhandled rejections
+    debug('Begin: Add unhandled rejection handler');
+    process.on('unhandledRejection', (error) => {
+      logging.error('Unhandled rejection:', error);
+    });
+    debug('End: Add unhandled rejection handler');
+  } catch (error) {
+    console.error(error); // eslint-disable-line no-console
+    process.exit(1);
+  }
+
+  try {
+    // Step 1 - require more fundamental components
+
+    // Sentry must be initialized early, but requires config
+    debug('Begin: Load sentry');
+    const sentry = require('./shared/sentry');
+    debug('End: Load sentry');
+
+    // Initialize prometheus client early to enable metrics collection during boot
+    // Note: this does not start the metrics server yet to avoid increasing boot time
+    const prometheusClient = initPrometheusClient({ config });
+
+    // Step 2 - Start server with minimal app in global maintenance mode
+    debug('Begin: load server + minimal app');
+    const rootApp = require('./app')();
+
+    if (server) {
+      const { GhostServer } = require('./server/ghost-server');
+      ghostServer = new GhostServer({
+        url: config.getSiteUrl(),
+        env: config.get('env'),
+        serverConfig: config.get('server'),
+      });
+      await ghostServer.start(rootApp);
+      bootLogger.log('server started');
+
+      // Ensure the prometheus client is stopped when the server shuts down
+      ghostServer.registerCleanupTask(async () => {
+        if (prometheusClient) {
+          prometheusClient.stop();
+        }
+      }, 'Prometheus client');
+      debug('End: load server + minimal app');
+    }
+
+    // Step 3 - Get the DB ready
+    debug('Begin: Get DB ready');
+    const databaseWarning = await initDatabase({ config });
+    bootLogger.log('database ready');
+    const connection = require('./server/data/db/connection');
+    sentry.initQueryTracing(connection);
+    debug('End: Get DB ready');
+
+    // Step 4 - Load Ghost with all its services
+    debug('Begin: Load Ghost Services & Apps');
+    await initCore({ ghostServer, config });
+
+    // Instrument the knex instance and connection pool if prometheus is enabled
+    // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
+    if (prometheusClient) {
+      prometheusClient.instrumentKnex(connection);
+    }
+
+    await initServicesForFrontend({ bootLogger });
+
+    if (frontend) {
+      initFrontend();
+    }
+    const ghostApp = await initExpressApps({ frontend, backend, config });
+
+    await initDynamicRouting({ frontend });
+
+    if (frontend) {
+      await initAppService();
+    }
+
+    const knex = require('./server/data/db').knex;
+    const jobsService = require('./server/services/jobs-service').init({ knex, config });
+
+    await initServices({ ghostServer, config, prometheusClient, jobsService });
+
+    debug('End: Load Ghost Services & Apps');
+
+    // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
+    debug('Begin: mountGhost');
+    rootApp.disable('maintenance');
+    rootApp.use(config.getSubdir(), ghostApp);
+    debug('End: mountGhost');
+
+    // Step 6 - We are technically done here - let everyone know!
+    bootLogger.log('booted');
+    // After boot, so the dev console's boot output doesn't scroll it away
+    if (databaseWarning) {
+      logging.warn(databaseWarning);
+    }
+    bootLogger.metric('boot-time');
+    notifyServerReady();
+
+    // Step 7 - Init our background services, we don't wait for this to finish
+    initBackgroundServices({ config });
+
+    // If we pass the env var, kill Ghost
+    if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
+      await flushLogsAndMetrics();
+      process.exit(0);
+    }
+
+    // We return the server purely for testing purposes
+    if (server) {
+      debug('End Boot: Returning Ghost Server');
+      return ghostServer;
+    } else {
+      debug('End boot: Returning Root App');
+      return rootApp;
+    }
+  } catch (error) {
+    const errors = require('@tryghost/errors');
+
+    // Ensure the error we have is an ignition error
+    let serverStartError = error;
+    if (!errors.utils.isGhostError(serverStartError)) {
+      serverStartError = new errors.InternalServerError({
+        message: serverStartError.message,
+        err: serverStartError,
+      });
+    }
+
+    logging.error(serverStartError);
+    // fallback in case logger fails to flush before exit
+    console.error(serverStartError); // eslint-disable-line no-console
+
+    // If ghost was started and something else went wrong, we shut it down
+    if (ghostServer) {
+      notifyServerReady(serverStartError);
+      ghostServer.shutdown(2);
+    } else {
+      // Ghost server failed to start, drain the log transports before exiting
+      await flushLogsAndMetrics();
+      process.exit(2);
+    }
+  }
+}
+
+module.exports = bootGhost;

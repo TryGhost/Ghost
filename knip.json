@@ -1,11 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreWorkspaces": ["apps/ember-admin"],
   "ignore": [
-    "ghost/core/test/utils/fixtures/themes/**/assets/built/**",
+    "ghost/test/utils/fixtures/themes/**/assets/built/**",
     ".github/scripts/i18n-review/**"
   ],
-  "ignoreBinaries": ["ember", "tb"],
+  "ignoreBinaries": ["less", "change"],
   "workspaces": {
     ".": {
       "vitest": {
@@ -15,79 +14,45 @@
         "lint-staged",
         "secretlint",
         "@secretlint/secretlint-rule-pattern",
-        "@secretlint/secretlint-rule-preset-recommend"
+        "@secretlint/secretlint-rule-preset-recommend",
+        "markdownlint-cli2",
+        "remark-cli",
+        "remark-validate-links"
       ]
     },
-    "ghost/core": {
-      "ignoreDependencies": ["@slack/webhook", "bookshelf-relations", "mysql", "cssnano"]
+    "ghost": {
+      "ignoreDependencies": ["cssnano", "mysql"]
     },
-    "apps/activitypub": {
-      "ignoreDependencies": ["tailwindcss"]
+    "clients/admin": {
+      "entry": ["src/members/detail/map-data/generate-map.mjs"]
     },
-    "apps/admin": {
-      "ignoreDependencies": ["@tryghost/kg-unsplash-selector"]
+    "clients/admin-x-framework": {
+      "entry": ["src/api/*.ts"]
     },
-    "apps/admin-x-framework": {
-      "ignoreDependencies": [
-        "@playwright/test",
-        "@tryghost/koenig-lexical",
-        "vite-plugin-css-injected-by-js"
-      ],
-      "entry": [
-        "src/index.ts",
-        "src/errors.ts",
-        "src/helpers.ts",
-        "src/hooks.ts",
-        "src/routing.ts",
-        "src/api/*.ts",
-        "src/utils/post-utils.ts",
-        "src/utils/nql.ts",
-        "src/utils/get-site-timezone.ts",
-        "src/vite.ts",
-        "src/playwright.ts",
-        "src/test/acceptance.ts",
-        "src/test/hook-testing-utils.ts",
-        "src/test/render.tsx",
-        "src/test/setup.ts",
-        "src/test/test-utils.tsx"
-      ]
+    "clients/comments-ui": {
+      "ignoreDependencies": ["eslint-plugin-tailwindcss"]
     },
-    "apps/comments-ui": {
-      "ignoreDependencies": [
-        "@tryghost/debug",
-        "@testing-library/jest-dom",
-        "eslint-plugin-tailwindcss"
-      ]
+    "clients/signup-form": {
+      "ignoreDependencies": ["eslint-plugin-tailwindcss"]
     },
-    "apps/portal": {
-      "ignoreDependencies": ["@tryghost/debug", "@testing-library/jest-dom"]
-    },
-    "apps/shade": {
-      "ignoreDependencies": ["@storybook/addon-links", "remark-gfm"],
-      "entry": [
-        "src/index.ts",
-        "src/tokens.ts",
-        "src/primitives.ts",
-        "src/components.ts",
-        "src/patterns.ts",
-        "src/page-templates.ts",
-        "src/app.ts",
-        "src/utils.ts"
-      ]
-    },
-    "apps/signup-form": {
-      "ignoreDependencies": [
-        "@tryghost/debug",
-        "@storybook/addon-links",
-        "@storybook/addon-docs",
-        "eslint-plugin-tailwindcss"
-      ]
-    },
-    "apps/sodo-search": {
-      "ignoreDependencies": ["@tryghost/debug", "@testing-library/jest-dom"]
+    "e2e": {
+      "ignoreDependencies": ["@tryghost/checkout", "@tryghost/metafield-types"]
     },
     "koenig/koenig-lexical": {
       "ignoreDependencies": ["@storybook/react", "prettier-plugin-organize-attributes"]
+    },
+    "packages/app-sdk": {
+      "ignoreDependencies": ["zod"]
+    },
+    "tools/configs/oxlint": {
+      "entry": ["plugin.ts", "local-plugin.ts", "filenames-plugin.ts"]
+    },
+    "tools/gx": {
+      "entry": ["*.ts"],
+      "ignoreDependencies": ["@internal/cfg-oxlint", "@internal/scripts"]
+    },
+    "tools/scripts": {
+      "ignoreDependencies": ["@internal/cfg-oxlint"]
     }
   }
 }

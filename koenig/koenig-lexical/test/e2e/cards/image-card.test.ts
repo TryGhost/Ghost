@@ -65,7 +65,9 @@ test.describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                     <figure data-kg-card-width="wide">
-                        <div><img alt="" src="/content/images/2022/11/koenig-lexical.jpg" /></div>
+                        <div>
+                            <div><img alt="" src="/content/images/2022/11/koenig-lexical.jpg" /></div>
+                        </div>
                         <figcaption>
                             <div data-kg-allow-clickthrough="true">
                                 <div>
@@ -179,7 +181,11 @@ test.describe('Image card', async () => {
             alt: '',
             caption: '',
             cardWidth: 'regular',
-            href: ''
+            href: '',
+            visibility: {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            }
         },{
             children: [],
             direction: null,
@@ -287,7 +293,9 @@ test.describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img alt="" src="blob:..." /></div>
+                        <div>
+                            <div><img alt="" src="blob:..." /></div>
+                        </div>
                         <figcaption>
                             <input placeholder="Type alt text for image (optional)" value=""/>
                             <button name="alt-toggle-button" type="button">Alt</button>
@@ -342,7 +350,9 @@ test.describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img alt="" src="blob:..." /></div>
+                        <div>
+                            <div><img alt="" src="blob:..." /></div>
+                        </div>
                         <figcaption>
                             <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
                                 <div>
@@ -579,7 +589,9 @@ test.describe('Image card', async () => {
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image">
                     <figure data-kg-card-width="regular">
-                        <div><img alt="" src="blob:..." /></div>
+                        <div>
+                            <div><img alt="" src="blob:..." /></div>
+                        </div>
                     </figure>
                 </div>
             </div>
@@ -738,9 +750,11 @@ test.describe('Image card', async () => {
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img
-                                alt="a group of people walking down a street next to tall buildings"
-                                src="http://127.0.0.1:5173/Koenig-editor-1.png" />
+                            <div>
+                                <img
+                                    alt="a group of people walking down a street next to tall buildings"
+                                    src="http://127.0.0.1:5173/Koenig-editor-1.png" />
+                            </div>
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
@@ -749,7 +763,9 @@ test.describe('Image card', async () => {
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
                                         <p dir="ltr">
                                         <span data-lexical-text="true">Photo by</span>
-                                        <a href="https://unsplash.com/@jamillatrach" dir="ltr">
+                                        <a
+                                          href="https://unsplash.com/@jamillatrach?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit"
+                                          dir="ltr">
                                             <span data-lexical-text="true">Latrach Med Jamil</span>
                                         </a>
                                         <span data-lexical-text="true">/</span>
@@ -792,9 +808,11 @@ test.describe('Image card', async () => {
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img
-                                alt=""
-                                src="https://static.klipy.com/gif/klipy-dog-dance.gif" />
+                            <div>
+                                <img
+                                    alt=""
+                                    src="https://static.klipy.com/gif/klipy-dog-dance.gif" />
+                            </div>
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
@@ -840,9 +858,11 @@ test.describe('Image card', async () => {
                 <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
                     <figure data-kg-card-width="regular">
                         <div>
-                            <img
-                                alt=""
-                                src="https://static.klipy.com/gif/klipy-cats-animals.gif" />
+                            <div>
+                                <img
+                                    alt=""
+                                    src="https://static.klipy.com/gif/klipy-cats-animals.gif" />
+                            </div>
                         </div>
                         <figcaption>
                             <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">

@@ -1,7 +1,7 @@
 /**
  * Site analytics (stats) selector strings, consumed by the admin screen
  * helpers and the e2e page objects. Source of truth:
- * apps/admin/src/analytics plus the shade KPI card patterns.
+ * clients/admin/src/analytics plus the shade KPI card patterns.
  */
 
 // testids

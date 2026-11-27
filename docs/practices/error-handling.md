@@ -193,8 +193,8 @@ Do not assume every error of a broad type is safe because one endpoint returns a
 carefully written example. Codes are more precise than message matching when a
 caller must identify a specific case.
 
-Some legacy UI paths still pass API messages through catch-all helpers such as
-Ember Admin's `showAPIError`. Treat those as existing behavior, not the pattern
+Some legacy UI paths still pass API messages through catch-all helpers. Treat
+those as existing behavior, not the pattern
 for new work. New and updated interactions should handle expected errors close
 to the workflow.
 

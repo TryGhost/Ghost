@@ -10,11 +10,10 @@ describe('EmailCtaNode', function () {
     let dataset: Record<string, unknown>;
     let exportOptions: Record<string, unknown>;
 
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -195,7 +194,7 @@ describe('EmailCtaNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders for email target without button', editorTest(function () {
+        it('renders for email target without button', editorTest(async function () {
             const payload = {
                 alignment: 'left',
                 buttonText: 'Test',
@@ -214,7 +213,7 @@ describe('EmailCtaNode', function () {
             const {element} = emailNode.exportDOM(editor, {...exportOptions, ...options});
             const el = element as HTMLElement;
 
-            assertPrettifiesTo(el.outerHTML, html`
+            await assertPrettifiesTo(el.outerHTML, html`
                 <div data-gh-segment="status:free">
                     <hr>
                     <p>Hello World</p>

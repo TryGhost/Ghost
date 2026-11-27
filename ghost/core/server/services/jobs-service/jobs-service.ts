@@ -1,0 +1,444 @@
+import errors from '@tryghost/errors';
+import cronValidate from 'cron-validate';
+import ObjectID from 'bson-objectid';
+import type { Knex } from 'knex';
+import type {
+  JobSettlement,
+  JobsBackendBase,
+  JobEnvelope,
+  AttemptResult,
+  DispatchEnvelope,
+  JobsShutdownOptions,
+  QueueDeclaration,
+  RecurringSchedule,
+} from '@tryghost/adapter-base-jobs';
+import type { GhostLogger } from '@tryghost/logging';
+import { Job, JobConstructor, JobHandler } from './job';
+import { afterCommit } from '../../lib/after-commit';
+
+export type JobsLogger = Pick<GhostLogger, 'error' | 'info' | 'warn'>;
+
+export interface JobsErrorReporter {
+  captureException(err: unknown, captureContext?: { tags?: Record<string, string> }): void;
+}
+
+type OutboxRow = { id: string; type: string | null };
+
+export interface OutboxStore {
+  insert(
+    entry: { id: string; envelope: DispatchEnvelope },
+    options?: { transacting?: Knex.Transaction },
+  ): Promise<void>;
+  releaseSubmitted(options: {
+    replays: (type: string) => boolean;
+    staleAfterMs: number;
+  }): Promise<{ released: OutboxRow[]; dropped: OutboxRow[] }>;
+  renew(ids: string[]): Promise<void>;
+}
+
+export interface OutboxRelayLike {
+  start(): void;
+  stop(): Promise<void>;
+  wake(): void;
+}
+
+export interface OutboxTrackerLike {
+  onSettled(id: string, settlement: JobSettlement): Promise<void>;
+}
+
+export interface JobsOutboxWiring {
+  store: OutboxStore;
+  relay: OutboxRelayLike;
+  // Only when the store keeps rows until their job settles
+  tracker?: OutboxTrackerLike;
+  // How long a submitted row can go without renewal before it is handed over again
+  leaseMs: number;
+  // Only logged here; the relay does the polling
+  pollIntervalMs: number;
+}
+
+export interface DispatchOptions {
+  transacting?: Knex.Transaction;
+}
+
+export interface JobsServiceOptions {
+  backend: JobsBackendBase;
+  logging: JobsLogger;
+  sentry?: JobsErrorReporter;
+  outbox?: JobsOutboxWiring;
+  logOutboxUnavailable?: boolean;
+}
+
+type Deliverer = (payload: string) => ReturnType<JobHandler>;
+
+// Execution policy for a job type, declared where its handler is registered:
+// either no options (the type runs on the backend's shared default lane) or a
+// queue name and concurrency together. The queue is routing metadata only -
+// delivery always routes by job type - and concurrency is a queue-level
+// declaration the backend enforces as strictly as it can (per process
+// in-memory, globally where a durable backend supports it). A tunable value
+// can be resolved from config at the registration site before declaring it
+// here.
+export interface JobHandlingOptions {
+  /** Named lane; types declaring the same name and concurrency share it. */
+  queue: string;
+  /** Max concurrent deliveries for the queue. */
+  concurrency: number;
+}
+
+export class JobsService {
+  readonly #backend: JobsBackendBase;
+  readonly #logging: JobsLogger;
+  readonly #sentry?: JobsErrorReporter;
+  readonly #outbox?: JobsOutboxWiring;
+  readonly #logOutboxUnavailable: boolean;
+  readonly #registry = new Map<string, Deliverer>();
+  readonly #queueByType = new Map<string, string>();
+  readonly #queues = new Map<string, QueueDeclaration>();
+  readonly #notReplayed = new Set<string>();
+  #leaseTimer?: ReturnType<typeof setTimeout>;
+  #staleCheckDueAt = 0;
+  #leaseTick?: Promise<void>;
+
+  constructor({ backend, logging, sentry, outbox, logOutboxUnavailable }: JobsServiceOptions) {
+    this.#backend = backend;
+    this.#logging = logging;
+    this.#sentry = sentry;
+    this.#outbox = outbox;
+    this.#logOutboxUnavailable = logOutboxUnavailable ?? false;
+  }
+
+  handle<T extends Job, D>(
+    JobClass: JobConstructor<T, D>,
+    handler: JobHandler<T>,
+    options?: JobHandlingOptions,
+  ): void {
+    const type = JobClass.type;
+    if (typeof type !== 'string' || type.length === 0) {
+      throw new errors.IncorrectUsageError({
+        message: `Cannot register a job handler: ${JobClass.name ?? 'job class'} is missing a static "type" string.`,
+      });
+    }
+    if (this.#registry.has(type)) {
+      throw new errors.IncorrectUsageError({
+        message: `A handler for job type "${type}" is already registered.`,
+      });
+    }
+    this.#declareQueue(type, options);
+    if (JobClass.replayAfterRestart !== true) {
+      this.#notReplayed.add(type);
+    }
+    this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
+  }
+
+  handles(type: string): boolean {
+    return this.#registry.has(type);
+  }
+
+  #declareQueue(type: string, options?: JobHandlingOptions): void {
+    if (!options) {
+      return;
+    }
+    const { queue, concurrency } = options;
+    if (typeof queue !== 'string' || queue.length === 0) {
+      throw new errors.IncorrectUsageError({
+        message: `Invalid queue for job type "${type}": ${JSON.stringify(queue)}. Expected a non-empty string.`,
+      });
+    }
+    // "default" is the backend's shared lane for types that declare no queue;
+    // declaring it would silently re-size that lane for every unrouted type.
+    if (queue === 'default') {
+      throw new errors.IncorrectUsageError({
+        message: `Queue name "default" is reserved for the shared lane; job type "${type}" must omit options to use it.`,
+      });
+    }
+    if (!Number.isInteger(concurrency) || concurrency < 1) {
+      throw new errors.IncorrectUsageError({
+        message: `Invalid concurrency for job type "${type}": ${JSON.stringify(concurrency)}. Expected a positive integer.`,
+      });
+    }
+
+    const existing = this.#queues.get(queue);
+    if (existing && existing.concurrency !== concurrency) {
+      throw new errors.IncorrectUsageError({
+        message: `Conflicting concurrency for queue "${queue}": ${existing.concurrency} is already declared, job type "${type}" declares ${concurrency}.`,
+      });
+    }
+    this.#queues.set(queue, { concurrency });
+    this.#queueByType.set(type, queue);
+  }
+
+  /**
+   * Resolves once the job is handed off, without waiting for the handler to run:
+   * after the outbox row is written when the outbox is active, otherwise after the
+   * backend's enqueue call. With `transacting` the hand-off follows that
+   * transaction's commit, so on the direct path dispatch resolves as soon as the
+   * hand-off is scheduled and an enqueue failure is reported rather than thrown.
+   * Resolution does not guarantee execution: the backend controls what happens to
+   * work during shutdown.
+   */
+  async dispatch(job: Job, { transacting }: DispatchOptions = {}): Promise<void> {
+    const envelope = this.#buildEnvelope(job);
+    const id = new ObjectID().toHexString();
+
+    if (this.#outbox) {
+      const { store, relay } = this.#outbox;
+      await store.insert({ id, envelope }, { transacting });
+      // The relay's poll is only a fallback; this process wakes it for its
+      // own rows once they are visible.
+      afterCommit(
+        transacting,
+        () => relay.wake(),
+        () => {}, // Rolled back: there is no row to deliver.
+      );
+      return;
+    }
+
+    // Direct path. The backend cannot join the caller's transaction, so the
+    // nearest safe equivalent is to hand the job over once that transaction
+    // commits: never before the write is visible, and not at all on rollback.
+    // A crash between commit and hand-off loses the job, as it always has on
+    // this path. Callers get one dispatch API either way and need no check.
+    await afterCommit(
+      transacting,
+      () => this.#enqueueDirect(id, envelope, transacting !== undefined),
+      () => {}, // Rolled back: nothing to dispatch.
+    );
+  }
+
+  // After a commit the caller has moved on, so a failure is reported rather
+  // than thrown. Without a transaction it rejects dispatch as before.
+  async #enqueueDirect(id: string, envelope: DispatchEnvelope, deferred: boolean): Promise<void> {
+    try {
+      await this.#backend.enqueue(id, envelope);
+    } catch (err) {
+      if (!deferred) {
+        throw err;
+      }
+      const type = envelope.payload.job.type;
+      this.#logging.error(`[Background Job] ${type} failed to enqueue after commit`, err);
+      this.#sentry?.captureException(err, { tags: { job_type: type } });
+    }
+  }
+
+  async scheduleRecurring(job: Job, schedule: RecurringSchedule): Promise<void> {
+    this.#assertValidCron(schedule.cron);
+    const envelope = this.#buildEnvelope(job);
+    await this.#backend.scheduleRecurring(envelope, schedule);
+  }
+
+  // later.parse.cron does not strictly validate: it silently coerces a
+  // malformed expression into a bogus schedule (garbage -> every minute,
+  // out-of-range -> clamped, an impossible date -> effectively never), so
+  // validate up front and fail loudly instead.
+  #assertValidCron(cron: string): void {
+    const result = cronValidate(cron, {
+      preset: 'default', // the seconds field is not supported in the default preset
+      override: { useSeconds: true },
+    });
+    if (!result.isValid()) {
+      throw new errors.IncorrectUsageError({
+        message: `Invalid cron expression: ${JSON.stringify(cron)}.`,
+      });
+    }
+  }
+
+  async start(): Promise<void> {
+    await this.#backend.start({
+      processor: (envelope) => this.#process(envelope),
+      queues: Object.fromEntries(this.#queues),
+      onSettled: this.#outbox?.tracker?.onSettled,
+    });
+    if (this.#outbox) {
+      await this.#releaseSubmitted(this.#outbox);
+      // Rows a previous run of this process held have all gone stale one
+      // lease after it stopped
+      this.#staleCheckDueAt = Date.now() + this.#outbox.leaseMs;
+      this.#outbox.relay.start();
+      this.#scheduleLease(this.#outbox);
+    } else if (this.#logOutboxUnavailable) {
+      this.#logging.warn(
+        '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL); using the legacy direct-dispatch path.',
+      );
+    }
+
+    const backend = this.#backend.constructor.name;
+    const outboxMode = this.#outboxMode();
+    const described =
+      outboxMode === 'retain' ? 'on, keeping rows until their job settles' : outboxMode;
+    const timings = this.#outbox
+      ? { poll_interval_ms: this.#outbox.pollIntervalMs, lease_ms: this.#outbox.leaseMs }
+      : {};
+    this.#logging.info(
+      { system: { event: 'jobs.started', backend, outbox_mode: outboxMode, ...timings } },
+      `[Jobs] Started on ${backend} with the outbox ${described}`,
+    );
+  }
+
+  // True when the outbox keeps each job's row until the job settles, so a job
+  // a restart or crash cut short is handed over again
+  keepsJobsUntilSettled(): boolean {
+    return this.#outboxMode() === 'retain';
+  }
+
+  // Only the store that keeps rows until settlement gets a tracker
+  #outboxMode(): 'off' | 'on' | 'retain' {
+    if (!this.#outbox) {
+      return 'off';
+    }
+    return this.#outbox.tracker ? 'retain' : 'on';
+  }
+
+  // A row nobody has renewed within the lease belongs to a process that has
+  // stopped, so its job may be lost. Live processes keep renewing their rows,
+  // so this is safe with several processes per site.
+  async #releaseSubmitted({ store, relay, leaseMs }: JobsOutboxWiring): Promise<void> {
+    const { released, dropped } = await store.releaseSubmitted({
+      replays: (type) => !this.#notReplayed.has(type),
+      staleAfterMs: leaseMs,
+    });
+    if (dropped.length > 0) {
+      this.#logging.info(
+        { system: { event: 'jobs_outbox.dropped', count: dropped.length, rows: dropped } },
+        `[Jobs Outbox] Dropped ${dropped.length} submitted rows whose job types are not replayed after a restart`,
+      );
+    }
+    if (released.length > 0) {
+      this.#logging.info(
+        { system: { event: 'jobs_outbox.released', count: released.length, rows: released } },
+        `[Jobs Outbox] Released ${released.length} submitted rows to hand over again`,
+      );
+      relay.wake();
+    }
+  }
+
+  // Every quarter of the lease, renews the rows of jobs the backend still
+  // holds and hands over rows no process has renewed, such as those of a
+  // process that stopped. A backend without heldIds dedupes by id, so its
+  // stale rows are re-enqueued harmlessly.
+  #scheduleLease(outbox: JobsOutboxWiring): void {
+    this.#leaseTimer = setTimeout(() => {
+      this.#leaseTick = this.#renewLease(outbox).then(() => {
+        if (this.#leaseTimer) {
+          this.#scheduleLease(outbox);
+        }
+      });
+    }, outbox.leaseMs / 4);
+  }
+
+  async #renewLease(outbox: JobsOutboxWiring): Promise<void> {
+    try {
+      const held = this.#backend.heldIds?.() ?? [];
+      if (held.length > 0) {
+        await outbox.store.renew(held);
+      }
+      // An idle process checks rarely, so its pooled connection can close
+      // between checks; one holding jobs checks every tick
+      const due = Date.now() >= this.#staleCheckDueAt;
+      if (held.length > 0 || due) {
+        await this.#releaseSubmitted(outbox);
+        // Only a due check that ran pushes the next one back, so a failed one
+        // is retried on the next tick and a busy tick keeps it on time
+        if (due) {
+          this.#staleCheckDueAt = Date.now() + outbox.pollIntervalMs;
+        }
+      }
+    } catch (error) {
+      this.#logging.error('[Jobs Outbox] renewing or releasing submitted rows failed', error);
+      this.#sentry?.captureException(error);
+    }
+  }
+
+  async shutdown(options?: JobsShutdownOptions): Promise<void> {
+    try {
+      if (this.#outbox) {
+        await this.#outbox.relay.stop();
+      }
+      await this.#backend.shutdown(options);
+    } finally {
+      // Renewal runs until the backend has drained, so a job still finishing
+      // keeps its row
+      clearTimeout(this.#leaseTimer);
+      this.#leaseTimer = undefined;
+      await this.#leaseTick;
+    }
+  }
+
+  // An in-process restart (test harness) re-runs handler registration on the
+  // same instance, so all registration state resets - handlers and queue
+  // declarations alike. The duplicate-type guard still holds within a boot.
+  clearHandlers(): void {
+    this.#registry.clear();
+    this.#queueByType.clear();
+    this.#queues.clear();
+    this.#notReplayed.clear();
+  }
+
+  #buildEnvelope(job: Job): DispatchEnvelope {
+    const type = this.#typeOf(job);
+    const jobEnvelope = { type, payload: JSON.stringify(job) };
+    const queue = this.#queueByType.get(type);
+    return {
+      version: 1,
+      payload:
+        queue === undefined ? { job: jobEnvelope } : { job: jobEnvelope, routing: { queue } },
+    };
+  }
+
+  #typeOf(job: Job): string {
+    const ctor: { type?: unknown; name?: string } = job.constructor;
+    const type = ctor.type;
+    if (typeof type !== 'string' || type.length === 0) {
+      throw new errors.IncorrectUsageError({
+        message: `Cannot dispatch job: ${ctor.name ?? 'job'} is missing a static "type" string.`,
+      });
+    }
+    return type;
+  }
+
+  async #process(envelope: JobEnvelope): Promise<AttemptResult> {
+    const deliver = this.#registry.get(envelope.type);
+    if (!deliver) {
+      // Fail the delivery so a durable backend can keep or retry the job, e.g.
+      // when an older container receives a new job type during a rolling deploy.
+      // The backend logs the failed delivery, so this does not log as well.
+      throw new errors.IncorrectUsageError({
+        message: `No handler registered for job type "${envelope.type}"; failing delivery.`,
+      });
+    }
+
+    // The outbox mode lets dashboards compare jobs on sites with the outbox on
+    const fields = (event: string, extra: Record<string, number> = {}) => ({
+      system: { event, job_type: envelope.type, outbox_mode: this.#outboxMode(), ...extra },
+    });
+    const startedAt = Date.now();
+    this.#logging.info(fields('job.started'), `[Background Job] ${envelope.type} started`);
+
+    let result: void | 'interrupted';
+    try {
+      result = await deliver(envelope.payload);
+    } catch (err) {
+      const durationMs = Date.now() - startedAt;
+      this.#logging.error(
+        err,
+        fields('job.failed', { duration_ms: durationMs }),
+        `[Background Job] ${envelope.type} failed after ${durationMs}ms`,
+      );
+      this.#sentry?.captureException(err, { tags: { job_type: envelope.type } });
+      throw err;
+    }
+
+    const durationMs = Date.now() - startedAt;
+    if (result === 'interrupted') {
+      this.#logging.info(
+        fields('job.interrupted', { duration_ms: durationMs }),
+        `[Background Job] ${envelope.type} interrupted after ${durationMs}ms`,
+      );
+      return 'interrupted';
+    }
+    this.#logging.info(
+      fields('job.completed', { duration_ms: durationMs }),
+      `[Background Job] ${envelope.type} completed in ${durationMs}ms`,
+    );
+  }
+}

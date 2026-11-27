@@ -2,7 +2,7 @@
 
 Ghost Core is one Node.js application which serves the public site, Admin, and
 the APIs. It also runs the services and background work needed by those
-interfaces. The browser applications in `apps/` are built separately and talk
+interfaces. The browser applications in `clients/` are built separately and talk
 to Ghost Core over HTTP.
 
 This guide describes the main runtime boundaries. For a directory-by-directory
@@ -49,15 +49,27 @@ authentication and permissions, execute an endpoint, and serialize its
 response.
 
 Endpoint code delegates domain and integration logic to the services under
-`ghost/core/core/server/services/`. Models and data access remain under
-`ghost/core/core/server/`. The codebase is evolving incrementally, so existing
+`ghost/core/server/services/`. Models and data access remain under
+`ghost/core/server/`. The codebase is evolving incrementally, so existing
 services do not all use the same construction, dependency injection, or export
-pattern. Follow the nearby service when extending an established area. For a
-new standalone service, follow the [services guide](../../ghost/core/core/server/services/README.md).
+pattern. The [services guide](../../ghost/core/server/services/README.md)
+defines the standard and lists the legacy services that do not meet it yet.
+When extending an established area, follow its existing code without treating
+a legacy shape as the pattern to copy. Create a new service with
+`pnpm gx generate service <name>` and follow the guide.
 
-Ghost's boot sequence owns service initialization. Services which listen for
-events, schedule work, or hold resources must be initialized during the
-appropriate boot phase rather than on their first request.
+A service root represents an application-owned instance, not every class or
+helper involved in a feature. Supporting libraries can be constructed by their
+callers, and service-private implementation stays with its owner. Some legacy
+support directories still live under `services/`; use the
+[service placement rules](../../ghost/core/server/services/README.md#what-belongs-here)
+rather than copying their location.
+
+Ghost's boot sequence owns service initialization. Boot initializes every
+standard service root in the appropriate phase and waits for it, whether or not
+it listens for events, schedules work, or holds resources. Lint and the boot
+tests check this. Do not leave a new service to be initialized on its first
+request.
 
 ## Public site and themes
 
@@ -72,17 +84,15 @@ HTTP request to the Content API.
 
 `routes.yaml`, the active theme, and site settings affect how public URLs are
 resolved and rendered. Routing can be reloaded while Ghost is running. The
-bridge in `ghost/core/core/bridge.js` contains the remaining explicit
+bridge in `ghost/core/bridge.js` contains the remaining explicit
 communication between server and frontend code, including theme and routing
 updates.
 
 ## Browser applications
 
-Admin is a browser application served at `/ghost/`. It currently combines the
-React application in `apps/admin/` with routes that still fall back to the
-legacy Ember application in `apps/ember-admin/`. Both use the Admin API. New
-Admin features are built in React using `admin-x-framework` and Shade; see the
-[Admin README](../../apps/admin/README.md) for the current boundary.
+Admin is the React application in `clients/admin/`, served at `/ghost/` and
+built on the Admin API. Admin features are built using `admin-x-framework` and
+Shade; see the [Admin README](../../clients/admin/README.md).
 
 Portal, Comments, Search, Signup Form, Announcement Bar, and Admin Toolbar are
 separate browser applications. Ghost adds their script configuration to public

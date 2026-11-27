@@ -18,12 +18,13 @@ import {
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { FakeMailgunServer, MailgunTestService } from '@/helpers/services/mailgun';
 import { FakeStripeServer, StripeTestService, WebhookClient } from '@/helpers/services/stripe';
-import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
+import { FakeUpgradeHost } from '@/helpers/services/upgrade';
+import { FixtureApp } from '@/helpers/services/apps';
+import { GHOST_OWNER } from '@/helpers/environment/constants';
+import { GhostInstance, getEnvironmentManager, isAllowedBrowserUrl } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { extractInviteLink } from '@/helpers/services/email/utils';
-import { faker } from '@faker-js/faker';
-import { loginToGetAuthenticatedSession } from '@/helpers/playwright/flows/sign-in';
-import { setupUser } from '@/helpers/utils';
+import { revealHiddenEditorChromeIn } from './editor-writing-focus';
 
 const debug = baseDebug('e2e:ghost-fixture');
 const STRIPE_SECRET_KEY = 'sk_test_e2eTestKey';
@@ -75,13 +76,14 @@ interface WorkerFixtures {
 }
 
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
-let cachedPerFileGhostAccountOwner: User | null = null;
 let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
 
 // External hosts requested by the browser, accumulated across a worker so the
 // worker teardown can print them (the server-side equivalent comes from the DNS
-// sidecar). Worker-scoped, like the caches above.
-const workerBrowserEgressHosts = new Set<string>();
+// sidecar). Worker-scoped, like the caches above. Each host keeps the first few
+// requests (URL and test) so a CI failure names its source.
+const workerBrowserEgressHosts = new Map<string, Set<string>>();
+const EGRESS_REQUESTS_PER_HOST = 5;
 
 export interface User {
   name: string;
@@ -95,6 +97,9 @@ export interface GhostConfig {
   // limit is just configuration and a test wanting a new one should not also need a new
   // field here.
   [key: `hostSettings__${string}`]: string | undefined;
+  // A labs flag that has to be on when Ghost boots, as the `apps` flag does for its OAuth
+  // provider. `labs` sets flags after boot.
+  [key: `labs__${string}`]: string | undefined;
 }
 
 export interface GhostInstanceFixture {
@@ -115,6 +120,12 @@ export interface GhostInstanceFixture {
   mailgunEnabled?: boolean;
   mailgunServer?: FakeMailgunServer;
   mailgun?: MailgunTestService;
+  // Forces per-test isolation because Ghost boots against a per-test fake upgrade host.
+  upgradeHostEnabled?: boolean;
+  upgradeHost?: FakeUpgradeHost;
+  // An app the test can install. Its ID is unique to the test, so it never meets another test's
+  // installation in a shared per-file environment.
+  fixtureApp: FixtureApp;
   emailClient: EmailClient;
   ghostAccountOwner: User;
   ghostAccountAuthor: StaffAccount;
@@ -156,6 +167,15 @@ function getResolvedIsolation(testInfo: TestInfo, isolation?: 'per-test'): Resol
   return 'per-file';
 }
 
+// Service worker requests have no frame, and frame() throws for them.
+function frameUrl(request: Request): string {
+  try {
+    return request.frame().url();
+  } catch {
+    return 'no frame';
+  }
+}
+
 async function setupNewAuthenticatedPage(
   browser: Browser,
   baseURL: string,
@@ -170,12 +190,36 @@ async function setupNewAuthenticatedPage(
       Origin: baseURL,
     },
   });
+  revealHiddenEditorChromeIn(context);
   const page = await context.newPage();
 
-  await loginToGetAuthenticatedSession(page, ghostAccountOwner.email, ghostAccountOwner.password);
+  // Sign in through the session API rather than the sign-in form. A UI sign-in
+  // boots the admin twice (the form, then a full reload once signed in); this
+  // boots it once. The sign-in screens have their own tests.
+  const { email, password } = ghostAccountOwner;
+  const response = await context.request.post('/ghost/api/admin/session/', {
+    data: { username: email, password },
+  });
+  if (!response.ok()) {
+    throw new Error(
+      `Signing in as ${email} failed (${response.status()}): ${await response.text()}`,
+    );
+  }
+  await page.goto('/ghost/#/');
+  await waitForAdminHome(page);
   debug('Authentication completed for Ghost instance');
 
   return { page, context, ghostAccountOwner };
+}
+
+// Wait for either Analytics header (normal mode) or billing iframe (force upgrade mode)
+async function waitForAdminHome(page: Page) {
+  const analyticsPage = new AnalyticsOverviewPage(page);
+  const billingIframe = page.getByTitle('Billing');
+  await Promise.race([
+    analyticsPage.header.waitFor({ state: 'visible' }),
+    billingIframe.waitFor({ state: 'visible' }),
+  ]);
 }
 
 async function setupAuthenticatedPageFromStorageState(
@@ -192,15 +236,10 @@ async function setupAuthenticatedPageFromStorageState(
     },
     storageState: authenticatedSession.storageState,
   });
+  revealHiddenEditorChromeIn(context);
   const page = await context.newPage();
   await page.goto('/ghost/#/');
-
-  const analyticsPage = new AnalyticsOverviewPage(page);
-  const billingIframe = page.getByTitle('Billing');
-  await Promise.race([
-    analyticsPage.header.waitFor({ state: 'visible' }),
-    billingIframe.waitFor({ state: 'visible' }),
-  ]);
+  await waitForAdminHome(page);
 
   return {
     page,
@@ -271,7 +310,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       const environmentManager = await getEnvironmentManager();
       await environmentManager.perTestTeardown(cachedPerFileInstance.instance);
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
     },
     {
@@ -298,14 +336,19 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         return;
       }
 
-      const print = (label: string, hosts: string[]) => {
+      const print = (label: string, hosts: string[], details?: Map<string, Set<string>>) => {
         if (hosts.length === 0) {
           return;
         }
         // eslint-disable-next-line no-console
         console.log(
           `\n[egress] external hosts ${label} (worker ${workerInfo.workerIndex}):\n` +
-            hosts.map((host) => `  - ${host}`).join('\n') +
+            hosts
+              .flatMap((host) => [
+                `  - ${host}`,
+                ...[...(details?.get(host) ?? [])].map((request) => `      ${request}`),
+              ])
+              .join('\n') +
             '\n',
         );
       };
@@ -319,10 +362,10 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       } catch {
         // Best-effort: never fail teardown over a monitor read error.
       }
-      const browserHosts = [...workerBrowserEgressHosts].sort();
+      const browserHosts = [...workerBrowserEgressHosts.keys()].sort();
 
       print('resolved by Ghost', serverHosts);
-      print('requested by the browser', browserHosts);
+      print('requested by the browser', browserHosts, workerBrowserEgressHosts);
 
       const unexpected = [...new Set([...serverHosts, ...browserHosts])].sort();
       if (EGRESS_ENFORCE && unexpected.length > 0) {
@@ -340,15 +383,25 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   ],
 
   _testEnvironmentContext: async (
-    { config, isolation, labs, stripeEnabled, stripeServer, mailgunEnabled, mailgunServer },
+    {
+      config,
+      isolation,
+      labs,
+      stripeEnabled,
+      stripeServer,
+      mailgunEnabled,
+      mailgunServer,
+      upgradeHostEnabled,
+      upgradeHost,
+    },
     use,
     testInfo: TestInfo,
   ) => {
     const environmentManager = await getEnvironmentManager();
     const requestedIsolation = getResolvedIsolation(testInfo, isolation);
-    // Stripe-enabled tests boot Ghost against a per-test fake Stripe server,
+    // Stripe and upgrade host tests boot Ghost against a per-test fake server,
     // so they cannot safely participate in per-file environment reuse.
-    const resolvedIsolation = stripeEnabled ? 'per-test' : requestedIsolation;
+    const resolvedIsolation = stripeEnabled || upgradeHostEnabled ? 'per-test' : requestedIsolation;
     const suiteKey = getSuiteKey(testInfo);
     const stripeConfig =
       stripeEnabled && stripeServer
@@ -366,7 +419,19 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             bulkEmail__mailgun__baseUrl: `http://host.docker.internal:${mailgunServer.port}/v3`,
           }
         : {};
-    const mergedConfig = { ...(config || {}), ...stripeConfig, ...mailgunConfig };
+    const upgradeHostConfig =
+      upgradeHostEnabled && upgradeHost
+        ? {
+            adapters__upgrade__active: 'HttpUpgradeAdapter',
+            adapters__upgrade__HttpUpgradeAdapter__url: `http://host.docker.internal:${upgradeHost.port}`,
+          }
+        : {};
+    const mergedConfig = {
+      ...(config || {}),
+      ...stripeConfig,
+      ...mailgunConfig,
+      ...upgradeHostConfig,
+    };
     const stripe = stripeServer
       ? {
           secretKey: STRIPE_SECRET_KEY,
@@ -389,7 +454,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       });
       const previousPerFileInstance = cachedPerFileInstance?.instance;
       cachedPerFileInstance = null;
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -428,7 +492,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextPerFileInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       if (previousPerFileInstance) {
@@ -458,7 +521,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         environmentSignature,
         instance: nextInstance,
       };
-      cachedPerFileGhostAccountOwner = null;
       cachedPerFileAuthenticatedSession = null;
 
       Object.assign(holder, nextInstance);
@@ -481,6 +543,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   labs: [undefined, { option: true }],
   stripeEnabled: [false, { option: true }],
   mailgunEnabled: [false, { option: true }],
+  upgradeHostEnabled: [false, { option: true }],
 
   stripeServer: async ({ stripeEnabled }, use) => {
     if (!stripeEnabled) {
@@ -514,6 +577,25 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     debug('Fake Mailgun server stopped');
   },
 
+  upgradeHost: async ({ upgradeHostEnabled }, use) => {
+    if (!upgradeHostEnabled) {
+      await use(undefined);
+      return;
+    }
+
+    const server = new FakeUpgradeHost();
+    await server.start();
+    debug('Fake upgrade host started on port', server.port);
+
+    await use(server);
+
+    await server.stop();
+    debug('Fake upgrade host stopped');
+    if (server.violations.length > 0) {
+      throw new Error(server.violations.join('\n'));
+    }
+  },
+
   mailgun: async ({ mailgunEnabled, mailgunServer }, use) => {
     if (!mailgunEnabled || !mailgunServer) {
       await use(undefined);
@@ -522,6 +604,18 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
     const service = new MailgunTestService(mailgunServer);
     await use(service);
+  },
+
+  fixtureApp: async ({}, use, testInfo) => {
+    // Playwright's test ID already differs for each --repeat-each run; a retry keeps it, so the
+    // retry count is added for a retry that reuses the per-file environment.
+    const app = new FixtureApp({ appId: `org.ghost.e2e.app-${testInfo.testId}-${testInfo.retry}` });
+    await app.start();
+    debug('Fixture app started on port', app.port);
+
+    await use(app);
+
+    await app.stop();
   },
 
   emailClient: async ({}, use) => {
@@ -581,33 +675,10 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
   // Create user credentials only (no authentication)
   ghostAccountOwner: async ({ ghostInstance, _testEnvironmentContext }, use) => {
-    if (!ghostInstance.baseUrl) {
-      throw new Error('baseURL is not defined');
-    }
-
     _testEnvironmentContext.markResetEnvironmentBlocker('ghostAccountOwner');
 
-    if (
-      _testEnvironmentContext.resolvedIsolation === 'per-file' &&
-      cachedPerFileGhostAccountOwner
-    ) {
-      await use(cachedPerFileGhostAccountOwner);
-      return;
-    }
-
-    // Create user in this Ghost instance
-    const ghostAccountOwner: User = {
-      name: 'Test User',
-      email: `test${faker.string.uuid()}@ghost.org`,
-      password: 'test@123@test',
-    };
-    await setupUser(ghostInstance.baseUrl, ghostAccountOwner);
-
-    if (_testEnvironmentContext.resolvedIsolation === 'per-file') {
-      cachedPerFileGhostAccountOwner = ghostAccountOwner;
-    }
-
-    await use(ghostAccountOwner);
+    // The owner is set up in the snapshot each test database is restored from.
+    await use({ ...GHOST_OWNER, email: ghostInstance.ownerEmail });
   },
 
   ghostAccountAuthor: async ({ pageWithAuthenticatedUser, emailClient }, use) => {
@@ -669,7 +740,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   },
 
   // Extract the page from pageWithAuthenticatedUser and apply labs/stripe settings
-  page: async ({ pageWithAuthenticatedUser, labs, _testEnvironmentContext }, use) => {
+  page: async ({ pageWithAuthenticatedUser, labs, _testEnvironmentContext }, use, testInfo) => {
     _testEnvironmentContext.markResetEnvironmentBlocker('page');
 
     const page = pageWithAuthenticatedUser.page;
@@ -678,20 +749,22 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     // the Ghost container's resolver can't see requests the browser makes itself
     // (changelog.json, embeds, avatar services, …), so we watch them here and
     // hand off-allowlist hosts to the worker-level sweep (_egressSummary).
-    const browserEgressRequests = new Map<Request, string>();
+    const browserEgressRequests = new Map<Request, { host: string; detail: string }>();
     const onRequest = (request: Request) => {
-      let host: string;
+      let url: URL;
       try {
-        const url = new URL(request.url());
-        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-          return;
-        }
-        host = url.hostname;
+        url = new URL(request.url());
       } catch {
         return;
       }
-      if (!isAllowedHost(host)) {
-        browserEgressRequests.set(request, host);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return;
+      }
+      if (!isAllowedBrowserUrl(url)) {
+        browserEgressRequests.set(request, {
+          host: url.hostname,
+          detail: `${request.url()} (from ${frameUrl(request)}, in "${testInfo.titlePath.join(' > ')}")`,
+        });
       }
     };
     const onResponse = (response: Response) => {
@@ -722,8 +795,12 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     if (EGRESS_MONITOR_ENABLED) {
       page.off('request', onRequest);
       page.off('response', onResponse);
-      for (const host of browserEgressRequests.values()) {
-        workerBrowserEgressHosts.add(host);
+      for (const { host, detail } of browserEgressRequests.values()) {
+        const requests = workerBrowserEgressHosts.get(host) ?? new Set<string>();
+        if (requests.size < EGRESS_REQUESTS_PER_HOST) {
+          requests.add(detail);
+        }
+        workerBrowserEgressHosts.set(host, requests);
       }
     }
   },

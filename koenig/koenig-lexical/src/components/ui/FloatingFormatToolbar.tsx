@@ -4,10 +4,12 @@ import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 import React from 'react';
 import debounce from 'lodash/debounce';
 import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, DELETE_CHARACTER_COMMAND} from 'lexical';
+import {$getSelectionRangeRect} from '../../utils/$getSelectionRangeRect';
 import {LinkActionToolbar} from './LinkActionToolbar.jsx';
 import {LinkActionToolbarWithSearch} from './LinkActionToolbarWithSearch.jsx';
 import {SnippetActionToolbar} from './SnippetActionToolbar';
 import {mergeRegister} from '@lexical/utils';
+import {setFloatingElemPosition} from '../../utils/setFloatingElemPosition';
 
 // don't show the toolbar until the mouse has moved a certain distance,
 // avoids accidental toolbar display when clicking buttons that select content
@@ -37,11 +39,16 @@ export function FloatingFormatToolbar({
 
     // toolbar opacity is 0 by default
     // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
-    const showToolbarIfHidden = React.useCallback((e) => {
-        if (toolbarItemType && toolbarRef.current?.style.opacity === '0') {
-            toolbarRef.current.style.opacity = '1';
+    // toolbar mounts on the first selected character, so position against the final selection on reveal
+    // (call inside an editor read)
+    const showToolbarIfHidden = React.useCallback(() => {
+        const toolbarElement = toolbarRef.current;
+        if (toolbarItemType && toolbarElement?.style.opacity === '0') {
+            const rangeRect = $getSelectionRangeRect({editor, selection: $getSelection()});
+            setFloatingElemPosition(rangeRect, toolbarElement, anchorElem);
+            toolbarElement.style.opacity = '1';
         }
-    }, [toolbarItemType]);
+    }, [anchorElem, editor, toolbarItemType]);
 
     React.useEffect(() => {
         const toggle = (e) => {
@@ -54,7 +61,7 @@ export function FloatingFormatToolbar({
                     });
 
                     if (selectedNodeMatchesTarget) {
-                        showToolbarIfHidden(e);
+                        showToolbarIfHidden();
                     }
                 }
             });

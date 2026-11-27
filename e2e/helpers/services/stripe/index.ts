@@ -2,6 +2,7 @@ export { FakeStripeServer } from './fake-stripe-server';
 export { WebhookClient } from './webhook-client';
 export { StripeTestService } from './stripe-service';
 export type { CreatedPaidMember } from './stripe-service';
+export type { CollectedCheckoutInput } from './completed-checkout';
 export {
   buildProduct,
   buildCustomer,

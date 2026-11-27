@@ -1,0 +1,34 @@
+const mentions = require('../../services/mentions').default;
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
+  docName: 'mentions',
+  browse: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['filter', 'fields', 'limit', 'order', 'page', 'debug', 'unique'],
+    permissions: true,
+    query(frame) {
+      return mentions.service.controller.browse(frame);
+    },
+  },
+
+  receive: {
+    statusCode: 202, // Required for the spec because we don't have a status page
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: [],
+    permissions: false,
+    response: {
+      format: 'plain',
+    },
+    async query(frame) {
+      await mentions.service.controller.receive(frame);
+      return null;
+    },
+  },
+};
+
+module.exports = controller;

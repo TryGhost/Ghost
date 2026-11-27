@@ -1,3 +1,4 @@
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
@@ -49,11 +50,12 @@ import {
     $selectDecoratorNode,
     getTopLevelNativeElement
 } from '../utils/';
-import {$isHtmlNode} from '../nodes/HtmlNode';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
+import {cardHasEditMode} from '../utils/visibility';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {mergeRegister} from '@lexical/utils';
 import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
 import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
@@ -91,7 +93,7 @@ function $selectCard(editor, nodeKey) {
 // remove empty cards when they are deselected
 function $deselectCard(editor, nodeKey) {
     const cardNode = $getNodeByKey(nodeKey);
-    if (cardNode?.isEmpty?.()) {
+    if (cardNode?.isAttached() && cardNode.isEmpty?.()) {
         $removeOrReplaceNodeWithParagraph(editor, cardNode);
     }
 }
@@ -125,6 +127,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         setIsEditingCard,
         setShowVisibilitySettings
     } = useKoenigSelectedCardContext();
+    const {cardConfig} = React.useContext(KoenigComposerContext);
 
     const isShiftPressed = React.useRef(false);
 
@@ -157,7 +160,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
     // deselect cards on mousedown outside of the editor container
     React.useEffect(() => {
         const onMousedown = (event) => {
-            if (!document.body.contains(event.target)) {
+            if (!document.body?.contains(event.target)) {
                 // The event target is no longer in the DOM
                 // This is possible if we have listeners in the capture phase of the event (e.g. dropdowns)
                 return;
@@ -165,7 +168,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
             // clicks outside of editor should deselect cards
             //  this more generic handling prevents the need to handle blur for codemirror cards (and likely others)
-            if (containerElem.current && !containerElem.current.contains(event.target)) {
+            if (editor.isEditable() && containerElem.current && !containerElem.current.contains(event.target)) {
                 editor.getEditorState().read(() => {
                     const selection = $getSelection();
                     if ($isNodeSelection(selection)) {
@@ -187,6 +190,57 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         };
     }, [editor, containerElem, isNested]);
 
+    // an editor made read-only keeps no card selected or in edit mode, so no
+    // card toolbar, settings panel or nested editor is left open to change it
+    React.useEffect(() => {
+        if (isNested) {
+            return;
+        }
+
+        return editor.registerEditableListener((isEditable) => {
+            if (isEditable) {
+                return;
+            }
+
+            setSelectedCardKey(null);
+            setIsEditingCard(false);
+            setShowVisibilitySettings(false);
+
+            // or the card comes back selected with the next update once editable. In a microtask:
+            // Lexical queues an update made from this listener and runs it inside the next one
+            queueMicrotask(() => {
+                if (editor.isEditable()) {
+                    return;
+                }
+                editor.update(() => {
+                    if ($isNodeSelection($getSelection())) {
+                        $setSelection(null);
+                    }
+                }, {tag: 'history-merge'});
+            });
+        });
+    }, [editor, isNested, setSelectedCardKey, setIsEditingCard, setShowVisibilitySettings]);
+
+    // the editor's elements stop being editable a render after the flag goes off: until then the
+    // browser would apply a key to whichever has focus, and Lexical take the changed DOM as input
+    React.useEffect(() => {
+        if (isNested) {
+            return;
+        }
+
+        const refuseInput = (event) => {
+            if (!editor.isEditable() && event.target instanceof Node && editor.getRootElement()?.contains(event.target)) {
+                event.preventDefault();
+            }
+        };
+
+        document.addEventListener('beforeinput', refuseInput, true);
+
+        return () => {
+            document.removeEventListener('beforeinput', refuseInput, true);
+        };
+    }, [editor, isNested]);
+
     // Override built-in keyboard movement around card (DecoratorNode) boundaries,
     // cards should be selected on up/down and when deleting content around them.
     // Trigger `cursorDidExitAtTop` prop if present and cursor at beginning of doc
@@ -200,7 +254,13 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                 // ignore selections inside of nested editors otherwise we'll
                 // mistakenly deselect the card containing the nested editor
-                if (isNested || document.activeElement.closest('[data-lexical-decorator]')) {
+                if (isNested || document.activeElement?.closest('[data-lexical-decorator]')) {
+                    return;
+                }
+
+                // a read-only editor selects no card, and deselecting must not
+                // remove an empty one from a document it may not change
+                if (!editor.isEditable()) {
                     return;
                 }
 
@@ -229,6 +289,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                         setSelectedCardKey(cardKey);
                         setIsEditingCard(false);
+                        // Hide visibility settings when switching to a different card
+                        setShowVisibilitySettings(false);
                     }, {tag: 'history-merge'}); // don't include a history entry for selection change
                 }
 
@@ -275,6 +337,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                         setSelectedCardKey(null);
                         setIsEditingCard(false);
+                        // Hide visibility settings when deselecting a card, otherwise
+                        // the panel re-appears on the next card that gets selected
+                        setShowVisibilitySettings(false);
                     }, {tag: 'history-merge'}); // don't include a history entry for selection change
                 }
 
@@ -292,6 +357,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 INSERT_CARD_COMMAND,
                 ({cardNode, openInEditMode}) => {
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     let focusNode;
 
                     const selection = $getSelection();
@@ -320,6 +389,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 SELECT_CARD_COMMAND,
                 ({cardKey}) => {
+                    // a read-only editor selects no card, whatever asked for it
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     // already selected, delete if empty as we're exiting edit mode
                     if (selectedCardKey === cardKey && isEditingCard) {
                         const cardNode = $getNodeByKey(cardKey);
@@ -345,6 +419,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 EDIT_CARD_COMMAND,
                 ({cardKey, focusEditor}) => {
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     if (selectedCardKey && selectedCardKey !== cardKey) {
                         $deselectCard(editor, selectedCardKey);
                     }
@@ -353,7 +431,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     setSelectedCardKey(cardKey);
 
                     const cardNode = $getNodeByKey(cardKey);
-                    if (cardNode.hasEditMode?.()) {
+                    if (cardHasEditMode(cardNode, cardConfig)) {
                         setIsEditingCard(true);
                     }
                 },
@@ -362,6 +440,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 DESELECT_CARD_COMMAND,
                 ({cardKey}) => {
+                    // deselecting removes an empty card, which a read-only editor may not
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     $deselectCard(editor, cardKey);
 
                     setSelectedCardKey(null);
@@ -374,6 +457,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 DELETE_CARD_COMMAND,
                 ({cardKey, direction = 'forward'}) => {
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     const cardNode = $getNodeByKey(cardKey);
                     const previousSibling = cardNode.getPreviousSibling();
                     const nextSibling = cardNode.getNextSibling();
@@ -424,6 +511,17 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
+                    // typing ` over selected text formats it as code, same as ctrl shift K
+                    const {altKey, ctrlKey, metaKey, isComposing, key} = event;
+                    if (key === '`' && !altKey && !ctrlKey && !metaKey && !isComposing) {
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection) && !selection.isCollapsed()) {
+                            event.preventDefault();
+                            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
+                            return true;
+                        }
+                    }
+
                     return false;
                 },
                 COMMAND_PRIORITY_LOW
@@ -431,11 +529,18 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
+                    if (!event) {
+                        return false;
+                    }
+
                     // toggle edit mode if a card is selected and ctrl/cmd+enter is pressed
                     if (selectedCardKey && (event.metaKey || event.ctrlKey)) {
                         const cardNode = $getNodeByKey(selectedCardKey);
+                        // in the caption of a card without its own edit mode (e.g. image),
+                        // ctrl/cmd+enter keeps moving the cursor to a paragraph after the card
+                        const isPanelOnlyEditFromCaption = event._fromNested && !cardNode.hasEditMode?.();
 
-                        if (cardNode.hasEditMode?.()) {
+                        if (cardHasEditMode(cardNode, cardConfig) && !isPanelOnlyEditFromCaption) {
                             event.preventDefault();
 
                             // when leaving edit mode, ensure focus moves back to the editor
@@ -527,8 +632,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 anchorNode = anchorNode.getTopLevelElement();
                                 let focusNode = selection.focus.getNode().getTopLevelElement();
 
+                                if (!anchorNode || !focusNode) {
+                                    return false;
+                                }
+
                                 // treat text nodes as normal
-                                let previousSibling = focusNode.getTopLevelElement().getPreviousSibling();
+                                let previousSibling = focusNode.getPreviousSibling();
                                 if ($isTextNode(focusNode) && $isTextNode(previousSibling)) {
                                     return false;
                                 }
@@ -573,6 +682,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     if ($isNodeSelection(selection)) {
                         const currentNode = selection.getNodes()[0];
+                        if (!currentNode) {
+                            return false;
+                        }
+
                         const previousSibling = currentNode.getPreviousSibling();
 
                         if (!previousSibling && cursorDidExitAtTop) {
@@ -613,7 +726,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 selection.focus.offset === 0;
 
                             if (onEmptyNode || atStartOfElement) {
-                                const previousSibling = topLevelElement.getPreviousSibling();
+                                const previousSibling = topLevelElement?.getPreviousSibling();
                                 if ($isDecoratorNode(previousSibling)) {
                                     $selectDecoratorNode(previousSibling);
                                     return true;
@@ -621,7 +734,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             } else {
                                 const atTopOfNode = $isAtTopOfNode(nativeSelection, RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX);
                                 if (atTopOfNode) {
-                                    const previousSibling = topLevelElement.getPreviousSibling();
+                                    const previousSibling = topLevelElement?.getPreviousSibling();
                                     if ($isDecoratorNode(previousSibling)) {
                                         $selectDecoratorNode(previousSibling);
                                         return true;
@@ -649,8 +762,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 anchorNode = anchorNode.getTopLevelElement();
                                 let focusNode = selection.focus.getNode().getTopLevelElement();
 
+                                if (!anchorNode || !focusNode) {
+                                    return false;
+                                }
+
                                 // treat text nodes as normal
-                                let nextSibling = focusNode.getTopLevelElement().getNextSibling();
+                                let nextSibling = focusNode.getNextSibling();
                                 if ($isTextNode(focusNode) && $isTextNode(nextSibling)) {
                                     return false;
                                 }
@@ -695,6 +812,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     if ($isNodeSelection(selection)) {
                         const currentNode = selection.getNodes()[0];
+                        if (!currentNode) {
+                            return false;
+                        }
+
                         const nextSibling = currentNode.getNextSibling();
 
                         // create a new paragraph and select it if selected card is at end of document
@@ -721,7 +842,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         if (selection.isCollapsed()) {
                             const topLevelElement = selection.anchor.getNode().getTopLevelElement();
                             const nativeSelection = window.getSelection();
-                            const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection.anchorNode);
+                            const nativeTopLevelElement = getTopLevelNativeElement(nativeSelection?.anchorNode);
 
                             // empty paragraphs are odd because the native range won't
                             // have a rect to compare positioning
@@ -730,18 +851,19 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 selection.anchor.offset === 0;
 
                             const atEndOfElement =
+                                nativeTopLevelElement &&
                                 nativeSelection.rangeCount !== 0 &&
                                 nativeSelection.anchorNode === nativeTopLevelElement &&
                                 nativeSelection.anchorOffset === nativeTopLevelElement.children.length - 1 &&
                                 nativeSelection.focusOffset === nativeTopLevelElement.children.length - 1;
 
                             if (onEmptyNode || atEndOfElement) {
-                                const nextSibling = topLevelElement.getNextSibling();
+                                const nextSibling = topLevelElement?.getNextSibling();
                                 if ($isDecoratorNode(nextSibling)) {
                                     $selectDecoratorNode(nextSibling);
                                     return true;
                                 }
-                            } else {
+                            } else if (nativeTopLevelElement) {
                                 const range = nativeSelection.getRangeAt(0).cloneRange();
                                 const rects = range.getClientRects();
 
@@ -752,7 +874,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                     const elemRect = nativeTopLevelElement.getBoundingClientRect();
 
                                     if (Math.abs(rangeRect.bottom - elemRect.bottom) < RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX) {
-                                        const nextSibling = topLevelElement.getNextSibling();
+                                        const nextSibling = topLevelElement?.getNextSibling();
                                         if ($isDecoratorNode(nextSibling)) {
                                             $selectDecoratorNode(nextSibling);
                                             return true;
@@ -780,6 +902,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     if (cursorDidExitAtTop) {
                         if ($isNodeSelection(selection)) {
                             const currentNode = selection.getNodes()[0];
+                            if (!currentNode) {
+                                return false;
+                            }
+
                             const previousSibling = currentNode.getPreviousSibling();
 
                             if (!previousSibling) {
@@ -800,11 +926,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     const firstNode = selection.getNodes()[0];
+                    if (!firstNode) {
+                        return false;
+                    }
                     let previousSibling;
 
                     if (!$isKoenigCard(firstNode)) {
                         const topLevelElement = firstNode.getTopLevelElement();
-                        previousSibling = topLevelElement.getPreviousSibling();
+                        previousSibling = topLevelElement?.getPreviousSibling();
                     } else {
                         previousSibling = firstNode.getPreviousSibling();
                     }
@@ -835,13 +964,16 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     const selectedNodes = selection.getNodes();
                     const lastNode = selectedNodes[selectedNodes.length - 1];
+                    if (!lastNode) {
+                        return false;
+                    }
 
                     let nextSibling;
                     if ($isKoenigCard(lastNode)) {
                         nextSibling = lastNode.getNextSibling();
                     } else {
                         const topLevelElement = lastNode.getTopLevelElement();
-                        nextSibling = topLevelElement.getNextSibling();
+                        nextSibling = topLevelElement?.getNextSibling();
                     }
 
                     if ($isDecoratorNode(nextSibling)) {
@@ -999,7 +1131,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const anchor = selection.anchor;
                             const anchorNode = anchor.getNode();
                             const topLevelElement = anchorNode.getTopLevelElement();
-                            const previousSibling = topLevelElement.getPreviousSibling();
+                            const previousSibling = topLevelElement?.getPreviousSibling();
 
                             const atStartOfElement =
                                 selection.anchor.offset === 0 &&
@@ -1033,7 +1165,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                             // delete empty paragraphs and select card if preceded by card
                             if ($isParagraphNode(anchorNode) && anchorNode.isEmpty() && $isDecoratorNode(previousSibling)) {
-                                topLevelElement.remove();
+                                topLevelElement?.remove();
                                 $selectDecoratorNode(previousSibling);
                                 return true;
                             }
@@ -1139,7 +1271,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const anchor = selection.anchor;
                             const anchorNode = anchor.getNode();
                             const topLevelElement = anchorNode.getTopLevelElement();
-                            const nextSibling = topLevelElement.getNextSibling();
+                            const nextSibling = topLevelElement?.getNextSibling();
 
                             const onEmptyNode =
                                 topLevelElement?.getTextContent().trim() === '' &&
@@ -1195,8 +1327,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const anchor = selection.anchor;
                             const anchorNode = anchor.getNode();
                             const topLevelElement = anchorNode.getTopLevelElement();
-                            const previousSibling = topLevelElement.getPreviousSibling();
-                            const nextSibling = topLevelElement.getNextSibling();
+                            const previousSibling = topLevelElement?.getPreviousSibling();
+                            const nextSibling = topLevelElement?.getNextSibling();
                             const sibling = isBackward ? previousSibling : nextSibling;
 
                             // Find out if the paragraph contains only one line
@@ -1228,6 +1360,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
+                    if (!$getSelection()) {
+                        return false;
+                    }
+
                     // exit the editor if we're shift tabbing on an element that isn't tabbed
                     if (event.shiftKey && cursorDidExitAtTop) {
                         const selection = $getSelection();
@@ -1237,6 +1373,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             selection.clear();
                             cursorDidExitAtTop();
                             return true;
+                        }
+
+                        if (!$isRangeSelection(selection)) {
+                            return false;
                         }
 
                         let nodes;
@@ -1261,7 +1401,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     // code card shortcut
                     if (!isNested) {
                         const selection = $getSelection();
-                        const currentNode = selection.getNodes()[0];
+                        const currentNode = selection?.getNodes()[0];
                         if ($isTextNode(currentNode)) {
                             const textContent = currentNode.getTextContent();
                             if (textContent.match(/^```(\w{1,10})?/)) {
@@ -1389,6 +1529,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 PASTE_LINK_COMMAND,
                 ({linkMatch}) => {
                     const selection = $getSelection();
+                    if (!$isRangeSelection(selection)) {
+                        return false;
+                    }
                     const selectionContent = selection.getTextContent();
                     const node = selection.anchor.getNode();
                     const nodeContent = node.getTextContent();
@@ -1462,26 +1605,16 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 SHOW_CARD_VISIBILITY_SETTINGS_COMMAND,
                 ({cardKey}) => {
-                    editor.update(() => {
-                        const cardNode = $getNodeByKey(cardKey);
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
 
-                        // If the card is an html card, we toggle the visibility settings differently
-                        // because we want to show the visibility settings panel while in selected mode
-                        // instead of entering edit mode
-                        if ($isHtmlNode(cardNode)) {
-                            setShowVisibilitySettings(true);
-                            if (!selectedCardKey) {
-                                editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey, focusEditor: true});
-                            }
-                        } else {
-                            if (cardNode?.hasEditMode?.() && !isEditingCard) {
-                                setShowVisibilitySettings(true);
-                                editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey, focusEditor: true});
-                            } else if (isEditingCard) {
-                                $deselectCard(editor, cardKey);
-                            }
-                        }
-                    });
+                    // visibility lives in the card's settings panel, which is only
+                    // shown in edit mode, so open the panel on its Visibility tab
+                    if (cardHasEditMode($getNodeByKey(cardKey), cardConfig)) {
+                        setShowVisibilitySettings(true);
+                        editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey, focusEditor: true});
+                    }
                     return true;
                 },
                 COMMAND_PRIORITY_LOW

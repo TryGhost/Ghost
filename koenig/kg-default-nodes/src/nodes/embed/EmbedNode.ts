@@ -9,7 +9,9 @@ const embedProperties = {
     metadata: {
         get default() {
             return {} as Record<string, unknown>;
-        }
+        },
+        urlType: 'url',
+        urlPath: 'metadata.thumbnail_url'
     },
     caption: {default: '', wordCount: true}
 } satisfies DecoratorNodePropertyMap;
@@ -27,6 +29,10 @@ export class EmbedNode extends generateDecoratorNode({
 
     isEmpty() {
         return !this.__url && !this.__html;
+    }
+
+    hasEditMode() {
+        return false;
     }
 }
 

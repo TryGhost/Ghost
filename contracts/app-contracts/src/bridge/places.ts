@@ -1,0 +1,30 @@
+import { z } from 'zod';
+
+import { ARGUMENT_MESSAGES } from './rules.ts';
+
+// Ghost's IDs are ObjectIds in lowercase hex, so no other value can match anything.
+const OBJECT_ID = /^[0-9a-f]{24}$/;
+
+const objectId = z
+  .string('Expected an ID')
+  .regex(OBJECT_ID, 'Expected an ID of 24 lowercase hexadecimal characters');
+
+/**
+ * A place in Admin an app can send the publisher to. Places are named rather than given as
+ * paths or URLs, so an app can only open what Admin chooses to offer, and Admin decides which
+ * route each one opens. Adding a place means adding an entry here.
+ *
+ * Each entry is strict, so an object naming two places, or a place Admin doesn't know, is
+ * refused rather than partly read.
+ *
+ * `post` is for posts only. Pages have their own editor route, so they use `page`.
+ */
+export const PlaceSchema = z.union(
+  [
+    z.strictObject({ post: z.strictObject({ id: objectId }) }),
+    z.strictObject({ page: z.strictObject({ id: objectId }) }),
+    z.strictObject({ member: z.strictObject({ id: objectId }) }),
+    z.strictObject({ apps: z.literal(true) }),
+  ],
+  ARGUMENT_MESSAGES.place,
+);

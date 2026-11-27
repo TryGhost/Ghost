@@ -4,6 +4,19 @@ services:
       context: ./
       dockerfile: docker/fake-mailgun/Dockerfile
     init: true
+    # Simulated analytics; change at runtime with PATCH http://127.0.0.1:4010/__fake/config
+    environment:
+      FAKE_MAILGUN_OPENED_RATE: '0.6'
+      FAKE_MAILGUN_MAX_OPEN_DELAY_SECONDS: '300'
+      FAKE_MAILGUN_CLICK_RATE: '0.1'
+      FAKE_MAILGUN_MIN_CLICK_DELAY_MS: '1000'
+      FAKE_MAILGUN_MAX_CLICK_DELAY_MS: '30000'
+      # Ghost runs on the host; its site hostname only resolves there
+      FAKE_MAILGUN_CLICK_HOST: host.docker.internal
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '127.0.0.1:4010:4010'
     depends_on:
       mailpit:
         condition: service_healthy

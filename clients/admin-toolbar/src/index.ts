@@ -1,0 +1,109 @@
+import { createElement as h, render } from 'preact';
+
+import { createAdminApi, canShowToolbar, createAuthFrame } from './auth';
+import { getConfig, getScript, type ToolbarConfig } from './config';
+import { ROOT_ID } from './constants';
+import { Toolbar } from './components';
+import { getToolbarStyle } from './styles';
+import type { StaffUser } from './user';
+
+const AUTH_FRAME_LOAD_TIMEOUT = 5000;
+
+function waitForFrameLoad(frame: HTMLIFrameElement) {
+  return new Promise<void>((resolve, reject) => {
+    function cleanup() {
+      window.clearTimeout(timeout);
+      frame.removeEventListener('load', handleLoad);
+      frame.removeEventListener('error', handleError);
+    }
+
+    function handleLoad() {
+      cleanup();
+      resolve();
+    }
+
+    function handleError() {
+      cleanup();
+      reject(new Error('auth_frame_load_error'));
+    }
+
+    const timeout = window.setTimeout(() => {
+      cleanup();
+      reject(new Error('auth_frame_load_timeout'));
+    }, AUTH_FRAME_LOAD_TIMEOUT);
+
+    frame.addEventListener('load', handleLoad);
+    frame.addEventListener('error', handleError);
+  });
+}
+
+function renderToolbar({
+  config,
+  user,
+  frame,
+}: {
+  config: ToolbarConfig;
+  user: StaffUser;
+  frame: HTMLIFrameElement;
+}) {
+  if (document.getElementById(ROOT_ID)) {
+    return;
+  }
+
+  const host = document.createElement('div');
+  host.id = ROOT_ID;
+  const shadow = host.attachShadow({ mode: 'open' });
+  const style = document.createElement('style');
+  const mount = document.createElement('div');
+
+  style.textContent = getToolbarStyle();
+  shadow.append(style, mount);
+  document.body.appendChild(host);
+
+  render(h(Toolbar, { config, user }), mount);
+
+  frame.dataset.toolbarMounted = 'true';
+}
+
+async function init() {
+  if (!document.body || document.getElementById(ROOT_ID)) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('admin_toolbar') === '0') {
+    return;
+  }
+
+  const config = getConfig(getScript());
+  if (!config) {
+    return;
+  }
+
+  const frame = createAuthFrame(config.adminUrl);
+  const api = createAdminApi(config.adminUrl, frame);
+
+  try {
+    await waitForFrameLoad(frame);
+    const user = await api.getUser();
+    if (!user || !canShowToolbar(user)) {
+      frame.remove();
+      return;
+    }
+    renderToolbar({ config, user, frame });
+  } catch {
+    frame.remove();
+  }
+}
+
+function start() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+}
+
+if (typeof document !== 'undefined') {
+  start();
+}

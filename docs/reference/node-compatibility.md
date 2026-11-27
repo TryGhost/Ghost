@@ -4,7 +4,7 @@ Ghost, Node.js, and Ghost-CLI have independent release cycles. This reference
 records the points where their supported version ranges changed.
 
 Use the versions pinned in [`.nvmrc`](../../.nvmrc) and
-[`package.json`](../../ghost/core/package.json) when working on the current
+[`package.json`](../../ghost/package.json) when working on the current
 Ghost codebase. Use this history when maintaining or upgrading an older Ghost
 installation.
 
@@ -57,6 +57,8 @@ Node.js or Ghost-CLI cell means that value did not change in that release.
 | 2026-06-19   | >= 6.46.0     | `^22.18.0`                             |                   | Bumped Node.js 22 minimum                      |
 | 2026-07-17   | >= 6.53.0     | `^22.23.1`                             |                   | Bumped Node.js 22 minimum                      |
 | 2026-09-02   | >= 6.63.0     | `^22.23.1 \|\| ^24.20.0`               |                   | Added Node.js 24                               |
+| 2026-11-06   | >= 6.76.0     | `^22.23.4 \|\| ^24.22.1`               |                   | Bumped Node.js minimums to security releases   |
+| 2026-11-11   | >= 6.77.0     | `^22.23.5 \|\| ^24.22.3`               |                   | Bumped Node.js minimums to security releases   |
 
 ## Ghost-CLI Node.js compatibility
 

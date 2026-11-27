@@ -7,15 +7,19 @@ import PropTypes from 'prop-types';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin.jsx';
 import clsx from 'clsx';
 import defaultTheme from '../../../themes/default.js';
+import {BASIC_TRANSFORMERS} from '../../../plugins/MarkdownShortcutPlugin';
 import {Button} from '../Button.jsx';
 import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
 import {CALLTOACTION_COLORS} from '../../../utils/callToActionColors.js';
+import {HEADING} from '@lexical/markdown';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay.jsx';
 import {RestrictContentPlugin} from '../../../index.js';
-import {VisibilitySettings} from '../VisibilitySettings.jsx';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useState} from 'react';
+
+// Typing "## " or "### " at the start of a line turns it into a heading, as in the post body
+const CTA_TEXT_TRANSFORMERS = [HEADING, ...BASIC_TRANSFORMERS];
 
 const getTheme = () => ({
     ...defaultTheme,
@@ -100,7 +104,7 @@ export function CallToActionCard({
     layout = 'immersive',
     showButton = false,
     showDividers = true,
-    visibilityOptions = {},
+    visibilitySettings = null,
     handleButtonColor = () => {},
     handleColorChange = () => {},
     handleLinkColorChange = () => {},
@@ -114,7 +118,6 @@ export function CallToActionCard({
     updateLayout = () => {},
     updateShowButton = () => {},
     updateShowDividers = () => {},
-    toggleVisibility = () => {},
     imageDragHandler = {},
     imageUploader = () => {},
     linkColor = 'text',
@@ -124,12 +127,9 @@ export function CallToActionCard({
 
     const {isLoading, progress} = imageUploader || {};
 
-    const hasVisibilityOptions = Array.isArray(visibilityOptions) && visibilityOptions.length > 0;
-
     const tabs = [
         {id: 'content', label: 'Content'},
-        {id: 'design', label: 'Design'},
-        ...(hasVisibilityOptions ? [{id: 'visibility', label: 'Visibility'}] : [])
+        {id: 'design', label: 'Design'}
     ];
 
     const layoutOptions = [
@@ -294,13 +294,6 @@ export function CallToActionCard({
         </>
     );
 
-    const visibilitySettings = (
-        <VisibilitySettings
-            toggleVisibility={toggleVisibility}
-            visibilityOptions={visibilityOptions}
-        />
-    );
-
     return (
         <>
             <div
@@ -381,11 +374,12 @@ export function CallToActionCard({
                             initialEditor={htmlEditor}
                             initialEditorState={htmlEditorInitialState}
                             initialTheme={theme}
+                            markdownTransformers={CTA_TEXT_TRANSFORMERS}
                             nodes='basic'
-                            placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl text-grey-500 dark:text-grey-800`}
+                            placeholderClassName={`bg-transparent whitespace-normal font-body text-body text-grey-500 dark:text-grey-800`}
                             placeholderText="Write something worth clicking..."
                             textClassName={clsx(
-                                'koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200',
+                                'koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-body text-body text-grey-900 dark:text-grey-200',
                                 alignment === 'center' && layout === 'immersive' ? 'text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left' : 'text-left'
                             )}
                         >
@@ -421,14 +415,15 @@ export function CallToActionCard({
 
             {isEditing && (
                 <SettingsPanel
-                    defaultTab={showVisibilitySettings ? 'visibility' : 'content'}
+                    defaultTab="content"
+                    showVisibilitySettings={showVisibilitySettings}
                     tabs={tabs}
+                    visibilitySettings={visibilitySettings}
                     onMouseDown={e => e.preventDefault()}
                 >
                     {{
                         content: contentSettings,
-                        design: designSettings,
-                        visibility: visibilitySettings
+                        design: designSettings
                     }}
                 </SettingsPanel>
             )}
@@ -465,8 +460,7 @@ CallToActionCard.propTypes = {
     onRemoveMedia: PropTypes.func,
     sponsorLabelHtmlEditor: PropTypes.object,
     sponsorLabelHtmlEditorInitialState: PropTypes.object,
-    visibilityOptions: PropTypes.array,
-    toggleVisibility: PropTypes.func,
+    visibilitySettings: PropTypes.node,
     imageUploadHandler: PropTypes.func,
     imageDragHandler: PropTypes.object,
     linkColor: PropTypes.oneOf(['text', 'accent']),

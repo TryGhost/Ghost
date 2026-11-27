@@ -1,0 +1,30 @@
+name: Publish TypeScript inventory
+
+on:
+  workflow_run:
+    workflows: ['TypeScript inventory']
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    if: >-
+      github.repository == 'TryGhost/Ghost' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == 'TryGhost/Ghost' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # No checkout or execution of source code in this credential-bearing job.
+    steps:
+      - name: Request report publication
+        env:
+          GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
+          SOURCE_RUN: ${{ github.event.workflow_run.id }}
+        run: |
+          jq -n --arg run "$SOURCE_RUN" \
+            '{event_type: "typescript-inventory", client_payload: {run_id: $run}}' \
+            | gh api --method POST repos/TryGhost/Ghost-Benchmarks/dispatches --input -

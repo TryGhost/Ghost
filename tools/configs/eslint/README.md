@@ -1,0 +1,132 @@
+# Shared ESLint configuration
+
+Ghost's shared ESLint rules live in two internal packages:
+
+- `@internal/cfg-eslint` provides shared rule atoms and `nodeLibConfig()` for
+  Node.js libraries.
+- `@internal/cfg-eslint-react` provides `reactAppConfig()` for React apps under
+  `clients/`.
+
+Both factories are synchronous and document their options with JSDoc and
+examples in their `index.mjs` files. Add the relevant package as a
+`workspace:*` development dependency and consume the factory by name.
+
+```js
+import {reactAppConfig} from '@internal/cfg-eslint-react';
+
+export default reactAppConfig({
+    tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
+    shadeRestricted: true
+});
+```
+
+## Rules and exceptions
+
+Factory consumers use `error` or `off`, not `warn`. Parameters prefixed with
+`legacy`, including `legacyTailwindV3ConfigPath` and `legacyJsTsSplit`, mark
+temporary migration exceptions rather than defaults for new work.
+
+Ghost Core keeps a standalone configuration because its rule set does not fit
+a shared factory. Read that file directly. It can still import shared atoms such as `correctnessRules`, `nodeLibRules`,
+and `strictLinterOptions` from `@internal/cfg-eslint`.
+
+## React Compiler rules
+
+`reactAppConfig()` runs the React Compiler rules from
+`eslint-plugin-react-hooks` as errors. The violations that existed when they
+were turned on are recorded, per file and rule, in each app's
+`eslint-suppressions.json`. ESLint reads that file from the app directory:
+
+- A violation in a new place fails lint, as does one more in a file than its
+  recorded count.
+- Fixing a recorded violation fails lint too, until the count is lowered. Run
+  the app's ESLint command with `--prune-suppressions`, for example
+  `pnpm exec eslint . --prune-suppressions` in `clients/admin`, and commit the
+  result.
+
+Counts only go down. Fix a new violation rather than adding it to the file.
+ESLint writes these files, so `oxfmt` ignores them.
+
+To see how many violations remain across the apps:
+
+```bash
+jq -s '[.[][][] | .count] | add' clients/*/eslint-suppressions.json
+```
+
+## Plugin dependencies
+
+A workspace must declare every ESLint plugin that its configuration resolves.
+
+- A factory consumer only needs the config package because the factory supplies
+  its plugins as objects.
+- A hand-written config that imports a plugin directly must declare that plugin
+  in its own `devDependencies`. Do not rely on root dependency hoisting.
+- A workspace using Tailwind must declare `tailwindcss` locally. Legacy
+  Tailwind v3 apps also use the `tailwind3` catalog entry for
+  `eslint-plugin-tailwindcss`.
+
+Run the workspace's `pnpm lint` target after changing its config. Run the root
+lint when changing shared rule atoms or either factory.
+
+## Custom rules in Oxlint
+
+`pnpm lint:oxlint` owns the eight `ghost-custom` rules and the three local rules
+(filename matching, Admin paths and E2E reset safety). Their standalone
+implementations live in `../oxlint/rules/`; they do not load ESLint plugins.
+The TypeScript plugins run directly on the pinned Node version. Their strict
+type check runs as part of `pnpm test`, or separately with
+`pnpm --filter @internal/cfg-oxlint test:types`. Oxlint API types come from
+`@oxlint/plugins` through type-only imports.
+
+The ESLint entries are removed, except for overrides that disable rules inherited
+from presets. `eslint-plugin-ghost` still supplies other checks, including import
+sorting, filename conventions and Mocha rules, so it remains installed.
+
+The root `.oxlintrc.json` preserves the previous workspace scopes, options and
+exceptions. API line limits, assertion-method checks and assertion-parameter
+checks were already disabled and remain off. All built-in Oxlint categories
+are off; enable further rules individually as `error` or `off`.
+`--deny-warnings` rejects accidental warnings.
+
+The `ghost/service-root-shape` rule checks every service root, unless the
+service is listed in the
+[legacy service inventory](../../../ghost/core/server/services/README.md#standard-and-legacy-services).
+Its standalone implementation is `../oxlint/rules/service-root-shape.ts`. It
+reads the legacy names from the inventory, so a new root needs no configuration
+and deleting a legacy entry applies the rule. Lint fails if the inventory cannot
+be read. Catalogue metadata validation remains separate from linting.
+
+The Oxlint-only `ghost/boot-awaits-service-init` rule checks `ghost/core/boot.js`.
+Every service that is not listed in the legacy service inventory must be bound
+there and have its `init()` awaited in a boot phase that `bootGhost` awaits. It
+reads the service directories and the inventory, so a new service needs no
+configuration and fails lint until boot awaits it. Its implementation is
+`../oxlint/rules/boot-awaits-service-init.ts`; see
+[initialization](../../../ghost/core/server/services/README.md#initialization).
+
+The Oxlint-only `ghost/no-injected-service-libraries` rule checks all TypeScript
+service roots for allowlisted libraries passed into local constructors. It
+reuses the service dependency policy in `.dependency-cruiser.cjs`; see the
+[services guide](../../../ghost/core/server/services/README.md#dependency-boundaries)
+for its scope and limits. There is no ESLint equivalent enabled.
+
+The Oxlint-only `ghost/prefer-canonical-types` rule rejects hand-written copies
+of a library type in Ghost Core, matched by shape rather than name. It covers
+type aliases, interfaces, inline object types and JSDoc object types. It ships
+with one shape: an object whose members are only log-level methods, which should
+be `GhostLogger` from `@tryghost/logging`. Add further shape and canonical-type
+pairs to the table in `../oxlint/rules/prefer-canonical-types.ts`.
+
+Run `pnpm lint` from the repository root to run both linters. CI does the same
+checks. When adding a workspace or changing a source/test scope, update the
+Oxlint overrides as well as the workspace's ESLint config. Use `oxlint-disable`
+comments for custom-rule exceptions so ESLint does not report unused directives.
+
+Run the rule and scope regression tests with
+`pnpm --filter @internal/scripts exec node --test test/oxlint.test.ts`.
+
+Run service-root compatibility and scope tests with
+`pnpm --filter @internal/scripts exec node --test test/service-root-shape.test.ts`.
+
+Run the boot rule's tests with
+`pnpm --filter @internal/scripts exec node --test test/boot-awaits-service-init.test.ts`.

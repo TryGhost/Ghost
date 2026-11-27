@@ -1,0 +1,147 @@
+import type { SchedulerAdapter } from '@tryghost/adapter-base-scheduling';
+import assert from 'node:assert/strict';
+import type { InternalKeys } from '../internal-keys';
+import type DomainEvents from '@tryghost/domain-events';
+import { setImmediate as flushEventLoop } from 'node:timers/promises';
+import { oneAtATime } from '../../../shared/one-at-a-time';
+import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
+import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
+import { SoonestTimer } from '../../lib/soonest-timer';
+import * as automationsApi from './automations-api';
+import { poll } from './poll';
+import { getSchedulerPollTime } from './scheduler-poll-time';
+import logging from '@tryghost/logging';
+import { LabelAddedToMembersEvent } from '../../../shared/events/label-added-to-members-event';
+// @ts-expect-error This module currently lacks type definitions.
+import emailAnalyticsJobs from '../email-analytics/jobs';
+import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
+import { welcomeEmailAutomationPoll } from './welcome-email-automation-poll';
+import memberWelcomeEmails from '../member-welcome-emails';
+
+type AutomationsServiceOptions = {
+  apiUrl: string;
+  domainEvents: Pick<typeof DomainEvents, 'dispatch' | 'subscribe'>;
+  internalKeys: InternalKeys;
+  schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
+  siteUuid: unknown;
+};
+
+const scheduleAutomationEmailAnalyticsJob = () =>
+  emailAnalyticsJobs.scheduleRecurringAutomationsJob(true);
+
+export class AutomationsService {
+  #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
+
+  init({
+    domainEvents,
+    apiUrl,
+    schedulerAdapter,
+    internalKeys,
+    siteUuid,
+  }: AutomationsServiceOptions): void {
+    const isInitialized = Boolean(this.#enqueuePollAt);
+    if (isInitialized) {
+      return;
+    }
+
+    // If we don't get a valid site UUID for some reason, compute jitter with the API URL.
+    const siteIdentifier = typeof siteUuid === 'string' && siteUuid.length ? siteUuid : apiUrl;
+    const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
+
+    const soonestTimer = new SoonestTimer(enqueuePollNow);
+
+    /**
+     * Enqueue an automations poll at a given time.
+     *
+     * If the poll is in the future, we schedule an in-memory timer *and*
+     * tell the scheduler.
+     *
+     * The in-memory timer can be more precise than the scheduler, and
+     * avoids reliance on an external service. The scheduler will wake up
+     * the server if it's stopped.
+     */
+    const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
+      const isRequestedDateInTheFuture = new Date() < date;
+      if (!isRequestedDateInTheFuture) {
+        // If you're using synchronous SQLite, we want to finish unwinding the call stack
+        // before dispatching another poll event.
+        await flushEventLoop();
+        enqueuePollNow();
+        return;
+      }
+
+      soonestTimer.scheduleAt(date);
+
+      const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
+
+      try {
+        const key = await internalKeys.get('ghost-scheduler');
+        await schedulerAdapter.schedule(
+          buildSignedJob({
+            apiUrl,
+            path: ['automations', 'poll'],
+            time: schedulerPollTime.getTime(),
+            key,
+            getIdempotencyKey: (url) =>
+              getSchedulerIdempotencyKey({
+                namespace: 'automations',
+                date: schedulerPollTime,
+                url,
+              }),
+          }),
+        );
+      } catch (err) {
+        logging.error(
+          { event: { name: 'automations.enqueue-poll.error' }, err, at: date.toISOString() },
+          'Failed to enqueue automations poll',
+        );
+      }
+    };
+
+    domainEvents.subscribe(
+      StartAutomationsPollEvent,
+      oneAtATime(() =>
+        poll({
+          automationsApi,
+          memberWelcomeEmailService: memberWelcomeEmails.service,
+          scheduleAutomationEmailAnalyticsJob,
+          enqueueAnotherPollAt: enqueuePollAt,
+        }),
+      ),
+    );
+
+    domainEvents.subscribe(
+      StartAutomationsPollEvent,
+      oneAtATime(() =>
+        welcomeEmailAutomationPoll({
+          memberWelcomeEmailService: memberWelcomeEmails.service,
+          enqueueAnotherPollAt: enqueuePollAt,
+        }),
+      ),
+    );
+
+    domainEvents.subscribe(LabelAddedToMembersEvent, (event: LabelAddedToMembersEvent) =>
+      automationsApi.notify({ eventName: 'label_added', ...event.data }),
+    );
+
+    schedulerAdapter.register(this);
+
+    enqueuePollNow();
+
+    this.#enqueuePollAt = enqueuePollAt;
+  }
+
+  /**
+   * Re-arm the poll chain. A queued poll signed under the previous scheduler
+   * key fails JWT verification when fired; this dispatches a fresh in-process
+   * poll that re-schedules the next callback under the current key.
+   */
+  async rescheduleAll(): Promise<void> {
+    await this.#enqueuePollAt?.(new Date());
+  }
+
+  async __testOnlyEnqueuePollAt(date: Readonly<Date>): Promise<void> {
+    assert(this.#enqueuePollAt, 'Tests should not call this before initialization');
+    return await this.#enqueuePollAt(date);
+  }
+}

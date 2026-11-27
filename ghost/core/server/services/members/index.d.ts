@@ -1,0 +1,48 @@
+import MemberRepository from './members-api/repositories/member-repository';
+import type MembersImportJob from './jobs/members-import-job';
+
+interface MemberBREADService {
+  disableCommenting(
+    memberId: string,
+    reason: string,
+    expiresAt: Date | null,
+    hideComments: boolean,
+    context: unknown,
+  ): Promise<unknown>;
+
+  enableCommenting(memberId: string, context: unknown): Promise<unknown>;
+
+  read(options: {
+    id?: string;
+    email?: string;
+    uuid?: string;
+    transient_id?: string;
+  }): Promise<unknown>;
+}
+
+interface MembersApi {
+  getPublicConfig(): Promise<{
+    issuer: string;
+    getVerificationKey(kid?: string): Promise<string>;
+  }>;
+  getMagicLink(
+    email: string,
+    type: 'signin' | 'signup',
+    tokenData?: Record<string, unknown>,
+  ): Promise<string>;
+  getMemberDataFromMagicLinkToken(token: string, otcVerification?: unknown): Promise<unknown>;
+  memberBREADService: MemberBREADService;
+  members: MemberRepository;
+}
+
+interface MembersService {
+  init(): Promise<void>;
+  api: MembersApi;
+  createPaidMemberShim(
+    tierSlug?: string,
+  ): Promise<{ status: 'paid'; products: Array<{ slug: string }> }>;
+  handleImportJob: ((job: MembersImportJob) => Promise<void>) | null;
+}
+
+declare const membersService: MembersService;
+export = membersService;

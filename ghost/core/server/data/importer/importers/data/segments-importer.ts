@@ -1,0 +1,268 @@
+import type { Knex } from 'knex';
+import { z } from 'zod';
+import segments from '../../../../services/segments';
+import { filterNamesSegment } from '../../../../services/segments/expansion';
+import { NameTakenError, SlugRejectedError } from '../../../../services/segments/errors';
+import {
+  isParseableFilter,
+  MAX_NAME_LENGTH,
+  normalizeName,
+  type Segment,
+  SegmentFilter,
+  SegmentName,
+  SegmentSlug,
+} from '../../../../services/segments/models';
+import {
+  type ExportedSegment,
+  SavedMemberView,
+  savedViewsIn,
+  segmentKey,
+  segmentsInRows,
+} from '../../../../services/segments/saved-member-views';
+
+// Imports a site's segments, which Admin shows as saved member views.
+//
+// An export holds them in two places. An export from a version that stores segments in a table
+// of their own has them as rows under `segments`, and again as entries of the `shared_views`
+// setting, beside the posts list's saved views, for older versions to import. An older export
+// has them in the setting alone. A segment is read once, from the rows when both places hold
+// it, and added through the segments service, so an imported segment follows the rules any new
+// segment does.
+
+const ExportedSetting = z.object({ key: z.string(), value: z.unknown() });
+
+const ExportData = z.object({
+  segments: z.array(z.unknown()).catch([]),
+  settings: z.array(z.unknown()).catch([]),
+});
+
+/**
+ * A `shared_views` value without its saved member views, which are imported as segments. A
+ * value that holds none, or that can't be read as views, is returned as it is.
+ */
+export function withoutSavedMemberViews(value: unknown): unknown {
+  const entries = savedViewsIn(value) ?? [];
+  const kept = entries.filter((entry) => !SavedMemberView.safeParse(entry).success);
+  return kept.length === entries.length ? value : JSON.stringify(kept);
+}
+
+/**
+ * The segments in an export file's data, in their order: its rows, then the saved member views
+ * that aren't a row's copy in the setting.
+ */
+function exportedSegments(allDataFromFile: unknown): ExportedSegment[] {
+  const data = ExportData.safeParse(allDataFromFile);
+  if (!data.success) {
+    return [];
+  }
+  const rows = segmentsInRows(data.data.segments);
+  const inRows = new Set(rows.map(segmentKey));
+  const views = data.data.settings
+    .flatMap((setting) => ExportedSetting.safeParse(setting).data ?? [])
+    .filter(({ key }) => key === 'shared_views')
+    .flatMap(({ value }) => savedViewsIn(value) ?? [])
+    .flatMap((entry) => SavedMemberView.safeParse(entry).data ?? [])
+    .filter((view) => !inRows.has(segmentKey(view)));
+  return [...rows, ...views];
+}
+
+/**
+ * The name a segment is imported under: `name` itself for the number 1, and otherwise `name` with
+ * the number added, such as "VIP (2)". Either is cut to be no longer than a segment's name can be.
+ */
+function numbered(name: string, number: number): string {
+  const suffix = number === 1 ? '' : ` (${number})`;
+  return [...name.trim()].slice(0, MAX_NAME_LENGTH - suffix.length).join('') + suffix;
+}
+
+interface ImportProblem {
+  message: string;
+  help: string;
+  context: string;
+}
+
+/**
+ * The step of a data import that adds the file's segments. It has the shape the data importer
+ * drives every step through.
+ */
+export class SegmentsImporter {
+  readonly dataKeyToImport = 'segments';
+  readonly options = { requiredImportedData: [], requiredExistingData: [] };
+  readonly requiredImportedData = {};
+  readonly requiredExistingData = {};
+  readonly problems: ImportProblem[] = [];
+  readonly errors: unknown[] = [];
+  readonly importedData: ExportedSegment[] = [];
+  readonly importedDataToReturn: ExportedSegment[] = [];
+
+  private readonly toImport: ExportedSegment[];
+
+  constructor(allDataFromFile: unknown) {
+    this.toImport = exportedSegments(allDataFromFile);
+  }
+
+  async fetchExisting(): Promise<void> {}
+
+  async beforeImport(): Promise<void> {}
+
+  async replaceIdentifiers(): Promise<void> {}
+
+  /**
+   * Adds each segment in the file, in the file's order and in the import's transaction.
+   *
+   * A segment the site already has is not added again, so a file can be imported twice: the
+   * site has it when a segment has its filter under its name, or under its name with a number,
+   * which is how an import stores a segment whose name was taken. A segment that can't be one,
+   * such as one with an empty name or a filter that isn't valid NQL, is left out and reported as
+   * a problem, and the import goes on. A segment whose name is taken by a segment
+   * with another filter is added with a number, such as "VIP (2)", because nobody can be asked
+   * for another name during an import. Every segment whose own name is free keeps it, so a
+   * segment only gets a number when the site, or an earlier segment in the file, has its name.
+   *
+   * A segment keeps the slug it had on the site it was exported from when the segments service
+   * accepts it, and gets one the service mints from its name when the site has that slug or a
+   * filter can't name a segment by it, as a saved member view, which has no slug, does. A
+   * segment added earlier in the import can be minted the slug a later segment of the file had,
+   * and that later segment then gets a minted slug too.
+   */
+  async doImport({ transacting }: { transacting: Knex.Transaction }): Promise<void> {
+    if (this.toImport.length === 0) {
+      return;
+    }
+    const { service } = segments;
+    const stored = await service.browse({}, transacting);
+    const taken = new Set(stored.map(({ name }) => normalizeName(name)));
+
+    // The names the site's segments have, by filter, and then those of the file's segments too.
+    const namesOf = new Map<string, Set<string>>();
+    const hold = (name: string, filter: string) =>
+      namesOf.set(filter, (namesOf.get(filter) ?? new Set()).add(normalizeName(name)));
+    for (const { name, filter } of stored) {
+      hold(name, filter);
+    }
+    // No name is given a higher number than this, as there are no more segments to clash with.
+    const highestNumber = stored.length + this.toImport.length + 1;
+    /**
+     * Whether a segment has `filter` under `name`, or under `name` with a number, which is how
+     * an earlier import or the migration stored a segment whose name was taken.
+     */
+    const isHeld = (name: string, filter: string): boolean => {
+      const names = namesOf.get(filter);
+      if (!names) {
+        return false;
+      }
+      for (let number = 1; number <= highestNumber; number += 1) {
+        if (names.has(normalizeName(numbered(name, number)))) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const wanted: { segment: ExportedSegment; filter: SegmentFilter; number?: number }[] = [];
+    for (const segment of this.toImport) {
+      const filter = SegmentFilter.safeParse(segment.filter);
+      if (!filter.success || !SegmentName.safeParse(numbered(segment.name, 1)).success) {
+        this.skipped(segment, 'Segment was not imported because its name or filter is invalid.');
+      } else if (filterNamesSegment(filter.data)) {
+        // A segment's filter can't name another segment, and the segment ids in an import don't
+        // match the site's segments anyway
+        this.skipped(segment, 'Segment was not imported because its filter names another segment.');
+      } else if (isHeld(segment.name, filter.data)) {
+        this.skipped(segment, 'Segment was not imported because the site already has it.');
+      } else if (!isParseableFilter(filter.data)) {
+        // After `isHeld`, as a stored segment can have a filter that isn't valid NQL. Before
+        // names are numbered, as the service would reject it, so a segment that is left out
+        // takes no name from one that is added.
+        this.skipped(segment, 'Segment was not imported because its filter is not valid NQL.');
+      } else {
+        hold(numbered(segment.name, 1), filter.data);
+        wanted.push({ segment, filter: filter.data });
+      }
+    }
+
+    /** The first number from `from` that gives `name` a name nothing has taken, which it takes. */
+    const take = (name: string, from: number): number => {
+      let number = from;
+      while (taken.has(normalizeName(numbered(name, number)))) {
+        number += 1;
+      }
+      taken.add(normalizeName(numbered(name, number)));
+      return number;
+    };
+    for (const entry of wanted) {
+      if (!taken.has(normalizeName(numbered(entry.segment.name, 1)))) {
+        entry.number = take(entry.segment.name, 1);
+      }
+    }
+    for (const entry of wanted) {
+      entry.number ??= take(entry.segment.name, 2);
+    }
+
+    // Each rejected name leads to one `take` counts as free, and the database can only count
+    // it as taken by a segment that is stored, so one more try than there are segments is enough.
+    const tries = stored.length + wanted.length + 1;
+    for (const { segment, filter, number } of wanted) {
+      await this.add(segment, filter, { number: number ?? 1, tries, take }, transacting);
+    }
+  }
+
+  /**
+   * Adds `segment` under its name with `names.number`. The database decides whether the name is
+   * taken, and can count a name as another segment's where `take`'s comparison doesn't, as
+   * MySQL's default collation does for "Cafe" and "Café". The segment is then tried
+   * with the next free number, up to `names.tries` times. A rejected add has written nothing, so
+   * the import goes on.
+   */
+  private async add(
+    segment: ExportedSegment,
+    filter: SegmentFilter,
+    names: { number: number; tries: number; take: (name: string, from: number) => number },
+    transacting: Knex.Transaction,
+  ): Promise<void> {
+    let { number } = names;
+    const slug = SegmentSlug.safeParse(segment.slug).data;
+    for (let tried = 0; tried < names.tries; tried += 1) {
+      const name = SegmentName.parse(numbered(segment.name, number));
+      try {
+        const added = await this.addUnder(name, filter, slug, transacting);
+        this.importedData.push(added);
+        this.importedDataToReturn.push(added);
+        return;
+      } catch (err) {
+        if (!(err instanceof NameTakenError)) {
+          throw err;
+        }
+        number = names.take(segment.name, number + 1);
+      }
+    }
+    this.skipped(segment, 'Segment was not imported because no name was free for it.');
+  }
+
+  /**
+   * Adds a segment under `name`, with `slug`, the slug it had in the file when that is in a
+   * slug's format. When the service rejects that slug, because the site has it or a filter can't
+   * name a segment by it, the segment is added again without one, for the service to mint.
+   */
+  private async addUnder(
+    name: SegmentName,
+    filter: SegmentFilter,
+    slug: SegmentSlug | undefined,
+    transacting: Knex.Transaction,
+  ): Promise<Segment> {
+    if (slug !== undefined) {
+      try {
+        return await segments.service.add({ actor: null }, { name, filter, slug }, transacting);
+      } catch (err) {
+        if (!(err instanceof SlugRejectedError)) {
+          throw err;
+        }
+      }
+    }
+    return segments.service.add({ actor: null }, { name, filter }, transacting);
+  }
+
+  private skipped(segment: ExportedSegment, message: string): void {
+    this.problems.push({ message, help: 'Segment', context: JSON.stringify(segment) });
+  }
+}

@@ -4,6 +4,7 @@ import errors from '@tryghost/errors';
 export interface User {
   id: string;
   email: string;
+  status?: string;
 }
 
 /**

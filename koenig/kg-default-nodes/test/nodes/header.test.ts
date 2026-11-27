@@ -13,11 +13,10 @@ describe('HeaderNode', function () {
         let dataset: Record<string, unknown>;
         let exportOptions: Record<string, unknown>;
 
-        const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+        const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
             editor.update(() => {
                 try {
-                    testFn();
-                    resolve();
+                    resolve(testFn());
                 } catch (e) {
                     reject(e);
                 }
@@ -134,18 +133,18 @@ describe('HeaderNode', function () {
         });
 
         describe('exportDOM', function () {
-            it('can render to HTML', editorTest(function () {
+            it('can render to HTML', editorTest(async function () {
                 const headerNode = $createHeaderNode(dataset);
                 const result = headerNode.exportDOM(editor, exportOptions);
                 const expectedElement = html`
-                <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url(https://example.com/image.jpg)">
+                <div class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url('https://example.com/image.jpg')">
                     <h2 class="kg-header-card-header" id="this-is-the-header-card">This is the header card</h2>
                     <h3 class="kg-header-card-subheader" id="hello">hello</h3>
                     <a class="kg-header-card-button" href="https://example.com/">The button</a>
                 </div>
         `;
                 expect((result as unknown as {type?: string}).type).toBe('inner');
-                assertPrettifiesTo((result.element as HTMLElement).innerHTML, expectedElement);
+                await assertPrettifiesTo((result.element as HTMLElement).innerHTML, expectedElement);
             }));
         });
         describe('importDOM', function () {
@@ -205,11 +204,10 @@ describe('HeaderNode', function () {
         let dataset: Record<string, unknown>;
         let exportOptions: Record<string, unknown>;
 
-        const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+        const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
             editor.update(() => {
                 try {
-                    testFn();
-                    resolve();
+                    resolve(testFn());
                 } catch (e) {
                     reject(e);
                 }

@@ -1,0 +1,295 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { readFile } from 'node:fs/promises';
+import yaml from 'js-yaml';
+import picomatch from 'picomatch';
+
+// The parts of ci.yml these tests read.
+interface Step {
+  id?: string;
+  run?: string;
+  with?: Record<string, string>;
+}
+
+interface Job {
+  needs: string[];
+  if?: string;
+  outputs: Record<string, string>;
+  steps: Step[];
+}
+
+interface Workflow {
+  jobs: Record<
+    | 'job_setup'
+    | 'job_lint_docs'
+    | 'job_service_inventory'
+    | 'job_legacy_services'
+    | 'job_required_tests',
+    Job
+  >;
+}
+
+async function loadWorkflow(): Promise<Workflow> {
+  return yaml.load(
+    await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8'),
+  ) as Workflow;
+}
+
+async function getFilterPatterns(filterName: string): Promise<string[]> {
+  const workflow = await loadWorkflow();
+  const filterStep = workflow.jobs.job_setup.steps.find((step) => step.id === 'changed');
+  // Anchored filter groups nest, hence the flatten.
+  const filters = yaml.load(filterStep?.with?.filters ?? '') as Record<string, unknown[]>;
+  const patterns = filters[filterName];
+  assert.ok(patterns, `ci.yml has no ${filterName} filter`);
+
+  return patterns.flat(Infinity) as string[];
+}
+
+describe('CI path filters', () => {
+  it('selects repository automation from its tools workspace', async () => {
+    for (const name of ['shared', 'ci']) {
+      const patterns = await getFilterPatterns(name);
+      assert.ok(
+        patterns.some((pattern) =>
+          picomatch(pattern, { dot: true })('tools/scripts/ci/e2e-shards.ts'),
+        ),
+        `${name} must select moved automation`,
+      );
+    }
+  });
+
+  it('excludes documentation after all positive core patterns', async () => {
+    const patterns = await getFilterPatterns('core');
+    const positivePatterns = patterns
+      .map((pattern, index) => ({ pattern, index }))
+      .filter(({ pattern }) => !pattern.startsWith('!'));
+
+    for (const exclusion of [
+      '!**/*.md',
+      '!**/*.mdx',
+      '!ghost/core/server/services/legacy-service-inventory.yaml',
+    ]) {
+      const exclusionIndex = patterns.indexOf(exclusion);
+      assert.notStrictEqual(exclusionIndex, -1);
+      assert.ok(
+        positivePatterns.every(({ index }) => index < exclusionIndex),
+        `${exclusion} must follow positive patterns so later patterns cannot add docs back`,
+      );
+    }
+  });
+
+  it('treats Markdown and MDX as documentation rather than code', async () => {
+    const anyCode = await getFilterPatterns('any-code');
+    const e2e = await getFilterPatterns('e2e');
+
+    assert.ok(anyCode.includes('!**/*.md'));
+    assert.ok(anyCode.includes('!**/*.mdx'));
+    assert.ok(e2e.includes('!**/*.md'));
+    assert.ok(e2e.includes('!**/*.mdx'));
+  });
+
+  it('lints documentation on every run', async () => {
+    const workflow = await loadWorkflow();
+    const job = workflow.jobs.job_lint_docs;
+
+    // A link target can be any file, so no path filter can safely skip this job.
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    assert.strictEqual(job.if, undefined);
+    assert.ok(job.steps.some((step) => step.run === 'pnpm lint:docs'));
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_lint_docs'),
+      'Documentation lint failures must block the required-tests gate',
+    );
+  });
+
+  it('runs code checks, but not runtime tests, when only the legacy service inventory changes', async () => {
+    const inventory = 'ghost/core/server/services/legacy-service-inventory.yaml';
+    const readme = 'ghost/core/server/services/README.md';
+    const matcher = async (filterName: string) => {
+      const patterns = await getFilterPatterns(filterName);
+      const positives = patterns.filter((pattern) => !pattern.startsWith('!'));
+      const exclusions = patterns.filter((pattern) => pattern.startsWith('!'));
+      return (path: string) =>
+        (positives.length === 0 ||
+          positives.some((pattern) => picomatch(pattern, { dot: true })(path))) &&
+        exclusions.every((pattern) => picomatch(pattern, { dot: true })(path));
+    };
+
+    // Boot never reads the inventory, so it cannot change runtime behaviour.
+    for (const filterName of ['core', 'e2e']) {
+      const matches = await matcher(filterName);
+      assert.strictEqual([inventory, readme].some(matches), false, filterName);
+      for (const runtime of [
+        'ghost/core/server/services/identity-tokens/index.ts',
+        'ghost/core/server/services/other-metadata.yaml',
+        '.github/workflows/ci.yml',
+      ]) {
+        assert.strictEqual(
+          [inventory, readme, runtime].some(matches),
+          true,
+          `${filterName}: ${runtime}`,
+        );
+      }
+    }
+
+    // Lint decides which services to check from the inventory. Removing an
+    // entry must run lint and the tooling tests, so it counts as code.
+    const anyCode = await matcher('any-code');
+    assert.strictEqual(anyCode(inventory), true, 'Inventory changes must run code checks');
+    assert.strictEqual(anyCode(readme), false);
+    assert.strictEqual(
+      anyCode('ghost/test/unit/server/services/legacy-service-inventory.test.ts'),
+      true,
+      'Changes to the inventory validator must still run code checks',
+    );
+  });
+
+  it('requires focused validation for inventory metadata, its test and configuration', async () => {
+    const patterns = await getFilterPatterns('service-inventory');
+    const matches = (path: string) =>
+      patterns.some((pattern) => picomatch(pattern, { dot: true })(path));
+    for (const path of [
+      'ghost/core/server/services/legacy-service-inventory.yaml',
+      'ghost/test/unit/server/services/legacy-service-inventory.test.ts',
+      'ghost/vitest.config.inventory.ts',
+      '.github/workflows/ci.yml',
+    ]) {
+      assert.strictEqual(matches(path), true, path);
+    }
+    assert.strictEqual(matches('ghost/core/server/services/README.md'), false);
+
+    const configPath = 'ghost/vitest.config.inventory.ts';
+    for (const filterName of ['core', 'e2e']) {
+      const filters = await getFilterPatterns(filterName);
+      assert.ok(filters.includes(`!${configPath}`), filterName);
+    }
+
+    const workflow = await loadWorkflow();
+    assert.strictEqual(
+      workflow.jobs.job_setup.outputs.changed_service_inventory,
+      '${{ steps.changed.outputs.service-inventory }}',
+    );
+    const job = workflow.jobs.job_service_inventory;
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    assert.strictEqual(job.if, "needs.job_setup.outputs.changed_service_inventory == 'true'");
+    assert.ok(
+      job.steps.some(
+        (step) =>
+          step.run === 'pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts',
+      ),
+    );
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_service_inventory'),
+      'Inventory validation failures must block the required-tests gate',
+    );
+  });
+
+  it('requires pull requests that change the inventory to pass the only-shrinks check', async () => {
+    const patterns = await getFilterPatterns('service-inventory');
+    for (const path of [
+      'ghost/core/server/services/legacy-service-inventory.yaml',
+      'tools/scripts/ci/check-legacy-services.ts',
+      'tools/configs/oxlint/legacy-services.ts',
+      'tools/scripts/ci/legacy-services-base.ts',
+    ]) {
+      assert.ok(
+        patterns.some((pattern) => picomatch(pattern, { dot: true })(path)),
+        path,
+      );
+    }
+
+    const workflow = await loadWorkflow();
+    const job = workflow.jobs.job_legacy_services;
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    // Only a pull request has a base to compare with. The job is skipped
+    // elsewhere; the command itself never skips.
+    assert.strictEqual(
+      job.if,
+      "github.event_name == 'pull_request' && needs.job_setup.outputs.changed_service_inventory == 'true'",
+    );
+    const checkout = job.steps.find((step) => step.with?.ref);
+    assert.strictEqual(checkout?.with?.['fetch-depth'], 0, 'The fork point needs full history');
+    assert.ok(
+      job.steps.some((step) => step.run?.includes('refs/remotes/origin/${PR_BASE_REF}')),
+      'The base branch must be fetched before the comparison',
+    );
+    assert.ok(
+      job.steps.some((step) => step.run === 'node tools/scripts/ci/check-legacy-services.ts'),
+    );
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_legacy_services'),
+      'A grown legacy list must block the required-tests gate',
+    );
+    const root = JSON.parse(
+      await readFile(new URL('../../../package.json', import.meta.url), 'utf8'),
+    );
+    assert.strictEqual(
+      root.scripts['lint:legacy-services'],
+      'node tools/scripts/ci/check-legacy-services.ts',
+    );
+  });
+
+  it('skips code checks and E2E for ownership and docs changes, but keeps mixed changes', async () => {
+    for (const filterName of ['any-code', 'e2e']) {
+      const patterns = await getFilterPatterns(filterName);
+      const matches = (path: string) =>
+        patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
+      const docsPaths = ['.github/CODEOWNERS', 'ghost/core/support/README.md'];
+
+      assert.strictEqual(docsPaths.some(matches), false, filterName);
+      for (const path of ['ghost/core/index.js', '.github/workflows/ci.yml']) {
+        assert.strictEqual([...docsPaths, path].some(matches), true, `${filterName}: ${path}`);
+      }
+    }
+  });
+
+  it('skips the build and E2E lane for Admin tests while keeping affected checks', async () => {
+    const e2e = await getFilterPatterns('e2e');
+    const anyCode = await getFilterPatterns('any-code');
+
+    // These filters contain only exclusions. The pinned action uses micromatch:
+    // a file survives only if it matches every negated glob, with dotfiles enabled.
+    for (const patterns of [e2e, anyCode]) {
+      assert.ok(patterns.every((pattern) => pattern.startsWith('!')));
+    }
+    const matches = (patterns: string[], path: string) =>
+      patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
+    const testPaths = [
+      'clients/admin/src/members/detail/member-event.test.ts',
+      'clients/admin/src/tags/tags.acceptance.test.tsx',
+      'clients/admin/src/editor/editor.component.test.tsx',
+      'clients/admin/src/tags/tags.screen.ts',
+      'clients/admin/test-utils/acceptance/setup.ts',
+      'clients/admin/test-utils/acceptance/public/mockServiceWorker.js',
+      'clients/admin/vitest.acceptance.config.ts',
+    ];
+    for (const path of testPaths) {
+      assert.strictEqual(matches(e2e, path), false, path);
+      assert.strictEqual(matches(anyCode, path), true, path);
+    }
+
+    const runtimePaths = [
+      'clients/admin/src/tags/tags.tsx',
+      'clients/admin/src/index.css',
+      'clients/admin/src/editor/engine/__fixtures__/index.ts',
+      'clients/admin/src/automations/run-history.test-utils.ts',
+      'clients/admin/vite.config.ts',
+      'clients/admin/vite.shared.ts',
+      'clients/admin/tsconfig.app.json',
+      'clients/admin/package.json',
+      'clients/admin/.env.test',
+      'clients/shade/src/components/ui/button.tsx',
+      'pnpm-lock.yaml',
+      '.github/workflows/ci.yml',
+    ];
+    for (const path of runtimePaths) {
+      assert.strictEqual(matches(e2e, path), true, path);
+    }
+    assert.strictEqual(
+      [...testPaths, ...runtimePaths].some((path) => matches(e2e, path)),
+      true,
+      'mixed changes must keep the build and E2E lane',
+    );
+  });
+});

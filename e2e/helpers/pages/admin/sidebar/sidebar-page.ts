@@ -20,7 +20,7 @@ export interface NavItem {
  * `roles` = roles whose sidebar shows the item (Owner sees everything
  * Administrator does; Contributors have no sidebar at all — they get a
  * floating user menu instead). Gating source:
- * apps/admin/src/layout/app-sidebar/{nav-main,nav-content}.tsx.
+ * clients/admin/src/layout/app-sidebar/{nav-main,nav-content}.tsx.
  */
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -73,12 +73,10 @@ export const NAV_ITEMS: NavItem[] = [
  *
  * Accessibility features:
  * ✓ Active nav links have aria-current="page"
- * ✓ Posts toggle button has aria-expanded
  */
 export class SidebarPage extends AdminPage {
   public readonly sidebar: Locator;
   public readonly adminSidebar: Locator;
-  public readonly postsToggle: Locator;
   public readonly userDropdownTrigger: Locator;
   public readonly appearanceMenuItem: Locator;
   public readonly themeLightOption: Locator;
@@ -92,10 +90,16 @@ export class SidebarPage extends AdminPage {
   public readonly upgradeNowLink: Locator;
   public readonly themeErrorBanner: Locator;
   public readonly themeErrorDialog: Locator;
+  /**
+   * The saved member views a publisher can see under Members, in the order the sidebar
+   * shows them. Links that are rendered but not visible are left out, so asserting the
+   * whole list also asserts that every view in it is on screen.
+   */
+  public readonly memberViewLinks: Locator;
 
   constructor(page: Page) {
     super(page);
-    // The admin renders more than one navigation landmark (React screens
+    // The admin renders more than one navigation landmark (screens
     // carry a breadcrumb <nav aria-label="breadcrumb"> too), so anchor on
     // the site search control, which only the sidebar contains.
     this.sidebar = page
@@ -104,7 +108,6 @@ export class SidebarPage extends AdminPage {
     // Container testid — for asserting the sidebar's absence (contributors
     // get a floating avatar menu instead of the sidebar).
     this.adminSidebar = page.getByTestId(sidebarSel.adminSidebar);
-    this.postsToggle = this.sidebar.getByRole('button', { name: sidebarSel.postsToggle });
     this.userDropdownTrigger = page.getByRole('button', { name: sidebarSel.userMenuTrigger });
     this.appearanceMenuItem = page.getByRole('menuitem', { name: sidebarSel.appearanceMenuItem });
     this.themeLightOption = page.getByRole('menuitem', { name: sidebarSel.lightAppearanceOption });
@@ -123,6 +126,12 @@ export class SidebarPage extends AdminPage {
       .getByRole('status')
       .filter({ hasText: sidebarSel.themeErrorsBannerText });
     this.themeErrorDialog = page.getByRole('dialog', { name: sidebarSel.themeErrorsDialog });
+    // The submenu has no accessible name, so it is found by the id that the
+    // "Toggle member views" button points at with aria-controls.
+    this.memberViewLinks = this.sidebar
+      .locator(`#${sidebarSel.memberViewsMenu}`)
+      .getByRole('link')
+      .filter({ visible: true });
   }
 
   getNavLink(name: string): Locator {
@@ -131,20 +140,6 @@ export class SidebarPage extends AdminPage {
 
   getCustomViewColorIndicator(viewName: string): Locator {
     return this.getNavLink(viewName).locator('[data-color]');
-  }
-
-  async expandPostsSubmenu(): Promise<void> {
-    const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
-    if (isExpanded !== 'true') {
-      await this.postsToggle.click();
-    }
-  }
-
-  async collapsePostsSubmenu(): Promise<void> {
-    const isExpanded = await this.postsToggle.getAttribute('aria-expanded');
-    if (isExpanded === 'true') {
-      await this.postsToggle.click();
-    }
   }
 
   async waitForDarkMode(enabled: boolean): Promise<void> {

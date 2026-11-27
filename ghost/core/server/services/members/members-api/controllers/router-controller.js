@@ -1,0 +1,1432 @@
+const dns = require('node:dns/promises');
+const crypto = require('node:crypto');
+const tpl = require('@tryghost/tpl');
+const logging = require('@tryghost/logging');
+const sanitizeHtml = require('sanitize-html');
+const { errors: stripeErrors } = require('stripe');
+const {
+  BadRequestError,
+  NoPermissionError,
+  UnauthorizedError,
+  DisabledFeatureError,
+  NotFoundError,
+} = require('@tryghost/errors');
+const errors = require('@tryghost/errors');
+const { isEmail } = require('@tryghost/validator');
+const { normalizeEmail } = require('../utils/normalize-email');
+const { hasActiveOffer } = require('../utils/has-active-offer');
+const { getInboxLinks } = require('../../../../lib/get-inbox-links');
+const { SIGNUP_CONTEXTS } = require('../../../../lib/member-signup-contexts');
+
+/** @import { CheckoutService } from '../../../stripe-checkout-config' */
+/** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
+
+const messages = {
+  emailRequired: 'Email is required.',
+  invalidEmail: 'Email is not valid',
+  blockedEmailDomain: 'Signups from this email domain are currently restricted.',
+  badRequest: 'Bad Request.',
+  notFound: 'Not Found.',
+  offerNotFound: 'This offer does not exist.',
+  offerArchived: 'This offer is archived.',
+  tierNotFound: 'This tier does not exist.',
+  tierArchived: 'This tier is archived.',
+  tierFree: "This tier is free, so it can't be bought.",
+  existingSubscription: 'A subscription exists for this Member.',
+  unableToCheckout: 'Unable to initiate checkout session',
+  inviteOnly: 'This site is invite-only, contact the owner for access.',
+  paidOnly: 'This site only accepts paid members.',
+  memberNotFound: 'No member exists with this e-mail address.',
+  invalidType: 'Invalid checkout type.',
+  notConfigured: 'This site is not accepting payments at the moment.',
+  invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
+  archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
+  otcNotSupported: 'OTC verification not supported.',
+  invalidCode: 'Invalid verification code.',
+  failedToVerifyCode: 'Failed to verify code, please try again.',
+  signInRequired: 'You must be signed in to continue.',
+};
+
+// helper utility for logic shared between sendMagicLink and verifyOTC
+function extractRefererOrRedirect(req) {
+  const { autoRedirect, redirect } = req.body;
+
+  if (autoRedirect === false) {
+    return null;
+  }
+
+  if (redirect) {
+    try {
+      return new URL(redirect).href;
+    } catch (e) {
+      logging.warn(e);
+    }
+  }
+
+  return req.get('referer') || null;
+}
+
+function extractGiftToken(input) {
+  if (!input || typeof input !== 'string' || input.length === 0) {
+    return null;
+  }
+
+  return input.trim();
+}
+
+/**
+ * The metadata keys Ghost sets on the Checkout sessions it creates, which the Stripe webhook reads
+ * to tell which site created a session, what kind of checkout it is and how its buyer can sign in.
+ * A buyer's request can't set them.
+ */
+const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
+  'ghost_donation',
+  'ghost_gift',
+  'ghost_gift_id',
+  'ghost_site_uuid',
+  'ghostSignupContext',
+]);
+
+function removeReservedCheckoutMetadata(metadata) {
+  if (!metadata || typeof metadata !== 'object') {
+    return;
+  }
+
+  for (const key of RESERVED_CHECKOUT_METADATA_KEYS) {
+    delete metadata[key];
+  }
+}
+
+/**
+ * Validate that a candidate return URL (e.g. Stripe Checkout success/cancel URL) points back
+ * to the configured Ghost site. Returns `undefined` when the candidate is missing, malformed,
+ * on a different origin, or outside of the site's subpath (for subpath installs) — leaving
+ * the downstream Stripe service to fall back to its configured default URL.
+ *
+ * This prevents the public checkout endpoints being abused as open-redirect surfaces.
+ *
+ * @param {string | undefined} candidate - URL provided in the request body
+ * @param {string} siteUrl - The site URL returned by urlUtils.getSiteUrl()
+ * @returns {string | undefined} The candidate URL if same-origin, otherwise undefined
+ */
+function sanitizeReturnUrl(candidate, siteUrl) {
+  if (typeof candidate !== 'string' || candidate.length === 0) {
+    return undefined;
+  }
+
+  let site;
+  let url;
+
+  try {
+    site = new URL(siteUrl);
+    url = new URL(candidate);
+  } catch {
+    return undefined;
+  }
+
+  if (url.origin !== site.origin) {
+    return undefined;
+  }
+
+  // Normalize site/candidate paths to trailing-slash form so that /blog and /blog/
+  // are treated equivalently when the site is configured at a subpath.
+  const sitePath = site.pathname.endsWith('/') ? site.pathname : `${site.pathname}/`;
+  const urlPath = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
+
+  return urlPath.startsWith(sitePath) ? url.href : undefined;
+}
+
+module.exports = class RouterController {
+  #inboxLinksDnsResolver = new dns.Resolver({ maxTimeout: 1000 });
+
+  /**
+   * RouterController
+   *
+   * @param {object} deps
+   * @param {any} deps.offersAPI
+   * @param {any} deps.paymentsService
+   * @param {any} deps.memberRepository
+   * @param {() => boolean} deps.allowSelfSignup
+   * @param {any} deps.magicLinkService
+   * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
+   * @param {import('../../../member-attribution')} deps.memberAttributionService
+   * @param {any} deps.tokenService
+   * @param {any} deps.sendEmailWithMagicLink
+   * @param {{isSet(name: string): boolean}} deps.labsService
+   * @param {any} deps.newslettersService
+   * @param {any} deps.sentry
+   * @param {any} deps.settingsCache
+   * @param {any} deps.settingsHelpers
+   * @param {any} deps.urlUtils
+   * @param {any} deps.emailAddressService
+   * @param {Pick<CheckoutService, 'read'>} deps.checkouts Decides the checkout a card update opens.
+   * @param {import('../../../stripe/tracking').StripeTracking} deps.tracking
+   */
+  constructor({
+    offersAPI,
+    paymentsService,
+    tiersService,
+    memberRepository,
+    allowSelfSignup,
+    magicLinkService,
+    stripeAPIService,
+    tokenService,
+    memberAttributionService,
+    sendEmailWithMagicLink,
+    labsService,
+    newslettersService,
+    sentry,
+    settingsCache,
+    settingsHelpers,
+    urlUtils,
+    emailAddressService,
+    giftService,
+    checkouts,
+    tracking,
+  }) {
+    this._offersAPI = offersAPI;
+    this._paymentsService = paymentsService;
+    this._tiersService = tiersService;
+    this._memberRepository = memberRepository;
+    this._allowSelfSignup = allowSelfSignup;
+    this._magicLinkService = magicLinkService;
+    this._stripeAPIService = stripeAPIService;
+    this._tokenService = tokenService;
+    this._sendEmailWithMagicLink = sendEmailWithMagicLink;
+    this._memberAttributionService = memberAttributionService;
+    this.labsService = labsService;
+    this._newslettersService = newslettersService;
+    this._sentry = sentry || undefined;
+    this._settingsCache = settingsCache;
+    this._settingsHelpers = settingsHelpers;
+    this._urlUtils = urlUtils;
+    this._emailAddressService = emailAddressService;
+    this._giftService = giftService;
+    this._checkouts = checkouts;
+    this._tracking = tracking;
+  }
+
+  async ensureStripe(_req, res, next) {
+    if (!this._stripeAPIService.configured) {
+      res.writeHead(400);
+      return res.end('Stripe not configured');
+    }
+    try {
+      await this._stripeAPIService.ready();
+      next();
+    } catch (err) {
+      logging.error(err);
+      res.writeHead(500);
+      return res.end('There was an error configuring stripe');
+    }
+  }
+
+  async createCheckoutSetupSession(req, res) {
+    const identity = req.body.identity;
+
+    if (!identity) {
+      res.writeHead(400);
+      return res.end();
+    }
+
+    let email;
+    try {
+      if (!identity) {
+        email = null;
+      } else {
+        const claims = await this._tokenService.decodeToken(identity);
+        email = claims && claims.sub;
+      }
+    } catch (err) {
+      logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
+      res.writeHead(401);
+      return res.end('Unauthorized');
+    }
+
+    const member = email ? await this._memberRepository.get({ email }) : null;
+
+    if (!member) {
+      res.writeHead(403);
+      return res.end('Bad Request.');
+    }
+
+    const subscriptions = await member.related('stripeSubscriptions').fetch();
+
+    let currency;
+    let customer;
+    if (!req.body.subscription_id) {
+      const activeSubscription = this._getActiveSubscription(subscriptions);
+      customer = await this._getCustomerForSubscription(member, activeSubscription);
+      if (customer.id === activeSubscription?.get('customer_id')) {
+        currency = activeSubscription.get('plan_currency') || undefined;
+      }
+    } else {
+      const subscription = subscriptions.models.find((sub) => {
+        return sub.get('subscription_id') === req.body.subscription_id;
+      });
+
+      if (!subscription) {
+        res.writeHead(404, {
+          'Content-Type': 'text/plain;charset=UTF-8',
+        });
+        return res.end(`Could not find subscription ${req.body.subscription_id}`);
+      }
+      currency = subscription.get('plan_currency') || undefined;
+      customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
+    }
+
+    const siteUrl = this._urlUtils.getSiteUrl();
+    const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
+      successUrl: sanitizeReturnUrl(req.body.successUrl, siteUrl),
+      cancelUrl: sanitizeReturnUrl(req.body.cancelUrl, siteUrl),
+      subscription_id: req.body.subscription_id,
+      currency,
+      checkout: await this._checkouts.read(),
+    });
+    const publicKey = this._stripeAPIService.getPublicKey();
+    const sessionInfo = {
+      sessionId: session.id,
+      publicKey,
+    };
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+    });
+
+    res.end(JSON.stringify(sessionInfo));
+  }
+
+  /**
+   * Newest active subscription first, the same ranking as members_resolved_subscription.
+   *
+   * @param {any} subscriptions
+   */
+  _getActiveSubscription(subscriptions) {
+    return subscriptions.models
+      .filter((sub) => ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status')))
+      .sort(
+        (a, b) =>
+          new Date(b.get('created_at')).getTime() - new Date(a.get('created_at')).getTime() ||
+          (a.get('id') < b.get('id') ? -1 : 1),
+      )[0];
+  }
+
+  /**
+   * @param {any} member
+   * @param {any} [subscription]
+   */
+  async _getCustomerForSubscription(member, subscription) {
+    if (subscription) {
+      try {
+        const customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
+        if (!customer.deleted) {
+          return customer;
+        }
+      } catch (err) {
+        if (err?.code !== 'resource_missing') {
+          throw err;
+        }
+      }
+    }
+
+    return await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+  }
+
+  async createBillingPortalSession(req, res) {
+    const identity = req.body.identity;
+
+    if (!identity) {
+      res.writeHead(400);
+      return res.end();
+    }
+
+    let email;
+    try {
+      const claims = await this._tokenService.decodeToken(identity);
+      email = claims && claims.sub;
+    } catch (err) {
+      logging.error(err);
+      res.writeHead(401);
+      return res.end('Unauthorized');
+    }
+
+    const member = email ? await this._memberRepository.get({ email }) : null;
+
+    if (!member) {
+      res.writeHead(403);
+      return res.end('Bad Request.');
+    }
+
+    const subscriptions = await member.related('stripeSubscriptions').fetch();
+
+    let customer;
+    if (!req.body.subscription_id) {
+      const activeSubscription = this._getActiveSubscription(subscriptions);
+      customer = await this._getCustomerForSubscription(member, activeSubscription);
+    } else {
+      const subscription = subscriptions.models.find((sub) => {
+        return sub.get('subscription_id') === req.body.subscription_id;
+      });
+
+      if (!subscription) {
+        res.writeHead(404, {
+          'Content-Type': 'text/plain;charset=UTF-8',
+        });
+        return res.end(`Could not find subscription ${req.body.subscription_id}`);
+      }
+
+      customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
+    }
+
+    const configurationId = this._settingsCache.get('stripe_billing_portal_configuration_id');
+
+    const siteUrl = this._urlUtils.getSiteUrl();
+    const session = await this._stripeAPIService.createBillingPortalSession(customer, {
+      returnUrl: sanitizeReturnUrl(req.body.returnUrl, siteUrl),
+      ...(configurationId && { configurationId }),
+    });
+    const sessionInfo = {
+      url: session.url,
+    };
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+    });
+
+    res.end(JSON.stringify(sessionInfo));
+  }
+
+  async _setAttributionMetadata(metadata) {
+    // Don't allow to set the source manually
+    delete metadata.attribution_id;
+    delete metadata.attribution_url;
+    delete metadata.attribution_type;
+    delete metadata.referrer_source;
+    delete metadata.referrer_medium;
+    delete metadata.referrer_url;
+    delete metadata.utm_source;
+    delete metadata.utm_medium;
+    delete metadata.utm_campaign;
+    delete metadata.utm_term;
+    delete metadata.utm_content;
+
+    if (metadata.urlHistory) {
+      // The full attribution history doesn't fit in the Stripe metadata (can't store objects + limited to 50 keys and 500 chars values)
+      // So we need to add top-level attributes with string values
+      const urlHistory = metadata.urlHistory;
+      delete metadata.urlHistory;
+
+      const attribution = await this._memberAttributionService.getAttribution(urlHistory);
+
+      // Don't set null properties
+      if (attribution.id) {
+        metadata.attribution_id = attribution.id;
+      }
+
+      if (attribution.url) {
+        metadata.attribution_url = attribution.url;
+      }
+
+      if (attribution.type) {
+        metadata.attribution_type = attribution.type;
+      }
+
+      if (attribution.referrerSource) {
+        metadata.referrer_source = attribution.referrerSource;
+      }
+
+      if (attribution.referrerMedium) {
+        metadata.referrer_medium = attribution.referrerMedium;
+      }
+
+      if (attribution.referrerUrl) {
+        metadata.referrer_url = attribution.referrerUrl;
+      }
+
+      // UTM parameters
+      if (attribution.utmSource) {
+        metadata.utm_source = attribution.utmSource;
+      }
+
+      if (attribution.utmMedium) {
+        metadata.utm_medium = attribution.utmMedium;
+      }
+
+      if (attribution.utmCampaign) {
+        metadata.utm_campaign = attribution.utmCampaign;
+      }
+
+      if (attribution.utmTerm) {
+        metadata.utm_term = attribution.utmTerm;
+      }
+
+      if (attribution.utmContent) {
+        metadata.utm_content = attribution.utmContent;
+      }
+    }
+  }
+
+  /**
+   * Read the passed tier, offer and cadence from the request body and return the corresponding objects, or throws if validation fails
+   * @returns
+   */
+  async _getSubscriptionCheckoutData(body) {
+    const tierId = body.tierId;
+    const offerId = body.offerId;
+
+    let cadence = body.cadence;
+    let tier;
+    let offer;
+
+    // Validate basic input
+    if (!offerId && !tierId) {
+      logging.error(
+        { event: { name: 'stripe_checkout.session.request_invalid' } },
+        'Expected offerId or tierId, received none',
+      );
+      throw new BadRequestError({
+        message: tpl(messages.badRequest),
+        context: 'Expected offerId or tierId, received none',
+      });
+    }
+
+    if (offerId && tierId) {
+      logging.error(
+        { event: { name: 'stripe_checkout.session.request_invalid' } },
+        'Expected offerId or tierId, received both',
+      );
+      throw new BadRequestError({
+        message: tpl(messages.badRequest),
+        context: 'Expected offerId or tierId, received both',
+      });
+    }
+
+    if (tierId && !cadence) {
+      logging.error(
+        { event: { name: 'stripe_checkout.session.request_invalid' }, cadence },
+        'Expected cadence to be "month" or "year"',
+      );
+      throw new BadRequestError({
+        message: tpl(messages.badRequest),
+        context: 'Expected cadence to be "month" or "year", received ' + cadence,
+      });
+    }
+
+    if (tierId && cadence && cadence !== 'month' && cadence !== 'year') {
+      logging.error(
+        { event: { name: 'stripe_checkout.session.request_invalid' }, cadence },
+        'Expected cadence to be "month" or "year"',
+      );
+      throw new BadRequestError({
+        message: tpl(messages.badRequest),
+        context: 'Expected cadence to be "month" or "year", received "' + cadence + '"',
+      });
+    }
+
+    // Fetch tier and offer
+    if (offerId) {
+      offer = await this._offersAPI.getOffer({ id: offerId });
+
+      if (!offer) {
+        throw new BadRequestError({
+          message: tpl(messages.offerNotFound),
+          context: 'Offer with id "' + offerId + '" not found',
+        });
+      }
+
+      if (offer.status && offer.status !== 'active') {
+        throw new BadRequestError({
+          message: tpl(messages.offerArchived),
+          context: 'Offer with id "' + offerId + '" is no longer active',
+        });
+      }
+
+      if (!offer.tier) {
+        throw new BadRequestError({
+          message: 'Offer does not have a tier',
+        });
+      }
+
+      tier = await this._tiersService.api.read(offer.tier.id);
+      cadence = offer.cadence;
+    } else if (tierId) {
+      offer = null;
+
+      tier = await this._tiersService.api.read(tierId);
+
+      if (!tier) {
+        logging.error(
+          { event: { name: 'stripe_checkout.session.tier_not_found' }, tier_id: tierId },
+          'Tier not found for a checkout',
+        );
+        throw new BadRequestError({
+          message: tpl(messages.tierNotFound),
+          context: 'Tier with id "' + tierId + '" not found',
+        });
+      }
+    }
+
+    if (tier.status === 'archived') {
+      throw new NoPermissionError({
+        message: tpl(messages.tierArchived),
+      });
+    }
+
+    return {
+      tier,
+      offer,
+      cadence,
+    };
+  }
+
+  /**
+   *
+   * @param {object} options
+   * @param {object} options.tier
+   * @param {object} [options.offer]
+   * @param {string} options.cadence
+   * @param {string} options.successUrl URL to redirect to after successful checkout
+   * @param {string} options.cancelUrl URL to redirect to after cancelled checkout
+   * @param {string} [options.email] Email address of the customer
+   * @param {object} [options.member] Currently authenticated member OR member associated with the email address
+   * @param {number|null} [options.giftTrialDays] Stable continuation decision from gift subscriptions
+   * @param {string} [options.referrer] Page to return to after signing in with the magic link
+   * @param {boolean} options.isAuthenticated
+   * @param {object} options.metadata Metadata to be passed to Stripe
+   * @returns
+   */
+  async _createSubscriptionCheckoutSession(options) {
+    // A free tier has nothing to pay for: checking it out would create a Stripe product for it
+    // and then fail on its missing price. Refuse it before anything reaches Stripe.
+    if (options.tier?.type === 'free') {
+      throw new BadRequestError({
+        message: tpl(messages.tierFree),
+        context: `Tier with id "${options.tier.id}" is free`,
+      });
+    }
+
+    const tier = options.tier;
+
+    if (!tier) {
+      throw new NotFoundError({
+        message: tpl(messages.tierNotFound),
+      });
+    }
+
+    if (tier.status === 'archived') {
+      throw new NoPermissionError({
+        message: tpl(messages.tierArchived),
+      });
+    }
+
+    if (options.offer) {
+      // Attach offer information to stripe metadata for free trial offers
+      // free trial offers don't have associated stripe coupons
+      options.metadata.offer = options.offer.id;
+    }
+
+    const member = options.member;
+    /** @type {SignupContext} */
+    let ghostSignupContext =
+      options.isAuthenticated && member
+        ? SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED
+        : SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
+
+    if (!member && options.email) {
+      // Create a signup link if there is no member with this email address
+      options.successUrl = await this._magicLinkService.getMagicLink({
+        tokenData: {
+          email: options.email,
+          attribution: {
+            id: options.metadata.attribution_id ?? null,
+            type: options.metadata.attribution_type ?? null,
+            url: options.metadata.attribution_url ?? null,
+          },
+        },
+        type: 'signup',
+        // Redirect to the original success url after sign up
+        referrer: options.successUrl,
+      });
+      ghostSignupContext = SIGNUP_CONTEXTS.HAS_PRECHECKOUT_MAGIC_LINK;
+    }
+
+    if (member) {
+      options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
+
+      // Existing paid members must manage their subscription instead of creating another.
+      const restrictCheckout = member.get('status') === 'paid';
+
+      if (restrictCheckout) {
+        if (!options.isAuthenticated && options.email) {
+          try {
+            await this._sendEmailWithMagicLink({
+              email: options.email,
+              requestedType: 'signin',
+              referrer: options.referrer,
+            });
+          } catch (err) {
+            logging.warn({ event: { name: 'stripe_checkout.session.sign_in_link_failed' }, err });
+          }
+        }
+        throw new NoPermissionError({
+          message: messages.existingSubscription,
+          code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION',
+        });
+      }
+    }
+
+    // Set by server to distinguish between checkout flows in Stripe webhooks.
+    options.metadata.ghostSignupContext = ghostSignupContext;
+
+    const paymentLink = await this._paymentsService.getPaymentLink(options);
+
+    return { url: paymentLink };
+  }
+
+  // Helper method to generate success URL with tier welcome page if available
+  _generateSuccessUrl(originalSuccessUrl, welcomePageURL) {
+    // If there's no welcome page URL, use the original success URL
+    if (!welcomePageURL) {
+      return originalSuccessUrl;
+    }
+
+    try {
+      // Create URL objects
+      const siteUrl = this._urlUtils.getSiteUrl();
+
+      // This will throw if welcomePageURL is invalid
+      const welcomeUrl = new URL(
+        welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL,
+        siteUrl,
+      );
+
+      // Add success parameters
+      welcomeUrl.searchParams.set('success', 'true');
+      welcomeUrl.searchParams.set('action', 'signup');
+
+      return welcomeUrl.href;
+    } catch (err) {
+      logging.warn({
+        event: { name: 'stripe_checkout.session.welcome_page_invalid' },
+        err,
+        welcome_page_url: welcomePageURL,
+      });
+      return originalSuccessUrl;
+    }
+  }
+
+  /**
+   *
+   * @param {object} options
+   * @param {string} options.successUrl URL to redirect to after successful checkout
+   * @param {string} options.cancelUrl URL to redirect to after cancelled checkout
+   * @param {string} [options.email] Email address of the customer
+   * @param {object} [options.member] Currently authenticated member OR member associated with the email address
+   * @param {boolean} options.isAuthenticated
+   * @param {object} options.metadata Metadata to be passed to Stripe
+   * @returns
+   */
+  async _createDonationCheckoutSession(options) {
+    if (!this._settingsHelpers.areDonationsEnabled()) {
+      throw new DisabledFeatureError({
+        message: tpl(messages.notConfigured),
+      });
+    }
+
+    const paymentLink = await this._paymentsService.getDonationPaymentLink(options);
+
+    return { url: paymentLink };
+  }
+
+  /**
+   * @param {object} options
+   * @param {string} options.tierId
+   * @param {string} [options.offerId]
+   * @param {string} [options.cadence]
+   * @param {number} [options.duration]
+   * @param {'link'|'email'} [options.deliveryMethod]
+   * @param {string} [options.recipientEmail]
+   * @param {string} [options.recipientName]
+   * @param {string} [options.buyerName]
+   * @param {string} [options.personalMessage]
+   * @param {string} [options.deliveryDate]
+   * @param {string} [options.email]
+   * @param {string} options.successUrl
+   * @param {string} options.cancelUrl
+   * @param {object} [options.member]
+   * @param {boolean} options.isAuthenticated
+   * @returns
+   */
+  async _createGiftCheckoutSession(options) {
+    if (!this._settingsHelpers.arePaidMembersEnabled()) {
+      throw new DisabledFeatureError({
+        message: tpl(messages.notConfigured),
+      });
+    }
+
+    // invite-only sites block new members, so a recipient who isn't already a member couldn't redeem
+    if (this._settingsHelpers.isMembersInviteOnly()) {
+      throw new DisabledFeatureError({
+        message: tpl(messages.inviteOnly),
+      });
+    }
+
+    return await this._giftService.service.startCheckout({
+      tierId: options.tierId,
+      offerId: options.offerId,
+      cadence: options.cadence,
+      duration: options.duration,
+      deliveryMethod: options.deliveryMethod,
+      recipientEmail: options.recipientEmail,
+      recipientName: options.recipientName,
+      buyerName: options.buyerName,
+      personalMessage: options.personalMessage,
+      deliveryDate: options.deliveryDate,
+      successUrl: options.successUrl,
+      cancelUrl: options.cancelUrl,
+      buyer: {
+        memberId: options.member?.id ?? null,
+        email: options.member?.get('email') ?? options.email ?? null,
+        name: options.member?.get('name') ?? null,
+        isAuthenticated: options.isAuthenticated,
+      },
+    });
+  }
+
+  async createCheckoutSession(req, res) {
+    try {
+      return await this._tracking.checkout(async (attempt) => {
+        const type = req.body.type ?? 'subscription';
+        const metadata = req.body.metadata ?? {};
+        const identity = req.body.identity;
+        const membersEnabled = true;
+
+        if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
+          throw new BadRequestError({
+            message: tpl(messages.invalidType),
+          });
+        }
+        attempt.starting(type);
+
+        let member;
+        let isAuthenticated = false;
+        if (membersEnabled) {
+          if (identity) {
+            let claims;
+            try {
+              claims = await this._tokenService.decodeToken(identity);
+            } catch (err) {
+              logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
+              throw new UnauthorizedError({ err });
+            }
+            const email = claims && claims.sub;
+            if (email) {
+              member = await this._memberRepository.get(
+                {
+                  email,
+                },
+                {
+                  withRelated: ['stripeCustomers', 'products'],
+                },
+              );
+              isAuthenticated = true;
+            }
+          } else if (req.body.customerEmail) {
+            member = await this._memberRepository.get(
+              {
+                email: req.body.customerEmail,
+              },
+              {
+                withRelated: ['stripeCustomers', 'products'],
+              },
+            );
+          }
+        }
+        attempt.buying({ existing: Boolean(member), verified: isAuthenticated });
+
+        await this._setAttributionMetadata(metadata);
+
+        if (metadata.newsletters) {
+          metadata.newsletters = JSON.stringify(
+            await this._validateNewsletters(JSON.parse(metadata.newsletters)),
+          );
+        }
+
+        removeReservedCheckoutMetadata(metadata);
+
+        const siteUrl = this._urlUtils.getSiteUrl();
+        const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
+        const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
+
+        const options = {
+          successUrl,
+          cancelUrl,
+          email: req.body.customerEmail,
+          member,
+          metadata,
+          isAuthenticated,
+        };
+
+        let response;
+        if (type === 'subscription') {
+          // A site without Stripe has no Stripe client to check out with, so refuse the way gift
+          // and donation checkouts do. This checks Stripe alone, not whether signups are open,
+          // so a site that has closed signups but kept Stripe still sells subscriptions.
+          if (!this._settingsHelpers.isStripeConnected()) {
+            throw new DisabledFeatureError({
+              message: tpl(messages.notConfigured),
+            });
+          }
+
+          if (!membersEnabled) {
+            throw new BadRequestError({
+              message: tpl(messages.badRequest),
+            });
+          }
+
+          let tier;
+          let cadence;
+          let offer;
+          let giftTrialDays;
+
+          if (req.body.continueFromGift) {
+            if (!isAuthenticated || !member) {
+              throw new UnauthorizedError({
+                message: tpl(messages.signInRequired),
+              });
+            }
+            const continuation = await this._giftService.service.preparePaidContinuation({
+              memberId: member.id,
+              memberStatus: member.get('status'),
+            });
+
+            ({ tier, cadence } = await this._getSubscriptionCheckoutData({
+              tierId: continuation.tierId,
+              cadence: continuation.cadence,
+            }));
+            giftTrialDays = continuation.trialDays;
+          } else {
+            ({ tier, cadence, offer } = await this._getSubscriptionCheckoutData(req.body));
+          }
+
+          response = await this._createSubscriptionCheckoutSession({
+            ...options,
+            tier,
+            cadence,
+            offer,
+            giftTrialDays,
+            referrer: req.get('referer'),
+          });
+
+          if (isAuthenticated && tier && tier.welcomePageURL) {
+            response.welcomePageUrl = tier.welcomePageURL;
+          }
+        } else if (type === 'donation') {
+          options.personalNote = parsePersonalNote(req.body.personalNote);
+          response = await this._createDonationCheckoutSession(options);
+        } else if (type === 'gift') {
+          if (!membersEnabled) {
+            throw new BadRequestError({
+              message: tpl(messages.badRequest),
+            });
+          }
+
+          response = await this._createGiftCheckoutSession({
+            ...options,
+            tierId: req.body.tierId,
+            offerId: req.body.offerId,
+            cadence: req.body.cadence,
+            duration: req.body.duration,
+            deliveryMethod: req.body.deliveryMethod,
+            recipientEmail: req.body.recipientEmail,
+            recipientName: req.body.recipientName,
+            buyerName: req.body.buyerName,
+            personalMessage: req.body.personalMessage,
+            deliveryDate: req.body.deliveryDate,
+            successUrl: siteUrl,
+            cancelUrl: options.cancelUrl || siteUrl,
+          });
+        }
+
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+        });
+
+        return res.end(JSON.stringify(response));
+      });
+    } catch (err) {
+      // A Stripe error is answered with a 400 and the message "Unable to initiate checkout
+      // session", which is the answer clients already handle: Portal recognises that message and
+      // shows it to the buyer in their language. The answer keeps the Stripe error's code, such as
+      // `email_invalid`, because BadRequestError copies the code of the error it wraps. The Stripe
+      // error is reported to Sentry here because Ghost's Sentry setup drops every Ghost error whose
+      // status isn't 500, so the BadRequestError would never reach Sentry.
+      //
+      // Any other error is rethrown unchanged. Ghost's own errors, such as the BadRequestError for
+      // a tier that doesn't exist, already carry the status and message to answer with. Anything
+      // else is a bug or an outage, which the members API's error handler answers with a 500 and
+      // reports to Sentry.
+      if (err instanceof stripeErrors.StripeError) {
+        this._sentry?.captureException?.(err);
+        throw new BadRequestError({ err, message: tpl(messages.unableToCheckout) });
+      }
+      throw err;
+    }
+  }
+
+  async sendMagicLink(req, res) {
+    const { email, honeypot } = req.body;
+    let { emailType } = req.body;
+
+    const referrer = extractRefererOrRedirect(req);
+    const giftToken = extractGiftToken(req.body.giftToken);
+
+    if (!email) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.emailRequired),
+      });
+    }
+
+    if (!isEmail(email)) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.invalidEmail),
+      });
+    }
+
+    // Normalize email to avoid invalid addresses and mitigate homograph attacks
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.invalidEmail),
+      });
+    }
+
+    if (honeypot) {
+      logging.warn('Honeypot field filled, this is likely a bot');
+
+      // Honeypot field is filled, this is a bot.
+      // Pretend that the email was sent successfully.
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      return res.end('{}');
+    }
+
+    if (!emailType) {
+      // Default to subscribe form that also allows to login (safe fallback for older clients)
+      emailType = 'subscribe';
+    }
+
+    if (!['signin', 'signup', 'subscribe'].includes(emailType)) {
+      res.writeHead(400);
+      return res.end('Bad Request.');
+    }
+
+    try {
+      /** @type {{inboxLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
+      const resBody = {};
+
+      if (emailType === 'signup' || emailType === 'subscribe') {
+        await this._handleSignup(req, normalizedEmail, referrer, giftToken);
+      } else {
+        const signIn = await this._handleSignin(req, normalizedEmail, referrer, giftToken);
+        if (signIn.otcRef) {
+          resBody.otc_ref = signIn.otcRef;
+        }
+      }
+
+      const inboxLinks = await getInboxLinks({
+        recipient: normalizedEmail,
+        sender: this._emailAddressService.getMembersSupportAddress(),
+        dnsResolver: this.#inboxLinksDnsResolver,
+      });
+      if (inboxLinks) {
+        resBody.inboxLinks = inboxLinks;
+        logging.info(`[Inbox links] Found inbox links for provider ${inboxLinks.provider}`);
+      } else {
+        logging.info('[Inbox links] Found no inbox links');
+      }
+
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify(resBody));
+    } catch (err) {
+      if (err.code === 'EENVELOPE') {
+        logging.error(err);
+        res.writeHead(400);
+        return res.end('Bad Request.');
+      }
+      logging.error(err);
+
+      // Let the normal error middleware handle this error
+      throw err;
+    }
+  }
+
+  async verifyOTC(req, res) {
+    const { otc, otcRef } = req.body;
+
+    if (!otc || !otcRef) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.badRequest),
+        context: 'otc and otcRef are required',
+        code: 'OTC_VERIFICATION_MISSING_PARAMS',
+      });
+    }
+
+    const tokenProvider = this._magicLinkService.tokenProvider;
+    if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.otcNotSupported),
+        code: 'OTC_NOT_SUPPORTED',
+      });
+    }
+
+    const tokenValue = await tokenProvider.getTokenByRef(otcRef);
+    if (!tokenValue) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.invalidCode),
+        code: 'INVALID_OTC',
+      });
+    }
+
+    const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
+    if (!isValidOTC) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.invalidCode),
+        code: 'INVALID_OTC',
+      });
+    }
+
+    const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
+    if (!otcVerificationHash) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.failedToVerifyCode),
+        code: 'OTC_VERIFICATION_FAILED',
+      });
+    }
+
+    const referrer = extractRefererOrRedirect(req);
+
+    const redirectUrl = this._magicLinkService.getSigninURL(
+      tokenValue,
+      'signin',
+      referrer,
+      otcVerificationHash,
+    );
+    if (!redirectUrl) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.failedToVerifyCode),
+        code: 'OTC_VERIFICATION_FAILED',
+      });
+    }
+
+    return res.json({ redirectUrl });
+  }
+
+  async _createHashFromOTCAndToken(otc, token) {
+    // timestamp for anti-replay protection (5 minute window)
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    const hash = this._magicLinkService.tokenProvider.createOTCVerificationHash(
+      otc,
+      token,
+      timestamp,
+    );
+
+    return `${timestamp}:${hash}`;
+  }
+
+  async _handleSignup(req, normalizedEmail, referrer = null, giftToken = null) {
+    const signupAccess = this._settingsCache.get('members_signup_access');
+
+    // A gift is a paid membership, so paid-members-only sites accept new members redeeming one.
+    const isPaidGiftRedemption = signupAccess === 'paid' && Boolean(giftToken);
+
+    if (!this._allowSelfSignup() && !isPaidGiftRedemption) {
+      if (signupAccess === 'paid') {
+        throw new errors.BadRequestError({
+          message: tpl(messages.paidOnly),
+        });
+      } else {
+        throw new errors.BadRequestError({
+          message: tpl(messages.inviteOnly),
+        });
+      }
+    }
+
+    const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
+    const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
+    if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.blockedEmailDomain),
+      });
+    }
+
+    // Throws the gift's own error (not found, redeemed, expired...) when it can't be redeemed.
+    if (isPaidGiftRedemption) {
+      await this._giftService.service.getRedeemable({ token: giftToken, memberStatus: null });
+    }
+
+    const { emailType } = req.body;
+
+    const tokenData = {
+      labels: req.body.labels,
+      name: req.body.name,
+      reqIp: req.ip ?? undefined,
+      newsletters: await this._validateNewsletters(req.body?.newsletters),
+      attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory),
+      ...(giftToken ? { giftToken } : {}),
+    };
+
+    return await this._sendEmailWithMagicLink({
+      email: normalizedEmail,
+      tokenData,
+      requestedType: emailType,
+      referrer,
+    });
+  }
+
+  async _handleSignin(req, normalizedEmail, referrer = null, giftToken = null) {
+    const { emailType, includeOTC: reqIncludeOTC } = req.body;
+
+    let includeOTC = false;
+
+    if (reqIncludeOTC === true || reqIncludeOTC === 'true') {
+      includeOTC = true;
+    }
+
+    const member = await this._memberRepository.get({ email: normalizedEmail });
+
+    if (!member) {
+      // Return a fake otcRef when OTC was requested so the response
+      // shape is identical regardless of whether a member exists
+      return includeOTC ? { otcRef: crypto.randomUUID() } : {};
+    }
+
+    const { name } = req.body;
+
+    const tokenData = {
+      ...(name ? { name } : {}),
+      ...(giftToken ? { giftToken } : {}),
+    };
+    return await this._sendEmailWithMagicLink({
+      email: normalizedEmail,
+      tokenData,
+      requestedType: emailType,
+      referrer,
+      includeOTC,
+    });
+  }
+
+  /**
+   * Validates the newsletters in the request body
+   * @param {object[]} requestedNewsletters
+   * @param {string} requestedNewsletters[].name
+   * @returns {Promise<object[] | undefined>} The validated newsletters
+   */
+  async _validateNewsletters(requestedNewsletters) {
+    if (!requestedNewsletters || !Array.isArray(requestedNewsletters)) {
+      return undefined;
+    }
+
+    // An explicit empty list means "no newsletters", not "the defaults"
+    if (requestedNewsletters.length === 0) {
+      return [];
+    }
+
+    if (requestedNewsletters.some((newsletter) => !newsletter.name)) {
+      return undefined;
+    }
+
+    const requestedNewsletterNames = requestedNewsletters.map((newsletter) => newsletter.name);
+    // Each name is embedded in a single-quoted item of an NQL `name:[...]`
+    // array, so both quote characters are escaped (a name may contain either).
+    // NQL has no `\\` escape — a lone backslash is read literally — so we
+    // escape quotes only; doubling backslashes would corrupt names that
+    // legitimately contain one. This keeps any injected operators inside the
+    // quoted string, preventing filter breakout.
+    const requestedNewsletterNamesFilter = requestedNewsletterNames.map(
+      (newsletter) => `'${newsletter.replace(/("|')/g, '\\$1')}'`,
+    );
+    const matchedNewsletters = await this._newslettersService.getAll({
+      filter: `name:[${requestedNewsletterNamesFilter}]`,
+      columns: ['id', 'name', 'status'],
+    });
+
+    // Check for invalid newsletters
+    if (matchedNewsletters.length !== requestedNewsletterNames.length) {
+      const validNewsletterNames = matchedNewsletters.map((newsletter) => newsletter.name);
+      const invalidNewsletterNames = requestedNewsletterNames.filter(
+        (newsletter) => !validNewsletterNames.includes(newsletter),
+      );
+
+      throw new errors.BadRequestError({
+        message: tpl(messages.invalidNewsletters, { newsletters: invalidNewsletterNames }),
+      });
+    }
+
+    // Check for archived newsletters
+    const requestedArchivedNewsletters = matchedNewsletters
+      .filter((newsletter) => newsletter.status === 'archived')
+      .map((newsletter) => newsletter.name);
+
+    if (requestedArchivedNewsletters && requestedArchivedNewsletters.length > 0) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.archivedNewsletters, { newsletters: requestedArchivedNewsletters }),
+      });
+    }
+
+    return matchedNewsletters
+      .filter((newsletter) => newsletter.status === 'active')
+      .map((newsletter) => ({ id: newsletter.id }));
+  }
+
+  /**
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   */
+  async getMemberOffers(req, res) {
+    const identity = req.body.identity;
+    const redemptionType = req.body.redemption_type || 'retention';
+
+    function sendOffersResponse(offers = []) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ offers }));
+    }
+
+    function sendNoOffersAvailable() {
+      return sendOffersResponse([]);
+    }
+
+    if (!identity) {
+      res.writeHead(401);
+      return res.end('Unauthorized');
+    }
+
+    if (redemptionType !== 'retention') {
+      res.writeHead(400);
+      return res.end('Invalid redemption_type');
+    }
+
+    let email;
+    try {
+      const claims = await this._tokenService.decodeToken(identity);
+      email = claims && claims.sub;
+    } catch (err) {
+      logging.error(err);
+      res.writeHead(401);
+      return res.end('Unauthorized');
+    }
+
+    if (!email) {
+      res.writeHead(401);
+      return res.end('Unauthorized');
+    }
+
+    // Get member with subscriptions
+    const member = await this._memberRepository.get(
+      { email },
+      {
+        withRelated: [
+          'stripeSubscriptions',
+          'stripeSubscriptions.stripePrice',
+          'stripeSubscriptions.stripePrice.stripeProduct',
+          'stripeSubscriptions.stripePrice.stripeProduct.product',
+        ],
+      },
+    );
+
+    if (!member) {
+      res.writeHead(404);
+      return res.end(tpl(messages.memberNotFound));
+    }
+
+    // Find active subscriptions
+    const subscriptions = member.related('stripeSubscriptions');
+    const activeSubscriptions = subscriptions.models.filter((sub) => {
+      const status = sub.get('status');
+      return ['active', 'trialing', 'past_due', 'unpaid'].includes(status);
+    });
+
+    // No active subscription - return empty offers
+    if (activeSubscriptions.length === 0) {
+      return sendNoOffersAvailable();
+    }
+
+    // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
+    if (activeSubscriptions.length > 1) {
+      return sendNoOffersAvailable();
+    }
+
+    const activeSubscription = activeSubscriptions[0];
+
+    // If subscription is already set to cancel, don't show retention offers
+    if (activeSubscription.get('cancel_at_period_end')) {
+      return sendNoOffersAvailable();
+    }
+
+    // If subscription has an active offer, don't show retention offers
+    if (await hasActiveOffer(activeSubscription, this._offersAPI)) {
+      return sendNoOffersAvailable();
+    }
+
+    // Get tier and cadence from the subscription
+    const stripePrice = activeSubscription.related('stripePrice');
+    if (!stripePrice || !stripePrice.id) {
+      return sendNoOffersAvailable();
+    }
+
+    const stripeProduct = stripePrice.related('stripeProduct');
+
+    // If the stripe product is not found, return empty offers
+    if (!stripeProduct || !stripeProduct.id) {
+      return sendNoOffersAvailable();
+    }
+
+    const product = stripeProduct.related('product');
+
+    // If the product is not found, return empty offers
+    if (!product || !product.id) {
+      return sendNoOffersAvailable();
+    }
+
+    const tierId = product.id;
+    const cadence = stripePrice.get('interval');
+    const subscriptionId = activeSubscription.id; // Ghost's internal ID, not Stripe's
+
+    let offers = [];
+    try {
+      offers = await this._offersAPI.listOffersAvailableToSubscription({
+        subscriptionId,
+        tierId,
+        cadence,
+        redemptionType,
+      });
+    } catch (err) {
+      logging.error('Failed to fetch offers:', err);
+    }
+
+    return sendOffersResponse(offers);
+  }
+};
+
+// Stripe's limit on `custom_fields[].label.custom` — longer labels make session creation fail
+const STRIPE_CUSTOM_FIELD_LABEL_MAX_LENGTH = 50;
+
+function parsePersonalNote(rawText) {
+  if (rawText && typeof rawText !== 'string') {
+    logging.warn(
+      { event: { name: 'stripe_checkout.session.personal_note_invalid' } },
+      'Donation personal note is not a string, ignoring',
+    );
+    return '';
+  }
+
+  // Bounded twice, for two different reasons. Before sanitising because this is a
+  // public endpoint and nothing past the limit can survive anyway, so there is no
+  // reason to sanitise more than that. After, because sanitising can lengthen the
+  // string (`&` becomes `&amp;`), and the second bound is the one Stripe measures.
+  const bounded = (rawText ?? '').slice(0, STRIPE_CUSTOM_FIELD_LABEL_MAX_LENGTH);
+  const safeInput = sanitizeHtml(bounded, {
+    allowedTags: [],
+    allowedAttributes: {},
+  });
+
+  return safeInput.slice(0, STRIPE_CUSTOM_FIELD_LABEL_MAX_LENGTH);
+}

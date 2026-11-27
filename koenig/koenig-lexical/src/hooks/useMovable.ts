@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef} from 'react';
 
-// TODO: this is a temporary fix, replacement for ember's id, need better solution
+// TODO: this is a temporary unique-id generator, need better solution
 function guidFor() {
     // create unique id
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -220,7 +220,7 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
             }
 
             for (const element of (e.path || e.composedPath())) {
-                if (element?.matches?.('input, .ember-basic-dropdown-trigger')) {
+                if (element?.matches?.('input')) {
                     break;
                 }
 

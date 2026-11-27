@@ -11,6 +11,7 @@ import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/
 import {backgroundImageUploadHandler} from '../utils/imageUploadHandler';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useContext, useEffect, useRef, useState} from 'react';
+import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function SignupNodeComponent({
@@ -215,6 +216,7 @@ function SignupNodeComponent({
         subheaderTextEditor.setEditable(isEditing);
         disclaimerTextEditor.setEditable(isEditing);
     }, [isEditing, headerTextEditor, subheaderTextEditor, disclaimerTextEditor]);
+    useEditModeAfterReadOnly(isEditing, headerTextEditor, subheaderTextEditor, disclaimerTextEditor);
 
     return (
         <>

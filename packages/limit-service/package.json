@@ -1,6 +1,6 @@
 {
     "name": "@tryghost/limit-service",
-    "version": "0.0.0",
+    "version": "private",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/TryGhost/Ghost.git",

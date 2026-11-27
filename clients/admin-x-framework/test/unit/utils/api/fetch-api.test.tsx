@@ -1,0 +1,352 @@
+import { renderHook } from '@testing-library/react';
+import { type AddressInfo } from 'node:net';
+import http from 'node:http';
+import { setTimeout as sleep } from 'node:timers/promises';
+import { promisify } from 'node:util';
+import React, { ReactNode } from 'react';
+import { FrameworkProvider } from '../../../../src/providers/framework-provider';
+import { useFetchApi } from '../../../../src/utils/api/fetch-api';
+import { onUpgradeStatus } from '../../../../src/utils/api/upgrade-status';
+import {
+  MaintenanceError,
+  ServerUnreachableError,
+  TimeoutError,
+  VersionMismatchError,
+} from '../../../../src/utils/errors';
+
+const wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
+  <FrameworkProvider
+    ghostVersion="5.x"
+    unsplashConfig={{
+      Authorization: '',
+      'Accept-Version': '',
+      'Content-Type': '',
+      'App-Pragma': '',
+      'X-Unsplash-Cache': true,
+    }}
+  >
+    {children}
+  </FrameworkProvider>
+);
+
+type TestResponseBody = Pick<http.IncomingMessage, 'method' | 'headers'> & {
+  body: string;
+};
+
+describe('useFetchApi', () => {
+  let server: http.Server;
+  let baseUrl: string;
+  let requestCounts: Map<string, number>;
+
+  beforeEach(async () => {
+    requestCounts = new Map();
+
+    server = http.createServer((req, res) => {
+      const chunks: Buffer[] = [];
+      req.on('data', (chunk: Buffer) => {
+        chunks.push(chunk);
+      });
+      req.on('end', async () => {
+        const url = req.url ?? '';
+        const requestCount = (requestCounts.get(url) ?? 0) + 1;
+        requestCounts.set(url, requestCount);
+
+        if (url.includes('maintenance') && requestCount === 1) {
+          res.writeHead(503);
+          res.end('Maintenance');
+          return;
+        }
+
+        if (url.includes('down')) {
+          res.writeHead(503);
+          res.end('Maintenance');
+          return;
+        }
+
+        if (url.includes('version-mismatch')) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ errors: [{ type: 'VersionMismatchError' }] }));
+          return;
+        }
+
+        if (url.includes('slow')) {
+          await sleep(100);
+        }
+
+        // jsdom's `XMLHttpRequest` needs these CORS headers.
+        const corsHeaders = {
+          'Access-Control-Allow-Origin': req.headers.origin || '*',
+          'Access-Control-Allow-Methods': '*',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Allow-Credentials': 'true',
+        };
+
+        if (url.includes('no-content')) {
+          res.writeHead(204, corsHeaders);
+          res.end();
+          return;
+        }
+
+        if (url.includes('invalid-status') && req.method !== 'OPTIONS') {
+          res.writeHead(999, corsHeaders);
+          res.end();
+          return;
+        }
+
+        if (url.includes('yaml')) {
+          res.writeHead(200, { 'Content-Type': 'application/yaml', ...corsHeaders });
+          res.end('routes:\n');
+          return;
+        }
+
+        if (url.includes('binary')) {
+          res.writeHead(200, { 'Content-Type': 'application/zip', ...corsHeaders });
+          res.end(Buffer.from([80, 75, 3, 4]));
+          return;
+        }
+
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        });
+        res.end(
+          JSON.stringify({
+            method: req.method,
+            headers: req.headers,
+            body: Buffer.concat(chunks).toString('utf8'),
+          } satisfies TestResponseBody),
+        );
+      });
+    });
+
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', () => {
+        resolve();
+      });
+    });
+
+    const address = server.address() as AddressInfo;
+    baseUrl = `http://127.0.0.1:${address.port}`;
+  });
+
+  afterEach(async () => {
+    const close = promisify(server.close.bind(server));
+    await close();
+
+    vi.restoreAllMocks();
+  });
+
+  it('makes an API request', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
+      method: 'POST',
+      body: 'test',
+      retry: false,
+    });
+
+    expect(data.method).toBe('POST');
+    expect(data.headers['x-ghost-version']).toBe('5.x');
+    expect(data.headers['app-pragma']).toBe('no-cache');
+    expect(data.headers['content-type']).toBe('application/json');
+    expect(data.body).toBe('test');
+  });
+
+  it('returns text for yaml responses', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<string>(`${baseUrl}/ghost/api/admin/yaml/`, { retry: false });
+
+    expect(data).toBe('routes:\n');
+  });
+
+  it('resolves the raw ArrayBuffer when responseType is arraybuffer', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<ArrayBuffer>(`${baseUrl}/ghost/api/admin/binary/`, {
+      retry: false,
+      responseType: 'arraybuffer',
+    });
+
+    expect(data).toBeInstanceOf(ArrayBuffer);
+    expect(Array.from(new Uint8Array(data))).toEqual([80, 75, 3, 4]);
+  });
+
+  it('resolves the raw Blob when responseType is blob', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<Blob>(`${baseUrl}/ghost/api/admin/binary/`, {
+      retry: false,
+      responseType: 'blob',
+    });
+
+    // instanceof fails across realms (undici Blob vs jsdom Blob), so assert shape
+    expect(data.constructor.name).toBe('Blob');
+    expect(Array.from(new Uint8Array(await data.arrayBuffer()))).toEqual([80, 75, 3, 4]);
+  });
+
+  it('retries maintenance errors until the API recovers', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/maintenance/`);
+
+    expect(data.method).toBe('GET');
+    expect(requestCounts.get('/ghost/api/admin/maintenance/')).toBe(2);
+  });
+
+  it('throws a timeout error when request exceeds timeout', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/slow/`, {
+        timeout: 20,
+        retry: false,
+      }),
+    ).rejects.toBeInstanceOf(TimeoutError);
+  });
+
+  it('cancels an in-flight request without treating it as a timeout', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+    const controller = new AbortController();
+    const request = result.current(`${baseUrl}/ghost/api/admin/slow/`, {
+      signal: controller.signal,
+      retry: false,
+    });
+    controller.abort();
+
+    await expect(request).rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  it('cancels a request during retry backoff without starting another attempt', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Offline'));
+    const controller = new AbortController();
+    const request = result.current(`${baseUrl}/ghost/api/admin/test/`, {
+      signal: controller.signal,
+    });
+    const rejection = expect(request).rejects.toMatchObject({ name: 'AbortError' });
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+    controller.abort();
+    await rejection;
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('resolves a 204 response when upload progress is enabled', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/no-content/`, {
+        method: 'POST',
+        body: 'test',
+        retry: false,
+        onUploadProgress: vi.fn(),
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('rejects when an upload response cannot be converted', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    await expect(
+      result.current(`${baseUrl}/ghost/api/admin/invalid-status/`, {
+        retry: false,
+        onUploadProgress: vi.fn(),
+      }),
+    ).rejects.toBeInstanceOf(ServerUnreachableError);
+  });
+
+  describe('upgrade status', () => {
+    let statuses: string[];
+    let unsubscribe: () => void;
+
+    beforeEach(() => {
+      statuses = [];
+      unsubscribe = onUpgradeStatus((status) => statuses.push(status));
+    });
+
+    afterEach(() => {
+      unsubscribe();
+    });
+
+    it('reports a version mismatch from the Ghost API', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(
+        result.current(`${baseUrl}/ghost/api/admin/version-mismatch/`),
+      ).rejects.toBeInstanceOf(VersionMismatchError);
+
+      expect(statuses).toEqual(['upgrade-required']);
+    });
+
+    it('reports maintenance once the request gives up', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(
+        result.current(`${baseUrl}/ghost/api/admin/down/`, { retry: false }),
+      ).rejects.toBeInstanceOf(MaintenanceError);
+
+      expect(statuses).toEqual(['maintenance']);
+    });
+
+    it('does not report maintenance that a retry recovers from', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await result.current(`${baseUrl}/ghost/api/admin/maintenance/`);
+
+      expect(statuses).toEqual([]);
+    });
+
+    it('ignores requests outside the Ghost API', async () => {
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(result.current(`${baseUrl}/version-mismatch/`)).rejects.toBeInstanceOf(
+        VersionMismatchError,
+      );
+
+      expect(statuses).toEqual([]);
+    });
+
+    it('stops reporting once unsubscribed', async () => {
+      unsubscribe();
+      const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+      await expect(
+        result.current(`${baseUrl}/ghost/api/admin/version-mismatch/`),
+      ).rejects.toBeInstanceOf(VersionMismatchError);
+
+      expect(statuses).toEqual([]);
+    });
+  });
+
+  it('emits upload progress when onUploadProgress is provided', async () => {
+    const realXhrSend = XMLHttpRequest.prototype.send;
+    vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(function (
+      this: XMLHttpRequest,
+      ...args
+    ) {
+      this.upload.dispatchEvent(
+        new ProgressEvent('progress', { lengthComputable: false, loaded: 2, total: 3 }),
+      );
+      this.upload.dispatchEvent(
+        new ProgressEvent('progress', { lengthComputable: true, loaded: 1, total: 10 }),
+      );
+      this.upload.dispatchEvent(
+        new ProgressEvent('progress', { lengthComputable: true, loaded: 9, total: 10 }),
+      );
+      realXhrSend.apply(this, args);
+    });
+    const onUploadProgress = vi.fn();
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+
+    const data = await result.current<TestResponseBody>(`${baseUrl}/ghost/api/admin/test/`, {
+      method: 'POST',
+      body: 'test',
+      retry: false,
+      onUploadProgress,
+    });
+
+    expect(data.body).toBe('test');
+    expect(onUploadProgress).toHaveBeenCalledWith(10);
+    expect(onUploadProgress).toHaveBeenCalledWith(90);
+  });
+});

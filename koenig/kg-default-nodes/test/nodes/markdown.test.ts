@@ -14,11 +14,10 @@ describe('MarkdownNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -110,13 +109,13 @@ describe('MarkdownNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('creates a markdown card', editorTest(function () {
+        it('creates a markdown card', editorTest(async function () {
             const markdownNode = $createMarkdownNode(dataset);
             const result = markdownNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
             expect(result.type).toBe('inner');
-            assertPrettifiesTo(element.innerHTML, html`
+            await assertPrettifiesTo(element.innerHTML, html`
                 <h1 id="heading">HEADING</h1>
                 <ul>
                 <li>list</li>

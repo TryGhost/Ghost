@@ -31,12 +31,12 @@ describe('renderers/email-cta-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div data-gh-segment="status:free">
                     <hr />
                     <p>Hello World</p>
@@ -55,10 +55,10 @@ describe('renderers/email-cta-renderer', function () {
             assert.equal(result.html, '');
         });
 
-        it('does not render button if button text empty', function () {
+        it('does not render button if button text empty', async function () {
             const result = renderForEmail(getTestData({showButton: true}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div data-gh-segment="status:free">
                     <hr />
                     <p>Hello World</p>
@@ -67,10 +67,10 @@ describe('renderers/email-cta-renderer', function () {
             `);
         });
 
-        it('does not render button if button url empty', function () {
+        it('does not render button if button url empty', async function () {
             const result = renderForEmail(getTestData({showButton: true, buttonText: 'Test'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div data-gh-segment="status:free">
                     <hr />
                     <p>Hello World</p>
@@ -79,10 +79,10 @@ describe('renderers/email-cta-renderer', function () {
             `);
         });
 
-        it('renders text with button and no dividers', function () {
+        it('renders text with button and no dividers', async function () {
             const result = renderForEmail(getTestData({showButton: true, buttonText: 'Test', buttonUrl: 'https://example.com', showDividers: false}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div data-gh-segment="status:free">
                     <p>Hello World</p>
                     <div class="btn btn-accent">
@@ -101,10 +101,10 @@ describe('renderers/email-cta-renderer', function () {
             `);
         });
 
-        it('renders only the button', function () {
+        it('renders only the button', async function () {
             const result = renderForEmail(getTestData({html: '', showButton: true, buttonText: 'Test', buttonUrl: 'https://example.com', showDividers: false}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div data-gh-segment="status:free">
                     <div class="btn btn-accent">
                         <table border="0" cellspacing="0" cellpadding="0" align="left">
@@ -122,10 +122,10 @@ describe('renderers/email-cta-renderer', function () {
             `);
         });
 
-        it('can align button center', function () {
+        it('can align button center', async function () {
             const result = renderForEmail(getTestData({alignment: 'center', showButton: true, buttonText: 'Test', buttonUrl: 'https://example.com'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div data-gh-segment="status:free" class="align-center">
                     <hr />
                     <p>Hello World</p>
@@ -146,11 +146,11 @@ describe('renderers/email-cta-renderer', function () {
             `);
         });
 
-        it('can render button', function () {
+        it('can render button', async function () {
             const result = renderForEmail(getTestData({showButton: true, buttonText: 'Click me', buttonUrl: 'https://ghost.org'}));
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div data-gh-segment="status:free">
                     <hr />
                     <p>Hello World</p>

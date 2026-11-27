@@ -1,0 +1,198 @@
+const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
+const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const configUtils = require('../../utils/config-utils');
+
+describe('Tinybird API', function () {
+  let agent;
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users');
+  });
+
+  describe('As Unauthorized User', function () {
+    it('Cannot fetch the tinybird-token endpoint', async function () {
+      await agent.get('/tinybird/token/').expectStatus(403);
+    });
+  });
+
+  describe('As Owner', function () {
+    beforeAll(async function () {
+      await agent.loginAsOwner();
+    });
+
+    it('reads the current signing config on every token request, including when disabled', async function () {
+      const jwt = require('jsonwebtoken');
+      const previousConfig = configUtils.config.get('tinybird');
+      try {
+        configUtils.set('tinybird', null);
+        const disabled = await agent.get('/tinybird/token/').expectStatus(200);
+        assert.equal(disabled.body.tinybird, null);
+
+        for (const suffix of ['a', 'b']) {
+          const adminToken = `test-signing-key-${suffix}`;
+          const workspaceId = `test-workspace-${suffix}`;
+          configUtils.set('tinybird', { workspaceId, adminToken });
+          const { body } = await agent.get('/tinybird/token/').expectStatus(200);
+          const decoded = jwt.verify(body.tinybird.token, adminToken, { algorithms: ['HS256'] });
+          assert.equal(decoded.workspace_id, workspaceId);
+          assert.equal(body.tinybird.exp, new Date(decoded.exp * 1000).toISOString());
+        }
+
+        configUtils.set('tinybird', null);
+        const disabledAgain = await agent.get('/tinybird/token/').expectStatus(200);
+        assert.equal(disabledAgain.body.tinybird, null);
+      } finally {
+        configUtils.set('tinybird', previousConfig);
+      }
+    });
+
+    it('renews the three-hour JWT expiry on each request with unchanged signing credentials', async function () {
+      const jwt = require('jsonwebtoken');
+      const tinybird = require('../../../core/server/services/tinybird');
+      const previousConfig = configUtils.config.get('tinybird');
+      const previousInstance = tinybird.instance;
+      const now = Date.now();
+      const clock = sinon.useFakeTimers({ now, toFake: ['Date'] });
+      const adminToken = 'unchanged-test-signing-key';
+      try {
+        configUtils.set('tinybird', { workspaceId: 'unchanged-workspace', adminToken });
+        const tokens = [];
+        for (const elapsed of [0, 60_000]) {
+          clock.setSystemTime(now + elapsed);
+          const { body } = await agent.get('/tinybird/token/').expectStatus(200);
+          const decoded = jwt.verify(body.tinybird.token, adminToken, { algorithms: ['HS256'] });
+          const expectedExpiry = Math.floor((now + elapsed) / 1000) + 180 * 60;
+          assert.equal(decoded.exp, expectedExpiry);
+          assert.equal(body.tinybird.exp, new Date(expectedExpiry * 1000).toISOString());
+          tokens.push(body.tinybird.token);
+        }
+        assert.notEqual(tokens[0], tokens[1]);
+      } finally {
+        clock.restore();
+        configUtils.set('tinybird', previousConfig);
+        tinybird.instance = previousInstance;
+      }
+    });
+
+    describe('With Tinybird configuration', function () {
+      beforeAll(async function () {
+        configUtils.set('tinybird', {
+          workspaceId: 'test-workspace-id',
+          adminToken: 'test-admin-token',
+        });
+      });
+
+      afterAll(async function () {
+        await configUtils.restore();
+      });
+
+      it('Can get a Tinybird JWT token', async function () {
+        const response = await agent.get('/tinybird/token/').expectStatus(200);
+
+        assert(response.body.tinybird);
+        assert(response.body.tinybird.token);
+        assert.equal(typeof response.body.tinybird.token, 'string');
+        assert(response.body.tinybird.token.length > 0);
+
+        // JWT tokens should include expiration in ISO format
+        assert(response.body.tinybird.exp);
+        assert.equal(typeof response.body.tinybird.exp, 'string');
+        assert(new Date(response.body.tinybird.exp).getTime() > Date.now());
+
+        // Verify that the ISO8601 string matches the JWT payload exp
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.decode(response.body.tinybird.token);
+        assert(typeof decoded === 'object' && decoded.exp);
+        const expectedExpiration = new Date(decoded.exp * 1000).toISOString();
+        assert.equal(response.body.tinybird.exp, expectedExpiration);
+      });
+    });
+
+    describe('Without Tinybird configuration', function () {
+      it('Returns null when not configured', async function () {
+        const response = await agent.get('/tinybird/token/').expectStatus(200);
+
+        assert.equal(response.body.tinybird, null);
+      });
+    });
+
+    describe('With stats token only (no JWT)', function () {
+      beforeAll(async function () {
+        configUtils.set('tinybird', {
+          stats: {
+            token: 'static-stats-token',
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await configUtils.restore();
+      });
+
+      it('Returns static token without exp field', async function () {
+        const response = await agent.get('/tinybird/token/').expectStatus(200);
+
+        assert(response.body.tinybird);
+        assert.equal(response.body.tinybird.token, 'static-stats-token');
+        assert.equal(response.body.tinybird.exp, undefined);
+      });
+    });
+
+    describe('With local stats token only (no JWT)', function () {
+      beforeAll(async function () {
+        configUtils.set('tinybird', {
+          stats: {
+            local: {
+              enabled: true,
+              token: 'local-stats-token',
+            },
+          },
+        });
+      });
+
+      afterAll(async function () {
+        await configUtils.restore();
+      });
+
+      it('Returns local token without exp field', async function () {
+        const response = await agent.get('/tinybird/token/').expectStatus(200);
+
+        assert(response.body.tinybird);
+        assert.equal(response.body.tinybird.token, 'local-stats-token');
+        assert.equal(response.body.tinybird.exp, undefined);
+      });
+    });
+  });
+
+  describe('As Admin', function () {
+    beforeAll(async function () {
+      await agent.loginAsAdmin();
+      configUtils.set('tinybird', {
+        workspaceId: 'test-workspace-id',
+        adminToken: 'test-admin-token',
+      });
+    });
+
+    afterAll(async function () {
+      await configUtils.restore();
+    });
+
+    it('Can get a Tinybird JWT token', async function () {
+      const response = await agent.get('/tinybird/token/').expectStatus(200);
+      assert(response.body.tinybird);
+      assert(response.body.tinybird.token);
+    });
+  });
+
+  describe('As Editor', function () {
+    beforeAll(async function () {
+      await agent.loginAsEditor();
+    });
+
+    it('Cannot get a Tinybird JWT token', async function () {
+      await agent.get('/tinybird/token/').expectStatus(403);
+    });
+  });
+});

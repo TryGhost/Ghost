@@ -1,0 +1,117 @@
+const assert = require('node:assert/strict');
+
+const TiersAPI = require('../../../../../core/server/services/tiers/tiers-api');
+const { InMemoryTierRepository } = require('./in-memory-tier-repository');
+
+describe('TiersAPI', function () {
+  /** @type {TiersAPI.ITierRepository} */
+  let repository;
+
+  /** @type {TiersAPI} */
+  let api;
+
+  // A fresh repository per test, so each test sees only the tiers it adds
+  beforeEach(function () {
+    repository = new InMemoryTierRepository();
+    api = new TiersAPI({
+      repository,
+      slugService: {
+        async generate(input) {
+          return input;
+        },
+      },
+    });
+  });
+
+  it('Can not create new free Tiers', async function () {
+    let error;
+    try {
+      await api.add({
+        name: 'My testing Tier',
+        type: 'free',
+      });
+      error = null;
+    } catch (err) {
+      error = err;
+    } finally {
+      assert(error, 'An error should have been thrown');
+    }
+  });
+
+  it('Can create new paid Tiers and find them again', async function () {
+    const tier = await api.add({
+      name: 'My testing Tier',
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
+    });
+
+    const found = await api.read(tier.id.toHexString());
+
+    assert(found);
+  });
+
+  it('Can edit a tier', async function () {
+    const tier = await api.add({
+      name: 'My testing Tier',
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
+    });
+
+    const updated = await api.edit(tier.id.toHexString(), {
+      name: 'Updated',
+    });
+
+    assert(updated.name === 'Updated');
+  });
+
+  it('Can archive a tier', async function () {
+    const tier = await api.add({
+      name: 'My testing Tier',
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
+    });
+
+    const updated = await api.edit(tier.id.toHexString(), {
+      status: 'archived',
+    });
+
+    assert(updated.status === 'archived');
+  });
+
+  function addPaidTier(name = 'My testing Tier') {
+    return api.add({
+      name,
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
+    });
+  }
+
+  it('Can browse tiers', async function () {
+    await addPaidTier();
+    await addPaidTier();
+    await addPaidTier();
+
+    const page = await api.browse();
+
+    assert(page.data.length === 3);
+    assert(page.meta.pagination.total === 3);
+  });
+
+  it('Can read a default tier', async function () {
+    const archived = await addPaidTier('Archived Tier');
+    await api.edit(archived.id.toHexString(), { status: 'archived' });
+    await addPaidTier();
+
+    const defaultTier = await api.readDefaultTier();
+
+    assert.equal(defaultTier?.name, 'My testing Tier');
+  });
+});

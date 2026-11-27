@@ -164,7 +164,7 @@ test.describe('Email card', async () => {
                     <div class="w-full pb-6">
                         <div class="py-[.6rem] font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey dark:text-grey-800">Hidden on website and paid newsletter</div>
                         <div
-                            class="koenig-lexical kg-inherit-styles w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 text-center mx-auto [&amp;:has(.placeholder)]:w-fit [&amp;:has(.placeholder)]:text-left">
+                            class="koenig-lexical kg-inherit-styles w-full bg-transparent whitespace-normal font-body text-body text-grey-900 dark:text-grey-200 text-center mx-auto [&amp;:has(.placeholder)]:w-fit [&amp;:has(.placeholder)]:text-left">
                             <div data-kg="editor">
                                 <div class="kg-prose" contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
                                     <p dir="ltr"><span data-lexical-text="true">Hello</span></p>

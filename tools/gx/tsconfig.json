@@ -1,0 +1,14 @@
+{
+  "extends": "@internal/cfg-typescript/esm.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // Core's development-table helper uses Array.prototype.toReversed.
+    "lib": ["es2023"],
+    "erasableSyntaxOnly": true,
+    // Match runtime: gx runs core with --conditions=source, so workspace deps needn't be built.
+    "customConditions": ["source"]
+  },
+  // Core source gx imports is checked here too, so it gets the declarations Core declares for
+  // libraries that ship no types, as Core's own type check does.
+  "include": ["*.ts", "lib/**/*.ts", "test/**/*.ts", "../../ghost/types/**/*.d.ts"]
+}

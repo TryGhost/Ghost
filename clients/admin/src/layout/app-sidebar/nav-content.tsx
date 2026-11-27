@@ -1,0 +1,252 @@
+import React from 'react';
+
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuBadge,
+} from '@tryghost/shade/components';
+import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
+import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
+import {
+  canManageAutomations,
+  canManageMembers,
+  canManageTags,
+} from '@tryghost/admin-x-framework/api/users';
+import { NavGroup } from './nav-group';
+import { NavMenuItem } from './nav-menu-item';
+import { useNavigationExpanded } from './hooks/use-navigation-preferences';
+import { NavSavedViews } from './nav-saved-views';
+import { NavMemberViews } from './nav-member-views';
+import { useMemberSidebarViews } from './member-sidebar-views';
+import { usePostNavigation } from './use-post-navigation';
+import { useIsActiveLink } from './use-is-active-link';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { AdminLink } from '@/shared/admin-link';
+
+function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
+  const admin7Design = useFeatureFlag('admin7Design');
+
+  return (
+    <>
+      <NavMenuItem.Link isActive={isActive} to={to}>
+        <LucideIcon.PenLine
+          className={cn(
+            !admin7Design &&
+              'pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0',
+          )}
+        />
+        <NavMenuItem.Label>Posts</NavMenuItem.Label>
+      </NavMenuItem.Link>
+      <AdminLink
+        aria-label="Create new post"
+        className={cn(
+          'absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2',
+          admin7Design
+            ? 'text-muted-foreground transition-[opacity,color,background-color] duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100 sidebar:[@media(hover:hover)_and_(pointer:fine)]:pointer-events-none sidebar:[@media(hover:hover)_and_(pointer:fine)]:opacity-0 [[data-controls-visible=true]_&]:pointer-events-auto [[data-controls-visible=true]_&]:opacity-100 [[data-controls-visible=true]_&]:delay-75'
+            : 'text-gray-700 dark:text-gray-800 dark:hover:text-white',
+        )}
+        to="/editor/post"
+      >
+        <LucideIcon.Plus className="mt-px stroke-[1.5px]!" size={20} />
+      </AdminLink>
+    </>
+  );
+}
+
+/** Only mounted in the legacy sidebar, which still shows its member count. */
+function MemberCountBadge() {
+  const count = useMemberCount();
+
+  return count !== null && count !== undefined ? (
+    <SidebarMenuBadge>{formatNumber(count)}</SidebarMenuBadge>
+  ) : null;
+}
+
+function MembersNavItemContent({
+  collapsible,
+  isActive,
+  showCount,
+  to,
+}: {
+  collapsible: boolean;
+  isActive: boolean;
+  showCount: boolean;
+  to: string;
+}) {
+  return (
+    <>
+      <NavMenuItem.Link isActive={isActive} to={to}>
+        <LucideIcon.Users
+          className={
+            collapsible
+              ? 'pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0'
+              : ''
+          }
+        />
+        <NavMenuItem.Label>Members</NavMenuItem.Label>
+      </NavMenuItem.Link>
+      {showCount && <MemberCountBadge />}
+    </>
+  );
+}
+
+function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
+  const { data: currentUser } = useCurrentUser();
+  const { data: settingsData } = useBrowseSettings();
+  const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
+  const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
+  const postNavigation = usePostNavigation('posts');
+  const pageNavigation = usePostNavigation('pages');
+  const memberViews = useMemberSidebarViews();
+  const hasMemberViews = memberViews.length > 0;
+  const automationsEnabled = useFeatureFlag('automations');
+  const appsEnabled = useFeatureFlag('apps');
+  const admin7Design = useFeatureFlag('admin7Design');
+  const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
+  const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
+
+  const showTags = currentUser && canManageTags(currentUser);
+  const showMembers = currentUser && canManageMembers(currentUser);
+  const showAutomations = currentUser && canManageAutomations(currentUser);
+  const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
+  const showComments = !!showMembers && commentsEnabled !== 'off';
+  const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
+  const hasActivePostChild = postViews.some((view) => view.isActive);
+  const postsExpanded = admin7Design
+    ? postNavigation.isMainActive || hasActivePostChild
+    : savedPostsExpanded;
+  const hasActiveMemberView = hasMemberViews && memberViews.some((view) => view.isActive);
+  const membersExpanded = admin7Design
+    ? isMembersRouteActive || isMemberActivityActive
+    : savedMembersExpanded;
+  const membersNavActive = isMembersRouteActive
+    ? !hasActiveMemberView || !membersExpanded
+    : isMemberActivityActive;
+  const postsRoute = postNavigation.mainUrl;
+  const postsNavActive = postNavigation.isMainActive || (!postsExpanded && hasActivePostChild);
+  const hasAudienceItems = Boolean(showMembers) || Boolean(showAutomations && automationsEnabled);
+
+  const contentItems = (
+    <>
+      <NavMenuItem.Collapsible
+        expanded={postsExpanded}
+        id="posts-submenu"
+        onExpandedChange={setPostsExpanded}
+      >
+        <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
+          <PostsNavItemContent isActive={postsNavActive} to={postsRoute} />
+        </NavMenuItem.CollapsibleItem>
+
+        <NavMenuItem.CollapsibleMenu>
+          <NavSavedViews views={postViews} />
+        </NavMenuItem.CollapsibleMenu>
+      </NavMenuItem.Collapsible>
+
+      <NavMenuItem>
+        <NavMenuItem.Link isActive={pageNavigation.isMainActive} to={pageNavigation.mainUrl}>
+          <LucideIcon.File />
+          <NavMenuItem.Label>Pages</NavMenuItem.Label>
+        </NavMenuItem.Link>
+      </NavMenuItem>
+
+      {showTags && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="tags" activeOnSubpath>
+            <LucideIcon.Tag />
+            <NavMenuItem.Label>Tags</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+    </>
+  );
+
+  const audienceItems = (
+    <>
+      {showMembers && (
+        <>
+          {hasMemberViews ? (
+            <NavMenuItem.Collapsible
+              expanded={membersExpanded}
+              id="members-submenu"
+              onExpandedChange={setMembersExpanded}
+            >
+              <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
+                <MembersNavItemContent
+                  collapsible={!admin7Design}
+                  isActive={membersNavActive}
+                  showCount={!admin7Design}
+                  to="members"
+                />
+              </NavMenuItem.CollapsibleItem>
+
+              <NavMenuItem.CollapsibleMenu>
+                <NavMemberViews />
+              </NavMenuItem.CollapsibleMenu>
+            </NavMenuItem.Collapsible>
+          ) : (
+            <NavMenuItem>
+              <MembersNavItemContent
+                collapsible={false}
+                isActive={membersNavActive}
+                showCount={!admin7Design}
+                to="members"
+              />
+            </NavMenuItem>
+          )}
+        </>
+      )}
+
+      {showComments && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="comments" activeOnSubpath>
+            <LucideIcon.MessagesSquare />
+            <NavMenuItem.Label>Comments</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+
+      {showAutomations && automationsEnabled && (
+        <NavMenuItem>
+          <NavMenuItem.Link to="automations" activeOnSubpath>
+            <LucideIcon.Zap />
+            <NavMenuItem.Label>Automations</NavMenuItem.Label>
+          </NavMenuItem.Link>
+        </NavMenuItem>
+      )}
+    </>
+  );
+
+  // Admin 7 keeps Content and Audience separate even without the Apps eyebrows.
+  if (appsEnabled || admin7Design) {
+    return (
+      <>
+        <NavGroup {...props}>
+          {appsEnabled && <NavGroup.Label>Content</NavGroup.Label>}
+          <NavGroup.Menu>{contentItems}</NavGroup.Menu>
+        </NavGroup>
+        {hasAudienceItems && (
+          <NavGroup {...props}>
+            {appsEnabled && <NavGroup.Label>Audience</NavGroup.Label>}
+            <NavGroup.Menu>{audienceItems}</NavGroup.Menu>
+          </NavGroup>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <SidebarGroup {...props}>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {contentItems}
+          {audienceItems}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+
+export default NavContent;

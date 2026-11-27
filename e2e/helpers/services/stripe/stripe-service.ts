@@ -6,6 +6,7 @@ import {
 import { FakeStripeServer } from './fake-stripe-server';
 import { WebhookClient } from './webhook-client';
 import {
+  buildCheckoutBranding,
   buildCheckoutSessionCompletedEvent,
   buildCustomer,
   buildDiscount,
@@ -21,6 +22,7 @@ import {
 } from './builders';
 import type {
   RecordedStripeCheckoutSession,
+  StripeCheckoutBranding,
   StripeCoupon,
   StripeCustomer,
   StripeDiscount,
@@ -70,6 +72,16 @@ export class StripeTestService {
 
   getCheckoutSessions(): RecordedStripeCheckoutSession[] {
     return this.server.getCheckoutSessions();
+  }
+
+  /** Sets the checkout branding in the Stripe dashboard; anything left out keeps Stripe's default. */
+  setCheckoutBranding(branding: Partial<StripeCheckoutBranding>): void {
+    this.server.setCheckoutBranding(buildCheckoutBranding(branding));
+  }
+
+  /** Makes Stripe report no checkout branding, so Ghost can't read it. */
+  hideCheckoutBranding(): void {
+    this.server.setCheckoutBranding(null);
   }
 
   /**
@@ -200,7 +212,7 @@ export class StripeTestService {
       paymentMethod.id,
     );
 
-    await this.sendCheckoutSessionCompletedWebhook(customer.id);
+    await this.sendCheckoutSessionCompletedWebhook(customer.id, subscription.id);
     await this.sendSubscriptionCreatedWebhook(subscription);
 
     return { customer, subscription, price, paymentMethod };
@@ -215,7 +227,7 @@ export class StripeTestService {
     const customer = buildCustomer({ email: opts.email, name: opts.name });
     this.server.upsertCustomer(customer);
     // Link the free member before Stripe creates the subscription.
-    await this.sendCheckoutSessionCompletedWebhook(customer.id);
+    await this.sendCheckoutSessionCompletedWebhook(customer.id, null);
 
     const price = buildPrice();
     const paymentMethod = buildPaymentMethod({ name: opts.name });
@@ -261,6 +273,7 @@ export class StripeTestService {
   async cancelSubscription(opts: { subscription: StripeSubscription }): Promise<void> {
     const subscription = opts.subscription;
     subscription.cancel_at_period_end = true;
+    subscription.canceled_at = Math.floor(Date.now() / 1000);
 
     this.server.upsertSubscription(subscription);
     debug('Updated subscription %s with cancel_at_period_end=true', subscription.id);
@@ -471,9 +484,14 @@ export class StripeTestService {
 
   private async sendCheckoutSessionCompletedWebhook(
     customerId: string,
+    subscriptionId: string | null,
     metadata?: Record<string, string>,
   ): Promise<void> {
-    const checkoutEvent = buildCheckoutSessionCompletedEvent({ customerId, metadata });
+    const checkoutEvent = buildCheckoutSessionCompletedEvent({
+      customerId,
+      subscriptionId,
+      metadata,
+    });
     const checkoutResponse = await this.webhookClient.sendWebhook(checkoutEvent);
     debug('checkout.session.completed webhook response: %d', checkoutResponse.status);
     if (!checkoutResponse.ok) {

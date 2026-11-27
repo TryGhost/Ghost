@@ -1,0 +1,153 @@
+// NOTE: the sole purpose of this suite is to test is it calls through to getAssetUrlHelper
+//       more complicated use cases are tested directly in asset_url.spec
+
+import assert from 'node:assert/strict';
+import { assertExists } from '../../../utils/assertions';
+import sinon from 'sinon';
+
+import configUtils from '../../../utils/config-utils';
+// @ts-expect-error This module lacks type definitions.
+import asset from '../../../../core/frontend/helpers/asset';
+// @ts-expect-error This module lacks type definitions.
+import proxy from '../../../../core/frontend/services/proxy';
+
+const { settingsCache } = proxy;
+
+describe('{{asset}} helper', function () {
+  let rendered;
+  let globalHash: string;
+  const localSettingsCache: Record<string, string> = {};
+
+  beforeAll(function () {
+    globalHash = String(asset('public/nonexistent.js')).split('?v=')[1] || '';
+    sinon.stub(settingsCache, 'get').callsFake(function (key: string) {
+      return localSettingsCache[key];
+    });
+  });
+
+  afterAll(function () {
+    sinon.restore();
+  });
+
+  // Each test starts from the same config and settings, whichever ran before it.
+  // Nested blocks add their own config in beforeEach, after this one.
+  beforeEach(function () {
+    configUtils.set({ useMinFiles: true });
+    for (const key of Object.keys(localSettingsCache)) {
+      delete localSettingsCache[key];
+    }
+  });
+
+  afterEach(async function () {
+    await configUtils.restore();
+  });
+
+  describe('no subdirectory', function () {
+    it('handles favicon correctly', function () {
+      rendered = asset('favicon.ico');
+      assertExists(rendered);
+      assert.equal(String(rendered), '/favicon.ico');
+    });
+
+    it('handles ghost.css for default templates correctly', function () {
+      rendered = asset('public/ghost.css');
+      assertExists(rendered);
+      assert.match(String(rendered), /^\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
+    });
+
+    it('handles custom favicon correctly', function () {
+      // with png
+      localSettingsCache.icon = '/content/images/favicon.png';
+      rendered = asset('favicon.png');
+      assertExists(rendered);
+      assert.equal(String(rendered), '/content/images/size/w256h256/favicon.png');
+
+      // with ico
+      localSettingsCache.icon = '/content/images/favicon.ico';
+      rendered = asset('favicon.ico');
+      assertExists(rendered);
+      assert.equal(String(rendered), '/content/images/favicon.ico');
+
+      // with webp
+      localSettingsCache.icon = '/content/images/favicon.webp';
+      rendered = asset('favicon.png');
+      assertExists(rendered);
+      assert.equal(String(rendered), '/content/images/size/w256h256/format/png/favicon.webp');
+
+      // with svg
+      localSettingsCache.icon = '/content/images/favicon.svg';
+      rendered = asset('favicon.png');
+      assertExists(rendered);
+      assert.equal(String(rendered), '/content/images/size/w256h256/format/png/favicon.svg');
+    });
+
+    it('handles public assets correctly', function () {
+      localSettingsCache.icon = '';
+
+      rendered = asset('public/asset.js');
+      assertExists(rendered);
+      assert.equal(String(rendered), '/public/asset.js?v=' + globalHash);
+    });
+
+    it('handles theme assets correctly', function () {
+      rendered = asset('js/asset.js');
+      assertExists(rendered);
+      assert.equal(String(rendered), '/assets/js/asset.js?v=' + globalHash);
+    });
+
+    it('handles hasMinFile assets correctly', function () {
+      rendered = asset('js/asset.js', { hash: { hasMinFile: true } });
+      assertExists(rendered);
+      assert.equal(String(rendered), '/assets/js/asset.min.js?v=' + globalHash);
+    });
+  });
+
+  describe('different admin and site urls', function () {
+    beforeEach(function () {
+      configUtils.set({ url: 'http://127.0.0.1' });
+      configUtils.set({ 'admin:url': 'http://localhost' });
+    });
+
+    it('handles favicon correctly', function () {
+      rendered = asset('favicon.ico');
+      assertExists(rendered);
+      assert.equal(String(rendered), 'http://127.0.0.1/favicon.ico');
+    });
+
+    it('handles ghost.css for default templates correctly', function () {
+      rendered = asset('public/ghost.css');
+      assertExists(rendered);
+      assert.match(
+        String(rendered),
+        /^http:\/\/127\.0\.0\.1\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/,
+      );
+    });
+  });
+
+  describe('with contentBasedHash enabled', function () {
+    beforeEach(function () {
+      configUtils.set({ 'caching:assets:contentBasedHash:enabled': true });
+    });
+
+    it('uses file-based hash for ghost.css when it exists', function () {
+      rendered = asset('public/ghost.css');
+      assertExists(rendered);
+      // ghost.css exists in static public path, so it gets a 16-char base64url hash
+      assert.match(String(rendered), /^\/public\/ghost\.css\?v=[A-Za-z0-9_-]{16}$/);
+    });
+
+    it('falls back to global hash for non-existent public assets', function () {
+      rendered = asset('public/nonexistent.js');
+      assertExists(rendered);
+      // Non-existent files fall back to the global hash
+      assert.equal(String(rendered), '/public/nonexistent.js?v=' + globalHash);
+    });
+
+    it('falls back to global hash for theme assets without active theme', function () {
+      rendered = asset('js/asset.js');
+      assertExists(rendered);
+      // No active theme, so falls back to the global hash
+      assert.equal(String(rendered), '/assets/js/asset.js?v=' + globalHash);
+    });
+  });
+});

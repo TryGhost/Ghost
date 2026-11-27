@@ -1,6 +1,6 @@
 /**
  * Onboarding screen selector strings, consumed by the admin screen helper and
- * the e2e page object. Source of truth: apps/admin/src/onboarding.
+ * the e2e page object. Source of truth: clients/admin/src/onboarding.
  */
 
 // testids

@@ -1,0 +1,707 @@
+import {
+  comparableTriggerRules,
+  getTriggerLabelId,
+  getTriggerTierIds,
+  subscriptionChangedSelectionFromRules,
+} from './utils/trigger-rules';
+import { APIError, HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useReadLabel } from '@tryghost/admin-x-framework/api/labels';
+import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
+import { LimitModalContent } from '@/settings/api';
+import NewAutomation from './new-automation';
+import AutomationStatusDialog from './components/automation-status-dialog';
+import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
+import AutomationCanvas from './components/canvas/automation-canvas';
+import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
+import { useAutomationForEditing } from './hooks/use-automation-for-editing';
+import React from 'react';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+  type ButtonProps,
+  LoadingIndicator,
+} from '@tryghost/shade/components';
+import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
+import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationDetail,
+  AutomationStatus,
+  AutomationTriggerRule,
+} from '@tryghost/admin-x-framework/api/automations';
+import { dequal } from 'dequal';
+import { isEmptyEmailLexical } from './utils';
+import { toast } from 'sonner';
+import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { navigateTo } from '@/utils/navigation';
+import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
+import type { AutomationEditState } from './types';
+import { hasMissingTierSelection } from './utils/tier-selection';
+import { isAutomationStatusActive } from './utils/is-automation-status-active';
+import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+
+const AUTOMATION_LIMITS = ['limitAutomations'] as const;
+
+const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
+const BODY_REQUIRED_MESSAGE = 'Add an email body.';
+const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
+const DELETED_LABEL_MESSAGE = 'Select a different label';
+
+const editableSlice = (automation: AutomationDetail) => ({
+  name: automation.name,
+  description: automation.description,
+  status: automation.status,
+  trigger_rules: comparableTriggerRules(automation.trigger_rules),
+  actions: automation.actions,
+  edges: automation.edges,
+});
+
+const getTriggerErrors = (
+  automation: AutomationDetail,
+  triggerType: AutomationTriggerRule['trigger_type'] | undefined,
+): Record<string, string> => {
+  if (triggerType === 'label_added') {
+    return getTriggerLabelId(automation.trigger_rules)
+      ? {}
+      : { [TRIGGER_CANVAS_ID]: 'Select a label' };
+  }
+  if (triggerType === 'paid_subscription_changed') {
+    return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
+      ? { [TRIGGER_CANVAS_ID]: 'Select one or more tiers' }
+      : {};
+  }
+  return !automation.trigger_rules.length
+    ? { [TRIGGER_CANVAS_ID]: 'Select one or more tiers' }
+    : {};
+};
+
+const isFailedEditState = (editState: AutomationEditState): boolean => {
+  return editState.phase === 'failed';
+};
+
+const getActionErrors = (automation: AutomationDetail): Record<string, string> => {
+  const errors: Record<string, string> = {};
+
+  for (const action of automation.actions) {
+    if (action.type !== 'send_email') {
+      continue;
+    }
+
+    const missingSubject = !action.data.email_subject.trim();
+    const missingBody = isEmptyEmailLexical(action.data.email_lexical);
+
+    if (missingSubject && missingBody) {
+      errors[action.id] = SUBJECT_AND_BODY_REQUIRED_MESSAGE;
+    } else if (missingSubject) {
+      errors[action.id] = SUBJECT_REQUIRED_MESSAGE;
+    } else if (missingBody) {
+      errors[action.id] = BODY_REQUIRED_MESSAGE;
+    }
+  }
+
+  return errors;
+};
+
+const AutomationEditorContent: React.FC<{
+  automationId: string | null;
+  creation?: {
+    initialAutomation: AutomationDetail;
+    triggerTop?: number;
+    triggerType: AutomationTriggerRule['trigger_type'];
+    onCreated: (id: string) => void;
+  };
+}> = ({ automationId, creation }) => {
+  const navigate = useNavigate();
+  const addMutation = useAddAutomation();
+  const limiter = useLimiter({ limits: AUTOMATION_LIMITS });
+  const { data: configData } = useBrowseConfig();
+  const [limitError, setLimitError] = React.useState<HostLimitError | null>(null);
+  const { confirm: confirmUpgrade, dialogProps: upgradeDialogProps } = useDirtyConfirmation();
+  const { automation, isError: isReadError } = useAutomationForEditing(automationId);
+
+  const editMutation = useEditAutomation();
+  const [validationFeedback, setValidationFeedback] =
+    React.useState<AutomationValidationAction | null>(null);
+  const [validationAttempt, setValidationAttempt] = React.useState(0);
+  const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
+  const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
+  // Invalid text stays in the input, outside the API-ready draft, but must block saving it.
+  const [invalidWaitIds, setInvalidWaitIds] = React.useState<Set<string>>(new Set());
+  const onWaitValidityChange = React.useCallback((stepId: string, valid: boolean) => {
+    setValidationFeedback(null);
+    setInvalidWaitIds((current) => {
+      if (current.has(stepId) === !valid) {
+        return current;
+      }
+      const next = new Set(current);
+      if (valid) {
+        next.delete(stepId);
+      } else {
+        next.add(stepId);
+      }
+      return next;
+    });
+  }, []);
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
+
+  // Keep the saved snapshot separate from the live query result. Later query updates or errors
+  // must not redefine the dirty state or overwrite edits made during this editing session.
+  const [savedAutomation, setSavedAutomation] = React.useState<AutomationDetail | undefined>(
+    undefined,
+  );
+  const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
+    creation?.initialAutomation,
+  );
+  // Preserve the trigger type even when every rule is removed from the draft.
+  const [triggerType, setTriggerType] = React.useState<
+    AutomationTriggerRule['trigger_type'] | undefined
+  >(creation?.triggerType);
+  const selectedLabelId = draft && getTriggerLabelId(draft.trigger_rules);
+  const labelQuery = useReadLabel(selectedLabelId ?? '', {
+    enabled: Boolean(selectedLabelId),
+    defaultErrorHandler: false,
+    staleTime: 0,
+  });
+  const labelDeleted =
+    labelQuery.error instanceof APIError && labelQuery.error.response?.status === 404;
+  const labelName = labelQuery.data?.labels[0]?.name;
+  const refreshLabel = labelQuery.refetch;
+  const selectedTriggerLabel = React.useMemo(
+    () =>
+      selectedLabelId
+        ? { name: labelName, deleted: labelDeleted, refresh: refreshLabel }
+        : undefined,
+    [selectedLabelId, labelName, labelDeleted, refreshLabel],
+  );
+  // A label can disappear while the draft is open, before the next save attempt.
+  const canvasErrors = React.useMemo(
+    () =>
+      labelDeleted
+        ? { ...validationErrors, [TRIGGER_CANVAS_ID]: DELETED_LABEL_MESSAGE }
+        : validationErrors,
+    [validationErrors, labelDeleted],
+  );
+  React.useEffect(() => {
+    if (!automation) {
+      return;
+    }
+
+    setSavedAutomation((currentAutomation) => currentAutomation ?? automation);
+    setDraft((currentDraft) => currentDraft ?? automation);
+    setTriggerType((currentType) => currentType ?? automation.trigger_rules[0]?.trigger_type);
+  }, [automation]);
+  const isEditorLoading = !draft && !isReadError;
+  const isEditorError = !draft && isReadError;
+
+  // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
+  // otherwise flip the dirty flag immediately after every successful publish.
+  const isNew = !!draft && !draft.id;
+  const hasUnsavedChanges =
+    isNew ||
+    invalidWaitIds.size > 0 ||
+    (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
+
+  // The canvas rebuilds every card whenever this or `savedTriggerTierIds` changes, so both stay
+  // stable across renders. A rebuild that lands just after React Flow first measures a card makes
+  // it lose that card's handles, and with them the edge into it and its Add step control.
+  const onDraftChange = React.useCallback(
+    (next: AutomationDetail) => {
+      setValidationFeedback(null);
+      setDraft(next);
+      setInvalidWaitIds((current) => {
+        const remaining = new Set(
+          [...current].filter((id) => next.actions.some((action) => action.id === id)),
+        );
+        return remaining.size === current.size ? current : remaining;
+      });
+      setValidationErrors((oldErrors) => {
+        if (Object.keys(oldErrors).length === 0) {
+          return oldErrors;
+        }
+
+        const nextErrors = {
+          ...getActionErrors(next),
+          ...getTriggerErrors(next, triggerType),
+        };
+        return Object.fromEntries(
+          Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
+        );
+      });
+      setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
+    },
+    [triggerType],
+  );
+  const savedTriggerTierIds = React.useMemo(
+    () => (savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []),
+    [savedAutomation],
+  );
+
+  const validateForAction = (
+    automationToValidate: AutomationDetail,
+    action: AutomationValidationAction,
+  ): boolean => {
+    setValidationFeedback(null);
+    if (!automationToValidate.name.trim()) {
+      toast.error('Add an automation name.');
+      return false;
+    }
+    const nextValidationErrors = {
+      ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
+      ...getTriggerErrors(automationToValidate, triggerType),
+    };
+    if (labelDeleted || Object.keys(nextValidationErrors).length > 0 || invalidWaitIds.size > 0) {
+      setValidationErrors(nextValidationErrors);
+      setEditState({ phase: 'idle' });
+      setValidationFeedback(action);
+      setValidationAttempt((attempt) => attempt + 1);
+      return false;
+    }
+
+    return true;
+  };
+
+  const save = async (statusToSave?: AutomationStatus) => {
+    if (!draft) {
+      throw new Error('Cannot edit an automation that has not loaded.');
+    }
+
+    let validationAction: AutomationValidationAction;
+    let requestState: AutomationEditState;
+    let errorState: AutomationEditState;
+
+    const oldStatus = draft.status;
+    const newStatus = statusToSave ?? oldStatus;
+    const statusTransition: `${boolean} -> ${boolean}` = `${isAutomationStatusActive(oldStatus)} -> ${isAutomationStatusActive(newStatus)}`;
+    switch (statusTransition) {
+      case 'true -> true':
+        validationAction = 'publish';
+        requestState = { phase: 'submitting', action: 'republish' };
+        errorState = { phase: 'failed', action: 'republish' };
+        break;
+      case 'false -> false':
+        validationAction = 'save';
+        requestState = { phase: 'submitting', action: 'save' };
+        errorState = { phase: 'failed', action: 'save' };
+        break;
+      case 'false -> true':
+        validationAction = 'publish';
+        requestState = { phase: 'submitting', action: 'publish' };
+        errorState = { phase: 'failed', action: 'publish' };
+        break;
+      case 'true -> false':
+        validationAction = 'unpublish';
+        requestState = { phase: 'submitting', action: 'unpublish' };
+        errorState = { phase: 'failed', action: 'unpublish' };
+        break;
+      default: {
+        const _exhaustive: never = statusTransition;
+        throw new Error(`Unhandled status transition: ${String(_exhaustive)}`);
+      }
+    }
+
+    if (!validateForAction(draft, validationAction)) {
+      return;
+    }
+
+    const handleSaveError = (error: unknown) => {
+      if (error instanceof HostLimitError) {
+        setEditState({ phase: 'idle' });
+        setLimitError(error);
+        return;
+      }
+      setEditState(errorState);
+      toast.error('Automation couldn’t be saved');
+    };
+
+    setEditState(requestState);
+
+    // An existing active automation consumes its slot already. New active automations
+    // and inactive-to-active edits need a fresh count before sending the mutation.
+    if (
+      newStatus === 'active' &&
+      (isNew || savedAutomation?.status !== 'active') &&
+      limiter.isLimited('limitAutomations')
+    ) {
+      try {
+        await limiter.errorIfWouldGoOverLimit('limitAutomations');
+      } catch (error) {
+        handleSaveError(error);
+        return;
+      }
+    }
+
+    const mutation = isNew ? addMutation : editMutation;
+    mutation.mutate(
+      { ...draft, status: newStatus },
+      {
+        onSuccess: (response) => {
+          const savedDraft = response.automations[0];
+          setSavedAutomation(savedDraft);
+          // A save acknowledges the submitted snapshot, not edits made while it was pending.
+          // Keep those edits dirty, adopting only the server identity and status transition.
+          setDraft((current) =>
+            !current || current === draft
+              ? savedDraft
+              : {
+                  ...current,
+                  id: savedDraft.id,
+                  status: savedDraft.status,
+                  created_at: savedDraft.created_at,
+                  updated_at: savedDraft.updated_at,
+                },
+          );
+          setValidationErrors({});
+          setEditState({ phase: 'idle' });
+          if (isNew) {
+            creation?.onCreated(savedDraft.id);
+            bypassNextNavigation();
+            navigate(`/automations/${savedDraft.id}`, { replace: true });
+          }
+        },
+        // Another publisher can take the final slot after the frontend check.
+        onError: handleSaveError,
+      },
+    );
+  };
+
+  const isConfirmPublishAlertOpen = editState.action === 'publish';
+  const isConfirmUnpublishAlertOpen = editState.action === 'unpublish';
+  const isConfirmRepublishAlertOpen = editState.action === 'republish';
+  const isEditRequestActive = editState.phase === 'submitting';
+  let isSaveButtonEnabled = !!draft && !isAutomationStatusActive(draft.status) && hasUnsavedChanges;
+  let saveButtonVariant: ButtonProps['variant'] = 'outline';
+  let saveButtonChildren: React.ReactNode = 'Save';
+  let isPublishButtonEnabled =
+    !!draft &&
+    draft.actions.length > 0 &&
+    (!isAutomationStatusActive(draft.status) || hasUnsavedChanges);
+  const publishButtonVariant: ButtonProps['variant'] = 'default';
+  const publishButtonChildren: React.ReactNode =
+    draft?.status === 'active' ? (hasUnsavedChanges ? 'Publish changes' : 'Published') : 'Publish';
+  let isTurnOffButtonEnabled = true;
+  let isRepublishButtonEnabled = true;
+  let republishButtonVariant: ButtonProps['variant'] = 'default';
+  let republishButtonChildren: React.ReactNode = 'Publish changes';
+  switch (editState.phase) {
+    case 'idle':
+      break;
+    case 'submitting':
+      isSaveButtonEnabled = false;
+      isPublishButtonEnabled = false;
+      isTurnOffButtonEnabled = false;
+
+      switch (editState.action) {
+        case 'save':
+          saveButtonChildren = (
+            <>
+              <LoadingIndicator size="sm" />
+              <span className="sr-only">Saving...</span>
+            </>
+          );
+          break;
+        case 'publish':
+          break;
+        case 'republish':
+          isRepublishButtonEnabled = false;
+          republishButtonChildren = (
+            <>
+              <LoadingIndicator color="light" size="sm" />
+              <span className="sr-only">Publishing...</span>
+            </>
+          );
+          break;
+        case 'unpublish':
+          break;
+      }
+      break;
+    case 'confirming':
+      switch (editState.action) {
+        case 'publish':
+          isSaveButtonEnabled = false;
+          isPublishButtonEnabled = false;
+          break;
+        case 'republish':
+          isPublishButtonEnabled = false;
+          isTurnOffButtonEnabled = false;
+          break;
+        case 'unpublish':
+          isSaveButtonEnabled = false;
+          isPublishButtonEnabled = false;
+          isTurnOffButtonEnabled = false;
+          break;
+      }
+      break;
+    case 'failed':
+      switch (editState.action) {
+        case 'save':
+          saveButtonVariant = 'destructive';
+          saveButtonChildren = 'Retry';
+          break;
+        case 'publish':
+          isSaveButtonEnabled = false;
+          isPublishButtonEnabled = false;
+          break;
+        case 'republish':
+          isPublishButtonEnabled = false;
+          isTurnOffButtonEnabled = false;
+          republishButtonVariant = 'destructive';
+          republishButtonChildren = 'Retry';
+          break;
+        case 'unpublish':
+          isTurnOffButtonEnabled = true;
+          break;
+      }
+      break;
+    default: {
+      const _exhaustive: never = editState;
+      throw new Error(`Unhandled edit state: ${String(_exhaustive)}`);
+    }
+  }
+
+  const onConfirmUnpublishOpenChange = (open: boolean): void => {
+    setEditState((oldEditState) => {
+      switch (oldEditState.phase) {
+        case 'confirming':
+        case 'failed':
+          return oldEditState.action === 'unpublish' && !open ? { phase: 'idle' } : oldEditState;
+        case 'idle':
+          return open ? { phase: 'confirming', action: 'unpublish' } : oldEditState;
+        default:
+          return oldEditState;
+      }
+    });
+  };
+
+  const onConfirmPublishOpenChange = (open: boolean): void => {
+    setEditState((oldEditState) => {
+      switch (oldEditState.phase) {
+        case 'confirming':
+        case 'failed':
+          return oldEditState.action === 'publish' && !open ? { phase: 'idle' } : oldEditState;
+        case 'idle':
+          return open ? { phase: 'confirming', action: 'publish' } : oldEditState;
+        default:
+          return oldEditState;
+      }
+    });
+  };
+
+  const onConfirmRepublishOpenChange = (open: boolean): void => {
+    setEditState((oldEditState) => {
+      switch (oldEditState.phase) {
+        case 'confirming':
+        case 'failed':
+          return oldEditState.action === 'republish' && !open ? { phase: 'idle' } : oldEditState;
+        case 'idle':
+          return open ? { phase: 'confirming', action: 'republish' } : oldEditState;
+        default:
+          return oldEditState;
+      }
+    });
+  };
+
+  const onPublish = (): void => {
+    if (!draft) {
+      throw new Error('Cannot publish an automation that has not loaded.');
+    }
+
+    if (!validateForAction(draft, 'publish')) {
+      return;
+    }
+
+    switch (draft.status) {
+      case 'active':
+        setEditState({ phase: 'confirming', action: 'republish' });
+        break;
+      case 'inactive':
+      case 'archived':
+        setEditState({ phase: 'confirming', action: 'publish' });
+        break;
+      default: {
+        const _exhaustive: never = draft.status;
+        throw new Error(`Unhandled status: ${String(_exhaustive)}`);
+      }
+    }
+  };
+
+  const { dialogProps: discardDialogProps, bypassNextNavigation } = useUnsavedChangesGuard({
+    when: hasUnsavedChanges,
+    confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges,
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex flex-col bg-background"
+      data-sentry-mask="true"
+      data-testid="automation-editor"
+    >
+      <AutomationHeader
+        automation={draft}
+        isLoadingAutomation={isEditorLoading}
+        isPublishButtonEnabled={isPublishButtonEnabled && !selectedRunId}
+        isSaveButtonEnabled={isSaveButtonEnabled && !selectedRunId}
+        isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
+        publishButtonChildren={publishButtonChildren}
+        publishButtonVariant={publishButtonVariant}
+        saveButtonChildren={saveButtonChildren}
+        saveButtonVariant={saveButtonVariant}
+        validationFeedback={selectedRunId ? null : validationFeedback}
+        onDismissValidationFeedback={() => setValidationFeedback(null)}
+        onNameChange={
+          !selectedRunId && draft ? (name) => onDraftChange({ ...draft, name }) : undefined
+        }
+        onPublish={onPublish}
+        onSave={() => void save()}
+        onTurnOff={() => {
+          if (draft && !validateForAction(draft, 'unpublish')) {
+            return;
+          }
+          setValidationFeedback(null);
+          setEditState({ phase: 'confirming', action: 'unpublish' });
+        }}
+      />
+
+      <AutomationCanvas
+        automation={draft}
+        canvasErrors={canvasErrors}
+        initialSidebar={
+          creation
+            ? 'closed'
+            : !draft || !configData
+              ? 'unknown'
+              : draft.status === 'active' && configData.config.stats
+                ? 'performance'
+                : 'closed'
+        }
+        initialTriggerTop={creation?.triggerTop}
+        isError={isEditorError}
+        isLoading={isEditorLoading}
+        savedTriggerTierIds={savedTriggerTierIds}
+        selectedRunId={selectedRunId}
+        selectedTriggerLabel={selectedTriggerLabel}
+        triggerType={triggerType}
+        validationAttempt={validationAttempt}
+        onChange={onDraftChange}
+        onSelectRun={setSelectedRunId}
+        onWaitValidityChange={onWaitValidityChange}
+      />
+
+      <DirtyConfirmDialog {...discardDialogProps} />
+      <DirtyConfirmDialog {...upgradeDialogProps} />
+
+      {limitError && (
+        <LimitModalContent
+          prompt={
+            limitError.data?.errors[0]?.context ||
+            limitError.data?.errors[0]?.message ||
+            limitError.message
+          }
+          onOk={() => {
+            setLimitError(null);
+            confirmUpgrade(hasUnsavedChanges, () => {
+              navigateTo(upgradeRoute(configData?.config));
+            });
+          }}
+          onRemove={() => setLimitError(null)}
+        />
+      )}
+      <AutomationStatusDialog
+        isError={editState.phase === 'failed'}
+        isPending={isEditRequestActive}
+        open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
+        status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
+        triggerLabel={selectedLabelId ? { id: selectedLabelId, name: labelName } : undefined}
+        onConfirm={() => void save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
+        onOpenChange={
+          isConfirmUnpublishAlertOpen ? onConfirmUnpublishOpenChange : onConfirmPublishOpenChange
+        }
+      />
+
+      <AlertDialog open={isConfirmRepublishAlertOpen} onOpenChange={onConfirmRepublishOpenChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update your automation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once published, your changes apply immediately to members already in progress and to
+              any new members who enter the automation.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
+            <Button
+              disabled={!isRepublishButtonEnabled}
+              variant={republishButtonVariant}
+              onClick={() => void save()}
+            >
+              {republishButtonChildren}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+const AutomationEditor: React.FC = () => {
+  const { id: automationId = '' } = useParams<{ id: string }>();
+  const location = useLocation();
+  // Matched params change on navigation even when their values do not; a native
+  // hash entry can reuse the location object.
+  const navigation = useMatches().at(-1)?.params;
+
+  // Keep the creation session mounted when its first save replaces /new with the server ID.
+  const [session, setSession] = React.useState({
+    routeId: automationId,
+    createdId: null as string | null,
+    key: 0,
+    location,
+    navigation,
+  });
+  if (
+    automationId !== session.routeId ||
+    location !== session.location ||
+    navigation !== session.navigation
+  ) {
+    const isFirstSave = session.routeId === 'new' && automationId === session.createdId;
+    // The router can render the create's URL replace and a later navigation as one,
+    // so the new-automation URL reached after the create is a new automation either way.
+    const isNewAfterCreate = automationId === 'new' && session.createdId !== null;
+    const keeps = isFirstSave || (automationId === session.routeId && !isNewAfterCreate);
+    setSession({
+      routeId: automationId,
+      createdId: keeps ? session.createdId : null,
+      key: keeps ? session.key : session.key + 1,
+      location,
+      navigation,
+    });
+  }
+  return (
+    <ScreenEntranceProvider>
+      {automationId === 'new' || automationId === session.createdId ? (
+        <NewAutomation key={session.key}>
+          {({ automation: initialAutomation, triggerType, triggerTop }) => (
+            <AutomationEditorContent
+              automationId={null}
+              creation={{
+                initialAutomation,
+                triggerTop,
+                triggerType,
+                onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
+              }}
+            />
+          )}
+        </NewAutomation>
+      ) : (
+        <AutomationEditorContent key={automationId} automationId={automationId} />
+      )}
+    </ScreenEntranceProvider>
+  );
+};
+
+export default AutomationEditor;

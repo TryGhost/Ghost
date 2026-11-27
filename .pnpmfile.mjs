@@ -1,5 +1,3 @@
-import { glob, readFile } from 'node:fs/promises';
-
 // Global pnpm hooks for the Ghost monorepo.
 //
 // `beforePacking` runs during `pnpm pack` / `pnpm publish` and mutates the
@@ -13,14 +11,14 @@ import { glob, readFile } from 'node:fs/promises';
 //     in a published manifest and only adds noise + phantom workspace refs
 //
 // Applied to the `ghost` package only (the Ghost-CLI release archive built by
-// ghost/core/scripts/pack.mjs):
+// ghost/scripts/pack.mts):
 //   - rewrite its workspace deps to the bundled `file:components/*.tgz`
 //     tarballs shipped in the archive (name→filename map via GHOST_COMPONENTS)
 //   - strip `scripts` to the runtime set — Ghost-CLI starts Ghost with `node`,
 //     not pnpm scripts, and the dev/build/test/lint scripts reference stripped
 //     devDependencies
 //
-// (`packageManager` is carried over separately, post-pack, by pack.js.)
+// (`packageManager` is carried over separately, post-pack, by pack.mts.)
 
 // Scripts retained in the packaged `ghost` manifest. Empty today: Ghost has no
 // runtime pnpm scripts. Add names here if that changes.
@@ -65,6 +63,18 @@ function beforePacking(pkg) {
   return pkg;
 }
 
+// Drops optional peers (all of them, or only `names`). pnpm links any optional
+// peer the workspace happens to satisfy, dragging it into production closures.
+// Required peers are kept so pnpm still enforces them.
+function dropOptionalPeers(pkg, names) {
+  for (const [name, meta] of Object.entries(pkg.peerDependenciesMeta ?? {})) {
+    if (meta?.optional && (!names || names.includes(name))) {
+      delete pkg.peerDependencies?.[name];
+      delete pkg.peerDependenciesMeta[name];
+    }
+  }
+}
+
 function readPackage(pkg) {
   // consolidate declares 48 template engines as optional peers. pnpm links any
   // that another workspace package happens to satisfy, so react, react-dom and
@@ -73,8 +83,7 @@ function readPackage(pkg) {
   // it never renders through it. packageExtensions can only add, so dropping the
   // peers outright needs this hook.
   if (pkg.name === 'consolidate') {
-    delete pkg.peerDependencies;
-    delete pkg.peerDependenciesMeta;
+    dropOptionalPeers(pkg);
   }
 
   // The 8.x Elasticsearch client hard-depends on apache-arrow for two ES|QL
@@ -96,8 +105,7 @@ function readPackage(pkg) {
   // NOTE: auto-install-peers: false doesn't solve the problem here unfortunately,
   // and it causes more issues with other deps
   if (['viem', 'ox', 'abitype'].includes(pkg.name)) {
-    delete pkg.peerDependencies?.typescript;
-    delete pkg.peerDependenciesMeta?.typescript;
+    dropOptionalPeers(pkg, ['typescript']);
   }
 
   // abitype's zod peer is only used by its `abitype/zod` subpath, which nothing
@@ -106,52 +114,19 @@ function readPackage(pkg) {
   // so ghost's production closure carried two identical copies of viem (~2.9k
   // files each), ox and abitype.
   if (pkg.name === 'abitype') {
-    delete pkg.peerDependencies?.zod;
-    delete pkg.peerDependenciesMeta?.zod;
+    dropOptionalPeers(pkg, ['zod']);
+  }
+
+  // better-auth declares its framework clients, ORM adapters and test helpers
+  // as optional peers. pnpm satisfied vitest and react from the workspace,
+  // pulling ~150 packages (vitest, vite, playwright, typescript, react) into
+  // ghost's production closure. Ghost uses only the server with its own Knex
+  // adapter, so none of them are needed.
+  if (pkg.name === 'better-auth') {
+    dropOptionalPeers(pkg);
   }
 
   return pkg;
 }
 
-/**
- * Dynamic config update function to automatically exclude "private" packages
- * from pnpm's changelog detection. We can't remove the version fields
- * because that would break workspace resolution, but we can dynamically add them
- * to the versioning.ignore list so that they don't trigger changelog generation.
- */
-async function updateConfig(config) {
-  const { packages, versioning = {} } = config;
-  // `pnpm dlx` runs this hook without the workspace package list
-  if (!packages) {
-    return config;
-  }
-
-  const ignoredPackages = new Set(versioning.ignore ?? []);
-
-  // step 1: enumerate all workspace packages with glob
-  const exclude = packages.filter((p) => p.startsWith('!')).map((p) => p.slice(1));
-  const patterns = packages.filter((p) => !p.startsWith('!')).map((p) => `${p}/package.json`);
-
-  const files = await Array.fromAsync(glob(patterns, { exclude }));
-
-  // step 2: read each package.json and check for "private", if so add to
-  // the ignore set
-  await Promise.all(
-    files.map(async (file) => {
-      const pkg = JSON.parse(await readFile(file, 'utf-8'));
-      if (pkg.private) {
-        ignoredPackages.add(pkg.name);
-      }
-    }),
-  );
-
-  // step 3: update the config with the new ignore list
-  config.versioning = {
-    ...versioning,
-    ignore: Array.from(ignoredPackages),
-  };
-
-  return config;
-}
-
-export const hooks = { beforePacking, readPackage, updateConfig };
+export const hooks = { beforePacking, readPackage };

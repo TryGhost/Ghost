@@ -1,5 +1,9 @@
+import {renderWithVisibility, type Visibility} from '../../../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../../../export-dom.js';
+import {cssUrl} from '../../../../utils/css-url.js';
+import {escapeHtml} from '../../../../utils/escape-html.js';
+import {sanitizeColor} from '../../../../utils/sanitize-color.js';
 import {getFirstHtmlElement} from '../../../../utils/get-first-html-element.js';
 import {renderEmailButton} from '../../../../utils/render-helpers/email-button.js';
 import {slugify} from '../../../../utils/slugify.js';
@@ -28,6 +32,7 @@ interface HeaderV2NodeData {
 }
 
 interface HeaderV2DatasetNode {
+    visibility?: Visibility;
     __alignment: string;
     __buttonText: string;
     __buttonEnabled: boolean;
@@ -73,10 +78,10 @@ function cardTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOptions
             width: bgImage.width as number,
             options: options as ImageRenderOptions
         });
-        const srcset = srcsetValue ? `srcset="${srcsetValue}"` : '';
+        const srcset = srcsetValue ? `srcset="${escapeHtml(srcsetValue)}"` : '';
 
         imgTemplate = `
-            <picture><img class="kg-header-card-image" src="${bgImage.src}" ${srcset} loading="lazy" alt="" /></picture>
+            <picture><img class="kg-header-card-image" src="${escapeHtml(bgImage.src)}" ${srcset} loading="lazy" alt="" /></picture>
         `;
     }
 
@@ -96,7 +101,7 @@ function cardTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOptions
 
     const button = () => {
         if (nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '') {
-            return `<a href="${nodeData.buttonUrl}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" data-button-color="${nodeData.buttonColor}" data-button-text-color="${nodeData.buttonTextColor}">${nodeData.buttonText}</a>`;
+            return `<a href="${escapeHtml(nodeData.buttonUrl)}" class="kg-header-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" data-button-color="${nodeData.buttonColor}" data-button-text-color="${nodeData.buttonTextColor}">${escapeHtml(nodeData.buttonText)}</a>`;
         }
         return '';
     };
@@ -125,7 +130,7 @@ function generateMSOSplitHeaderImage(nodeData: HeaderV2NodeData) {
         return `
             <!--[if mso]>
                 <v:rect xmlns:v="urn:schemas-microsoft-com:vml" stroke="false" style="width:600px;height:320px;">
-                    <v:fill type="frame" aspect="atmost" size="225pt,120pt" src="${backgroundImageSrc}" color="${backgroundColor}" />
+                    <v:fill type="frame" aspect="atmost" size="225pt,120pt" src="${escapeHtml(backgroundImageSrc)}" color="${backgroundColor}" />
                     <v:textbox inset="0,0,0,0">
                     </v:textbox>
                 </v:rect>
@@ -135,7 +140,7 @@ function generateMSOSplitHeaderImage(nodeData: HeaderV2NodeData) {
         return `
             <!--[if mso]>
                 <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:320px;">
-                    <v:fill type="frame" aspect="atleast" src="${backgroundImageSrc}" color="${backgroundColor}" />
+                    <v:fill type="frame" aspect="atleast" src="${escapeHtml(backgroundImageSrc)}" color="${backgroundColor}" />
                     <v:textbox inset="0,0,0,0">
                     </v:textbox>
                 </v:rect>
@@ -162,7 +167,7 @@ function generateMSOContentWrapper(nodeData: HeaderV2NodeData) {
     const msoImageVML = hasImageWithoutSplit ? `
                     <!--[if mso]>
                         <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
-                            <v:fill src="${backgroundImageSrc}" color="${backgroundColor}" type="frame" aspect="atleast" focusposition="0.5,0.5" />
+                            <v:fill src="${escapeHtml(backgroundImageSrc)}" color="${backgroundColor}" type="frame" aspect="atleast" focusposition="0.5,0.5" />
                             <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
                     <![endif]-->
                     ` : '';
@@ -188,8 +193,8 @@ function generateMSOContentClosing(nodeData: HeaderV2NodeData) {
 function emailTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOptions) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
-    const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: url(${nodeData.backgroundImageSrc}); background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
-    const splitImageStyle = `background-image: url(${nodeData.backgroundImageSrc}); background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
+    const backgroundImageStyle = nodeData.backgroundImageSrc ? (nodeData.layout !== 'split' ? `background-image: ${cssUrl(nodeData.backgroundImageSrc)}; background-size: cover; background-position: center center;` : `background-color: ${nodeData.backgroundColor};`) : `background-color: ${nodeData.backgroundColor};`;
+    const splitImageStyle = `background-image: ${cssUrl(nodeData.backgroundImageSrc)}; background-size: ${nodeData.backgroundSize !== 'contain' ? 'cover' : '50%'}; background-position: center`;
 
     const showButton = nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '';
 
@@ -209,7 +214,7 @@ function emailTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOption
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image" bgcolor="${nodeData.backgroundColor}" align="center">
+                        <td background="${escapeHtml(nodeData.backgroundImageSrc)}" style="${splitImageStyle}" class="kg-header-card-image" bgcolor="${nodeData.backgroundColor}" align="center">
                             ${generateMSOSplitHeaderImage(nodeData) /* mso-only img, no shared markup */}
                         </td>
                     </tr>
@@ -220,12 +225,12 @@ function emailTemplate(nodeData: HeaderV2NodeData, options: HeaderV2RenderOption
                     ${generateMSOContentWrapper(nodeData) /* creates correct opening td tag for any platform */}
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
-                                <td align="${nodeData.alignment}">
+                                <td align="${escapeHtml(nodeData.alignment)}">
                                     <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
                                 </td>
                             </tr>
                             <tr>
-                                <td class="kg-header-card-subheading-wrapper" align="${nodeData.alignment}">
+                                <td class="kg-header-card-subheading-wrapper" align="${escapeHtml(nodeData.alignment)}">
                                     <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
                                 </td>
                             </tr>
@@ -261,13 +266,13 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
         backgroundImageWidth: dataset.__backgroundImageWidth,
         backgroundImageHeight: dataset.__backgroundImageHeight,
         backgroundSize: dataset.__backgroundSize,
-        backgroundColor: dataset.__backgroundColor,
-        buttonColor: dataset.__buttonColor,
+        backgroundColor: sanitizeColor(dataset.__backgroundColor),
+        buttonColor: sanitizeColor(dataset.__buttonColor),
         layout: dataset.__layout,
-        textColor: dataset.__textColor,
-        buttonTextColor: dataset.__buttonTextColor,
+        textColor: sanitizeColor(dataset.__textColor),
+        buttonTextColor: sanitizeColor(dataset.__buttonTextColor),
         swapped: dataset.__swapped,
-        accentColor: dataset.__accentColor
+        accentColor: sanitizeColor(dataset.__accentColor)
     };
 
     if (options.target === 'email') {
@@ -276,7 +281,7 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
 
         emailDiv.innerHTML = emailTemplate(node, options)?.trim();
 
-        return {element: getFirstHtmlElement(emailDiv, 'renderHeaderV2Node email') as HTMLDivElement, type: 'outer' as const};
+        return renderWithVisibility({element: getFirstHtmlElement(emailDiv, 'renderHeaderV2Node email') as HTMLDivElement, type: 'outer' as const}, dataset.visibility, options);
     }
 
     const htmlString = cardTemplate(node, options);
@@ -298,14 +303,14 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
         }
     }
 
-    return {element: getFirstHtmlElement(element, 'renderHeaderV2Node') as HTMLDivElement, type: 'outer' as const};
+    return renderWithVisibility({element: getFirstHtmlElement(element, 'renderHeaderV2Node') as HTMLDivElement, type: 'outer' as const}, dataset.visibility, options);
 }
 
 export function getCardClasses(nodeData: HeaderV2NodeData) {
     const cardClasses = ['kg-card kg-header-card kg-v2'];
 
     if (nodeData.layout && nodeData.layout !== 'split') {
-        cardClasses.push(`kg-width-${nodeData.layout}`);
+        cardClasses.push(`kg-width-${escapeHtml(nodeData.layout)}`);
     }
 
     if (nodeData.layout === 'split') {

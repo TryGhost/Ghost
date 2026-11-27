@@ -1,0 +1,869 @@
+import { isDeepStrictEqual } from 'node:util';
+import ObjectID from 'bson-objectid';
+import errors from '@tryghost/errors';
+import type { Knex } from 'knex';
+import { z } from 'zod';
+import { Definition } from './models';
+import {
+  FieldTypeSchema,
+  MEMBER_ACCESS,
+  MemberAccessSchema,
+  TypedSettingsInputSchema,
+  WRITTEN_SETTINGS,
+  isCreatableType,
+  refusedProperty,
+  withTypedSettings,
+  type FieldType,
+  type MemberAccess,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
+import { metafieldCodec, metafieldCodecWithDefaults } from './codec';
+import { readStoredField } from './stored-fields';
+import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
+import type { Namespaces } from './namespaces';
+import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from './schema';
+import {
+  ACTIVE_ONLY,
+  ANY_STATUS,
+  inFieldOrder,
+  nql,
+  type DefinitionQuery,
+  type FieldIdentity,
+  type FieldSource,
+} from './queries';
+import type { FieldKey } from './key';
+import type { RequestContext } from '../../../lib/actor';
+import {
+  isSlug,
+  mintSlug,
+  numberedSlugs,
+  type Numbering,
+  type Slug,
+  slugSchema,
+  withRoomForNumber,
+} from '../../../lib/slug';
+import {
+  DefinitionAdded,
+  DefinitionDeleted,
+  DefinitionEdited,
+  DefinitionsAdded,
+  DefinitionsReordered,
+  type OnDefinitionUpdated,
+} from './changes';
+import type { MetafieldsTracking } from './tracking';
+import { ensureTransaction } from '../../../lib/ensure-transaction';
+import type { Asking, ResourceKind } from './resource';
+
+const MAX_KEY_ITERATIONS = 1000;
+
+// A key becomes a property name on the plain objects that carry a member's values —
+// on both sides of the wire, since `custom_fields` is JSON and a client gets a plain
+// object from JSON.parse. A key naming a member of Object.prototype reads back as
+// inherited rather than absent wherever one of those objects is indexed.
+//
+// Derived rather than listed, from the format of a key being written, minted or given: an
+// underscore slug. The only prototype name an underscore slug can spell is `constructor`.
+const RESERVED_KEYS = Object.getOwnPropertyNames(Object.prototype).filter((name) =>
+  isSlug(name, '_'),
+);
+
+const FieldAccess = z.object({ member: MemberAccessSchema });
+
+// A bound on the work one request can ask for, separate from how many definitions
+// a site may hold in total. Every definition in a batch costs several queries
+// inside one open write transaction, so an operator raising the site ceiling must
+// not also mean a single request can ask for an unbounded amount of that work.
+const MAX_FIELDS_PER_REQUEST = 100;
+
+// Only the key is read; the client sends whole field objects because that is the shape
+// the API speaks in.
+const ReorderInput = z
+  .array(
+    z.object({
+      key: z
+        .string()
+        .min(1, { message: 'Every custom field in the order needs a key.' })
+        .pipe(KeySchema),
+    }),
+  )
+  .min(1, { message: 'The order must name every custom field.' });
+
+/**
+ * The add and edit inputs, validated against the fields table's column lengths so an over-long
+ * name is a validation error rather than a database error.
+ */
+function definitionInputs(maxLength: { name: number; key: number }) {
+  const name = z
+    .string()
+    .trim()
+    .min(1, { message: 'Custom field name is required.' })
+    .max(maxLength.name, { message: 'Custom field name is too long.' });
+
+  // A key a caller gives with a new definition, rather than one derived from the name: an
+  // underscore slug, as a minted key is, that the fields table can store. Only a key written is
+  // held to the slug's format. A key that is read or addressed is held to `KeySchema`, which also
+  // accepts keys such as `a__b` that a field created before this rule can have.
+  const givenKey = z
+    .string()
+    .max(maxLength.key, { message: 'Custom field key is too long.' })
+    .pipe(slugSchema('_', 'A custom field key'));
+
+  return {
+    // A key is optional: without one, it is derived from the name. The type is checked with the
+    // settings it takes. Create accepts a batch. The framework guarantees a non-empty array by the time a query
+    // runs, but the service validates the whole payload up front so a bad item anywhere fails
+    // the request before anything is written.
+    add: z
+      .array(
+        withTypedSettings(
+          { name, key: givenKey.optional(), access: FieldAccess.optional() },
+          WRITTEN_SETTINGS,
+        ),
+      )
+      .min(1)
+      .max(MAX_FIELDS_PER_REQUEST, {
+        message: `Custom fields can only be created ${MAX_FIELDS_PER_REQUEST} at a time.`,
+      }),
+    // Name, settings, status and access are mutable. `key` and `type` are accepted so the
+    // immutability rules can reject a change loudly; they are never persisted. Settings are
+    // checked against the field's type once the field is read.
+    edit: z.object({
+      name: name.optional(),
+      settings: z.unknown().optional(),
+      status: FieldStatusSchema.optional(),
+      access: FieldAccess.optional(),
+      key: z.optional(KeySchema),
+      type: FieldTypeSchema.optional(),
+    }),
+    // A minted key's base leaves room for a `_<n>` suffix, with n up to MAX_KEY_ITERATIONS, so
+    // even the longest minted key fits the column.
+    keyNumbering: {
+      separator: '_',
+      maxLength: maxLength.key,
+      lastNumber: MAX_KEY_ITERATIONS,
+    } satisfies Numbering<'_'>,
+  };
+}
+
+/**
+ * The key a definition was given, or, when it was given none, the base to mint one from: its
+ * name minted. Both are underscore slugs, as every key written is.
+ */
+type KeyToTake = { given: Slug<'_'> } | { base: Slug<'_'> };
+
+/** A definition as it was before an edit, and as the edit left it. */
+export interface EditedDefinition {
+  previous: Definition;
+  next: Definition;
+}
+
+/**
+ * The definitions of one resource's metafields: reading them, and the commands that add, edit,
+ * reorder and delete them in a namespace. Every command asks the namespace's registration what
+ * its limits allow, and reports the change it made, inside its transaction, to the function it
+ * is given. Who may run a command is the owner's to decide, before calling it.
+ */
+export class MetafieldDefinitionsService<R extends ResourceKind> {
+  private knex: Knex;
+  private fields: FieldSource<R>;
+  private onDefinitionUpdated: OnDefinitionUpdated;
+  private namespaces: Namespaces<R>;
+  private tracking: MetafieldsTracking;
+  private labs: { isSet(flag: string): boolean };
+  private inputs: ReturnType<typeof definitionInputs>;
+
+  constructor({
+    knex,
+    fields,
+    onDefinitionUpdated,
+    namespaces,
+    tracking,
+    labs,
+  }: {
+    knex: Knex;
+    fields: FieldSource<R>;
+    /** Called with each change a command makes, inside the command's transaction. */
+    onDefinitionUpdated: OnDefinitionUpdated;
+    namespaces: Namespaces<R>;
+    tracking: MetafieldsTracking;
+    /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
+    labs: { isSet(flag: string): boolean };
+  }) {
+    this.knex = knex;
+    this.fields = fields;
+    this.onDefinitionUpdated = onDefinitionUpdated;
+    this.namespaces = namespaces;
+    this.tracking = tracking;
+    this.labs = labs;
+    this.inputs = definitionInputs(fields.maxLength);
+  }
+
+  async browse(
+    options: { namespace: Namespace; filter?: string },
+    caller: Asking<R>,
+    executor: Knex = this.knex,
+  ): Promise<Definition[]> {
+    // Whichever set comes back, it comes back in the publisher's order: filtering
+    // narrows the list, it never reorders it.
+    const { namespace, filter } = options;
+    if (filter) {
+      // A filter naming `status` decides the statuses itself, which is how Settings
+      // pulls active and archived together in one request
+      // (`filter=status:[active,archived]`). One that does not gets the same active-only
+      // scope as an unfiltered read.
+      const parsed = parseFilter(filter);
+      return this.list(
+        this.fields.definitions(executor, {
+          caller,
+          status: filterReferencesStatus(parsed) ? ANY_STATUS : ACTIVE_ONLY,
+          namespace,
+          filter: parsed,
+        }),
+      );
+    }
+    return this.list(this.fields.definitions(executor, { caller, status: ACTIVE_ONLY, namespace }));
+  }
+
+  private async list(query: DefinitionQuery): Promise<Definition[]> {
+    const rows = await inFieldOrder(query.read, this.fields.name).select('*');
+    return rows.flatMap((row) => this.readField(row) ?? []);
+  }
+
+  /** A stored definition, or null for one that can't be read even with its type's defaults. */
+  private readField(row: Readonly<Record<string, unknown>>): Definition | null {
+    return readStoredField(
+      row,
+      { asStored: metafieldCodec, withDefaults: metafieldCodecWithDefaults },
+      { reader: 'definitions', tracking: this.tracking },
+    );
+  }
+
+  async read(
+    namespace: Namespace,
+    key: Key,
+    caller: Asking<R>,
+    executor: Knex = this.knex,
+  ): Promise<Definition> {
+    const [field] = await this.list(
+      this.fields.definitions(executor, {
+        caller,
+        status: ANY_STATUS,
+        field: { namespace, key },
+      }),
+    );
+    if (!field) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
+    }
+    return field;
+  }
+
+  /**
+   * Create one or more field definitions, each under the key it is given or, without one, a key
+   * derived from its name. All-or-nothing: the batch runs in a single transaction, so a name
+   * clash or the operational cap on the third item leaves the first two unwritten rather than
+   * half-applying the request.
+   *
+   * Running inside the transaction also makes a batch self-consistent for free —
+   * `assertNameAvailable` and `takeKey` see the rows inserted earlier in the same
+   * batch, so two items sharing a name or given the same key are refused and two items deriving
+   * the same key get distinct ones, exactly as if they had arrived as separate requests.
+   *
+   * Given a transaction as `executor` it joins that transaction; given a plain connection it
+   * opens its own.
+   */
+  async add(
+    context: RequestContext,
+    namespace: Namespace,
+    input: unknown,
+    executor: Knex = this.knex,
+  ): Promise<Definition[]> {
+    return this.tracking.definition('create', async (attempt) => {
+      await this.namespaces.assertChangeable(namespace);
+      const requestedCount = Array.isArray(input) ? input.length : 0;
+
+      const parsed = this.inputs.add.safeParse(input);
+      if (!parsed.success) {
+        const issue = parsed.error.issues[0];
+        throw new errors.ValidationError({
+          message: issue.message,
+          property: propertyOf(issue.path),
+          context: batchContext(issue.path[0], requestedCount),
+        });
+      }
+      const fields = parsed.data;
+      attempt.fields(fields);
+
+      fields.forEach((field, index) => {
+        this.assertCreatable(field.type, batchContext(index, requestedCount));
+      });
+
+      // A key given is taken as it is. Otherwise its base is minted from the name before opening
+      // the transaction: it needs no database access, and an unusable name is a payload problem
+      // worth reporting on its own terms.
+      const keyed = fields.map((field, index): KeyToTake => {
+        if (field.key !== undefined) {
+          return { given: field.key };
+        }
+        const base = mintSlug(field.name, '_');
+        if (!base) {
+          throw new errors.ValidationError({
+            message: 'Custom field name must contain at least one usable character.',
+            property: 'name',
+            context: batchContext(index, requestedCount),
+          });
+        }
+        return { base };
+      });
+
+      let created: Definition[];
+      try {
+        created = await ensureTransaction(executor, async (trx) => {
+          await this.assertRoom(trx, namespace, fields.length);
+
+          // Read once, before the loop: a batch appends as consecutive ranks, so
+          // the five fields of one request land in the order the request gave
+          // them rather than all sharing the end of the list.
+          const firstSortOrder = await this.nextSortOrder(trx, namespace);
+
+          const keys: Slug<'_'>[] = [];
+          for (const [index, field] of fields.entries()) {
+            await this.assertNameAvailable(trx, namespace, field.name);
+            const key = await this.takeKey(
+              trx,
+              namespace,
+              keyed[index],
+              batchContext(index, requestedCount),
+            );
+            await this.insertField(trx, {
+              namespace,
+              key,
+              name: field.name,
+              typed: field,
+              memberAccess: field.access?.member ?? MEMBER_ACCESS.none,
+              sortOrder: firstSortOrder + index,
+            });
+            keys.push(key);
+          }
+          const added = await this.readMany(trx, namespace, keys);
+          await this.onDefinitionUpdated(
+            trx,
+            context,
+            new DefinitionsAdded(added.map((field) => new DefinitionAdded(field))),
+          );
+          return added;
+        });
+      } catch (err) {
+        // takeKey already checked the key was free, so a unique violation here only
+        // means a concurrent create claimed the same key in between. The index
+        // is the final arbiter; surface a retryable conflict rather than a 500.
+        if (isUniqueConstraintViolation(err)) {
+          throw new errors.ConflictError({
+            message: 'Could not create the custom field, please try again.',
+          });
+        }
+        throw err;
+      }
+
+      return created;
+    });
+  }
+
+  /**
+   * Refuses a type this site doesn't offer yet: one still in development, whose Labs flag is
+   * off here. Asked of every create, whoever makes it, so the API refuses what Admin doesn't
+   * offer.
+   */
+  private assertCreatable(type: FieldType, context?: string): void {
+    if (!isCreatableType(type, (flag) => this.labs.isSet(flag))) {
+      throw new errors.ValidationError({
+        message: `Custom fields of the type ${type} are not available on this site.`,
+        property: 'type',
+        context,
+      });
+    }
+  }
+
+  private async insertField(
+    db: Knex,
+    field: {
+      namespace: Namespace;
+      key: Slug<'_'>;
+      name: string;
+      typed: TypedSettings;
+      memberAccess: MemberAccess;
+      sortOrder: number;
+    },
+  ): Promise<void> {
+    await this.fields.table(db).insert({
+      id: new ObjectID().toHexString(),
+      namespace: field.namespace,
+      key: field.key,
+      name: field.name,
+      ...z.encode(DbTypedSettings, field.typed),
+      member_access: field.memberAccess,
+      sort_order: field.sortOrder,
+      created_at: new Date(),
+    });
+  }
+
+  /**
+   * Refuses adding `adding` fields to a namespace its limits leave no room in, counting every
+   * field it holds, archived ones included.
+   *
+   * The count is a consistent read, not a locking one, so two creates landing at the same
+   * instant can both pass and take a namespace one over. That is deliberate: holding a table
+   * lock across every create to make it exact would cost more than the overshoot it prevents.
+   */
+  private async assertRoom(db: Knex, namespace: Namespace, adding: number): Promise<void> {
+    const row = await this.fields.table(db).where({ namespace }).count({ count: '*' }).first();
+    await this.namespaces.assertRoom(namespace, Number(row?.count ?? 0), adding);
+  }
+
+  /**
+   * Set the order of the whole list, stated rather than adjusted: every row gets a
+   * fresh rank, so a move is well-defined even where every rank is still the default.
+   * Returns every definition, archived included, matching what the request named.
+   *
+   * Given a transaction as `executor` it joins that transaction; given a plain connection it
+   * opens its own.
+   */
+  async reorder(
+    context: RequestContext,
+    namespace: Namespace,
+    input: unknown,
+    executor: Knex = this.knex,
+  ): Promise<Definition[]> {
+    return this.tracking.definition('reorder', async () => {
+      await this.namespaces.assertChangeable(namespace);
+      const parsed = ReorderInput.safeParse(input);
+      if (!parsed.success) {
+        const issue = parsed.error.issues[0];
+        throw new errors.ValidationError({
+          message: issue.message,
+          property: propertyOf(issue.path),
+        });
+      }
+      const keys = parsed.data.map((item) => item.key);
+
+      return ensureTransaction(executor, async (trx) => {
+        await this.assertNamesEveryField(trx, namespace, keys);
+        const previous = await this.everyDefinition(trx, namespace);
+
+        // Ranks come from the request's order; the statements go out in key order, so
+        // two concurrent reorders take their row locks in the same sequence and
+        // cannot deadlock. `updated_at` is left alone — the definitions did not
+        // change, the list around them did.
+        const ranked = keys
+          .map((key, rank) => ({ key, rank }))
+          .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+        for (const { key, rank } of ranked) {
+          await this.fields.table(trx).where({ namespace, key }).update({ sort_order: rank });
+        }
+
+        // An order covers the whole list, archived definitions included.
+        const ordered = await this.everyDefinition(trx, namespace);
+        await this.onDefinitionUpdated(
+          trx,
+          context,
+          new DefinitionsReordered(namespace, previous, ordered),
+        );
+        return ordered;
+      });
+    });
+  }
+
+  /**
+   * A partial order is ambiguous, so a reorder that does not name every field exactly
+   * once is refused rather than half-applied. A client that loaded before a colleague
+   * added a field cannot name it, and is told to reload.
+   */
+  private async assertNamesEveryField(db: Knex, namespace: Namespace, keys: Key[]): Promise<void> {
+    const named = new Set(keys);
+    const existing = new Set(
+      await this.fields.table(db).where('namespace', namespace).pluck<string[]>('key'),
+    );
+
+    const matches =
+      named.size === keys.length &&
+      named.size === existing.size &&
+      keys.every((key) => existing.has(key));
+
+    if (!matches) {
+      throw new errors.ValidationError({
+        message: 'The order must name every custom field exactly once. Reload and try again.',
+        property: 'key',
+      });
+    }
+  }
+
+  /**
+   * Every definition in `namespace` as stored, archived ones included, in the publisher's order.
+   * Read from the table rather than as a caller reads them, since a change is only made to a
+   * namespace that is available, where every definition reads as it is stored.
+   */
+  private async everyDefinition(db: Knex, namespace: Namespace): Promise<Definition[]> {
+    const rows = await inFieldOrder(
+      this.fields.table(db).where('namespace', namespace),
+      this.fields.name,
+    ).select('*');
+    return rows.flatMap((row) => this.readField(row) ?? []);
+  }
+
+  /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
+  private async nextSortOrder(db: Knex, namespace: Namespace): Promise<number> {
+    const row = await this.fields
+      .table(db)
+      .where('namespace', namespace)
+      .max({ highest: 'sort_order' })
+      .first();
+    const highest = row?.highest;
+    // No fields yet, so this one starts the order.
+    if (highest === null || highest === undefined) {
+      return 0;
+    }
+    return Number(highest) + 1;
+  }
+
+  /** Read back a batch in the order its keys were created, not the table's order. */
+  private async readMany(db: Knex, namespace: Namespace, keys: FieldKey[]): Promise<Definition[]> {
+    const rows = await this.fields
+      .table(db)
+      .where('namespace', namespace)
+      .whereIn('key', keys)
+      .select('*');
+    const byKey = new Map(rows.map((row) => [row.key, row]));
+    return keys.map((key) => {
+      const row = byKey.get(key);
+      const field = row ? this.readField(row) : null;
+      if (!field) {
+        throw new errors.InternalServerError({
+          message: 'A custom field could not be read back after it was written.',
+        });
+      }
+      return field;
+    });
+  }
+
+  /**
+   * The key a new definition is added under: the one it was given, if no definition in the
+   * namespace has it, archived ones included, or else a free one minted from its name's base.
+   */
+  private async takeKey(
+    db: Knex,
+    namespace: Namespace,
+    keyed: KeyToTake,
+    context?: string,
+  ): Promise<Slug<'_'>> {
+    if ('base' in keyed) {
+      return this.mintKey(db, namespace, keyed.base);
+    }
+    const taken =
+      RESERVED_KEYS.includes(keyed.given) ||
+      (await this.fields.table(db).where({ namespace, key: keyed.given }).first()) !== undefined;
+    if (taken) {
+      throw new errors.ValidationError({
+        message: 'A custom field with this key already exists.',
+        property: 'key',
+        context,
+      });
+    }
+    return keyed.given;
+  }
+
+  /**
+   * Pick a free key from the name's base: `base`, then `base_2`, `base_3`, ...
+   * Reads the keys the namespace has already taken by that base, archived fields
+   * included, so a key is never reused once minted.
+   */
+  private async mintKey(db: Knex, namespace: Namespace, base: Slug<'_'>): Promise<Slug<'_'>> {
+    const { keyNumbering } = this.inputs;
+    const taken = new Set<string>([
+      ...RESERVED_KEYS,
+      ...(await this.fields
+        .table(db)
+        .where('namespace', namespace)
+        .where('key', 'like', `${withRoomForNumber(base, keyNumbering)}%`)
+        .pluck('key')),
+    ]);
+    for (const candidate of numberedSlugs(base, keyNumbering)) {
+      if (!taken.has(candidate)) {
+        return candidate;
+      }
+    }
+    throw new errors.ValidationError({
+      message: 'Could not mint a unique key for this custom field.',
+      property: 'name',
+    });
+  }
+
+  /**
+   * Names are unique within a namespace (across active and archived) so the label
+   * is never ambiguous in its list, and a unique index on namespace and `name` enforces
+   * it. This read gives a clean `property: name` 422 for the common case (the raw index
+   * violation can't be told apart from a key clash); the index is the race backstop.
+   *
+   * The LOWER() normalises case in application code because the engines
+   * disagree: MySQL's default collation is case-insensitive, SQLite's is not,
+   * so relying on the index alone would reject "Company"/"company" in prod but
+   * allow it in the SQLite test/dev suites. `exceptKey` lets a field keep its
+   * own name on an unrelated edit.
+   */
+  private async assertNameAvailable(
+    db: Knex,
+    namespace: Namespace,
+    name: string,
+    exceptKey?: Key,
+  ): Promise<void> {
+    const query = this.fields
+      .table(db)
+      .where('namespace', namespace)
+      .whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
+    if (exceptKey) {
+      query.whereNot('key', exceptKey);
+    }
+    const clash = await query.first();
+    if (clash) {
+      throw new errors.ValidationError({
+        message: 'A custom field with this name already exists.',
+        property: 'name',
+      });
+    }
+  }
+
+  async edit(
+    context: RequestContext,
+    namespace: Namespace,
+    key: Key,
+    input: unknown,
+    executor: Knex = this.knex,
+  ): Promise<EditedDefinition> {
+    return this.tracking.definition('edit', async (attempt) => {
+      await this.namespaces.assertChangeable(namespace);
+      const parsed = this.inputs.edit.safeParse(input);
+      if (!parsed.success) {
+        throw new errors.ValidationError({
+          message: parsed.error.issues[0].message,
+          property: propertyOf(parsed.error.issues[0].path),
+        });
+      }
+      const patch = parsed.data;
+
+      return ensureTransaction(executor, async (trx) => {
+        const existing = await this.lockedField(trx, { namespace, key });
+        if (!existing) {
+          throw new errors.NotFoundError({ message: 'Custom field not found.' });
+        }
+        attempt.fields([existing]);
+
+        // Key and type are immutable after creation: values are addressed by namespace and key
+        // and interpreted by type, so changing either would silently orphan or
+        // corrupt stored values. Reject a differing value rather than ignore it.
+        if (patch.key !== undefined && patch.key !== existing.key) {
+          throw new errors.ValidationError({
+            message: 'Custom field keys cannot be changed once created.',
+            property: 'key',
+          });
+        }
+        if (patch.type !== undefined && patch.type !== existing.type) {
+          throw new errors.ValidationError({
+            message: 'Custom field types cannot be changed once created.',
+            property: 'type',
+          });
+        }
+
+        const settings =
+          patch.settings === undefined
+            ? undefined
+            : TypedSettingsInputSchema.safeParse({ type: existing.type, settings: patch.settings });
+        if (settings && !settings.success) {
+          throw new errors.ValidationError({
+            message: settings.error.issues[0].message,
+            property: propertyOf(settings.error.issues[0].path),
+          });
+        }
+
+        // Only what actually changes is written, so re-saving an unchanged field writes nothing
+        // and reports nothing. An edit that does change the field is reported once, when it is
+        // whole, from the field as it was to the field as it now is.
+
+        if (patch.name !== undefined && patch.name !== existing.name) {
+          attempt.changing('rename');
+          await this.assertNameAvailable(trx, namespace, patch.name, key);
+          try {
+            await this.fields
+              .table(trx)
+              .where({ namespace, key })
+              .update({ name: patch.name, updated_at: new Date() });
+          } catch (err) {
+            if (isUniqueConstraintViolation(err)) {
+              throw new errors.ConflictError({
+                message: 'Could not rename the custom field, please try again.',
+              });
+            }
+            throw err;
+          }
+        }
+
+        if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
+          attempt.changing('changeSettings');
+          await this.fields
+            .table(trx)
+            .where({ namespace, key })
+            .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
+        }
+
+        if (patch.access !== undefined && patch.access.member !== existing.access.member) {
+          attempt.changing('changeAccess');
+          await this.fields
+            .table(trx)
+            .where({ namespace, key })
+            .update({ member_access: patch.access.member, updated_at: new Date() });
+        }
+
+        // A status change is the archive/restore transition.
+        if (patch.status !== undefined && patch.status !== existing.status) {
+          const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
+          attempt.changing(verb);
+          await this.fields
+            .table(trx)
+            .where({ namespace, key })
+            .update({ status: patch.status, updated_at: new Date() });
+        }
+
+        // Read with a lock, as `existing` was, so the two are compared as the database holds
+        // them now. A plain read could see the field as it was when a caller's transaction first
+        // read anything, and report a change this edit did not make.
+        const field = await this.lockedField(trx, { namespace, key });
+        if (!field) {
+          throw new errors.InternalServerError({
+            message: 'The custom field was not found right after editing it.',
+          });
+        }
+        if (!isDeepStrictEqual(existing, field)) {
+          await this.onDefinitionUpdated(trx, context, new DefinitionEdited(existing, field));
+        }
+        return { previous: existing, next: field };
+      });
+    });
+  }
+
+  /**
+   * The field as stored, with its row locked until `trx` ends, so two edits of one field take
+   * turns and each is compared with what the other saved. Returns null for a field that does not
+   * exist, or one that cannot be read even with its type's defaults.
+   */
+  private async lockedField(
+    trx: Knex.Transaction,
+    field: FieldIdentity,
+  ): Promise<Definition | null> {
+    const row = await this.fields
+      .table(trx)
+      .where({ namespace: field.namespace, key: field.key })
+      .forUpdate()
+      .first();
+    return row ? this.readField(row) : null;
+  }
+
+  /**
+   * Permanently delete a field and every member value attached to it (the FK
+   * cascades the values). Destructive and irreversible, so it's gated on the
+   * field already being archived: a publisher must archive first, then delete,
+   * which makes accidental data loss a deliberate two-step. Archiving is the
+   * reversible soft state (see `edit` with a status change).
+   */
+  async destroy(
+    context: RequestContext,
+    namespace: Namespace,
+    key: Key,
+    executor: Knex = this.knex,
+  ): Promise<void> {
+    return this.tracking.definition('delete', async (attempt) => {
+      await this.namespaces.assertChangeable(namespace);
+      await ensureTransaction(executor, async (trx) => {
+        // Locked, so a restore that lands between this check and the delete waits, rather than
+        // having the field it just restored deleted.
+        const stored = await this.lockedField(trx, { namespace, key });
+        if (!stored) {
+          throw new errors.NotFoundError({ message: 'Custom field not found.' });
+        }
+        attempt.fields([stored]);
+        if (stored.status !== FIELD_STATUS.archived) {
+          throw new errors.ValidationError({
+            message: 'Only archived custom fields can be deleted. Archive the field first.',
+          });
+        }
+        await this.fields.table(trx).where({ namespace, key }).del();
+        await this.onDefinitionUpdated(trx, context, new DefinitionDeleted(stored));
+      });
+    });
+  }
+}
+
+// What a zod issue points at within one field, by its path, such as `name` or
+// `settings.options.2`, so a client can show it beside the input that set the value.
+// Create validates an array, so an issue's path is prefixed with the item's index
+// (`[0, 'name']`), which is dropped: which item it was is reported separately by
+// batchContext. An issue with the batch as a whole points at nothing.
+function propertyOf(path: PropertyKey[]): string | undefined {
+  const withinField = typeof path[0] === 'number' ? path.slice(1) : path;
+  return withinField.length > 0 ? refusedProperty(withinField) : undefined;
+}
+
+// Which definition of a batch an error belongs to. Only set when the request
+// carried more than one: a lone definition needs no pointer, and every client
+// today sends exactly one, so this stays absent on the common path.
+function batchContext(index: PropertyKey | undefined, requestedCount: number): string | undefined {
+  if (requestedCount <= 1 || typeof index !== 'number') {
+    return undefined;
+  }
+  return `Custom field ${index + 1} of ${requestedCount}.`;
+}
+
+const DriverError = z.object({ code: z.string() });
+
+function isUniqueConstraintViolation(error: unknown): boolean {
+  const code = DriverError.safeParse(error).data?.code;
+  return code === 'ER_DUP_ENTRY' || code === 'SQLITE_CONSTRAINT';
+}
+
+const MongoQuery = z.record(z.string(), z.unknown());
+
+// Parse a caller-supplied NQL filter, without applying it. A malformed filter is a
+// client error (400), not a 500. Whether the result widens the statuses is decided by
+// the caller, which reads it with `filterReferencesStatus` and says so when building
+// the query; nothing here narrows anything.
+function parseFilter(filter: string): Record<string, unknown> {
+  let mongoQuery: Record<string, unknown>;
+  try {
+    mongoQuery = MongoQuery.parse(nql(filter).toJSON());
+  } catch (err) {
+    throw new errors.BadRequestError({
+      message: 'Could not parse the filter parameter.',
+      property: 'filter',
+      err: err instanceof Error ? err : undefined,
+    });
+  }
+  return mongoQuery;
+}
+
+// Whether an NQL-parsed filter constrains `status` anywhere, including inside the
+// $and/$or/$nor combinators — so a status filter at any nesting counts as the
+// caller opting in to (or out of) archived fields.
+function filterReferencesStatus(query: Record<string, unknown>): boolean {
+  return filterReferencesAttribute(query, 'status');
+}
+
+function filterReferencesAttribute(query: Record<string, unknown>, attribute: string): boolean {
+  return Object.entries(query).some(([key, value]) => {
+    if (key === attribute) {
+      return true;
+    }
+    if ((key === '$and' || key === '$or' || key === '$nor') && Array.isArray(value)) {
+      return value.some((sub) => {
+        const clause = MongoQuery.safeParse(sub);
+        return clause.success && filterReferencesAttribute(clause.data, attribute);
+      });
+    }
+    return false;
+  });
+}

@@ -197,6 +197,9 @@ export function buildCollectedCheckoutCompletedEvent(opts: {
         customer: customerId,
         metadata: { checkoutType: 'signup', ...session.response.metadata },
         custom_fields: answeredQuestions(session, collected.answers ?? {}),
+        // The session reports what it asked for, which the capture can't know.
+        shipping_address_collection: session.request.shipping_address_collection ?? null,
+        phone_number_collection: { enabled: asks(session, 'phone_number_collection') },
         shipping: shippingBlock(session, collected.shipping, captured),
         customer_details: {
           ...customerDetails,

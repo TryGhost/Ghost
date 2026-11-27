@@ -1,0 +1,126 @@
+import { page } from 'vitest/browser';
+import { getScrollParent } from '@tryghost/shade/utils';
+import {
+  addFilterButton,
+  filterButton,
+  loadMoreButton,
+  membersActions,
+  membersListItem,
+  membersListScrollRoot,
+  newMemberLink,
+  noResultsText,
+  searchLabel,
+  showAllButton,
+  textFilterFields,
+} from '@tryghost/test-data/selectors/members';
+
+/** Members screen locators and gestures for acceptance specs; no assertions. */
+export const membersScreen = {
+  memberRows: () => page.getByTestId(membersListItem),
+  memberRow: (name: string) => page.getByTestId(membersListItem).filter({ hasText: name }),
+  // The visual pinned-header clone is aria-hidden; the accessible original is height zero.
+  pinnedHeaderCell: (name: string) =>
+    Array.from(
+      document.querySelectorAll<HTMLTableCellElement>(
+        '[data-testid="members-pinned-header"] thead th',
+      ),
+    ).find((cell) => cell.textContent === name && cell.getBoundingClientRect().height > 0),
+  link: (name: string) => page.getByRole('link', { name, exact: true }),
+  newMemberLink: () => page.getByRole('link', { name: newMemberLink }),
+  searchInput: () => page.getByLabelText(searchLabel),
+  noResults: () => page.getByText(noResultsText),
+  showAllButton: () => page.getByRole('button', { name: showAllButton }),
+  emptyState: () => page.getByText('Start building your audience'),
+  actionsButton: () => page.getByTestId(membersActions),
+  loadMoreButton: () => page.getByRole('button', { name: loadMoreButton }),
+  dialog: () => page.getByRole('dialog'),
+  menuItem: (name: string | RegExp) => page.getByRole('menuitem', { name }),
+  /** Reads "Save view", or "Edit view" while the filters match a saved view. */
+  manageViewButton: () => page.getByRole('button', { name: /^(Save|Edit) view$/ }),
+  viewNameInput: () => membersScreen.dialog().getByRole('textbox', { name: 'View name' }),
+  viewPopoverButton: (label: string) =>
+    membersScreen.dialog().getByRole('button', { name: label, exact: true }),
+
+  /** Save the current filters as a view or, on a saved view, rename it. */
+  async saveView(name: string): Promise<void> {
+    await membersScreen.manageViewButton().click();
+    await membersScreen.viewNameInput().fill(name);
+    await membersScreen.viewPopoverButton('Save').click();
+  },
+
+  /** Delete the saved view the list is on, through its edit popover. */
+  async deleteView(): Promise<void> {
+    await membersScreen.manageViewButton().click();
+    await membersScreen.viewPopoverButton('Delete').click();
+    await membersScreen.viewPopoverButton('Delete').click();
+  },
+
+  /** Add a text filter through the filters UI: Filter button → field option → fill the value input. */
+  async addFilter(field: keyof typeof textFilterFields, value: string): Promise<void> {
+    await membersScreen.openFilterField(field);
+    await page.getByRole('textbox', { name: textFilterFields[field] }).fill(value);
+  },
+
+  /** Add a searchable multiselect filter: Filter button → field option → search → pick an option. */
+  async addSearchableFilter(field: string, searchText: string, optionName: string): Promise<void> {
+    await membersScreen.openFilterField(field);
+    // The search placeholder derives from the field label.
+    await page.getByPlaceholder(`Search ${field.toLowerCase()}...`).fill(searchText);
+    await page.getByRole('option', { name: optionName }).click();
+  },
+
+  async addMultiselectFilter(field: string, optionNames: string[]): Promise<void> {
+    await membersScreen.openFilterField(field);
+    await page.getByRole('option', { name: optionNames[0], exact: true }).click();
+
+    if (optionNames.length > 1) {
+      await membersScreen.openMultiselectValue(optionNames[0]);
+      for (const optionName of optionNames.slice(1)) {
+        await membersScreen.multiselectOption(optionName).click();
+      }
+    }
+  },
+
+  /** The shell element whose scroll position drives the virtualized rows. */
+  listScrollElement: () =>
+    getScrollParent(document.querySelector(`[data-testid="${membersListScrollRoot}"]`)),
+
+  /** The table's horizontal scroll container, independent of the page's vertical scroll. */
+  horizontalScrollElement(): HTMLElement | undefined {
+    let element = membersScreen.memberRows().elements()[0]?.parentElement;
+    while (element) {
+      if (getComputedStyle(element).overflowX === 'auto') {
+        return element;
+      }
+      element = element.parentElement;
+    }
+    return undefined;
+  },
+
+  /** The highest row index the virtualizer has rendered with data (-1 when none). */
+  lastRenderedRowIndex: () =>
+    Math.max(
+      -1,
+      ...Array.from(document.querySelectorAll(`[data-testid="${membersListItem}"]`), (row) =>
+        Number(row.getAttribute('data-index')),
+      ),
+    ),
+
+  multiselectOption: (name: string) =>
+    page.getByRole('option', { name: new RegExp(`^${name}\\b`) }),
+
+  async openMultiselectValue(triggerName: string): Promise<void> {
+    await page.getByRole('button', { name: triggerName, exact: true }).click();
+  },
+
+  async openActionsMenu(): Promise<void> {
+    await membersScreen.actionsButton().click();
+  },
+
+  async openFilterField(field: string): Promise<void> {
+    // The trigger relabels from "Filter" to "Add filter" once a filter exists.
+    const buttonName = new RegExp(`^(${filterButton}|${addFilterButton})$`);
+    await page.getByRole('button', { name: buttonName }).click();
+    await page.getByRole('option', { name: field, exact: true }).click();
+  },
+};

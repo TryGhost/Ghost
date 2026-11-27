@@ -7,7 +7,6 @@ import {defineConfig, esmExternalRequirePlugin, loadEnv} from 'vite';
 import {resolve, dirname} from 'path';
 import {fileURLToPath} from 'url';
 import {createRequire} from 'node:module';
-import {sentryVitePlugin} from '@sentry/vite-plugin';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -32,38 +31,9 @@ export default (function viteConfig({mode}) {
         })
     ];
 
-    // Keep sentryVitePlugin as the last plugin
-    // only include when we have the required details to keep local dev less noisy
-    if (process.env.IS_SHIPPING) {
-        plugins.push(
-            sentryVitePlugin({
-                org: 'ghost-foundation',
-                project: 'admin',
-
-                // Auth tokens can be obtained from https://sentry.io/settings/account/api/auth-tokens/
-                // and need `project:releases` and `org:read` scopes
-                authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
-
-                // We're not injecting release information into the build
-                // @see https://www.npmjs.com/package/@sentry/vite-plugin#option-release-inject
-                // Setting this option to true causes our build to fail: this plugin runs before the build is complete,
-                // and therefore our commonJS dependencies such as `kg-markdown-html-renderer` are not yet transpiled
-                release: {
-                    inject: false
-                },
-
-                telemetry: false
-            })
-        );
-    }
-
     return defineConfig({
         plugins,
         server: {
-            // Allow access from Ghost's Docker dev environment (host.docker.internal)
-            allowedHosts: true
-        },
-        preview: {
             // Allow access from Ghost's Docker dev environment (host.docker.internal)
             allowedHosts: true
         },
@@ -93,23 +63,11 @@ export default (function viteConfig({mode}) {
             cssCodeSplit: true,
             lib: {
                 entry: resolve(__dirname, 'src/index.ts'),
-                name: pkg.name,
-                fileName(format) {
-                    if (format === 'umd') {
-                        return `${outputFileName}.umd.js`;
-                    }
-
-                    return `${outputFileName}.js`;
-                }
+                formats: ['es'],
+                fileName: () => `${outputFileName}.js`
             },
             rolldownOptions: {
                 output: {
-                    globals: {
-                        'react': 'React',
-                        'react/jsx-runtime': 'React',
-                        'react-dom': 'ReactDOM',
-                        'react-dom/client': 'ReactDOM'
-                    },
                     assetFileNames: (assetInfo) => {
                         // Vite 6 changed CSS output naming in lib mode from
                         // 'style.css' to deriving from the entry filename.

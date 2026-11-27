@@ -1,9 +1,9 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
-import Prettier from '@prettier/sync';
 
 import {BookmarkNode, $createBookmarkNode, $isBookmarkNode, type BookmarkData} from '../../src/index.js';
 
@@ -17,11 +17,10 @@ describe('BookmarkNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -110,7 +109,8 @@ describe('BookmarkNode', function () {
             const bookmarkNodeDataset = bookmarkNode.getDataset();
 
             expect(bookmarkNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -160,7 +160,7 @@ describe('BookmarkNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('creates an bookmark card', editorTest(function () {
+        it('creates an bookmark card', editorTest(async function () {
             const bookmarkNode = $createBookmarkNode(dataset);
             const result = bookmarkNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
@@ -186,9 +186,7 @@ describe('BookmarkNode', function () {
                 </figure>
             `;
 
-            const prettyExpectedHtml = Prettier.format(expectedHtml, {parser: 'html'});
-
-            assertPrettifiesTo(element.outerHTML, prettyExpectedHtml);
+            await assertPrettifiesTo(element.outerHTML, expectedHtml);
         }));
 
         it('renders email target', editorTest(function () {
@@ -213,6 +211,7 @@ describe('BookmarkNode', function () {
             const metadata = dataset.metadata as Record<string, unknown>;
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'bookmark',
                 version: 1,
                 url: dataset.url,
@@ -266,6 +265,34 @@ describe('BookmarkNode', function () {
                     } catch (e) {
                         reject(e);
                     }
+                });
+            });
+        });
+
+        it('migrates legacy visibility to the current format', function () {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'bookmark',
+                        ...dataset,
+                        visibility: {showOnWeb: true, showOnEmail: false, segment: ''}
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            editor.setEditorState(editor.parseEditorState(serializedState));
+
+            editor.getEditorState().read(() => {
+                const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
+
+                expect(bookmarkNode.visibility).toMatchObject({
+                    web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                    email: {memberSegment: ''}
                 });
             });
         });

@@ -78,8 +78,49 @@ describe('HTTP', function () {
         integration: null,
         user: null,
         member: null,
+        principal: null,
       },
     });
+  });
+
+  it('sets the ip option from the request, not the query', function () {
+    const apiImpl: ApiImplementation & { options?: string[] } = sinon.stub().resolves();
+    apiImpl.options = ['ip'];
+    req.ip = '203.0.113.7';
+    req.query = { ip: '198.51.100.1' };
+    req.params = { ip: '198.51.100.2' };
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal(apiImpl.firstCall.firstArg.options.ip, '203.0.113.7');
+  });
+
+  it('leaves out the ip option unless the controller declares it', function () {
+    const apiImpl = sinon.stub().resolves();
+    req.ip = '203.0.113.7';
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal('ip' in apiImpl.firstCall.firstArg.options, false);
+  });
+
+  it('sets the userAgent option from the request header, not the query', function () {
+    const apiImpl: ApiImplementation & { options?: string[] } = sinon.stub().resolves();
+    apiImpl.options = ['userAgent'];
+    req.get = (name: string) => (name === 'user-agent' ? 'Test Browser/1.0' : undefined);
+    req.query = { userAgent: 'Spoofed/1.0' };
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal(apiImpl.firstCall.firstArg.options.userAgent, 'Test Browser/1.0');
+  });
+
+  it('leaves out the userAgent option unless the controller declares it', function () {
+    const apiImpl = sinon.stub().resolves();
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal('userAgent' in apiImpl.firstCall.firstArg.options, false);
   });
 
   it('api response is fn', async function () {
@@ -177,6 +218,17 @@ describe('HTTP', function () {
     });
   });
 
+  it('passes the principal into the context', async function () {
+    const principal = { kind: 'user', user: { id: 'user-id' } };
+    req.auth = principal;
+    const apiImpl = sinon.stub().resolves({ ok: true });
+
+    await shared.http(apiImpl)(req, res, next);
+
+    assert.equal(next.called, false);
+    assert.equal(apiImpl.firstCall.firstArg.options.context.principal, principal);
+  });
+
   it('supports async response format and statusCode function', async function () {
     await new Promise<void>((resolve) => {
       const apiImpl: ApiImplementation = sinon.stub().resolves({ ok: true });
@@ -269,6 +321,59 @@ describe('HTTP', function () {
       });
 
       shared.http(apiImpl)(req, res, next);
+    });
+  });
+
+  describe('routedMethod', function () {
+    it('names the pipeline method a handler runs, with its permissions', function () {
+      const ownCheck = () => Promise.resolve();
+      const controller = shared.pipeline(
+        {
+          docName: 'posts',
+          browse: { permissions: true, query: () => [] },
+          upload: { permissions: false, query: () => [] },
+          poll: { permissions: ownCheck, query: () => [] },
+          importCSV: { permissions: { docName: 'content_imports' }, query: () => [] },
+        },
+        {},
+      );
+
+      assert.deepEqual(shared.routedMethod(shared.http(controller.browse)), {
+        controller: controller.browse,
+        docName: 'posts',
+        method: 'browse',
+        permissions: true,
+      });
+      assert.equal(shared.routedMethod(shared.http(controller.upload))?.permissions, false);
+      assert.equal(shared.routedMethod(shared.http(controller.poll))?.permissions, ownCheck);
+      assert.deepEqual(shared.routedMethod(shared.http(controller.importCSV))?.permissions, {
+        docName: 'content_imports',
+      });
+    });
+
+    it('knows no method for a controller outside the pipeline', function () {
+      const outside = Object.assign(() => Promise.resolve(), {});
+      assert.deepEqual(shared.routedMethod(shared.http(outside)), {
+        controller: outside,
+        permissions: undefined,
+      });
+    });
+
+    it('knows a handler from http() of a method the API does not have', function () {
+      const handler = shared.http(undefined as never);
+
+      assert.deepEqual(shared.routedMethod(handler), {
+        controller: undefined,
+        permissions: undefined,
+      });
+    });
+
+    it('knows nothing of any other handler', function () {
+      assert.equal(
+        shared.routedMethod(() => {}),
+        undefined,
+      );
+      assert.equal(shared.routedMethod(undefined), undefined);
     });
   });
 });

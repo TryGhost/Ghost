@@ -1,0 +1,425 @@
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  ListItem,
+  RowPrimaryAction,
+} from '@tryghost/shade/components';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
+import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import type { ActivePresence } from '@/shared/presence/presence-api';
+import { AdminLink } from '@/shared/admin-link';
+import { FadingText } from '@/shared/fading-text';
+import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
+import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
+import {
+  didPostEmailFail,
+  getPostDateTooltip,
+  getPostMetaParts,
+  getPostStatusDetail,
+  getPostStatusLabel,
+} from '@/posts/list/post-row-copy';
+import { hasPostAnalyticsPage, type PostMetricsSettings } from '@/posts/list/post-metrics';
+import { PostMetricsCells } from '@/posts/list/components/post-metrics-cells';
+import { PostListRowEmailStatus } from '@/posts/list/components/post-list-row-email-status';
+import { EmailSendingStatusLine } from '@/posts/email-sending-status/email-sending-status-line';
+import {
+  hasInProgressEmail,
+  SETTLED_POST_LIST_ROW_EMAIL_STATUS,
+  type PostListRowEmailStatusState,
+} from '@/posts/list/components/post-list-row-email-status-state';
+import { forwardRef, memo, useState } from 'react';
+import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
+import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
+import type { PostResource } from '@/posts/list/post-resource';
+
+interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
+  post: PostListItem;
+  /** Other staff with this post open; absent while presence indicators are off. */
+  presenceActive?: ActivePresence[];
+  resource: PostResource;
+  timezone?: string;
+  /**
+   * Contributors get a link out to the live post instead of the editor, for
+   * published posts they can no longer edit.
+   */
+  isContributor?: boolean;
+  /** Owner or Administrator. */
+  hasAdminAccess?: boolean;
+  paidMembersEnabled?: boolean;
+  isSelected?: boolean;
+  /** Capture-phase, so it beats the row's own link. */
+  onSelectMouseDown?: (event: ReactMouseEvent, id: string) => void;
+  onSelectClick?: (event: ReactMouseEvent) => void;
+  /**
+   * The right-click menu is rendered *inside* this component rather than
+   * wrapped around it. A wrapper's `children` is a fresh React element on
+   * every parent render, so `memo` on the wrapper can never hold and the
+   * whole list re-renders on every selection change. Rendering it here puts
+   * the menu's children inside this memo boundary instead.
+   *
+   * These props are all primitives or ref-stable getters for the same reason.
+   */
+  getMenuItems: () => PostContextMenuItem[];
+  showGiftLink?: boolean;
+  menuEnabled?: boolean;
+  menuOnOpenChange?: (open: boolean) => void;
+  menuOnAction?: (key: PostContextMenuKey) => void | Promise<void>;
+  metricsSettings: PostMetricsSettings;
+  visitorCounts?: Record<string, number>;
+  memberCounts?: Record<string, { free: number; paid: number }>;
+}
+
+interface PostListRowComponentProps extends PostListRowProps {
+  emailSendingState: PostListRowEmailStatusState;
+}
+
+/**
+ * Status colour. Only draft (pink), scheduled (green) and failed (red) are
+ * coloured; published and sent, most rows on a real site, stay muted.
+ *
+ * Red uses Shade's semantic danger token; pink and green have no semantic
+ * equivalent (a draft is not a warning, a schedule is not a success) so they
+ * use the palette aliases.
+ */
+function statusTone(post: PostListItem, isFailed: boolean): string {
+  if (isFailed) {
+    return 'text-state-danger';
+  }
+
+  switch (post.status) {
+    case 'draft':
+      return 'text-pink';
+    case 'scheduled':
+      return 'text-green';
+    default:
+      return 'text-muted-foreground';
+  }
+}
+
+/**
+ * The thumbnail, matched to the analytics dashboard's: a 16/10 landscape
+ * thumbnail at the same widths and corner radius.
+ *
+ * The empty state is analytics' shared placeholder component rather than a
+ * restyle of it, so the two lists cannot drift apart.
+ */
+const FEATURE_IMAGE_GEOMETRY = 'aspect-[16/10] w-[80px] shrink-0 rounded-sm lg:w-[100px]';
+
+function FeatureImage({ post }: { post: PostListItem }) {
+  if (post.feature_image) {
+    return (
+      <div
+        className={cn(FEATURE_IMAGE_GEOMETRY, 'bg-muted bg-cover bg-center')}
+        role="presentation"
+        style={{ backgroundImage: `url(${JSON.stringify(post.feature_image)})` }}
+      />
+    );
+  }
+
+  // `p-0` because the placeholder's own padding is sized for a larger box;
+  // here the icon just centres in the thumbnail.
+  return (
+    <FeatureImagePlaceholder
+      className={cn(FEATURE_IMAGE_GEOMETRY, 'p-0 group-hover:brightness-95')}
+    />
+  );
+}
+
+type RowLinkProps = ComponentPropsWithoutRef<typeof AdminLink> & { offsite: boolean };
+
+/** Offsite URLs open in a new tab; everything else is an in-app route. */
+const RowLink = forwardRef<HTMLAnchorElement, RowLinkProps>(function RowLink(
+  { offsite, to, ...props },
+  ref,
+) {
+  return offsite ? (
+    <a ref={ref} href={to} rel="noopener noreferrer" target="_blank" {...props} />
+  ) : (
+    <AdminLink ref={ref} to={to} {...props} />
+  );
+});
+
+const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps>(
+  function PostListRowComponent(
+    {
+      post,
+      presenceActive,
+      resource,
+      timezone,
+      isContributor,
+      hasAdminAccess,
+      paidMembersEnabled,
+      isSelected,
+      onSelectMouseDown,
+      onSelectClick,
+      getMenuItems,
+      showGiftLink,
+      menuEnabled,
+      menuOnOpenChange,
+      menuOnAction,
+      metricsSettings,
+      visitorCounts,
+      memberCounts,
+      emailSendingState,
+      // Everything else lands on the <li>: the context menu wraps each row with
+      // `asChild`, so Radix hands its trigger props and ref straight through.
+      ...rest
+    },
+    ref,
+  ) {
+    const [isHovered, setIsHovered] = useState(false);
+
+    const metaParts = getPostMetaParts(post, { timezone });
+    const dateTooltip = getPostDateTooltip(post, { timezone });
+    const statusLabel = getPostStatusLabel(post, resource);
+    const statusDetail = getPostStatusDetail(post, { timezone, resource });
+    const isFailed = didPostEmailFail(post, resource);
+    const displayedPost =
+      emailSendingState.status === 'failed'
+        ? ({ ...post, email: { ...post.email, status: 'failed' } } as PostListItem)
+        : post;
+    const displayedIsFailed = emailSendingState.status === 'failed' || isFailed;
+    const displayedStatusLabel =
+      emailSendingState.status === 'failed'
+        ? getPostStatusLabel(displayedPost, resource)
+        : statusLabel;
+
+    // Strictly `published`: an email-only `sent` post still opens in the
+    // editor for a contributor.
+    const isPublished = post.status === 'published';
+    const editorType = resource === 'pages' ? 'page' : 'post';
+    const linksOffsite = Boolean(isContributor && isPublished);
+    const editorPath = `/editor/${editorType}/${post.id}`;
+
+    const goesToAnalytics = hasPostAnalyticsPage(
+      post,
+      metricsSettings,
+      resource,
+      Boolean(hasAdminAccess),
+    );
+    const action = goesToAnalytics
+      ? {
+          to: `/posts/analytics/${post.id}`,
+          label: 'Post analytics',
+          offsite: false,
+          Icon: LucideIcon.ChartNoAxesColumn,
+        }
+      : linksOffsite
+        ? // "View post" on both resources. Only ever reached by a
+          // contributor, who has no page access anyway.
+          { to: post.url, label: 'View post', offsite: true, Icon: LucideIcon.ArrowUpRight }
+        : { to: editorPath, label: 'Edit', offsite: false, Icon: LucideIcon.Pen };
+
+    const row = (
+      <li
+        ref={ref}
+        {...rest}
+        className={cn(
+          'group border-b border-border-default in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent]',
+          // A light blue rather than a grey: selection is a different
+          // kind of state from hover, and two greys a step apart read as
+          // degrees of the same thing.
+          //
+          // `select-none`: a modifier-drag across rows shouldn't leave
+          // text highlighted behind the selection.
+          //
+          // Hover applies only when the row is *not* selected — a hover
+          // rule would otherwise outrank the selected background and make
+          // the row under the cursor look deselected.
+          isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
+        )}
+        data-presence-id={post.id}
+        data-selected={isSelected ? 'true' : undefined}
+        data-testid="posts-list-item"
+        onClickCapture={onSelectClick}
+        onMouseDownCapture={(event) => {
+          onSelectMouseDown?.(event, post.id);
+        }}
+        onMouseEnter={() => {
+          setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+        }}
+      >
+        {/* Keep the right-hand controls centered against the feature image. */}
+        <Inline align="center" gap="md">
+          <RowPrimaryAction asChild>
+            <RowLink
+              className="flex min-w-0 flex-1 items-start gap-4 py-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
+              data-testid="post-list-item-link"
+              offsite={linksOffsite}
+              to={linksOffsite ? post.url : editorPath}
+            >
+              <FeatureImage post={post} />
+              <Stack className="min-w-0 flex-1" gap="xs">
+                <Inline align="center" gap="xs">
+                  {post.featured && (
+                    <LucideIcon.Star
+                      aria-label="Featured"
+                      className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
+                      data-testid="post-featured"
+                    />
+                  )}
+                  <Text as="h3" className="truncate tracking-normal" weight="semibold">
+                    {post.title}
+                  </Text>
+                </Inline>
+
+                {metaParts.length > 0 && (
+                  // Joined from parts so a missing piece takes its
+                  // separator with it — no dangling " – date".
+                  //
+                  // Truncated like the title above it. Left to wrap,
+                  // a long author-and-tag line runs to three lines on
+                  // a narrow window and drives the row's height,
+                  // which reads as the metrics squashing it.
+                  <Text
+                    className="relative z-10 truncate"
+                    size="sm"
+                    title={dateTooltip}
+                    tone="secondary"
+                  >
+                    {metaParts.join(' - ')}
+                  </Text>
+                )}
+
+                {emailSendingState.status === 'sending' ? (
+                  <EmailSendingStatusLine
+                    announce={false}
+                    className="text-sm"
+                    line={emailSendingState.line}
+                  />
+                ) : (
+                  <Text
+                    className={statusTone(displayedPost, displayedIsFailed)}
+                    size="sm"
+                    weight={
+                      displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                        ? 'medium'
+                        : 'regular'
+                    }
+                  >
+                    {displayedStatusLabel}
+                    {/* Mounted only while hovered, fading in and out. A CSS
+                                  opacity fade alone would keep it in the DOM, so a screen
+                                  reader would read every row's full dispatch details
+                                  aloud, always. */}
+                    {emailSendingState.status !== 'failed' && statusDetail && (
+                      <FadingText show={isHovered}> {statusDetail}</FadingText>
+                    )}
+                  </Text>
+                )}
+              </Stack>
+            </RowLink>
+          </RowPrimaryAction>
+          {presenceActive && presenceActive.length > 0 ? (
+            <PresenceAvatars
+              active={presenceActive}
+              // Under 360px the title has no room left to give.
+              className="relative z-10 max-[359px]:hidden"
+              resourceType={editorType}
+            />
+          ) : null}
+          <PostMetricsCells
+            className="relative z-10 py-4"
+            hideEmailMetrics={emailSendingState.status === 'sending'}
+            memberCounts={memberCounts}
+            paidMembersEnabled={paidMembersEnabled}
+            post={post}
+            resource={resource}
+            settings={metricsSettings}
+            visitorCounts={visitorCounts}
+          />
+          {/* Always visible so the action stays discoverable and remains
+                    available on touch devices. */}
+          <Tooltip delayDuration={1000}>
+            <TooltipTrigger asChild>
+              <Button
+                // The 32px margin on top of the row's gap separates
+                // the action from the analytics figures beside it. It is an
+                // action rather than another figure, so it needs to read as
+                // separate from the run of metrics.
+                // Margin rather than a wider row gap, which would push the
+                // title away from the metrics too.
+                className={cn(
+                  'my-4 shrink-0',
+                  'relative z-10',
+                  'ms-8',
+                  // Below 1200px the metrics are hidden, so with avatars beside it the
+                  // action needs no extra separation and the title keeps the room.
+                  presenceActive && presenceActive.length > 0 && 'max-[1200px]:ms-2',
+                  'text-muted-foreground hover:bg-background hover:text-foreground',
+                  isHovered && 'bg-background',
+                )}
+                size="icon"
+                variant={isHovered ? 'outline' : 'ghost'}
+                asChild
+              >
+                <RowLink
+                  aria-label={action.label}
+                  data-testid="post-list-item-action"
+                  offsite={action.offsite}
+                  to={action.to}
+                  data-ignore-select
+                >
+                  <action.Icon />
+                </RowLink>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent variant="white">{action.label}</TooltipContent>
+          </Tooltip>
+        </Inline>
+      </li>
+    );
+
+    return (
+      <PostsContextMenu
+        enabled={menuEnabled ?? false}
+        getItems={getMenuItems}
+        showGiftLink={showGiftLink ?? false}
+        onAction={menuOnAction ?? (() => {})}
+        onOpenChange={menuOnOpenChange ?? (() => {})}
+      >
+        <ListItem asChild>{row}</ListItem>
+      </PostsContextMenu>
+    );
+  },
+);
+
+const PostListRowWithEmailStatus = forwardRef<HTMLLIElement, PostListRowProps>(
+  function PostListRowWithEmailStatus(props, ref) {
+    if (hasInProgressEmail(props.post, props.resource)) {
+      return (
+        <PostListRowEmailStatus post={props.post}>
+          {(emailSendingState) => (
+            <PostListRowComponent ref={ref} {...props} emailSendingState={emailSendingState} />
+          )}
+        </PostListRowEmailStatus>
+      );
+    }
+
+    return (
+      <PostListRowComponent
+        ref={ref}
+        {...props}
+        emailSendingState={SETTLED_POST_LIST_ROW_EMAIL_STATUS}
+      />
+    );
+  },
+);
+
+/**
+ * Memoised. Selection state and modifier "select mode" both live above the
+ * list, so without this every cmd-click and every press of the Cmd key
+ * re-renders every row — and each row carries its own Radix hover cards, which
+ * is by far the most expensive thing on the screen.
+ *
+ * Every prop is either a primitive or memoised upstream; `metricsSettings` in
+ * particular is built with `useMemo` for this reason.
+ */
+export const PostListRow = memo(PostListRowWithEmailStatus);

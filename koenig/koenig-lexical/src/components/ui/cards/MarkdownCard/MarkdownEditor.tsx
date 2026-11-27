@@ -59,8 +59,8 @@ export default function MarkdownEditor({
             hideIcons: getListOfHiddenIcons(),
             // hide status bar
             status: [],
-            // Ghost-specific SimpleMDE toolbar config - allows us to create a
-            // bridge between SimpleMDE buttons and Ember actions
+            // Ghost-specific SimpleMDE toolbar config - bridges SimpleMDE buttons
+            // to the card's actions
             toolbar: [
                 'bold', 'italic', 'heading', '|',
                 'quote', 'unordered-list', 'ordered-list', '|',

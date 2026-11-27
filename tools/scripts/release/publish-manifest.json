@@ -1,0 +1,57 @@
+[
+  {
+    "name": "@tryghost/portal",
+    "path": "clients/portal",
+    "versioning": "patch",
+    "cdn": "portal"
+  },
+  {
+    "name": "@tryghost/sodo-search",
+    "path": "clients/sodo-search",
+    "versioning": "patch",
+    "cdn": "sodoSearch"
+  },
+  {
+    "name": "@tryghost/comments-ui",
+    "path": "clients/comments-ui",
+    "versioning": "patch",
+    "cdn": "comments"
+  },
+  {
+    "name": "@tryghost/signup-form",
+    "path": "clients/signup-form",
+    "versioning": "patch",
+    "cdn": "signupForm"
+  },
+  {
+    "name": "@tryghost/announcement-bar",
+    "path": "clients/announcement-bar",
+    "versioning": "patch",
+    "cdn": "announcementBar"
+  },
+  {
+    "name": "@tryghost/admin-toolbar",
+    "path": "clients/admin-toolbar",
+    "versioning": "patch",
+    "cdn": "adminToolbar"
+  },
+  {
+    "name": "@tryghost/shade",
+    "path": "clients/shade",
+    "versioning": "prerelease",
+    "distTag": "latest",
+    "installArgs": "--ignore-scripts"
+  },
+  {
+    "name": "@tryghost/adapter-base-upgrade",
+    "path": "packages/adapters/upgrade-base",
+    "versioning": "prerelease",
+    "distTag": "alpha"
+  },
+  {
+    "name": "@tryghost/app-sdk",
+    "path": "packages/app-sdk",
+    "versioning": "prerelease",
+    "distTag": "latest"
+  }
+]

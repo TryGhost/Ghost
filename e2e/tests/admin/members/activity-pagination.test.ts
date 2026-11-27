@@ -12,7 +12,6 @@ interface SignupEvent {
 }
 
 test.describe('Ghost Admin - Member activity pagination', () => {
-  test.use({ labs: { membersActivityReact: true } });
   let createdMemberIds: string[] = [];
 
   test.afterEach(async ({ page }) => {

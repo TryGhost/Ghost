@@ -1,0 +1,19 @@
+{
+  "supported": true,
+  "availability": "ready",
+  "backupRequired": true,
+  "currentVersion": "6.68.0",
+  "oneClick": [{ "component": "ghost", "fromVersion": "6.68.0", "toVersion": "6.72.0" }],
+  "manual": [
+    {
+      "component": "stack",
+      "fromVersion": "v1.4.0",
+      "toVersion": "v1.5.0",
+      "reason": "A stack update replaces the upgrade supervisor itself, so it runs on the host.",
+      "steps": ["In the site directory, run `./ghost-docker self-update`"]
+    }
+  ],
+  "activeJobId": null,
+  "pollAfterMs": 30000,
+  "diagnostics": []
+}

@@ -26,6 +26,8 @@
         body.style.justifyContent = 'center';
         // don't stretch embeds to the frame, or ones that clip overflow (eg, TikTok) never grow
         body.style.alignItems = 'flex-start';
+        // the frame is sized to fit, and a scrollbar would change the width the height is worked out from
+        document.documentElement.style.overflow = 'hidden';
 
         function setSize(element, property, value) {
             if (element.style[property] !== value) {

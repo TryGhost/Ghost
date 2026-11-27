@@ -344,6 +344,14 @@ export function generateDecoratorNode({nodeType, properties, defaultRenderFn, ve
             return true;
         }
 
+        /**
+         * Defines whether a node has a visibility property, which the editor
+         * shows as a Visibility tab in the card's settings panel
+         */
+        hasVisibility() {
+            return internalProps.some(prop => prop.name === 'visibility');
+        }
+
         /*
         * Returns the text content of the node, used by the editor to calculate the word count
         * This method filters out properties without `wordCount: true`
@@ -365,7 +373,7 @@ export function generateDecoratorNode({nodeType, properties, defaultRenderFn, ve
          * @returns {boolean}
          */
         getIsVisibilityActive() {
-            if (!internalProps.some(prop => prop.name === 'visibility')) {
+            if (!this.hasVisibility()) {
                 return false;
             }
 

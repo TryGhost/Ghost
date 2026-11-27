@@ -52,21 +52,24 @@ test.describe('Ghost Admin - Editor session expiry', () => {
     // on screen and asks for the password instead
     await expect(editor.reauthenticateModal.modal).toBeVisible({ timeout: 15000 });
     expect(page.url()).toContain(`/editor/post/${postId}`);
-    await expect(editor.lexicalEditor).toContainText('Written after the session expired.');
+    await expect(editor.bodyBehindDialog).toContainText('Written after the session expired.');
 
     // Re-authenticating closes the modal and restores the session
     await editor.reauthenticateModal.signIn(ghostAccountOwner.password);
     await expect(editor.reauthenticateModal.modal).toBeHidden();
 
-    // Saving works again: the next edit autosaves successfully
+    // Saving works again: the next edit autosaves successfully. Matched on
+    // its content, since the editor also re-sends the held save on its own
+    const afterMarker = 'Written after re-authenticating.';
     const [saveResponse] = await Promise.all([
       page.waitForResponse(
         (response) =>
           response.request().method() === 'PUT' &&
           response.url().includes(`/ghost/api/admin/posts/${postId}/`) &&
-          response.status() === 200,
+          response.status() === 200 &&
+          (response.request().postData() ?? '').includes(afterMarker),
       ),
-      editor.appendToBody(' Written after re-authenticating.'),
+      editor.appendToBody(` ${afterMarker}`),
     ]);
     expect(saveResponse.status()).toBe(200);
 
@@ -81,6 +84,6 @@ test.describe('Ghost Admin - Editor session expiry', () => {
     expect(post.status).toBe('draft');
     expect(post.lexical).toContain('Written before the session expired.');
     expect(post.lexical).toContain('Written after the session expired.');
-    expect(post.lexical).toContain('Written after re-authenticating.');
+    expect(post.lexical).toContain(afterMarker);
   });
 });

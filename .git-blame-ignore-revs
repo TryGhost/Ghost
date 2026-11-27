@@ -4,3 +4,6 @@
 
 # Formatted the repository with oxfmt (#30184)
 5ad154310fa5b325c2201ff3caeaa4daee8172d3
+
+# Moved the Ghost package from ghost/core to ghost (#31630)
+6571bf8d130af2cdd59503ec3a96becdae32672b

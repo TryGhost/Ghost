@@ -56,7 +56,12 @@ const EmojiPickerPortal = ({
                 adjustedTop = rect.top - pickerHeight - shiftPixels + scrollY;
             }
 
-            setPosition({x: (rect.left + scrollX) / 1.5, y: adjustedTop});
+            setPosition({
+                x: (rect.left + scrollX) / 1.5,
+                y: adjustedTop,
+                // Raise the picker for editors inside modals, like some email editors.
+                isInDialog: !!positionRef.current.closest('[role="dialog"], #modal-backdrop')
+            });
         }
     }, [positionRef]);
 
@@ -71,7 +76,8 @@ const EmojiPickerPortal = ({
     if (!position) {
         return null;
     }
-    const {x, y} = position;
+    const {x, y, isInDialog} = position;
+    const pickerLayer = isInDialog ? 'z-[10000]' : 'z-20';
 
     const handleClick = (e) => {
         e.stopPropagation();
@@ -110,7 +116,7 @@ const EmojiPickerPortal = ({
 
     return (
         <Portal>
-            <div ref={pickerRef} className='z-20 mr-9 mt-10 rounded-md bg-white' data-testid="emoji-picker-container" style={style} onClick={handleClick}>
+            <div ref={pickerRef} className={`${pickerLayer} mr-9 mt-10 rounded-md bg-white`} data-testid="emoji-picker-container" style={style} onClick={handleClick}>
                 <div className=''>
                     <Picker // https://github.com/missive/emoji-mart#-picker
                         data={data}

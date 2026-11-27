@@ -14,7 +14,7 @@ test.describe('Ghost Admin - Members Search and Filter', () => {
 
   // Server-side filtering journey. The client-side halves (URL/NQL
   // serialization, filter UI, empty states) are covered by
-  // apps/admin/src/members/members-filtering.acceptance.test.tsx.
+  // clients/admin/src/members/members-filtering.acceptance.test.tsx.
   test('combines multiple filters to narrow results and clears all at once', async ({ page }) => {
     await memberFactory.createMany([
       { name: 'Alice Alpha', email: 'alice@alpha.com', labels: ['Premium'] },

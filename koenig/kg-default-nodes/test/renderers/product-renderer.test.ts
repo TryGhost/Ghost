@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/product-renderer', function () {
     function getTestData(overrides = {}) {
@@ -18,6 +18,10 @@ describe('renderers/product-renderer', function () {
         };
     }
 
+    // Values containing characters that are special in HTML
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('product', data, options);
     }
@@ -27,15 +31,15 @@ describe('renderers/product-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-product-card">
                     <div class="kg-product-card-container">
-                        <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" class="kg-product-card-image" loading="lazy">
+                        <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="" class="kg-product-card-image" loading="lazy">
                         <div class="kg-product-card-title-container">
                             <h4 class="kg-product-card-title">This is a <b>title</b></h4>
                         </div>
@@ -74,12 +78,55 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
+        it('renders escaped image alt text', async function () {
+            const result = renderForWeb(getTestData({productImageAlt: 'Fits "most" cameras & lenses'}));
+
+            await assertPrettifiedIncludes(result.html, html`
+                <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; lenses" class="kg-product-card-image" loading="lazy">
+            `);
+        });
+
+        it('writes button text as text', function () {
+            const result = renderForWeb(getTestData({productButton: badText}));
+            const button = createDocument(result.html).querySelector('.kg-product-card-button span');
+
+            assert.equal(button?.textContent, badText);
+            assert.equal(button?.children.length, 0);
+        });
+
+        it('renders a link, image and image dimensions containing special characters', function () {
+            const result = renderForWeb(getTestData({productUrl: badUrl, productImageSrc: badUrl, productImageWidth: '200" x="', productImageHeight: '100>'}));
+            const document = createDocument(result.html);
+            const image = document.querySelector('.kg-product-card-image');
+            const link = document.querySelector('.kg-product-card-button');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(image?.getAttributeNames(), ['src', 'width', 'height', 'alt', 'class', 'loading']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+            assert.equal(image?.getAttribute('width'), '200" x="');
+            assert.equal(image?.getAttribute('height'), '100>');
+            assert.deepEqual(link?.getAttributeNames(), ['href', 'class', 'target', 'rel']);
+            assert.equal(link?.getAttribute('href'), badUrl);
+        });
+
+        it('rounds the star rating down to a whole number of stars', function () {
+            const activeStars = (rating: unknown) => {
+                const document = createDocument(renderForWeb(getTestData({productStarRating: rating})).html);
+                assert.equal(document.querySelectorAll('.kg-product-card-rating-star').length, 5);
+                return document.querySelectorAll('.kg-product-card-rating-active').length;
+            };
+
+            assert.equal(activeStars(3.6), 3);
+            assert.equal(activeStars(9), 5);
+            assert.equal(activeStars('4" x="'), 0);
+        });
+
         it('renders nothing with a missing data', function () {
             const result = renderForWeb(getTestData({isEmpty: () => true}));
             assert.equal(result.html, '');
         });
 
-        it('renders with only a title', function () {
+        it('renders with only a title', async function () {
             const result = renderForWeb({
                 productImageSrc: '',
                 productImageWidth: null,
@@ -93,7 +140,7 @@ describe('renderers/product-renderer', function () {
                 productUrl: ''
             });
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-product-card">
                     <div class="kg-product-card-container">
                         <div class="kg-product-card-title-container">
@@ -105,7 +152,7 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
-        it('renders with only a description', function () {
+        it('renders with only a description', async function () {
             const result = renderForWeb({
                 productImageSrc: '',
                 productImageWidth: null,
@@ -119,7 +166,7 @@ describe('renderers/product-renderer', function () {
                 productUrl: ''
             });
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-product-card">
                     <div class="kg-product-card-container">
                         <div class="kg-product-card-title-container">
@@ -131,7 +178,7 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
-        it('renders with only a button', function () {
+        it('renders with only a button', async function () {
             const result = renderForWeb({
                 productImageSrc: '',
                 productImageWidth: null,
@@ -145,7 +192,7 @@ describe('renderers/product-renderer', function () {
                 productUrl: 'https://example.com/product/ok'
             });
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-product-card">
                     <div class="kg-product-card-container">
                         <div class="kg-product-card-title-container">
@@ -160,10 +207,10 @@ describe('renderers/product-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData(), {feature: {}});
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
                     <tbody>
                         <tr>
@@ -176,6 +223,7 @@ describe('renderers/product-renderer', function () {
                                                     src="/content/images/2022/11/koenig-lexical.jpg"
                                                     width="200"
                                                     height="100"
+                                                    alt=""
                                                     border="0" />
                                             </td>
                                         </tr>
@@ -222,28 +270,63 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
+        it('renders escaped image alt text', async function () {
+            const result = renderForEmail(getTestData({productImageAlt: 'Fits "most" cameras & lenses'}), {feature: {}});
+
+            await assertPrettifiedIncludes(result.html, html`
+                <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; lenses" border="0" />
+            `);
+        });
+
         it('renders nothing with a missing data', function () {
             const result = renderForEmail(getTestData({isEmpty: () => true}), {feature: {}});
             assert.equal(result.html, '');
         });
 
-        it('renders dark mode rating image when background is dark', function () {
+        it('renders an image and image dimensions containing special characters', function () {
+            const result = renderForEmail(getTestData({productImageSrc: badUrl, productImageWidth: '200" x="', productImageHeight: '100>'}), {feature: {}});
+            const image = createDocument(result.html).querySelector('.kg-product-image img');
+
+            assert.deepEqual(image?.getAttributeNames(), ['src', 'width', 'height', 'alt', 'border']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+            assert.equal(image?.getAttribute('width'), '200" x="');
+            assert.equal(image?.getAttribute('height'), '100>');
+        });
+
+        it('renders the rating image for a whole number of stars', function () {
+            const ratingImage = (rating: unknown) => {
+                const image = createDocument(renderForEmail(getTestData({productStarRating: rating}), {feature: {}}).html).querySelector('.kg-product-rating img');
+                return image?.getAttribute('src');
+            };
+
+            assert.equal(ratingImage(3.6), 'https://static.ghost.org/v4.0.0/images/star-rating-3.png');
+            assert.equal(ratingImage(9), 'https://static.ghost.org/v4.0.0/images/star-rating-5.png');
+        });
+
+        it('leaves the rating image out when there are no stars', function () {
+            for (const rating of [0, 0.4, '4" x="']) {
+                const document = createDocument(renderForEmail(getTestData({productStarRating: rating}), {feature: {}}).html);
+                assert.equal(document.querySelector('.kg-product-rating'), null, String(rating));
+            }
+        });
+
+        it('renders dark mode rating image when background is dark', async function () {
             const result = renderForEmail(getTestData(), {feature: {}, design: {backgroundIsDark: true}});
             assert.ok(result.html);
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <img src="https://static.ghost.org/v4.0.0/images/star-rating-darkmode-3.png" border="0" />
             `);
         });
 
-        it('renders light mode rating image when background is light', function () {
+        it('renders light mode rating image when background is light', async function () {
             const result = renderForEmail(getTestData(), {feature: {}, design: {backgroundIsDark: false}});
             assert.ok(result.html);
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <img src="https://static.ghost.org/v4.0.0/images/star-rating-3.png" border="0" />
             `);
         });
 
-        it('renders without rating when star-rating is disabled', function () {
+        it('renders without rating when star-rating is disabled', async function () {
             const result = renderForEmail({
                 productButton: 'Click me',
                 productButtonEnabled: true,
@@ -257,7 +340,7 @@ describe('renderers/product-renderer', function () {
                 productUrl: 'https://example.com/product/ok'
             }, {feature: {}});
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
                     <tbody>
                         <tr>
@@ -266,7 +349,7 @@ describe('renderers/product-renderer', function () {
                                     <tbody>
                                         <tr>
                                             <td class="kg-product-image" align="center">
-                                                <img src="https://example.com/images/ok.jpg" border="0" />
+                                                <img src="https://example.com/images/ok.jpg" alt="" border="0" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -299,7 +382,7 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
-        it('renders without button when button is disabled', function () {
+        it('renders without button when button is disabled', async function () {
             const result = renderForEmail({
                 productButton: 'Click me',
                 productButtonEnabled: false,
@@ -313,7 +396,7 @@ describe('renderers/product-renderer', function () {
                 productUrl: 'https://example.com/product/ok'
             }, {feature: {}});
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
                     <tbody>
                         <tr>
@@ -322,7 +405,7 @@ describe('renderers/product-renderer', function () {
                                     <tbody>
                                         <tr>
                                             <td class="kg-product-image" align="center">
-                                                <img src="https://example.com/images/ok.jpg" border="0" />
+                                                <img src="https://example.com/images/ok.jpg" alt="" border="0" />
                                             </td>
                                         </tr>
                                         <tr>
@@ -342,7 +425,7 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
-        it('renders without an image when productImageSrc is missing', function () {
+        it('renders without an image when productImageSrc is missing', async function () {
             const result = renderForEmail({
                 productButton: 'Click me',
                 productButtonEnabled: false,
@@ -356,7 +439,7 @@ describe('renderers/product-renderer', function () {
                 productUrl: 'https://example.com/product/ok'
             }, {feature: {}});
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <table class="kg-product-card" cellspacing="0" cellpadding="0" border="0">
                     <tbody>
                         <tr>
@@ -391,6 +474,15 @@ describe('renderers/product-renderer', function () {
             const result = renderForEmail(getTestData(), {feature: {}, design: {buttonCorners: 'pill'}});
 
             assert.ok(!result.html.includes('border-radius'));
+        });
+
+        it('renders a button URL and text containing special characters', function () {
+            const result = renderForEmail(getTestData({productUrl: badUrl, productButton: badText}));
+            const link = createDocument(result.html).querySelector('table.btn a');
+
+            assert.equal(link?.getAttribute('href'), badUrl);
+            assert.equal(link?.textContent, badText);
+            assert.equal(link?.children.length, 0);
         });
     });
 });

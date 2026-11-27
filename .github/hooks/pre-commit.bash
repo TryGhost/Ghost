@@ -16,6 +16,19 @@ if [ $lintStatus -ne 0 ]; then
     exit 1
 fi
 
+# lint-staged is only given added and modified files, so it cannot tell that a
+# removed or renamed file is still the target of a link in a document.
+if [ -n "$(git diff --cached --name-only --no-renames --diff-filter=D)" ]; then
+    echo -e "Checking documentation links ${grey}(pre-commit hook)${no_color} "
+
+    # git sets GIT_DIR for hooks in a worktree, which stops remark-validate-links
+    # from finding the repository root to resolve its own GitHub URLs
+    if ! (unset GIT_DIR && pnpm --silent lint:doc-links); then
+        echo -e "${red}❌ Documentation link check failed${no_color}"
+        exit 1
+    fi
+fi
+
 ##
 ## 1) Scan staged text files for secrets
 ##
@@ -117,7 +130,7 @@ STAGED_TREE=$(git write-tree 2>/dev/null || true)
 
 if [ -z "$CHANGESET_BASE" ] || [ -z "$STAGED_TREE" ]; then
     echo "No merge-base with main, skipping changeset check..."
-elif node scripts/change-check.js "$CHANGESET_BASE" "$STAGED_TREE"; then
+elif node tools/scripts/ci/change-check.ts "$CHANGESET_BASE" "$STAGED_TREE"; then
     echo "Changesets look good, continuing..."
 else
     echo -e "${grey}⚠️  Reminder only (not blocking) — run 'pnpm change' to add a changeset. CI enforces this.${no_color}"

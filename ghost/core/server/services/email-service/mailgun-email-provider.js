@@ -1,0 +1,217 @@
+const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
+const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
+const {
+  createRecipientVariables,
+  getHtmlEscapedIds,
+  replaceTokensWithRecipientVariables,
+} = require('../../lib/mailgun/mailgun-recipient-variables');
+const { buildRecipientMessageId } = require('../../lib/mailgun/mailgun-recipient-message-id');
+const {
+  RECIPIENT_VERIFICATION_CODE,
+  recipientVerificationError,
+  countsDiffer,
+} = require('./recipient-accounting');
+
+/**
+ * @typedef {object} Config
+ * @prop {(key: string) => unknown} get
+ */
+
+/**
+ * @typedef {object} Recipient
+ * @prop {string} email
+ * @prop {Replacement[]} replacements
+ */
+
+/**
+ * @typedef {object} Replacement
+ * @prop {string} token
+ * @prop {string} value
+ * @prop {string} id
+ */
+
+/**
+ * @typedef {object} EmailSendingOptions
+ * @prop {boolean} clickTrackingEnabled
+ * @prop {boolean} openTrackingEnabled
+ * @prop {Date} deliveryTime
+ * @prop {number} [expectedRecipientCount]
+ * @prop {string} [batchId]
+ */
+
+/**
+ * @typedef {object} EmailProviderSuccessResponse
+ * @prop {string|null} id Null when the batch carries a per-recipient Message-Id
+ */
+
+class MailgunEmailProvider {
+  #mailgunClient;
+  #config;
+
+  /**
+   * @param {object} dependencies
+   * @param {import('../../lib/mailgun/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
+   * @param {Config} dependencies.config
+   */
+  constructor({ mailgunClient, config }) {
+    this.#mailgunClient = mailgunClient;
+    this.#config = config;
+  }
+
+  /**
+   * Create mailgun error message for storing in the database
+   * @param {Object} error
+   * @param {string} error.message
+   * @param {string} error.details
+   * @returns {string}
+   */
+  #createMailgunErrorMessage(error) {
+    const message =
+      (error?.message || 'Mailgun Error') + (error?.details ? ': ' + error.details : '');
+    return message.slice(0, 2000);
+  }
+
+  /**
+   * Send an email using the Mailgun API
+   * @param {import('./sending-service').EmailData} data
+   * @param {EmailSendingOptions} options
+   * @returns {Promise<EmailProviderSuccessResponse>}
+   */
+  async send(data, options) {
+    const {
+      subject,
+      html,
+      plaintext,
+      from,
+      domainOverride,
+      replyTo,
+      emailId,
+      recipients,
+      replacementDefinitions,
+    } = data;
+
+    logging.info(`Sending email to ${recipients.length} recipients`);
+    const startTime = Date.now();
+    debug(`sending message to ${recipients.length} recipients`);
+
+    try {
+      const messageData = {
+        subject,
+        html,
+        plaintext,
+        from,
+        replyTo,
+        tags: ['bulk-email'],
+        domainOverride,
+        id: emailId,
+        track_opens: !!options.openTrackingEnabled,
+        track_clicks: !!options.clickTrackingEnabled,
+        buildRecipientMessageId: ({ recipientEmail, domain }) =>
+          buildRecipientMessageId({ emailId, recipientEmail, domain }),
+      };
+
+      const mailgunTagFromConfig = this.#config.get('bulkEmail:mailgun:tag');
+      if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
+        messageData.tags.push(mailgunTagFromConfig);
+      }
+
+      if (options.deliveryTime && options.deliveryTime instanceof Date) {
+        messageData.deliveryTime = options.deliveryTime;
+      }
+
+      // create recipient data for Mailgun using replacement definitions
+      const htmlEscapedIds = getHtmlEscapedIds(replacementDefinitions);
+      const recipientData = recipients.reduce((acc, recipient) => {
+        acc[recipient.email] = createRecipientVariables(recipient.replacements, htmlEscapedIds);
+        return acc;
+      }, {});
+      if (
+        options.expectedRecipientCount !== undefined &&
+        Object.keys(recipientData).length !== options.expectedRecipientCount
+      ) {
+        const actual = Object.keys(recipientData).length;
+        throw recipientVerificationError(
+          emailId,
+          'provider_payload_count',
+          {
+            batch_id: options.batchId,
+            expected: options.expectedRecipientCount,
+            actual,
+          },
+          {
+            countMismatch: countsDiffer(options.expectedRecipientCount, actual),
+          },
+        );
+      }
+
+      // update content to use Mailgun variable syntax for all replacements
+      ['html', 'plaintext'].forEach((key) => {
+        if (messageData[key]) {
+          messageData[key] = replaceTokensWithRecipientVariables(
+            messageData[key],
+            replacementDefinitions,
+            key,
+          );
+        }
+      });
+
+      // send the email using Mailgun
+      // uses empty replacements array as we've already replaced all tokens with Mailgun variables
+      const response = await this.#mailgunClient.send(messageData, recipientData, []);
+
+      debug(`sent message (${Date.now() - startTime}ms)`);
+      logging.info(`Sent message (${Date.now() - startTime}ms)`);
+
+      // Return mailgun provider id, trim <> from response
+      return {
+        id: response.id === null ? null : response.id.trim().replace(/^<|>$/g, ''),
+      };
+    } catch (e) {
+      if (e.code === RECIPIENT_VERIFICATION_CODE) {
+        throw e;
+      }
+      let ghostError;
+      if (e.error && e.messageData) {
+        const { error, messageData } = e;
+
+        // REF: possible mailgun errors https://documentation.mailgun.com/en/latest/api-intro.html#status-codes
+        ghostError = new errors.EmailError({
+          statusCode: error.status,
+          message: this.#createMailgunErrorMessage(error),
+          errorDetails: JSON.stringify({ error, messageData }),
+          context: `Mailgun Error ${error.status}: ${error.details}`,
+          help: `https://docs.ghost.org/newsletters/#bulk-email-configuration`,
+          code: 'BULK_EMAIL_SEND_FAILED',
+        });
+      } else {
+        ghostError = new errors.EmailError({
+          statusCode: undefined,
+          message: this.#createMailgunErrorMessage(e),
+          errorDetails: undefined,
+          context: e.context || 'Mailgun Error',
+          code: 'BULK_EMAIL_SEND_FAILED',
+        });
+      }
+
+      debug(`failed to send message (${Date.now() - startTime}ms)`);
+
+      throw ghostError;
+    }
+  }
+
+  getMaximumRecipients() {
+    return this.#mailgunClient.getBatchSize();
+  }
+
+  /**
+   * Returns the configured delay between batches in milliseconds
+   *
+   * @returns {number}
+   */
+  getTargetDeliveryWindow() {
+    return this.#mailgunClient.getTargetDeliveryWindow();
+  }
+}
+
+module.exports = MailgunEmailProvider;

@@ -2,6 +2,7 @@ import { Locator, Page } from '@playwright/test';
 import {
   addFacebookImageLabel,
   addXImageLabel,
+  chooseDateButton,
   codeInjectionFootLabel,
   codeInjectionHeadLabel,
   facebookImageUnsplashButton,
@@ -29,8 +30,6 @@ import {
   settingsDeleteDialog,
   settingsDeleteError,
   settingsExcerptInput,
-  settingsFacebookCardBackButton,
-  settingsFacebookCardRow,
   settingsFacebookDescriptionInput,
   settingsFacebookPreview,
   settingsFacebookPreviewImage,
@@ -63,11 +62,10 @@ import {
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
   settingsTiersError,
+  settingsTiersList,
   settingsTiersPicker,
   settingsUrlPreview,
   settingsVisibilitySelect,
-  settingsXCardBackButton,
-  settingsXCardRow,
   settingsXDescriptionInput,
   settingsXImage,
   settingsXPreview,
@@ -77,7 +75,10 @@ import {
   xImageUnsplashButton,
 } from '@tryghost/test-data/selectors/editor';
 
-/** The React sidebar's sections, in the order it renders them. */
+/**
+ * The sidebar's sections, in the order it renders them. The X and Facebook
+ * cards are tabs of the Meta data pane, opened through it.
+ */
 export type PostSettingsSectionId =
   | 'url'
   | 'publish-date'
@@ -262,8 +263,8 @@ class UrlSection extends InlineSection {
 }
 
 class PublishDateSection extends InlineSection {
-  /** Read-only: the date is chosen from a calendar popover. */
   readonly dateInput: Locator;
+  readonly calendarButton: Locator;
   readonly timeInput: Locator;
   readonly error: Locator;
   readonly note: Locator;
@@ -271,6 +272,9 @@ class PublishDateSection extends InlineSection {
   constructor(page: Page, sidebar: PostSettingsSidebar) {
     super(page, sidebar, 'publish-date');
     this.dateInput = page.getByTestId(settingsPublishDate);
+    this.calendarButton = page
+      .getByTestId(postSettingsSidebar)
+      .getByRole('button', { name: chooseDateButton, exact: true });
     this.timeInput = page.getByTestId(settingsPublishTime);
     this.error = page.getByTestId(settingsPublishDateError);
     this.note = page.getByTestId(settingsPublishDateNote);
@@ -281,17 +285,17 @@ class PublishDateSection extends InlineSection {
   }
 
   /**
-   * Chooses `YYYY-MM-DD` in the calendar popover behind the read-only date
-   * field, paging month by month from wherever the calendar opens.
+   * Chooses `YYYY-MM-DD` in the calendar popover the date field's button opens,
+   * paging month by month from wherever the calendar opens.
    */
   async setDate(day: string): Promise<void> {
     const [year, month, date] = day.split('-').map(Number);
     const monthName = CALENDAR_MONTHS[month - 1];
 
-    await this.dateInput.click();
-    const openInput = this.dateInput.and(this.page.locator('[aria-expanded="true"]'));
-    await openInput.waitFor({ state: 'visible' });
-    const calendarId = await openInput.getAttribute('aria-controls');
+    await this.calendarButton.click();
+    const openButton = this.calendarButton.and(this.page.locator('[aria-expanded="true"]'));
+    await openButton.waitFor({ state: 'visible' });
+    const calendarId = await openButton.getAttribute('aria-controls');
     const calendar = this.page.locator(`[id="${calendarId}"]`);
 
     const targetGrid = calendar.getByRole('grid', { name: `${monthName} ${year}`, exact: true });
@@ -404,8 +408,13 @@ class AccessSection extends InlineSection {
     return this.visibilitySelect;
   }
 
+  /** The chip a tier the post grants is drawn as. */
   tier(name: string): Locator {
-    return this.tiersPicker.getByRole('checkbox', { name, exact: true });
+    return this.tiersPicker.getByRole('button', { name: `Remove ${name}`, exact: true });
+  }
+
+  tierOption(name: string): Locator {
+    return this.page.getByTestId(settingsTiersList).getByRole('option', { name, exact: true });
   }
 
   /** `label` is the option as the select shows it. */
@@ -413,13 +422,22 @@ class AccessSection extends InlineSection {
     await chooseSelectOption(this.page, this.visibilitySelect, label);
   }
 
-  /** Ticks a tier in the picker that `Specific tier(s)` shows. */
+  /** Picks a tier in the picker that `Specific tier(s)` shows, if the post does not grant it yet. */
   async selectTier(name: string): Promise<void> {
-    await this.tier(name).check();
+    await this.setTier(name, true);
   }
 
   async deselectTier(name: string): Promise<void> {
-    await this.tier(name).uncheck();
+    await this.setTier(name, false);
+  }
+
+  private async setTier(name: string, selected: boolean): Promise<void> {
+    await this.tiersPicker.getByRole('combobox').click();
+    const option = this.tierOption(name);
+    if ((await option.getAttribute('aria-selected')) !== String(selected)) {
+      await option.click();
+    }
+    await (selected ? this.tier(name).waitFor() : this.tier(name).waitFor({ state: 'detached' }));
   }
 }
 
@@ -688,6 +706,7 @@ async function replaceCode(field: Locator, code: string): Promise<void> {
 }
 
 class MetaDataPane extends PaneSection {
+  readonly searchTab: Locator;
   readonly titleInput: Locator;
   readonly descriptionInput: Locator;
   readonly searchPreview: Locator;
@@ -697,9 +716,17 @@ class MetaDataPane extends PaneSection {
       rowLabel: settingsMetaDataRow,
       backLabel: settingsMetaDataBackButton,
     });
+    this.searchTab = sidebar.root.getByRole('tab', { name: 'Search', exact: true });
     this.titleInput = page.getByTestId(settingsMetaTitleInput);
     this.descriptionInput = page.getByTestId(settingsMetaDescriptionInput);
     this.searchPreview = page.getByTestId(settingsSerpPreview);
+  }
+
+  /** Lands on the Search tab, even when the pane is already open on a card's tab. */
+  async open(): Promise<void> {
+    await super.open();
+    await this.searchTab.click();
+    await this.titleInput.waitFor({ state: 'visible' });
   }
 
   async setTitle(title: string): Promise<void> {
@@ -714,9 +741,8 @@ class MetaDataPane extends PaneSection {
 }
 
 interface SocialCardSelectors {
-  id: PostSettingsSectionId;
-  rowLabel: string;
-  backLabel: string;
+  /** The card's tab in the Meta data pane. */
+  tabName: 'X card' | 'Facebook card';
   titleInput: string;
   descriptionInput: string;
   preview: string;
@@ -726,7 +752,10 @@ interface SocialCardSelectors {
   removeImageButton: string;
 }
 
-class SocialCardPane extends PaneSection {
+/** A card's tab of the Meta data pane. Opening it opens the pane on that tab. */
+class SocialCardPane implements SettingsSectionObject {
+  readonly tab: Locator;
+  readonly pane: Locator;
   readonly titleInput: Locator;
   readonly descriptionInput: Locator;
   readonly preview: Locator;
@@ -735,11 +764,17 @@ class SocialCardPane extends PaneSection {
   readonly unsplashButton: Locator;
   readonly removeImageButton: Locator;
 
-  constructor(page: Page, sidebar: PostSettingsSidebar, selectors: SocialCardSelectors) {
-    super(page, sidebar, selectors.id, {
-      rowLabel: selectors.rowLabel,
-      backLabel: selectors.backLabel,
-    });
+  private readonly metaData: MetaDataPane;
+
+  constructor(
+    page: Page,
+    sidebar: PostSettingsSidebar,
+    metaData: MetaDataPane,
+    selectors: SocialCardSelectors,
+  ) {
+    this.metaData = metaData;
+    this.tab = sidebar.root.getByRole('tab', { name: selectors.tabName, exact: true });
+    this.pane = page.getByTestId(settingsSubviewPane);
     this.titleInput = page.getByTestId(selectors.titleInput);
     this.descriptionInput = page.getByTestId(selectors.descriptionInput);
     this.preview = page.getByTestId(selectors.preview);
@@ -768,16 +803,24 @@ class SocialCardPane extends PaneSection {
   async uploadImage(filePath: string): Promise<void> {
     await this.imageInput.setInputFiles(filePath);
   }
+
+  async open(): Promise<void> {
+    await this.metaData.open();
+    await this.tab.click();
+    await this.titleInput.waitFor({ state: 'visible' });
+  }
+
+  async close(): Promise<void> {
+    await this.metaData.close();
+  }
 }
 
 class XCardPane extends SocialCardPane {
   readonly image: Locator;
 
-  constructor(page: Page, sidebar: PostSettingsSidebar) {
-    super(page, sidebar, {
-      id: 'x-card',
-      rowLabel: settingsXCardRow,
-      backLabel: settingsXCardBackButton,
+  constructor(page: Page, sidebar: PostSettingsSidebar, metaData: MetaDataPane) {
+    super(page, sidebar, metaData, {
+      tabName: 'X card',
       titleInput: settingsXTitleInput,
       descriptionInput: settingsXDescriptionInput,
       preview: settingsXPreview,
@@ -835,7 +878,7 @@ class DeleteSection extends InlineSection {
   }
 }
 
-/** The React editor's post settings sidebar. */
+/** The editor's post settings sidebar. */
 export class PostSettingsSidebar {
   readonly root: Locator;
   /** A section's failed-browse notice, wherever the sidebar shows one. */
@@ -880,11 +923,9 @@ export class PostSettingsSidebar {
     this.postHistory = new PostHistorySection(page, this);
     this.codeInjection = new CodeInjectionPane(page, this);
     this.metaData = new MetaDataPane(page, this);
-    this.xCard = new XCardPane(page, this);
-    this.facebookCard = new SocialCardPane(page, this, {
-      id: 'facebook-card',
-      rowLabel: settingsFacebookCardRow,
-      backLabel: settingsFacebookCardBackButton,
+    this.xCard = new XCardPane(page, this, this.metaData);
+    this.facebookCard = new SocialCardPane(page, this, this.metaData, {
+      tabName: 'Facebook card',
       titleInput: settingsFacebookTitleInput,
       descriptionInput: settingsFacebookDescriptionInput,
       preview: settingsFacebookPreview,
@@ -914,13 +955,7 @@ export class PostSettingsSidebar {
       'keyboard-shortcuts': this.keyboardShortcuts,
       delete: this.delete,
     };
-    this.panes = [
-      this.codeInjection,
-      this.metaData,
-      this.xCard,
-      this.facebookCard,
-      this.keyboardShortcuts,
-    ];
+    this.panes = [this.codeInjection, this.metaData, this.keyboardShortcuts];
   }
 
   async open(): Promise<void> {

@@ -1,0 +1,5 @@
+{
+  "component": "ghost",
+  "toVersion": "6.72.0",
+  "idempotencyKey": "96525598-8933-5537-8f86-a9f36f13b60e"
+}

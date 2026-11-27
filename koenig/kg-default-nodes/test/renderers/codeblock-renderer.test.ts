@@ -20,9 +20,9 @@ describe('renderers/codeblock-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-code-card">
                     <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
                     <figcaption>A code block</figcaption>
@@ -30,9 +30,9 @@ describe('renderers/codeblock-renderer', function () {
             `);
         });
 
-        it('renders without caption', function () {
+        it('renders without caption', async function () {
             const result = renderForWeb(getTestData({caption: ''}));
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
             `);
         });
@@ -44,9 +44,9 @@ describe('renderers/codeblock-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-code-card">
                     <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
                     <figcaption>A code block</figcaption>
@@ -54,9 +54,9 @@ describe('renderers/codeblock-renderer', function () {
             `);
         });
 
-        it('renders without caption', function () {
+        it('renders without caption', async function () {
             const result = renderForWeb(getTestData({caption: ''}));
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <pre><code class="language-javascript">&lt;script&gt;&lt;/script&gt;</code></pre>
             `);
         });

@@ -14,8 +14,8 @@ on:
     paths:
       - '.github/workflows/tinybird.yml'
       - 'compose.dev.analytics.yaml'
-      - 'ghost/core/core/server/data/tinybird/**'
-      - '!ghost/core/core/server/data/tinybird/**/*.md'
+      - 'ghost/core/server/data/tinybird/**'
+      - '!ghost/core/server/data/tinybird/**/*.md'
 
 permissions:
   contents: read
@@ -23,6 +23,12 @@ permissions:
 jobs:
   changes:
     name: Detect Tinybird changes
+    # Skip sync-fork.yml pushes to main in TryGhost copies: upstream already ran these commits.
+    if: >-
+      !(github.event_name == 'push'
+        && github.ref == 'refs/heads/main'
+        && github.repository_owner == 'TryGhost'
+        && github.repository != 'TryGhost/Ghost')
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -30,7 +36,7 @@ jobs:
     outputs:
       tinybird: ${{ steps.changed.outputs.tinybird }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -39,14 +45,14 @@ jobs:
       - name: Determine whether Tinybird files changed
         id: changed
         if: github.event_name == 'pull_request'
-        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        uses: AurorNZ/paths-filter@ead37777b84ca4c3301a92f453c4040b85287e76 # v5.1.0
         with:
           filters: |
             tinybird:
               - '.github/workflows/tinybird.yml'
               - 'compose.dev.analytics.yaml'
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
+              - 'ghost/core/server/data/tinybird/**'
+              - '!ghost/core/server/data/tinybird/**/*.md'
 
   tests:
     name: Tinybird Tests
@@ -55,28 +61,32 @@ jobs:
     if: github.event_name != 'pull_request' || needs.changes.outputs.tinybird == 'true'
     defaults:
       run:
-        working-directory: ghost/core/core/server/data/tinybird
+        working-directory: ghost/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:9d438ecb6f03b00b024f6a48c824ddc29c81b99829c874a0095648b765c083e6
+        image: tinybirdco/tinybird-local:latest@sha256:17bf5d10c191e246dfe7daad775b83bae04a36113336a02761ba9f1cd57a9752
+        env:
+          TB_LOCAL_CSV_WORKERS: '1'
+          TB_LOCAL_MCP: 'false'
+          TB_LOCAL_KAFKA: 'false'
         ports:
           - 7181:7181
     outputs:
       datafiles_changed: ${{ steps.datafiles.outputs.tinybird }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Determine whether Tinybird datafiles changed
         id: datafiles
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
+        uses: AurorNZ/paths-filter@ead37777b84ca4c3301a92f453c4040b85287e76 # v5.1.0
         with:
           filters: |
             tinybird:
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
+              - 'ghost/core/server/data/tinybird/**'
+              - '!ghost/core/server/data/tinybird/**/*.md'
 
       # tinybird.co/install.sh always installs the latest CLI, so this job
       # silently tracked upstream. 4.6.14 ingests a nested JSON object into a
@@ -133,7 +143,7 @@ jobs:
     needs: [tests]
     if: github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.tests.outputs.datafiles_changed == 'true'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Trigger and watch traffic analytics infra Tinybird workflow
         env:
