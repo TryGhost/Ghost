@@ -3,6 +3,15 @@ import { type ErrorResponse, ValidationError } from '@tryghost/admin-x-framework
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 
+vi.mock('@/automations/api', () => ({
+  useLabelAutomations: () => ({
+    matches: [],
+    isLoading: false,
+    isError: false,
+    check: vi.fn().mockResolvedValue([]),
+  }),
+}));
+
 const label = {
   id: '1',
   name: 'Existing',

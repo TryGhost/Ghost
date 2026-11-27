@@ -111,6 +111,7 @@ interface LabelListItemsProps {
   onCreate?: (name: string) => Promise<Label | undefined>;
   isCreating?: boolean;
   onSearchClear?: () => void;
+  onDeletionWarningOpenChange?: (open: boolean) => void;
 }
 
 const LabelListItems: React.FC<LabelListItemsProps> = ({
@@ -124,6 +125,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   onCreate,
   isCreating,
   onSearchClear,
+  onDeletionWarningOpenChange,
 }) => {
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
@@ -192,6 +194,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                   label={label}
                   onCancel={() => setEditingLabelId(null)}
                   onDelete={handleDelete}
+                  onDeletionWarningOpenChange={onDeletionWarningOpenChange}
                   onSave={handleEdit}
                 />
               ) : (
@@ -410,6 +413,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const deletionWarningOpen = useRef(false);
+  const handleDeletionWarningOpenChange = useCallback((isOpen: boolean) => {
+    deletionWarningOpen.current = isOpen;
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -458,6 +465,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
       return;
     }
     const handlePointerDown = (e: PointerEvent) => {
+      // Clicking the deletion warning must not dismiss this picker.
+      if (deletionWarningOpen.current) {
+        return;
+      }
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
@@ -594,6 +605,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   shouldClientFilter={optionSource.shouldClientFilter}
                   onCreate={onCreate}
                   onDelete={onDelete}
+                  onDeletionWarningOpenChange={handleDeletionWarningOpenChange}
                   onEdit={onEdit}
                   onSearchClear={() => handleSearchChange('')}
                   onToggle={onToggle}
