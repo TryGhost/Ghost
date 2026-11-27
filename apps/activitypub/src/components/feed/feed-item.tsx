@@ -18,14 +18,17 @@ import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
 import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
+import { handleHashtagLinkClick } from '../../utils/hashtags';
 import { handleProfileClick } from '../../utils/handle-profile-click';
-import { openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
+import { linkHashtagsInText, openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
 import { renderTimestamp } from '../../utils/render-timestamp';
 import {
   useDeleteMutationForUser,
   useFollowMutationForUser,
+  useHashtagSupportForUser,
   useUnfollowMutationForUser,
 } from '../../hooks/use-activity-pub-queries';
+import { useHashtagHref } from '@src/hooks/use-hashtag-href';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 import { useSensitiveMediaDisclosure } from '@src/hooks/use-sensitive-media-disclosure';
 
@@ -544,6 +547,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
   const deleteMutation = useDeleteMutationForUser('index');
   const navigate = useNavigateWithBasePath();
+  const hashtagsSupported = useHashtagSupportForUser();
+  const getHashtagHref = useHashtagHref();
+
+  // Notes from a site without a tag page for a hashtag carry it as plain text
+  const formatContent = (content: string) =>
+    openLinksInNewTab(
+      hashtagsSupported && object?.type === 'Note' ? linkHashtagsInText(content, getHashtagHref) : content,
+      { keepHashtagLinks: hashtagsSupported },
+    );
 
   const {
     contentWarning,
@@ -611,6 +623,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
           e.stopPropagation();
           handleProfileClick(handle, navigate);
         }
+      } else if (hashtagsSupported) {
+        handleHashtagLinkClick(e, navigate);
       }
     };
 
@@ -618,7 +632,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     return () => {
       element.removeEventListener('click', handleProfileLinkClick);
     };
-  }, [navigate, object?.content]);
+  }, [hashtagsSupported, navigate, object?.content]);
 
   const onLikeClick = () => {
     // Do API req or smth
@@ -733,7 +747,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
           {!isLoading ? (
             <div
               dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? ''),
+                __html: sanitizeHtml(
+                  formatContent(object.content || '') ?? '',
+                ),
               }}
               ref={contentRef}
               onClick={(e) => {
@@ -1138,7 +1154,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
                       ) : (
                         <div
                           dangerouslySetInnerHTML={{
-                            __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? ''),
+                            __html: sanitizeHtml(
+                              formatContent(object.content || '') ?? '',
+                            ),
                           }}
                           ref={contentRef}
                           className="ap-note-content break-anywhere tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3"

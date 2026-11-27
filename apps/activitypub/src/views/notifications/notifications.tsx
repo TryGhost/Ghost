@@ -19,11 +19,12 @@ import {
 } from '@components/feed/feed-item';
 import { EmptyViewIcon, EmptyViewIndicator } from '@src/components/global/empty-view-indicator';
 import { Notification, isApiError } from '@src/api/activitypub';
+import { handleHashtagLinkClick } from '@utils/hashtags';
 import { handleProfileClick } from '@utils/handle-profile-click';
 import { renderTimestamp } from '@src/utils/render-timestamp';
 import { sanitizeHtml, stripHtml } from '@src/utils/content-formatters';
+import { useHashtagSupportForUser, useNotificationsForUser } from '@hooks/use-activity-pub-queries';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
-import { useNotificationsForUser } from '@hooks/use-activity-pub-queries';
 import { useSensitiveMediaDisclosure } from '@hooks/use-sensitive-media-disclosure';
 
 interface NotificationGroup {
@@ -182,6 +183,7 @@ const ProfileLinkedContent: React.FC<{
 }> = ({ content, className, stripTags = [] }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigateWithBasePath();
+  const hashtagsSupported = useHashtagSupportForUser();
 
   useEffect(() => {
     const element = contentRef.current;
@@ -202,6 +204,8 @@ const ProfileLinkedContent: React.FC<{
           e.stopPropagation();
           handleProfileClick(handle, navigate);
         }
+      } else if (hashtagsSupported) {
+        handleHashtagLinkClick(e as MouseEvent, navigate);
       }
     };
 
@@ -209,7 +213,7 @@ const ProfileLinkedContent: React.FC<{
     return () => {
       element.removeEventListener('click', handleProfileLinkClick);
     };
-  }, [navigate, content]);
+  }, [content, hashtagsSupported, navigate]);
 
   return (
     <div

@@ -74,6 +74,12 @@ export const routes: CustomRouteObject[] = [
         pageTitle: 'Explore',
       },
       {
+        path: 'hashtags/:hashtag',
+        lazy: lazyComponent(() => import('./views/hashtag')),
+        pageTitle: 'Hashtag',
+        showBackButton: true,
+      },
+      {
         path: 'profile',
         lazy: lazyComponent(() => import('./views/profile')),
         pageTitle: 'Profile',

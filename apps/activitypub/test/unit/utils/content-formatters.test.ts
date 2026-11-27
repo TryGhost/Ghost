@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   enforceVideoCardInlinePlayback,
   formatArticle,
+  linkHashtagsInText,
   openLinksInNewTab,
   sanitizeArticleContent,
   sanitizeHtml,
@@ -99,6 +100,41 @@ describe('Content Formatters', function () {
       expect(unsafe.hasAttribute('href')).toBe(false);
     });
 
+    it('leaves hashtag links alone when keepHashtagLinks is set', function () {
+      const div = renderHtml(
+        openLinksInNewTab(
+          '<a href="https://example.com/tag/foo/" class="mention hashtag" rel="tag">#<span>foo</span></a><a href="https://example.com">a</a>',
+          { keepHashtagLinks: true },
+        ),
+      );
+      const [hashtag, regular] = Array.from(div.querySelectorAll('a'));
+
+      expect(hashtag.hasAttribute('target')).toBe(false);
+      expect(hashtag.getAttribute('rel')).toBe('tag');
+      expect(regular.getAttribute('target')).toBe('_blank');
+      expect(regular.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('opens hashtag links in a new tab by default', function () {
+      const div = renderHtml(
+        openLinksInNewTab('<a href="https://example.com/tag/foo/" rel="tag">#foo</a>'),
+      );
+      const link = div.querySelector('a') as HTMLAnchorElement;
+
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('still drops unsafe hrefs from hashtag links when keepHashtagLinks is set', function () {
+      const div = renderHtml(
+        openLinksInNewTab('<a href="javascript:alert(1)" rel="tag">#foo</a>', {
+          keepHashtagLinks: true,
+        }),
+      );
+
+      expect(div.querySelector('a')!.hasAttribute('href')).toBe(false);
+    });
+
     it('does not parse content into the live document', function () {
       const createElement = document.createElement.bind(document);
       const created: string[] = [];
@@ -122,6 +158,29 @@ describe('Content Formatters', function () {
           '<script src="https://platform.twitter.com/widgets.js"></script><p>Hi</p>',
         ),
       ).toBe('<script src="https://platform.twitter.com/widgets.js"></script><p>Hi</p>');
+    });
+  });
+
+  describe('linkHashtagsInText', function () {
+    const getHashtagHref = (name: string) => `#/hashtags/${name.toLowerCase()}`;
+
+    it('links hashtags written as plain text', function () {
+      expect(linkHashtagsInText("<p>It's #Coffee time, #tea</p>", getHashtagHref)).toBe(
+        '<p>It\'s <a href="#/hashtags/coffee" class="hashtag" rel="tag">#Coffee</a> time, <a href="#/hashtags/tea" class="hashtag" rel="tag">#tea</a></p>',
+      );
+    });
+
+    it('leaves hashtags in links and code alone', function () {
+      const content =
+        '<p><a href="https://example.com/tag/ghost/" rel="tag">#Ghost</a> <code>#include</code></p><pre>#define</pre>';
+
+      expect(linkHashtagsInText(content, getHashtagHref)).toBe(content);
+    });
+
+    it('does not link text that is not a hashtag', function () {
+      const content = '<p>Number #1, C#sharp, page/#anchor, Q&amp;A#tag and ##double</p>';
+
+      expect(linkHashtagsInText(content, getHashtagHref)).toBe(content);
     });
   });
 
