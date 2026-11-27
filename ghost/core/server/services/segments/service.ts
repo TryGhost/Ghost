@@ -28,6 +28,7 @@ import {
   type SegmentFilter,
   type SegmentName,
   type SegmentSlug,
+  type SegmentStaffUser,
 } from './models';
 import { slugsForName } from './slugs';
 import type { SegmentChangeAttempt, SegmentsTracking } from './tracking';
@@ -72,8 +73,41 @@ const TABLE = 'segments';
 /** The columns a segment is read from: one for each of its fields. */
 const COLUMNS = Segment.keyof().options;
 
-const StoredSegment = Segment.optional();
-const StoredSegments = z.array(Segment);
+/**
+ * What a segment is read from: its columns, and the name of each staff user it records. A name
+ * is a subquery rather than a join, so that the lock an edit takes on a segment's row doesn't
+ * lock the users' rows as well.
+ */
+function columnsWithNames(executor: Knex) {
+  const nameOf = (column: 'created_by' | 'updated_by') =>
+    executor('users')
+      .where('users.id', executor.ref(`${TABLE}.${column}`))
+      .select('users.name')
+      .as(`${column}_name`);
+  return [...COLUMNS, nameOf('created_by'), nameOf('updated_by')];
+}
+
+const staffUser = (id: string | null, name: string | null): SegmentStaffUser | null =>
+  id === null ? null : { id, name };
+
+/** A segment as a read returns it. A user who has since been deleted has no name. */
+const RowWithNames = Segment.extend({
+  created_by: z.string().nullable(),
+  updated_by: z.string().nullable(),
+  created_by_name: z.string().nullable(),
+  updated_by_name: z.string().nullable(),
+}).transform(
+  ({ created_by_name: createdByName, updated_by_name: updatedByName, ...row }): Segment => ({
+    ...row,
+    created_by: staffUser(row.created_by, createdByName),
+    updated_by: staffUser(row.updated_by, updatedByName),
+  }),
+);
+
+const StoredSegment = RowWithNames.optional();
+const StoredSegments = z.array(RowWithNames);
+
+const StaffUserName = z.object({ name: z.string() }).optional();
 
 const notFoundError = () => new errors.NotFoundError({ message: 'Segment not found.' });
 
@@ -142,14 +176,14 @@ export class SegmentsService {
       }
       query.whereIn(`${TABLE}.slug`, criteria.slugs);
     }
-    return StoredSegments.parse(await query.select(...COLUMNS));
+    return StoredSegments.parse(await query.select(...columnsWithNames(executor)));
   }
 
   /** The segment with `id`. Fails with a NotFoundError when there's no such segment. */
   async read(id: string, executor: Knex = this.knex): Promise<Segment> {
     const row: unknown = await executor(TABLE)
       .where('id', id)
-      .first(...COLUMNS);
+      .first(...columnsWithNames(executor));
     const segment = StoredSegment.parse(row);
     if (!segment) {
       throw notFoundError();
@@ -162,7 +196,8 @@ export class SegmentsService {
    * the one `input` gives, or else the first slug minted from its name that no other segment has.
    * Fails with a ValidationError when another segment has the name, when its filter isn't valid
    * NQL or names a segment, or when `input` gives a slug that a filter can't name or that another
-   * segment has. Another segment can have the same filter.
+   * segment has. Another segment can have the same filter. The staff user `context` acts as is
+   * recorded as who added it and who last edited it.
    */
   add(context: RequestContext, input: NewSegment, executor: Knex = this.knex): Promise<Segment> {
     return this.tracking.change('add', (attempt) =>
@@ -180,12 +215,15 @@ export class SegmentsService {
         }
         // One time for both, so a new segment's `updated_at` is its `created_at`.
         const now = databaseNow();
+        const by = await this.actingStaffUser(context, trx);
         const segment = {
           id: newId(),
           name: input.name,
           filter: input.filter,
           created_at: now,
           updated_at: now,
+          created_by: by,
+          updated_by: by,
         };
         const added =
           input.slug === undefined
@@ -205,7 +243,8 @@ export class SegmentsService {
    * has a slug other than the segment's own, because a segment's slug can't change. The segment's
    * own filter is accepted back as it is stored, even when it isn't valid NQL, as a stored filter
    * can be. A change that leaves the name and the filter as they are changes nothing, so nothing
-   * is written or reported, and the segment keeps the time it was last edited.
+   * is written or reported, and the segment keeps the time it was last edited. Otherwise the staff
+   * user `context` acts as is recorded as who last edited it.
    */
   edit(
     context: RequestContext,
@@ -234,11 +273,22 @@ export class SegmentsService {
           return previous;
         }
 
-        const segment = { ...previous, name, filter, updated_at: databaseNow() };
+        const segment = {
+          ...previous,
+          name,
+          filter,
+          updated_at: databaseNow(),
+          updated_by: await this.actingStaffUser(context, trx),
+        };
         try {
           await trx(TABLE)
             .where('id', previous.id)
-            .update({ name, filter, updated_at: toDatabaseDate(segment.updated_at) });
+            .update({
+              name,
+              filter,
+              updated_at: toDatabaseDate(segment.updated_at),
+              updated_by: segment.updated_by?.id ?? null,
+            });
         } catch (err) {
           if (uniqueViolationColumn(err, TABLE) === 'name') {
             reject(attempt, new NameTakenError());
@@ -352,6 +402,8 @@ export class SegmentsService {
           ...segment,
           created_at: toDatabaseDate(segment.created_at),
           updated_at: toDatabaseDate(segment.updated_at),
+          created_by: segment.created_by?.id ?? null,
+          updated_by: segment.updated_by?.id ?? null,
         },
       );
       return undefined;
@@ -364,12 +416,29 @@ export class SegmentsService {
     }
   }
 
+  /**
+   * The staff user `context` acts as, with their name, whom an add or an edit records: an app
+   * acting for a staff user acts as them. Null when no staff user is acting, as for an import.
+   * Integrations can't change segments.
+   */
+  private async actingStaffUser(
+    context: RequestContext,
+    trx: Knex.Transaction,
+  ): Promise<SegmentStaffUser | null> {
+    const { actor } = context;
+    if (actor?.type !== 'user') {
+      return null;
+    }
+    const user: unknown = await trx('users').where('id', actor.id).first('name');
+    return { id: actor.id, name: StaffUserName.parse(user)?.name ?? null };
+  }
+
   /** The segment with `id`, if there is one, with its row locked until `trx` ends. */
   private async lock(id: string, trx: Knex.Transaction): Promise<Segment | undefined> {
     const row: unknown = await trx(TABLE)
       .where('id', id)
       .forUpdate()
-      .first(...COLUMNS);
+      .first(...columnsWithNames(trx));
     return StoredSegment.parse(row);
   }
 }

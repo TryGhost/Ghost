@@ -25,6 +25,8 @@ const {
 } = matchers;
 const { cacheInvalidateHeaderNotSet } = assertions;
 
+type StaffUser = { id: string; name: string | null };
+
 type Segment = {
   id: string;
   name: string;
@@ -32,6 +34,8 @@ type Segment = {
   filter: string;
   created_at: string;
   updated_at: string;
+  created_by: StaffUser | null;
+  updated_by: StaffUser | null;
 };
 
 type ApiResponse = {
@@ -39,7 +43,7 @@ type ApiResponse = {
   body: {
     segments: Segment[];
     settings: { key: string; value: string | null }[];
-    users: { id: string }[];
+    users: { id: string; name: string }[];
     actions: {
       event: string;
       actor_type: string;
@@ -71,6 +75,7 @@ type AdminAgent = {
   post(url: string): ApiRequest;
   put(url: string): ApiRequest;
   delete(url: string): ApiRequest;
+  loginAs(email: string, password: string): Promise<void>;
   loginAsOwner(): Promise<void>;
   loginAsAdmin(): Promise<void>;
   loginAsEditor(): Promise<void>;
@@ -227,7 +232,14 @@ describe('Segments Admin API', function () {
   ): Promise<Segment> {
     // A time to the second, as the table holds times, so the segment compares as the API returns it
     const time = '2026-11-24T10:00:00.000Z';
-    const stored = { id: ObjectID().toHexString(), ...segment, created_at: time, updated_at: time };
+    const stored = {
+      id: ObjectID().toHexString(),
+      ...segment,
+      created_at: time,
+      updated_at: time,
+      created_by: null,
+      updated_by: null,
+    };
     await models.Base.knex('segments').insert({
       ...stored,
       sort_order: 0,
@@ -908,6 +920,7 @@ describe('Segments Admin API', function () {
         ...stored,
         name: 'Still broken',
         updated_at: renamed.updated_at,
+        updated_by: renamed.updated_by,
       });
       assertTimeSince(renamed.updated_at, renaming);
       assert.deepEqual(await browse(), body.segments);
@@ -1110,6 +1123,85 @@ describe('Segments Admin API', function () {
         .expectStatus(404)
         .matchHeaderSnapshot(writeHeaders)
         .matchBodySnapshot(errorBody);
+    });
+  });
+
+  describe('who added and last edited a segment', function () {
+    /** The staff user signed in, as a segment names them. */
+    async function signedIn(): Promise<StaffUser> {
+      const { body } = await agent.get('users/me/').expectStatus(200);
+      const [{ id, name }] = body.users;
+      return { id, name };
+    }
+
+    // Each sign-in counts towards the login attempt limit, so clear it before signing the
+    // owner back in.
+    afterEach(async function () {
+      await dbUtils.truncate('rate_limits');
+      await agent.loginAsOwner();
+    });
+
+    it('records the staff user who adds a segment as who added it and who last edited it', async function () {
+      const owner = await signedIn();
+
+      const segment = await add('VIP', 'label:vip');
+
+      assert.deepEqual(segment.created_by, owner);
+      assert.deepEqual(segment.updated_by, owner);
+      assert.deepEqual(await browse(), [segment]);
+      const { body } = await agent.get(`segments/${segment.id}/`).expectStatus(200);
+      assert.deepEqual(body.segments, [segment]);
+    });
+
+    it('records the staff user who renames a segment or changes its filter as who last edited it', async function () {
+      const segment = await add('VIP', 'label:vip');
+      await agent.loginAsAdmin();
+      const admin = await signedIn();
+
+      const renamed = await rename(segment.id, 'Gold');
+
+      assert.deepEqual(renamed, {
+        ...segment,
+        name: 'Gold',
+        updated_at: renamed.updated_at,
+        updated_by: admin,
+      });
+      assert.deepEqual(await browse(), [renamed]);
+
+      await agent.loginAsOwner();
+      const changed = await edit(segment.id, { filter: 'label:gold' });
+
+      assert.deepEqual(changed.updated_by, segment.created_by);
+      assert.deepEqual(await browse(), [changed]);
+    });
+
+    it('keeps who last edited a segment for a save that changes nothing and for a reorder', async function () {
+      const free = await add('Free', 'status:free');
+      const paid = await add('Paid', 'status:paid');
+      await agent.loginAsAdmin();
+
+      assert.deepEqual(await rename(paid.id, 'Paid'), paid);
+      const { body } = await reorder([paid.id, free.id]).expectStatus(200);
+
+      assert.deepEqual(body.segments, [paid, free]);
+      assert.deepEqual(await browse(), [paid, free]);
+    });
+
+    it('returns the id of a staff user who has since been deleted, without a name', async function () {
+      const email = 'segment-author@example.com';
+      const password = 'Lantern-Orbit-52';
+      const author = await models.User.add(
+        { name: 'Segment author', email, password, roles: ['Administrator'] },
+        { context: { internal: true } },
+      );
+      await agent.loginAs(email, password);
+      const segment = await add('VIP', 'label:vip');
+      await agent.loginAsOwner();
+
+      await agent.delete(`users/${author.id}/`).expectStatus(204);
+
+      const deleted = { id: author.id, name: null };
+      assert.deepEqual(await browse(), [{ ...segment, created_by: deleted, updated_by: deleted }]);
     });
   });
 

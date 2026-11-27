@@ -58,8 +58,10 @@ const EDITS: { [Property in keyof Segment]: EditOf } = {
   id: NOT_LOGGED,
   slug: NOT_LOGGED,
   created_at: NOT_LOGGED,
-  // Changes with every edit, and says nothing an action's own time does not.
+  created_by: NOT_LOGGED,
+  // Changes with every edit, and says nothing an action's own time and actor do not.
   updated_at: NOT_LOGGED,
+  updated_by: NOT_LOGGED,
 };
 
 /** The actions for one edit of a segment: one for each property the edit changed. */

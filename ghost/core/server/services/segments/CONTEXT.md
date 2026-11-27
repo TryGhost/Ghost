@@ -28,7 +28,7 @@ A segment's filter has to be valid NQL when the segment is saved with it: the pa
 
 ## Order
 
-Every list of segments is in the site's order. A segment is added after the others, and a reorder puts them all in a new order, given as every segment's id in the order wanted. A reorder that leaves a segment out, names one twice or names one that doesn't exist was made from an out-of-date list, and is rejected without changing anything. A reorder changes only the order, so no segment's `updated_at` moves, and anyone who can edit a segment can reorder them.
+Every list of segments is in the site's order. A segment is added after the others, and a reorder puts them all in a new order, given as every segment's id in the order wanted. A reorder that leaves a segment out, names one twice or names one that doesn't exist was made from an out-of-date list, and is rejected without changing anything. A reorder changes only the order, so no segment's `updated_at` or `updated_by` moves, and anyone who can edit a segment can reorder them.
 
 ## Slugs
 
@@ -39,6 +39,10 @@ A slug a caller gives is held to the same rules: its format, and the filter pars
 ## Times
 
 A segment has the time it was added, `created_at`, and the time it was last edited, `updated_at`. An add writes one time to both, so a segment has been edited when `updated_at` is later than `created_at`. Both are stored to the second in UTC, and a command returns them as a read of the segment would. An edit that leaves a segment's name and filter as they are writes nothing, so its times stay as they were. A segment the migration moved from the saved views setting has the time the migration ran, as the setting held no time for a view, and a 6.80 migration gave each segment that had never been renamed its `created_at` as its `updated_at`. An import adds each segment through the same command as any other, so an imported segment is created at the time of the import and hasn't been edited, whatever times the file holds.
+
+## Staff users
+
+A segment records the staff user who added it, `created_by`, and the staff user who last edited it, `updated_by`, as `updated_at` records when. An add records the staff user acting as both, and an edit that changes the name or the filter records them as `updated_by`. An app records the staff user it acts for. A change with no staff user acting, such as an import's or one by an app acting for nobody, records nobody, and integrations can't change segments. A segment added before segments recorded staff users, including every segment moved from the saved views setting, has nobody: nothing is filled in for those. The API returns each staff user as their id and name, or null for nobody, and a user who has since been deleted as their id without a name. A site export holds the users' ids, which name nobody on another site, so an imported segment records nobody whatever the file holds. History records the staff user behind each change as well, but only administrators can read History.
 
 ## Names
 
