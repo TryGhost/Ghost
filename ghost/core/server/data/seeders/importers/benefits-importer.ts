@@ -1,18 +1,26 @@
-const { TableImporter } = require('./table-importer');
-const { faker } = require('@faker-js/faker');
-const { slugify } = require('@tryghost/string');
-const { blogStartDate } = require('../utils/blog-info');
+import { TableImporter } from './table-importer';
+import { faker } from '@faker-js/faker';
+import { slugify } from '@tryghost/string';
+import { blogStartDate } from '../utils/blog-info';
+import type { Knex } from 'knex';
 
-class BenefitsImporter extends TableImporter {
+type Benefit = {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: Date;
+};
+
+class BenefitsImporter extends TableImporter<Benefit> {
   static table = 'benefits';
-  static dependencies = [];
+  static dependencies: string[] = [];
   defaultQuantity = 5;
 
-  constructor(knex, transaction) {
+  constructor(knex: Knex, transaction: Knex.Transaction) {
     super(BenefitsImporter.table, knex, transaction);
   }
 
-  generate() {
+  generate(): Benefit {
     const name = faker.company.catchPhrase();
     const sixMonthsLater = new Date(blogStartDate);
     sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);

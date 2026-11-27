@@ -1,19 +1,30 @@
-const { TableImporter } = require('./table-importer');
-const { faker } = require('@faker-js/faker');
-const { slugify } = require('@tryghost/string');
-const security = require('@tryghost/security');
-const { toDatabaseDate } = require('../../../lib/db-types/date');
+import { TableImporter } from './table-importer';
+import { faker } from '@faker-js/faker';
+import { slugify } from '@tryghost/string';
+import security from '@tryghost/security';
+import { toDatabaseDate } from '../../../lib/db-types/date';
+import type { Knex } from 'knex';
 
-class UsersImporter extends TableImporter {
+type User = {
+  id: string;
+  name: string;
+  slug: string;
+  password: string;
+  email: string;
+  profile_image: string;
+  created_at: string;
+};
+
+class UsersImporter extends TableImporter<User> {
   static table = 'users';
-  static dependencies = [];
+  static dependencies: string[] = [];
   defaultQuantity = 8;
 
-  constructor(knex, transaction) {
+  constructor(knex: Knex, transaction: Knex.Transaction) {
     super(UsersImporter.table, knex, transaction);
   }
 
-  async generate() {
+  async generate(): Promise<User> {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const name = `${firstName} ${lastName}`;

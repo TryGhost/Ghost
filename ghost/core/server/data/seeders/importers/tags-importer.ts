@@ -1,9 +1,18 @@
-const { faker } = require('@faker-js/faker');
-const { slugify } = require('@tryghost/string');
-const { TableImporter } = require('./table-importer');
-const { toDatabaseDate } = require('../../../lib/db-types/date');
+import { faker } from '@faker-js/faker';
+import { slugify } from '@tryghost/string';
+import { TableImporter } from './table-importer';
+import { toDatabaseDate } from '../../../lib/db-types/date';
+import type { Knex } from 'knex';
 
-class TagsImporter extends TableImporter {
+type Tag = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  created_at: string;
+};
+
+class TagsImporter extends TableImporter<Tag> {
   static table = 'tags';
   static dependencies = ['users'];
   defaultQuantity = faker.number.int({
@@ -11,16 +20,18 @@ class TagsImporter extends TableImporter {
     max: 24,
   });
 
-  constructor(knex, transaction) {
+  declare users: unknown[];
+
+  constructor(knex: Knex, transaction: Knex.Transaction) {
     super(TagsImporter.table, knex, transaction);
   }
 
-  async import(quantity = this.defaultQuantity) {
+  async import(quantity = this.defaultQuantity): Promise<void> {
     this.users = await this.transaction.select('id').from('users');
     await super.import(quantity);
   }
 
-  generate() {
+  generate(): Tag {
     let name = `${faker.color.human()} ${faker.person.jobType()} ${faker.string.numeric(10)}`;
     name = `${name[0].toUpperCase()}${name.slice(1)}`;
     const threeYearsAgo = new Date();

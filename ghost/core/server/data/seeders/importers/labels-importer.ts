@@ -1,21 +1,32 @@
-const { TableImporter } = require('./table-importer');
-const { faker } = require('@faker-js/faker');
-const { slugify } = require('@tryghost/string');
-const { blogStartDate } = require('../utils/blog-info');
-const { toDatabaseDate } = require('../../../lib/db-types/date');
+import { TableImporter } from './table-importer';
+import { faker } from '@faker-js/faker';
+import { slugify } from '@tryghost/string';
+import { blogStartDate } from '../utils/blog-info';
+import { toDatabaseDate } from '../../../lib/db-types/date';
+import type { Knex } from 'knex';
 
-class LabelsImporter extends TableImporter {
+type Label = {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+};
+
+class LabelsImporter extends TableImporter<Label> {
   static table = 'labels';
-  static dependencies = [];
+  static dependencies: string[] = [];
   defaultQuantity = 10;
 
-  constructor(knex, transaction) {
+  declare generatedNames: Set<string>;
+
+  constructor(knex: Knex, transaction: Knex.Transaction) {
     super(LabelsImporter.table, knex, transaction);
     this.generatedNames = new Set();
   }
 
-  generateName() {
-    let name;
+  generateName(): string {
+    let name: string;
     do {
       name = `${faker.color.human()} ${faker.person.jobType()}`;
       name = `${name[0].toUpperCase()}${name.slice(1)}`;
@@ -24,7 +35,7 @@ class LabelsImporter extends TableImporter {
     return name;
   }
 
-  generate() {
+  generate(): Label {
     const name = this.generateName();
     return {
       id: this.fastFakeObjectId(),
