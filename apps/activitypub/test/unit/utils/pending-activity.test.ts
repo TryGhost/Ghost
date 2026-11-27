@@ -94,7 +94,7 @@ describe('Pending Activity Utils', function () {
       expect(attributedToPreferredUsername).toEqual(actor.preferredUsername);
     });
 
-    it('should attach an uploaded image url to the pending activity', function () {
+    it('should attach every uploaded image to the pending activity', function () {
       const actor: ActorProperties = {
         id: 'https://example.com/actor',
         icon: {
@@ -122,14 +122,15 @@ describe('Pending Activity Utils', function () {
         url: 'https://example.com/actor',
       };
       const id = generatePendingActivityId();
-      const pendingActivity = generatePendingActivity(
-        actor,
-        id,
-        'Pending note',
-        'https://example.com/image.png',
-      );
+      const pendingActivity = generatePendingActivity(actor, id, 'Pending note', [
+        { url: 'https://example.com/one.png', altText: 'First' },
+        { url: 'https://example.com/two.png' },
+      ]);
 
-      expect(pendingActivity.object.image).toBe('https://example.com/image.png');
+      expect(pendingActivity.object.attachment).toEqual([
+        { type: 'Image', url: 'https://example.com/one.png', name: 'First' },
+        { type: 'Image', url: 'https://example.com/two.png', name: undefined },
+      ]);
     });
   });
 

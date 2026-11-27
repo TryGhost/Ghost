@@ -19,7 +19,8 @@ import {
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE } from '@utils/image';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { MAX_NOTE_IMAGES } from '@src/api/activitypub';
 import { toast } from 'sonner';
 import {
   uploadFile,
@@ -28,7 +29,28 @@ import {
   useReplyMutationForUser,
   useUserDataForUser,
 } from '@hooks/use-activity-pub-queries';
+import { useFeatureFlags } from '@src/lib/feature-flags';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
+
+interface ComposerImage {
+  id: string;
+  previewUrl: string;
+  // Set once the upload has finished
+  url: string | null;
+  altText: string;
+}
+
+function getUploadErrorMessage(error: unknown) {
+  if (error && typeof error === 'object' && 'statusCode' in error) {
+    switch (error.statusCode) {
+      case 413:
+        return 'Image size exceeds limit.';
+      case 415:
+        return 'The file type is not supported.';
+    }
+  }
+  return 'Failed to upload image. Try again.';
+}
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
   children?: ReactNode;
@@ -56,14 +78,17 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const altTextInputRef = useRef<HTMLInputElement>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [images, setImages] = useState<ComposerImage[]>([]);
+  // Mirrors `images` so handlers can read the latest list while uploads are still running
+  const imagesRef = useRef<ComposerImage[]>([]);
+  const updateImages = useCallback((update: (current: ComposerImage[]) => ComposerImage[]) => {
+    imagesRef.current = update(imagesRef.current);
+    setImages(imagesRef.current);
+  }, []);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const [content, setContent] = useState('');
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [altText, setAltText] = useState('');
-  const [showAltInput, setShowAltInput] = useState(false);
+  const [altInputImageId, setAltInputImageId] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const navigate = useNavigateWithBasePath();
@@ -89,7 +114,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
     }
   }, [isOpen, props.open]);
 
+  // The service only accepts several images once `images` is deployed, so that part of the
+  // composer is behind a flag until it is
+  const { isEnabled } = useFeatureFlags();
+  const imageLimit = isEnabled('noteImages') ? MAX_NOTE_IMAGES : 1;
   const isDisabled = !content.trim() || !user || isPosting || content.length > MAX_CONTENT_LENGTH;
+  const isImageUploading = images.some((image) => image.url === null);
+  const altInputImage = images.find((image) => image.id === altInputImageId);
 
   const handlePost = useCallback(async () => {
     const trimmedContent = content.trim();
@@ -98,6 +129,10 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
       return;
     }
 
+    const uploadedImages = images.flatMap((image) =>
+      image.url ? [{ url: image.url, altText: image.altText || undefined }] : [],
+    );
+
     try {
       setIsPosting(true);
 
@@ -105,15 +140,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
         await replyMutation.mutateAsync({
           inReplyTo: replyTo.object.id,
           content: trimmedContent,
-          imageUrl: uploadedImageUrl || undefined,
-          altText: altText || undefined,
+          images: uploadedImages,
         });
         onReply?.();
       } else {
         await noteMutation.mutateAsync({
           content: trimmedContent,
-          imageUrl: uploadedImageUrl || undefined,
-          altText: altText || undefined,
+          images: uploadedImages,
         });
         navigate('/notes');
       }
@@ -138,8 +171,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
     replyTo,
     replyMutation,
     noteMutation,
-    uploadedImageUrl,
-    altText,
+    images,
     onReply,
     onReplyError,
     setIsOpen,
@@ -172,13 +204,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
 
   // Focus alt text input when it becomes visible
   useEffect(() => {
-    if (showAltInput && altTextInputRef.current) {
+    if (altInputImageId && altTextInputRef.current) {
       const timeoutId = setTimeout(() => {
         altTextInputRef.current?.focus();
       }, 100);
       return () => clearTimeout(timeoutId);
     }
-  }, [showAltInput]);
+  }, [altInputImageId]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -197,31 +229,88 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
     }
   }, [isOpen, props.open, isDisabled, isImageUploading, handlePost]);
 
-  const handlePaste = useCallback(async (e: React.ClipboardEvent | ClipboardEvent) => {
-    const items = e.clipboardData?.items;
-    if (!items) {
-      return;
-    }
+  const removeImage = useCallback(
+    (id: string) => {
+      const image = imagesRef.current.find((item) => item.id === id);
+      if (image) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+      updateImages((current) => current.filter((item) => item.id !== id));
+      setAltInputImageId((current) => (current === id ? null : current));
+    },
+    [updateImages],
+  );
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.type.indexOf('image') !== -1) {
-        e.preventDefault();
-        const file = item.getAsFile();
-        if (file) {
+  const addImages = useCallback(
+    async (files: File[]) => {
+      const room = imageLimit - imagesRef.current.length;
+      if (files.length > room) {
+        toast.error(
+          imageLimit === 1
+            ? 'You can only add one image.'
+            : `You can add up to ${formatNumber(imageLimit)} images.`,
+        );
+      }
+
+      const added = files
+        .slice(0, Math.max(room, 0))
+        .filter((file) => {
           if (file.size > MAX_FILE_SIZE) {
             toast.error(FILE_SIZE_ERROR_MESSAGE);
-            return;
+            return false;
           }
+          return true;
+        })
+        .map((file) => ({ file, id: crypto.randomUUID(), previewUrl: URL.createObjectURL(file) }));
 
-          const previewUrl = URL.createObjectURL(file);
-          setImagePreview(previewUrl);
-          await handleImageUpload(file);
-        }
-        break;
+      if (added.length === 0) {
+        return;
       }
-    }
-  }, []);
+
+      const newImages = added.map(({ id, previewUrl }) => ({
+        id,
+        previewUrl,
+        url: null,
+        altText: '',
+      }));
+      updateImages((current) => [...current, ...newImages]);
+
+      await Promise.all(
+        added.map(async ({ file, id }) => {
+          try {
+            const url = await uploadFile(file);
+            updateImages((current) =>
+              current.map((image) => (image.id === id ? { ...image, url } : image)),
+            );
+          } catch (error) {
+            removeImage(id);
+            toast.error(getUploadErrorMessage(error));
+          }
+        }),
+      );
+    },
+    [imageLimit, removeImage, updateImages],
+  );
+
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent | ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) {
+        return;
+      }
+
+      const files = Array.from(items)
+        .filter((item) => item.type.indexOf('image') !== -1)
+        .map((item) => item.getAsFile())
+        .filter((file): file is File => file !== null);
+
+      if (files.length > 0) {
+        e.preventDefault();
+        await addImages(files);
+      }
+    },
+    [addImages],
+  );
 
   useEffect(() => {
     const modalIsOpen = props.open !== undefined ? props.open : isOpen;
@@ -231,71 +320,20 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
     }
   }, [isOpen, props.open, handlePaste]);
 
-  const handleImageUpload = async (file: File) => {
-    try {
-      setIsImageUploading(true);
-      const imageUrl = await uploadFile(file);
-      setUploadedImageUrl(imageUrl);
-    } catch (error) {
-      setImagePreview(null);
-
-      let errorMessage = 'Failed to upload image. Try again.';
-
-      if (error && typeof error === 'object' && 'statusCode' in error) {
-        switch (error.statusCode) {
-          case 413:
-            errorMessage = 'Image size exceeds limit.';
-            break;
-          case 415:
-            errorMessage = 'The file type is not supported.';
-            break;
-          default:
-          // Use the default error message
-        }
-      }
-      toast.error(errorMessage);
-    } finally {
-      setIsImageUploading(false);
-    }
-  };
-
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-
-    if (files && files.length > 0) {
-      const file = files[0];
-
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(FILE_SIZE_ERROR_MESSAGE);
-        e.target.value = '';
-        return;
-      }
-
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-
-      await handleImageUpload(file);
-    }
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = '';
+    await addImages(files);
   };
 
-  const handleClearImage = (e: React.MouseEvent) => {
+  const handleClearImage = (id: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    setImagePreview(null);
-    setUploadedImageUrl(null);
-    setAltText('');
-    setShowAltInput(false);
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-    }
-
-    if (imageInputRef.current) {
-      imageInputRef.current.value = '';
-    }
+    removeImage(id);
   };
 
-  const handleToggleAltInput = (e: React.MouseEvent) => {
+  const handleToggleAltInput = (id: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowAltInput(!showAltInput);
+    setAltInputImageId(altInputImageId === id ? null : id);
   };
 
   const handleContentClick = () => {
@@ -305,11 +343,9 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
   useEffect(() => {
     // Cleanup function to revoke object URLs when component unmounts
     return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
+      imagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
     };
-  }, [imagePreview]);
+  }, []);
 
   let placeholder = "What's new?";
   if (replyTo) {
@@ -329,13 +365,9 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
       onOpenChange={(open) => {
         if (open) {
           setContent('');
-          setImagePreview(null);
-          setUploadedImageUrl(null);
-          setAltText('');
-          setShowAltInput(false);
-          if (imagePreview) {
-            URL.revokeObjectURL(imagePreview);
-          }
+          imagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+          updateImages(() => []);
+          setAltInputImageId(null);
           if (imageInputRef.current) {
             imageInputRef.current.value = '';
           }
@@ -374,7 +406,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
           />
         )}
         <div
-          className={`flex ${!imagePreview ? 'min-h-36' : ''} cursor-text items-start gap-3`}
+          className={`flex ${images.length === 0 ? 'min-h-36' : ''} cursor-text items-start gap-3`}
           onClick={handleContentClick}
         >
           <div className="sticky top-0">
@@ -400,7 +432,6 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
                     rows={1}
                     value={content}
                     onChange={handleChange}
-                    onPaste={handlePaste}
                   />
                 </FormPrimitive.Control>
               </FormPrimitive.Field>
@@ -411,6 +442,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
                     accept="image/jpeg,image/png,image/webp,image/gif"
                     className="hidden"
                     type="file"
+                    multiple
                     onChange={handleImageChange}
                   />
                 </FormPrimitive.Control>
@@ -418,43 +450,69 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
             </div>
           </FormPrimitive.Root>
         </div>
-        {imagePreview && (
-          <div className="group relative mt-6 flex min-h-[200px] w-full items-center justify-center">
-            <img
-              alt="Image attachment preview"
-              className={`max-h-[320px] w-full rounded-sm object-cover outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`}
-              src={imagePreview}
-            />
-            {isImageUploading && (
-              <div className="absolute leading-[0]">
-                <LoadingIndicator size="md" />
-              </div>
-            )}
-            <Button
-              className="absolute top-3 right-3 size-8 bg-black/60 text-white opacity-0 group-hover:opacity-100 hover:bg-black/80"
-              onClick={handleClearImage}
-            >
-              <LucideIcon.Trash2 />
-            </Button>
-            {!isImageUploading && (
-              <Button
-                className={`absolute bottom-3 left-3 h-6 px-2 py-0 text-white ${!showAltInput ? 'bg-black/60 hover:bg-black/80' : 'bg-green-500 hover:bg-green-500'}`}
-                onClick={handleToggleAltInput}
+        {images.length > 0 && (
+          <div
+            className={
+              images.length === 1
+                ? 'mt-6 flex w-full'
+                : 'mt-6 grid w-full auto-rows-[160px] grid-cols-2 gap-2'
+            }
+          >
+            {images.map((image, index) => (
+              <div
+                key={image.id}
+                className={`group relative flex w-full items-center justify-center ${images.length === 1 ? 'min-h-[200px]' : ''} ${images.length === 3 && index === 0 ? 'row-span-2' : ''}`}
+                data-testid="image-preview"
               >
-                Alt
-              </Button>
-            )}
+                <img
+                  alt={`Image attachment preview ${formatNumber(index + 1)}`}
+                  className={`${images.length === 1 ? 'max-h-[320px]' : 'h-full'} w-full rounded-sm object-cover outline-1 -outline-offset-1 outline-black/10 ${image.url === null && 'opacity-10'}`}
+                  src={image.previewUrl}
+                />
+                {image.url === null && (
+                  <div className="absolute leading-[0]">
+                    <LoadingIndicator size="md" />
+                  </div>
+                )}
+                <Button
+                  aria-label={`Remove image ${formatNumber(index + 1)}`}
+                  className="absolute top-3 right-3 size-8 bg-black/60 text-white opacity-0 group-hover:opacity-100 hover:bg-black/80"
+                  onClick={handleClearImage(image.id)}
+                >
+                  <LucideIcon.Trash2 />
+                </Button>
+                {image.url !== null && (
+                  <Button
+                    aria-label={`Edit alt text for image ${formatNumber(index + 1)}`}
+                    className={`absolute bottom-3 left-3 h-6 px-2 py-0 text-white ${altInputImageId !== image.id ? 'bg-black/60 hover:bg-black/80' : 'bg-green-500 hover:bg-green-500'}`}
+                    onClick={handleToggleAltInput(image.id)}
+                  >
+                    Alt
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
         )}
-        {imagePreview && !isImageUploading && showAltInput && (
+        {altInputImage && altInputImage.url !== null && (
           <div className="mt-1">
             <Input
               ref={altTextInputRef}
               className="w-full border-0 bg-transparent px-0 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-(--color-popover) dark:text-white dark:placeholder:text-gray-800"
-              placeholder="Type alt text for image (optional)"
+              placeholder={
+                images.length === 1
+                  ? 'Type alt text for image (optional)'
+                  : `Type alt text for image ${formatNumber(images.indexOf(altInputImage) + 1)} (optional)`
+              }
               type="text"
-              value={altText}
-              onChange={(e) => setAltText(e.target.value)}
+              value={altInputImage.altText}
+              onChange={(e) =>
+                updateImages((current) =>
+                  current.map((image) =>
+                    image.id === altInputImage.id ? { ...image, altText: e.target.value } : image,
+                  ),
+                )
+              }
             />
           </div>
         )}
@@ -463,6 +521,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
         >
           <Button
             className="mr-auto w-[34px]"
+            disabled={images.length >= imageLimit}
             variant="outline"
             onClick={() => imageInputRef.current?.click()}
           >
