@@ -166,7 +166,7 @@ body {
     helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   --font-family: var(--font-sans);
   --font-feature-settings: 'zero' 1, 'ss01' 1;
-  --heading-font-feature-settings: 'dlig' 1, 'zero' 1, 'ss01' 1, 'cv05' 1;
+  --heading-font-feature-settings: 'zero' 1, 'ss01' 1, 'cv05' 1;
   font-family: var(--font-sans);
   font-optical-sizing: none;
   font-variation-settings: 'opsz' 14;
