@@ -84,6 +84,22 @@ const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
           <LucideIcon.ChevronRight size={20} />
         </SettingAction>
       </SettingItem>
+      {account?.relaySharingEnabled !== undefined && (
+        <SettingItem withHover onClick={() => navigate('/preferences/relay-sharing')}>
+          <SettingHeader>
+            <SettingTitle>Relay sharing</SettingTitle>
+            <SettingDescription>Send public posts to ActivityPub relays</SettingDescription>
+          </SettingHeader>
+          <SettingAction className="flex items-center gap-2">
+            {account.relaySharingEnabled ? (
+              <span className="font-medium text-black">On</span>
+            ) : (
+              <span>Off</span>
+            )}
+            <LucideIcon.ChevronRight size={20} />
+          </SettingAction>
+        </SettingItem>
+      )}
       <SettingItem to="/preferences/move" withHover>
         <SettingHeader>
           <SettingTitle>Account migration</SettingTitle>
