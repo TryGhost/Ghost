@@ -255,8 +255,9 @@ and names that repeat, and Ghost's reads them unlike a URL parser, so the
 bridge reads an app's query strictly and refuses one it can't write so that
 every parser reads the same: a name must be plain word characters, appear
 once and not be one every object already has, such as `constructor`, a
-value's escapes must be well formed, and there are at most 100 parameters. Values are free. A test in Ghost shows its parser reads back
-exactly what the bridge held.
+value's escapes must be well formed, and there are at most 100 parameters.
+Values are free. A test in Ghost shows its parser reads back exactly what the
+bridge held.
 _Avoid_: normalised query, raw query
 
 **Feature name**:
