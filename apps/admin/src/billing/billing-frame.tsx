@@ -177,7 +177,9 @@ function BillingAppFrame({ alerts, billingUrl }: BillingFrameProps & { billingUr
     }
 
     try {
-      const response = await fetchApi<IdentitiesResponse>(apiUrl('/identities/'));
+      const response = await fetchApi<IdentitiesResponse>(
+        apiUrl('/identities/', { audience: 'billing' }),
+      );
       connection.post({ request: 'token', response: response.identities?.[0]?.token });
       isOwnerRef.current = true;
     } catch (error) {

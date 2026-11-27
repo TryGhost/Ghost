@@ -118,14 +118,14 @@ describe('ActivityPubService', function () {
     const siteUrl = new URL('http://fake-site-url');
     const scope = nock(siteUrl)
       .get('/.ghost/activitypub/v1/site/')
-      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner:activitypub')
       .reply(200, {
         webhook_secret: 'webhook_secret_baby!!',
       });
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -163,14 +163,14 @@ describe('ActivityPubService', function () {
     const siteUrl = new URL('http://fake-site-url');
     const scope = nock(siteUrl)
       .get('/.ghost/activitypub/v1/site/')
-      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner:activitypub')
       .reply(200, {
         webhook_secret: 'webhook_secret_baby!!',
       });
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -199,7 +199,7 @@ describe('ActivityPubService', function () {
 
     nock(siteUrl)
       .get('/.ghost/activitypub/v1/site/')
-      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner:activitypub')
       .reply(200, {
         webhook_secret: 'webhook_secret_baby!!',
       });
@@ -225,14 +225,14 @@ describe('ActivityPubService', function () {
     const siteUrl = new URL('http://fake-site-url');
     const scope = nock(siteUrl)
       .get('/.ghost/activitypub/v1/site/')
-      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner:activitypub')
       .reply(200, {
         webhook_secret: 'webhook_secret_baby!!',
       });
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -263,7 +263,7 @@ describe('ActivityPubService', function () {
 
     nock(siteUrl)
       .get('/.ghost/activitypub/v1/site/')
-      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner:activitypub')
       .reply(200, {
         webhook_secret: 'webhook_secret_baby!!',
       });
@@ -339,14 +339,14 @@ describe('ActivityPubService', function () {
     const siteUrl = new URL('http://fake-site-url');
     const scope = nock(siteUrl)
       .get('/.ghost/activitypub/v1/site/')
-      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner:activitypub')
       .reply(200, {
         webhook_secret: 'webhook_secret_baby!!',
       });
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -378,8 +378,8 @@ describe('ActivityPubService', function () {
     const siteUrl = new URL('http://fake-site-url');
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -416,8 +416,8 @@ describe('ActivityPubService', function () {
     const scope = nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(404);
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -451,8 +451,8 @@ describe('ActivityPubService', function () {
     const scope = nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(502);
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -486,8 +486,8 @@ describe('ActivityPubService', function () {
     const scope = nock(siteUrl).get('/.ghost/activitypub/v1/site/').reply(200, {});
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
     const service = new ActivityPubService(
@@ -517,12 +517,12 @@ describe('ActivityPubService', function () {
     const siteUrl = new URL('http://fake-site-url');
     const scope = nock(siteUrl)
       .delete('/.ghost/activitypub/v1/site/')
-      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner:activitypub')
       .reply(200);
 
     const identityTokenService = {
-      getTokenForUser(email: string, role: string) {
-        return `token:${email}:${role}`;
+      getTokenForUser(email: string, role: string, audience: string) {
+        return `token:${email}:${role}:${audience}`;
       },
     };
 
