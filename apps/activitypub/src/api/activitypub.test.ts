@@ -1,4 +1,4 @@
-import { ActivityPubAPI } from './activitypub';
+import { ActivityPubAPI, PostType, sanitizeInReplyTo } from './activitypub';
 import { describe, expect, test } from 'vitest';
 
 function NotFound() {
@@ -34,6 +34,67 @@ function Fetch(specs: Record<string, Spec>) {
     return spec.response;
   };
 }
+
+describe('sanitizeInReplyTo', function () {
+  const validAuthor = {
+    name: 'Bob',
+    handle: '@bob@example.com',
+    url: 'https://example.com/@bob',
+  };
+
+  test('returns null for missing or null context', function () {
+    expect(sanitizeInReplyTo(null)).toBeNull();
+    expect(sanitizeInReplyTo(undefined)).toBeNull();
+  });
+
+  test('keeps a valid reply context', function () {
+    expect(
+      sanitizeInReplyTo({
+        id: 'https://example.com/notes/1',
+        type: PostType.Article,
+        author: validAuthor,
+      }),
+    ).toEqual({
+      id: 'https://example.com/notes/1',
+      type: PostType.Article,
+      author: validAuthor,
+    });
+  });
+
+  test('defaults a missing type to unknown (null)', function () {
+    expect(sanitizeInReplyTo({ id: 'https://example.com/notes/1', author: null })).toEqual({
+      id: 'https://example.com/notes/1',
+      type: null,
+      author: null,
+    });
+  });
+
+  test('nulls the author when handle is not a string', function () {
+    expect(
+      sanitizeInReplyTo({
+        id: 'https://example.com/notes/1',
+        type: PostType.Note,
+        author: { ...validAuthor, handle: 123 },
+      }),
+    ).toEqual({ id: 'https://example.com/notes/1', type: PostType.Note, author: null });
+  });
+
+  test('nulls the author when name is not a string', function () {
+    expect(
+      sanitizeInReplyTo({
+        id: 'https://example.com/notes/1',
+        type: PostType.Note,
+        author: { ...validAuthor, name: { display: 'Bob' } },
+      }),
+    ).toEqual({ id: 'https://example.com/notes/1', type: PostType.Note, author: null });
+  });
+
+  test('discards unusable context without a parent id', function () {
+    expect(sanitizeInReplyTo({ author: validAuthor })).toBeNull();
+    expect(sanitizeInReplyTo({ id: '', author: validAuthor })).toBeNull();
+    expect(sanitizeInReplyTo('https://example.com/notes/1')).toBeNull();
+  });
+});
 
 describe('ActivityPubAPI', function () {
   describe('domain', function () {
