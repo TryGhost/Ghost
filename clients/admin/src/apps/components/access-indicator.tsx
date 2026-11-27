@@ -47,7 +47,7 @@ const TrustNote: React.FC<{ manifest: AppManifest; reviewingUpdate: boolean }> =
 const NO_ACCESS = 'This app doesn’t ask for access to anything on your site.';
 
 /**
- * One line per resource: its name over what the app can do with it, one sentence per scope.
+ * One line per resource: its name over what the app can do with it, one entry per scope.
  * Scopes in `added` are marked as new. `removed` lists what's gone, quieter.
  */
 export const AccessLines: React.FC<{

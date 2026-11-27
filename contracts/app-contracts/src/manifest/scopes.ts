@@ -17,7 +17,7 @@ import type { ScopeChange } from './changes-schema.ts';
 export interface ScopeLine {
   readonly resource: AppResourceName;
   readonly title: string;
-  /** Each scope's wording, one sentence per scope, in the registry's order. */
+  /** Each scope's wording, one entry per scope, in the registry's order. */
   readonly actions: readonly string[];
   readonly scopes: readonly AppPermissionKey[];
 }

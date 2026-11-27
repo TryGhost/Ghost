@@ -133,7 +133,7 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.accessItems().first())
       .toHaveTextContent(
-        'Posts and pagesList, search and read every post and page, drafts included.Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them.',
+        'Posts and pagesList, search and read every post and page, drafts included.Edit, publish and email posts and pages, and change their content to anything, including HTML and scripts that run on your site. Change who can read them and their authors, and create tags for them.',
       );
     await expect
       .element(appsScreen.accessItems().nth(1))
