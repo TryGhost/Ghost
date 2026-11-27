@@ -15,6 +15,7 @@ import ImageLightbox, { useLightboxImages } from '../global/image-lightbox';
 import ProfilePreviewHoverCard from '../global/profile-preview-hover-card';
 
 import FeedItemStats from './feed-item-stats';
+import RepostedBy from './reposted-by';
 import clsx from 'clsx';
 import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
@@ -544,6 +545,8 @@ interface FeedItemProps {
   onClick?: () => void;
   onDelete?: () => void;
   showStats?: boolean;
+  /** Who reposted the post, newest first. Defaults to the actor of an Announce. */
+  reposters?: ActorProperties[];
 }
 
 const noop = () => {};
@@ -576,6 +579,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
   onClick: onClickHandler = noop,
   onDelete = noop,
   showStats = true,
+  reposters = type === 'Announce' ? [actor] : [],
 }) => {
   const timestamp =
     new Date(object?.published ?? new Date()).toLocaleDateString('default', {
@@ -856,8 +860,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
           (object.attributedTo as { id: string }).id === actor.id
       : object.authored;
 
-  const isActorCurrentUser = type === 'Announce' ? (object.reposted ?? false) : object.authored;
-
   const handleFollow = () => {
     if (authorHandle) {
       followMutation.mutate(authorHandle);
@@ -894,25 +896,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
             data-object-id={object.id}
             onClick={onClick}
           >
-            {type === 'Announce' && (
+            {reposters.length > 0 && (
               <div className="z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600">
                 {repostIcon}
                 <div className="flex min-w-0 items-center gap-1 text-sm">
-                  <ProfilePreviewHoverCard
-                    actor={actor}
-                    align="center"
-                    isCurrentUser={isActorCurrentUser}
-                  >
-                    <span
-                      className="break-anywhere truncate hover:underline"
-                      onClick={(e) => {
-                        handleProfileClick(actor, navigate, e);
-                      }}
-                    >
-                      {actor.name}
-                    </span>
-                  </ProfilePreviewHoverCard>
-                  reposted
+                  <RepostedBy
+                    nameClassName="break-anywhere truncate hover:underline"
+                    reposters={reposters}
+                  />
                 </div>
               </div>
             )}
@@ -1268,24 +1259,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         </span>
                       </div>
                     </ProfilePreviewHoverCard>
-                    {type === 'Announce' && (
-                      <span className="z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600">
+                    {reposters.length > 0 && (
+                      <span className="z-10 flex min-w-0 items-center gap-1 text-gray-700 dark:text-gray-600">
                         {repostIcon}
-                        <ProfilePreviewHoverCard
-                          actor={actor}
-                          align="center"
-                          isCurrentUser={isActorCurrentUser}
-                        >
-                          <span
-                            className="line-clamp-1 hover:underline"
-                            onClick={(e) => {
-                              handleProfileClick(actor, navigate, e);
-                            }}
-                          >
-                            {actor.name}
-                          </span>
-                        </ProfilePreviewHoverCard>{' '}
-                        reposted
+                        <RepostedBy
+                          nameClassName="line-clamp-1 hover:underline"
+                          reposters={reposters}
+                        />
                       </span>
                     )}
                     <span
