@@ -82,6 +82,19 @@ function isFallthroughFile(filePath) {
   return false;
 }
 
+/**
+ * Theme files are public, and browsers use fonts, module scripts and `crossorigin` files from
+ * another origin only with CORS.
+ *
+ * @param {import('http').ServerResponse} response
+ */
+function setPublicCorsHeader(response) {
+  // An origin the site's CORS already allows keeps that answer, which may allow credentials
+  if (!response.getHeader('Access-Control-Allow-Origin')) {
+    response.setHeader('Access-Control-Allow-Origin', '*');
+  }
+}
+
 function forwardToExpressStatic(req, res, next, options = {}) {
   if (!themeEngine.getActive()) {
     return next();
@@ -91,6 +104,8 @@ function forwardToExpressStatic(req, res, next, options = {}) {
   // We also allow sitemap.xml and sitemap-:resource.xml to fall through so that we can serve our defaults if they're not found in the theme
   const fallthrough = isFallthroughFile(req.path);
 
+  const { setHeaders, ...rest } = options;
+
   express.serveStatic(
     themeEngine.getActive().path,
     Object.assign(
@@ -99,8 +114,12 @@ function forwardToExpressStatic(req, res, next, options = {}) {
         //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
         maxAge: config.get('caching:theme:maxAge') * 1000,
         fallthrough,
+        setHeaders(response, filePath, stat) {
+          setPublicCorsHeader(response);
+          setHeaders?.(response, filePath, stat);
+        },
       },
-      options,
+      rest,
     ),
   )(req, res, next);
 }

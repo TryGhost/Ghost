@@ -53,15 +53,17 @@ class LocalFilesStorage extends LocalStorageBase {
    * Scripts and stylesheets the site itself points at are the exception:
    * the Pintura files an admin uploaded in Settings, and self-hosted
    * frontend apps (Portal, Search, Comments, ...) configured in config.
-   * Browsers refuse to load those with an inert type.
+   * Browsers refuse to load those with an inert type. These trusted files are also readable from
+   * any origin: the site loads its frontend apps with `crossorigin`, and they're public files.
    */
   setServeHeaders(res: Response, filePath: string): void {
     super.setServeHeaders(res, filePath);
 
-    res.setHeader(
-      'Content-Type',
-      this.getTrustedAssetContentType(filePath) ?? getStorageContentType(filePath),
-    );
+    const trustedType = this.getTrustedAssetContentType(filePath);
+    res.setHeader('Content-Type', trustedType ?? getStorageContentType(filePath));
+    if (trustedType && !res.getHeader('Access-Control-Allow-Origin')) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
   }
 
   private getTrustedAssetContentType(filePath: string): string | null {

@@ -2,7 +2,7 @@ import { connect, type Socket } from 'node:net';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import sirv from 'sirv';
-import type { Plugin, ProxyOptions } from 'vite';
+import { defaultAllowedOrigins, type Plugin, type ProxyOptions } from 'vite';
 
 // Built to apps/<name>/umd by each app's `build`, or its watcher under `pnpm dev:public`
 const PUBLIC_APPS = [
@@ -54,7 +54,15 @@ export function ghostFrontDoorPlugin(
 ): Plugin {
   const appsDir = path.resolve(__dirname, '..');
   const publicApps = new Map(
-    PUBLIC_APPS.map((name) => [name, sirv(path.join(appsDir, name, 'umd'), { dev: true })]),
+    PUBLIC_APPS.map((name) => [
+      name,
+      sirv(path.join(appsDir, name, 'umd'), {
+        dev: true,
+        // Public files that pages load with `crossorigin`, so any origin can use them, as a CDN
+        // would allow
+        setHeaders: (res) => res.setHeader('Access-Control-Allow-Origin', '*'),
+      }),
+    ]),
   );
   const ghosts = secondGhost ? [backend, secondGhost] : [backend];
 
@@ -105,7 +113,12 @@ export function ghostFrontDoorPlugin(
         ws: true,
         ...(secondGhost ? { configure: servedBy('1') } : {}),
       };
-      return { server: { proxy } };
+      // By default Vite answers CORS preflights itself, for local origins only. Here Ghost answers
+      // them, as it does in production, so cross-origin requests to the site's APIs behave the
+      // same in development.
+      return {
+        server: { proxy, cors: { origin: defaultAllowedOrigins, preflightContinue: true } },
+      };
     },
 
     configureServer(server) {
