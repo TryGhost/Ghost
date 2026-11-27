@@ -74,7 +74,7 @@ export function LabelTriggerPicker({
   const selectedName = selectedLabel?.name;
   let displayName = 'Search or create a label...';
   if (selectedLabel?.deleted) {
-    displayName = selectedName ? `${selectedName} (deleted)` : 'Label deleted';
+    displayName = selectedName ? `${selectedName} (deleted)` : '(label deleted)';
   } else if (labelId) {
     displayName = selectedName ?? 'Loading label...';
   }

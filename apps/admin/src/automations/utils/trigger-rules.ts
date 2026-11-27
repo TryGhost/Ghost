@@ -88,7 +88,7 @@ export const getTriggerLabelId = (rules: readonly AutomationTriggerRule[]): stri
   rules.find(
     (rule): rule is Extract<AutomationTriggerRule, { trigger_type: 'label_added' }> =>
       rule.trigger_type === 'label_added',
-  )?.label_id;
+  )?.label_id ?? undefined;
 
 function subscriptionChangedRulesFromSelection(selection: TierSelection): AutomationTriggerRule[] {
   const from: AutomationTriggerRule[] =

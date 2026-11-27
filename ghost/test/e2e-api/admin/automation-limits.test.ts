@@ -238,17 +238,17 @@ describe('Automation host limits', () => {
     assert.equal(await countActiveAutomations(), 0);
   });
 
-  it('keeps welcome statuses without acquiring the limit lock on unconfigured plans', async () => {
+  it('keeps legacy writes unlocked and serializes automation changes on unconfigured plans', async () => {
     await hostLimits.setHostLimits({});
     const free = await createWelcome('member-welcome-email-free', 'active');
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
     });
-    const limitLockQueries: string[] = [];
+    const automationLocks: string[] = [];
     const capture = (query: { sql: string; bindings?: unknown[] }) => {
       if (query.sql.includes('for update') && query.bindings?.includes('site_uuid')) {
-        limitLockQueries.push(query.sql);
+        automationLocks.push(query.sql);
       }
     };
     db.knex.on('query', capture);
@@ -261,6 +261,7 @@ describe('Automation host limits', () => {
         .put(`automated_emails/${free.id}`)
         .body({ automated_emails: [{ name: free.name, status: 'active' }] })
         .expectStatus(200);
+      assert.deepEqual(automationLocks, []);
       await Promise.all([repository.add(payload()), repository.browse()]);
       const automation = await repository.getById(free.id);
       assert.ok(automation);
@@ -272,7 +273,7 @@ describe('Automation host limits', () => {
     } finally {
       db.knex.off('query', capture);
     }
-    assert.deepEqual(limitLockQueries, []);
+    assert.equal(automationLocks.length, 2);
   });
 
   it.each([0, 1, 2])(
@@ -389,7 +390,7 @@ describe('Automation host limits', () => {
       .expectStatus(201);
   });
 
-  it('skips the limit lock for inactive writes but locks existing active edits', async () => {
+  it('serializes draft, deactivation, and active edits with the same shared lock', async () => {
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
       fakeWaitHoursMultiplier: null,
@@ -397,10 +398,10 @@ describe('Automation host limits', () => {
     const active = await repository.add(payload());
     const republished = await repository.add(payload());
     await capAtCurrentCount();
-    const limitLockQueries: string[] = [];
+    const automationLocks: string[] = [];
     const capture = (query: { sql: string; bindings?: unknown[] }) => {
       if (query.sql.includes('for update') && query.bindings?.includes('site_uuid')) {
-        limitLockQueries.push(query.sql);
+        automationLocks.push(query.sql);
       }
     };
     db.knex.on('query', capture);
@@ -414,13 +415,13 @@ describe('Automation host limits', () => {
         ...omit(active, ['trigger_rules']),
         status: 'inactive',
       });
-      assert.deepEqual(limitLockQueries, []);
+      assert.equal(automationLocks.length, 3);
       assert.equal(await countActiveAutomations(), 1);
       await repository.edit(republished.id, {
         ...omit(republished, ['trigger_rules']),
         description: 'Edited active',
       });
-      assert.equal(limitLockQueries.length, 1);
+      assert.equal(automationLocks.length, 4);
       assert.equal(await countActiveAutomations(), 1);
     } finally {
       db.knex.off('query', capture);

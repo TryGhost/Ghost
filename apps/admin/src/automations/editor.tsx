@@ -169,16 +169,18 @@ const AutomationEditorContent: React.FC<{
     staleTime: 0,
   });
   const labelDeleted =
-    labelQuery.error instanceof APIError && labelQuery.error.response?.status === 404;
+    draft?.trigger_rules.some(
+      (rule) => rule.trigger_type === 'label_added' && rule.label_id === null,
+    ) ||
+    (labelQuery.error instanceof APIError && labelQuery.error.response?.status === 404);
   const labelName = labelQuery.data?.labels[0]?.name;
   const refreshLabel = labelQuery.refetch;
-  const selectedTriggerLabel = React.useMemo(
-    () =>
-      selectedLabelId
-        ? { name: labelName, deleted: labelDeleted, refresh: refreshLabel }
-        : undefined,
-    [selectedLabelId, labelName, labelDeleted, refreshLabel],
-  );
+  const selectedTriggerLabel = React.useMemo(() => {
+    if (selectedLabelId || labelDeleted) {
+      return { name: labelName, deleted: labelDeleted, refresh: refreshLabel };
+    }
+    return undefined;
+  }, [selectedLabelId, labelName, labelDeleted, refreshLabel]);
   // A label can disappear while the draft is open, before the next save attempt.
   const canvasErrors = React.useMemo(
     () =>

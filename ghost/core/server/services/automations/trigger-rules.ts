@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { DbDate } from '../../lib/db-types/date';
 import { ObjectIdSchema } from '../../lib/db-types/object-id';
 
-export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigger_type', [
+const nonLabelTriggerRules = [
   z.object({
     trigger_type: z.literal('free_signup'),
     scope: z.null(),
@@ -43,13 +43,26 @@ export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigg
       direction: z.enum(['from', 'to']),
     }),
   ]),
-  z.object({
-    trigger_type: z.literal('label_added'),
-    label_id: ObjectIdSchema,
-    scope: z.null(),
-    product_id: z.null(),
-    direction: z.null(),
-  }),
+] as const;
+
+const labelTriggerRuleInputSchema = z.object({
+  trigger_type: z.literal('label_added'),
+  label_id: ObjectIdSchema,
+  scope: z.null(),
+  product_id: z.null(),
+  direction: z.null(),
+});
+
+/** Submitted triggers must identify a live label. */
+export const automationTriggerRuleInputSchema = z.discriminatedUnion('trigger_type', [
+  ...nonLabelTriggerRules,
+  labelTriggerRuleInputSchema,
+]);
+
+/** Stored definitions retain the trigger after its inactive label was deleted. */
+export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigger_type', [
+  ...nonLabelTriggerRules,
+  labelTriggerRuleInputSchema.extend({ label_id: ObjectIdSchema.nullable() }),
 ]);
 
 export type AutomationTriggerRuleDefinition = z.infer<typeof automationTriggerRuleDefinitionSchema>;

@@ -1,4 +1,7 @@
-import { automationTriggerRuleDefinitionSchema } from '../../../../../core/server/services/automations/trigger-rules';
+import {
+  automationTriggerRuleDefinitionSchema,
+  automationTriggerRuleInputSchema,
+} from '../../../../../core/server/services/automations/trigger-rules';
 
 describe('automationTriggerRuleDefinitionSchema', () => {
   it.each([
@@ -26,6 +29,18 @@ describe('automationTriggerRuleDefinitionSchema', () => {
     expect(automationTriggerRuleDefinitionSchema.safeParse(rule).success).toBe(true);
   });
 
+  it('reads a deleted label reference but requires a label when writing', () => {
+    const rule = {
+      trigger_type: 'label_added',
+      label_id: null,
+      scope: null,
+      product_id: null,
+      direction: null,
+    };
+    expect(automationTriggerRuleDefinitionSchema.safeParse(rule).success).toBe(true);
+    expect(automationTriggerRuleInputSchema.safeParse(rule).success).toBe(false);
+  });
+
   it.each([undefined, 'from', 'to'])('requires null direction, rejecting %j', (direction) => {
     expect(
       automationTriggerRuleDefinitionSchema.safeParse({
@@ -51,7 +66,7 @@ describe('automationTriggerRuleDefinitionSchema', () => {
     },
   );
 
-  it.each([undefined, null, '', 'invalid'])('rejects invalid label ID %j', (label_id) => {
+  it.each([undefined, '', 'invalid'])('rejects invalid label ID %j', (label_id) => {
     expect(
       automationTriggerRuleDefinitionSchema.safeParse({
         trigger_type: 'label_added',

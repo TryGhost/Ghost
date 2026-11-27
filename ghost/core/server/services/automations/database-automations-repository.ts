@@ -340,7 +340,7 @@ export function createDatabaseAutomationsRepository({
 
     async add(data) {
       return await knex.transaction(async (trx) => {
-        await lockAutomationLimit(trx, data.status);
+        await repository2.lockAutomationChanges(trx);
         switch (data.status) {
           case 'active':
             await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
@@ -407,7 +407,7 @@ export function createDatabaseAutomationsRepository({
 
     async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
       return await knex.transaction(async (trx) => {
-        await lockAutomationLimit(trx, data.status);
+        await repository2.lockAutomationChanges(trx);
 
         const automation = await loadAutomation(trx, id);
 
@@ -452,7 +452,13 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        await validateTriggerLabels(trx, triggerRules);
+        // A full activation can omit trigger_rules, so validate the saved
+        // rules as well. A deleted trigger must never become live again.
+        const rulesToValidate =
+          data.status === 'active' && data.trigger_rules === undefined
+            ? await loadTriggerRules(trx, id)
+            : triggerRules;
+        await validateTriggerLabels(trx, rulesToValidate);
 
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
@@ -1617,6 +1623,15 @@ function requireAutomation(automation: AutomationRow | null, id: string): Automa
   return automation;
 }
 
+async function loadTriggerRules(trx: Knex.Transaction, automationId: string) {
+  return (
+    await trx('automation_trigger_rules')
+      .select('trigger_type', 'scope', 'product_id', 'direction', 'label_id')
+      .where('automation_id', automationId)
+      .orderBy(['product_id', 'direction'])
+  ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
+}
+
 async function buildAutomation(
   repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
@@ -1628,12 +1643,7 @@ async function buildAutomation(
     actionRows.map((row) => row.id),
   );
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
-  const rules = (
-    await trx('automation_trigger_rules')
-      .select('trigger_type', 'scope', 'product_id', 'direction', 'label_id')
-      .where('automation_id', automation.id)
-      .orderBy(['product_id', 'direction'])
-  ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
+  const rules = await loadTriggerRules(trx, automation.id);
 
   if (rules.length === 0) {
     throw new errors.InternalServerError({

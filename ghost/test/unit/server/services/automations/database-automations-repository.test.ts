@@ -67,6 +67,12 @@ const createDatabase = async (): Promise<Knex> => {
   const fakeEmailDesignSettingId = id();
   const defaultEmailDesignSettingId = id();
 
+  await database.schema.createTable('settings', (table) => {
+    table.text('id').primary();
+    table.text('key').notNullable();
+  });
+  await database('settings').insert({ id: id(), key: 'site_uuid' });
+
   await database.schema.createTable('members', (table) => {
     table.text('id').primary();
   });

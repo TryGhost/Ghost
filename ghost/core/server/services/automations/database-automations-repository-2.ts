@@ -174,6 +174,12 @@ export const createDatabaseAutomationsRepository2 = ({
   knex: Knex;
 }>) => {
   return {
+    async clearLabelReferences(connection, labelId) {
+      await connection('automation_trigger_rules')
+        .where('label_id', labelId)
+        .update({ label_id: null });
+    },
+
     async deleteTriggerRules(connection, automationId) {
       await connection('automation_trigger_rules').where('automation_id', automationId).delete();
     },
@@ -285,6 +291,18 @@ export const createDatabaseAutomationsRepository2 = ({
       return Number(result?.count ?? 0);
     },
 
+    async hasActiveLabelAutomation(connection, labelId) {
+      const active = await connection('automations')
+        .join('automation_trigger_rules as rules', 'rules.automation_id', 'automations.id')
+        .where('rules.label_id', labelId)
+        .where('automations.status', 'active')
+        .select('automations.id')
+        .orderBy('automations.id')
+        .forUpdate()
+        .first();
+      return Boolean(active);
+    },
+
     async incrementEmailClickedCount(connection, revisionId) {
       await connection('automation_action_revisions')
         .where({ id: revisionId })
@@ -387,6 +405,22 @@ export const createDatabaseAutomationsRepository2 = ({
         .whereIn('id', ids)
         .orderBy('id')
         .forUpdate();
+    },
+
+    async lockAutomationChanges(connection) {
+      // The existing site_uuid row gives automation edits and label deletion one
+      // shared lock, preventing publication while a trigger label is being deleted.
+      // Enrollment and email execution do not take this lock.
+      const site = await connection('settings')
+        .select('id')
+        .where('key', 'site_uuid')
+        .forUpdate()
+        .first();
+      if (!site) {
+        throw new errors.InternalServerError({
+          message: 'Cannot lock automation changes: site UUID setting is missing.',
+        });
+      }
     },
 
     async lockNotYetOpenedEmailRecipients(connection, automatedEmailRecipientIds) {

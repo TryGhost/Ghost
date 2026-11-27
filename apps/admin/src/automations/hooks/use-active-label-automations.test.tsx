@@ -32,12 +32,28 @@ describe('Active label automation lookup', () => {
     expect(fetchApi).not.toHaveBeenCalled();
   });
 
-  it('returns no references for an automation deleted after browse', async () => {
-    fetchApi.mockResolvedValueOnce({ automations: [summary] }).mockRejectedValueOnce(notFound());
-    const { result } = renderLookup(true);
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current).toMatchObject({ data: [], isError: false });
-  });
+  it.each(['deleted', 'deactivated'])(
+    'returns no references for an automation %s after browse',
+    async (state) => {
+      fetchApi.mockResolvedValueOnce({ automations: [summary] });
+      if (state === 'deleted') {
+        fetchApi.mockRejectedValueOnce(notFound());
+      } else {
+        fetchApi.mockResolvedValueOnce({
+          automations: [
+            {
+              ...summary,
+              status: 'inactive',
+              trigger_rules: [{ trigger_type: 'label_added', label_id: null }],
+            },
+          ],
+        });
+      }
+      const { result } = renderLookup(true);
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current).toMatchObject({ data: [], isError: false });
+    },
+  );
 
   it.each([404, 500])(
     'reports a %s lookup failure and retries with only active trigger references',
