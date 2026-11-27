@@ -26,8 +26,11 @@ interface FilterableModel extends FilterTarget {
   filterRelations(): FilterRelations | undefined;
   /** A filter every query of the model has, which overrides the caller's. None by default. */
   enforcedFilters(options: Readonly<FilterOptions>): unknown;
-  /** A filter the model's queries have unless the caller's filter names its keys. None by default. */
-  defaultFilters(options: Readonly<FilterOptions>): unknown;
+  /**
+   * Filter text for conditions the model's queries have unless the caller's filter names their
+   * keys. None by default.
+   */
+  defaultFilters(options: Readonly<FilterOptions>): string | null | undefined;
   /** Filter text the filter plugin appends to the caller's. None by default. */
   extraFilters(options: Readonly<FilterOptions>): unknown;
 }
@@ -104,13 +107,12 @@ function filterQueries(
 
 /**
  * Throws when `model` or `options` ask for something the filter steps have no stage for: a
- * model's enforced, default or extra filters, or a query that asks for `useCTE`. The filter plugin
- * applies those, so ignoring them would query without a filter the model relies on.
+ * model's enforced or extra filters, or a query that asks for `useCTE`. The filter plugin applies
+ * those, so ignoring them would query without a filter the model relies on.
  */
 function rejectUnsupported(model: FilterableModel, options: Readonly<FilterOptions>): void {
   const unsupported = [
     model.enforcedFilters(options) ? 'enforcedFilters' : undefined,
-    model.defaultFilters(options) ? 'defaultFilters' : undefined,
     model.extraFilters(options) ? 'extraFilters' : undefined,
     options.useCTE ? 'the useCTE option' : undefined,
   ].filter((name) => name !== undefined);
@@ -124,19 +126,25 @@ function rejectUnsupported(model: FilterableModel, options: Readonly<FilterOptio
 
 /**
  * Resolves the filter in `options` for `Model` through `steps`: parses it once, runs each step on
- * it in order with `options` as the context, and returns the resolved filter, whose queries
- * compile the rewritten filter with the model's filter relations. A model whose filter is read
- * this way calls this from its resolveFilter, and its steps map the filter's keys onto the keys
- * its relations name. Throws when the model has enforced, default or extra filters, or the query
- * asks for `useCTE`, which the steps don't apply.
+ * it in order with `options` as the context, adds the model's default filters, and returns the
+ * resolved filter, whose queries compile the result with the model's filter relations. A model
+ * whose filter is read this way calls this from its resolveFilter, and its steps map the filter's
+ * keys onto the keys its relations name. Throws when the model has enforced or extra filters, or
+ * the query asks for `useCTE`, which the steps don't apply.
  */
 export async function resolveFilterWithSteps(
   Model: FilterableModelClass,
   steps: readonly FilterStep[],
   options: FilterOptions,
 ): Promise<ResolvedFilter<FilterableModel>> {
-  rejectUnsupported(Model.forge(), options);
-  const filter = await Filter.resolve(options.filter, steps, options);
+  const model = Model.forge();
+  rejectUnsupported(model, options);
+  const filter = await Filter.resolve(
+    options.filter,
+    steps,
+    options,
+    model.defaultFilters(options) || undefined,
+  );
   return new ResolvedFilter(
     { ...options },
     filterQueries(Model, (target) => {

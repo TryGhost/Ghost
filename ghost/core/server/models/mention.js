@@ -1,4 +1,6 @@
 const ghostBookshelf = require('./base');
+const { callerTransformerStep } = require('../lib/filters');
+const { resolveFilterWithSteps } = require('./base/plugins/filtered-collection');
 
 const Mention = ghostBookshelf.Model.extend(
   {
@@ -13,6 +15,18 @@ const Mention = ghostBookshelf.Model.extend(
     },
   },
   {
+    /**
+     * A mentions filter is parsed once and rewritten by the caller's own rewrite, then has each
+     * condition of defaultFilters() whose key it has no condition on.
+     */
+    resolveFilter(options) {
+      return resolveFilterWithSteps(
+        this,
+        [callerTransformerStep(options.mongoTransformer)],
+        options,
+      );
+    },
+
     permittedOptions(methodName) {
       let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
       const validOptions = {
