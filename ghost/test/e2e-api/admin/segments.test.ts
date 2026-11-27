@@ -359,7 +359,7 @@ describe('Segments Admin API', function () {
     });
 
     it("rejects a name the database counts as another segment's", async function () {
-      // Names are compared ignoring case, and MySQL's default collation also ignores accents.
+      // MySQL's default collation ignores accents as well as case.
       await add('Cafe', 'label:cafe');
 
       assert.deepEqual(await addError({ name: 'Café', filter: 'label:accent' }), NAME_TAKEN);

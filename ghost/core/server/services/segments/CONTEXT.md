@@ -42,11 +42,11 @@ A segment has the time it was added, `created_at`, and the time it was last edit
 
 ## Names
 
-A name is taken when another segment has it by either of two rules. The first ignores case and surrounding whitespace, and is the same on every database. The second is the table's unique index, which compares by the database's collation: MySQL's default collation also ignores accents, so "Café" is rejected when "Cafe" exists.
+A name is taken when the table's unique index rejects it, so the database's collation decides which names are the same. A name a request gives is trimmed first. MySQL's default collation, `utf8mb4_0900_ai_ci`, ignores case and accents, so "vip" is rejected when "VIP" exists and "Café" when "Cafe" does, and it counts spaces, so names that differ in their spaces are different names. A site whose tables have the older `utf8mb4_general_ci` also ignores trailing spaces. SQLite compares bytes, so there names that differ only in case or accents are different names, until SQLite support is removed. An import numbers the names it adds ignoring case and surrounding whitespace, and takes the next number when the index rejects one.
 
 ## Concurrent writes
 
-No lock keeps writers apart. The table's unique indexes reject a name or a slug another request takes at the same time, and the database's error names the index. A name taken that way rejects the segment, and so does a slug the caller gave. A minted slug taken that way is skipped, and the segment is added under the next one, so segments added at the same time whose names mint the same slug are all added. Segments added at the same moment can get the same position, and are then listed in the order of the table's tie-break.
+No lock keeps writers apart. The table's unique indexes reject a name or a slug another segment has, including one another request takes at the same time, and the database's error names the index. A taken name rejects the segment, and so does a taken slug the caller gave. A minted slug another request takes at the same time is skipped, and the segment is added under the next one, so segments added at the same time whose names mint the same slug are all added. Segments added at the same moment can get the same position, and are then listed in the order of the table's tie-break.
 
 ## Changes
 
