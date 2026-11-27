@@ -1,3 +1,8 @@
+- name: returns_the_early_exit_after_trigger_label_removal
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-trigger_label_removed&run_ids=case-trigger_label_removed
+  expected_result: |
+    {"id":"case-trigger_label_removed","created_at":"2020-01-01T00:00:00.000000Z","status":"exited_early","failed":false}
+
 - name: recorded_statuses_and_stable_ties
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation
   expected_result: |

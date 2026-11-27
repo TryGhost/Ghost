@@ -619,29 +619,29 @@ describe('automations poll', function () {
   });
 
   describe('label added trigger', function () {
-    const labelStep = () =>
-      buildEmailStep({
-        automation_trigger_rules: [
-          {
-            id: 'label-rule',
-            automation_id: 'automation-id',
-            created_at: new Date(),
-            trigger_type: 'label_added',
-            label_id: '64b6f7b7c8f1a2b3c4d5e6f8',
-            scope: null,
-            product_id: null,
-            direction: null,
-          },
-        ],
-      });
+    const labelId = '64b6f7b7c8f1a2b3c4d5e6f8';
+    const labelTrigger: Pick<StepBase, 'automation_trigger_rules'> = {
+      automation_trigger_rules: [
+        {
+          id: 'label-rule',
+          automation_id: 'automation-id',
+          created_at: new Date(),
+          trigger_type: 'label_added',
+          label_id: labelId,
+          scope: null,
+          product_id: null,
+          direction: null,
+        },
+      ],
+    };
 
     it('executes for a member with a label', async function () {
-      const step = labelStep();
+      const step = buildEmailStep(labelTrigger);
       Member.findOne.resolves(
         buildMember({
           status: 'free',
           products: [],
-          labels: [{ id: '64b6f7b7c8f1a2b3c4d5e6f8' }],
+          labels: [{ id: labelId }],
         }),
       );
       automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
@@ -653,7 +653,23 @@ describe('automations poll', function () {
       sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
     });
 
-    // TODO(NY-1795) Test that the step is marked terminal when the member no longer has the label.
+    it.each([
+      { step: buildWaitStep(labelTrigger), labels: [] },
+      { step: buildEmailStep(labelTrigger), labels: [{ id: 'unrelated-label' }] },
+    ])('stops a $step.type step when the trigger label is missing', async ({ step, labels }) => {
+      Member.findOne.resolves(buildMember({ labels }));
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        automationsApi.markStepTerminal,
+        step,
+        'member label removed',
+      );
+      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+      sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+    });
   });
 
   it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
