@@ -343,7 +343,9 @@ sides read a path, a header or a refusal the same way.
 session's token. Ghost's server decides what an app may call: it holds the
 token to the installation's approved scopes and refuses every route no scope
 covers, so Admin sends any path within the API and the app gets the server's
-answer. Ghost refuses an app with a 403 whose first error has a code of its
+answer. The one exception is `GET /site`, the site's public details, which
+anyone may read without signing in, so every app reaches it whatever its
+scopes. Ghost refuses an app with a 403 whose first error has a code of its
 own:
 
 | Code                 | Ghost refused the call because                                         |
