@@ -286,10 +286,11 @@ describe.skipIf(!isBetterAuth)('An app holding every scope', function () {
           403,
           `${what} answered ${response.statusCode}: ${JSON.stringify(response.body)}`,
         );
-        // Refused as an app: for a scope no app can hold, or where no app may call at all.
-        // Never for the Owner's role, which allows all of these.
-        assert.ok(
-          ['APP_SCOPE_REQUIRED', 'APP_NOT_ALLOWED'].includes(response.body.errors[0].code),
+        // Refused as a call no app may make: an app holding every scope can't lack one, and the
+        // Owner's role it acts for allows all of these.
+        assert.equal(
+          response.body.errors[0].code,
+          'APP_NOT_ALLOWED',
           `${what} was refused as ${response.body.errors[0].code}`,
         );
       }
