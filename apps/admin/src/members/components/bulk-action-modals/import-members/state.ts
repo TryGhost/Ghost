@@ -18,6 +18,7 @@ export interface ImportResponse {
 
 export interface ImportState {
   status: ImportStatus;
+  isConfirming: boolean;
   file: File | null;
   fileData: Record<string, string>[] | null;
   mapping: MembersFieldMapping | null;
@@ -35,6 +36,7 @@ export interface ImportState {
 
 export const createInitialImportState = (): ImportState => ({
   status: 'INIT',
+  isConfirming: false,
   file: null,
   fileData: null,
   mapping: null,
