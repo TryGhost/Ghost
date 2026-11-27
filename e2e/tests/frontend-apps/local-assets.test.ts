@@ -49,10 +49,10 @@ function overridesIn(file: string): Map<string, Override> {
 
 function publicAppDirs(): string[] {
   return fs
-    .readdirSync(new URL('apps/', root), { withFileTypes: true })
+    .readdirSync(new URL('clients/', root), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .filter((entry) => {
-      const pkgUrl = new URL(`apps/${entry.name}/package.json`, root);
+      const pkgUrl = new URL(`clients/${entry.name}/package.json`, root);
       if (!fs.existsSync(pkgUrl)) {
         return false;
       }
@@ -84,8 +84,8 @@ test('e2e/Dockerfile.e2e copies in the bundle each override points at', () => {
   const dockerfile = read('e2e/Dockerfile.e2e');
   const assetDirs = new Set([...overridesIn('e2e/Dockerfile.e2e').values()].map((o) => o.assetDir));
   for (const dir of assetDirs) {
-    expect(dockerfile, `COPY for apps/${dir}/umd`).toContain(
-      `COPY apps/${dir}/umd /home/ghost/core/built/admin/assets/${dir}`,
+    expect(dockerfile, `COPY for clients/${dir}/umd`).toContain(
+      `COPY clients/${dir}/umd /home/ghost/core/built/admin/assets/${dir}`,
     );
   }
 });
@@ -94,11 +94,11 @@ test('every public app is built into the e2e image', () => {
   const dockerfile = read('e2e/Dockerfile.e2e');
   const workflow = read('.github/workflows/ci.yml');
   for (const dir of publicAppDirs()) {
-    expect(dockerfile, `Dockerfile.e2e COPY for apps/${dir}/umd`).toContain(
-      `COPY apps/${dir}/umd `,
+    expect(dockerfile, `Dockerfile.e2e COPY for clients/${dir}/umd`).toContain(
+      `COPY clients/${dir}/umd `,
     );
-    expect(workflow, `ci.yml e2e-public-apps tarball entry for apps/${dir}/umd`).toMatch(
-      new RegExp(`^\\s+apps/${dir}/umd\\b`, 'm'),
+    expect(workflow, `ci.yml e2e-public-apps tarball entry for clients/${dir}/umd`).toMatch(
+      new RegExp(`^\\s+clients/${dir}/umd\\b`, 'm'),
     );
   }
 });

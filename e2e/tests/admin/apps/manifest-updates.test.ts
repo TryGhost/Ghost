@@ -14,7 +14,13 @@ async function reopenApp(page: Page, installationId: string) {
 }
 
 test.describe('Ghost Admin - App manifest updates', () => {
-  test.use({ labs: { apps: true } });
+  // Apps get tokens from Better Auth's OAuth provider, which is registered only when the flag
+  // is on at boot, so they run in the Better Auth project only.
+  test.skip(
+    process.env.GHOST_E2E_AUTH_ENGINE !== 'better-auth',
+    'Apps need auth:engine better-auth',
+  );
+  test.use({ labs: { apps: true }, config: { labs__apps: 'true' } });
 
   test('applies a silent change when the app next opens', async ({ page, fixtureApp }) => {
     const appPage = new AppPage(page);

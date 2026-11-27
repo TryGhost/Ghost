@@ -1,9 +1,11 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-csv';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { INTERNAL } from '../../members-metafields';
-import type { MetafieldDefinitionsService } from '../../members-metafields/definitions-service';
-import type { MetafieldValuesService, PlannedWrite } from '../../members-metafields/values-service';
+import {
+  type MemberMetafieldValues,
+  type MemberDefinitions,
+  type PlannedWrite,
+} from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -18,6 +20,9 @@ import type MembersImportJob from '../jobs/members-import-job';
 import { tracer } from '../../../lib/tracing';
 import { importExportTracking } from './tracking';
 import MembersCSVExporter, { type ExportOptions } from './export/exporter';
+
+/** An import is Ghost's own work, which reaches every field whoever started it. */
+const INTERNAL = { kind: 'internal' } as const;
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
@@ -49,15 +54,15 @@ interface ImporterServices {
   productRepository: unknown;
   // The metafields services the members service hands the import composition root.
   metafields: {
-    definitions: Pick<MetafieldDefinitionsService, 'browse'>;
-    values: Pick<MetafieldValuesService, 'planWrite' | 'applyImportedWrite'>;
+    definitions: Pick<MemberDefinitions, 'browse'>;
+    values: Pick<MemberMetafieldValues, 'planWrite' | 'applyImportedWrite'>;
   };
 }
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
-  definitions: Pick<MetafieldDefinitionsService, 'browse'>;
-  values: Pick<MetafieldValuesService, 'getValuesForMembers'>;
+  definitions: Pick<MemberDefinitions, 'browse'>;
+  values: Pick<MemberMetafieldValues, 'getValuesForMany'>;
 }
 
 // Build the members CSV importer. This is the composition root: today's models and
@@ -185,7 +190,8 @@ export function makeExporter({
           { ...options, transacting, activeNewsletterIds },
           'findPage',
         );
-        const query: Knex.QueryBuilder = models.Member.getFilteredCollectionQuery(filterOptions);
+        const filter = await models.Member.resolveFilter(filterOptions);
+        const query: Knex.QueryBuilder = filter.query();
         return (columns, limit, afterId) => {
           const batch = query.clone();
           if (afterId !== undefined) {
@@ -206,7 +212,7 @@ export function makeExporter({
       activeDefinitions: async (): Promise<CsvField[]> =>
         definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
       valuesForMembers: (memberIds, executor) =>
-        values.getValuesForMembers(memberIds, INTERNAL, executor),
+        values.getValuesForMany(memberIds, INTERNAL, executor),
     },
 
     tracking: importExportTracking(tracer),

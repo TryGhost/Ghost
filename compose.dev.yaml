@@ -172,11 +172,11 @@ services:
     volumes:
       # Mount Caddyfile for live config changes without rebuilding
       - ./docker/dev-gateway/Caddyfile:/etc/caddy/Caddyfile:ro
-      # All workspace apps mounted read-only. Caddy file_server resolves
-      # /srv/apps/<name>/umd dynamically for the public-app routes (see
+      # All workspace clients mounted read-only. Caddy file_server resolves
+      # /srv/clients/<name>/umd dynamically for the public-app routes (see
       # the Caddyfile @public_app block). Replaces the per-app `vite preview`
       # sirv layer + avoids per-app bind mounts.
-      - ./apps:/srv/apps:ro
+      - ./clients:/srv/clients:ro
     depends_on:
       ghost-dev:
         condition: service_healthy

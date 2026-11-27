@@ -94,7 +94,7 @@ Some libraries are allowed only in one form:
 
 - **Lodash:** import individual functions, such as `lodash/pick`. The whole
   `lodash` package is not allowed. Plain JavaScript is often simpler.
-- **Dates and times:** use the [kernel clock](../../ghost/core/kernel/clock.ts).
+- **Dates and times:** use the [Support clock](../../ghost/core/support/clock.ts).
   Do not import Moment, Moment Timezone, Luxon or any other date library
   elsewhere. The clock's deprecated `moment` export keeps existing date logic
   working while it moves.
@@ -131,7 +131,7 @@ type is not a runtime dependency:
 - `core-sharp-via-image-transform`;
 - `public-apps-not-field-rules`.
 
-Every other rule, such as `kernel-not-application`, covers types as well.
+Every other rule, such as `support-not-application`, covers types as well.
 
 Mark an import that is used only for types as type-only. The compiler drops an
 ordinary import whose names are used only as types, but the scan reads the

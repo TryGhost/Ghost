@@ -29,6 +29,19 @@ on after every Ghost(Pro) server has the type's code, and only creating a field
 of the type is gated. See
 [why a new field type starts behind a flag](../../contracts/metafield-types/docs/explanation/why-a-new-field-type-starts-behind-a-flag.md).
 
+Member segments are another exception. The private `memberSegments` flag gates
+members filters that name a segment, emailing a post to a segment and Admin's
+segment screens, and those screens take it to mean that the server has every
+segments API change they use. Some servers have the flag without all of that
+code, so this holds only because no customer's site can have the flag on,
+through the remote manifest, public beta or GA, until every Ghost(Pro) server
+has every server change the screens use. Until then, only sites with developer
+experiments turn it on, and they can meet a server that is behind Admin. Once
+it is on for customers, an Admin change that needs newer server code detects
+it, or merges only after every Ghost(Pro) server has it. Self-hosted sites get
+Admin and Ghost Core together in one release, so they never meet an older
+server.
+
 ## Flag stages
 
 Flags are camelCase keys registered in
@@ -59,8 +72,8 @@ call site. It is a short cleanup step, not a permanent home for released flags.
 1. Add the key to `PRIVATE_FEATURES` or `PUBLIC_BETA_FEATURES` in
    `ghost/core/shared/labs.js`.
 2. Add the matching toggle to
-   `apps/admin/src/settings/advanced/labs/private-features.tsx` or
-   `apps/admin/src/settings/advanced/labs/beta-features.tsx`.
+   `clients/admin/src/settings/advanced/labs/private-features.tsx` or
+   `clients/admin/src/settings/advanced/labs/beta-features.tsx`.
 3. Gate the server and browser behavior that must ship together.
 4. Add tests for both the enabled and disabled behavior.
 5. Update and review the Admin config and settings API snapshots.
@@ -116,7 +129,7 @@ compatibility branches, without changing ordinary component calls. Document
 milestone-specific scope and exclusions alongside the affected design.
 
 Content-list and table row behavior follows Shade's
-[Lists and tables contract](../../apps/shade/src/docs/list-rows.mdx#shared-defaults)
+[Lists and tables contract](../../clients/shade/src/docs/list-rows.mdx#shared-defaults)
 in both the current and upcoming UI. Row alignment, feedback, primary actions
 and press behavior are shared defaults, independent of `admin7Design`.
 

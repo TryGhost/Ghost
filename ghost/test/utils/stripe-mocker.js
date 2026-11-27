@@ -131,6 +131,7 @@ class StripeMocker {
   prices = [];
   products = [];
   checkoutSessions = [];
+  webhookEndpoints = [];
 
   /**
    * The branding set in the Stripe dashboard. A new checkout session reports it, under any
@@ -155,11 +156,35 @@ class StripeMocker {
    * Requests Stripe fails, as it does when a key is revoked, an object is locked or Stripe can't be
    * reached. Each failure answers every request, or only those for one `resource` (such as
    * `customers` or `checkout/sessions`) and optionally one object `id`, with `reply`: a status and a
-   * body in Stripe's API shape, or an error that fails the request before Stripe responds.
+   * body in Stripe's API shape, or an error that fails the request before Stripe responds. An `id`
+   * of null matches requests that name no object, such as a create. A failure can be kept to one
+   * HTTP `method`, and to its first `times` requests.
    *
-   * @type {{resource?: string, id?: string, reply: [number, object] | Error}[]}
+   * @type {{resource?: string, id?: string | null, method?: string, times?: number, reply: [number, object] | Error}[]}
    */
   failures = [];
+
+  /**
+   * Every request Stripe received, in order.
+   *
+   * @type {{method: string, resource?: string, id?: string, action?: string}[]}
+   */
+  requests = [];
+
+  /**
+   * Awaited before Stripe answers a request, so a test can hold a request back or line several up.
+   *
+   * @type {((request: {method: string, resource?: string, id?: string, action?: string}) => Promise<void>) | null}
+   */
+  beforeReply = null;
+
+  /**
+   * Awaited after Stripe has handled a request and before its answer is sent, so a test can make an
+   * answer arrive late.
+   *
+   * @type {((request: {method: string, resource?: string, id?: string, action?: string}) => Promise<void>) | null}
+   */
+  beforeDelivery = null;
 
   nockInterceptors = [];
 
@@ -194,7 +219,11 @@ class StripeMocker {
     this.prices = [];
     this.products = [];
     this.checkoutSessions = [];
+    this.webhookEndpoints = [];
     this.failures = [];
+    this.requests = [];
+    this.beforeReply = null;
+    this.beforeDelivery = null;
     this.checkoutBranding = StripeMocker.defaultCheckoutBranding();
     this.failCheckoutExpiry = false;
     this.refuseCheckoutDesign = false;
@@ -347,6 +376,7 @@ class StripeMocker {
         type: 'list',
         data: [
           {
+            id: `si_${this.#generateRandomId()}`,
             price,
           },
         ],
@@ -363,8 +393,12 @@ class StripeMocker {
         type: 'checkout.session.completed',
         data: {
           object: {
+            id: `cs_${this.#generateRandomId()}`,
+            object: 'checkout.session',
+            created: Math.floor(Date.now() / 1000),
             mode: 'subscription',
             customer: customer.id,
+            subscription: subscriptionId,
             metadata: {
               checkoutType: 'signup',
             },
@@ -471,6 +505,7 @@ class StripeMocker {
           decoded.items = {
             data: [
               {
+                id: `si_${this.#generateRandomId()}`,
                 ...first,
                 price,
               },
@@ -495,6 +530,12 @@ class StripeMocker {
           },
           ...decoded,
         };
+      }
+
+      // As Stripe does, an update that sets a subscription to end with its current period sets
+      // `canceled_at` to the time of that update, and one that sets it to continue clears it.
+      if (id && typeof decoded.cancel_at_period_end === 'boolean' && !('canceled_at' in decoded)) {
+        decoded.canceled_at = decoded.cancel_at_period_end ? Math.floor(Date.now() / 1000) : null;
       }
 
       if (typeof decoded.customer === 'string') {
@@ -540,15 +581,36 @@ class StripeMocker {
    * @param {(err: Error | null, result?: any) => void} callback
    * @param {(parts: {resource?: string, id?: string, action?: string}) => any} answer
    */
-  #reply(uri, callback, answer) {
+  #reply(method, uri, callback, answer) {
     const parts = partsOf(uri);
-    const failure = this.failures.find(
-      (f) => (!f.resource || f.resource === parts.resource) && (!f.id || f.id === parts.id),
-    );
-    if (failure?.reply instanceof Error) {
-      return callback(failure.reply);
+    const request = { method, ...parts };
+    this.requests.push(request);
+
+    const respond = () => {
+      const failure = this.failures.find(
+        (f) =>
+          (!f.resource || f.resource === parts.resource) &&
+          (f.id === null ? !parts.id : !f.id || f.id === parts.id) &&
+          (!f.method || f.method === method) &&
+          f.times !== 0,
+      );
+      if (failure?.times) {
+        failure.times -= 1;
+      }
+      const failed = failure?.reply instanceof Error;
+      const reply = failure ? failure.reply : answer(parts);
+      const deliver = () => (failed ? callback(reply) : callback(null, reply));
+
+      if (!this.beforeDelivery) {
+        return deliver();
+      }
+      this.beforeDelivery(request).then(deliver, callback);
+    };
+
+    if (!this.beforeReply) {
+      return respond();
     }
-    callback(null, failure ? failure.reply : answer(parts));
+    this.beforeReply(request).then(respond, callback);
   }
 
   /**
@@ -573,7 +635,7 @@ class StripeMocker {
       .get(/v1\/.*/);
     this.nockInterceptors.push(interceptor);
     interceptor.reply((uri, _body, callback) =>
-      this.#reply(uri, callback, (parts) => this.#get(parts)),
+      this.#reply('GET', uri, callback, (parts) => this.#get(parts)),
     );
 
     interceptor = nock('https://api.stripe.com')
@@ -583,7 +645,7 @@ class StripeMocker {
     this.nockInterceptors.push(interceptor);
 
     interceptor.reply((uri, body, callback) =>
-      this.#reply(uri, callback, (parts) => this.#post(parts, body)),
+      this.#reply('POST', uri, callback, (parts) => this.#post(parts, body)),
     );
 
     interceptor = nock('https://api.stripe.com')
@@ -593,7 +655,7 @@ class StripeMocker {
     this.nockInterceptors.push(interceptor);
 
     interceptor.reply((uri, _body, callback) =>
-      this.#reply(uri, callback, (parts) => this.#delete(parts)),
+      this.#reply('DELETE', uri, callback, (parts) => this.#delete(parts)),
     );
   }
 
@@ -669,7 +731,32 @@ class StripeMocker {
       return this.#postData(this.checkoutSessions, id, 'status=expired', 'checkout');
     }
 
+    if (resource === 'webhook_endpoints' && !action) {
+      return this.#postWebhookEndpoint(id, require('qs').parse(body));
+    }
+
     return [500];
+  }
+
+  /** Creates or updates a webhook endpoint. As at Stripe, only a create answers with the secret. */
+  #postWebhookEndpoint(id, { url, api_version: apiVersion }) {
+    if (!id) {
+      const endpoint = {
+        id: `we_${this.#generateRandomId()}`,
+        object: 'webhook_endpoint',
+        url,
+        api_version: apiVersion,
+        secret: `whsec_${this.#generateRandomId()}`,
+      };
+      this.webhookEndpoints.push(endpoint);
+      return [200, endpoint];
+    }
+    const endpoint = this.webhookEndpoints.find((one) => one.id === id);
+    if (!endpoint) {
+      return resourceMissing('webhook_endpoint', id);
+    }
+    endpoint.url = url ?? endpoint.url;
+    return [200, { ...endpoint, secret: undefined }];
   }
 
   /** Attaches a payment method to a customer, as Stripe does, refusing either if Stripe lacks it. */
@@ -685,10 +772,25 @@ class StripeMocker {
     return [200, paymentMethod];
   }
 
-  /** What Stripe answers a DELETE with. */
+  /**
+   * What Stripe answers a DELETE with: a subscription canceled now, or a deleted webhook endpoint.
+   */
   #delete({ resource, id }) {
     if (resource === 'subscriptions' && id) {
-      return this.#postData(this.subscriptions, id, 'status=canceled', resource);
+      return this.#postData(
+        this.subscriptions,
+        id,
+        { status: 'canceled', canceled_at: Math.floor(Date.now() / 1000) },
+        resource,
+      );
+    }
+    if (resource === 'webhook_endpoints' && id) {
+      const index = this.webhookEndpoints.findIndex((endpoint) => endpoint.id === id);
+      if (index === -1) {
+        return resourceMissing('webhook_endpoint', id);
+      }
+      this.webhookEndpoints.splice(index, 1);
+      return [200, { id, object: 'webhook_endpoint', deleted: true }];
     }
     return [500];
   }

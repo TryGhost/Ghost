@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
+import { memberAvatarImage } from '../../../core/server/services/members/member-avatar';
 const models = require('../../../core/server/models');
 
 describe('Comments stats API', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let postIds: string[];
-  let members: { id: string; name: string | null }[];
+  let members: { id: string; name: string | null; email: string }[];
   const commentIds: string[] = [];
   const reportIds: string[] = [];
   const range = '?date_from=2020-03-01&date_to=2020-03-03&timezone=UTC';
@@ -55,7 +56,7 @@ describe('Comments stats API', function () {
       .whereNotNull('name')
       .orderBy('id')
       .limit(2)
-      .select('id', 'name');
+      .select('id', 'name', 'email');
     const [postA, postB] = postIds;
     const [memberA, memberB] = members.map(({ id }) => id);
 
@@ -86,6 +87,8 @@ describe('Comments stats API', function () {
 
   it('returns totals, the previous period and a zero-filled series', async function () {
     const { body } = await agent.get(`stats/comments${range}`).expectStatus(200);
+
+    assert.deepEqual(body.meta, { filters: true });
 
     assert.deepEqual(body.stats, [
       {
@@ -132,7 +135,51 @@ describe('Comments stats API', function () {
       .expectStatus(200);
 
     assert.deepEqual(body.stats, [
-      { member_id: members[0].id, name: members[0].name, comments: 3 },
+      {
+        member_id: members[0].id,
+        name: members[0].name,
+        avatar_image: memberAvatarImage(members[0].email),
+        comments: 3,
+      },
+    ]);
+  });
+
+  it('shares comment filters across overview and rankings and advertises support', async function () {
+    const filter = encodeURIComponent(`post_id:'${postIds[0]}' + status:hidden + count.reports:0`);
+    const { body: overview } = await agent
+      .get(`stats/comments${range}&filter=${filter}`)
+      .expectStatus(200);
+    assert.deepEqual(overview.meta, { filters: true });
+    assert.deepEqual(overview.stats[0].totals, { comments: 1, commenters: 1, reported: 0 });
+    assert.deepEqual(overview.stats[0].previous_totals, {
+      comments: 0,
+      commenters: 0,
+      reported: 0,
+    });
+    assert.deepEqual(
+      overview.stats[0].series.map(({ comments }: { comments: number }) => comments),
+      [1, 0, 0],
+    );
+
+    const { body: posts } = await agent
+      .get(`stats/comments/top-posts${range}&filter=${filter}`)
+      .expectStatus(200);
+    assert.deepEqual(posts.meta, { filters: true });
+    assert.equal(posts.stats.length, 1);
+    assert.equal(posts.stats[0].post_id, postIds[0]);
+    assert.equal(posts.stats[0].comments, 1);
+
+    const { body: commenters } = await agent
+      .get(`stats/comments/top-commenters${range}&filter=${filter}`)
+      .expectStatus(200);
+    assert.deepEqual(commenters.meta, { filters: true });
+    assert.deepEqual(commenters.stats, [
+      {
+        member_id: members[1].id,
+        name: members[1].name,
+        avatar_image: memberAvatarImage(members[1].email),
+        comments: 1,
+      },
     ]);
   });
 
@@ -141,6 +188,10 @@ describe('Comments stats API', function () {
   for (const path of paths) {
     it(`rejects ${path} without a date range`, async function () {
       await agent.get(`${path}?timezone=UTC`).expectStatus(422);
+    });
+
+    it(`rejects unsupported filter fields on ${path}`, async function () {
+      await agent.get(`${path}${range}&filter=members.email:secret`).expectStatus(422);
     });
   }
 

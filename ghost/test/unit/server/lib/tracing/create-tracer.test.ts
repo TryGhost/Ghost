@@ -149,6 +149,33 @@ describe('createTracer', function () {
     );
   });
 
+  it('records and logs an array of errors, as a model’s validation throws, as its first error', async function () {
+    const { tracer, shipped, lines } = recording();
+    const first = new ValidationError({ message: 'Value in [newsletters.name] cannot be blank.' });
+    const thrown = [
+      first,
+      new ValidationError({ message: 'Value in [newsletters.slug] cannot be blank.' }),
+    ];
+
+    await assert.rejects(
+      tracer.track('test.operation', async () => {
+        throw thrown;
+      }),
+      (err) => err === thrown,
+    );
+
+    await shipping();
+    expect(shipped).toEqual([
+      {
+        metric: 'ghost-spans',
+        document: expect.objectContaining({ error: { type: 'ValidationError' } }),
+      },
+    ]);
+    expect(lines).toEqual([
+      [expect.objectContaining({ err: first, error: { type: 'ValidationError' } })],
+    ]);
+  });
+
   it('keeps numbers apart from the other attributes, as Elastic stores them, and drops empty lists', async function () {
     const { tracer, shipped } = recording();
 

@@ -25,7 +25,7 @@ Put tests as close as possible to the code and behavior under test:
 
 - **Unit tests** cover a function, component, or package in isolation. Most
   workspaces use Vitest and expose a `test` or `test:unit` target. App tests
-  under `apps/` assert with Vitest's `expect`; Ghost Core, the packages and
+  under `clients/` assert with Vitest's `expect`; Ghost Core, the packages and
   Koenig assert with `node:assert/strict`.
 - **Ghost Core integration tests** cover interactions between server modules
   and live against a test database. They live in `ghost/test/integration/`.
@@ -283,9 +283,9 @@ changes before committing.
 ## Run Editor Acceptance Tests
 
 The editor's acceptance specs live in
-`apps/admin/src/editor/*.acceptance.test.tsx` and run in Vitest Browser Mode
+`clients/admin/src/editor/*.acceptance.test.tsx` and run in Vitest Browser Mode
 through `pnpm nx test:acceptance @tryghost/admin`. See
-[the editor's README](../../apps/admin/src/editor/README.md) for the harness
+[the editor's README](../../clients/admin/src/editor/README.md) for the harness
 helpers and conventions they use.
 
 ## Before Opening a Pull Request

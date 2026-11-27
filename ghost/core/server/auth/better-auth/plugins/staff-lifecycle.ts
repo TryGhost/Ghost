@@ -5,6 +5,7 @@ import { createAuthEndpoint, createAuthMiddleware, isAPIError } from 'better-aut
 import { setSessionCookie } from 'better-auth/cookies';
 import { z } from 'zod';
 import { ROUTES, SSO_PREFIX } from '../routes';
+import { deleteAppTokens } from './app-clients';
 
 // Legacy user model statuses; `warn-*` users can still sign in
 const WARN_STATUSES = ['warn-1', 'warn-2', 'warn-3', 'warn-4'];
@@ -244,10 +245,16 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
         },
       ),
 
+      /**
+       * Every security event that signs a user out comes through here or `revokeAllSessions`
+       * (native `/change-password` through the instance's own hook). Both also delete the app
+       * tokens, which don't rely on cascading with the session: either may be stored apart.
+       */
       revokeUserSessions: createAuthEndpoint.serverOnly(
         { method: 'POST', body: z.object({ userId: z.string() }) },
         async (ctx) => {
           await ctx.context.internalAdapter.deleteUserSessions(ctx.body.userId);
+          await deleteAppTokens(ctx.context, { userId: ctx.body.userId });
           return ctx.json({ status: true });
         },
       ),
@@ -255,6 +262,7 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
       revokeAllSessions: createAuthEndpoint.serverOnly({ method: 'POST' }, async (ctx) => {
         const adapter = await getCurrentAdapter(ctx.context.adapter);
         const count = await adapter.deleteMany({ model: 'session', where: [] });
+        await deleteAppTokens(ctx.context, { all: true });
         return ctx.json({ count });
       }),
     },

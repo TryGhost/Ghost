@@ -88,6 +88,7 @@ class PostEmailHandler {
     if (!emailRecipientFilter || emailRecipientFilter === 'all') {
       return;
     }
+    this.models.Post.rejectSegmentRecipients(emailRecipientFilter);
 
     try {
       await this.models.Member.findPage({ filter: emailRecipientFilter, limit: 1 });

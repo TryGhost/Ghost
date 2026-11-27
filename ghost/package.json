@@ -58,9 +58,10 @@
     "test:unit": "vitest run",
     "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
-    "test:e2e:better-auth": "auth__engine=better-auth vitest run -c vitest.config.db.ts --project e2e-api --project e2e-isolated",
+    "test:e2e:better-auth": "auth__engine=better-auth labs__apps=true vitest run -c vitest.config.db.ts --project e2e-api --project e2e-isolated",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
+    "test:ci:e2e:better-auth": "COVERAGE_LANE=e2e-better-auth pnpm test:e2e:better-auth --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
     "test:ci:unit": "vitest run --coverage --coverage.reportsDirectory=coverage-unit --coverage.reporter=cobertura --coverage.reporter=text-summary",
     "test:int:slow": "pnpm test:integration",
@@ -68,16 +69,17 @@
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
     "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json && tsc -p scripts/tsconfig.json",
     "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts,mts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
-    "lint:kernel": "eslint 'core/kernel/**/*.{js,ts}' --cache",
+    "lint:support": "eslint 'core/support/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
     "lint:test": "eslint 'test/**/*.{js,ts}' --cache",
-    "lint:code": "pnpm run '/^lint:(server|kernel|shared|frontend)$/'",
-    "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
+    "lint:code": "pnpm run '/^lint:(server|support|shared|frontend)$/'",
+    "lint": "pnpm run '/^lint:(server|support|shared|frontend|test)$/'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",
     "@better-auth/core": "catalog:",
+    "@better-auth/oauth-provider": "catalog:",
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "catalog:",
     "@faker-js/faker": "catalog:",
@@ -119,7 +121,7 @@
     "@tryghost/metrics": "catalog:",
     "@tryghost/mg-clean-html": "catalog:",
     "@tryghost/mongo-knex": "catalog:",
-    "@tryghost/mongo-utils": "0.6.7",
+    "@tryghost/mongo-utils": "0.7.0",
     "@tryghost/mw-error-handler": "3.4.0",
     "@tryghost/mw-vhost": "3.4.0",
     "@tryghost/nodemailer": "2.4.0",
@@ -369,6 +371,15 @@
         ],
         "outputs": [
           "{projectRoot}/coverage-e2e/cobertura-coverage.xml"
+        ]
+      },
+      "test:ci:e2e:better-auth": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-e2e-better-auth/cobertura-coverage.xml"
         ]
       },
       "test:ci:integration": {

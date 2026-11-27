@@ -1,5 +1,4 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:members');
-const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
 const { chainTransformers } = require('@tryghost/mongo-utils');
 const { validateAdminApiBulkFilterTransformer } = require('../../api-filter-utils');
 
@@ -13,30 +12,6 @@ function defaultRelations(frame) {
   }
 
   frame.options.withRelated = ['labels'];
-}
-
-// @TODO: move this into the member repository in members-api
-function mapSubscribedFlagToNewsletterRelation(frame) {
-  const transformer = mapNQLKeyValues({
-    key: {
-      from: 'subscribed',
-      to: 'newsletters.status',
-    },
-    values: [
-      {
-        from: true,
-        to: 'active',
-      },
-      {
-        from: false,
-        to: { $ne: 'active' },
-      },
-    ],
-  });
-
-  frame.options.mongoTransformer = frame.options.mongoTransformer
-    ? chainTransformers(frame.options.mongoTransformer, transformer)
-    : transformer;
 }
 
 function validateBulkFilter(frame) {
@@ -75,7 +50,6 @@ module.exports = {
   browse(apiConfig, frame) {
     debug('browse');
     defaultRelations(frame);
-    mapSubscribedFlagToNewsletterRelation(frame);
 
     if (!frame.options.order) {
       frame.options.autoOrder = 'created_at DESC, id DESC';
@@ -137,12 +111,10 @@ module.exports = {
   bulkEdit(apiConfig, frame) {
     debug('bulkEdit');
     validateBulkFilter(frame);
-    mapSubscribedFlagToNewsletterRelation(frame);
   },
 
   bulkDestroy(apiConfig, frame) {
     debug('bulkDestroy');
     validateBulkFilter(frame);
-    mapSubscribedFlagToNewsletterRelation(frame);
   },
 };

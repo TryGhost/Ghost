@@ -37,3 +37,10 @@ exports.scheduleRecurringAutomationsJob = async (...args) => {
 exports.scheduleRecurringGiftDeliveriesJob = async (...args) => {
   await emailAnalyticsJobScheduler.scheduleRecurringGiftDeliveriesJob(...args);
 };
+
+/**
+ * @returns {Promise<void>}
+ */
+exports.scheduleRecurringJobs = async () => {
+  await emailAnalyticsJobScheduler.scheduleRecurringJobs();
+};

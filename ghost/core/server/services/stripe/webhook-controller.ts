@@ -2,45 +2,42 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
+import { firstError } from '../../lib/first-error';
 import type { StripeTracking, WebhookOutcome } from './tracking';
 import { classifyFailure, FAILURE_CODES } from './webhook/failures';
 import {
   readEnvelope,
   toWebhookEvent,
   type StripeEventEnvelope,
-  type StripeObject,
   type WebhookEvent,
   type WebhookEventKind,
+  type WebhookEvents,
 } from './webhook/webhook-event';
 
 export interface WebhookControllerDeps {
   /** The Stripe API version of Ghost's webhook endpoint, which Stripe formats events for. */
   apiVersion: string;
+  /** This site's uuid, which tells the Checkout sessions it created from other sites'. */
+  siteUuid(): string;
   webhookManager: {
-    webhookSecret: string | null;
-    parseWebhook(body: unknown, signature: string): unknown;
+    parseWebhook(body: unknown, signature: string): Promise<unknown>;
   };
-  checkoutSessionEventService: {
-    completeSubscriptionCheckout(session: StripeObject): Promise<unknown>;
-    updateCard(session: StripeObject): Promise<unknown>;
-    completeGiftPurchase(session: StripeObject): Promise<unknown>;
-    recordDonation(session: StripeObject): Promise<unknown>;
-  };
-  subscriptionEventService: {
-    handleSubscriptionEvent(subscription: StripeObject): Promise<unknown>;
-  };
-  invoiceEventService: { handleInvoiceEvent(invoice: StripeObject): Promise<unknown> };
-  chargeRefundedEventService: { handleEvent(charge: StripeObject): Promise<unknown> };
+  commands: WebhookCommands;
   tracking: Pick<StripeTracking, 'webhook'>;
   sentry: { captureException(err: unknown): unknown };
 }
 
-/** The command that handles each kind of webhook event. */
+/** The command that handles each kind of webhook event, which takes the kind's input. */
 type Commands = {
-  [K in WebhookEventKind]: (event: WebhookEvent<K>) => Promise<WebhookOutcome>;
+  [K in WebhookEventKind]: (input: WebhookEvents[K]) => Promise<WebhookOutcome>;
 };
 
-const HANDLED: WebhookOutcome = { result: 'handled' };
+/**
+ * The command for each kind of webhook event Ghost acts on, which `webhookCommands` builds with
+ * each command's dependencies (see `webhook/commands.ts`). The controller ignores an `ignored`
+ * event itself.
+ */
+export type WebhookCommands = Omit<Commands, 'ignored'>;
 
 /** Runs the command for the event's kind. */
 function run<K extends WebhookEventKind>(
@@ -49,12 +46,6 @@ function run<K extends WebhookEventKind>(
 ): Promise<WebhookOutcome> {
   return commands[event.kind](event);
 }
-
-/** The id of an object's Stripe customer, whether Stripe sent the id or the expanded customer. */
-const CustomerId = z
-  .object({ customer: z.union([z.string(), z.object({ id: z.string() }).loose()]) })
-  .loose()
-  .transform(({ customer }) => (typeof customer === 'string' ? customer : customer.id));
 
 const WithStatus = z.object({ statusCode: z.number() });
 
@@ -83,46 +74,7 @@ export class WebhookController {
   constructor(deps: WebhookControllerDeps) {
     this.#deps = deps;
     this.#commands = {
-      subscription_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.completeSubscriptionCheckout(session);
-        return HANDLED;
-      },
-      card_update_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.updateCard(session);
-        return HANDLED;
-      },
-      gift_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.completeGiftPurchase(session);
-        return HANDLED;
-      },
-      donation_checkout: async ({ session }) => {
-        await deps.checkoutSessionEventService.recordDonation(session);
-        return HANDLED;
-      },
-      subscription: async ({ type, subscription }) => {
-        const listedCustomer = this.#listedCustomerOf(subscription);
-        if (type === 'customer.subscription.updated' && listedCustomer) {
-          logging.info(
-            {
-              event: { name: 'stripe.webhook.ignored' },
-              stripe_event_type: type,
-              customer_id: listedCustomer,
-            },
-            'Ignored a Stripe webhook for a customer on stripeWebhookCustomerIgnoreList',
-          );
-          return { result: 'ignored', reason: 'listed_customer' };
-        }
-        await deps.subscriptionEventService.handleSubscriptionEvent(subscription);
-        return HANDLED;
-      },
-      invoice: async ({ invoice }) => {
-        await deps.invoiceEventService.handleInvoiceEvent(invoice);
-        return HANDLED;
-      },
-      refund: async ({ charge }) => {
-        await deps.chargeRefundedEventService.handleEvent(charge);
-        return HANDLED;
-      },
+      ...deps.commands,
       ignored: async ({ reason }) => ({ result: 'ignored', reason }),
     };
   }
@@ -144,13 +96,16 @@ export class WebhookController {
     }
     try {
       await this.#deps.tracking.webhook(async (attempt) => {
-        const verified = this.#verify(req.body, signature);
+        const verified = await this.#verify(req.body, signature);
         const envelope = readEnvelope(verified);
         attempt.receiving(envelope.type);
         // Before the event is parsed into its kind, so a mismatch is still logged when it's the
         // reason the event doesn't parse.
         this.#checkApiVersion(envelope);
-        const event = toWebhookEvent(envelope.type, verified);
+        const event = toWebhookEvent(envelope.type, verified, {
+          siteUuid: this.#deps.siteUuid(),
+          listedCustomers: this.#listedCustomers,
+        });
         attempt.matching(event.kind);
         logging.info(
           {
@@ -160,14 +115,26 @@ export class WebhookController {
           },
           'Handling a Stripe webhook',
         );
+        if (event.kind === 'ignored' && event.reason === 'listed_customer') {
+          logging.info(
+            {
+              event: { name: 'stripe.webhook.ignored' },
+              stripe_event_type: envelope.type,
+              customer_id: event.customerId,
+            },
+            'Ignored a Stripe webhook for a customer on stripeWebhookCustomerIgnoreList',
+          );
+        }
         return run(this.#commands, event);
       });
       res.writeHead(200);
       res.end();
-    } catch (err) {
-      // The span has already recorded the failure and logged the error. Only failures whose reason
-      // is set to report go to Sentry, and Ghost's Sentry setup also drops every Ghost error whose
-      // status isn't 500.
+    } catch (thrown) {
+      // The span has already recorded the failure and logged the error. The failure is classified,
+      // reported and answered as the error Ghost reads from what was thrown (see `firstError`).
+      // Only failures whose reason is set to report go to Sentry, and Ghost's Sentry setup also
+      // drops every Ghost error whose status isn't 500.
+      const err = firstError(thrown);
       if (classifyFailure(err).sentry) {
         this.#deps.sentry.captureException(err);
       }
@@ -177,17 +144,13 @@ export class WebhookController {
   }
 
   /** Returns the event in `body` after verifying its signature with the site's webhook secret. */
-  #verify(body: unknown, signature: string): unknown {
-    if (!this.#deps.webhookManager.webhookSecret) {
-      throw new errors.UnauthorizedError({
-        code: FAILURE_CODES.webhookSecretMissing,
-        message:
-          "The site has no Stripe webhook secret, so it can't verify the webhook's signature.",
-      });
-    }
+  async #verify(body: unknown, signature: string): Promise<unknown> {
     try {
-      return this.#deps.webhookManager.parseWebhook(body, signature);
+      return await this.#deps.webhookManager.parseWebhook(body, signature);
     } catch (err) {
+      if (classifyFailure(err).reason === 'webhook_secret_missing') {
+        throw err;
+      }
       // Only a signature that doesn't verify is the site's setup. Anything else that stops the
       // check, such as Ghost clearing its Stripe client while disconnecting, stays Ghost's.
       const mismatched = SignatureVerificationError.safeParse(err).success;
@@ -218,13 +181,5 @@ export class WebhookController {
         'Stripe sent a webhook rendered at a different API version than Ghost expects',
       );
     }
-  }
-
-  /** The subscription's Stripe customer, when it's on the ignore list. */
-  #listedCustomerOf(subscription: StripeObject): string | undefined {
-    const customerId = CustomerId.safeParse(subscription);
-    return customerId.success && this.#listedCustomers.has(customerId.data)
-      ? customerId.data
-      : undefined;
   }
 }

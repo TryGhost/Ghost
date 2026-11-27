@@ -1,0 +1,347 @@
+import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
+import { AddCustomFieldModal } from './custom-fields/add-custom-field-modal';
+import { EditCustomFieldModal } from './custom-fields/edit-custom-field-modal';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import TopLevelGroup from '@/settings/components/top-level-group';
+import {
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
+  Button,
+  DragIndicator,
+  NoValueLabel,
+  NoValueLabelIcon,
+  type SortableItemContainerProps,
+  SortableList,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { TextCursorInput } from 'lucide-react';
+import { arrayMove } from '@dnd-kit/sortable';
+import {
+  inOrderOf,
+  memberCustomFieldsDataType,
+  useBrowseMemberCustomFieldsIncludingArchived,
+  useReorderMemberCustomFields,
+  userTypeForField,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { HostLimitGate } from '@/shared/gates/host-limit-gate';
+import { useHandleError, useHostLimits } from '@tryghost/admin-x-framework/hooks';
+import { CUSTOM_FIELDS_LIMIT } from '@/shared/member-custom-fields/availability';
+import { useQueryClient } from '@tryghost/admin-x-framework';
+import { withErrorBoundary } from '@/settings/components/with-error-boundary';
+import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { DialogPortal } from '@/settings/providers/dialog-portal';
+import { UpgradeNotice } from '@/settings/components/upgrade-notice';
+
+// How many fields render before the list collapses behind "Show all" — the
+// recommendations list's preview size.
+const PREVIEW_COUNT = 5;
+
+// The sortable list addresses rows by `id`; a field has no id over the API, so its key
+// is the identity throughout.
+type SortableField = MemberCustomField & { id: string };
+const withRowIds = (fields: MemberCustomField[]): SortableField[] =>
+  fields.map((field) => ({ ...field, id: field.key }));
+
+// One row's content, shared by the plain list and the sortable one so a field reads
+// identically whether or not it can be dragged.
+const FieldRow: React.FC<{
+  field: MemberCustomField;
+  openModal: (field: MemberCustomField) => void;
+}> = ({ field, openModal }) => {
+  const userType = userTypeForField(field);
+  return (
+    <>
+      <ListItemContent asChild>
+        <button
+          className="flex w-full items-center gap-3 py-3 text-left"
+          type="button"
+          onClick={() => openModal(field)}
+        >
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+            <CustomFieldIcon className="size-[18px]" type={userType.id} />
+          </span>
+          <span className="min-w-0 grow">
+            <span className="block truncate font-semibold">{field.name}</span>
+            {/* Where the row already says what the field is, it says who can see it. An
+                archived field is closed to members whatever its access says, so it is never marked. */}
+            <span className="block truncate text-sm text-muted-foreground">
+              {userType.label}
+              {field.status === 'active' &&
+                field.access.member !== 'none' &&
+                ' · Visible to members'}
+            </span>
+          </span>
+        </button>
+      </ListItemContent>
+      <ListItemActions>
+        <Button size="sm" type="button" variant="ghost" onClick={() => openModal(field)}>
+          Edit
+        </Button>
+      </ListItemActions>
+    </>
+  );
+};
+
+// The row a dragged field sits in. The drag overlay renders outside the list's wrapper,
+// so a row being dragged supplies its own List to keep its styling.
+const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
+  id,
+  setRef,
+  isDragging,
+  style,
+  separator,
+  children,
+  ...props
+}) => {
+  // Neither belongs on the handle button the rest is spread onto: DragIndicator errors
+  // on `separator`, and `id` is a field key that would become the button's DOM id.
+  void separator;
+  void id;
+
+  // The handle sits in a centred column because the row stretches its children.
+  const row = (
+    <ListItem
+      ref={setRef}
+      className={isDragging ? 'opacity-75' : ''}
+      data-testid="custom-field-list-item"
+      style={style}
+    >
+      <Inline align="center" className="w-10 shrink-0" data-row-secondary>
+        <DragIndicator className="h-10" isDragging={isDragging || false} {...props} />
+      </Inline>
+      {children}
+    </ListItem>
+  );
+
+  return isDragging ? <List>{row}</List> : row;
+};
+
+const FieldList: React.FC<{
+  fields: MemberCustomField[];
+  // Lifted to the parent: Tabs unmount hidden panels, so local state
+  // would forget an expanded list on every tab switch.
+  showAll: boolean;
+  onShowAll: () => void;
+  openModal: (field: MemberCustomField) => void;
+  // Absent on the archived tab: an archived field holds its place in the order but
+  // there is nowhere to see it, so there is nothing to drag it through.
+  onMove?: (key: string, overKey: string) => void;
+}> = ({ fields, showAll, onShowAll, openModal, onMove }) => {
+  if (fields.length === 0) {
+    // Mirrors the newsletters list's empty state, tab for tab.
+    return (
+      <NoValueLabel>
+        <NoValueLabelIcon>
+          <TextCursorInput />
+        </NoValueLabelIcon>
+        No custom fields found.
+      </NoValueLabel>
+    );
+  }
+
+  // The endpoint returns the full (deliberately small) list, so "Show all"
+  // is a client-side reveal — same UI as the recommendations table, without
+  // inventing pagination the API doesn't have.
+  const isTruncated = !showAll && fields.length > PREVIEW_COUNT;
+  const visibleFields = isTruncated ? fields.slice(0, PREVIEW_COUNT) : fields;
+
+  // A collapsed list is still sortable: both ends of a drag are rows on screen, and the
+  // fields behind "Show all" keep their places around the move.
+  const isSortable = Boolean(onMove);
+
+  return (
+    <>
+      {isSortable ? (
+        <SortableList
+          container={(props) => <SortableFieldRow {...props} />}
+          getItemLabel={(field) => field.name}
+          items={withRowIds(visibleFields)}
+          renderItem={(field) => <FieldRow field={field} openModal={openModal} />}
+          wrapper={List}
+          onMove={(key, overKey) => onMove?.(key, overKey)}
+        />
+      ) : (
+        <List>
+          {visibleFields.map((field) => (
+            <ListItem key={field.key} data-testid="custom-field-list-item">
+              <FieldRow field={field} openModal={openModal} />
+            </ListItem>
+          ))}
+        </List>
+      )}
+      {isTruncated && (
+        <div className="flex items-center gap-2 border-t border-border pt-2">
+          <Button size="sm" type="button" variant="outline" onClick={onShowAll}>
+            Show all
+          </Button>
+        </div>
+      )}
+    </>
+  );
+};
+
+/** The publisher's fields in their order, split by status, with dragging to reorder them. */
+const FieldLists: React.FC<{ openModal: (field: MemberCustomField) => void }> = ({ openModal }) => {
+  // Settings is the one place that manages archived fields too, so it uses the
+  // include-archived variant rather than the default active-only browse.
+  const { data } = useBrowseMemberCustomFieldsIncludingArchived();
+  const { mutateAsync: reorderFields } = useReorderMemberCustomFields();
+  const queryClient = useQueryClient();
+  const handleError = useHandleError();
+
+  // The order just drawn, held as keys over whatever the server says — so a field added
+  // or removed elsewhere still appears or goes. It states an order, never a set.
+  const [drawnOrder, setDrawnOrder] = useState<string[] | null>(null);
+  const serverFields = data;
+  const fields = useMemo(() => {
+    const known = serverFields || [];
+    return drawnOrder ? inOrderOf(drawnOrder, known) : known;
+  }, [serverFields, drawnOrder]);
+  const [selectedTab, setSelectedTab] = useState('active-fields');
+  const [showAllActive, setShowAllActive] = useState(false);
+  const [showAllArchived, setShowAllArchived] = useState(false);
+
+  // The opted-in query returns both statuses; the tabs split them, following
+  // the newsletters group. Archived fields stay manageable (rename, reactivate)
+  // rather than vanishing — their globally-unique names would otherwise
+  // block new fields for no visible reason.
+  const activeFields = fields.filter((field) => field.status === 'active');
+  const archivedFields = fields.filter((field) => field.status === 'archived');
+
+  // The collapse is an initial-view optimization only: a new field is appended to the
+  // end of the publisher's order, so it lands in exactly the hidden slot. When a tab's
+  // list grows while the screen is open, expand it so the new arrival is visible in
+  // place rather than silently swallowed behind "Show all". Expanding also puts the
+  // active list back in reach of a drag, which a truncated list does not offer.
+  const previousCounts = useRef({ active: 0, archived: 0 });
+  useEffect(() => {
+    if (activeFields.length > previousCounts.current.active && previousCounts.current.active > 0) {
+      setShowAllActive(true);
+    }
+    if (
+      archivedFields.length > previousCounts.current.archived &&
+      previousCounts.current.archived > 0
+    ) {
+      setShowAllArchived(true);
+    }
+    previousCounts.current = { active: activeFields.length, archived: archivedFields.length };
+  }, [activeFields.length, archivedFields.length]);
+
+  /**
+   * Applied to the whole list rather than the active tab: a reorder names every
+   * definition, and the archived ones keep their places around the move. Rendered
+   * immediately from local state, so letting go is the end of the interaction.
+   */
+  const onMove = (key: string, overKey: string) => {
+    const from = fields.findIndex((field) => field.key === key);
+    const to = fields.findIndex((field) => field.key === overKey);
+    if (from === -1 || to === -1 || from === to) {
+      return;
+    }
+
+    const reordered = arrayMove(fields, from, to);
+    setDrawnOrder(reordered.map((field) => field.key));
+
+    reorderFields(reordered)
+      .catch((error) => {
+        // The server's message says what to do; refetching is how the screen
+        // learns about the field it did not know about.
+        handleError(error);
+        void queryClient.invalidateQueries({ queryKey: [memberCustomFieldsDataType] });
+      })
+      // Dropped either way: on success the cache holds this order, on failure the
+      // server's is the one to show.
+      .finally(() => setDrawnOrder(null));
+  };
+
+  // Both tabs render (empty ones included, the newsletters pattern) once ANY field
+  // exists — but a site with no fields at all gets no tabs, just the group description;
+  // newsletters never faces that state (a site always has one), custom fields start there.
+  if (fields.length === 0) {
+    return null;
+  }
+  return (
+    <Tabs value={selectedTab} variant="underline" onValueChange={setSelectedTab}>
+      <TabsList>
+        <TabsTrigger value="active-fields">Active</TabsTrigger>
+        <TabsTrigger value="archived-fields">Archived</TabsTrigger>
+      </TabsList>
+      <TabsContent value="active-fields">
+        <FieldList
+          fields={activeFields}
+          openModal={openModal}
+          showAll={showAllActive}
+          onMove={onMove}
+          onShowAll={() => setShowAllActive(true)}
+        />
+      </TabsContent>
+      <TabsContent value="archived-fields">
+        <FieldList
+          fields={archivedFields}
+          openModal={openModal}
+          showAll={showAllArchived}
+          onShowAll={() => setShowAllArchived(true)}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+/**
+ * While the host switches custom fields off, the section keeps its title and description, so
+ * it still says what custom fields are, while the fields and the way to add one give way to
+ * the upgrade: the server reads every field as archived and refuses every change. The upgrade
+ * is offered in the host's own words where it gives some.
+ */
+const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
+  const [modal, setModal] = useState<
+    { readonly kind: 'add' } | { readonly kind: 'edit'; readonly field: MemberCustomField } | null
+  >(null);
+  const closeModal = () => setModal(null);
+  const hostMessage = useHostLimits()?.[CUSTOM_FIELDS_LIMIT]?.error;
+
+  return (
+    <TopLevelGroup
+      customButtons={
+        <HostLimitGate limit={CUSTOM_FIELDS_LIMIT}>
+          <Button size="sm" type="button" variant="ghost" onClick={() => setModal({ kind: 'add' })}>
+            Add custom field
+          </Button>
+        </HostLimitGate>
+      }
+      description="Create and manage custom fields to store extra information about your members"
+      keywords={keywords}
+      navid="custom-fields"
+      testId="custom-fields"
+      title="Custom fields"
+    >
+      <HostLimitGate
+        limit={CUSTOM_FIELDS_LIMIT}
+        limited={
+          <UpgradeNotice>
+            {hostMessage || "Custom fields aren't available on this site."}
+          </UpgradeNotice>
+        }
+      >
+        <FieldLists openModal={(field) => setModal({ kind: 'edit', field })} />
+        {modal && (
+          <DialogPortal>
+            {modal.kind === 'add' ? (
+              <AddCustomFieldModal onClose={closeModal} />
+            ) : (
+              <EditCustomFieldModal field={modal.field} onClose={closeModal} />
+            )}
+          </DialogPortal>
+        )}
+      </HostLimitGate>
+    </TopLevelGroup>
+  );
+};
+
+export default withErrorBoundary(CustomFields, 'Custom fields');

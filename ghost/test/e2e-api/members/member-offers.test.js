@@ -756,6 +756,7 @@ describe('Members API - Member Offers', function () {
         status: 'active',
         customer: customerId,
         cancel_at_period_end: false,
+        canceled_at: null,
         current_period_end: Math.floor(currentPeriodEnd.getTime() / 1000),
         start_date: Math.floor(discountStart.getTime() / 1000),
         items: {
@@ -1118,6 +1119,7 @@ describe('Members API - Member Offers', function () {
         status: 'active',
         customer: customerId,
         cancel_at_period_end: false,
+        canceled_at: null,
         current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
         start_date: Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60,
         items: {

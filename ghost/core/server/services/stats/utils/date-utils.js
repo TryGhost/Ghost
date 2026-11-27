@@ -1,4 +1,4 @@
-const { getUnixTime, moment } = require('../../../../kernel/clock');
+const { getUnixTime, moment } = require('../../../../support/clock');
 
 /**
  * Today's UTC calendar date

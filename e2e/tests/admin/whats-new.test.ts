@@ -55,7 +55,7 @@ async function mockChangelog(page: Page, entries: RawChangelogEntry[]): Promise<
   });
 }
 
-// Single-boot cases live in apps/admin/src/whats-new/whats-new.acceptance.test.tsx;
+// Single-boot cases live in clients/admin/src/whats-new/whats-new.acceptance.test.tsx;
 // this case stays because the banner link opens a real popup window.
 test.describe("Ghost Admin - What's New Banner", () => {
   test.describe('banner notification', () => {

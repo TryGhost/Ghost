@@ -1,11 +1,17 @@
 // util to avoid processing events in Koenig when they originate from an editor
 // element inside a card
-export const shouldIgnoreEvent = (event) => {
+export const shouldIgnoreEvent = (event: KeyboardEvent | ClipboardEvent | InputEvent | null): boolean => {
     if (!event) {
         return false;
     }
 
-    const {metaKey, key, target} = event;
+    const metaKey = 'metaKey' in event ? event.metaKey : false;
+    const key = 'key' in event ? event.key : undefined;
+    const {target} = event;
+    if (!(target instanceof Element)) {
+        return false;
+    }
+
     const isEscape = key === 'Escape';
     const isMetaEnter = metaKey && key === 'Enter';
 

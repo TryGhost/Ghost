@@ -2,7 +2,7 @@
 
 Ghost Core is one Node.js application which serves the public site, Admin, and
 the APIs. It also runs the services and background work needed by those
-interfaces. The browser applications in `apps/` are built separately and talk
+interfaces. The browser applications in `clients/` are built separately and talk
 to Ghost Core over HTTP.
 
 This guide describes the main runtime boundaries. For a directory-by-directory
@@ -90,9 +90,9 @@ updates.
 
 ## Browser applications
 
-Admin is the React application in `apps/admin/`, served at `/ghost/` and
+Admin is the React application in `clients/admin/`, served at `/ghost/` and
 built on the Admin API. Admin features are built using `admin-x-framework` and
-Shade; see the [Admin README](../../apps/admin/README.md).
+Shade; see the [Admin README](../../clients/admin/README.md).
 
 Portal, Comments, Search, Signup Form, Announcement Bar, and Admin Toolbar are
 separate browser applications. Ghost adds their script configuration to public

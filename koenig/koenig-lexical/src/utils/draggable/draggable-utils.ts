@@ -1,5 +1,5 @@
 // TODO: more or less duplicated in koenig-card-gallery other than direction
-export function isCardDropAllowed(draggableIndex, droppableIndex, position = '') {
+export function isCardDropAllowed(draggableIndex: number, droppableIndex: number | undefined, position = ''): boolean {
     // images can be dragged out of a gallery to any position
     if (draggableIndex === -1) {
         return true;
@@ -22,32 +22,33 @@ export function isCardDropAllowed(draggableIndex, droppableIndex, position = '')
     return droppableIndex !== draggableIndex;
 }
 
+// a CSS selector, or a predicate that is called with each candidate element
+export type ElementMatcher = string | ((element: Element) => boolean);
+
 // TODO: rename to closest? getParent can actually match passed in element
-export function getParent(element, value) {
-    return getWithMatch(element, value, current => current.parentNode);
+export function getParent(element: Element | null, value: ElementMatcher): Element | null {
+    return getWithMatch(element, value, current => current.parentElement);
 }
 
-export function getNextSibling(element, value) {
+export function getNextSibling(element: Element, value: ElementMatcher): Element | null {
     // don't match the passed in element
-    element = element.nextElementSibling;
-    return getWithMatch(element, value, current => current.nextElementSibling);
+    return getWithMatch(element.nextElementSibling, value, current => current.nextElementSibling);
 }
 
-export function getPreviousSibling(element, value) {
+export function getPreviousSibling(element: Element, value: ElementMatcher): Element | null {
     // don't match the passed in element
-    element = element.previousElementSibling;
-    return getWithMatch(element, value, current => current.previousElementSibling);
+    return getWithMatch(element.previousElementSibling, value, current => current.previousElementSibling);
 }
 
-export function getParentScrollableElement(element) {
+export function getParentScrollableElement(element: Element | null): Element | null {
     if (!element) {
         return getDocumentScrollingElement();
     }
 
-    let position = getComputedStyle(element).getPropertyValue('position');
-    let excludeStaticParents = position === 'absolute';
+    const position = getComputedStyle(element).getPropertyValue('position');
+    const excludeStaticParents = position === 'absolute';
 
-    let scrollableElement = getParent(element, (parent) => {
+    const scrollableElement = getParent(element, (parent) => {
         if (excludeStaticParents && isStaticallyPositioned(parent)) {
             return false;
         }
@@ -61,42 +62,38 @@ export function getParentScrollableElement(element) {
     }
 }
 
-export function getDocumentScrollingElement() {
-    return document.scrollingElement?.body || document.scrollingElement || document.element;
+export function getDocumentScrollingElement(): Element {
+    return document.scrollingElement || document.documentElement;
 }
 
-export function applyUserSelect(element, value) {
-    element.style.webkitUserSelect = value;
-    element.style.mozUserSelect = value;
-    element.style.msUserSelect = value;
-    element.style.oUserSelect = value;
-    element.style.userSelect = value;
+// vendor-prefixed properties that the DOM typings no longer declare
+interface PrefixedUserSelectStyle extends CSSStyleDeclaration {
+    mozUserSelect?: string;
+    msUserSelect?: string;
+    oUserSelect?: string;
+}
+
+export function applyUserSelect(element: HTMLElement, value: string): void {
+    const style: PrefixedUserSelectStyle = element.style;
+    style.webkitUserSelect = value;
+    style.mozUserSelect = value;
+    style.msUserSelect = value;
+    style.oUserSelect = value;
+    style.userSelect = value;
 }
 
 /* Not exported --------------------------------------------------------------*/
 
-function getWithMatch(element, value, next) {
+function getWithMatch(element: Element | null, value: ElementMatcher, next: (current: Element) => Element | null): Element | null {
+    function matches(currentElement: Element): boolean {
+        return typeof value === 'string' ? currentElement.matches(value) : value(currentElement);
+    }
+
     if (!element) {
         return null;
     }
 
-    let selector = value;
-    let callback = value;
-
-    let isSelector = typeof value === 'string';
-    let isFunction = typeof value === 'function';
-
-    function matches(currentElement) {
-        if (!currentElement) {
-            return currentElement;
-        } else if (isSelector) {
-            return currentElement.matches(selector);
-        } else if (isFunction) {
-            return callback(currentElement);
-        }
-    }
-
-    let current = element;
+    let current: Element | null = element;
 
     do {
         if (matches(current)) {
@@ -104,19 +101,21 @@ function getWithMatch(element, value, next) {
         }
 
         current = next(current);
-    } while (current && current !== document.body && current !== document);
+    } while (current && current !== document.body);
+
+    return null;
 }
 
-function isStaticallyPositioned(element) {
-    let position = getComputedStyle(element).getPropertyValue('position');
+function isStaticallyPositioned(element: Element): boolean {
+    const position = getComputedStyle(element).getPropertyValue('position');
     return position === 'static';
 }
 
-function hasOverflow(element) {
-    let overflowRegex = /(auto|scroll)/;
-    let computedStyles = getComputedStyle(element, null);
+function hasOverflow(element: Element): boolean {
+    const overflowRegex = /(auto|scroll)/;
+    const computedStyles = getComputedStyle(element, null);
 
-    let overflow =
+    const overflow =
         computedStyles.getPropertyValue('overflow') +
         computedStyles.getPropertyValue('overflow-y') +
         computedStyles.getPropertyValue('overflow-x');

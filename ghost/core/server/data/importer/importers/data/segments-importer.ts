@@ -1,8 +1,17 @@
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import segments from '../../../../services/segments';
-import { MAX_NAME_LENGTH, SegmentFilter, SegmentName } from '../../../../services/segments/models';
-import { isNameTakenError, normalizeName } from '../../../../services/segments/rejections';
+import { filterNamesSegment } from '../../../../services/segments/expansion';
+import { NameTakenError, SlugRejectedError } from '../../../../services/segments/errors';
+import {
+  isParseableFilter,
+  MAX_NAME_LENGTH,
+  normalizeName,
+  type Segment,
+  SegmentFilter,
+  SegmentName,
+  SegmentSlug,
+} from '../../../../services/segments/models';
 import {
   type ExportedSegment,
   SavedMemberView,
@@ -104,17 +113,24 @@ export class SegmentsImporter {
    * A segment the site already has is not added again, so a file can be imported twice: the
    * site has it when a segment has its filter under its name, or under its name with a number,
    * which is how an import stores a segment whose name was taken. A segment that can't be one,
-   * such as one with an empty name, is left out. A segment whose name is taken by a segment
+   * such as one with an empty name or a filter that isn't valid NQL, is left out and reported as
+   * a problem, and the import goes on. A segment whose name is taken by a segment
    * with another filter is added with a number, such as "VIP (2)", because nobody can be asked
    * for another name during an import. Every segment whose own name is free keeps it, so a
    * segment only gets a number when the site, or an earlier segment in the file, has its name.
+   *
+   * A segment keeps the slug it had on the site it was exported from when the segments service
+   * accepts it, and gets one the service mints from its name when the site has that slug or a
+   * filter can't name a segment by it, as a saved member view, which has no slug, does. A
+   * segment added earlier in the import can be minted the slug a later segment of the file had,
+   * and that later segment then gets a minted slug too.
    */
   async doImport({ transacting }: { transacting: Knex.Transaction }): Promise<void> {
     if (this.toImport.length === 0) {
       return;
     }
     const { service } = segments;
-    const stored = await service.browse(transacting);
+    const stored = await service.browse({}, transacting);
     const taken = new Set(stored.map(({ name }) => normalizeName(name)));
 
     // The names the site's segments have, by filter, and then those of the file's segments too.
@@ -148,8 +164,17 @@ export class SegmentsImporter {
       const filter = SegmentFilter.safeParse(segment.filter);
       if (!filter.success || !SegmentName.safeParse(numbered(segment.name, 1)).success) {
         this.skipped(segment, 'Segment was not imported because its name or filter is invalid.');
+      } else if (filterNamesSegment(filter.data)) {
+        // A segment's filter can't name another segment, and the segment ids in an import don't
+        // match the site's segments anyway
+        this.skipped(segment, 'Segment was not imported because its filter names another segment.');
       } else if (isHeld(segment.name, filter.data)) {
         this.skipped(segment, 'Segment was not imported because the site already has it.');
+      } else if (!isParseableFilter(filter.data)) {
+        // After `isHeld`, as a stored segment can have a filter that isn't valid NQL. Before
+        // names are numbered, as the service would reject it, so a segment that is left out
+        // takes no name from one that is added.
+        this.skipped(segment, 'Segment was not imported because its filter is not valid NQL.');
       } else {
         hold(numbered(segment.name, 1), filter.data);
         wanted.push({ segment, filter: filter.data });
@@ -174,7 +199,7 @@ export class SegmentsImporter {
       entry.number ??= take(entry.segment.name, 2);
     }
 
-    // Each rejected name leads to one the service has free, and the database can only count
+    // Each rejected name leads to one `take` counts as free, and the database can only count
     // it as taken by a segment that is stored, so one more try than there are segments is enough.
     const tries = stored.length + wanted.length + 1;
     for (const { segment, filter, number } of wanted) {
@@ -183,9 +208,9 @@ export class SegmentsImporter {
   }
 
   /**
-   * Adds `segment` under its name with `names.number`. The service compares names as `take`
-   * does, but the database can count a name as another segment's where that comparison
-   * doesn't, as MySQL's default collation does for "Cafe" and "Café". The segment is then tried
+   * Adds `segment` under its name with `names.number`. The database decides whether the name is
+   * taken, and can count a name as another segment's where `take`'s comparison doesn't, as
+   * MySQL's default collation does for "Cafe" and "Café". The segment is then tried
    * with the next free number, up to `names.tries` times. A rejected add has written nothing, so
    * the import goes on.
    */
@@ -196,21 +221,45 @@ export class SegmentsImporter {
     transacting: Knex.Transaction,
   ): Promise<void> {
     let { number } = names;
+    const slug = SegmentSlug.safeParse(segment.slug).data;
     for (let tried = 0; tried < names.tries; tried += 1) {
       const name = SegmentName.parse(numbered(segment.name, number));
       try {
-        const added = await segments.service.add({ actor: null }, { name, filter }, transacting);
+        const added = await this.addUnder(name, filter, slug, transacting);
         this.importedData.push(added);
         this.importedDataToReturn.push(added);
         return;
       } catch (err) {
-        if (!isNameTakenError(err)) {
+        if (!(err instanceof NameTakenError)) {
           throw err;
         }
         number = names.take(segment.name, number + 1);
       }
     }
     this.skipped(segment, 'Segment was not imported because no name was free for it.');
+  }
+
+  /**
+   * Adds a segment under `name`, with `slug`, the slug it had in the file when that is in a
+   * slug's format. When the service rejects that slug, because the site has it or a filter can't
+   * name a segment by it, the segment is added again without one, for the service to mint.
+   */
+  private async addUnder(
+    name: SegmentName,
+    filter: SegmentFilter,
+    slug: SegmentSlug | undefined,
+    transacting: Knex.Transaction,
+  ): Promise<Segment> {
+    if (slug !== undefined) {
+      try {
+        return await segments.service.add({ actor: null }, { name, filter, slug }, transacting);
+      } catch (err) {
+        if (!(err instanceof SlugRejectedError)) {
+          throw err;
+        }
+      }
+    }
+    return segments.service.add({ actor: null }, { name, filter }, transacting);
   }
 
   private skipped(segment: ExportedSegment, message: string): void {

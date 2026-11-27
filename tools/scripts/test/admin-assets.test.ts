@@ -47,22 +47,22 @@ beforeEach(() => {
   write('koenig/koenig-lexical/dist/embed-renderer/index.html', 'isolated renderer');
   write('koenig/koenig-lexical/dist/embed-renderer/assets/renderer.js', 'isolated script');
   write(
-    'apps/admin/dist/index.html',
+    'clients/admin/dist/index.html',
     '<script type="module" src="https://cdn.example/assets/react.js"></script>',
   );
-  write('apps/admin/dist/assets/react.js', 'react');
-  write('apps/admin/dist/assets/react.css', 'react css');
-  write('apps/admin/dist/assets/fonts/inter.woff2', 'react font');
+  write('clients/admin/dist/assets/react.js', 'react');
+  write('clients/admin/dist/assets/react.css', 'react css');
+  write('clients/admin/dist/assets/fonts/inter.woff2', 'react font');
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 describe('Admin asset assembly', () => {
   it('copies the React build to Core and ships the isolated renderer separately', () => {
-    const html = read('apps/admin/dist/index.html');
+    const html = read('clients/admin/dist/index.html');
     assembleAdminAssets(root);
     const core = join(root, 'ghost/core/built/admin');
     assert.equal(read('ghost/core/built/admin/index.html'), html);
-    assert.deepEqual(inventory(join(root, 'apps/admin/dist')), inventory(core));
+    assert.deepEqual(inventory(join(root, 'clients/admin/dist')), inventory(core));
     assert.equal(read('ghost/core/built/admin/assets/react.js'), 'react');
     assert.equal(read('ghost/core/built/admin/assets/react.css'), 'react css');
     assert.equal(read('ghost/core/built/admin/assets/fonts/inter.woff2'), 'react font');
@@ -93,7 +93,7 @@ describe('Admin asset assembly', () => {
   });
 
   for (const required of [
-    'apps/admin/dist/index.html',
+    'clients/admin/dist/index.html',
     'koenig/koenig-lexical/dist/embed-renderer',
   ]) {
     it(`preserves previous output when ${required} is missing`, () => {
@@ -110,7 +110,7 @@ describe('Admin asset assembly', () => {
     write('ghost/core/built/admin/index.html', 'previous build');
     cpSync(
       join(root, 'koenig/koenig-lexical/dist/embed-renderer'),
-      join(root, 'apps/admin/dist/assets/koenig-lexical/embed-renderer'),
+      join(root, 'clients/admin/dist/assets/koenig-lexical/embed-renderer'),
       { recursive: true },
     );
     assert.throws(() => assembleAdminAssets(root), /must not be served with Admin assets/);
@@ -124,7 +124,7 @@ describe('Admin asset assembly', () => {
     } finally {
       process.umask(previous);
     }
-    for (const directory of ['apps/admin/dist', 'ghost/core/built/admin']) {
+    for (const directory of ['clients/admin/dist', 'ghost/core/built/admin']) {
       assert.equal(statSync(join(root, directory)).mode & 0o777, 0o755);
       assert.equal(statSync(join(root, directory, 'assets/react.js')).mode & 0o777, 0o644);
     }

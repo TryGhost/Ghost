@@ -1,6 +1,6 @@
 /**
  * Posts/pages list selector strings, consumed by the admin screen helpers and
- * the e2e page objects. Source of truth: apps/admin/src/posts/list.
+ * the e2e page objects. Source of truth: clients/admin/src/posts/list.
  */
 
 // testids

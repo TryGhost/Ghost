@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import type { Knex } from 'knex';
 import { DbDate } from '../../lib/db-types/date';
+import type { SchemaTable } from '../../lib/db-types/tables';
 
 export const CONFIG_TABLE = 'stripe_checkout_config';
 
@@ -16,8 +16,6 @@ export const DbStripeCheckoutConfig = z.object({
   updated_at: DbDate.nullable(),
 });
 
-type StripeCheckoutConfigRow = z.infer<typeof DbStripeCheckoutConfig>;
-
 /** The columns holding the parts of the config that are Stripe's own, each JSON or null. */
 export const DbConfigParts = DbStripeCheckoutConfig.pick({
   design: true,
@@ -26,11 +24,6 @@ export type DbConfigParts = z.infer<typeof DbConfigParts>;
 
 declare module 'knex/types/tables' {
   interface Tables {
-    stripe_checkout_config: Knex.CompositeTableType<
-      StripeCheckoutConfigRow,
-      Omit<z.input<typeof DbStripeCheckoutConfig>, keyof DbConfigParts> &
-        Partial<z.input<typeof DbConfigParts>>,
-      Partial<z.input<typeof DbStripeCheckoutConfig>>
-    >;
+    stripe_checkout_config: SchemaTable<'stripe_checkout_config'>;
   }
 }

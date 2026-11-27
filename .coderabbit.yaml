@@ -19,7 +19,7 @@ reviews:
       - dependabot[bot]
   path_filters:
     - '!**/dist/**'
-    - '!apps/**/build/**'
+    - '!clients/**/build/**'
     - '!ghost/**/build/**'
     - '!koenig/**/build/**'
     - '!packages/**/build/**'
@@ -165,7 +165,7 @@ reviews:
         copied runtime assets, ESM/NodeNext compatibility, and consumer-facing release
         impact. Respect ghostPackage migration/exempt metadata and public/browser/test-
         only exceptions. Do not repeat fields enforced by lint:packages or changeset CI.
-    - path: 'apps/{admin,activitypub,admin-x-framework,shade}/**/*.{ts,tsx}'
+    - path: 'clients/{admin,activitypub,admin-x-framework,shade}/**/*.{ts,tsx}'
       instructions: |
         Review Admin UI for existing Shade reuse, correct component layer, semantic
         tokens, and accessible interaction states. New UI that depends on backend
@@ -173,7 +173,7 @@ reviews:
         the not-yet-deployed backend case. Admin UI copy is not translated, so do not ask
         for translations. Do not apply these rules to independent public UMD apps. Do not
         repeat ESLint/Tailwind findings.
-    - path: 'apps/{portal,comments-ui,signup-form,sodo-search,announcement-bar}/**/*.{js,jsx,ts,tsx}'
+    - path: 'clients/{portal,comments-ui,signup-form,sodo-search,announcement-bar}/**/*.{js,jsx,ts,tsx}'
       instructions: |
         These are independent public UMD/CDN surfaces, not embedded Shade apps. Review
         backwards-compatible browser behaviour, bundle/runtime assumptions, accessible
@@ -254,13 +254,13 @@ knowledge_base:
       - files: 'docs/practices/database-migrations.md'
         applyTo: 'ghost/core/server/data/migrations/**,ghost/core/server/data/schema/**'
       - files: 'docs/practices/error-handling.md'
-        applyTo: 'ghost/core/server/**,apps/**/*.{js,jsx,ts,tsx}'
+        applyTo: 'ghost/core/server/**,clients/**/*.{js,jsx,ts,tsx}'
       - files: 'docs/practices/internationalization.md'
-        applyTo: 'apps/**/*.{js,jsx,ts,tsx},packages/i18n/**'
+        applyTo: 'clients/**/*.{js,jsx,ts,tsx},packages/i18n/**'
       - files: 'docs/contributing/testing.md'
         applyTo: '**/{test,tests}/**,**/*{.,-}{test,spec}.{js,jsx,ts,tsx}'
       - files: 'docs/codebase/monorepo-structure.md'
-        applyTo: 'package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,contracts/**,ghost/**,koenig/**'
+        applyTo: 'package.json,pnpm-workspace.yaml,nx.json,clients/**,packages/**,contracts/**,ghost/**,koenig/**'
       - files: 'docs/codebase/configuration.md'
         applyTo: 'ghost/core/shared/config/**,ghost/config*.json*'
       - files: 'docs/codebase/internal-caching.md'
@@ -273,7 +273,7 @@ knowledge_base:
         applyTo: 'packages/**,contracts/**'
       - files: 'contracts/README.md'
         applyTo: 'contracts/**'
-      - files: 'apps/shade/AGENTS.md'
-        applyTo: 'apps/admin/**,apps/activitypub/**,apps/admin-x-framework/**,apps/shade/**'
+      - files: 'clients/shade/AGENTS.md'
+        applyTo: 'clients/admin/**,clients/activitypub/**,clients/admin-x-framework/**,clients/shade/**'
       - files: 'e2e/README.md,e2e/AGENTS.md'
         applyTo: 'e2e/**'

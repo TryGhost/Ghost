@@ -9,7 +9,7 @@ node_modules
 **/*.log
 
 # Workspace outputs; tools/scripts/build contains source.
-apps/**/build
+clients/**/build
 ghost/**/build
 koenig/**/build
 packages/**/build

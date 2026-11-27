@@ -43,7 +43,11 @@ type SessionRequest = Request & { user?: unknown; skipVerification?: boolean };
 
 type SessionMiddleware = (req: SessionRequest, res: Response, next: NextFunction) => unknown;
 
+// Its methods are single functions, which the pipeline runs with none of its stages, only the
+// refusal of apps on methods that check no standard permission
 const controller = {
+  docName: 'session',
+
   add(frame: SessionFrame): Promise<SessionMiddleware> {
     const object = frame.data;
 

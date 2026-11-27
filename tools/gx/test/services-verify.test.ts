@@ -117,7 +117,7 @@ test('only new JavaScript outside fixtures is rejected', () => {
       'ghost/core/server/services/mentions/post-urls.js',
       'ghost/core/server/services/mentions/post-urls.ts',
       'ghost/test/utils/fixtures/themes/casper/index.js',
-      'apps/admin/src/thing.js',
+      'clients/admin/src/thing.js',
     ]),
     ['ghost/core/server/services/mentions/post-urls.js'],
   );

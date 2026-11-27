@@ -4,6 +4,7 @@ import { AppManifestSchema, ManifestChangeSchema } from '@tryghost/app-contracts
 import { DbBoolean } from '../../lib/db-types/boolean';
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
+import type { RowUpdate, SchemaTable } from '../../lib/db-types/tables';
 
 // Mirrors schema.ts's `isIn` on the column, which stays static config and does not import this.
 export const AppInstallationStatus = z.enum(['active', 'suspended', 'uninstalled']);
@@ -53,34 +54,16 @@ export const DbAppInstallationManifest = z.object({
   created_at: DbDate,
 });
 
-type AppInstallationRow = z.infer<typeof DbAppInstallation>;
-type AppInstallationManifestRow = z.infer<typeof DbAppInstallationManifest>;
-
-// What an insert must name. `revision` and `pending_manifest_id` are DB-defaulted.
-type AppInstallationInsert = Omit<
-  z.input<typeof DbAppInstallation>,
-  'revision' | 'pending_manifest_id'
-> &
-  Partial<Pick<z.input<typeof DbAppInstallation>, 'revision' | 'pending_manifest_id'>>;
-
 // `revision` is only incremented in SQL (`revision + 1`), so two concurrent changes can't
 // write the same number.
-type AppInstallationUpdate = Partial<
-  Omit<z.input<typeof DbAppInstallation>, 'revision'> & { revision: Knex.Raw<number> }
->;
+type AppInstallationUpdate = Omit<RowUpdate<'app_installations'>, 'revision'> & {
+  revision?: Knex.Raw<number>;
+};
 
 declare module 'knex/types/tables' {
   interface Tables {
-    app_installations: Knex.CompositeTableType<
-      AppInstallationRow,
-      AppInstallationInsert,
-      AppInstallationUpdate
-    >;
+    app_installations: SchemaTable<'app_installations', { update: AppInstallationUpdate }>;
     // Append-only: a manifest row is never updated.
-    app_installation_manifests: Knex.CompositeTableType<
-      AppInstallationManifestRow,
-      z.input<typeof DbAppInstallationManifest>,
-      never
-    >;
+    app_installation_manifests: SchemaTable<'app_installation_manifests', { update: never }>;
   }
 }

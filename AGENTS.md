@@ -45,14 +45,14 @@ service.
 
 ## Task routing and important warnings
 
-- **Admin UI:** read [`apps/admin/README.md`](apps/admin/README.md) and
-  [`apps/shade/AGENTS.md`](apps/shade/AGENTS.md). Build new features in React,
+- **Admin UI:** read [`clients/admin/README.md`](clients/admin/README.md) and
+  [`clients/shade/AGENTS.md`](clients/shade/AGENTS.md). Build new features in React,
   use `admin-x-framework` for APIs, and use Shade for UI. Admin and Core deploy
   independently, so feature-detect backend support and test the older-backend
   case.
   - Shade docs: in this repo, `https://shade.ghost.org/docs/<page>.md` is the
-    source `apps/shade/src/docs/<page>.mdx`, and `docs/components/<path>.md`
-    is `apps/shade/src/components/<path>.mdx`. Read those files directly.
+    source `clients/shade/src/docs/<page>.mdx`, and `docs/components/<path>.md`
+    is `clients/shade/src/components/<path>.mdx`. Read those files directly.
 - **Embedded Admin CSS:** do not import `@tryghost/shade/styles.css` from an
   embedded app. Admin owns the single Tailwind and Shade CSS lane.
 - **Translations:** follow the

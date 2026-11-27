@@ -139,7 +139,7 @@
           "{workspaceRoot}/packages/**/*",
           "{workspaceRoot}/contracts/**/*",
           "{workspaceRoot}/koenig/**/*",
-          "{workspaceRoot}/apps/**/*",
+          "{workspaceRoot}/clients/**/*",
           "sharedGlobals"
         ],
         "outputs": [],

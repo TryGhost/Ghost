@@ -185,7 +185,7 @@ describe('Members import and export outcomes', function () {
       // made to have on its own.
       const { values } = metafieldsService;
       assert(values);
-      sinon.stub(values, 'getValuesForMembers').rejects(new Error('Lost the connection'));
+      sinon.stub(values, 'getValuesForMany').rejects(new Error('Lost the connection'));
       await exportCSV().catch(() => {});
 
       expect(await exported()).toMatchObject([

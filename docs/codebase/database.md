@@ -141,6 +141,45 @@ example `utf8mb4_general_ci`). Knex then creates every table with it, and Ghost
 no longer matches the referenced columns, so pick one that is compatible with
 the existing tables or leave it unset.
 
+## Typed queries
+
+A service that queries a table with Knex gives the table an entry in Knex's
+`Tables`, built from the table's definition in `schema.ts` with `SchemaTable`
+from [`server/lib/db-types/tables.ts`](../../ghost/core/server/lib/db-types/tables.ts):
+
+```ts
+declare module 'knex/types/tables' {
+  interface Tables {
+    gift_links: SchemaTable<'gift_links'>;
+  }
+}
+```
+
+`knex('gift_links')` then takes its columns from the schema. Don't restate a
+table's columns in a row type of your own: a column that is renamed or removed
+in `schema.ts` then fails to compile where a write names it.
+
+- A read returns `StoredRow<'gift_links'>`: every column as the database
+  returns it, before anything parses it. SQLite and MySQL return dates and
+  booleans differently, so read them through `DbDate` and `DbBoolean`. A column
+  that holds JSON is the JSON text. A column that lists its values with `isIn`
+  reads as any string, because the database doesn't check the list.
+- An insert takes `NewRow<'gift_links'>`: every column, where a column that can
+  be null or has a default may be left out. A column that lists its values
+  with `isIn` takes only those.
+- An update takes `RowUpdate<'gift_links'>`: any of the columns.
+
+A service that allows less than the table does says so in the entry, with
+types built from those three so the columns still come from the schema. A
+table whose rows are never updated is:
+
+```ts
+app_installation_manifests: SchemaTable<'app_installation_manifests', { update: never }>;
+```
+
+Only a table with an entry is typed. An entry applies to every query that
+names the table, in any file.
+
 ## Sortable collections
 
 A sortable collection is a table's rows kept in an order, such as a list a
@@ -187,14 +226,18 @@ same position, and the tie-break orders them. `reorder` takes the id of every
 row exactly once and rejects anything else, so an order made from an
 out-of-date list isn't half applied.
 
-The compiler enforces this for a table whose rows a domain declares in Knex's
-`Tables`. Declare the insert type as `SortableInsert<Row>`, and leave the
-position column out of the row, insert and update types:
+The compiler enforces this for a table with an entry in Knex's `Tables`, as
+[typed queries](#typed-queries) describes. Declare the insert type as
+`SortableInsert<Row>`, and leave the position column out of the row, insert
+and update types:
 
 ```ts
 declare module 'knex/types/tables' {
   interface Tables {
-    segments: Knex.CompositeTableType<SegmentRow, SortableInsert<NewSegmentRow>, SegmentUpdate>;
+    segments: SchemaTable<
+      'segments',
+      { row: SegmentRow; insert: SortableInsert<NewSegmentRow>; update: SegmentUpdate }
+    >;
   }
 }
 ```

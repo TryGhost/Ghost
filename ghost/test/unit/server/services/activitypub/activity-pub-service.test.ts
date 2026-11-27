@@ -296,6 +296,42 @@ describe('ActivityPubService', function () {
     await knexInstance.destroy();
   });
 
+  it('Keeps the stored webhooks when adding the new ones fails', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
+
+    const siteUrl = new URL('http://fake-site-url');
+    nock(siteUrl).get('/.ghost/activitypub/v1/site/').times(2).reply(200, {
+      webhook_secret: 'webhook_secret_baby!!',
+    });
+
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
+
+    await service.initialiseWebhooks();
+    await knexInstance('webhooks').update({ secret: 'old-secret' });
+    const webhooks = await knexInstance.select('*').from('webhooks');
+    await knexInstance.raw(
+      "CREATE TRIGGER fail_webhook_insert BEFORE INSERT ON webhooks BEGIN SELECT RAISE(ABORT, 'insert failed'); END",
+    );
+
+    await assert.rejects(service.initialiseWebhooks(), /insert failed/);
+
+    assert.deepEqual(await knexInstance.select('*').from('webhooks'), webhooks);
+
+    await knexInstance.destroy();
+  });
+
   it('Can handle missing integration without erroring', async function () {
     const knexInstance = await getKnexInstance();
     await addOwnerUser(knexInstance);

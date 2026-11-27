@@ -23,6 +23,10 @@ export function startContext(overrides: Partial<StartContext> = {}): StartContex
     theme: { mode: 'light', accent_color: '#ff5500' },
     session: { revision: 3 },
     path: '/',
+    layout: {
+      safeArea: { top: 0, right: 0, bottom: 57, left: 285 },
+      overlaySafeArea: { top: 44, right: 8, bottom: 65, left: 293 },
+    },
     ...overrides,
   };
 }
@@ -78,6 +82,8 @@ export function hostExports(): HostMocks {
     // Follows every move, as Admin does when the publisher isn't navigating elsewhere.
     pathChanged: vi.fn<HostExports['pathChanged']>(async (path) => normaliseAppPath(path)),
     open: vi.fn<HostExports['open']>(async () => {}),
+    overlayShown: vi.fn<HostExports['overlayShown']>(async () => {}),
+    overlayHidden: vi.fn<HostExports['overlayHidden']>(async () => {}),
   };
 }
 

@@ -1,6 +1,6 @@
 /**
  * Apps screen selector strings, consumed by the admin screen helpers and the
- * e2e page objects. Source of truth: apps/admin/src/apps.
+ * e2e page objects. Source of truth: clients/admin/src/apps.
  */
 
 // testids
@@ -27,6 +27,8 @@ export const appPage = 'app-page';
 export const appFrame = 'app-frame';
 export const appFooter = 'app-footer';
 export const appContent = 'app-content';
+export const appOverlayFrame = 'app-overlay-frame';
+export const appOverlayTint = 'app-overlay-tint';
 export const appNotResponding = 'app-not-responding';
 export const appUnavailable = 'app-unavailable';
 export const appNotInstalled = 'app-not-installed';

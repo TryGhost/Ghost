@@ -170,10 +170,12 @@ describe('App installations composition root', function () {
     assert.equal(result.manifest.id, manifest.id);
     assert.equal(browse.firstCall.thisValue, root.service);
     assert.equal(preview.firstCall.thisValue, root.service);
-    assert.deepEqual(await sessions.start.query({ options: { id: 'installation-id' } }), {
-      revision: 0,
-    });
-    sinon.assert.calledOnceWithExactly(startSession, 'installation-id');
+    const principal = { kind: 'anonymous' as const };
+    assert.deepEqual(
+      await sessions.start.query({ options: { id: 'installation-id', context: { principal } } }),
+      { revision: 0 },
+    );
+    sinon.assert.calledOnceWithExactly(startSession, 'installation-id', principal);
     assert.equal(startSession.firstCall.thisValue, root.service);
   });
 

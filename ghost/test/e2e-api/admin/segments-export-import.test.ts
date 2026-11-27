@@ -2,16 +2,24 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'fs-extra';
+import { assertTimeSince } from '../../utils/assertions';
 
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const { knex } = require('../../../core/server/data/db');
 
-type Segment = { id: string; name: string; filter: string };
+type Segment = {
+  id: string;
+  name: string;
+  slug: string;
+  filter: string;
+  created_at: string;
+  updated_at: string;
+};
 type Setting = { key: string; value: unknown };
 type ExportData = { segments?: unknown[]; settings: Setting[] };
 type Export = { db: [{ meta: { version: string }; data: ExportData }] };
 
-type Problem = { help: string };
+type Problem = { help: string; message: string; context: string };
 
 type ApiRequest = Promise<{
   body: { segments: Segment[]; settings: Setting[]; problems: Problem[] } & Export;
@@ -52,11 +60,19 @@ describe('Segments in a site export and import', function () {
 
   const names = async () => (await browse()).map(({ name }) => name);
 
-  async function add(name: string, filter: string) {
-    await agent
+  async function add(name: string, filter: string): Promise<Segment> {
+    const { body } = await agent
       .post('segments/')
       .body({ segments: [{ name, filter }] })
       .expectStatus(201);
+    return body.segments[0];
+  }
+
+  async function rename(id: string, name: string) {
+    await agent
+      .put(`segments/${id}/`)
+      .body({ segments: [{ name }] })
+      .expectStatus(200);
   }
 
   async function removeSegments() {
@@ -119,18 +135,20 @@ describe('Segments in a site export and import', function () {
   it('brings the segments of an exported site back, in their order', async function () {
     await saveSharedViews(JSON.stringify([postsView]));
     await add('Free', 'status:free');
-    await add('VIP', 'label:vip');
+    // A rename keeps the slug, so this segment's slug is no longer the one its name mints.
+    const vip = await add('VIP', 'label:vip');
+    await rename(vip.id, 'Very important');
     const exported = await exportSavedViews();
     await removeSegments();
 
     const problems = await importData(exported);
 
-    // An imported segment is a new segment, so its id is not compared.
+    // An imported segment is a new segment, so its id is not compared. It keeps its slug.
     assert.deepEqual(
-      (await browse()).map(({ name, filter }) => ({ name, filter })),
+      (await browse()).map(({ name, slug, filter }) => ({ name, slug, filter })),
       [
-        { name: 'Free', filter: 'status:free' },
-        { name: 'VIP', filter: 'label:vip' },
+        { name: 'Free', slug: 'free', filter: 'status:free' },
+        { name: 'Very important', slug: 'vip', filter: 'label:vip' },
       ],
     );
     assert.deepEqual(await postsViews(), [postsView]);
@@ -138,6 +156,33 @@ describe('Segments in a site export and import', function () {
       problems.filter(({ help }) => help === 'Segment'),
       [],
     );
+  });
+
+  it('adds each segment as new, created when it is imported and not edited since', async function () {
+    const vip = await add('VIP', 'label:vip');
+    await rename(vip.id, 'Very important');
+    // Earlier than the import can be, so the times in the file can be told from the import's.
+    await knex('segments').update({
+      created_at: '2020-01-01 00:00:00',
+      updated_at: '2021-01-01 00:00:00',
+    });
+    const exported = await exportSavedViews();
+    expect(exported.segments).toMatchObject([
+      {
+        name: 'Very important',
+        created_at: '2020-01-01T00:00:00.000Z',
+        updated_at: '2021-01-01T00:00:00.000Z',
+      },
+    ]);
+    await removeSegments();
+    const importing = new Date();
+
+    await importData(exported);
+
+    const [imported] = await browse();
+    assert.equal(imported.name, 'Very important');
+    assertTimeSince(imported.created_at, importing);
+    assert.equal(imported.updated_at, imported.created_at);
   });
 
   // A version from before segments had a table imports them from the setting alone.
@@ -162,14 +207,46 @@ describe('Segments in a site export and import', function () {
 
     await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
 
+    // A saved member view has no slug, so each gets one minted from its name.
     assert.deepEqual(
-      (await browse()).map(({ name, filter }) => ({ name, filter })),
+      (await browse()).map(({ name, slug, filter }) => ({ name, slug, filter })),
       [
-        { name: 'VIP', filter: 'label:vip' },
-        { name: 'Free', filter: 'status:free' },
+        { name: 'VIP', slug: 'vip', filter: 'label:vip' },
+        { name: 'Free', slug: 'free', filter: 'status:free' },
       ],
     );
     assert.deepEqual(await postsViews(), [postsView]);
+  });
+
+  it('keeps the slug a segment had, unless another segment has it or it is not a slug', async function () {
+    await add('Very important', 'label:vip');
+
+    await importData({
+      segments: [
+        { name: 'VIP', slug: 'customers', filter: 'label:vip', sort_order: 0 },
+        { name: 'Gold', slug: 'very-important', filter: 'label:gold', sort_order: 1 },
+        { name: 'Platinum', slug: 'customers', filter: 'label:platinum', sort_order: 2 },
+        { name: 'Silver', slug: 'Not a slug', filter: 'label:silver', sort_order: 3 },
+        { name: 'Bronze', slug: '2024', filter: 'label:bronze', sort_order: 4 },
+        { name: 'Copper', slug: null, filter: 'label:copper', sort_order: 5 },
+        { name: 'Free', filter: 'status:free', sort_order: 6 },
+      ],
+      settings: [],
+    });
+
+    assert.deepEqual(
+      (await browse()).map(({ name, slug }) => ({ name, slug })),
+      [
+        { name: 'Very important', slug: 'very-important' },
+        { name: 'VIP', slug: 'customers' },
+        { name: 'Gold', slug: 'gold' },
+        { name: 'Platinum', slug: 'platinum' },
+        { name: 'Silver', slug: 'silver' },
+        { name: 'Bronze', slug: 'bronze' },
+        { name: 'Copper', slug: 'copper' },
+        { name: 'Free', slug: 'free' },
+      ],
+    );
   });
 
   it('numbers a segment whose name the site has for another filter', async function () {
@@ -236,10 +313,12 @@ describe('Segments in a site export and import', function () {
   });
 
   it('brings segments back in their order, not the order they were added in', async function () {
-    await add('Free', 'status:free');
-    await add('VIP', 'label:vip');
-    // Nothing reorders segments yet, so the first one is moved to the end in the table.
-    await knex('segments').where({ name: 'Free' }).update({ sort_order: 5 });
+    const free = await add('Free', 'status:free');
+    const vip = await add('VIP', 'label:vip');
+    await agent
+      .put('segments/')
+      .body({ segments: [{ id: vip.id }, { id: free.id }] })
+      .expectStatus(200);
     const exported = await exportSavedViews();
     await removeSegments();
 
@@ -261,7 +340,7 @@ describe('Segments in a site export and import', function () {
   });
 
   it('numbers a name the database counts as another segment’s', async function () {
-    // The site and the file have names that differ by an accent, which the segments service
+    // The site and the file have names that differ by an accent, which the import's numbering
     // tells apart and MySQL's default collation doesn't. The file's numbered names are its own.
     await add('Café', 'label:accent');
     const views = [
@@ -290,6 +369,75 @@ describe('Segments in a site export and import', function () {
     await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
 
     assert.equal(await sharedViews(), JSON.stringify([postsView]));
+  });
+
+  it('skips a segment whose filter names another segment and imports the rest', async function () {
+    const problems = await importData({
+      segments: [
+        { name: 'Free', filter: 'status:free', sort_order: 0 },
+        { name: 'Nested', filter: 'segment:0123456789abcdef01234567', sort_order: 1 },
+      ],
+      settings: [],
+    });
+
+    assert.deepEqual(await names(), ['Free']);
+    assert.match(
+      problems.find(({ help }) => help === 'Segment')?.message ?? '',
+      /names another segment/,
+    );
+  });
+
+  it('skips a segment whose filter is not valid NQL, and imports the rest under their own names', async function () {
+    const problems = await importData({
+      segments: [
+        { name: 'VIP', filter: 'label:vip+', sort_order: 0 },
+        { name: 'VIP', filter: 'label:vip', sort_order: 1 },
+        { name: 'Free', filter: 'status:free', sort_order: 2 },
+      ],
+      settings: [],
+    });
+
+    // The skipped segment doesn't take its name, so the next segment with it isn't numbered.
+    assert.deepEqual(
+      (await browse()).map(({ name, filter }) => ({ name, filter })),
+      [
+        { name: 'VIP', filter: 'label:vip' },
+        { name: 'Free', filter: 'status:free' },
+      ],
+    );
+    assert.deepEqual(
+      problems
+        .filter(({ help }) => help === 'Segment')
+        .map(({ message, context }) => ({ message, segment: JSON.parse(context) })),
+      [
+        {
+          message: 'Segment was not imported because its filter is not valid NQL.',
+          segment: { name: 'VIP', filter: 'label:vip+' },
+        },
+      ],
+    );
+  });
+
+  it('reports a segment the site has as had, even when its filter is not valid NQL', async function () {
+    // As a version that didn't check a filter's syntax could have saved it
+    await knex('segments').insert({
+      id: '0123456789abcdef01234567',
+      name: 'Legacy',
+      slug: 'legacy',
+      filter: 'status:paid+',
+      sort_order: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    const exported = await exportSavedViews();
+
+    const problems = await importData(exported);
+
+    assert.deepEqual(await names(), ['Legacy']);
+    assert.deepEqual(
+      problems.filter(({ help }) => help === 'Segment').map(({ message }) => message),
+      ['Segment was not imported because the site already has it.'],
+    );
   });
 
   it('cuts a name that is too long and leaves out a view that cannot be a segment', async function () {

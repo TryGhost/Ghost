@@ -70,15 +70,48 @@ for (const [status, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
 const getMemberStatus = (slug: unknown): undefined | MemberStatus =>
   typeof slug === 'string' ? slugToMemberStatus.get(slug) : undefined;
 
+// The read that finds due runs joins other tables, and locking it would lock
+// their rows too. This locks the runs alone, in id order. Only a locking read
+// sees what another poll committed while this one waited, so it checks again
+// that each run is still due.
+async function lockRuns(
+  trx: Knex.Transaction,
+  dueRuns: Run[],
+  now: Readonly<Date>,
+  lockCutoff: Readonly<Date>,
+): Promise<Run[]> {
+  if (dueRuns.length === 0) {
+    return [];
+  }
+
+  const lockedRuns: ReadonlyArray<{ id: string }> = await trx('welcome_email_automation_runs')
+    .select('id')
+    .whereIn(
+      'id',
+      dueRuns.map((run) => run.id),
+    )
+    .whereNotNull('next_welcome_email_automated_email_id')
+    .where('ready_at', '<=', now)
+    .where((builder) => {
+      builder.whereNull('step_started_at').orWhere('step_started_at', '<', lockCutoff);
+    })
+    .orderBy('id')
+    .forUpdate();
+  const lockedIds = new Set(lockedRuns.map((run) => run.id));
+
+  return dueRuns.filter((run) => lockedIds.has(run.id));
+}
+
 async function fetchAndLockRuns(): Promise<{
   runs: Run[];
   nextFutureReadyAt: null | Date;
+  isBatchFull: boolean;
 }> {
   const now = new Date();
   const lockCutoff = new Date(now.getTime() - LOCK_TIMEOUT);
 
   return await db.knex.transaction(async (trx: Knex.Transaction) => {
-    const runs = await trx<Run>('welcome_email_automation_runs as r')
+    const dueRuns = await trx<Run>('welcome_email_automation_runs as r')
       .join('automations as a', 'r.welcome_email_automation_id', 'a.id')
       .join(
         'welcome_email_automated_emails as e',
@@ -101,6 +134,10 @@ async function fetchAndLockRuns(): Promise<{
       )
       .limit(MAX_RUNS_PER_BATCH);
 
+    // Counted before locking, as another poll may take some of these runs.
+    const isBatchFull = dueRuns.length >= MAX_RUNS_PER_BATCH;
+    const runs = await lockRuns(trx, dueRuns, now, lockCutoff);
+
     if (runs.length === 0) {
       const result = await trx('welcome_email_automation_runs')
         .whereNotNull('next_welcome_email_automated_email_id')
@@ -108,7 +145,7 @@ async function fetchAndLockRuns(): Promise<{
         .select(db.knex.raw('MIN(ready_at) as next_ready_at'))
         .first<{ next_ready_at: Date | null | string }>();
       const nextFutureReadyAt = result?.next_ready_at ? new Date(result.next_ready_at) : null;
-      return { runs, nextFutureReadyAt };
+      return { runs, nextFutureReadyAt, isBatchFull };
     }
 
     const ids: string[] = [];
@@ -126,7 +163,7 @@ async function fetchAndLockRuns(): Promise<{
         updated_at: now,
       });
 
-    return { runs, nextFutureReadyAt: null };
+    return { runs, nextFutureReadyAt: null, isBatchFull };
   });
 }
 
@@ -292,10 +329,12 @@ async function processRun({
  */
 export async function welcomeEmailAutomationPoll(options: PollOptions): Promise<void> {
   const { memberWelcomeEmailService, enqueueAnotherPollAt } = options;
-  const { runs, nextFutureReadyAt } = await fetchAndLockRuns();
+  const { runs, nextFutureReadyAt, isBatchFull } = await fetchAndLockRuns();
 
   if (runs.length === 0) {
-    if (nextFutureReadyAt) {
+    if (isBatchFull) {
+      enqueueAnotherPollAt(new Date());
+    } else if (nextFutureReadyAt) {
       enqueueAnotherPollAt(nextFutureReadyAt);
     }
     return;
@@ -307,7 +346,7 @@ export async function welcomeEmailAutomationPoll(options: PollOptions): Promise<
 
   // If the batch is full, we might have another batch to execute. (There's
   // no way to know without trying.)
-  if (runs.length >= MAX_RUNS_PER_BATCH) {
+  if (isBatchFull) {
     enqueueAnotherPollAt(new Date());
   }
 }

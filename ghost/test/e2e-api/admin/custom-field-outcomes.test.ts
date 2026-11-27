@@ -357,10 +357,9 @@ describe('Custom field outcomes', function () {
       const id = await memberId('member1@test.com');
       const { values } = metafields;
       assert(values);
-      const planned = await values.planWrite(
-        values.unwrapWire({ custom: { [nickname]: 'Bex' } }),
-        metafields.ADMIN,
-      );
+      const planned = await values.planWrite(values.unwrapWire({ custom: { [nickname]: 'Bex' } }), {
+        kind: 'staff',
+      });
 
       await assert.rejects(
         models.Base.knex.transaction(async (transacting: Knex.Transaction) => {

@@ -1,5 +1,6 @@
 import type { FetchRequest } from './fetch.ts';
-import type { FetchResponse, PathMove, Place, StartContext, Theme } from './rules.ts';
+import type { OverlayOptions } from './overlay.ts';
+import type { FetchResponse, Layout, PathMove, Place, StartContext, Theme } from './rules.ts';
 
 /**
  * The calls each side of the channel exposes to the other. Every call returns a promise,
@@ -37,6 +38,13 @@ export interface HostExports {
   pathChanged(path: string, move: PathMove): Promise<string>;
   /** Sends the publisher to a named place in Admin. */
   open(place: Place): Promise<void>;
+  /**
+   * Shows the overlay frame over Admin with this tint, or changes the tint of the one shown.
+   * Refused as `rejected` unless the app is started.
+   */
+  overlayShown(options: OverlayOptions): Promise<void>;
+  /** Hides the overlay frame and the tint. */
+  overlayHidden(): Promise<void>;
 }
 
 /** What an app's page exposes to Admin, through the SDK. */
@@ -49,4 +57,11 @@ export interface AppExports {
    * of Admin's own links. The page follows without adding a history entry.
    */
   pathChanged(path: string): Promise<void>;
+  /** Admin laid out the page's frame differently, such as when its navigation pins or unpins. */
+  layoutChanged(layout: Layout): Promise<void>;
+  /**
+   * The publisher pressed Admin's tint. The page treats it as a press outside its topmost dialog
+   * or sheet.
+   */
+  overlayDismissed(): Promise<void>;
 }

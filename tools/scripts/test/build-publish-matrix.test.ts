@@ -27,7 +27,7 @@ describe('buildMatrix', () => {
     const matrix = buildMatrix(['@tryghost/portal', 'ghost']);
     assert.strictEqual(matrix.length, 1);
     assert.strictEqual(matrix[0]?.package_name, '@tryghost/portal');
-    assert.strictEqual(matrix[0]?.package_path, 'apps/portal');
+    assert.strictEqual(matrix[0]?.package_path, 'clients/portal');
   });
 
   it('preserves manifest order regardless of affected order', () => {
@@ -77,7 +77,7 @@ describe('buildMatrix', () => {
 
 describe('cdnAlias', () => {
   const pkg = normalizeManifest([
-    { name: '@tryghost/x', path: 'apps/x', versioning: 'patch', cdn: 'x' },
+    { name: '@tryghost/x', path: 'clients/x', versioning: 'patch', cdn: 'x' },
   ])[0]!;
 
   it("puts the line defaults.json pins into the package's URLs", () => {
@@ -141,7 +141,7 @@ describe('publish-manifest.json <-> defaults.json contract', () => {
 describe('normalizeManifest', () => {
   const portal = {
     name: '@tryghost/portal',
-    path: 'apps/portal',
+    path: 'clients/portal',
     versioning: 'patch',
     cdn: 'portal',
   };
@@ -151,7 +151,7 @@ describe('normalizeManifest', () => {
   });
 
   it('requires a prerelease package to name its dist-tag', () => {
-    const shade = { name: '@tryghost/shade', path: 'apps/shade', versioning: 'prerelease' };
+    const shade = { name: '@tryghost/shade', path: 'clients/shade', versioning: 'prerelease' };
     assert.throws(() => normalizeManifest([shade]), /must name a distTag/);
     assert.deepStrictEqual(normalizeManifest([{ ...shade, distTag: 'alpha' }]), [
       { ...shade, distTag: 'alpha' },
@@ -159,7 +159,7 @@ describe('normalizeManifest', () => {
   });
 
   it('lets a prerelease package opt into latest by naming it', () => {
-    const shade = { name: '@tryghost/shade', path: 'apps/shade', versioning: 'prerelease' };
+    const shade = { name: '@tryghost/shade', path: 'clients/shade', versioning: 'prerelease' };
     assert.deepStrictEqual(normalizeManifest([{ ...shade, distTag: 'latest' }]), [
       { ...shade, distTag: 'latest' },
     ]);
@@ -186,6 +186,6 @@ describe('normalizeManifest', () => {
 
   it('rejects anything that is not an array of entries', () => {
     assert.throws(() => normalizeManifest({ name: 'x' }), /expected array/);
-    assert.throws(() => normalizeManifest([{ path: 'apps/x', versioning: 'patch' }]), /name/);
+    assert.throws(() => normalizeManifest([{ path: 'clients/x', versioning: 'patch' }]), /name/);
   });
 });
