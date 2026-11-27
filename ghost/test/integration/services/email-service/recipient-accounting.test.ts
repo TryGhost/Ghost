@@ -794,10 +794,13 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   });
 
   it('creates no batch for an all-excluded preparation page', async function () {
-    const original = models.Member.getFilteredCollectionQuery.bind(models.Member);
-    sinon
-      .stub(models.Member, 'getFilteredCollectionQuery')
-      .callsFake((...args) => original(...args).where('id', '000000000000000000000004'));
+    const resolveFilter = models.Member.resolveFilter.bind(models.Member);
+    sinon.stub(models.Member, 'resolveFilter').callsFake(async (options) => {
+      const filter = await resolveFilter(options);
+      const query = filter.query.bind(filter);
+      filter.query = () => query().where('id', '000000000000000000000004');
+      return filter;
+    });
     const memberId = '000000000000000000000004';
     await corruptMember(memberId, { uuid: '' });
     assert.deepEqual(await service.createBatches(data), []);
@@ -1056,9 +1059,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         batches.reduce((sum, batch) => sum + batch.get('recipient_count'), 0),
         3,
       );
-      const audience = sinon
-        .stub(models.Member, 'getFilteredCollectionQuery')
-        .throws(new Error('Frozen'));
+      const audience = sinon.stub(models.Member, 'resolveFilter').rejects(new Error('Frozen'));
       assert.deepEqual(
         (await service.createBatches(data)).map((batch) => batch.id),
         batches.map((batch) => batch.id),
@@ -1076,8 +1077,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         .where({ email_id: email.id })
         .orderBy('id');
       const audience = sinon
-        .stub(models.Member, 'getFilteredCollectionQuery')
-        .throws(new Error('Already started'));
+        .stub(models.Member, 'resolveFilter')
+        .rejects(new Error('Already started'));
       const batches = await service.createBatches(data);
       assert.equal(batches.length, 2);
       assert.deepEqual(
@@ -1745,8 +1746,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       .where({ email_id: email.id })
       .orderBy('id');
     const audience = sinon
-      .stub(models.Member, 'getFilteredCollectionQuery')
-      .throws(new Error('Audience must stay frozen'));
+      .stub(models.Member, 'resolveFilter')
+      .rejects(new Error('Audience must stay frozen'));
     const retried = await service.createBatches(data);
     assert.deepEqual(retried.map((b) => b.id).sort(), prepared.map((b) => b.id).sort());
     assert.deepEqual(

@@ -9,6 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  rowSurfaceClasses,
 } from '@tryghost/shade/components';
 import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
@@ -390,10 +391,10 @@ export function MappingStep({
               )}
             >
               <div className="min-h-0 flex-1 overflow-auto">
-                <Table className="table-fixed">
+                <Table className="table-fixed [&_tr>td:first-child]:pl-4 [&_tr>td:last-child]:pr-2.5 [&_tr>th:first-child]:pl-2 [&_tr>th:last-child]:pr-2">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10">
+                    <TableRow className={rowSurfaceClasses.inset}>
+                      <TableHead className="w-9">
                         <span className="sr-only">Import this column</span>
                       </TableHead>
                       <TableHead className="w-[26%]">Field</TableHead>
@@ -433,7 +434,7 @@ export function MappingStep({
                           </div>
                         </div>
                       </TableHead>
-                      <TableHead className="w-[38%]">Import as</TableHead>
+                      <TableHead>Import as</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -454,6 +455,7 @@ export function MappingStep({
                         <TableRow
                           key={row.key}
                           className={cn(
+                            rowSurfaceClasses.inset,
                             '[&>td]:group-hover:bg-transparent',
                             !isImported(row) && 'bg-muted/50',
                           )}
@@ -524,7 +526,7 @@ export function MappingStep({
                         </TableRow>
                       ))
                     ) : (
-                      <TableRow>
+                      <TableRow className={rowSurfaceClasses.inset}>
                         <TableCell className="text-muted-foreground" colSpan={columnCount}>
                           No data found in the uploaded CSV.
                         </TableCell>

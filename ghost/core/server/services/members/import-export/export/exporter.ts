@@ -29,7 +29,7 @@ export interface MetafieldsService {
 
 // The members aggregate applies the same filter and search rules as Admin browse.
 export interface MembersRepository {
-  canReadFilteredBatches(options: ExportOptions): boolean;
+  canReadFilteredBatches(options: ExportOptions): Promise<boolean>;
   findFilteredIds(options: ExportOptions): Promise<string[]>;
   openFilteredBatchReader(
     options: ExportOptions,
@@ -161,7 +161,7 @@ export default class MembersCSVExporter {
 
   async export(options: ExportOptions = {}): Promise<Readable> {
     const filtered = Boolean(options.filter || options.search);
-    const batched = filtered && this._members.canReadFilteredBatches(options);
+    const batched = filtered && (await this._members.canReadFilteredBatches(options));
     if (!batched) {
       return this.startExport(options, filtered, false);
     }

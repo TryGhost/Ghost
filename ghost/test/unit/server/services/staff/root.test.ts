@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { DonationCheckout } from '../../../../../core/server/services/stripe/webhook/webhook-event';
 
 const DomainEvents = require('@tryghost/domain-events');
 const handlebars = require('handlebars');
@@ -263,8 +264,41 @@ describe('Staff service root', function () {
 
     it('gives Stripe donation checkout the staff emails read at each access', async function () {
       const stripe = require('../../../../../core/server/services/stripe');
+      const donations = require('../../../../../core/server/services/donations').default;
+      // Stripe saves each donation before it tells the site's staff about it.
+      sandbox.stub(donations, 'service').get(() => ({ save: async () => undefined }));
+      const donation: DonationCheckout = {
+        amount: 1000,
+        currency: 'usd',
+        customerId: null,
+        donor: { name: 'A reader', email: 'reader@example.com' },
+        message: null,
+        attribution: {
+          attributionId: null,
+          attributionUrl: null,
+          attributionType: null,
+          referrerSource: null,
+          referrerMedium: null,
+          referrerUrl: null,
+          utmSource: null,
+          utmMedium: null,
+          utmCampaign: null,
+          utmTerm: null,
+          utmContent: null,
+        },
+      };
+      const recordDonation = () => stripe.webhookCommands.donation_checkout(donation);
 
-      await assertReadOnEachAccess(stripe.checkoutSessionEventService.deps);
+      await assert.rejects(recordDonation(), BEFORE_INIT);
+
+      await staff.init();
+      await recordDonation();
+      sinon.assert.calledOnce(send);
+
+      const replacement = { notifyDonationReceived: sandbox.stub().resolves() };
+      sandbox.stub(staff, 'service').get(() => ({ emails: replacement }));
+      await recordDonation();
+      sinon.assert.calledOnce(replacement.notifyDonationReceived);
     });
 
     it('gives Gifts the staff emails read at each access', async function () {

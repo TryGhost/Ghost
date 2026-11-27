@@ -11,6 +11,7 @@ describe('PostEmailHandler', function () {
     mockModels = {
       Post: {
         findOne: sinon.stub(),
+        rejectSegmentRecipients: sinon.stub(),
       },
       Member: {
         findPage: sinon.stub(),

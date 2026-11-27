@@ -111,7 +111,10 @@ function NavMenuCollapsibleMenu({ children }: NavMenuCollapsibleMenuProps) {
   );
 }
 
-/** Keeps the rows in place so the grid can close around their full height. */
+/**
+ * Keeps the rows in place so the grid can close around their full height.
+ * Settings' grouped navigation shares it, so its groups open the same way.
+ */
 function AnimatedNavMenuCollapsibleMenu({
   children,
   expanded,
@@ -307,4 +310,11 @@ NavMenuItem.Collapsible = NavMenuCollapsible;
 NavMenuItem.CollapsibleItem = NavMenuCollapsibleItem;
 NavMenuItem.CollapsibleMenu = NavMenuCollapsibleMenu;
 
-export { NavMenuItem, NavMenuLink, NavMenuLabel, NavSubmenuItem, NavMenuButton };
+export {
+  AnimatedNavMenuCollapsibleMenu,
+  NavMenuItem,
+  NavMenuLink,
+  NavMenuLabel,
+  NavSubmenuItem,
+  NavMenuButton,
+};

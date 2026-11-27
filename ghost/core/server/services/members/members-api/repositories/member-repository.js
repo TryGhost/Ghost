@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
-const { ADMIN } = require('../../../members-metafields');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
@@ -26,8 +25,27 @@ const {
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const { truncateCharacters } = require('../../../../lib/truncate-characters');
 const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
+const {
+  cancellationDates,
+  changedPayingEvent,
+  couponOffer,
+  firstLinkEventDate,
+  givesAccess,
+  hasActiveTrial,
+  isActiveStatus,
+  isComplimentaryNickname,
+  isIncomplete,
+  isReplacedByMigration,
+  memberStatusFrom,
+  startAttribution,
+  startedPayingEvent,
+  subscriptionRow,
+  tierFilter,
+  tierPrice,
+} = require('./linked-subscription');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
 
@@ -92,9 +110,7 @@ function attributionColumns(table, attribution) {
   const columns = schema.tables[table];
   /** @param {'attribution_url' | 'referrer_source' | 'referrer_medium' | 'referrer_url' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content'} column */
   const fitted = (column, /** @type {string | null | undefined} */ value) =>
-    // By character rather than UTF-16 unit, as the column counts them, so an emoji
-    // is never split in half.
-    value ? Array.from(value).slice(0, columns[column].maxlength).join('') : null;
+    value ? truncateCharacters(value, columns[column].maxlength) : null;
 
   return {
     attribution_id: attribution?.id ?? null,
@@ -158,7 +174,7 @@ module.exports = class MemberRepository {
    * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
    * @param {any} deps.productRepository
    * @param {any} deps.offersAPI
-   * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues
+   * @param {import('../../../members-metafields').MemberMetafieldValues} deps.metafieldValues
    * @param {ITokenService} deps.tokenService
    * @param {any} deps.newslettersService
    * @param {Pick<automationsApi, 'notify'>} deps.automationsApi
@@ -320,15 +336,11 @@ module.exports = class MemberRepository {
   }
 
   isActiveSubscriptionStatus(status) {
-    return ['active', 'trialing', 'unpaid', 'past_due'].includes(status);
-  }
-
-  isComplimentarySubscription(subscription) {
-    return this.isComplimentaryPlanNickname(subscription.plan?.nickname);
+    return isActiveStatus(status);
   }
 
   isComplimentaryPlanNickname(nickname) {
-    return nickname && nickname.toLowerCase() === 'complimentary';
+    return isComplimentaryNickname(nickname);
   }
 
   /**
@@ -464,59 +476,6 @@ module.exports = class MemberRepository {
       return 'admin';
     } else {
       return 'member';
-    }
-  }
-
-  getMRR({ interval, amount, status = null, canceled = false, discount = null }) {
-    if (status === 'trialing') {
-      return 0;
-    }
-    if (status === 'incomplete') {
-      return 0;
-    }
-    if (status === 'incomplete_expired') {
-      return 0;
-    }
-    if (status === 'canceled') {
-      return 0;
-    }
-
-    if (canceled) {
-      return 0;
-    }
-
-    let amountWithDiscount = amount;
-
-    if (
-      discount &&
-      discount.end === null &&
-      discount.coupon &&
-      discount.coupon.duration === 'forever'
-    ) {
-      // Discounts should only get applied when they are 'forever' discounts / they don't have an end date
-      if (discount.coupon.amount_off !== null) {
-        amountWithDiscount = Math.max(0, amountWithDiscount - discount.coupon.amount_off);
-      } else {
-        amountWithDiscount = Math.round(
-          (amountWithDiscount * (100 - discount.coupon.percent_off)) / 100,
-        );
-      }
-    }
-
-    if (interval === 'year') {
-      return Math.floor(amountWithDiscount / 12);
-    }
-
-    if (interval === 'month') {
-      return amountWithDiscount;
-    }
-
-    if (interval === 'week') {
-      return amountWithDiscount * 4;
-    }
-
-    if (interval === 'day') {
-      return amountWithDiscount * 30;
     }
   }
 
@@ -1269,9 +1228,10 @@ module.exports = class MemberRepository {
     // transaction, and kept on the deleted member, whose member.deleted webhook is sent
     // once the transaction commits.
     const destroy = async (transacting) => {
-      const previousMetafields = await this._metafieldValues.getValuesForMember(
+      // Read as Ghost itself, as what it finds is what the site's webhooks are sent.
+      const previousMetafields = await this._metafieldValues.getValuesFor(
         member.id,
-        ADMIN,
+        { kind: 'internal' },
         transacting,
       );
       // require: false so concurrent deletes don't throw "No Rows Deleted"
@@ -1302,14 +1262,13 @@ module.exports = class MemberRepository {
     const filterOptions = _.pick(options, ['transacting', 'context']);
 
     if (all !== true) {
-      // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+      // mongoTransformer carries the caller's checks on the filter, such as the Admin API's
+      // rejection of restricted fields
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
 
-    const memberRows = await this._Member
-      .getFilteredCollectionQuery(filterOptions)
-      .select('members.id')
-      .distinct();
+    const selected = await this._Member.resolveFilter(filterOptions);
+    const memberRows = await selected.query().select('members.id').distinct();
 
     const memberIds = memberRows.map((row) => row.id);
 
@@ -1340,13 +1299,12 @@ module.exports = class MemberRepository {
     const filterOptions = _.pick(options, ['transacting', 'context']);
 
     if (all !== true) {
-      // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+      // mongoTransformer carries the caller's checks on the filter, such as the Admin API's
+      // rejection of restricted fields
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
-    const memberRows = await this._Member
-      .getFilteredCollectionQuery(filterOptions)
-      .select('members.id')
-      .distinct();
+    const selected = await this._Member.resolveFilter(filterOptions);
+    const memberRows = await selected.query().select('members.id').distinct();
 
     const memberIds = memberRows.map((row) => row.id);
 
@@ -1391,10 +1349,11 @@ module.exports = class MemberRepository {
       const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
         const membersArr = memberIds.map((i) => `'${i}'`).join(',');
-        const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
+        const subscriptions = await this._MemberNewsletter.resolveFilter({
           filter: `newsletter_id:'${data.newsletter}'+member_id:[${membersArr}]`,
           transacting,
         });
+        const unsubscribeRows = await subscriptions.query();
         const toUnsubscribe = unsubscribeRows.map((row) => row.id);
 
         return await this._MemberNewsletter.bulkDestroy(toUnsubscribe, undefined, { transacting });
@@ -1517,10 +1476,12 @@ module.exports = class MemberRepository {
   }
 
   /**
+   * Saves a Stripe subscription on a member, as Ghost describes it once it's read it from Stripe
+   * again, and updates the member's status and tiers to match.
    *
    * @param {Object} data
    * @param {string} data.id - member ID
-   * @param {Object} data.subscription
+   * @param {{id: string, customer: string}} data.subscription - the subscription and its customer
    * @param {string | null} [data.offerId]
    * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
    * @param {object} [options]
@@ -1572,40 +1533,19 @@ module.exports = class MemberRepository {
       throw new errors.NotFoundError({ message: tpl(messages.subscriptionNotFound) });
     }
 
-    const stripeSubscriptionData = await this._stripeAPIService.getSubscription(
-      data.subscription.id,
-    );
-    let paymentMethodId;
-    if (stripeSubscriptionData.default_payment_method) {
-      paymentMethodId = stripeSubscriptionData.default_payment_method;
-    } else {
-      // If the subscription doesn't have a payment method, we fall back to the customer's default.
-      // This is set when the customer uses the Stripe billing portal to update their payment method.
-      const customerId = stripeSubscriptionData.customer;
-      const customer = await this._stripeAPIService.getCustomer(customerId);
-      const customerPaymentMethod = customer.invoice_settings?.default_payment_method;
-      if (customerPaymentMethod) {
-        paymentMethodId = customerPaymentMethod;
-      } else {
-        paymentMethodId = null;
-      }
-    }
-    const stripePaymentMethodData = paymentMethodId
-      ? await this._stripeAPIService.getCardPaymentMethod(paymentMethodId)
-      : null;
+    const description = await this._stripeAPIService.getSubscriptionToLink(data.subscription.id);
 
     const stripeCustomerSubscriptionModel = await this.getSubscriptionByStripeID(
-      stripeSubscriptionData.id,
-      { ...options, forUpdate: true },
+      data.subscription.id,
+      {
+        ...options,
+        forUpdate: true,
+      },
     );
 
-    const subscriptionPriceData = stripeSubscriptionData.items?.data?.[0]?.price;
     let ghostProduct;
     try {
-      ghostProduct = await this._productRepository.get(
-        { stripe_product_id: subscriptionPriceData.product },
-        options,
-      );
+      ghostProduct = await this._productRepository.get(tierFilter(description), options);
       // Use first Ghost product as default product in case of missing link
       if (!ghostProduct) {
         ghostProduct = await this._productRepository.getDefaultProduct(options);
@@ -1617,42 +1557,28 @@ module.exports = class MemberRepository {
           {
             id: ghostProduct.get('id'),
             name: ghostProduct.get('name'),
-            stripe_prices: [
-              {
-                stripe_price_id: subscriptionPriceData.id,
-                stripe_product_id: subscriptionPriceData.product,
-                active: subscriptionPriceData.active,
-                nickname: subscriptionPriceData.nickname,
-                currency: subscriptionPriceData.currency,
-                amount: subscriptionPriceData.unit_amount,
-                type: subscriptionPriceData.type,
-                interval:
-                  (subscriptionPriceData.recurring && subscriptionPriceData.recurring.interval) ||
-                  null,
-              },
-            ],
+            stripe_prices: [tierPrice(description)],
           },
           options,
         );
       } else {
         // Log error if no Ghost products found
         logging.error(
-          `There was an error linking subscription - ${stripeSubscriptionData.id}, no Products exist.`,
+          `There was an error linking subscription - ${data.subscription.id}, no Products exist.`,
         );
       }
     } catch (e) {
-      logging.error(`Failed to handle prices and product for - ${stripeSubscriptionData.id}.`);
+      logging.error(`Failed to handle prices and product for - ${data.subscription.id}.`);
       logging.error(e);
     }
 
-    const stripeCouponId = stripeSubscriptionData.discount?.coupon?.id;
+    const fromCoupon = couponOffer(description);
 
     // For trial offers, offer id is passed from metadata as there is no stripe coupon
     let offerId = data.offerId || null;
 
-    if (stripeCouponId && !offerId && ghostProduct) {
-      const coupon = stripeSubscriptionData.discount.coupon;
-      const cadence = subscriptionPriceData?.recurring?.interval;
+    if (fromCoupon && !offerId && ghostProduct) {
+      const { coupon, cadence } = fromCoupon;
       const tier = { id: ghostProduct.get('id'), name: ghostProduct.get('name') };
 
       try {
@@ -1669,7 +1595,7 @@ module.exports = class MemberRepository {
           // For example, a `yearly` coupon set to `repeating` (Ghost only accepts `once` or `forever` for `yearly` coupons).
           //
           // In this case, we skip creating the offer, but still create the paid member
-          logging.error(`Failed to create offer for Stripe coupon - ${stripeCouponId}`);
+          logging.error(`Failed to create offer for Stripe coupon - ${coupon.id}`);
           logging.error(e);
         } else {
           throw e;
@@ -1677,51 +1603,7 @@ module.exports = class MemberRepository {
       }
     }
 
-    const subscriptionData = {
-      customer_id: stripeSubscriptionData.customer,
-      subscription_id: stripeSubscriptionData.id,
-      status: stripeSubscriptionData.status,
-      cancel_at_period_end: stripeSubscriptionData.cancel_at_period_end,
-      cancellation_reason: this.getCancellationReason(stripeSubscriptionData),
-      current_period_end: new Date(stripeSubscriptionData.current_period_end * 1000),
-      start_date: new Date(stripeSubscriptionData.start_date * 1000),
-      default_payment_card_last4:
-        (stripePaymentMethodData &&
-          stripePaymentMethodData.card &&
-          stripePaymentMethodData.card.last4) ||
-        null,
-      stripe_price_id: subscriptionPriceData.id,
-      plan_id: subscriptionPriceData.id,
-      // trial start and end are returned as Stripe timestamps and need coversion
-      trial_start_at: stripeSubscriptionData.trial_start
-        ? new Date(stripeSubscriptionData.trial_start * 1000)
-        : null,
-      trial_end_at: stripeSubscriptionData.trial_end
-        ? new Date(stripeSubscriptionData.trial_end * 1000)
-        : null,
-      // NOTE: Defaulting to interval as migration to nullable field
-      // turned out to be much bigger problem.
-      // Ideally, would need nickname field to be nullable on the DB level
-      // condition can be simplified once this is done
-      plan_nickname: subscriptionPriceData.nickname || subscriptionPriceData.recurring?.interval,
-      plan_interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
-      plan_amount: subscriptionPriceData.unit_amount,
-      plan_currency: subscriptionPriceData.currency,
-      mrr: this.getMRR({
-        interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
-        amount: subscriptionPriceData.unit_amount,
-        status: stripeSubscriptionData.status,
-        canceled: stripeSubscriptionData.cancel_at_period_end,
-        discount: stripeSubscriptionData.discount,
-      }),
-      offer_id: offerId,
-      discount_start: stripeSubscriptionData.discount?.start
-        ? new Date(stripeSubscriptionData.discount.start * 1000)
-        : null,
-      discount_end: stripeSubscriptionData.discount?.end
-        ? new Date(stripeSubscriptionData.discount.end * 1000)
-        : null,
-    };
+    const subscriptionData = subscriptionRow(description, offerId);
 
     const getStatus = (modelToCheck) => {
       const status = modelToCheck.get('status');
@@ -1741,10 +1623,8 @@ module.exports = class MemberRepository {
 
       return 'inactive';
     };
-    const eventData = {};
-    const isIncomplete = ['incomplete', 'incomplete_expired'].includes(
-      stripeSubscriptionData.status,
-    );
+    let eventData = {};
+    const incomplete = isIncomplete(description);
     let subscriptionToRecord = null;
 
     // A cancellation (or reactivation) changes no `members` column, so the member
@@ -1752,10 +1632,7 @@ module.exports = class MemberRepository {
     // subscription so the event can be marked and carry its prior state.
     let subscriptionBeforeCancelFlagChange = null;
 
-    const stripeCustomerSubscriptionModelShouldBeDeleted =
-      stripeSubscriptionData.metadata &&
-      !!stripeSubscriptionData.metadata.ghost_migrated_to &&
-      stripeSubscriptionData.status === 'canceled';
+    const stripeCustomerSubscriptionModelShouldBeDeleted = isReplacedByMigration(description);
     if (stripeCustomerSubscriptionModelShouldBeDeleted) {
       logging.warn(
         `Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`,
@@ -1778,13 +1655,8 @@ module.exports = class MemberRepository {
 
       // CASE: Only preserve offer_id for active trials (trial offers don't have Stripe discounts)
       // Otherwise, allow offer_id to be cleared when the Stripe discount expires
-      if (!subscriptionData.offer_id) {
-        const trialEndAt = subscriptionData.trial_end_at;
-        const hasActiveTrial = trialEndAt && new Date(trialEndAt) > new Date();
-
-        if (hasActiveTrial) {
-          delete subscriptionData.offer_id;
-        }
+      if (!subscriptionData.offer_id && hasActiveTrial(description)) {
+        delete subscriptionData.offer_id;
       }
 
       const updatedStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.edit(
@@ -1797,7 +1669,7 @@ module.exports = class MemberRepository {
 
       if (
         stripeCustomerSubscriptionModel.get('status') === 'incomplete' &&
-        this.isActiveSubscriptionStatus(stripeSubscriptionData.status)
+        givesAccess(description)
       ) {
         // Older Ghost versions recorded incomplete subscriptions as conversions. Avoid
         // recording them twice when a checkout already in progress completes.
@@ -1817,7 +1689,7 @@ module.exports = class MemberRepository {
       // CASE: Record offer redemption when offer_id changes to a new non-null value
       // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
       if (
-        !isIncomplete &&
+        !incomplete &&
         !subscriptionToRecord &&
         previousOfferId !== subscriptionData.offer_id &&
         subscriptionData.offer_id
@@ -1844,7 +1716,7 @@ module.exports = class MemberRepository {
       }
 
       if (
-        !isIncomplete &&
+        !incomplete &&
         !subscriptionToRecord &&
         (stripeCustomerSubscriptionModel.get('mrr') !==
           updatedStripeCustomerSubscriptionModel.get('mrr') ||
@@ -1883,11 +1755,7 @@ module.exports = class MemberRepository {
             type: eventType,
             subscription_id: updatedStripeCustomerSubscriptionModel.id,
             from_plan: stripeCustomerSubscriptionModel.get('plan_id'),
-            to_plan:
-              updatedStripeCustomerSubscriptionModel.get('status') === 'canceled'
-                ? null
-                : updatedStripeCustomerSubscriptionModel.get('plan_id'),
-            currency: subscriptionPriceData.currency,
+            ...changedPayingEvent(description),
             mrr_delta: mrrDelta,
           },
           options,
@@ -1921,10 +1789,7 @@ module.exports = class MemberRepository {
           const context = options?.context || {};
           const source = this._resolveContextSource(context);
           const cancelNow = updatedStatus === 'expired';
-          const canceledAt = new Date(stripeSubscriptionData.canceled_at * 1000);
-          const expiryAt = cancelNow
-            ? canceledAt
-            : updatedStripeCustomerSubscriptionModel.get('current_period_end');
+          const { canceledAt, expiryAt } = cancellationDates(description, cancelNow);
 
           const subscriptionCancelledEvent = SubscriptionCancelledEvent.create({
             source,
@@ -1940,12 +1805,12 @@ module.exports = class MemberRepository {
         }
       }
     } else {
-      eventData.created_at = new Date(stripeSubscriptionData.start_date * 1000);
+      eventData = firstLinkEventDate(description);
       const newStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.add(
         subscriptionData,
         options,
       );
-      if (!isIncomplete) {
+      if (!incomplete) {
         subscriptionToRecord = newStripeCustomerSubscriptionModel;
       }
     }
@@ -1959,9 +1824,7 @@ module.exports = class MemberRepository {
           subscription_id: subscriptionToRecord.id,
           type: 'created',
           source: 'stripe',
-          from_plan: null,
-          to_plan: subscriptionPriceData.id,
-          currency: subscriptionPriceData.currency,
+          ...startedPayingEvent(description),
           mrr_delta: subscriptionToRecord.get('mrr'),
           ...eventData,
         },
@@ -1970,30 +1833,7 @@ module.exports = class MemberRepository {
 
       const context = options?.context || {};
       const source = this._resolveContextSource(context);
-      const attribution = {
-        id: data.attribution?.id ?? stripeSubscriptionData.metadata?.attribution_id ?? null,
-        url: data.attribution?.url ?? stripeSubscriptionData.metadata?.attribution_url ?? null,
-        type: data.attribution?.type ?? stripeSubscriptionData.metadata?.attribution_type ?? null,
-        referrerSource:
-          data.attribution?.referrerSource ??
-          stripeSubscriptionData.metadata?.referrer_source ??
-          null,
-        referrerMedium:
-          data.attribution?.referrerMedium ??
-          stripeSubscriptionData.metadata?.referrer_medium ??
-          null,
-        referrerUrl:
-          data.attribution?.referrerUrl ?? stripeSubscriptionData.metadata?.referrer_url ?? null,
-        utmSource:
-          data.attribution?.utmSource ?? stripeSubscriptionData.metadata?.utm_source ?? null,
-        utmMedium:
-          data.attribution?.utmMedium ?? stripeSubscriptionData.metadata?.utm_medium ?? null,
-        utmCampaign:
-          data.attribution?.utmCampaign ?? stripeSubscriptionData.metadata?.utm_campaign ?? null,
-        utmTerm: data.attribution?.utmTerm ?? stripeSubscriptionData.metadata?.utm_term ?? null,
-        utmContent:
-          data.attribution?.utmContent ?? stripeSubscriptionData.metadata?.utm_content ?? null,
-      };
+      const attribution = startAttribution(data.attribution, description);
 
       const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
         source,
@@ -2048,15 +1888,9 @@ module.exports = class MemberRepository {
     let memberProducts = (await memberModel.related('products').fetch(options)).toJSON();
     const oldMemberProducts = memberModel.related('products').toJSON();
     let status = memberProducts.length === 0 ? 'free' : 'comped';
-    if (
-      !stripeCustomerSubscriptionModelShouldBeDeleted &&
-      this.isActiveSubscriptionStatus(stripeSubscriptionData.status)
-    ) {
-      if (this.isComplimentarySubscription(stripeSubscriptionData)) {
-        status = 'comped';
-      } else {
-        status = 'paid';
-      }
+    const statusFromSubscription = memberStatusFrom(description);
+    if (!stripeCustomerSubscriptionModelShouldBeDeleted && statusFromSubscription) {
+      status = statusFromSubscription;
 
       if (stripeCustomerSubscriptionModel) {
         // We might need to...
@@ -2333,23 +2167,6 @@ module.exports = class MemberRepository {
       });
       throw e;
     }
-  }
-
-  getCancellationReason(subscription) {
-    // Case: manual cancellation in Portal
-    if (subscription.metadata && subscription.metadata.cancellation_reason) {
-      return subscription.metadata.cancellation_reason;
-
-      // Case: Automatic cancellation due to several payment failures
-    } else if (
-      subscription.cancellation_details &&
-      subscription.cancellation_details.reason &&
-      subscription.cancellation_details.reason === 'payment_failed'
-    ) {
-      return 'Payment failed';
-    }
-
-    return null;
   }
 
   async getSubscription(data, options) {

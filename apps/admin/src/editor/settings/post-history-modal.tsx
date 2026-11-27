@@ -47,6 +47,7 @@ function RevisionRow({
   timezone,
   selected,
   restorable,
+  readOnly,
   onSelect,
   onRestore,
 }: {
@@ -54,6 +55,7 @@ function RevisionRow({
   timezone: string;
   selected: boolean;
   restorable: boolean;
+  readOnly: boolean;
   onSelect: () => void;
   onRestore: () => void;
 }) {
@@ -89,6 +91,7 @@ function RevisionRow({
       {selected && restorable ? (
         <Button
           className="absolute right-3 bottom-2 bg-surface-elevated-2"
+          disabled={readOnly}
           size="sm"
           variant="outline"
           onClick={onRestore}
@@ -117,6 +120,8 @@ export interface PostHistoryModalProps {
   onOpenChange: (open: boolean) => void;
   onCloseAutoFocus: (event: Event) => void;
   restoreError?: string;
+  /** History stays readable while another tab holds the editing lease. */
+  readOnly?: boolean;
 }
 
 /**
@@ -139,16 +144,21 @@ export function PostHistoryModal({
   onOpenChange,
   onCloseAutoFocus,
   restoreError,
+  readOnly = false,
 }: PostHistoryModalProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [confirming, setConfirming] = useState<RevisionEntry | null>(null);
   const [restoring, setRestoring] = useState(false);
   const selected = revisions[selectedIndex];
 
+  if (readOnly && confirming && !restoring) {
+    setConfirming(null);
+  }
+
   // Radix closes on action click; the confirmation stays up until the save lands.
   const confirmRestore = async (event: React.MouseEvent) => {
     event.preventDefault();
-    if (!confirming || restoring) {
+    if (!confirming || restoring || readOnly) {
       return;
     }
     setRestoring(true);
@@ -200,6 +210,11 @@ export function PostHistoryModal({
             className="w-[320px] shrink-0 overflow-y-auto border-l border-border p-3"
             gap="none"
           >
+            {readOnly ? (
+              <Text className="mb-3" role="status" size="sm" tone="secondary">
+                Take over editing to restore a previous version of this {postType}.
+              </Text>
+            ) : null}
             {restoreError ? (
               <Text className="mb-3 text-destructive" role="alert" size="sm">
                 {restoreError}
@@ -209,6 +224,7 @@ export function PostHistoryModal({
               {revisions.map((revision, index) => (
                 <RevisionRow
                   key={revision.id}
+                  readOnly={readOnly}
                   restorable={index !== 0 && revision.lexical !== null}
                   revision={revision}
                   selected={index === selectedIndex}
@@ -248,7 +264,10 @@ export function PostHistoryModal({
               </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button disabled={restoring} onClick={(event) => void confirmRestore(event)}>
+              <Button
+                disabled={restoring || readOnly}
+                onClick={(event) => void confirmRestore(event)}
+              >
                 Restore
               </Button>
             </AlertDialogAction>

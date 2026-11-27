@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import {
   configResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeMemberCustomFields,
   fakeMembers,
   member,
@@ -141,6 +142,38 @@ async function openCreateFormTypes(labs: Record<string, boolean>) {
 }
 
 describe('Import members custom fields', () => {
+  it.each([false, true])(
+    'keeps mapping controls padded without horizontal overflow with admin7Design %s',
+    async (admin7Design) => {
+      fakeCustomFieldsWorld();
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      await renderAdminApp('/members', { labs: { admin7Design } });
+      await openMappingStep();
+
+      const table = importMembersScreen.dialog().getByRole('table').element();
+      const scroller = table.parentElement!.parentElement!;
+      const headers = table.querySelectorAll('th');
+      const cells = table.querySelectorAll('tbody tr:first-child td');
+
+      expect.soft(getComputedStyle(headers[0]).paddingLeft).toBe('8px');
+      expect.soft(getComputedStyle(headers[3]).paddingRight).toBe('8px');
+      expect.soft(getComputedStyle(cells[0]).paddingLeft).toBe('16px');
+      expect.soft(getComputedStyle(cells[3]).paddingRight).toBe('10px');
+      expect.soft(scroller.scrollWidth).toBe(scroller.clientWidth);
+
+      const fieldText = document.createRange();
+      fieldText.selectNodeContents(cells[1]);
+      const checkboxRight = importToggle('email').element().getBoundingClientRect().right;
+      expect.soft(fieldText.getBoundingClientRect().left - checkboxRight).toBeCloseTo(14);
+
+      await importToggle('email').hover();
+      expect(getComputedStyle(cells[0], '::before').left).toBe('0px');
+      expect(getComputedStyle(cells[3], '::before').right).toBe('0px');
+      expect(scroller.scrollWidth).toBe(scroller.clientWidth);
+    },
+  );
+
   describe('a list made from a column', () => {
     const TOPICS_CSV =
       'email,name,topics\nada@example.com,Ada,Film | Travel\ngrace@example.com,Grace,Cooking\n';

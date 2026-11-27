@@ -72,7 +72,7 @@ module.exports = function (Bookshelf) {
        */
       findAll: async function findAll(unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findAll');
-        const itemCollection = this.getFilteredCollection(options);
+        const itemCollection = (await this.resolveFilter(options)).collection();
 
         // @TODO: we can't use order raw when running migrations (see https://github.com/tgriesser/knex/issues/2763)
         if (this.orderDefaultRaw && !options.migrating) {
@@ -120,7 +120,7 @@ module.exports = function (Bookshelf) {
         const skipPagination = options.skipPagination === true;
         delete options.skipPagination;
 
-        const itemCollection = this.getFilteredCollection(options);
+        const itemCollection = (await this.resolveFilter(options)).collection();
         const requestedColumns = options.columns;
         // make sure we include plaintext and custom_excerpt if excerpt is requested
         requiredForExcerpt(requestedColumns);
@@ -219,7 +219,7 @@ module.exports = function (Bookshelf) {
        * @param {Object} [unfilteredOptions]
        * @return {Promise<Bookshelf['Model']>} Single Model
        */
-      findOne: function findOne(data, unfilteredOptions) {
+      findOne: async function findOne(data, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'findOne');
         data = this.filterData(data);
         const model = this.forge(data);
@@ -229,7 +229,8 @@ module.exports = function (Bookshelf) {
 
         // @NOTE: The API layer decides if this option is allowed
         if (options.filter) {
-          model.applyDefaultAndCustomFilters(options);
+          const filter = await this.resolveFilter(options);
+          filter.applyTo(model);
         }
 
         // Ensure only valid fields/columns are added to query
@@ -270,7 +271,8 @@ module.exports = function (Bookshelf) {
 
         // @NOTE: The API layer decides if this option is allowed
         if (options.filter) {
-          model.applyDefaultAndCustomFilters(options);
+          const filter = await this.resolveFilter(options);
+          filter.applyTo(model);
         }
 
         // We allow you to disable timestamps when run migration, so that the posts `updated_at` value is the same

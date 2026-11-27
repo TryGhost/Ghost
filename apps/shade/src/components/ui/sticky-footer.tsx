@@ -40,7 +40,17 @@ export const StickyFooter = ({
     while (container && !isScrollContainer(container)) {
       container = container.parentElement;
     }
-    if (!footer || !container) {
+    if (!footer) {
+      return;
+    }
+    if (!container || container === footer.ownerDocument.documentElement) {
+      // In an app, the window's bottom is under Admin's chrome.
+      footer.style.setProperty(
+        '--sticky-footer-bottom',
+        'var(--ghost-safe-area-inset-bottom, 0px)',
+      );
+    }
+    if (!container) {
       return;
     }
 
@@ -65,6 +75,9 @@ export const StickyFooter = ({
     };
   }, []);
 
+  const bottom = (offset: string) =>
+    `calc(${shiftY ? `${shiftY} + ` : ''}${offset} + var(--sticky-footer-bottom, 0px))`;
+
   return (
     <div
       ref={ref}
@@ -73,7 +86,7 @@ export const StickyFooter = ({
         className,
       )}
       style={{
-        bottom: shiftY ? `calc(${shiftY} - 24px)` : '-24px',
+        bottom: bottom('-24px'),
         height: `${height + 24}px`,
         ...style,
       }}
@@ -82,7 +95,7 @@ export const StickyFooter = ({
       <div className="sticky bottom-0 z-[298] block h-6 bg-(--sticky-footer-bg)" />
       <div
         className={cn(
-          'sticky bottom-0 z-[299] -mb-6 flex items-center justify-between bg-(--sticky-footer-bg)',
+          'sticky bottom-[var(--sticky-footer-bottom,0px)] z-[299] -mb-6 flex items-center justify-between bg-(--sticky-footer-bg)',
           contentClassName,
         )}
         style={{ height }}
@@ -96,7 +109,7 @@ export const StickyFooter = ({
       </div>
       <div
         className="sticky mx-2 block h-6 rounded-full shadow-[0_0_0_1px_color-mix(in_oklab,var(--border)_25%,transparent),0_-8px_16px_-3px_color-mix(in_oklab,var(--foreground)_8%,transparent)]"
-        style={{ bottom: shiftY ? `calc(${shiftY} + ${height - 24}px)` : `${height - 24}px` }}
+        style={{ bottom: bottom(`${height - 24}px`) }}
       />
     </div>
   );

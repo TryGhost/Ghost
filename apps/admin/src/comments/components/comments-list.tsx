@@ -21,6 +21,8 @@ import {
 } from '@/shared/virtual-list';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { forwardRef, useEffect, useRef, useState } from 'react';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { Stack } from '@tryghost/shade/primitives';
 
 const SpacerRow = ({ height }: { height: number }) => (
   <div aria-hidden="true" className="flex">
@@ -61,6 +63,7 @@ function CommentsList({
   dislikesEnabled: boolean;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const compactComments = useFeatureFlag('commentsAnalytics');
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems, {
     resetKey,
   });
@@ -118,7 +121,7 @@ function CommentsList({
 
   return (
     <TooltipProvider>
-      <div ref={parentRef} className="overflow-hidden border-t">
+      <div ref={parentRef} className={cn('overflow-hidden', !compactComments && 'border-t')}>
         <div className="flex flex-col" data-testid="comments-list">
           <div className="flex flex-col">
             <SpacerRow height={spaceBefore} />
@@ -132,7 +135,12 @@ function CommentsList({
               const row = (
                 <div
                   {...props}
-                  className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b px-0 py-3 md:py-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                  className={cn(
+                    'grid w-full grid-cols-1 items-start justify-between gap-4 px-0',
+                    compactComments
+                      ? 'py-4 md:py-6 lg:grid-cols-[minmax(0,1fr)_120px] lg:gap-8'
+                      : 'border-b py-3 md:py-5 lg:grid-cols-[minmax(0,1fr)_144px]',
+                  )}
                   data-testid="comment-list-row"
                   onClick={() => {
                     // Close sidebar when clicking on a comment in the main list
@@ -151,52 +159,57 @@ function CommentsList({
                       src={item.member?.avatar_image}
                     />
 
-                    <div className="flex min-w-0 flex-col gap-3">
-                      <div>
-                        <CommentHeader
-                          canComment={item.member?.can_comment}
-                          createdAt={item.created_at}
-                          isHidden={item.status === 'hidden'}
-                          isPinned={item.pinned}
-                          memberId={item.member?.id}
-                          memberName={item.member?.name}
-                          postTitle={item.post?.title}
-                          onAuthorClick={
-                            item.member?.id
-                              ? () => onAddFilter('author', item.member!.id)
-                              : undefined
-                          }
-                          onPostClick={
-                            item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined
-                          }
-                          onUnpinClick={() => unpinComment({ id: item.id })}
-                        />
+                    <Stack className="min-w-0" gap={compactComments ? 'sm' : 'md'}>
+                      <Stack gap={compactComments ? 'xs' : 'md'}>
+                        <div>
+                          <CommentHeader
+                            canComment={item.member?.can_comment}
+                            createdAt={item.created_at}
+                            isHidden={item.status === 'hidden'}
+                            isPinned={item.pinned}
+                            memberId={item.member?.id}
+                            memberName={item.member?.name}
+                            postTitle={item.post?.title}
+                            onAuthorClick={
+                              item.member?.id
+                                ? () => onAddFilter('author', item.member!.id)
+                                : undefined
+                            }
+                            onPostClick={
+                              item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined
+                            }
+                            onUnpinClick={() => unpinComment({ id: item.id })}
+                          />
 
-                        {item.in_reply_to_snippet && (
-                          <div
-                            className={`mb-1 line-clamp-1 max-w-3xl ${item.status === 'hidden' && 'opacity-50'}`}
-                          >
-                            <span className="text-muted-foreground">Replied to:</span>&nbsp;
-                            <Link
-                              className="text-sm font-normal text-muted-foreground hover:text-foreground"
-                              data-testid="replied-to-link"
-                              to={
-                                buildThreadLink(
-                                  searchParams,
-                                  item.in_reply_to_id || item.parent_id,
-                                ) || ''
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
+                          {item.in_reply_to_snippet && (
+                            <div
+                              className={`mb-1 line-clamp-1 max-w-3xl ${item.status === 'hidden' && 'opacity-50'}`}
                             >
-                              {item.in_reply_to_snippet}
-                            </Link>
-                          </div>
-                        )}
-                      </div>
+                              <span className="text-muted-foreground">Replied to:</span>&nbsp;
+                              <Link
+                                className={cn(
+                                  'font-normal text-muted-foreground hover:text-foreground',
+                                  compactComments ? 'text-base' : 'text-sm',
+                                )}
+                                data-testid="replied-to-link"
+                                to={
+                                  buildThreadLink(
+                                    searchParams,
+                                    item.in_reply_to_id || item.parent_id,
+                                  ) || ''
+                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                              >
+                                {item.in_reply_to_snippet}
+                              </Link>
+                            </div>
+                          )}
+                        </div>
 
-                      <CommentContent item={item} />
+                        <CommentContent compact={compactComments} item={item} />
+                      </Stack>
 
                       <div className="flex flex-row flex-nowrap items-center gap-3">
                         {item.status === 'published' && (
@@ -228,14 +241,18 @@ function CommentsList({
                         />
                         <CommentMenu comment={item} />
                       </div>
-                    </div>
+                    </Stack>
                   </div>
 
                   <div>
                     {item.post?.feature_image ? (
                       <img
                         alt={item.post.title || 'Post feature image'}
-                        className={`hidden aspect-video w-36 rounded object-cover lg:block ${item.status === 'hidden' && 'opacity-50'}`}
+                        className={cn(
+                          'hidden aspect-video rounded object-cover lg:block',
+                          compactComments ? 'w-30' : 'w-36',
+                          item.status === 'hidden' && 'opacity-50',
+                        )}
                         src={item.post.feature_image}
                       />
                     ) : null}

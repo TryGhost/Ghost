@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import type { Knex } from 'knex';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
 import { ActionLog } from '../../../core/server/lib/action-log/action-log';
+import { recordGiftLinkChanges } from '../../../core/server/lib/action-log/gift-links';
 import type { RequestContext } from '../../../core/server/lib/actor';
 import type { GiftLink } from '../../../core/server/services/gift-links/models';
 
@@ -36,7 +37,7 @@ describe('GiftLinksService (integration)', function () {
     // Mirror init()'s wiring.
     service = new GiftLinksService({
       knex: models.Base.knex,
-      actionLog: new ActionLog(),
+      onGiftLinkUpdated: recordGiftLinkChanges(new ActionLog()),
     });
   });
 

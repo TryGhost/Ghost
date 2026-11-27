@@ -4,14 +4,67 @@ const { afterCommit } = require('../lib/after-commit');
 const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
-const { chainTransformers } = require('@tryghost/mongo-utils');
+const { mapKeyValues } = require('@tryghost/mongo-utils');
+const {
+  callerTransformerStep,
+  keyWithConditionStep,
+  renameStep,
+  transformerStep,
+} = require('../lib/filters');
+const { resolveFilterWithSteps } = require('./base/plugins/filtered-collection');
 const { memberAvatarImage } = require('../services/members/member-avatar');
 const { MemberCommentingCodec } = require('../services/members/commenting');
 const { LabelAddedToMembersEvent } = require('../../shared/events/label-added-to-members-event');
+const { METAFIELDS_RELATION } = require('../services/members-metafields/members-resource');
 const {
-  METAFIELDS_RELATION,
   createMetafieldsFilterTransformer,
-} = require('../services/members-metafields/filter');
+} = require('../services/members-metafields/metafields/filter');
+const { segmentStep, readSegmentsWith } = require('./member-segments');
+
+// `subscribed` isn't a column. `subscribed:true` selects members subscribed to an active
+// newsletter, and `subscribed:false` selects members subscribed to none.
+const mapSubscribedToNewsletterStatus = mapKeyValues({
+  key: {
+    from: 'subscribed',
+    to: 'newsletters.status',
+  },
+  values: [
+    {
+      from: true,
+      to: 'active',
+    },
+    {
+      from: false,
+      to: { $ne: 'active' },
+    },
+  ],
+});
+
+// `opened_emails.post_id` names the post of an email a member opened: the email's post, on a
+// recipient row that was opened. mongo-knex can't compare a joined column with null, so the
+// condition is written as `opened_at:>=0`, which selects the same rows as `opened_at:-null`.
+const openedEmailsPost = keyWithConditionStep({
+  key: 'opened_emails.post_id',
+  replacement: 'emails.post_id',
+  condition: 'email_recipients.opened_at:>=0',
+});
+
+// Members filter keys that stand for a relation's column or an aggregate, as filterRelations()
+// names them.
+const relationKeys = renameStep({
+  label: 'labels.slug',
+  labels: 'labels.slug',
+  product: 'products.slug',
+  products: 'products.slug',
+  tier: 'products.slug',
+  tiers: 'products.slug',
+  tier_id: 'products.id',
+  newsletters: 'newsletters.slug',
+  signup: 'signups.attribution_id',
+  conversion: 'conversions.attribution_id',
+  offer_redemptions: 'offer_redemptions.offer_id',
+  'count.active_stripe_customers': 'active_stripe_customers_count',
+});
 
 const DEEP_OFFSET_THRESHOLD = 1000;
 
@@ -149,80 +202,6 @@ const Member = ghostBookshelf.Model.extend(
       }
 
       return ghostBookshelf.Model.prototype.format.call(this, attrs);
-    },
-
-    filterExpansions() {
-      return [
-        {
-          key: 'label',
-          replacement: 'labels.slug',
-        },
-        {
-          key: 'labels',
-          replacement: 'labels.slug',
-        },
-        {
-          key: 'product',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'products',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'tier',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'tiers',
-          replacement: 'products.slug',
-        },
-        {
-          key: 'tier_id',
-          replacement: 'products.id',
-        },
-        {
-          key: 'newsletters',
-          replacement: 'newsletters.slug',
-        },
-        {
-          key: 'signup',
-          replacement: 'signups.attribution_id',
-        },
-        {
-          key: 'conversion',
-          replacement: 'conversions.attribution_id',
-        },
-        {
-          key: 'opened_emails.post_id',
-          replacement: 'emails.post_id',
-          // Currently we cannot expand on values such as null or a string in mongo-knex
-          // But the line below is essentially the same as: `email_recipients.opened_at:-null`
-          expansion: 'email_recipients.opened_at:>=0',
-        },
-        {
-          key: 'offer_redemptions',
-          replacement: 'offer_redemptions.offer_id',
-        },
-        {
-          key: 'count.active_stripe_customers',
-          replacement: 'active_stripe_customers_count',
-        },
-      ];
-    },
-
-    // Every members query routes its filter through this one method: list, CSV export, bulk
-    // edit and delete, counts and email sends all reach it via findPage or
-    // getFilteredCollectionQuery. Chaining the metafield filter transformer here covers them
-    // all without any call site wiring it.
-    applyDefaultAndCustomFilters(options) {
-      if (options.filter && options.filter.includes(`${METAFIELDS_RELATION.tableNameAs}.`)) {
-        const transformer = createMetafieldsFilterTransformer();
-        options.mongoTransformer = options.mongoTransformer
-          ? chainTransformers(options.mongoTransformer, transformer)
-          : transformer;
-      }
-      return ghostBookshelf.Model.prototype.applyDefaultAndCustomFilters.call(this, options);
     },
 
     filterRelations() {
@@ -686,6 +665,48 @@ const Member = ghostBookshelf.Model.extend(
       return options;
     },
 
+    /**
+     * Every members query resolves its filter here before building SQL: list, CSV export, bulk
+     * edit and delete, counts and email sends all do, so a filter means the same in all of them
+     * without any call site wiring it. The filter is parsed once and rewritten by these steps, in
+     * this order:
+     *
+     * 1. The segments the filter names, each put in place of its `segment` statement, so every
+     *    later step sees a segment's own conditions.
+     * 2. The caller's own rewrite, such as the Admin API's restricted-field check, which sees those
+     *    conditions and the keys not yet renamed.
+     * 3. `subscribed`, which isn't a column, rewritten as the status of the member's newsletters.
+     * 4. The custom fields rewrite, which turns `metafields` statements into queries on the values
+     *    table.
+     * 5. `opened_emails.post_id`, then the keys that only rename a relation's column, mapped onto
+     *    the relation keys filterRelations() names.
+     *
+     * The resolved filter's queries compile the result with filterRelations().
+     */
+    resolveFilter(options) {
+      return resolveFilterWithSteps(
+        this,
+        [
+          segmentStep,
+          callerTransformerStep(options.mongoTransformer),
+          transformerStep(mapSubscribedToNewsletterStatus),
+          transformerStep(createMetafieldsFilterTransformer()),
+          openedEmailsPost,
+          relationKeys,
+        ],
+        options,
+      );
+    },
+
+    /**
+     * Gives members filters the segments they name. Boot calls this once the segments service is
+     * ready.
+     * @param {import('./member-segments').FilterSegments} source
+     */
+    readSegmentsWith(source) {
+      readSegmentsWith(source);
+    },
+
     findPage(options = {}) {
       if (options.skipPagination || options.limit === 'all') {
         return ghostBookshelf.Model.findPage.call(this, options);
@@ -696,7 +717,7 @@ const Member = ghostBookshelf.Model.extend(
       );
     },
 
-    canOptimizeFreeSubscriberFilter(options) {
+    async canOptimizeFreeSubscriberFilter(options) {
       if (
         options.filter !== FREE_SUBSCRIBER_FILTER ||
         options.search ||
@@ -705,21 +726,21 @@ const Member = ghostBookshelf.Model.extend(
         return false;
       }
 
-      // The rewrite only applies to the exact query this filter compiles to today.
-      const collection = ghostBookshelf.Model.getFilteredCollection.call(
-        this,
-        this.filterOptions(options, 'findPage'),
+      // The rewrite only applies to the exact query this filter compiles to today, so the query
+      // is built without the active newsletters' ids, which make the model rewrite it.
+      const filter = await this.resolveFilter(
+        this.filterOptions(_.omit(options, 'activeNewsletterIds'), 'findPage'),
       );
-      return isFreeSubscriberQuery(collection.query());
+      return isFreeSubscriberQuery(filter.query());
     },
 
     async activeNewsletterIds(transacting) {
       return transacting('newsletters').where({ status: 'active' }).pluck('id');
     },
 
-    withActiveNewsletterIds(options, read) {
+    async withActiveNewsletterIds(options, read) {
       const knex = ghostBookshelf.knex;
-      if (options.transacting || !this.canOptimizeFreeSubscriberFilter(options)) {
+      if (options.transacting || !(await this.canOptimizeFreeSubscriberFilter(options))) {
         return read(options);
       }
 
@@ -733,29 +754,24 @@ const Member = ghostBookshelf.Model.extend(
       );
     },
 
-    getFilteredCollection(options) {
-      const collection = ghostBookshelf.Model.getFilteredCollection.call(this, options);
-      if (!options.activeNewsletterIds) {
-        return collection;
+    // Given the active newsletters' ids, read in the same snapshot as the members, the free
+    // subscriber filter's query tests membership of those newsletters directly instead of joining
+    // the newsletters table. Preserve the original filter if the compiler or an additional
+    // constraint produces any other query. The rewrite applies to the count and page.
+    rewriteFilteredQuery(query, options) {
+      if (!options.activeNewsletterIds || !isFreeSubscriberQuery(query)) {
+        return;
       }
-
-      const query = collection.query();
-      // Preserve the original filter if the compiler or an additional constraint
-      // produces any other query. The rewrite applies to the count and page.
-      if (isFreeSubscriberQuery(query)) {
-        const membership = ghostBookshelf
-          .knex('members_newsletters')
-          .select(ghostBookshelf.knex.raw('1'))
-          .whereColumn('members_newsletters.member_id', 'members.id')
-          .whereIn('members_newsletters.newsletter_id', options.activeNewsletterIds);
-        query
-          .clear('where')
-          .where('members.email_disabled', false)
-          .where('members.status', 'free')
-          .whereExists(membership);
-      }
-
-      return collection;
+      const membership = ghostBookshelf
+        .knex('members_newsletters')
+        .select(ghostBookshelf.knex.raw('1'))
+        .whereColumn('members_newsletters.member_id', 'members.id')
+        .whereIn('members_newsletters.newsletter_id', options.activeNewsletterIds);
+      query
+        .clear('where')
+        .where('members.email_disabled', false)
+        .where('members.status', 'free')
+        .whereExists(membership);
     },
 
     add(data, unfilteredOptions = {}) {

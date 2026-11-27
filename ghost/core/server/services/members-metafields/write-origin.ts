@@ -1,5 +1,5 @@
 import { actorFrom, readFrameIdentity } from '../../lib/actor';
-import type { SingleWriteOrigin } from './schema';
+import type { SingleWriteOrigin } from './metafields/schema';
 
 /**
  * Who made a write through the Admin API and where, read the same way as `actingContext`, so

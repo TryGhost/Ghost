@@ -1,12 +1,12 @@
 import React from 'react';
-import clsx from 'clsx';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { NoValueLabel, NoValueLabelIcon } from '@tryghost/shade/components';
 import { type Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { TrialDaysLabel } from './tier-detail-preview';
 import { currencyToDecimal, getSymbol } from '@tryghost/admin-x-framework';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+import { useSettingsGroupedNav } from '@/settings/hooks/use-settings-groups';
 
 interface TiersListProps {
   tab?: 'active-tiers' | 'archive-tiers' | 'free-tier';
@@ -17,17 +17,23 @@ interface TierCardProps {
   tier: Tier;
 }
 
-const cardContainerClasses = clsx(
-  'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-gray-100 p-4 transition-all hover:border-gray-100 hover:bg-gray-50 hover:shadow-sm min-[900px]:min-h-[200px] dark:bg-gray-950 dark:hover:border-gray-800',
-);
+/** Grey tiles on a white card, or white tiles on the grouped navigation's grey card. */
+const cardContainerClasses = (grouped: boolean) =>
+  cn(
+    'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border p-4 transition-all hover:shadow-sm min-[900px]:min-h-[200px]',
+    grouped
+      ? 'border-border-default bg-card'
+      : 'border-transparent bg-muted hover:border-border-default hover:bg-interactive-hover',
+  );
 
 const TierCard: React.FC<TierCardProps> = ({ tier }) => {
   const { updateRoute } = useSettingsNavigation();
+  const grouped = useSettingsGroupedNav();
   const currency = tier?.currency || 'USD';
   const currencySymbol = currency ? getSymbol(currency) : '$';
 
   return (
-    <div className={cardContainerClasses} data-testid="tier-card" data-tier={tier.slug}>
+    <div className={cardContainerClasses(grouped)} data-testid="tier-card" data-tier={tier.slug}>
       <div
         className="w-full grow"
         onClick={() => {
@@ -65,6 +71,7 @@ const TierCard: React.FC<TierCardProps> = ({ tier }) => {
 
 const TiersList: React.FC<TiersListProps> = ({ tab, tiers }) => {
   const { updateRoute } = useSettingsNavigation();
+  const grouped = useSettingsGroupedNav();
   const openTierModal = () => {
     updateRoute('tiers/add');
   };
@@ -87,7 +94,7 @@ const TiersList: React.FC<TiersListProps> = ({ tab, tiers }) => {
       })}
       {tab === 'active-tiers' && (
         <button
-          className={`${cardContainerClasses} group cursor-pointer`}
+          className={`${cardContainerClasses(grouped)} group cursor-pointer`}
           type="button"
           onClick={() => {
             openTierModal();

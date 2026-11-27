@@ -7,6 +7,7 @@ import net from 'node:net';
 import path from 'node:path';
 import request from 'supertest';
 import { SESSION_COOKIE_NAME as SESSION_COOKIE } from '../../core/server/auth/better-auth/create-auth';
+import { getInDevelopmentTables } from '../../core/server/data/schema/in-development';
 
 const { startGhost, fixtureManager, configUtils } = require('../utils/e2e-framework');
 const db = require('../../core/server/data/db');
@@ -21,8 +22,20 @@ const GHOST_ROOT = path.join(__dirname, '../..');
 const MIGRATIONS = path.join(GHOST_ROOT, 'core/server/data/migrations/versions');
 const BOOT_TIMEOUT_MS = 90_000;
 const AUTH_TABLES = ['verifications', 'user_sessions', 'user_accounts'];
-// The migrations that graduated the auth tables (plan Phase 3, step 5)
-const GRADUATION = /-(add-better-auth-tables|backfill-credential-accounts)\.ts$/;
+const OAUTH_TABLES = [
+  'oauth_clients',
+  'oauth_resources',
+  'oauth_client_resources',
+  'oauth_refresh_tokens',
+  'oauth_access_tokens',
+  'oauth_consents',
+  'oauth_client_assertions',
+  'oauth_jwks',
+];
+// The migrations that graduated the auth tables (plan Phase 3, step 5) and the
+// OAuth provider's tables
+const GRADUATION =
+  /-(add-better-auth-tables|backfill-credential-accounts|add-oauth-provider-tables)\.ts$/;
 
 type Engine = 'legacy' | 'better-auth';
 type BootOptions = { deviceVerification?: boolean; smtpPort?: number };
@@ -138,8 +151,8 @@ const mergeCookies = (jar: string[], cookies: string[]) => {
 
 /**
  * Puts the test database back as a release from before the auth tables
- * graduated left it: hashes in `users.password`, no auth tables, and the
- * graduation migrations not yet run
+ * graduated left it: hashes in `users.password`, no auth or OAuth tables, and
+ * the graduation migrations not yet run
  */
 async function toPreGraduationDatabase() {
   const accounts = await db
@@ -148,6 +161,12 @@ async function toPreGraduationDatabase() {
     .select('user_id', 'password');
   for (const account of accounts) {
     await db.knex('users').where({ id: account.user_id }).update({ password: account.password });
+  }
+  // Newer than the auth tables and some reference them, so they go first. The
+  // migrations recreate the OAuth tables; the Ghost these tests boot doesn't
+  // create in-development tables, so those stay gone
+  for (const table of [...getInDevelopmentTables(), ...OAUTH_TABLES].toReversed()) {
+    await db.knex.schema.dropTableIfExists(table);
   }
   for (const table of AUTH_TABLES) {
     await db.knex.schema.dropTableIfExists(table);
@@ -159,8 +178,8 @@ async function toPreGraduationDatabase() {
     .filter((name) => GRADUATION.test(name))
     // knex-migrator records a .ts migration under its .js name
     .map((name) => name.replace(/\.ts$/, '.js'));
-  assert.equal(graduation.length, 2, 'finds the graduation migrations');
-  assert.equal(await db.knex('migrations').whereIn('name', graduation).del(), 2);
+  assert.equal(graduation.length, 3, 'finds the graduation migrations');
+  assert.equal(await db.knex('migrations').whereIn('name', graduation).del(), 3);
 }
 
 /** A minimal SMTP server that keeps every message it receives */

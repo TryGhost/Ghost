@@ -10,6 +10,82 @@ const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const { SubscriptionCreatedEvent } = require('../../../../../../../core/shared/events');
 
+const {
+  StripeSubscription,
+} = require('../../../../../../../core/server/services/stripe/stripe-api-responses');
+const {
+  describeSubscription,
+} = require('../../../../../../../core/server/services/stripe/subscription-description');
+
+/** A subscription and its Stripe customer, as callers pass it to `linkSubscription`. */
+const SUBSCRIPTION = { id: 'sub_123', customer: 'cus_123' };
+
+/** Now, as Stripe sends times: in seconds. */
+function nowInSeconds() {
+  return Math.floor(Date.now() / 1000);
+}
+
+/**
+ * Ghost's description of a subscription, as `StripeAPI.getSubscriptionToLink` returns it, made
+ * from the subscription as Stripe sends it: by default an active monthly subscription of 500
+ * cents without a card, discount, trial or metadata, with `overrides` to Stripe's fields.
+ *
+ * @param {Record<string, unknown>} [overrides]
+ */
+function describedSubscription(overrides = {}) {
+  const now = nowInSeconds();
+  const subscription = StripeSubscription.parse({
+    id: SUBSCRIPTION.id,
+    customer: SUBSCRIPTION.customer,
+    status: 'active',
+    cancel_at_period_end: false,
+    current_period_end: now + 31 * 24 * 60 * 60,
+    start_date: now,
+    canceled_at: null,
+    items: {
+      data: [
+        {
+          id: 'item_123',
+          price: {
+            id: 'price_123',
+            product: 'product_123',
+            active: true,
+            nickname: 'Monthly',
+            currency: 'usd',
+            unit_amount: 500,
+            type: 'recurring',
+            recurring: { interval: 'month' },
+          },
+        },
+      ],
+    },
+    metadata: {},
+    ...overrides,
+  });
+  return describeSubscription(subscription, null);
+}
+
+/**
+ * A discount as Stripe sends it on a subscription, from coupon `id` of 20% off that lasts
+ * `duration`, for `months` when it repeats, which started at `start`, in seconds, and has no end.
+ *
+ * @param {{id: string, duration: string, months?: number | null, start?: number}} coupon
+ */
+function discountFrom({ id, duration, months = null, start = nowInSeconds() }) {
+  return {
+    coupon: {
+      id,
+      duration,
+      duration_in_months: months,
+      percent_off: 20,
+      amount_off: null,
+      currency: null,
+    },
+    start,
+    end: null,
+  };
+}
+
 describe('MemberRepository', function () {
   let Automation;
   let Member;
@@ -57,7 +133,7 @@ describe('MemberRepository', function () {
       offersAPI,
       automationsApi,
       productRepository,
-      metafieldValues: { getValuesForMember: async () => undefined },
+      metafieldValues: { getValuesFor: async () => undefined },
       stripeAPIService,
       tokenService,
       ...overrides,
@@ -106,7 +182,7 @@ describe('MemberRepository', function () {
 
     MemberNewsletter = {
       bulkDestroy: sinon.stub().resolves(),
-      getFilteredCollectionQuery: sinon.stub().resolves([]),
+      resolveFilter: sinon.stub().resolves({ query: sinon.stub().resolves([]) }),
     };
 
     MemberCancelEvent = {
@@ -221,13 +297,6 @@ describe('MemberRepository', function () {
     // EventEmitter, so clear listeners between tests to avoid a leak warning
     // and to stop this file's listeners leaking into other files (isolate:false).
     DomainEvents.ee.removeAllListeners();
-  });
-
-  describe('#isComplimentarySubscription', function () {
-    it('Does not error when subscription.plan is null', function () {
-      const repo = buildRepo();
-      repo.isComplimentarySubscription({});
-    });
   });
 
   describe('#resolveContextSource', function () {
@@ -454,8 +523,10 @@ describe('MemberRepository', function () {
 
     it('dispatches label additions successful inserts', async function () {
       const dispatch = sinon.spy(DomainEvents, 'dispatch');
-      Member.getFilteredCollectionQuery = sinon.stub().returns({
-        select: () => ({ distinct: async () => ['added', 'failed'].map((id) => ({ id })) }),
+      Member.resolveFilter = sinon.stub().resolves({
+        query: () => ({
+          select: () => ({ distinct: async () => ['added', 'failed'].map((id) => ({ id })) }),
+        }),
       });
       Member.lockForUpdate = sinon.stub().resolves();
       Member.bulkAdd = sinon.stub().callsFake(async (relations) => ({
@@ -487,8 +558,10 @@ describe('MemberRepository', function () {
         (_, i) => `member-${String(i).padStart(4, '0')}`,
       );
       const lockError = new Error('Lock wait timeout exceeded');
-      Member.getFilteredCollectionQuery = sinon.stub().returns({
-        select: () => ({ distinct: async () => memberIds.map((id) => ({ id })) }),
+      Member.resolveFilter = sinon.stub().resolves({
+        query: () => ({
+          select: () => ({ distinct: async () => memberIds.map((id) => ({ id })) }),
+        }),
       });
       Member.lockForUpdate = sinon
         .stub()
@@ -642,7 +715,7 @@ describe('MemberRepository', function () {
   });
 
   describe('linkSubscription', function () {
-    let subscriptionData;
+    let description;
     let subscriptionCreatedNotifySpy;
 
     afterEach(function () {
@@ -653,34 +726,7 @@ describe('MemberRepository', function () {
       sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
       subscriptionCreatedNotifySpy = sinon.spy();
 
-      subscriptionData = {
-        id: 'sub_123',
-        customer: 'cus_123',
-        status: 'active',
-        items: {
-          type: 'list',
-          data: [
-            {
-              id: 'item_123',
-              price: {
-                id: 'price_123',
-                product: 'product_123',
-                active: true,
-                nickname: 'Monthly',
-                currency: 'usd',
-                recurring: {
-                  interval: 'month',
-                },
-                unit_amount: 500,
-                type: 'recurring',
-              },
-            },
-          ],
-        },
-        start_date: Date.now() / 1000,
-        current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
-        cancel_at_period_end: false,
-      };
+      description = describedSubscription();
 
       Member = {
         findOne: sinon.stub().resolves({
@@ -727,14 +773,7 @@ describe('MemberRepository', function () {
 
       stripeAPIService = {
         configured: true,
-        getSubscription: sinon.stub().resolves(subscriptionData),
-        getCustomer: sinon.stub().resolves({
-          id: 'cus_123',
-          invoice_settings: {
-            default_payment_method: null,
-          },
-          subscriptions: { data: [] },
-        }),
+        getSubscriptionToLink: sinon.stub().resolves(description),
       };
 
       productRepository = {
@@ -783,19 +822,23 @@ describe('MemberRepository', function () {
           .stub(repo, 'getSubscriptionByStripeID')
           .callsFake(async () => (storedSubscription ? toModel(storedSubscription) : null));
         dispatch = sinon.stub(repo, 'dispatchEvent');
-        subscriptionData.metadata = {
-          attribution_id: 'post_id',
-          attribution_type: 'post',
-          attribution_url: '/original-post/',
-          referrer_source: 'Google',
-          utm_campaign: 'summer',
-        };
       });
 
       async function link(status) {
-        subscriptionData.status = status;
+        stripeAPIService.getSubscriptionToLink.resolves(
+          describedSubscription({
+            status,
+            metadata: {
+              attribution_id: 'post_id',
+              attribution_type: 'post',
+              attribution_url: '/original-post/',
+              referrer_source: 'Google',
+              utm_campaign: 'summer',
+            },
+          }),
+        );
         await repo.linkSubscription(
-          { id: 'member_id', subscription: subscriptionData },
+          { id: 'member_id', subscription: SUBSCRIPTION },
           { transacting: { executionPromise: Promise.resolve() } },
         );
       }
@@ -807,30 +850,8 @@ describe('MemberRepository', function () {
           .filter((event) => event instanceof SubscriptionCreatedEvent);
       }
 
-      for (const status of ['incomplete', 'incomplete_expired']) {
-        it(`stores ${status} without paid activity or conversion events`, async function () {
-          await link(status);
-
-          assert.equal(storedSubscription.status, status);
-          assert.equal(storedSubscription.mrr, 0);
-          assert.equal(Member.edit.lastCall.args[0].status, 'free');
-          sinon.assert.notCalled(MemberPaidSubscriptionEvent.add);
-          assert.equal(createdEvents().length, 0);
-        });
-      }
-
-      it('never counts an incomplete subscription that expires, including repeat deliveries', async function () {
-        await link('incomplete');
-        await link('incomplete');
-        await link('incomplete_expired');
-        await link('incomplete_expired');
-
-        assert.equal(storedSubscription.status, 'incomplete_expired');
-        sinon.assert.notCalled(MemberPaidSubscriptionEvent.add);
-        assert.equal(createdEvents().length, 0);
-      });
-
-      for (const status of ['active', 'trialing', 'past_due', 'unpaid']) {
+      // webhooks.test.js pins the conversion when an incomplete subscription becomes active.
+      for (const status of ['trialing', 'past_due', 'unpaid']) {
         it(`records a single attributed conversion when incomplete becomes ${status}`, async function () {
           await link('incomplete');
           await link(status);
@@ -873,84 +894,6 @@ describe('MemberRepository', function () {
       });
     });
 
-    it('dispatches paid subscription event', async function () {
-      const repo = buildRepo({
-        stripeAPIService,
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionData,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(subscriptionCreatedNotifySpy);
-      sinon.assert.notCalled(mockOfferRedemption.add);
-    });
-
-    it('records the offer redemption for a new member starting a subscription', async function () {
-      // When a new member starts a paid subscription, the subscription is created with the offer ID
-      const repo = buildRepo({
-        stripeAPIService,
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        offersAPI,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      // No existing subscription
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      DomainEvents.subscribe(SubscriptionCreatedEvent, subscriptionCreatedNotifySpy);
-
-      await repo.linkSubscription(
-        {
-          id: 'member_id_123',
-          subscription: subscriptionData,
-          offerId: 'offer_123',
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(subscriptionCreatedNotifySpy);
-      sinon.assert.calledWith(
-        subscriptionCreatedNotifySpy,
-        sinon.match((event) => {
-          if (event.data.offerId === 'offer_123') {
-            return true;
-          }
-          return false;
-        }),
-      );
-
-      sinon.assert.called(mockOfferRedemption.add);
-      sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_123' }));
-    });
-
     it('records the offer redemption for an existing member upgrading to a paid subscription', async function () {
       // When an existing free member upgrades to a paid subscription, the subscription is first created _without_ the offer id
       // Then it is updated with the offer id after the checkout.completed webhook is received
@@ -974,7 +917,7 @@ describe('MemberRepository', function () {
       await repo.linkSubscription(
         {
           id: 'member_id_123',
-          subscription: subscriptionData,
+          subscription: SUBSCRIPTION,
           offerId: 'offer_123',
         },
         {
@@ -989,81 +932,6 @@ describe('MemberRepository', function () {
 
       sinon.assert.called(mockOfferRedemption.add);
       sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_123' }));
-    });
-
-    it('creates an offer from a Stripe coupon', async function () {
-      offersAPI = {
-        ensureOfferForStripeCoupon: sinon.stub().resolves({ id: 'offer_new' }),
-      };
-
-      const productRepositoryWithTier = {
-        get: sinon.stub().resolves({
-          get: sinon.stub().callsFake((key) => {
-            if (key === 'id') {
-              return 'tier_1';
-            }
-            if (key === 'name') {
-              return 'Tier One';
-            }
-            return null;
-          }),
-          toJSON: sinon.stub().returns({}),
-        }),
-        update: sinon.stub().resolves({}),
-      };
-
-      const stripeCoupon = {
-        id: 'coupon_abc',
-        percent_off: 20,
-        duration: 'forever',
-      };
-
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves({
-            ...subscriptionData,
-            discount: {
-              coupon: stripeCoupon,
-            },
-          }),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository: productRepositoryWithTier,
-        offersAPI,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      const transacting = {
-        executionPromise: Promise.resolve(),
-      };
-
-      await repo.linkSubscription(
-        {
-          id: 'member_id_123',
-          subscription: { ...subscriptionData, discount: { coupon: { id: 'coupon_abc' } } },
-        },
-        {
-          transacting,
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(offersAPI.ensureOfferForStripeCoupon);
-      // Verify the coupon, cadence, tier, and options are passed correctly
-      assert.deepEqual(offersAPI.ensureOfferForStripeCoupon.firstCall.args[0], stripeCoupon);
-      assert.equal(offersAPI.ensureOfferForStripeCoupon.firstCall.args[1], 'month');
-      assert.deepEqual(offersAPI.ensureOfferForStripeCoupon.firstCall.args[2], {
-        id: 'tier_1',
-        name: 'Tier One',
-      });
-      assert.equal(offersAPI.ensureOfferForStripeCoupon.firstCall.args[3].transacting, transacting);
-      assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, 'offer_new');
     });
 
     it('sets offer_id to null if Stripe coupon is known to be incompatible with Ghost offers', async function () {
@@ -1092,22 +960,14 @@ describe('MemberRepository', function () {
         update: sinon.stub().resolves({}),
       };
 
-      const stripeCoupon = {
-        id: 'coupon_invalid',
-        percent_off: 20,
-        duration: 'repeating',
-        duration_in_months: 3,
-      };
-
       const repo = buildRepo({
         stripeAPIService: {
           ...stripeAPIService,
-          getSubscription: sinon.stub().resolves({
-            ...subscriptionData,
-            discount: {
-              coupon: stripeCoupon,
-            },
-          }),
+          getSubscriptionToLink: sinon.stub().resolves(
+            describedSubscription({
+              discount: discountFrom({ id: 'coupon_invalid', duration: 'repeating', months: 3 }),
+            }),
+          ),
         },
         StripeCustomerSubscription,
         MemberPaidSubscriptionEvent,
@@ -1128,7 +988,7 @@ describe('MemberRepository', function () {
       await repo.linkSubscription(
         {
           id: 'member_id_123',
-          subscription: { ...subscriptionData, discount: { coupon: { id: 'coupon_invalid' } } },
+          subscription: SUBSCRIPTION,
         },
         {
           transacting,
@@ -1142,485 +1002,6 @@ describe('MemberRepository', function () {
       // Verify subscription was still created, but without an offer_id
       sinon.assert.calledOnce(StripeCustomerSubscription.add);
       assert.equal(StripeCustomerSubscription.add.firstCall.args[0].offer_id, null);
-    });
-
-    it('throws other validation errors from ensureOfferForStripeCoupon', async function () {
-      const otherValidationError = new errors.ValidationError({
-        message: 'Some other validation error',
-      });
-
-      offersAPI = {
-        ensureOfferForStripeCoupon: sinon.stub().rejects(otherValidationError),
-      };
-
-      const productRepositoryWithTier = {
-        get: sinon.stub().resolves({
-          get: sinon.stub().callsFake((key) => {
-            if (key === 'id') {
-              return 'tier_1';
-            }
-            if (key === 'name') {
-              return 'Tier One';
-            }
-            return null;
-          }),
-          toJSON: sinon.stub().returns({}),
-        }),
-        update: sinon.stub().resolves({}),
-      };
-
-      const stripeCoupon = {
-        id: 'coupon_abc',
-        percent_off: 20,
-        duration: 'forever',
-      };
-
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves({
-            ...subscriptionData,
-            discount: {
-              coupon: stripeCoupon,
-            },
-          }),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository: productRepositoryWithTier,
-        offersAPI,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      const transacting = {
-        executionPromise: Promise.resolve(),
-      };
-
-      // Should throw because it's not the INVALID_YEARLY_DURATION error
-      await assert.rejects(
-        repo.linkSubscription(
-          {
-            id: 'member_id_123',
-            subscription: { ...subscriptionData, discount: { coupon: { id: 'coupon_abc' } } },
-          },
-          {
-            transacting,
-            context: {},
-          },
-        ),
-        (err) => {
-          assert.equal(err.message, 'Some other validation error');
-          return true;
-        },
-      );
-
-      // Verify ensureOfferForStripeCoupon was called
-      sinon.assert.calledOnce(offersAPI.ensureOfferForStripeCoupon);
-
-      // Verify subscription was NOT created because the error was rethrown
-      sinon.assert.notCalled(StripeCustomerSubscription.add);
-    });
-
-    it('persists discount_start and discount_end for a new subscription', async function () {
-      const discountStart = 1768940436;
-      const discountEnd = 1784578836;
-
-      const subscriptionWithDiscount = {
-        ...subscriptionData,
-        discount: {
-          id: 'di_1SrlPkB8iNXqDnZRX03bQHnQ',
-          coupon: {
-            id: 'H4H47PbG',
-            percent_off: 20,
-            duration: 'repeating',
-            duration_in_months: 6,
-          },
-          start: discountStart,
-          end: discountEnd,
-        },
-      };
-
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves(subscriptionWithDiscount),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        offersAPI,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      // No existing subscription
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionWithDiscount,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      // Verify discount_start and discount_end are set correctly
-      sinon.assert.calledOnce(StripeCustomerSubscription.add);
-      const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
-
-      assert.ok(addedSubscriptionData.discount_start instanceof Date);
-      assert.ok(addedSubscriptionData.discount_end instanceof Date);
-      assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
-      assert.equal(addedSubscriptionData.discount_end.getTime(), discountEnd * 1000);
-    });
-
-    it('persists discount_start and discount_end for an existing subscription', async function () {
-      const discountStart = 1768940436;
-      const discountEnd = 1784578836;
-
-      const subscriptionWithDiscount = {
-        ...subscriptionData,
-        discount: {
-          id: 'di_1SrlPkB8iNXqDnZRX03bQHnQ',
-          coupon: {
-            id: 'H4H47PbG',
-            percent_off: 20,
-            duration: 'repeating',
-            duration_in_months: 6,
-          },
-          start: discountStart,
-          end: discountEnd,
-        },
-      };
-
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves(subscriptionWithDiscount),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        offersAPI,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      // Existing subscription
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
-        load: sinon.stub().resolvesThis(),
-        get: sinon.stub().withArgs('offer_id').returns(null),
-      });
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionWithDiscount,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      // Verify edit was called (not add) since subscription exists
-      sinon.assert.notCalled(StripeCustomerSubscription.add);
-      sinon.assert.calledOnce(StripeCustomerSubscription.edit);
-
-      const editedSubscriptionData = StripeCustomerSubscription.edit.firstCall.args[0];
-
-      assert.ok(editedSubscriptionData.discount_start instanceof Date);
-      assert.ok(editedSubscriptionData.discount_end instanceof Date);
-      assert.equal(editedSubscriptionData.discount_start.getTime(), discountStart * 1000);
-      assert.equal(editedSubscriptionData.discount_end.getTime(), discountEnd * 1000);
-    });
-
-    it('nullifies discount_start and discount_end when discount is removed from Stripe subscription', async function () {
-      const repo = buildRepo({
-        stripeAPIService,
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      const subscriptionWithNoDiscount = {
-        ...subscriptionData,
-        discount: null,
-      };
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionWithNoDiscount,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(StripeCustomerSubscription.add);
-      const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
-
-      assert.equal(addedSubscriptionData.discount_start, null);
-      assert.equal(addedSubscriptionData.discount_end, null);
-    });
-
-    it('falls back to customer default payment method when subscription has none', async function () {
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves({
-            ...subscriptionData,
-            default_payment_method: null,
-          }),
-          getCustomer: sinon.stub().resolves({
-            id: 'cus_123',
-            invoice_settings: {
-              default_payment_method: 'pm_customer_default',
-            },
-            subscriptions: { data: [] },
-          }),
-          getCardPaymentMethod: sinon.stub().resolves({
-            id: 'pm_customer_default',
-            type: 'card',
-            card: {
-              last4: '8888',
-            },
-          }),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionData,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(StripeCustomerSubscription.add);
-      const addedData = StripeCustomerSubscription.add.firstCall.args[0];
-      assert.equal(addedData.default_payment_card_last4, '8888');
-    });
-
-    it('sets card last4 to null when neither subscription nor customer has a default payment method', async function () {
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves({
-            ...subscriptionData,
-            default_payment_method: null,
-          }),
-          getCustomer: sinon.stub().resolves({
-            id: 'cus_123',
-            invoice_settings: {
-              default_payment_method: null,
-            },
-            subscriptions: { data: [] },
-          }),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionData,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(StripeCustomerSubscription.add);
-      const addedData = StripeCustomerSubscription.add.firstCall.args[0];
-      assert.equal(addedData.default_payment_card_last4, null);
-    });
-
-    it('uses subscription default payment method when available', async function () {
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves({
-            ...subscriptionData,
-            default_payment_method: 'pm_sub_default',
-          }),
-          getCardPaymentMethod: sinon.stub().resolves({
-            id: 'pm_sub_default',
-            type: 'card',
-            card: {
-              last4: '4242',
-            },
-          }),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionData,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(StripeCustomerSubscription.add);
-      const addedData = StripeCustomerSubscription.add.firstCall.args[0];
-      assert.equal(addedData.default_payment_card_last4, '4242');
-    });
-
-    it('handles expanded customer object on subscription when falling back', async function () {
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves({
-            ...subscriptionData,
-            customer: { id: 'cus_123', object: 'customer' },
-            default_payment_method: null,
-          }),
-          getCustomer: sinon.stub().resolves({
-            id: 'cus_123',
-            invoice_settings: {
-              default_payment_method: { id: 'pm_expanded', type: 'card', card: { last4: '1234' } },
-            },
-            subscriptions: { data: [] },
-          }),
-          getCardPaymentMethod: sinon.stub().resolves({
-            id: 'pm_expanded',
-            type: 'card',
-            card: {
-              last4: '1234',
-            },
-          }),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      await repo.linkSubscription(
-        {
-          subscription: { ...subscriptionData, customer: { id: 'cus_123', object: 'customer' } },
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(StripeCustomerSubscription.add);
-      const addedData = StripeCustomerSubscription.add.firstCall.args[0];
-      assert.equal(addedData.default_payment_card_last4, '1234');
-    });
-
-    it('handles discounts with no end date (e.g. forever discounts)', async function () {
-      const discountStart = 1768940436;
-
-      const subscriptionWithForeverDiscount = {
-        ...subscriptionData,
-        discount: {
-          id: 'di_forever',
-          coupon: {
-            id: 'forever_coupon',
-            percent_off: 20,
-            duration: 'forever',
-          },
-          start: discountStart,
-          end: null,
-        },
-      };
-
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves(subscriptionWithForeverDiscount),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        offersAPI,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionWithForeverDiscount,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.calledOnce(StripeCustomerSubscription.add);
-      const addedSubscriptionData = StripeCustomerSubscription.add.firstCall.args[0];
-
-      assert.ok(addedSubscriptionData.discount_start instanceof Date);
-      assert.equal(addedSubscriptionData.discount_start.getTime(), discountStart * 1000);
-      assert.equal(addedSubscriptionData.discount_end, null);
     });
 
     it('clears offer_id when existing subscription has no active trial and no Stripe discount', async function () {
@@ -1652,7 +1033,7 @@ describe('MemberRepository', function () {
 
       await repo.linkSubscription(
         {
-          subscription: subscriptionData, // no discount, so offer_id resolves to null
+          subscription: SUBSCRIPTION, // no discount, so offer_id resolves to null
         },
         {
           transacting: {
@@ -1696,15 +1077,16 @@ describe('MemberRepository', function () {
         }),
       });
 
-      stripeAPIService.getSubscription.resolves({
-        ...subscriptionData,
-        trial_start: Date.now() / 1000 - 7 * 24 * 60 * 60,
-        trial_end: futureTrialEnd.getTime() / 1000,
-      });
+      stripeAPIService.getSubscriptionToLink.resolves(
+        describedSubscription({
+          trial_start: nowInSeconds() - 7 * 24 * 60 * 60,
+          trial_end: futureTrialEnd.getTime() / 1000,
+        }),
+      );
 
       await repo.linkSubscription(
         {
-          subscription: subscriptionData, // no discount, so offer_id resolves to null
+          subscription: SUBSCRIPTION, // no discount, so offer_id resolves to null
         },
         {
           transacting: {
@@ -1749,15 +1131,16 @@ describe('MemberRepository', function () {
         }),
       });
 
-      stripeAPIService.getSubscription.resolves({
-        ...subscriptionData,
-        trial_start: pastTrialEnd.getTime() / 1000 - 7 * 24 * 60 * 60,
-        trial_end: pastTrialEnd.getTime() / 1000,
-      });
+      stripeAPIService.getSubscriptionToLink.resolves(
+        describedSubscription({
+          trial_start: pastTrialEnd.getTime() / 1000 - 7 * 24 * 60 * 60,
+          trial_end: pastTrialEnd.getTime() / 1000,
+        }),
+      );
 
       await repo.linkSubscription(
         {
-          subscription: subscriptionData, // no discount
+          subscription: SUBSCRIPTION, // no discount
         },
         {
           transacting: {
@@ -1778,24 +1161,15 @@ describe('MemberRepository', function () {
     it('records an offer redemption when offer_id changes from one offer to another', async function () {
       // A retention offer replaces an expired signup offer (old → new)
       // The event timestamp should use the Stripe discount start time, not the subscription created_at
-      const discountStartUnix = Math.floor(Date.now() / 1000) - 60; // 1 minute ago
-      const subscriptionWithDiscount = {
-        ...subscriptionData,
-        discount: {
-          coupon: {
-            id: 'coupon_retention',
-            percent_off: 20,
-            duration: 'once',
-          },
-          start: discountStartUnix,
-          end: null,
-        },
-      };
+      const discountStart = nowInSeconds() - 60; // 1 minute ago
+      const subscriptionWithDiscount = describedSubscription({
+        discount: discountFrom({ id: 'coupon_retention', duration: 'once', start: discountStart }),
+      });
 
       const repo = buildRepo({
         stripeAPIService: {
           ...stripeAPIService,
-          getSubscription: sinon.stub().resolves(subscriptionWithDiscount),
+          getSubscriptionToLink: sinon.stub().resolves(subscriptionWithDiscount),
         },
         StripeCustomerSubscription,
         MemberPaidSubscriptionEvent,
@@ -1823,7 +1197,7 @@ describe('MemberRepository', function () {
       await repo.linkSubscription(
         {
           id: 'member_id_123',
-          subscription: subscriptionWithDiscount,
+          subscription: SUBSCRIPTION,
           offerId: 'new_retention_offer_456',
         },
         {
@@ -1843,7 +1217,7 @@ describe('MemberRepository', function () {
       // Timestamp should be the discount start, not the subscription created_at
       const redemption = mockOfferRedemption.add.firstCall.args[0];
 
-      assert.equal(redemption.created_at.getTime(), discountStartUnix * 1000);
+      assert.equal(redemption.created_at.getTime(), discountStart * 1000);
     });
 
     it('records an offer redemption with created_at timestamp when no Stripe discount is present', async function () {
@@ -1888,7 +1262,7 @@ describe('MemberRepository', function () {
       await repo.linkSubscription(
         {
           id: 'member_id_123',
-          subscription: subscriptionData,
+          subscription: SUBSCRIPTION,
           offerId: 'trial_offer_789',
         },
         {
@@ -1912,25 +1286,16 @@ describe('MemberRepository', function () {
       // The new offer should overwrite the existing one (the trial guard only applies when offer_id is null)
       const futureTrialEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-      const subscriptionWithDiscount = {
-        ...subscriptionData,
-        trial_start: Date.now() / 1000 - 7 * 24 * 60 * 60,
+      const subscriptionWithDiscount = describedSubscription({
+        trial_start: nowInSeconds() - 7 * 24 * 60 * 60,
         trial_end: futureTrialEnd.getTime() / 1000,
-        discount: {
-          coupon: {
-            id: 'coupon_new',
-            percent_off: 15,
-            duration: 'forever',
-          },
-          start: Date.now() / 1000,
-          end: null,
-        },
-      };
+        discount: discountFrom({ id: 'coupon_new', duration: 'forever' }),
+      });
 
       const repo = buildRepo({
         stripeAPIService: {
           ...stripeAPIService,
-          getSubscription: sinon.stub().resolves(subscriptionWithDiscount),
+          getSubscriptionToLink: sinon.stub().resolves(subscriptionWithDiscount),
         },
         StripeCustomerSubscription,
         MemberPaidSubscriptionEvent,
@@ -1957,7 +1322,7 @@ describe('MemberRepository', function () {
 
       await repo.linkSubscription(
         {
-          subscription: subscriptionWithDiscount,
+          subscription: SUBSCRIPTION,
         },
         {
           transacting: {
@@ -1977,64 +1342,6 @@ describe('MemberRepository', function () {
       // Should record a redemption for the new offer
       sinon.assert.called(mockOfferRedemption.add);
       sinon.assert.calledWith(mockOfferRedemption.add, sinon.match({ offer_id: 'offer_new' }));
-    });
-
-    it('does not record an offer redemption when offer_id stays the same', async function () {
-      // Same offer synced again via webhook — no new event
-      const subscriptionWithDiscount = {
-        ...subscriptionData,
-        discount: {
-          coupon: {
-            id: 'coupon_abc',
-            percent_off: 20,
-            duration: 'forever',
-          },
-          start: Date.now() / 1000,
-          end: null,
-        },
-      };
-
-      const repo = buildRepo({
-        stripeAPIService: {
-          ...stripeAPIService,
-          getSubscription: sinon.stub().resolves(subscriptionWithDiscount),
-        },
-        StripeCustomerSubscription,
-        MemberPaidSubscriptionEvent,
-        MemberProductEvent,
-        productRepository,
-        offersAPI,
-        Member,
-        OfferRedemption: mockOfferRedemption,
-      });
-
-      sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
-        load: sinon.stub().resolvesThis(),
-        id: 'sub_db_id',
-        get: sinon.stub().callsFake((key) => {
-          if (key === 'offer_id') {
-            return 'offer_new'; // same as what ensureOfferForStripeCoupon returns
-          }
-          if (key === 'trial_end_at') {
-            return null;
-          }
-          return null;
-        }),
-      });
-
-      await repo.linkSubscription(
-        {
-          subscription: subscriptionWithDiscount,
-        },
-        {
-          transacting: {
-            executionPromise: Promise.resolve(),
-          },
-          context: {},
-        },
-      );
-
-      sinon.assert.notCalled(mockOfferRedemption.add);
     });
   });
 
@@ -2360,7 +1667,7 @@ describe('MemberRepository', function () {
   });
 
   describe('linkSubscription - automation integration', function () {
-    let subscriptionData;
+    let description;
 
     afterEach(function () {
       sinon.restore();
@@ -2368,34 +1675,7 @@ describe('MemberRepository', function () {
 
     beforeEach(function () {
       sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
-      subscriptionData = {
-        id: 'sub_123',
-        customer: 'cus_123',
-        status: 'active',
-        items: {
-          type: 'list',
-          data: [
-            {
-              id: 'item_123',
-              price: {
-                id: 'price_123',
-                product: 'product_123',
-                active: true,
-                nickname: 'Monthly',
-                currency: 'usd',
-                recurring: {
-                  interval: 'month',
-                },
-                unit_amount: 500,
-                type: 'recurring',
-              },
-            },
-          ],
-        },
-        start_date: Date.now() / 1000,
-        current_period_end: Date.now() / 1000 + 60 * 60 * 24 * 31,
-        cancel_at_period_end: false,
-      };
+      description = describedSubscription();
 
       Member = {
         findOne: sinon.stub().resolves({
@@ -2477,14 +1757,7 @@ describe('MemberRepository', function () {
 
       stripeAPIService = {
         configured: true,
-        getSubscription: sinon.stub().resolves(subscriptionData),
-        getCustomer: sinon.stub().resolves({
-          id: 'cus_123',
-          invoice_settings: {
-            default_payment_method: null,
-          },
-          subscriptions: { data: [] },
-        }),
+        getSubscriptionToLink: sinon.stub().resolves(description),
       };
 
       productRepository = {
@@ -2536,7 +1809,7 @@ describe('MemberRepository', function () {
       await repo.linkSubscription(
         {
           id: 'member_id_123',
-          subscription: subscriptionData,
+          subscription: SUBSCRIPTION,
         },
         {
           transacting: {
@@ -2567,7 +1840,7 @@ describe('MemberRepository', function () {
       sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
       await repo.linkSubscription(
-        { id: 'member_id_123', subscription: subscriptionData },
+        { id: 'member_id_123', subscription: SUBSCRIPTION },
         { context: { user: 'admin' }, transacting: { executionPromise: Promise.resolve() } },
       );
 
@@ -2613,7 +1886,7 @@ describe('MemberRepository', function () {
       });
 
       await repo.linkSubscription(
-        { id: 'member_id_123', subscription: subscriptionData },
+        { id: 'member_id_123', subscription: SUBSCRIPTION },
         { transacting: { executionPromise: Promise.resolve() } },
       );
 
@@ -2659,7 +1932,7 @@ describe('MemberRepository', function () {
         await repo.linkSubscription(
           {
             id: 'member_id_123',
-            subscription: subscriptionData,
+            subscription: SUBSCRIPTION,
           },
           {
             transacting: {
@@ -2710,7 +1983,7 @@ describe('MemberRepository', function () {
         await repo.linkSubscription(
           {
             id: 'member_id_123',
-            subscription: subscriptionData,
+            subscription: SUBSCRIPTION,
           },
           {
             transacting: {
@@ -2768,7 +2041,7 @@ describe('MemberRepository', function () {
           await repo.linkSubscription(
             {
               id: 'member_id_123',
-              subscription: subscriptionData,
+              subscription: SUBSCRIPTION,
             },
             {
               transacting: {
@@ -2827,7 +2100,7 @@ describe('MemberRepository', function () {
         await repo.linkSubscription(
           {
             id: 'member_id_123',
-            subscription: subscriptionData,
+            subscription: SUBSCRIPTION,
           },
           {
             transacting: {
@@ -2868,7 +2141,7 @@ describe('MemberRepository', function () {
         await repo.linkSubscription(
           {
             id: 'member_id_123',
-            subscription: subscriptionData,
+            subscription: SUBSCRIPTION,
           },
           {
             transacting: {

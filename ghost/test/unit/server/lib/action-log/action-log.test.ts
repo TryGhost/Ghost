@@ -99,13 +99,45 @@ describe('Unit: lib/action-log/action-log', function () {
       event: 'edited',
       resourceId: POST_ID,
       primaryName: 'Company',
-      context: { key: 'company', primary_name: 'Employer', action_name: 'x', count: 2 } as {
-        key: string;
-      },
+      context: {
+        key: 'company',
+        primary_name: 'Employer',
+        action_name: 'x',
+        count: 2,
+        app_installation_id: 'forged',
+      } as { key: string },
     });
 
     const [row] = await knex('actions').select();
     assert.equal(row.context, JSON.stringify({ primary_name: 'Company', key: 'company' }));
+  });
+
+  it('stores the app an actor acted through beside them', async function () {
+    await record(
+      { ...ACTING, appInstallationId: 'installation-id' },
+      {
+        resourceType: 'app_installation',
+        event: 'installed',
+        resourceId: POST_ID,
+        primaryName: 'Podcast',
+        context: { app_id: 'com.example.podcast', app_installation_id: 'forged' } as Record<
+          string,
+          unknown
+        >,
+      },
+    );
+
+    const [row] = await knex('actions').select();
+    assert.equal(row.actor_id, USER_ID);
+    assert.equal(row.actor_type, 'user');
+    assert.equal(
+      row.context,
+      JSON.stringify({
+        primary_name: 'Podcast',
+        app_id: 'com.example.podcast',
+        app_installation_id: 'installation-id',
+      }),
+    );
   });
 
   it('stores a bulk change without a resource', async function () {

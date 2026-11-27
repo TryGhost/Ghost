@@ -66,6 +66,9 @@ export const commentsScreen = {
         .filter({ has: page.getByRole('paragraph').filter({ hasText: text }) }),
     ),
   filterButton: () => page.getByRole('button', { name: filterButton, exact: true }),
+  filterFieldOption: (name: string) => page.getByRole('option', { name, exact: true }),
+  resetFiltersButton: () => page.getByRole('button', { name: 'Reset filters', exact: true }),
+  filteredEmptyState: () => page.getByText('No comments match these filters', { exact: true }),
   showAllButton: () => page.getByRole('button', { name: showAllCommentsButton }),
   disableCommentingMenuItem: () => page.getByRole('menuitem', { name: 'Disable commenting' }),
   enableCommentingMenuItem: () => page.getByRole('menuitem', { name: 'Enable commenting' }),
@@ -83,6 +86,11 @@ export const commentsScreen = {
   analyticsSheet: () => page.getByRole('dialog', { name: analyticsSheetLabel }),
   analyticsDateRange: () => page.getByRole('combobox', { name: dateRangeSelect }),
   analyticsDateRangeOption: (name: string) => page.getByRole('option', { name }),
+  customDateRangeDialog: () => page.getByRole('dialog', { name: 'Custom date range' }),
+  customDateRangeStart: () => commentsScreen.customDateRangeDialog().getByLabelText('Start date'),
+  customDateRangeEnd: () => commentsScreen.customDateRangeDialog().getByLabelText('End date'),
+  applyCustomDateRangeButton: () =>
+    commentsScreen.customDateRangeDialog().getByRole('button', { name: 'Apply', exact: true }),
   analyticsKpiValue: (metric: 'comments' | 'commenters' | 'reported') =>
     page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}`),
   analyticsKpiTrend: (metric: 'comments' | 'commenters' | 'reported') =>

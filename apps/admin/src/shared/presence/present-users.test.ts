@@ -88,4 +88,11 @@ describe('describePresence', () => {
       'Alex, Sam and Kim have this post open',
     );
   });
+
+  it('leads with the viewer as You', () => {
+    expect(describePresence([], 'post', { withViewer: true })).toBe('You have this post open');
+    expect(describePresence(['Sam Kim'], 'page', { withViewer: true })).toBe(
+      'You and Sam Kim have this page open',
+    );
+  });
 });

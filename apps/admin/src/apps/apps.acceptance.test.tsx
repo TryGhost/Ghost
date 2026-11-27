@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import type {
   AppInstallation,
@@ -9,6 +9,7 @@ import {
   allowUnhandledRequests,
   callAppFrame,
   callHostRaw,
+  configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -41,6 +42,7 @@ import {
   fakeInstallations,
   fakeSessionStart,
   imageSources,
+  SESSION_TOKEN,
   installation,
   labs,
   manifest,
@@ -95,6 +97,15 @@ const apiError = (status: number, message: string, code?: string) =>
     status,
     headers: { 'content-type': 'application/json' },
   });
+
+/** How Ghost turns away the apps routes while the `apps` flag is off: a 404 without a code. */
+const appsTurnedOff = () =>
+  new Response(
+    JSON.stringify({
+      errors: [{ type: 'NotFoundError', message: 'Resource could not be found.' }],
+    }),
+    { status: 404, headers: { 'content-type': 'application/json' } },
+  );
 
 /**
  * Sets `appFrameTimeouts.ready` to `ms` while `run` runs, or until `run` calls `restore` to give
@@ -583,6 +594,120 @@ describe('Managing apps', () => {
     expect(sessionsApi.requests).toHaveLength(2);
   });
 
+  it('says apps need the new auth engine on a site that doesn’t run it, with no Try again', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'Apps need Ghost’s new auth engine.', 'APP_AUTH_ENGINE_UNSUPPORTED'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('app-needs-new-auth-engine'))
+      .toHaveTextContent('Apps need Ghost’s new auth engine');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+  });
+
+  it('says apps open after a restart when the apps flag was turned on since Ghost started', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'Apps can’t open until Ghost restarts.', 'APP_TOKENS_UNAVAILABLE'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('apps-need-restart'))
+      .toHaveTextContent('they open once Ghost restarts');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+
+    sessionsApi.set(installation());
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('says apps are turned off when Ghost turns the session away for that, with no Try again', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    let appsOn = true;
+    sessionsApi.setAnswer(() => {
+      // Turned off elsewhere since Admin loaded its config
+      appsOn = false;
+      return appsTurnedOff();
+    });
+
+    await renderAdminApp(APP_ROUTE, {
+      boot: {
+        browseConfig: { response: () => configResponse({ labs: { ...labs, apps: appsOn } }) },
+      },
+    });
+
+    await expect
+      .element(page.getByTestId('apps-turned-off'))
+      .toHaveTextContent('Apps are turned off on this site');
+    await expect.element(appsScreen.notInstalled()).not.toBeInTheDocument();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+  });
+
+  it('says an app couldn’t load, not that apps are off, when Ghost turns its session away with the config showing them on', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(appsTurnedOff());
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByText('Couldn’t load this app. Please try again.')).toBeVisible();
+    await expect.element(page.getByTestId('apps-turned-off')).not.toBeInTheDocument();
+    await expect.element(appsScreen.notInstalled()).not.toBeInTheDocument();
+  });
+
+  it('says the staff user doesn’t have access to apps when their role can’t read installations', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      new Response(
+        JSON.stringify({
+          errors: [
+            {
+              type: 'NoPermissionError',
+              message: 'You do not have permission to read app_installations',
+            },
+          ],
+        }),
+        { status: 403, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(page.getByTestId('apps-access-denied')).toBeVisible();
+  });
+
+  it('says the staff user doesn’t have access to apps when Ghost refuses them a session', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(
+        403,
+        'Apps open only in a signed-in Administrator’s or Owner’s session.',
+        'APP_STAFF_SESSION_REQUIRED',
+      ),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(page.getByTestId('apps-access-denied'))
+      .toHaveTextContent('You don’t have access to apps');
+    await expect.element(page.getByText('Couldn’t load this app')).not.toBeInTheDocument();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
   // Uninstalling and installing it again from a link is how another developer's key gets pinned.
   it('says Ghost couldn’t confirm it’s the app installed, sending the publisher to its developer', async () => {
     fakeInstallations([installation()]);
@@ -662,7 +787,7 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.footer()).not.toHaveAttribute('data-development');
     });
 
-    it('marks a development build in its footer, below the frame', async () => {
+    it('marks a development build in its footer, over the bottom of the frame', async () => {
       const development = installation({ manifest: manifest({ development: true }) });
       await fakeAppPage(development);
 
@@ -673,7 +798,171 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.footer()).toHaveAttribute('data-development');
       const frame = appsScreen.frame().element().getBoundingClientRect();
       const footer = appsScreen.footer().element().getBoundingClientRect();
-      expect(frame.bottom).toBeLessThanOrEqual(footer.top);
+      expect(Math.round(footer.bottom)).toBe(Math.round(frame.bottom));
+    });
+
+    it('tells the app how far the footer reaches over its page', async () => {
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const footer = appsScreen.footer().element().getBoundingClientRect();
+      await expect
+        .poll(async () => (await appState()).safeArea)
+        .toEqual({
+          top: '0px',
+          right: '0px',
+          bottom: `${Math.round(footer.height)}px`,
+          left: '0px',
+        });
+    });
+
+    it('runs the app’s page beneath Admin 7’s nav, which it keeps out of the safe area', async () => {
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+      const nav = document.querySelector('[data-slot=floating-sidebar]')!;
+      const frame = appsScreen.frame().element();
+      const footer = appsScreen.footer().element();
+      const left = async () => parseFloat((await appState()).safeArea.left);
+      const pageStart = () =>
+        Math.round(footer.getBoundingClientRect().left - frame.getBoundingClientRect().left);
+
+      expect(frame.getBoundingClientRect().left).toBeLessThan(nav.getBoundingClientRect().right);
+      await expect.poll(async () => [await left(), pageStart()]).toSatisfy(([a, b]) => a === b);
+      expect(frame.getBoundingClientRect().left + (await left())).toBeGreaterThanOrEqual(
+        nav.getBoundingClientRect().right,
+      );
+      const pinned = await left();
+
+      // Unpinned, the nav's circle reaches further in than Admin's padding beside it.
+      const frameLeft = frame.getBoundingClientRect().left;
+      await userEvent.keyboard('{Control>}b{/Control}');
+      await expect.poll(sidebarScreen.floatingState).not.toBe('pinned');
+      await expect.poll(left).toBeLessThan(pinned);
+      const circle = document.querySelector('[data-slot=floating-sidebar]')!;
+      await expect
+        .poll(async () => frameLeft + (await left()) - circle.getBoundingClientRect().right)
+        .toBeGreaterThanOrEqual(0);
+      expect(frame.getBoundingClientRect().left).toBeCloseTo(frameLeft, 0);
+      // Admin keeps its own pages clear of the circle on both sides.
+      expect((await appState()).safeArea.right).toBe(`${await left()}px`);
+    });
+
+    it('keeps the safe area as the docked side panel widens over the page, which keeps its layout', async () => {
+      await page.viewport(1600, 800);
+      onTestFinished(() => page.viewport(1280, 720));
+      await fakeAppPage(installation());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const help = document.createElement('iframe');
+      help.srcdoc = '<p>Help</p>';
+      const panel = window.ghost!.sidePanel.open(help, { size: 'default' });
+      const panelLeft = () =>
+        Math.round(document.querySelector('[data-side-panel]')!.getBoundingClientRect().left);
+      await expect.poll(() => panelLeft()).toBeLessThan(1600 - 100);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 700);
+      });
+      const before = (await appState()).safeArea;
+
+      panel?.setSize('full');
+
+      // Sampled on every poll until the panel stops widening.
+      const seen = new Set<string>();
+      let last: number | undefined;
+      await expect
+        .poll(async () => {
+          seen.add(JSON.stringify((await appState()).safeArea));
+          const [previous, now] = [last, panelLeft()];
+          last = now;
+          return previous === now && now < 800;
+        })
+        .toBe(true);
+      expect([...seen]).toEqual([JSON.stringify(before)]);
+      expect(appsScreen.frame().element().getBoundingClientRect().right).toBeGreaterThan(
+        panelLeft(),
+      );
+    });
+
+    for (const pinned of [true, false]) {
+      it(`centres the safe area where Admin centres its own pages, beside Admin 7’s ${pinned ? 'pinned' : 'unpinned'} nav`, async () => {
+        allowUnhandledRequests();
+        fakeInstallations([installation()]);
+        await fakeAppPage(installation());
+        const me = currentUserResponse();
+        me.users[0].accessibility = JSON.stringify({
+          navigation: {
+            expanded: { posts: true, members: true },
+            menu: { visible: true, mode: pinned ? 'full' : 'compact' },
+          },
+        });
+        await renderAdminApp('/apps', {
+          labs: { ...labs, admin7Design: true },
+          boot: { browseMe: { response: me } },
+        });
+        await expect.element(appsScreen.row('Podcast')).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe(pinned ? 'pinned' : 'closed');
+        const listPage = document.querySelector<HTMLElement>('[data-list-page=list-page]')!;
+        const box = listPage.getBoundingClientRect();
+        const style = getComputedStyle(listPage);
+        const adminMiddle =
+          (box.left + parseFloat(style.paddingLeft) + box.right - parseFloat(style.paddingRight)) /
+          2;
+
+        await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
+
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect
+          .poll(async () => {
+            const { safeArea } = await appState();
+            const frame = appsScreen.frame().element().getBoundingClientRect();
+            const middle =
+              (frame.left + parseFloat(safeArea.left) + frame.right - parseFloat(safeArea.right)) /
+              2;
+            return Math.abs(middle - adminMiddle);
+          })
+          .toBeLessThanOrEqual(1);
+      });
+    }
+
+    it('keeps hovering below Admin 7’s unpinned nav opening it, over the app’s page', async () => {
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({
+        navigation: {
+          expanded: { posts: true, members: true },
+          menu: { visible: true, mode: 'compact' },
+        },
+      });
+      await renderAdminApp(APP_ROUTE, {
+        labs: { ...labs, admin7Design: true },
+        boot: { browseMe: { response: me } },
+      });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.poll(sidebarScreen.floatingState).toBe('closed');
+      const circle = document
+        .querySelector('[data-slot=floating-sidebar]')!
+        .getBoundingClientRect();
+      const frame = appsScreen.frame().element().getBoundingClientRect();
+      const x = circle.left + circle.width / 2;
+      const y = circle.bottom + 120;
+      expect(frame.left).toBeLessThan(x);
+      expect(document.elementFromPoint(x, y)).not.toBe(appsScreen.frame().element());
+
+      const strip = document.elementFromPoint(x, y) as HTMLElement;
+      const box = strip.getBoundingClientRect();
+      await userEvent.hover(appsScreen.footer());
+      await userEvent.hover(page.elementLocator(strip), {
+        position: { x: x - box.left, y: y - box.top },
+      });
+      await expect.poll(sidebarScreen.floatingState).toBe('open');
     });
 
     it('keeps the footer beside the default nav, with the same space at both ends', async () => {
@@ -687,7 +976,7 @@ describe('Managing apps', () => {
       expect(footerSpace(nav).start).toBeGreaterThan(0);
     });
 
-    it('keeps the footer under the frame beside Admin 7’s unpinned nav', async () => {
+    it('keeps the footer in the safe area beside Admin 7’s unpinned nav', async () => {
       allowUnhandledRequests();
       await fakeAppPage(installation());
       const me = currentUserResponse();
@@ -704,15 +993,20 @@ describe('Managing apps', () => {
       });
 
       await expect.element(appsScreen.frame()).toBeVisible();
-      // Admin pads the page evenly beside the unpinned nav, so the footer runs as wide as the frame.
+      // Admin pads the page evenly beside the unpinned nav, and the frame runs beneath the padding.
       const frame = appsScreen.frame().element();
       const footer = appsScreen.footer().element();
       await expect
-        .poll(() => {
+        .poll(async () => {
           const [f, a] = [footer.getBoundingClientRect(), frame.getBoundingClientRect()];
-          return [Math.round(f.left - a.left), Math.round(f.right - a.right)];
+          const { safeArea } = await appState();
+          return [
+            Math.round(f.left - a.left) <= parseFloat(safeArea.left),
+            safeArea.right === safeArea.left,
+            Math.round(a.right - f.right) > 0,
+          ];
         })
-        .toEqual([0, 0]);
+        .toEqual([true, true, true]);
     });
 
     it('keeps the footer beside Admin 7’s pinned nav, with the same space at both ends', async () => {
@@ -991,6 +1285,11 @@ describe('Managing apps', () => {
     // The index of Admin's current history entry, as React Router numbers them.
     const historyIndex = () => (window.history.state as { idx?: number } | null)?.idx ?? 0;
     const frameAddress = async () => (await appState()).address;
+    /** The frame's address once its document has connected; a path sent before then is lost. */
+    const startedFrameAddress = async () => {
+      const { address, path } = await appState();
+      return path === address ? address : `${address} (not started)`;
+    };
 
     it('follows the app’s own route in Admin’s URL, without reloading the app', async () => {
       await fakeAppPage(installation());
@@ -1032,32 +1331,34 @@ describe('Managing apps', () => {
 
         answer(await move('/episodes'));
         await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
-        await expect.poll(frameAddress).toBe('/episodes');
+        await expect.poll(startedFrameAddress).toBe('/episodes');
         answer(await move('/episodes/12'));
         await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes/12`);
-        await expect.poll(frameAddress).toBe('/episodes/12');
+        await expect.poll(startedFrameAddress).toBe('/episodes/12');
 
         window.history.back();
         await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
-        await expect.poll(frameAddress).toBe('/episodes');
+        await expect.poll(startedFrameAddress).toBe('/episodes');
         window.history.back();
         await expect.poll(currentRoute).toBe(APP_ROUTE);
-        await expect.poll(frameAddress).toBe('/admin');
+        await expect.poll(startedFrameAddress).toBe('/admin');
         window.history.forward();
         await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
-        await expect.poll(frameAddress).toBe('/episodes');
+        await expect.poll(startedFrameAddress).toBe('/episodes');
 
         // The publisher leaves for the Apps list, then comes back with back.
         await sidebarScreen.navLink('Apps').click();
         await expect.poll(currentRoute).toBe('/apps');
+        // Admin's URL changes before the list renders, and back before then keeps the old frame.
+        await expect.element(appsScreen.frame()).not.toBeInTheDocument();
         window.history.back();
         await expect.poll(currentRoute).toBe(`${APP_ROUTE}/episodes`);
         await expect.element(appsScreen.frame()).toBeVisible();
         // The page opens where the publisher was, with no steps of the frame's own to go through.
-        await expect.poll(frameAddress).toBe('/episodes');
+        await expect.poll(startedFrameAddress).toBe('/episodes');
         window.history.back();
         await expect.poll(currentRoute).toBe(APP_ROUTE);
-        await expect.poll(frameAddress).toBe('/admin');
+        await expect.poll(startedFrameAddress).toBe('/admin');
         window.history.back();
         await expect.poll(currentRoute).toBe('/apps');
       });
@@ -1267,6 +1568,461 @@ describe('Managing apps', () => {
     });
   });
 
+  describe('the app’s overlay', () => {
+    const tintClasses = (): string[] =>
+      (appsScreen.overlayTint().element() as HTMLElement).className.split(' ');
+    const showOverlay = (tint: 'dialog' | 'sheet') =>
+      callHostRaw(APP_ORIGIN, 'overlayShown', { tint });
+
+    it('covers Admin with its tint and the overlay frame while the page has a dialog open', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+
+      answer(await showOverlay('sheet'));
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      await expect.poll(() => tintClasses()).toContain('opacity-100');
+      expect(tintClasses()).toContain('bg-black/10');
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      await expect.poll(() => tintClasses()).toContain('opacity-0');
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+    });
+
+    it('loads the overlay frame at the page’s route, and keeps it there as the app moves', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(`${APP_ROUTE}/episodes/12`, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect
+        .element(appsScreen.overlayFrame())
+        .toHaveAttribute('src', `${APP_ORIGIN}/episodes/12`);
+
+      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/13'));
+
+      await expect.poll(() => currentRoute()).toBe(`${APP_ROUTE}/episodes/13`);
+      await expect
+        .element(appsScreen.overlayFrame())
+        .toHaveAttribute('src', `${APP_ORIGIN}/episodes/12`);
+    });
+
+    it('leaves the overlay to the page when the publisher presses the tint', async () => {
+      // A raw page ignores the press, as a page whose dialog stays open does.
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+
+      await userEvent.click(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      expect(tintClasses()).not.toContain('opacity-0');
+    });
+
+    describe('shows only the app’s safe area', () => {
+      const overlayFrame = () => appsScreen.overlayFrame().element() as HTMLIFrameElement;
+      const pressed = (x: number, y: number) => document.elementFromPoint(x, y);
+      const tint = () => appsScreen.overlayTint().element();
+
+      it('over the whole window, so the dialog lays out as Admin’s own would', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const box = overlayFrame().getBoundingClientRect();
+        expect([box.left, box.top, box.width, box.height]).toEqual([
+          0,
+          0,
+          window.innerWidth,
+          window.innerHeight,
+        ]);
+      });
+
+      it('over the app’s page, and none of Admin’s chrome, its footer included', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+
+        answer(await showOverlay('sheet'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const pageBox = appsScreen.frame().element().getBoundingClientRect();
+        const footer = appsScreen.footer().element().getBoundingClientRect();
+        const middle = (pageBox.top + footer.top) / 2;
+        expect(pressed(pageBox.left + 2, middle)).toBe(overlayFrame());
+        expect(pressed(pageBox.right - 2, pageBox.top + 2)).toBe(overlayFrame());
+        expect(pressed(pageBox.left + 2, footer.top - 2)).toBe(overlayFrame());
+        expect(pressed(pageBox.left - 2, middle)).toBe(tint());
+        expect(pressed(pageBox.left + 2, footer.top + 2)).toBe(tint());
+      });
+
+      it('clear of Admin 7’s unpinned nav, whose circle reaches past the page’s padding', async () => {
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        const me = currentUserResponse();
+        me.users[0].accessibility = JSON.stringify({
+          navigation: {
+            expanded: { posts: true, members: true },
+            menu: { visible: true, mode: 'compact' },
+          },
+        });
+        await renderAdminApp(APP_ROUTE, {
+          labs: { ...labs, admin7Design: true },
+          boot: { browseMe: { response: me } },
+        });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('closed');
+        const circle = document
+          .querySelector('[data-slot=floating-sidebar]')!
+          .getBoundingClientRect();
+
+        answer(await showOverlay('sheet'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const middle = circle.top + circle.height / 2;
+        // The circle and the margin beside it where hovering opens the nav, then past them.
+        expect(pressed(circle.right - 2, middle)).toBe(tint());
+        expect(pressed(circle.right + 12, middle)).toBe(tint());
+        expect(pressed(circle.right + 20, middle)).toBe(overlayFrame());
+
+        // The nav opens only for a pointer that comes from elsewhere, so this starts beside it.
+        await userEvent.hover(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+        await userEvent.hover(appsScreen.overlayFrame(), {
+          position: { x: circle.right + 60, y: middle },
+        });
+        await userEvent.hover(appsScreen.overlayTint(), {
+          position: { x: circle.left + circle.width / 2, y: circle.bottom + 120 },
+        });
+        await new Promise((resolve) => {
+          setTimeout(resolve, 300);
+        });
+        expect(sidebarScreen.floatingState()).toBe('closed');
+      });
+
+      it('over Admin 7’s unpinned nav while it closes, as Admin’s own sheets cover it', async () => {
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        const me = currentUserResponse();
+        me.users[0].accessibility = JSON.stringify({
+          navigation: {
+            expanded: { posts: true, members: true },
+            menu: { visible: true, mode: 'compact' },
+          },
+        });
+        await renderAdminApp(APP_ROUTE, {
+          labs: { ...labs, admin7Design: true },
+          boot: { browseMe: { response: me } },
+        });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('closed');
+        const circle = document
+          .querySelector('[data-slot=floating-sidebar]')!
+          .getBoundingClientRect();
+        await userEvent.hover(appsScreen.footer());
+        await userEvent.hover(appsScreen.frame(), {
+          position: { x: 300, y: 300 },
+        });
+        await userEvent.hover(sidebarScreen.shellNav(), {
+          position: { x: circle.width / 2, y: circle.height + 120 },
+        });
+        await expect.poll(sidebarScreen.floatingState).toBe('open');
+        const panel = document
+          .querySelector('[data-slot=floating-sidebar]')!
+          .getBoundingClientRect();
+
+        answer(await showOverlay('sheet'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const middle = panel.top + panel.height / 2;
+        expect([sidebarScreen.floatingState(), pressed(panel.right - 4, middle)]).toEqual([
+          'open',
+          overlayFrame(),
+        ]);
+        expect(pressed(panel.right + 20, middle)).toBe(overlayFrame());
+      });
+
+      it('moves the side panel’s window out of its way, also when it opens between dialogs', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        answer(await showOverlay('dialog'));
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+        await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+        const help = document.createElement('iframe');
+        help.srcdoc = '<p>Help</p>';
+        window.ghost!.sidePanel.open(help, { size: 'default' });
+        const window_ = () => document.querySelector('[data-side-panel-layout=window]')!;
+        await expect.poll(() => window_().getAttribute('data-side-panel')).toBe('default');
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
+        const panel = window_().getBoundingClientRect();
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        expect(getComputedStyle(window_()).visibility).toBe('hidden');
+        expect(pressed(panel.left + 4, panel.top + 4)).toBe(overlayFrame());
+
+        answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+        await expect.poll(() => getComputedStyle(window_()).visibility).toBe('visible');
+      });
+
+      it('moves the side panel’s bar out of its way, which floats beside a docked panel too', async () => {
+        onTestFinished(() => page.viewport(1280, 720));
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        const help = document.createElement('iframe');
+        help.srcdoc = '<p>Help</p>';
+        const panel = window.ghost!.sidePanel.open(help, { size: 'default' });
+        panel?.setSize('minimized');
+        const bar = () => document.querySelector('[data-side-panel=minimized]');
+        await expect.poll(() => bar()).not.toBeNull();
+        await page.viewport(1600, 800);
+        await expect.poll(() => bar()?.getAttribute('data-side-panel-layout')).toBe('docked');
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
+        const box = bar()!.getBoundingClientRect();
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        expect(getComputedStyle(bar()!).visibility).toBe('hidden');
+        expect(pressed(box.left + box.width / 2, box.top + box.height / 2)).not.toBe(bar());
+      });
+
+      it('beside the docked side panel at its default width, also when it was expanded', async () => {
+        await page.viewport(1600, 800);
+        onTestFinished(() => page.viewport(1280, 720));
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        const help = document.createElement('iframe');
+        help.srcdoc = '<p>Help</p>';
+        const panel = window.ghost!.sidePanel.open(help, { size: 'default' });
+        const docked = () => document.querySelector('[data-side-panel-layout=docked]')!;
+        const panelLeft = () => Math.round(docked().getBoundingClientRect().left);
+        await expect.poll(() => docked().getAttribute('data-side-panel')).toBe('default');
+        await new Promise((resolve) => {
+          setTimeout(resolve, 700);
+        });
+        const defaultLeft = panelLeft();
+        panel?.setSize('full');
+        await expect.poll(panelLeft).toBeLessThan(defaultLeft - 200);
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        await expect.poll(panelLeft).toBe(defaultLeft);
+        const middle = window.innerHeight / 2;
+        await expect.poll(() => pressed(defaultLeft - 20, middle)).toBe(overlayFrame());
+        expect(pressed(defaultLeft + 20, middle)).toBe(tint());
+      });
+
+      it('and takes no presses from the moment it starts to hide', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        answer(await showOverlay('dialog'));
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const pageBox = appsScreen.frame().element().getBoundingClientRect();
+        const centre = [pageBox.left + pageBox.width / 2, pageBox.top + 100] as const;
+        expect(pressed(...centre)).toBe(overlayFrame());
+
+        answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+        await expect.poll(() => pressed(...centre)).toBe(appsScreen.frame().element());
+        expect(getComputedStyle(overlayFrame()).visibility).toBe('visible');
+      });
+
+      it('with the card’s rounded corners, which stay Admin’s', async () => {
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs: { ...labs, admin7Design: true } });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+
+        answer(await showOverlay('sheet'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const card = appsScreen.frame().element().getBoundingClientRect();
+        expect(pressed(card.right - 1, card.top + 1)).toBe(tint());
+        expect(pressed(card.right - 12, card.top + 12)).toBe(overlayFrame());
+      });
+
+      it('beside Admin 7’s pinned nav, which the app’s page runs beneath', async () => {
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs: { ...labs, admin7Design: true } });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+        const nav = document.querySelector('[data-slot=floating-sidebar]')!.getBoundingClientRect();
+        const pageBox = appsScreen.frame().element().getBoundingClientRect();
+        expect(pageBox.left).toBeLessThan(nav.right);
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const footer = appsScreen.footer().element().getBoundingClientRect();
+        const middle = (pageBox.top + footer.top) / 2;
+        expect(pressed(nav.right - 2, middle)).toBe(tint());
+        expect(pressed(footer.left + 2, middle)).toBe(overlayFrame());
+        expect(pressed(footer.left + 2, pageBox.top - 2)).toBe(tint());
+      });
+    });
+
+    it('keeps focus in the overlay frame when the publisher presses the tint', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      const overlayFrame = appsScreen.overlayFrame().element();
+      await expect.poll(() => document.activeElement).toBe(overlayFrame);
+
+      await userEvent.click(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+
+      expect(document.activeElement).toBe(overlayFrame);
+    });
+
+    it('puts focus back in the page frame as the overlay hides', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      await expect.poll(() => document.activeElement).toBe(appsScreen.frame().element());
+    });
+
+    it('leaves focus that left the overlay where it went as the overlay hides', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
+      const elsewhere = document.createElement('button');
+      document.body.append(elsewhere);
+      onTestFinished(() => elsewhere.remove());
+      elsewhere.focus();
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+      expect(document.activeElement).toBe(elsewhere);
+    });
+
+    it('keeps Tab and Shift+Tab in the topmost of the page’s nested dialogs', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      const opened = async () =>
+        !(
+          'error' in
+          (await callAppFrame(APP_ORIGIN, 'openDialogs', [
+            ['Outer first', 'Outer last'],
+            ['Inner first', 'Inner last'],
+          ]))
+        );
+      // Retried until the overlay has loaded.
+      await expect.poll(opened).toBe(true);
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      const focused = () => callAppFrame(APP_ORIGIN, 'overlayFocus');
+      await expect.poll(focused).toBe('Inner first');
+      await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+      await expect.poll(focused).toBe('Inner last');
+      await userEvent.keyboard('{Tab}');
+      await expect.poll(focused).toBe('Inner first');
+    });
+
+    it(
+      'covers Admin with a dialog the page opens without a press, and moves focus into it',
+      { timeout: 30_000 },
+      async () => {
+        await fakeAppPage(installation());
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.element(appsScreen.overlayFrame()).toBeInTheDocument();
+        const chrome = [...document.querySelectorAll<HTMLAnchorElement>('a[href]')].find((link) =>
+          link.checkVisibility(),
+        );
+        chrome?.focus();
+        expect(document.activeElement).toBe(chrome);
+
+        // Past the 5 seconds of activation that calling into the frame gives it and Admin.
+        answer(await callAppFrame(APP_ORIGIN, 'openDialogLater', ['First', 'Last'], 7_000));
+        // Read in Admin alone until then, as calling into the frame would activate it.
+        await expect
+          .poll(() => document.activeElement, { timeout: 15_000 })
+          .toBe(appsScreen.overlayFrame().element());
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500);
+        });
+
+        expect((await appState()).laterDialog).toEqual({ activation: false, focused: 'First' });
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        expect(tintClasses()).toContain('opacity-100');
+        const focused = () => callAppFrame(APP_ORIGIN, 'overlayFocus');
+        expect(await focused()).toBe('First');
+        await userEvent.keyboard('{Tab}');
+        await expect.poll(focused).toBe('Last');
+        await userEvent.keyboard('{Tab}');
+        await expect.poll(focused).toBe('First');
+
+        await userEvent.keyboard('{Escape}');
+
+        await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+        await expect.poll(() => document.activeElement).toBe(appsScreen.frame().element());
+      },
+    );
+
+    it('makes the rest of Admin inert and hidden from assistive technology while the overlay shows', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const admin = [...document.body.children].find((element) =>
+        element.contains(appsScreen.frame().element()),
+      ) as HTMLElement | undefined;
+      const state = () => ({ hidden: admin?.getAttribute('aria-hidden'), inert: admin?.inert });
+      expect(state()).toEqual({ hidden: null, inert: false });
+
+      answer(await showOverlay('dialog'));
+      await expect.poll(state).toEqual({ hidden: 'true', inert: true });
+      expect(appsScreen.overlayFrame().element().closest('[inert]')).toBeNull();
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+      await expect.poll(state).toEqual({ hidden: null, inert: false });
+    });
+
+    it('loads the app’s page again when the overlay frame holds a document on Admin’s origin', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.overlayFrame()).toBeInTheDocument();
+      const overlayFrame = appsScreen.overlayFrame().element() as HTMLIFrameElement;
+      // Until the app's page is in the frame, its navigation there can still win over this one.
+      await expect.poll(() => overlayFrame.contentDocument).toBeNull();
+
+      // A `srcdoc` document is on Admin's origin, standing in for one the app navigated to.
+      overlayFrame.srcdoc = '<p>Admin’s own</p>';
+
+      await expect.poll(() => overlayFrame.isConnected).toBe(false);
+      await expect.element(appsScreen.frame()).toBeVisible();
+    });
+  });
+
   describe('the Admin API, on the app’s behalf', () => {
     /** An installation approved to work with posts and pages and add tags, as these calls need. */
     const postsApp = () =>
@@ -1298,6 +2054,107 @@ describe('Managing apps', () => {
       const { headers } = postsApi.requests[0];
       expect(headers['app-pragma']).toBe('no-cache');
       expect(headers['x-podcast-trace']).toBe('abc');
+      // The session's token, which the app's frame never sees
+      expect(headers.authorization).toBe(`Bearer ${SESSION_TOKEN.access_token}`);
+    });
+
+    it('renews a token Ghost refused and sends the request again, without reloading the app', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const renewApi = fakeAdminEndpoint('POST', `/apps/installations/${postsApp().id}/tokens/`, {
+        app_tokens: [{ ...SESSION_TOKEN, access_token: 'ghost_app_renewed' }],
+      });
+      const postsApi = fakeAdminEndpoint('GET', '/posts/?include=authors', ({ headers }) =>
+        headers.authorization === 'Bearer ghost_app_renewed'
+          ? { posts: [] }
+          : apiError(401, 'The app token is invalid or has expired.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const frame = appsScreen.frame().element();
+
+      const response = answer(await callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }));
+
+      expect(response.status).toBe(200);
+      expect(postsApi.requests).toHaveLength(2);
+      expect(renewApi.requests).toHaveLength(1);
+      expect(renewApi.requests[0].body).toEqual({
+        app_tokens: [{ revision: postsApp().revision }],
+      });
+      expect(appsScreen.frame().element()).toBe(frame);
+      expect(sessionsApi.requests).toHaveLength(1);
+    });
+
+    it('ends the session when Ghost refuses to renew its token', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        apiError(409, 'This app session has ended.', 'APP_SESSION_ENDED'),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'The app token is invalid or has expired.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      // The session ends while the call is out, taking the frame with it
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      // Ended as any session is: Admin starts a new one
+      await expect.poll(() => sessionsApi.requests.length).toBe(2);
+    });
+
+    it('shows apps are turned off when they were while it was open, renewing nothing more', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const renewApi = fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        appsTurnedOff(),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'Apps are not enabled on this site.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      sessionsApi.set(appsTurnedOff());
+      // Turned off elsewhere: Admin still holds the config it loaded with them on
+      fakeAdminEndpoint('GET', '/config/', configResponse({ labs: { apps: false } }));
+
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      await expect.element(page.getByTestId('apps-turned-off')).toBeVisible();
+      expect(renewApi.requests).toHaveLength(1);
+      expect(sessionsApi.requests).toHaveLength(2);
+    });
+
+    it('says the staff user doesn’t have access to apps once Ghost refuses them while it’s open', async () => {
+      const { sessionsApi } = await fakeAppPage(postsApp());
+      const staffSessionRequired = apiError(
+        403,
+        'Apps open only in a signed-in Administrator’s or Owner’s session.',
+        'APP_STAFF_SESSION_REQUIRED',
+      );
+      fakeAdminEndpoint(
+        'POST',
+        `/apps/installations/${postsApp().id}/tokens/`,
+        staffSessionRequired.clone(),
+      );
+      fakeAdminEndpoint(
+        'GET',
+        '/posts/?include=authors',
+        apiError(401, 'The staff user behind the app token is not active.', 'APP_TOKEN_INVALID'),
+      );
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      sessionsApi.set(staffSessionRequired);
+
+      void callAppFrame(APP_ORIGIN, 'fetch', { path: '/posts/' }).catch(() => {});
+
+      await expect.element(page.getByTestId('apps-access-denied')).toBeVisible();
     });
 
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
@@ -1895,10 +2752,14 @@ describe('Managing apps', () => {
 
     const dialog = appsScreen.uninstallDialog();
     await expect.element(dialog).toHaveTextContent('Uninstall Podcast?');
-    // Ghost can't stop a copy that's already open elsewhere, so it doesn't say it does.
+    // A copy already open elsewhere closes on its own, not straight away
     await expect
       .element(dialog)
-      .toHaveTextContent('The app stops opening for everyone. Where it’s already open');
+      .toHaveTextContent(
+        'The app loses its access to your site straight away, and no one can open it. If someone has it open right now, it will close on its own within the hour.',
+      );
+    // Once it closes nothing of it runs, so the dialog doesn't say its other requests still work
+    await expect.element(dialog).not.toHaveTextContent('anywhere other than Ghost');
     await expect
       .element(appsScreen.integrationKeyNote())
       .toHaveTextContent('Settings › Integrations');

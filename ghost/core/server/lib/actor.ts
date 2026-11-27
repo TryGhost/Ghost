@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Principal } from '../auth/principal';
 
 /** Who made a change: a staff user, or an integration through its API key. */
 export interface Actor {
@@ -9,6 +10,8 @@ export interface Actor {
 /** What a command knows about the request that called it. Null when nobody is acting. */
 export interface RequestContext {
   actor: Actor | null;
+  /** The app installation the request came through, if an app made it. */
+  appInstallationId?: string;
 }
 
 /**
@@ -65,7 +68,30 @@ export function actorFrom(identity: FrameIdentity): Actor | null {
   return null;
 }
 
+type AppPrincipal = Extract<Principal, { kind: 'app' }>;
+
+// Tied to the app principal's type, so renaming its fields fails to compile instead of quietly
+// recording no app.
+const AppPrincipalFrame = z.object({
+  principal: z.object({
+    kind: z.literal('app'),
+    app: z.object({ id: z.string().min(1) }),
+  }),
+}) satisfies z.ZodType<{
+  principal: Pick<AppPrincipal, 'kind'> & { app: Pick<AppPrincipal['app'], 'id'> };
+}>;
+
+/** Reads the app installation a request came through from its app principal, if it has one. */
+export function appInstallationIdFrom(context: unknown): string | undefined {
+  const frame = AppPrincipalFrame.safeParse(context);
+  return frame.success ? frame.data.principal.app.id : undefined;
+}
+
 /** Reads the context a command needs from an API frame's context. */
 export function actingContext(context: unknown): RequestContext {
-  return { actor: actorFrom(readFrameIdentity(context)) };
+  const appInstallationId = appInstallationIdFrom(context);
+  return {
+    actor: actorFrom(readFrameIdentity(context)),
+    ...(appInstallationId ? { appInstallationId } : {}),
+  };
 }

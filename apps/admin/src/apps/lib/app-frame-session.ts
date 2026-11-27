@@ -1,7 +1,14 @@
-import { type Place, type StartContext, type Theme } from '@tryghost/app-contracts/bridge';
+import {
+  type Layout,
+  type OverlayTint,
+  type Place,
+  type StartContext,
+  type Theme,
+} from '@tryghost/app-contracts/bridge';
 import type { AdminApiFetch } from './bridge-fetch';
 import { type AppFrameHost, bindAppFrame } from './bridge-host';
 import { appFrameTimeouts } from './frame';
+import { sameLayout } from './layout';
 
 export type AppFrameStatus = 'loading' | 'ready' | 'failed';
 
@@ -14,6 +21,8 @@ export interface AppFrameState {
   attempt: number;
   /** When this load started. Used to show how long the app has gone without responding. */
   startedAt: Date;
+  /** The overlay's tint while the page has a dialog or sheet open, else undefined. */
+  overlay?: OverlayTint;
 }
 
 /**
@@ -78,6 +87,12 @@ export interface AppFrameSession {
   pathChanged: (path: string, move?: number) => void;
   /** Called when Admin's theme changes. The session sends the new theme to the app. */
   themeChanged: (theme: Theme) => void;
+  /** Called when Admin lays out the app's frame differently. The session sends the new layout. */
+  layoutChanged: (layout: Layout) => void;
+  /** Called when the publisher presses Admin's tint. The session tells the page. */
+  overlayDismissed: () => void;
+  /** Called when the overlay frame holds a document on Admin's own origin. The page loads again. */
+  overlayLeft: () => void;
 }
 
 /**
@@ -120,9 +135,9 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * app's moves as a push or a replace, which Admin records in its own history. Back and forward are
  * then Admin's own navigations, which the session sends to the app.
  *
- * Path and theme changes are passed between Admin and the app once each. The session never sends
- * the app a value it already has, whether the app sent it to Admin or Admin sent it to the app,
- * even while Admin is still catching up with routes the app has since left.
+ * Path, theme and layout changes are passed between Admin and the app once each. The session never
+ * sends the app a value it already has, whether the app sent it to Admin or Admin sent it to the
+ * app, even while Admin is still catching up with routes the app has since left.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
@@ -136,10 +151,11 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
   let shortLived = 0;
   let documentStartedAt: number | undefined;
 
-  // Admin's path within the app, and the path and theme the app last sent or was sent.
+  // Admin's path within the app, and the path, theme and layout the app last sent or was sent.
   let adminPath: string | undefined;
   let appPath: string | undefined;
   let appTheme: Theme | undefined;
+  let appLayout: Layout | undefined;
   // The navigations Admin started to follow the app but hasn't completed yet, in order. The app can
   // move again before Admin arrives, so Admin's reported path can be a route the app has already
   // left. A location created for one of these entries means Admin is catching up, not navigating by
@@ -169,6 +185,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       title: undefined,
       attempt: state.attempt + 1,
       startedAt: new Date(),
+      overlay: undefined,
     });
   };
 
@@ -194,7 +211,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     }
     if (shortLived > MAX_SHORT_LIVED) {
       detach();
-      update({ status: 'failed', title: undefined });
+      update({ status: 'failed', title: undefined, overlay: undefined });
       return false;
     }
     return true;
@@ -217,6 +234,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         adminPath = context.path;
         appPath = context.path;
         appTheme = context.theme;
+        appLayout = context.layout;
         // A new page starts at Admin's current path. It doesn't know about routes Admin is still
         // navigating to.
         following = [];
@@ -245,10 +263,29 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         },
         // The app reports each move before it asks to open a place, so its route is current.
         open: (place) => options.open(place, appPath ?? options.context().path),
+        overlayShown: ({ tint }) => {
+          if (host !== bound || state.status !== 'ready') {
+            return false;
+          }
+          if (state.overlay !== tint) {
+            update({ overlay: tint });
+          }
+          return true;
+        },
+        overlayHidden: () => {
+          if (host === bound && state.overlay !== undefined) {
+            update({ overlay: undefined });
+          }
+        },
         documentChanged: () => {
           if (host === bound && documentEnded(false)) {
             window.clearTimeout(timer);
-            update({ status: 'loading', title: undefined, startedAt: new Date() });
+            update({
+              status: 'loading',
+              title: undefined,
+              startedAt: new Date(),
+              overlay: undefined,
+            });
             timer = window.setTimeout(restartOnItsOwn, appFrameTimeouts.ready);
           }
         },
@@ -267,7 +304,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     const fail = () => {
       if (host === bound) {
         bound.dispose();
-        update({ status: 'failed', title: undefined });
+        update({ status: 'failed', title: undefined, overlay: undefined });
       }
     };
     // Cleared as soon as the app starts, so a started app is never marked unresponsive.
@@ -328,6 +365,20 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       if (host?.connected && !sameTheme(appTheme, theme)) {
         appTheme = theme;
         host.themeChanged(theme);
+      }
+    },
+    layoutChanged: (layout) => {
+      if (host?.connected && !sameLayout(appLayout, layout)) {
+        appLayout = layout;
+        host.layoutChanged(layout);
+      }
+    },
+    overlayDismissed: () => {
+      host?.overlayDismissed();
+    },
+    overlayLeft: () => {
+      if (host) {
+        restartOnItsOwn();
       }
     },
   };

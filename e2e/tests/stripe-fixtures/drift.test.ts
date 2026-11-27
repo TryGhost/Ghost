@@ -94,34 +94,49 @@ test.describe('Stripe fixtures - builder shapes match captured Stripe responses'
    * actually return means the entry is wrong, and a wrong entry is worse than none.
    */
   const consumed: Array<{ object: string; path: string; readAt: string }> = [
-    {
-      object: 'subscription',
-      path: 'plan.nickname',
-      readAt: 'member-repository isComplimentaryPlanNickname',
-    },
     { object: 'subscription', path: 'plan.amount', readAt: 'next-payment-calculator' },
     { object: 'subscription', path: 'plan.interval', readAt: 'next-payment-calculator' },
     { object: 'subscription', path: 'plan.currency', readAt: 'next-payment-calculator' },
-    { object: 'subscription', path: 'plan.product', readAt: 'invoice-event-service' },
+    { object: 'subscription', path: 'plan.product', readAt: 'invoice recordInvoicePayment' },
     {
       object: 'subscription',
       path: 'status',
-      readAt: 'member-repository isActiveSubscriptionStatus',
+      readAt: 'subscription-description describeSubscription',
     },
     {
       object: 'subscription',
       path: 'current_period_end',
-      readAt: 'member-repository linkSubscription',
+      readAt: 'subscription-description describeSubscription',
     },
     {
       object: 'subscription',
       path: 'cancel_at_period_end',
-      readAt: 'member-repository linkSubscription',
+      readAt: 'subscription-description describeSubscription',
+    },
+    {
+      object: 'subscription',
+      path: 'canceled_at',
+      readAt: 'subscription-description describeSubscription',
     },
     {
       object: 'subscription',
       path: 'items.data.0.price.id',
-      readAt: 'member-repository linkSubscription',
+      readAt: 'subscription-description describeSubscription',
+    },
+    {
+      object: 'subscription',
+      path: 'items.data.0.price.nickname',
+      readAt: 'subscription-description describeSubscription',
+    },
+    {
+      object: 'subscription',
+      path: 'items.data.0.price.type',
+      readAt: 'subscription-description describeSubscription',
+    },
+    {
+      object: 'subscription',
+      path: 'items.data.0.price.recurring.interval',
+      readAt: 'subscription-description describeSubscription',
     },
     { object: 'price', path: 'nickname', readAt: 'product-repository price sync' },
     { object: 'price', path: 'recurring.interval', readAt: 'stripe-api createPrice round trip' },

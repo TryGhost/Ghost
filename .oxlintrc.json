@@ -71,7 +71,7 @@
     {
       "files": [
         "ghost/core/server/**/*.js",
-        "ghost/core/kernel/**/*.js",
+        "ghost/core/support/**/*.js",
         "ghost/core/shared/**/*.js",
         "ghost/core/frontend/**/*.js",
         "ghost/core/*.js",
@@ -237,7 +237,7 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../kernel/define-service"
+            "helperImport": "../../../support/define-service"
           }
         ],
         "ghost/no-injected-service-libraries": "error"

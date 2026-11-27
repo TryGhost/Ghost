@@ -29,6 +29,7 @@ interface TagPickerProps {
   inputLabel: string;
   /** Ties the input to a visible label the caller renders. */
   inputId?: string;
+  disabled?: boolean;
   /** Leaves the selected tags out of the list rather than listing them ticked. */
   hideSelected?: boolean;
   /** Holds the read until the list is first opened, so a field never opened reads nothing. */
@@ -55,6 +56,7 @@ export function TagPicker({
   onReorder,
   inputLabel,
   inputId,
+  disabled = false,
   hideSelected = false,
   deferSearch = false,
   requestOptions,
@@ -114,6 +116,7 @@ export function TagPicker({
         ),
         onSelect: (typed) => onAdd({ name: typed }),
       }}
+      disabled={disabled}
       emptyMessage="No tags found"
       // Names are not unique; the slug, on hover, is what tells two of them
       // apart. A tag typed but not yet saved has none, and so no title.

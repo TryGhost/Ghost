@@ -171,9 +171,12 @@ export type Principal =
   | {
       // Field names are provisional until PLA-631; scopes are required, and missing scopes mean no access
       kind: 'app';
-      method: 'oauth_authorization_code' | 'oauth_client_credentials';
+      // `app_user_token` and `session` are provisional too: a token issued at app session
+      // start, bound to the staff session it acts in
+      method: 'oauth_authorization_code' | 'oauth_client_credentials' | 'app_user_token';
       app: AppInstallationView;
       actingFor: UserView | null;
+      session?: SessionView;
       scopes: Scopes;
     }
   | { kind: 'internal' }

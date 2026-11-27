@@ -1,8 +1,9 @@
 import CommentsAnalyticsPanel from './analytics/comments-analytics-panel';
 import CommentsAnalyticsRail from './analytics/comments-analytics-rail';
+import CommentsDateRangeSelect from './analytics/comments-date-range-select';
 import CommentsFilters from './components/comments-filters';
 import CommentsList from './components/comments-list';
-import { Box, Container, Inline } from '@tryghost/shade/primitives';
+import { Box, Container, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Button,
@@ -26,6 +27,7 @@ import { useCommentsAnalytics } from './analytics/use-comments-analytics';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useSearchParams } from '@tryghost/admin-x-framework';
 import { useWideLayout } from './analytics/use-wide-layout';
+import { STATS_RANGES } from '@/shared/analytics/constants';
 
 function getSingleCommentIdParam(searchParams: URLSearchParams): string | undefined {
   const value = searchParams.get('id');
@@ -36,7 +38,7 @@ function getSingleCommentIdParam(searchParams: URLSearchParams): string | undefi
 
 const CommentsPage: React.FC<{
   timezone: string;
-  // The list can render on the UTC fallback; analytics would fetch every query twice
+  // Shared date scopes wait for the site timezone; the plain list can use UTC.
   timezoneReady: boolean;
   singleCommentId?: string;
 }> = ({ timezone, timezoneReady, singleCommentId }) => {
@@ -51,8 +53,8 @@ const CommentsPage: React.FC<{
   const analytics = useCommentsAnalytics(
     timezone,
     analyticsEnabled && timezoneReady && (wideLayout || analyticsSheetOpened),
+    nql,
   );
-  const showAnalytics = analyticsEnabled && !analytics.unavailable;
   const handleAddFilter = useCallback(
     (field: string, value: string, operator: string = 'is') => {
       const nextFilters = [
@@ -79,14 +81,11 @@ const CommentsPage: React.FC<{
     },
     [filters, searchParams, setFilters, setSearchParams, singleCommentId, timezone],
   );
-  // Panel rows show the list for one post or member, so they replace either filter
+  // Ranking rows progressively narrow the shared scope, keeping the other fields.
   const handleAnalyticsFilter = useCallback(
     (field: 'post' | 'author', id: string) => {
       setFilters(
-        [
-          ...filters.filter((filter) => filter.field !== 'post' && filter.field !== 'author'),
-          createFilter(field, 'is', [id]),
-        ],
+        [...filters.filter((filter) => filter.field !== field), createFilter(field, 'is', [id])],
         { replace: false },
       );
     },
@@ -97,8 +96,8 @@ const CommentsPage: React.FC<{
       return `id:${escapeNqlString(singleCommentId)}`;
     }
 
-    return nql;
-  }, [nql, singleCommentId]);
+    return analyticsEnabled ? analytics.listFilter : nql;
+  }, [analytics.listFilter, analyticsEnabled, nql, singleCommentId]);
 
   const handleShowAllComments = useCallback(() => {
     setSearchParams(new URLSearchParams(), { replace: false });
@@ -110,9 +109,11 @@ const CommentsPage: React.FC<{
     isFetching,
     isFetchingNextPage,
     isRefetching,
+    isPlaceholderData,
     fetchNextPage,
     hasNextPage,
   } = useBrowseComments({
+    enabled: !analyticsEnabled || timezoneReady,
     searchParams: {
       include: adminCommentIncludes(dislikesEnabled),
       ...(effectiveFilter ? { filter: effectiveFilter } : {}),
@@ -120,136 +121,176 @@ const CommentsPage: React.FC<{
     placeholderData: keepPreviousData,
   });
 
-  const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
+  const noComments =
+    data !== undefined &&
+    !isPlaceholderData &&
+    !isFetching &&
+    !isError &&
+    data.comments.length === 0;
+  const showAnalytics = analyticsEnabled && !analytics.unavailable && !noComments;
+  if (noComments && analyticsSheetOpen) {
+    setAnalyticsSheetOpen(false);
+  }
+
+  const shouldShowLoading =
+    (analyticsEnabled && !timezoneReady) || (isFetching && !isFetchingNextPage && !isRefetching);
   const resetKey = effectiveFilter ?? '';
   const hasFilters = filters.length > 0;
   const mobileFilters = useMobileFilters();
   const [filterBarContainer, setFilterBarContainer] = useState<HTMLDivElement | null>(null);
+  const hasSharedFilters =
+    analyticsEnabled && (hasFilters || analytics.range !== STATS_RANGES.allTime.value);
+
+  const commentsBody = shouldShowLoading ? (
+    <Inline className="flex-1" justify="center">
+      <LoadingIndicator size="lg" />
+    </Inline>
+  ) : isError ? (
+    <Stack align="center" className="flex-1" gap="none" justify="center">
+      <Text as="h2" className="mb-2" size="xl" weight="medium">
+        Error loading comments
+      </Text>
+      <Text as="p" className="mb-4" tone="secondary">
+        Please reload the page to try again
+      </Text>
+      <Button onClick={() => window.location.reload()}>Reload page</Button>
+    </Stack>
+  ) : !data?.comments.length ? (
+    <Stack align="center" className="flex-1" gap="none" justify="center">
+      <EmptyIndicator
+        title={
+          singleCommentId
+            ? 'Comment not found'
+            : hasSharedFilters
+              ? 'No comments match these filters'
+              : 'No comments yet'
+        }
+      >
+        <LucideIcon.MessageSquare />
+      </EmptyIndicator>
+      {singleCommentId && (
+        <Button className="mt-4" variant="outline" onClick={handleShowAllComments}>
+          Show all comments
+        </Button>
+      )}
+    </Stack>
+  ) : (
+    <>
+      <CommentsList
+        dislikesEnabled={dislikesEnabled}
+        fetchNextPage={() => void fetchNextPage()}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        isLoading={isFetching && !isFetchingNextPage}
+        items={data?.comments ?? []}
+        resetKey={resetKey}
+        totalItems={data?.meta?.pagination?.total ?? 0}
+        onAddFilter={handleAddFilter}
+      />
+      {singleCommentId && (
+        <Inline className="py-8" justify="center">
+          <Button variant="outline" onClick={handleShowAllComments}>
+            Show all comments
+          </Button>
+        </Inline>
+      )}
+    </>
+  );
 
   return (
-    <Inline align="stretch" className="size-full" gap="none">
-      <Box className="min-w-0 flex-1">
-        <Container className="relative flex h-full flex-col" size="page">
-          <ListPage data-testid="comments-page">
-            <ListPage.Header>
-              <PageHeader blurredBackground={false} sticky={false}>
-                <PageHeader.Left>
-                  <PageHeader.Title>Comments</PageHeader.Title>
-                </PageHeader.Left>
-                {((!singleCommentId && (!hasFilters || mobileFilters)) || showAnalytics) && (
-                  <PageHeader.Actions>
-                    <PageHeader.ActionGroup>
-                      {showAnalytics && !wideLayout && (
-                        <PageHeader.Action
-                          label="Analytics"
-                          onClick={() => {
-                            setAnalyticsSheetOpen(true);
-                            setAnalyticsSheetOpened(true);
-                          }}
-                        >
-                          <LucideIcon.ChartNoAxesColumn />
-                          Analytics
-                        </PageHeader.Action>
-                      )}
-                      {!singleCommentId && (!hasFilters || mobileFilters) && (
-                        <CommentsFilters
-                          barContainer={filterBarContainer}
-                          filters={filters}
-                          siteTimezone={timezone}
-                          onFiltersChange={setFilters}
-                        />
-                      )}
-                    </PageHeader.ActionGroup>
-                  </PageHeader.Actions>
-                )}
-              </PageHeader>
-              {!singleCommentId && hasFilters && mobileFilters && (
-                <div ref={setFilterBarContainer} />
-              )}
-              {!singleCommentId && hasFilters && !mobileFilters && (
-                <FilterBar>
-                  <CommentsFilters
-                    filters={filters}
-                    siteTimezone={timezone}
-                    onFiltersChange={setFilters}
-                  />
-                </FilterBar>
-              )}
-            </ListPage.Header>
-            <ListPage.Body>
-              {shouldShowLoading ? (
-                <div className="flex flex-1 items-center justify-center">
-                  <LoadingIndicator size="lg" />
-                </div>
-              ) : isError ? (
-                <div className="flex flex-1 flex-col items-center justify-center">
-                  <h2 className="mb-2 text-xl font-medium">Error loading comments</h2>
-                  <p className="mb-4 text-muted-foreground">Please reload the page to try again</p>
-                  <Button onClick={() => window.location.reload()}>Reload page</Button>
-                </div>
-              ) : !data?.comments.length ? (
-                <div className="flex flex-1 items-center justify-center">
-                  {singleCommentId ? (
-                    <div className="flex flex-col items-center">
-                      <EmptyIndicator title="Comment not found">
-                        <LucideIcon.MessageSquare />
-                      </EmptyIndicator>
-                      <Button className="mt-4" variant="outline" onClick={handleShowAllComments}>
-                        Show all comments
-                      </Button>
-                    </div>
-                  ) : (
-                    <EmptyIndicator title="No comments yet">
-                      <LucideIcon.MessageSquare />
-                    </EmptyIndicator>
+    <Container className="relative h-full min-w-0" size="page">
+      <ListPage data-testid="comments-page">
+        <ListPage.Header>
+          <PageHeader
+            blurredBackground={false}
+            className={analyticsEnabled ? '[&_[data-page-header=main]]:flex-wrap' : undefined}
+            sticky={false}
+          >
+            <PageHeader.Left>
+              <PageHeader.Title>Comments</PageHeader.Title>
+            </PageHeader.Left>
+            {((!singleCommentId && (!hasFilters || mobileFilters)) || analyticsEnabled) && (
+              <PageHeader.Actions>
+                <PageHeader.ActionGroup>
+                  {showAnalytics && !wideLayout && (
+                    <PageHeader.Action
+                      className="px-2 sm:px-3"
+                      label="Analytics"
+                      onClick={() => {
+                        setAnalyticsSheetOpen(true);
+                        setAnalyticsSheetOpened(true);
+                      }}
+                    >
+                      <LucideIcon.ChartNoAxesColumn />
+                      <span className="hidden sm:inline">Analytics</span>
+                    </PageHeader.Action>
                   )}
-                </div>
-              ) : (
-                <>
-                  <CommentsList
-                    dislikesEnabled={dislikesEnabled}
-                    fetchNextPage={() => void fetchNextPage()}
-                    hasNextPage={hasNextPage}
-                    isFetchingNextPage={isFetchingNextPage}
-                    isLoading={isFetching && !isFetchingNextPage}
-                    items={data?.comments ?? []}
-                    resetKey={resetKey}
-                    totalItems={data?.meta?.pagination?.total ?? 0}
-                    onAddFilter={handleAddFilter}
-                  />
-                  {singleCommentId && (
-                    <div className="flex justify-center py-8">
-                      <Button variant="outline" onClick={handleShowAllComments}>
-                        Show all comments
-                      </Button>
-                    </div>
+                  {!singleCommentId && (!hasFilters || mobileFilters) && (
+                    <CommentsFilters
+                      barContainer={filterBarContainer}
+                      filters={filters}
+                      includeDateFilter={!analyticsEnabled}
+                      siteTimezone={timezone}
+                      onFiltersChange={setFilters}
+                    />
                   )}
-                </>
-              )}
-            </ListPage.Body>
-          </ListPage>
-        </Container>
-      </Box>
-      {showAnalytics &&
-        (wideLayout ? (
-          <CommentsAnalyticsRail>
-            <CommentsAnalyticsPanel analytics={analytics} onFilter={handleAnalyticsFilter} />
-          </CommentsAnalyticsRail>
-        ) : (
-          <Sheet open={analyticsSheetOpen} onOpenChange={setAnalyticsSheetOpen}>
-            <SheetContent aria-describedby={undefined} className="overflow-y-auto sm:max-w-[400px]">
-              <SheetTitle className="sr-only">Comment analytics</SheetTitle>
-              <CommentsAnalyticsPanel
-                analytics={analytics}
-                onFilter={(field, id) => {
-                  setAnalyticsSheetOpen(false);
-                  handleAnalyticsFilter(field, id);
-                }}
+                  {analyticsEnabled && (
+                    <CommentsDateRangeSelect
+                      customRange={analytics.customRange}
+                      range={analytics.range}
+                      timezone={timezone}
+                      onCustomRangeChange={analytics.setCustomRange}
+                      onRangeChange={analytics.setRange}
+                    />
+                  )}
+                </PageHeader.ActionGroup>
+              </PageHeader.Actions>
+            )}
+          </PageHeader>
+          {!singleCommentId && hasFilters && mobileFilters && <div ref={setFilterBarContainer} />}
+          {!singleCommentId && hasFilters && !mobileFilters && (
+            <FilterBar>
+              <CommentsFilters
+                filters={filters}
+                includeDateFilter={!analyticsEnabled}
+                siteTimezone={timezone}
+                onFiltersChange={setFilters}
               />
-            </SheetContent>
-          </Sheet>
-        ))}
-    </Inline>
+            </FilterBar>
+          )}
+        </ListPage.Header>
+        <ListPage.Body>
+          {analyticsEnabled && wideLayout ? (
+            <Inline align="stretch" className="min-h-0 flex-1" gap="xl">
+              <Stack className="min-w-0 flex-1" gap="none">
+                {commentsBody}
+              </Stack>
+              {showAnalytics && (
+                <CommentsAnalyticsRail>
+                  <CommentsAnalyticsPanel analytics={analytics} onFilter={handleAnalyticsFilter} />
+                </CommentsAnalyticsRail>
+              )}
+            </Inline>
+          ) : (
+            commentsBody
+          )}
+        </ListPage.Body>
+      </ListPage>
+      {showAnalytics && !wideLayout && (
+        <Sheet open={analyticsSheetOpen} onOpenChange={setAnalyticsSheetOpen}>
+          <SheetContent aria-describedby={undefined} className="overflow-y-auto sm:max-w-[400px]">
+            <SheetTitle className="sr-only">Comment analytics</SheetTitle>
+            <CommentsAnalyticsPanel
+              analytics={analytics}
+              onFilter={(field, id) => {
+                setAnalyticsSheetOpen(false);
+                handleAnalyticsFilter(field, id);
+              }}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+    </Container>
   );
 };
 

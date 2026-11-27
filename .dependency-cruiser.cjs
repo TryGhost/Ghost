@@ -45,7 +45,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
-  '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
+  '^ghost/core/support/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
@@ -65,8 +65,11 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
   '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
+  '^ghost/core/server/data/schema/schema\\.ts$', // The table definitions, as static data; no database access or application instances.
   '^ghost/core/server/lib/sortable\\.ts$', // Ordered reads, inserts and reorders for a schema-declared collection, on the caller's connection; no application instances.
   '^ghost/core/server/lib/db-errors\\.ts$', // Recognises the errors a database rejects a write with.
+  '^ghost/core/server/lib/changes\\.ts$', // Base classes a service extends to declare the changes it reports; they hold data only, no application instances.
+  '^ghost/core/server/lib/first-error\\.ts$', // Reads a thrown array of errors, as model validation throws, as its first error.
   '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
   '^ghost/core/server/lib/db-types/text\\.ts$', // Byte-length check for text columns.
   '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
@@ -77,6 +80,9 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/soonest-timer\\.ts$', // Timer class the caller builds and owns.
   '^ghost/core/server/lib/auto-filling-map\\.ts$', // Map that fills missing keys from a caller-supplied factory.
   '^ghost/core/server/lib/member-signup-contexts\\.ts$', // Member signup context constants and one predicate.
+  '^ghost/core/server/lib/truncate-characters\\.ts$', // Cuts a string to a column's length in characters; no application instances.
+  '^ghost/core/server/lib/slug\\.ts$', // What a slug is, and minting slugs people type, such as custom field keys and segment slugs, from names; no application instances.
+  '^ghost/core/server/lib/filters/index\\.ts$', // Parses filter text, rewrites the parsed filter with caller-supplied steps and compiles it onto the caller's query builder; no application instances or I/O.
   '^ghost/core/shared/errify\\.ts$', // Turns any thrown value into an Error.
   '^ghost/core/shared/timing-safe-string-equal\\.ts$', // Constant-time string comparison.
   '^ghost/core/shared/one-at-a-time\\.ts$', // Wraps a caller's function so calls do not overlap.
@@ -218,6 +224,15 @@ const specialistDependencies = [
 
   // Content and rendering.
   {
+    // Transliterating names to ASCII, to mint slugs such as custom field keys and segment slugs.
+    // The migration that gives existing segments their slugs keeps its own copy of the minting.
+    dependency: npm('unidecode'),
+    owners: [
+      core('server/lib/slug.ts'),
+      core('server/data/migrations/versions/6.80/2026-11-26-01-02-18-backfill-segment-slugs.ts'),
+    ],
+  },
+  {
     // Converting Mobiledoc and Lexical content.
     dependency: workspace('@tryghost/kg-converters', 'koenig/kg-converters'),
     owners: [
@@ -270,6 +285,25 @@ const specialistDependencies = [
     ],
   },
 
+  // Filters. The filters library parses filter text and compiles the parsed
+  // filter onto a query; other code uses the library.
+  {
+    // Parsing NQL filter text.
+    dependency: npm('@tryghost/nql-lang'),
+    owners: [
+      core('server/lib/filters/'),
+      // Checks that each slug it mints reads back as itself in a filter.
+      core('server/data/migrations/versions/6.80/2026-11-26-01-02-18-backfill-segment-slugs.ts'),
+      core('frontend/helpers/get.js'),
+      core('server/api/endpoints/utils/serializers/input/tiers.js'),
+    ],
+  },
+  {
+    // Compiling a parsed filter onto a Knex query.
+    dependency: npm('@tryghost/mongo-knex'),
+    owners: [core('server/lib/filters/'), service('members-metafields/')],
+  },
+
   // Database.
   {
     // Telling SQLite from MySQL on a connection the caller passes.
@@ -279,16 +313,12 @@ const specialistDependencies = [
       core('server/models/label.js'),
       service('jobs-service/index.ts'),
       service('members/service.js'),
+      service('stripe/webhook-store.ts'),
       service('url/routable-resources.js'),
     ],
   },
 
   // One service each.
-  {
-    // Custom field keys and filters.
-    dependency: `${npm('unidecode')}|${npm('@tryghost/mongo-knex')}`,
-    owners: [service('members-metafields/')],
-  },
   {
     // Cron expressions for scheduled jobs.
     dependency: npm('cron-validate'),
@@ -372,7 +402,7 @@ const serviceDependencyDecisions = {
   // owners is counted here too, without a pattern.
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
-    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
+    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the Support clock, which exports moment for existing date logic.
     '^(node:)?url$', // Use the global URL; url.parse is deprecated.
     '^(node:)?(fs(/promises)?|os|net)$|^fs-extra$', // No file system, operating system or networking modules: the root passes a loader limited to what is needed.
   ],
@@ -457,22 +487,22 @@ module.exports = {
         path: '^ghost/core/',
         pathNot: [
           `^${servicesRoot}/[^/]+/index\\.ts$`,
-          '^ghost/core/kernel/',
+          '^ghost/core/support/',
           ...serviceRootsElsewhere,
         ],
       },
       to: {
-        path: '^ghost/core/kernel/define-service\\.ts$',
+        path: '^ghost/core/support/define-service\\.ts$',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
-    // Kernel primitives must be independent of the application they support.
+    // Support primitives must be independent of the application they serve.
     {
-      name: 'kernel-not-application',
-      comment: 'Kernel code must not import application code, including shared.',
+      name: 'support-not-application',
+      comment: 'Support code must not import application code, including shared.',
       severity: 'error',
-      from: { path: '^ghost/core/kernel/' },
-      to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+      from: { path: '^ghost/core/support/' },
+      to: { path: '^ghost/', pathNot: '^ghost/core/support/' },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*

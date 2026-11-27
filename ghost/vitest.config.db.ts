@@ -98,7 +98,7 @@ const sharedDbConfig = {
 // report without failing.
 type CoverageLane = {
   reportsDirectory: string;
-  thresholds: {
+  thresholds?: {
     statements: number;
     branches: number;
     functions: number;
@@ -114,6 +114,12 @@ const COVERAGE_LANES: Record<string, CoverageLane> = {
   integration: {
     reportsDirectory: 'coverage-integration',
     thresholds: { statements: 47, branches: 32, functions: 47, lines: 47 },
+  },
+  // Ungated: it runs a subset of the e2e suites under the other engine, so its
+  // totals say nothing on their own. It reports the code only that engine
+  // reaches, such as apps.
+  'e2e-better-auth': {
+    reportsDirectory: 'coverage-e2e-better-auth',
   },
 };
 

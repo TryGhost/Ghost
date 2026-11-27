@@ -3,10 +3,28 @@ const _ = require('lodash');
 const permissions = require('../../../auth/permissions');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const { capabilities, capabilityKey } = require('../../../auth/policy/capabilities');
+const { scopesAllow } = require('../../../auth/policy/scopes');
+const { noPermission } = require('../../../auth/policy/authorize');
 
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
+  appsCannotCall: 'Apps do not have permission to {method} {docName}',
+  appsCannotCallOutside: 'Apps do not have permission to call this endpoint',
 };
+
+/**
+ * The methods an app may call although they check no permission or check their own, so the
+ * scopes an app was approved for can't limit them. A method is listed here only when it is safe
+ * for any app, whatever its scopes; every other such method refuses apps. None is yet. A
+ * controller outside the pipeline has no name to list, so it runs through `pipeline()` first,
+ * which for methods written as single functions adds only this check.
+ */
+const APP_UNCHECKED_ALLOWLIST = new Set();
+
+/** The object type a docName names in permissions, e.g. `posts` → `post` */
+const singularOf = (docName) =>
+  docName.match(/ies$/) ? docName.replace(/ies$/, 'y') : docName.replace(/s$/, '');
 
 /**
  * @description Handle requests, which need authentication.
@@ -18,12 +36,7 @@ const messages = {
 const nonePublicAuth = async (apiConfig, frame) => {
   debug('check admin permissions');
 
-  let singular;
-  if (apiConfig.docName.match(/ies$/)) {
-    singular = apiConfig.docName.replace(/ies$/, 'y');
-  } else {
-    singular = apiConfig.docName.replace(/s$/, '');
-  }
+  const singular = singularOf(apiConfig.docName);
   let permissionIdentifier = frame.options.id;
 
   // CASE: Target ctrl can override the identifier. The identifier is the unique identifier of the target resource
@@ -105,4 +118,67 @@ module.exports = {
 
     return nonePublicAuth(apiConfig, frame);
   },
+
+  /**
+   * @description Refuses an app on a method whose permission check is its own or none, unless
+   * the method is on the allowlist. The scopes an app was approved for only cap the standard
+   * check, so without this an app would act on such a method as the staff user it acts for.
+   *
+   * @param {Object} apiConfig - Docname & method of target ctrl.
+   * @param {import('@tryghost/api-framework').Frame} frame
+   */
+  async handleUnchecked(apiConfig, frame) {
+    if (frame.options.context?.principal?.kind !== 'app') {
+      return;
+    }
+    if (APP_UNCHECKED_ALLOWLIST.has(`${apiConfig.docName}.${apiConfig.method}`)) {
+      return;
+    }
+    throw new errors.NoPermissionError({
+      message: tpl(messages.appsCannotCall, {
+        method: apiConfig.method,
+        docName: apiConfig.docName,
+      }),
+    });
+  },
+
+  /**
+   * @description Refuses an app, ahead of the route's other middleware, on a method whose
+   * permission stage would refuse it whatever the request: one it may not call unchecked, or one
+   * whose standard check needs a scope the app wasn't approved for. Rate limits and uploads on
+   * the route then never act for a request that can't succeed. The error is the one the stage
+   * would throw; the role and row checks still run in the stage. A controller outside the
+   * pipeline has no permission stage and no name the allowlist could hold, so it refuses apps.
+   *
+   * @param {import('@tryghost/api-framework').RoutedMethod} routed
+   * @param {Object} principal - The request's principal
+   */
+  async refuseAppEarly(routed, principal) {
+    if (principal?.kind !== 'app') {
+      return;
+    }
+    if (!routed.docName || !routed.method) {
+      throw new errors.NoPermissionError({ message: tpl(messages.appsCannotCallOutside) });
+    }
+    const { permissions: own, docName, method } = routed;
+    // A method with no permissions of its own is written as a single function, which checks none
+    if (own === undefined || own === false || typeof own === 'function') {
+      return module.exports.handleUnchecked(
+        { docName, method },
+        { options: { context: { principal } } },
+      );
+    }
+    const config = Object.assign({ docName, method }, typeof own === 'object' ? own : {});
+    const key = capabilityKey(singularOf(config.docName), config.method);
+    if (!scopesAllow(capabilities(principal).scopes, key)) {
+      const err = noPermission();
+      err.message = tpl(messages.noPermissionToCall, {
+        method: config.method,
+        docName: config.docName,
+      });
+      throw err;
+    }
+  },
+
+  APP_UNCHECKED_ALLOWLIST,
 };

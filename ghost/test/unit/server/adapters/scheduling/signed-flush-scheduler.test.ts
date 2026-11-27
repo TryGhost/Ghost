@@ -16,6 +16,7 @@ function buildDeps(
   overrides: {
     pending?: number[];
     currentKey?: InternalApiKey;
+    dedupesByIdempotencyKey?: boolean;
   } = {},
 ) {
   const apiUrl = 'https://example.com/ghost/api/admin';
@@ -32,6 +33,7 @@ function buildDeps(
       unschedule: sinon.stub(),
       register: sinon.stub(),
       run: sinon.stub(),
+      dedupesByIdempotencyKey: overrides.dedupesByIdempotencyKey,
     },
     internalKeys,
     endpoint: ['gifts', 'flush_deliveries'],
@@ -79,6 +81,20 @@ describe('SignedFlushScheduler', function () {
 
       const [job] = deps.adapter.schedule.getCall(0).args;
       assert.ok(job.url.startsWith(`${deps.apiUrl}/gifts/flush_reminders?token=`));
+    });
+
+    it('gives the same job the same idempotency key', async function () {
+      const time = Date.now() + 60_000;
+      const first = buildDeps();
+      const second = buildDeps();
+
+      await new SignedFlushScheduler(first).scheduleAt(time);
+      await new SignedFlushScheduler(second).scheduleAt(time);
+
+      const [firstJob] = first.adapter.schedule.getCall(0).args;
+      const [secondJob] = second.adapter.schedule.getCall(0).args;
+      assert.match(firstJob.extra.idempotencyKey, /^ghost-gift-delivery-[0-9a-f]{64}$/);
+      assert.equal(secondJob.extra.idempotencyKey, firstJob.extra.idempotencyKey);
     });
 
     it('does not arm an already-due time', async function () {
@@ -224,6 +240,28 @@ describe('SignedFlushScheduler', function () {
         deps.adapter.schedule.getCall(0).args[0].url,
         'with no previousKey, both URLs are signed under the same (current) key',
       );
+    });
+
+    it('boot rebuild only schedules when the adapter dedupes by idempotency key', async function () {
+      const pending = [Date.now() + 30_000, Date.now() + 60_000];
+      const deps = buildDeps({ pending, dedupesByIdempotencyKey: true });
+      const scheduler = new SignedFlushScheduler(deps);
+
+      await scheduler.rescheduleAll();
+
+      sinon.assert.notCalled(deps.adapter.unschedule);
+      sinon.assert.calledTwice(deps.adapter.schedule);
+    });
+
+    it('rotation still unschedules when the adapter dedupes by idempotency key', async function () {
+      const deps = buildDeps({ pending: [Date.now() + 30_000], dedupesByIdempotencyKey: true });
+      const scheduler = new SignedFlushScheduler(deps);
+
+      await scheduler.rescheduleAll({ previousKey: { id: 'k', secret: HEX_OLD } });
+
+      sinon.assert.calledOnce(deps.adapter.unschedule);
+      assert.equal(deps.adapter.unschedule.getCall(0).args[1].bootstrap, false);
+      sinon.assert.calledOnce(deps.adapter.schedule);
     });
 
     it('rebuilds duplicate pending times as one job', async function () {

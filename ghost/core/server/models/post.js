@@ -19,9 +19,12 @@ const { Newsletter } = require('./newsletter');
 const { BadRequestError } = require('@tryghost/errors');
 const { mobiledocToLexical } = require('@tryghost/kg-converters');
 const { setIsRoles } = require('./role-utils');
+const { filterNamesSegment } = require('../services/segments/expansion');
 
 const messages = {
   isAlreadyPublished: 'Your post is already published, please reload your page.',
+  visibilityNamesSegment: 'Visibility cannot name a segment.',
+  emailToSegment: 'Emails cannot be sent to a segment yet.',
   valueCannotBeBlank: 'Value in {key} cannot be blank.',
   expectedPublishedAtInFuture:
     'Date must be at least {cannotScheduleAPostBeforeInMinutes} minutes in the future.',
@@ -595,6 +598,22 @@ Post = ghostBookshelf.Model.extend(
             message: tpl(messages.isAlreadyPublished, { key: 'status' }),
           }),
         );
+      }
+
+      // A members filter that names a segment only works where the segments are read when the
+      // query runs. Post access is checked in memory against one member, without reading
+      // segments, and an email's recipient filter is stored and run when the email is sent, with
+      // segments that may have changed since, so both reject a filter that names a segment.
+      if (this.hasChanged('visibility') && filterNamesSegment(this.get('visibility'))) {
+        return Promise.reject(
+          new errors.ValidationError({
+            message: tpl(messages.visibilityNamesSegment),
+            property: 'visibility',
+          }),
+        );
+      }
+      if (options.email_segment) {
+        Post.rejectSegmentRecipients(options.email_segment);
       }
 
       if (options.method === 'insert') {
@@ -1292,6 +1311,20 @@ Post = ghostBookshelf.Model.extend(
       }
 
       return order;
+    },
+
+    /**
+     * Throws a BadRequestError for an email recipient filter that names a segment. The filter is
+     * stored and run when the email is sent, and an email doesn't store a copy of its segments
+     * yet, so the send would read segments that may have changed since. Saving a post and the
+     * check before an email is sent both call this.
+     *
+     * @param {string} emailRecipientFilter
+     */
+    rejectSegmentRecipients(emailRecipientFilter) {
+      if (filterNamesSegment(emailRecipientFilter)) {
+        throw new BadRequestError({ message: tpl(messages.emailToSegment) });
+      }
     },
 
     /**

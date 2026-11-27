@@ -19,12 +19,18 @@ const TAG_NAME_MAX_LENGTH = 191;
  * The post's tags in order, which is the `sort_order` Ghost stores. The field
  * holds the records the chips are drawn from; the save writes identities.
  */
-export function TagsSection({ session }: { session: EditorSettingsPort }) {
+export function TagsSection({
+  session,
+  disabled = false,
+}: {
+  session: EditorSettingsPort;
+  disabled?: boolean;
+}) {
   const inputId = useId();
   const tags = session.settings.tags;
 
   const commit = (next: ReadonlyArray<TagLike>) => {
-    if (next !== tags) {
+    if (!disabled && next !== tags) {
       session.editSettings({ tags: next });
     }
   };
@@ -34,6 +40,7 @@ export function TagsSection({ session }: { session: EditorSettingsPort }) {
       <Label htmlFor={inputId}>Tags</Label>
       <TagPicker
         defaultErrorHandler={false}
+        disabled={disabled}
         inputId={inputId}
         inputLabel="Tags"
         maxLength={TAG_NAME_MAX_LENGTH}

@@ -4,10 +4,12 @@ import { type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { selectTriggerVariants } from '@/components/ui/select-variants';
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
+import { hasSafeArea, safeAreaCollision } from '@/lib/safe-area';
 const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
@@ -88,36 +90,54 @@ SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayNam
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, onEscapeKeyDown, position = 'popper', ...props }, ref) => (
-  <SelectPrimitive.Portal>
-    <ShadeScope>
-      <SelectPrimitive.Content
-        ref={ref}
-        className={cn(
-          'relative z-[9999] max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-menu border border-border/60 bg-surface-elevated-2 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
-          position === 'popper' &&
-            'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
-          className,
-        )}
-        position={position}
-        onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
-        {...props}
-      >
-        <SelectScrollUpButton />
-        <SelectPrimitive.Viewport
-          className={cn(
-            'p-1',
-            position === 'popper' &&
-              'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
-          )}
-        >
-          {children}
-        </SelectPrimitive.Viewport>
-        <SelectScrollDownButton />
-      </SelectPrimitive.Content>
-    </ShadeScope>
-  </SelectPrimitive.Portal>
-));
+>(
+  (
+    {
+      className,
+      children,
+      onEscapeKeyDown,
+      position: requested = 'popper',
+      collisionBoundary,
+      ...props
+    },
+    ref,
+  ) => {
+    const container = usePortalContainer();
+    // Radix fits an item-aligned select to the window, ignoring the safe area's boundary.
+    const position = hasSafeArea(container) ? 'popper' : requested;
+    return (
+      <SelectPrimitive.Portal container={container}>
+        <ShadeScope>
+          <SelectPrimitive.Content
+            ref={ref}
+            className={cn(
+              'relative z-[9999] max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-menu border border-border/60 bg-surface-elevated-2 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
+              position === 'popper' &&
+                'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
+              className,
+            )}
+            {...safeAreaCollision(collisionBoundary, container)}
+            position={position}
+            onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
+            {...props}
+          >
+            <SelectScrollUpButton />
+            <SelectPrimitive.Viewport
+              className={cn(
+                'p-1',
+                position === 'popper' &&
+                  'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
+              )}
+            >
+              {children}
+            </SelectPrimitive.Viewport>
+            <SelectScrollDownButton />
+          </SelectPrimitive.Content>
+        </ShadeScope>
+      </SelectPrimitive.Portal>
+    );
+  },
+);
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 const SelectLabel = React.forwardRef<

@@ -20,6 +20,7 @@ describe('createAdminApiFetch', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', fetchMock);
     session = new AbortController();
+    token.send.mockImplementation((call) => call('ghost_app_current'));
   });
 
   afterEach(() => {
@@ -27,10 +28,15 @@ describe('createAdminApiFetch', () => {
     vi.clearAllMocks();
   });
 
+  const token = {
+    send: vi.fn<(call: (token: string) => Promise<Response>) => Promise<Response>>(),
+  };
+
   const adminApiFetch = createAdminApiFetch({
     apiRoot: new URL(API_ROOT),
     approvedScopes: new Set(['post:browse', 'post:add', 'post:edit', 'tag:browse']),
     ghostVersion: '6.0',
+    token,
   });
 
   it('refuses a call the installation wasn’t approved for, before sending anything', async () => {
@@ -48,6 +54,7 @@ describe('createAdminApiFetch', () => {
     const withStats = createAdminApiFetch({
       apiRoot: new URL(API_ROOT),
       approvedScopes: new Set(['post:browse', 'post:read_stats']),
+      token,
     });
 
     await withStats({ path: '/posts/?include=email,count.clicks' }, session.signal);
@@ -73,7 +80,11 @@ describe('createAdminApiFetch', () => {
     );
 
     const [, init] = fetchMock.mock.calls[0];
-    expect(init?.headers).toEqual({ 'app-pragma': 'no-cache', 'x-ghost-version': '6.0' });
+    expect(init?.headers).toEqual({
+      'app-pragma': 'no-cache',
+      'x-ghost-version': '6.0',
+      authorization: 'Bearer ghost_app_current',
+    });
   });
 
   it('labels a body as JSON itself, whatever content type the app set', async () => {
@@ -98,6 +109,7 @@ describe('createAdminApiFetch', () => {
       'app-pragma': 'no-cache',
       'content-type': 'application/json',
       'x-ghost-version': '6.0',
+      authorization: 'Bearer ghost_app_current',
     });
   });
 
@@ -124,11 +136,17 @@ describe('createAdminApiFetch', () => {
     const [url, init] = fetchMock.mock.calls[0];
     // With no include named, the app gets the defaults it may have, without how posts performed.
     expect(url).toEqual(new URL(`${API_ROOT}posts/?limit=5&include=tags,authors`));
+    // The app's token is the only credential: the staff session's cookie isn't sent.
     expect(init).toMatchObject({
       method: 'GET',
-      credentials: 'include',
+      credentials: 'omit',
       redirect: 'manual',
-      headers: { 'app-pragma': 'no-cache', 'x-ghost-version': '6.0', 'x-podcast-trace': 'abc' },
+      headers: {
+        'app-pragma': 'no-cache',
+        'x-ghost-version': '6.0',
+        'x-podcast-trace': 'abc',
+        authorization: 'Bearer ghost_app_current',
+      },
     });
   });
 
@@ -226,5 +244,26 @@ describe('createAdminApiFetch', () => {
       new URL(`${API_ROOT}posts/?include=tags,authors`),
       response,
     );
+  });
+
+  it('gives the app the response its token source settled on', async () => {
+    token.send.mockImplementation(async (call) => {
+      await call('ghost_app_expired');
+      return call('ghost_app_renewed');
+    });
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response('{"errors":[{"code":"APP_TOKEN_INVALID"}]}', { status: 401 }),
+      )
+      .mockResolvedValueOnce(new Response('{"posts":[]}'));
+
+    const answer = await adminApiFetch({ path: '/posts/' }, session.signal);
+
+    expect(answer).toMatchObject({ status: 200, body: '{"posts":[]}' });
+    expect(
+      fetchMock.mock.calls.map(
+        ([, init]) => (init?.headers as Record<string, string>).authorization,
+      ),
+    ).toEqual(['Bearer ghost_app_expired', 'Bearer ghost_app_renewed']);
   });
 });

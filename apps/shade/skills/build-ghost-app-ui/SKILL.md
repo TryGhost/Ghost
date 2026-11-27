@@ -56,15 +56,22 @@ Check each step against the app, and do the ones it's missing:
 
 1. Start from the page template with
    [`shade-page-templates`](../shade-page-templates/SKILL.md).
-2. As the screen needs them, use
+2. Open the [Kitchen sink](https://github.com/TryGhost/Apps/tree/main/examples/kitchen-sink)
+   example's README, which lists its finished screens and the files for
+   each. If one matches your screen, read only that screen's files and use
+   them as the worked example. Do the same with its States screen for the
+   empty, loading and error states every screen needs. Copy only the parts
+   the screen needs, without the mock data, and keep the setup from
+   [Set up](#set-up).
+3. As the screen needs them, use
    [`shade-page-header`](../shade-page-header/SKILL.md) for the header,
    [`shade-use-primitives`](../shade-use-primitives/SKILL.md) for layout,
    [`shade-tokens-not-hex`](../shade-tokens-not-hex/SKILL.md) for colour,
    [`shade-no-dark-variants`](../shade-no-dark-variants/SKILL.md) for dark
    mode and [`shade-imports`](../shade-imports/SKILL.md) for imports.
-3. When building or changing content lists, tables, or custom rows, read
+4. When building or changing content lists, tables, or custom rows, read
    [Lists and tables](https://shade.ghost.org/docs/list-rows.md) to choose the right row components.
-4. Read only the [docs that apply to apps](https://shade.ghost.org/docs/ghost-apps.md#docs-that-apply-to-apps).
+5. Read only the [docs that apply to apps](https://shade.ghost.org/docs/ghost-apps.md#docs-that-apply-to-apps).
 
 ## Self-check
 

@@ -68,6 +68,10 @@ module.exports = {
     hasScheduled.expiredComped = true;
   },
 
+  async runExpiredCompCleanupJob(jobsService) {
+    await jobsService.dispatch(new CleanExpiredCompedJob());
+  },
+
   async scheduleTokenCleanupJob(jobsService) {
     if (hasScheduled.tokens) {
       return;

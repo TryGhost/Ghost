@@ -35,7 +35,8 @@ interface AdminAgent extends Agent {
 //
 // Everything here is set up and checked through an API: the publisher's side through
 // the Admin API, the member's through the members API. Nothing reads or writes a
-// table, so none of this is pinned to how the fields happen to be stored.
+// table, so none of this is pinned to how the fields happen to be stored, except the
+// fields in a namespace nobody registered, which no API can define yet.
 describe('Member Custom Fields Members API', function () {
   let adminAgent: AdminAgent;
   let membersAgent: MembersAgent;
@@ -591,6 +592,65 @@ describe('Member Custom Fields Members API', function () {
 
       const after = await fieldChangesInActivityFeed();
       assert.equal(after.length, before.length);
+    });
+  });
+
+  // No API defines a field outside `custom` yet, so these are written to the table, as an app's
+  // would be. Nobody registered their namespace, so a member reaches each the way they reach a
+  // custom field: by the field's member access.
+  describe('fields in a namespace nobody registered', function () {
+    const { knex } = require('../../../core/server/data/db');
+
+    const defineInShop = (id: string, key: string, memberAccess: string) =>
+      knex('members_metafields').insert({
+        id,
+        namespace: 'shop',
+        key,
+        name: key,
+        type: 'short_text',
+        member_access: memberAccess,
+        created_at: new Date(),
+      });
+
+    beforeEach(async function () {
+      await defineInShop('6600000000000000000000c1', 'loyalty_tier', 'read');
+      await defineInShop('6600000000000000000000c2', 'credit_limit', 'none');
+      await defineInShop('6600000000000000000000c3', 'nickname', 'write');
+      await adminAgent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [
+            { metafields: { shop: { loyalty_tier: 'Gold', credit_limit: '500', nickname: 'Al' } } },
+          ],
+        })
+        .expectStatus(200);
+    });
+
+    afterEach(async function () {
+      // Deleting the fields takes the member's values with them.
+      await knex('members_metafields').where('namespace', 'shop').del();
+    });
+
+    it('shows a member the values their fields open to them, and nothing of the rest', async function () {
+      const { body } = await membersAgent.get('/api/member/').expectStatus(200);
+      assert.deepEqual(body.metafields.shop, { loyalty_tier: 'Gold', nickname: 'Al' });
+    });
+
+    it('lets a member write only the fields open to their writes', async function () {
+      await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { shop: { nickname: 'Ally' } } })
+        .expectStatus(200);
+
+      const { body } = await membersAgent
+        .put('/api/member/')
+        .body({ metafields: { shop: { loyalty_tier: 'Platinum' } } })
+        .expectStatus(422);
+      assert.equal(body.errors[0].message, 'Cannot set custom field: shop.loyalty_tier');
+
+      const stored = await readMemberAsStaff();
+      assert.equal(stored.metafields.shop.nickname, 'Ally');
+      assert.equal(stored.metafields.shop.loyalty_tier, 'Gold');
     });
   });
 

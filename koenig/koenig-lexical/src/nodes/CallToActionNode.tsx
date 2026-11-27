@@ -4,6 +4,7 @@ import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES} from '../index.js';
 import {CallToActionNode as BaseCallToActionNode} from '@tryghost/kg-default-nodes';
 import {CallToActionNodeComponent} from './CallToActionNodeComponent';
+import {HeadingNode} from '@lexical/rich-text';
 import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
@@ -39,7 +40,8 @@ export class CallToActionNode extends BaseCallToActionNode {
         super(dataset, key);
 
         // set up nested editor instances
-        setupNestedEditor(this, '__callToActionHtmlEditor', {editor: dataset.callToActionHtmlEditor, nodes: BASIC_NODES});
+        // HeadingNode lets the format toolbar offer H2/H3 inside the CTA text
+        setupNestedEditor(this, '__callToActionHtmlEditor', {editor: dataset.callToActionHtmlEditor, nodes: [...BASIC_NODES, HeadingNode]});
         setupNestedEditor(this, '__sponsorLabelHtmlEditor', {editor: dataset.sponsorLabelHtmlEditor, nodes: BASIC_NODES});
 
         // populate nested editors on initial construction

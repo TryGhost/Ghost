@@ -97,6 +97,9 @@ export interface GhostConfig {
   // limit is just configuration and a test wanting a new one should not also need a new
   // field here.
   [key: `hostSettings__${string}`]: string | undefined;
+  // A labs flag that has to be on when Ghost boots, as the `apps` flag does for its OAuth
+  // provider. `labs` sets flags after boot.
+  [key: `labs__${string}`]: string | undefined;
 }
 
 export interface GhostInstanceFixture {

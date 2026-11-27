@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { ExportRequestsService } from './export-requests-service';
 
 export default defineService('Export Requests', () => {

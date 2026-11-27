@@ -31,11 +31,17 @@ describe('WebhookController', function () {
   beforeEach(function () {
     deps = {
       apiVersion: '2020-08-27',
-      subscriptionEventService: { handleSubscriptionEvent: sinon.stub() },
-      invoiceEventService: { handleInvoiceEvent: sinon.stub() },
-      checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },
-      chargeRefundedEventService: { handleEvent: sinon.stub() },
-      webhookManager: { webhookSecret: 'whsec_test', parseWebhook: sinon.stub() },
+      siteUuid: () => '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11',
+      commands: {
+        subscription_checkout: sinon.stub(),
+        card_update_checkout: sinon.stub(),
+        gift_checkout: sinon.stub(),
+        donation_checkout: sinon.stub(),
+        subscription: sinon.stub(),
+        invoice: sinon.stub(),
+        refund: sinon.stub().resolves({ result: 'handled' }),
+      },
+      webhookManager: { parseWebhook: sinon.stub() },
       tracking,
       sentry: { captureException: sinon.stub() },
     };
@@ -59,12 +65,24 @@ describe('WebhookController', function () {
     sinon.restore();
   });
 
+  it.each([
+    ['body', () => delete req.body],
+    ['signature header', () => delete req.headers['stripe-signature']],
+  ])('responds with 400 without checking a request that has no %s', async function (_name, remove) {
+    remove();
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledOnceWithExactly(res.writeHead, 400);
+    sinon.assert.notCalled(deps.webhookManager.parseWebhook);
+  });
+
   it('logs an error for an event rendered at a different API version and still handles it', async function () {
     sinon.stub(logging, 'error');
-    deps.webhookManager.parseWebhook.returns({
+    deps.webhookManager.parseWebhook.resolves({
       type: 'charge.refunded',
       api_version: '2025-08-27.basil',
-      data: { object: { id: 'ch_1' } },
+      data: { object: { id: 'ch_1', payment_intent: 'pi_1' } },
     });
 
     await controller.handle(req, res);
@@ -74,16 +92,16 @@ describe('WebhookController', function () {
       api_version: '2025-08-27.basil',
       expected_api_version: '2020-08-27',
     });
-    sinon.assert.calledOnce(deps.chargeRefundedEventService.handleEvent);
+    sinon.assert.calledOnce(deps.commands.refund);
     sinon.assert.calledWith(res.writeHead, 200);
   });
 
   it('does not log a version error for an event at the pinned API version', async function () {
     sinon.stub(logging, 'error');
-    deps.webhookManager.parseWebhook.returns({
+    deps.webhookManager.parseWebhook.resolves({
       type: 'charge.refunded',
       api_version: '2020-08-27',
-      data: { object: { id: 'ch_1' } },
+      data: { object: { id: 'ch_1', payment_intent: 'pi_1' } },
     });
 
     await controller.handle(req, res);
@@ -93,17 +111,19 @@ describe('WebhookController', function () {
 
   /** A subscription event whose handler fails with `failure`, which it returns. */
   function failingWith(failure) {
-    deps.webhookManager.parseWebhook.returns({
+    deps.webhookManager.parseWebhook.resolves({
       type: 'customer.subscription.created',
-      data: { object: { customer: 'cust_123' } },
+      data: {
+        object: { id: 'sub_123', customer: 'cust_123', items: { data: [{ id: 'si_123' }] } },
+      },
     });
-    deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+    deps.commands.subscription.throws(failure);
     return failure;
   }
 
   // One failure for each reason a failed event can have: the status Ghost responds with, and
-  // whether it reports the failure to Sentry. `fail` sets the failure up, and returns the error
-  // when it's the handler that throws it.
+  // whether it reports the failure to Sentry. `fail` sets the failure up and, when it's the
+  // handler that throws, returns the error Sentry gets.
   const failures = [
     {
       name: 'unclassified',
@@ -111,6 +131,22 @@ describe('WebhookController', function () {
       status: 500,
       reported: true,
       fail: () => failingWith(new Error('Unexpected error')),
+    },
+    {
+      name: 'unclassified, as a model’s validation failed with an array of errors',
+      reason: 'unclassified',
+      status: 422,
+      reported: true,
+      fail: () => {
+        const first = new errors.ValidationError({
+          message: 'Value in [newsletters.name] cannot be blank.',
+        });
+        failingWith([
+          first,
+          new errors.ValidationError({ message: 'Value in [newsletters.slug] cannot be blank.' }),
+        ]);
+        return first;
+      },
     },
     {
       name: 'unclassified, as Stripe refused a request Ghost made',
@@ -207,7 +243,7 @@ describe('WebhookController', function () {
       status: 401,
       reported: true,
       fail: () => {
-        deps.webhookManager.parseWebhook.throws(
+        deps.webhookManager.parseWebhook.rejects(
           new Stripe.errors.StripeSignatureVerificationError({
             message: 'No signatures found matching the expected signature for payload.',
           }),
@@ -220,7 +256,7 @@ describe('WebhookController', function () {
       status: 401,
       reported: true,
       fail: () => {
-        deps.webhookManager.parseWebhook.throws(new TypeError('Cannot read properties of null'));
+        deps.webhookManager.parseWebhook.rejects(new TypeError('Cannot read properties of null'));
       },
     },
     {
@@ -229,7 +265,9 @@ describe('WebhookController', function () {
       status: 401,
       reported: true,
       fail: () => {
-        deps.webhookManager.webhookSecret = null;
+        deps.webhookManager.parseWebhook.rejects(
+          new errors.UnauthorizedError({ code: FAILURE_CODES.webhookSecretMissing, message: 'x' }),
+        );
       },
     },
   ];

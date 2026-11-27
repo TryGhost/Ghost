@@ -2,6 +2,7 @@ import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import { transactionsWaitingOn } from '../../utils/lock-waits';
 
 const supertest = require('supertest');
 const DatabaseInfo = require('@tryghost/database-info');
@@ -464,22 +465,6 @@ describe('Members import — custom fields', function () {
 
   // These run on MySQL only, as SQLite only runs one write at a time.
   describe.runIf(DatabaseInfo.isMySQL(knex))('alongside other writes', function () {
-    // How many transactions are waiting for a lock on the table.
-    async function transactionsWaitingOn(table: string): Promise<number> {
-      const [rows] = await models.Base.knex.raw(
-        `
-        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
-        FROM performance_schema.data_lock_waits AS waits
-        JOIN performance_schema.data_locks AS requested
-          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
-        WHERE requested.OBJECT_SCHEMA = DATABASE()
-          AND requested.OBJECT_NAME = ?
-      `,
-        [table],
-      );
-      return Number(rows[0].waiting);
-    }
-
     // An import row has to see the custom field values an Admin edit to the same member saved
     // just before it. Otherwise the row replaces only the values it saw, and leaves behind any
     // the edit added.
@@ -503,14 +488,17 @@ describe('Members import — custom fields', function () {
             .then((response: any) => response);
           await vi.waitFor(
             async () =>
-              assert.equal(await transactionsWaitingOn('members_metafield_change_events'), 1),
+              assert.equal(await transactionsWaitingOn(knex, 'members_metafield_change_events'), 1),
             { timeout: 5000 },
           );
 
           imported = importCSV(`email,metafields.custom.${key}\n${email},"Film, TV"\n`);
-          await vi.waitFor(async () => assert.equal(await transactionsWaitingOn('members'), 1), {
-            timeout: 5000,
-          });
+          await vi.waitFor(
+            async () => assert.equal(await transactionsWaitingOn(knex, 'members'), 1),
+            {
+              timeout: 5000,
+            },
+          );
           await gate.commit();
           assert.equal((await edit).status, 200);
           assert.equal((await imported).body.meta.stats.imported, 1);
@@ -542,9 +530,12 @@ describe('Members import — custom fields', function () {
         try {
           await gate('members').forUpdate();
           imports = emails.map((email) => importCSV(`email\n${email}\n`));
-          await vi.waitFor(async () => assert.equal(await transactionsWaitingOn('members'), 2), {
-            timeout: 5000,
-          });
+          await vi.waitFor(
+            async () => assert.equal(await transactionsWaitingOn(knex, 'members'), 2),
+            {
+              timeout: 5000,
+            },
+          );
           await gate.commit();
           for (const res of await Promise.all(imports)) {
             assert.equal(

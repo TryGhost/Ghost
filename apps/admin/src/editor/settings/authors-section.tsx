@@ -13,6 +13,7 @@ import { AUTHORS_SEARCH_PARAMS, selectedAuthors, type AuthorOption } from './aut
 export interface AuthorsSectionProps {
   session: EditorSettingsPort;
   currentUser?: User;
+  disabled?: boolean;
 }
 
 /**
@@ -20,7 +21,7 @@ export interface AuthorsSectionProps {
  * save policy decides when the list is persisted, and the post keeps the order
  * the field lists them in.
  */
-export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
+export function AuthorsSection({ session, currentUser, disabled = false }: AuthorsSectionProps) {
   const inputId = useId();
   const errorId = useId();
   const [browsing, setBrowsing] = useState(false);
@@ -51,13 +52,18 @@ export function AuthorsSection({ session, currentUser }: AuthorsSectionProps) {
 
   // The whole record stays in the field: reduced to identities here, a chip the
   // browse has not named would fall back to its id.
-  const change = (next: AuthorOption[]) => session.editSettings({ authors: next });
+  const change = (next: AuthorOption[]) => {
+    if (!disabled) {
+      session.editSettings({ authors: next });
+    }
+  };
 
   return (
     <SettingsSection field="authors">
       <Label htmlFor={inputId}>Authors</Label>
       <AuthorsPicker
         describedBy={invalid ? errorId : undefined}
+        disabled={disabled}
         inputId={inputId}
         invalid={invalid}
         loadError={isError}

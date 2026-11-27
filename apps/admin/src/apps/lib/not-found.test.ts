@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type ErrorResponse, JSONError } from '@tryghost/admin-x-framework/errors';
-import { isInstallationNotFound, sessionFailureOf } from './not-found';
+import { isInstallationNotFound } from './not-found';
 
 const apiError = (status: number, code: string | null) =>
   new JSONError(new Response(null, { status }), {
@@ -17,28 +17,5 @@ describe('isInstallationNotFound', () => {
   it('leaves other failures alone', () => {
     expect(isInstallationNotFound(apiError(500, null))).toBe(false);
     expect(isInstallationNotFound(new Error('offline'))).toBe(false);
-  });
-});
-
-describe('sessionFailureOf', () => {
-  it('reads a 409 as a failure of the app, with its own code', () => {
-    expect(sessionFailureOf(apiError(409, 'APP_MANIFEST_UNREACHABLE'))).toEqual({
-      code: 'APP_MANIFEST_UNREACHABLE',
-      unconfirmed: false,
-    });
-    expect(isInstallationNotFound(apiError(409, 'APP_MANIFEST_UNREACHABLE'))).toBe(false);
-  });
-
-  it.each(['APP_IDENTITY_MISMATCH', 'APP_CHALLENGE_FAILED', 'APP_BACKEND_KEY_RETIRED'])(
-    'says Ghost couldn’t confirm the app for %s',
-    (code) => {
-      expect(sessionFailureOf(apiError(409, code))).toEqual({ code, unconfirmed: true });
-    },
-  );
-
-  it('leaves other failures alone', () => {
-    expect(sessionFailureOf(apiError(409, null))).toBeUndefined();
-    expect(sessionFailureOf(apiError(404, 'APP_NOT_INSTALLED'))).toBeUndefined();
-    expect(sessionFailureOf(new Error('offline'))).toBeUndefined();
   });
 });

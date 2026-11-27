@@ -1,7 +1,11 @@
 import { useCallback } from 'react';
-import { useBrowseConfig } from '../api/config';
+import { type Config, useBrowseConfig } from '../api/config';
 import { useFeatureFlagOverrides } from '../providers/feature-flag-overrides-context';
 import type { RequestOptions } from '../utils/api/fetch-api';
+
+/** Whether Labs has a flag on. Only boolean `true` counts, as Ghost's own check does. */
+export const isLabsFlagOn = (labs: Config['labs'] | undefined, flag: string): boolean =>
+  labs?.[flag] === true;
 
 export interface FeatureFlagOptions {
   requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
@@ -28,7 +32,7 @@ export const useFeatureFlags = ({
   const labs = config?.config.labs;
 
   return useCallback(
-    (flag: string) => labs?.[flag] === true || enabledFlags.includes(flag),
+    (flag: string) => isLabsFlagOn(labs, flag) || enabledFlags.includes(flag),
     [labs, enabledFlags],
   );
 };

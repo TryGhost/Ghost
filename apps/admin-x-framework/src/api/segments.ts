@@ -9,7 +9,13 @@ import { createMutation, createQuery } from '../utils/api/hooks';
 const SegmentSchema = z.object({
   id: z.string(),
   name: z.string(),
+  // A server from before segments had slugs leaves it out.
+  slug: z.string().optional(),
   filter: z.string(),
+  // When the segment was added and last edited, as ISO 8601 times. A server from before segments
+  // had times leaves both out. The segment has been edited when `updated_at` is later.
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 });
 
 const SegmentsResponseSchema = z.object({

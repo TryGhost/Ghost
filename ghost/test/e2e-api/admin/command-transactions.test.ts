@@ -97,10 +97,9 @@ describe('Commands and transactions', function () {
     const key = await createField('Nickname');
     const memberId = await createMember();
     const { values } = metafields.booted();
-    const planned = await values.planWrite(
-      values.unwrapWire({ custom: { [key]: 'Bex' } }),
-      metafields.ADMIN,
-    );
+    const planned = await values.planWrite(values.unwrapWire({ custom: { [key]: 'Bex' } }), {
+      kind: 'staff',
+    });
     return { memberId, planned };
   }
 
@@ -321,6 +320,19 @@ describe('Commands and transactions', function () {
       },
     },
     {
+      name: 'segments: reorder',
+      tables: ['segments'],
+      recorded: false,
+      arrange: async () => {
+        const first = await addSegment();
+        const { id: second } = await segments.default.service.add(context, {
+          name: SegmentName.parse('Gold'),
+          filter: SegmentFilter.parse('label:gold'),
+        });
+        return (executor) => segments.default.service.reorder([second, first], executor);
+      },
+    },
+    {
       name: 'segments: destroy',
       tables: ['segments'],
       recorded: true,
@@ -440,7 +452,7 @@ describe('Commands and transactions', function () {
         read: (executor) =>
           metafields
             .booted()
-            .definitions.browse({ namespace: CUSTOM_NAMESPACE }, metafields.ADMIN, executor),
+            .definitions.browse({ namespace: CUSTOM_NAMESPACE }, { kind: 'staff' }, executor),
       }),
     },
     {
@@ -451,40 +463,40 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             definitions.edit(context, CUSTOM_NAMESPACE, key, { name: 'Employer' }, trx),
-          read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, metafields.ADMIN, executor),
+          read: (executor) => definitions.read(CUSTOM_NAMESPACE, key, { kind: 'staff' }, executor),
         };
       },
     },
     {
-      name: 'custom field values: getValuesForMember',
+      name: 'custom field values: getValuesFor',
       arrange: async () => {
         const { memberId, planned } = await plannedValue();
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesForMember(memberId, metafields.ADMIN, executor),
+          read: (executor) => values.getValuesFor(memberId, { kind: 'staff' }, executor),
         };
       },
     },
     {
-      name: 'custom field values: getValuesForMembers',
+      name: 'custom field values: getValuesForMany',
       arrange: async () => {
         const { memberId, planned } = await plannedValue();
         const { values } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: (executor) => values.getValuesForMembers([memberId], metafields.ADMIN, executor),
+          read: (executor) => values.getValuesForMany([memberId], { kind: 'staff' }, executor),
         };
       },
     },
     {
-      name: 'custom field values: browseChangeEvents',
+      name: 'custom field activity: browse',
       arrange: async () => {
         const { memberId, planned } = await plannedValue();
-        const { values } = metafields.booted();
+        const { values, activity } = metafields.booted();
         return {
           change: (trx) => values.applyImportedWrite(memberId, planned, trx),
-          read: async (executor) => (await values.browseChangeEvents({}, executor)).total,
+          read: async (executor) => (await activity.browse({}, executor)).total,
         };
       },
     },
@@ -505,7 +517,7 @@ describe('Commands and transactions', function () {
           read: async (executor) => {
             const { writes } = await values.planOrRefuse(
               values.unwrapWire({ custom: { nickname: 'Bex' } }),
-              metafields.ADMIN,
+              { kind: 'staff' },
               undefined,
               executor,
             );
@@ -530,7 +542,7 @@ describe('Commands and transactions', function () {
             values
               .planWrite(
                 values.unwrapWire({ custom: { nickname: 'Bex' } }),
-                metafields.ADMIN,
+                { kind: 'staff' },
                 executor,
               )
               .then(
@@ -548,7 +560,9 @@ describe('Commands and transactions', function () {
         return {
           change: (trx) =>
             bindings.bind(PHONE_PORT, { namespace: CUSTOM_NAMESPACE, key }, new Date(), trx),
-          read: async (executor) => [...(await bindings.boundPorts([PHONE_PORT], executor)).keys()],
+          read: async (executor) => [
+            ...(await bindings.boundPorts([PHONE_PORT], { kind: 'member' }, executor)).keys(),
+          ],
         };
       },
     },
@@ -646,7 +660,7 @@ describe('Commands and transactions', function () {
       name: 'segments: browse',
       arrange: async () => ({
         change: (trx) => segments.default.service.add(context, newSegment(), trx),
-        read: (executor) => segments.default.service.browse(executor),
+        read: (executor) => segments.default.service.browse({}, executor),
       }),
     },
     {

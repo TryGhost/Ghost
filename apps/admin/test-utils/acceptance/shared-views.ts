@@ -1,4 +1,5 @@
 import { HttpResponse } from 'msw';
+import type { Segment } from '@tryghost/admin-x-framework/api/segments';
 import { settingsResponse } from '@tryghost/test-data';
 
 import type { RenderAdminAppOptions } from './render-admin-app';
@@ -20,25 +21,37 @@ import { registerAdminApiHandler, registerRoute } from './worker';
  * for the rest of the test.
  */
 
-interface Segment {
-  id: string;
-  name: string;
-  filter: string;
-}
-
 /** The setting's value as the test declared it, without the views that became segments. */
 let declared: string | undefined;
 /** The setting's value as last saved through `/settings/` in this test. */
 let written: string | undefined;
-/** The segments, in order. Each keeps the id it was given when it was added. */
+/** The segments, in order. Each keeps the id and the slug it was given when it was added. */
 let segmentViews: Segment[] = [];
 /** How many segments this test has added, which the next segment's id is made from. */
 let segmentsAdded = 0;
 
-/** A new segment, with an id no other segment of the test has, as Ghost gives each segment. */
-function newSegment(name: string, filter: string): Segment {
+/**
+ * A slug made from `name` as Ghost mints one, without transliterating it or checking it against
+ * Ghost's filter parser, and numbered when one of `others` has it.
+ */
+function slugFor(name: string, others: Segment[]): string {
+  const base =
+    name
+      .toLowerCase()
+      .replace(/'/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'segment';
+  let slug = base;
+  for (let number = 2; others.some((other) => other.slug === slug); number += 1) {
+    slug = `${base}-${number}`;
+  }
+  return slug;
+}
+
+/** A new segment under `slug`, with an id no other segment of the test has, as Ghost gives each. */
+function newSegment(name: string, filter: string, slug: string): Segment {
   segmentsAdded += 1;
-  return { id: segmentsAdded.toString(16).padStart(24, '0'), name, filter };
+  return { id: segmentsAdded.toString(16).padStart(24, '0'), name, slug, filter };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -94,10 +107,13 @@ function storeViews(value: string): string {
   const entries: unknown[] = views;
   segmentViews = entries
     .filter(isStoredMemberView)
-    .map(
-      (view) =>
+    .reduce<Segment[]>(
+      (stored, view) => [
+        ...stored,
         previous.find(({ name, filter }) => name === view.name && filter === view.filter.filter) ??
-        newSegment(view.name, view.filter.filter),
+          newSegment(view.name, view.filter.filter, slugFor(view.name, [...previous, ...stored])),
+      ],
+      [],
     );
   return JSON.stringify(entries.filter((view) => !isStoredMemberView(view)));
 }
@@ -285,13 +301,14 @@ const MAX_NAME_LENGTH = 191;
 
 /**
  * The segment a write body sends, read as strictly as Ghost reads it: `name` is trimmed, a
- * read-only `id` is ignored, and any other field is refused. Returns the refusing `Response`
- * when the body isn't one Ghost accepts.
+ * read-only `id` is ignored, a change can give a `slug`, which has to be text, and any other field
+ * is refused, as Admin never sends one. Returns the refusing `Response` when the body isn't one
+ * Ghost accepts.
  */
 function readSegmentInput(
   body: unknown,
   action: 'save' | 'edit',
-): { name: string; filter?: string } | Response {
+): { name: string; filter?: string; slug?: string } | Response {
   const refuse = (issue: SegmentBodyIssue) =>
     HttpResponse.json(segmentsBodyError(action, issue), { status: 422 });
   const segments: unknown[] = isRecord(body) && Array.isArray(body.segments) ? body.segments : [];
@@ -301,7 +318,8 @@ function readSegmentInput(
   if (!isRecord(segment)) {
     return refuse({ code: 'invalid_type', message: 'Invalid input', path: ['body', 'segments'] });
   }
-  const unknownKeys = Object.keys(segment).filter((key) => !['id', 'name', 'filter'].includes(key));
+  const fields = action === 'edit' ? ['id', 'name', 'slug', 'filter'] : ['id', 'name', 'filter'];
+  const unknownKeys = Object.keys(segment).filter((key) => !fields.includes(key));
   if (unknownKeys.length > 0) {
     return refuse({
       code: 'unrecognized_keys',
@@ -309,6 +327,10 @@ function readSegmentInput(
       message: `Unrecognized key: ${unknownKeys.map((key) => `"${key}"`).join(', ')}`,
       path: at(),
     });
+  }
+  const slug = segment.slug;
+  if (slug !== undefined && typeof slug !== 'string') {
+    return refuse({ code: 'invalid_type', message: 'Slug must be a string', path: at('slug') });
   }
   if (typeof segment.name !== 'string') {
     return refuse({ code: 'invalid_type', message: 'Name must be a string', path: at('name') });
@@ -332,7 +354,7 @@ function readSegmentInput(
   if (filter === '') {
     return refuse({ code: 'custom', message: 'Filter cannot be empty', path: at('filter') });
   }
-  return { name, filter };
+  return { name, filter, slug };
 }
 
 /** Whether a segment, other than the one at `exceptIndex`, has `name`, ignoring case. */
@@ -357,7 +379,7 @@ function addSegment(body: unknown, filtersAreUnique: boolean): Response {
   if (filtersAreUnique && segmentViews.some((view) => view.filter === filter)) {
     return segmentsRefusal('save', 'invalid', 'A view with this filter already exists', 'filter');
   }
-  const segment = newSegment(input.name, filter);
+  const segment = newSegment(input.name, filter, slugFor(input.name, segmentViews));
   segmentViews = [...segmentViews, segment];
   return HttpResponse.json({ segments: [segment] }, { status: 201 });
 }
@@ -373,6 +395,9 @@ function renameSegment(id: string, body: unknown): Response {
   }
   if (input.filter !== undefined && input.filter !== target.segment.filter) {
     return segmentsRefusal('edit', 'invalid', "A segment's filter cannot be changed", 'filter');
+  }
+  if (input.slug !== undefined && input.slug !== target.segment.slug) {
+    return segmentsRefusal('edit', 'invalid', "A segment's slug cannot be changed", 'slug');
   }
   if (isNameTaken(input.name, target.index)) {
     return segmentsRefusal('edit', 'invalid', 'A view with this name already exists', 'name');

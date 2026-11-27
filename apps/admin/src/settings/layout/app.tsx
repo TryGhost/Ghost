@@ -13,6 +13,7 @@ import { Stack } from '@tryghost/shade/primitives';
 import { startTransition, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useScrollSectionContext } from '@/settings/hooks/use-scroll-section';
+import { ActiveSettingsGroupProvider } from './active-settings-group-provider';
 import { isOpenSectionRequest } from '@/settings/utils/open-section';
 import {
   useSettingsNavigationSlot,
@@ -105,17 +106,19 @@ export function App({ upgradeStatus }: AppProps) {
 
   return (
     <SettingsAppProvider upgradeStatus={upgradeStatus}>
-      <div className="settings-app h-full min-h-0">
-        <ConfirmationProvider>
-          <DialogPortalProvider>
-            <SettingsLocationSync />
-            <SettingsNavigationPortal />
-            {sectionsReady && (MainContent ? <MainContent /> : <SettingsLoading />)}
-            <Outlet />
-            <DirtyNavigationGuard />
-          </DialogPortalProvider>
-        </ConfirmationProvider>
-      </div>
+      <ActiveSettingsGroupProvider>
+        <div className="settings-app h-full min-h-0">
+          <ConfirmationProvider>
+            <DialogPortalProvider>
+              <SettingsLocationSync />
+              <SettingsNavigationPortal />
+              {sectionsReady && (MainContent ? <MainContent /> : <SettingsLoading />)}
+              <Outlet />
+              <DirtyNavigationGuard />
+            </DialogPortalProvider>
+          </ConfirmationProvider>
+        </div>
+      </ActiveSettingsGroupProvider>
     </SettingsAppProvider>
   );
 }

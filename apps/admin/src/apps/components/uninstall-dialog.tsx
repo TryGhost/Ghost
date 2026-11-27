@@ -75,8 +75,8 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
           <AlertDialogDescription asChild>
             <Stack gap="sm">
               <p>
-                The app stops opening for everyone. Where it’s already open, in another tab or for
-                another staff user, it can keep running until that tab is reloaded.
+                The app loses its access to your site straight away, and no one can open it. If
+                someone has it open right now, it will close on its own within the hour.
               </p>
               <p>Reinstalling it later is like installing it for the first time.</p>
             </Stack>

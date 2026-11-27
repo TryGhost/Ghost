@@ -6,10 +6,15 @@ import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
 
+import { overlayTint, useHostedModal, useModalOpen } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
+import { keepOpenOnToast } from '@/lib/toast-press';
 import { ShadeScope } from '@/shade-scope';
 
-const Sheet = SheetPrimitive.Root;
+const Sheet = (props: React.ComponentProps<typeof SheetPrimitive.Root>) => {
+  const [rootProps, provideOpen] = useModalOpen(props);
+  return provideOpen(<SheetPrimitive.Root {...rootProps} />);
+};
 
 const SheetTrigger = SheetPrimitive.Trigger;
 
@@ -23,7 +28,8 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      'fixed inset-0 z-50 bg-black/10  duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
+      'fixed inset-0 z-50 duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
+      overlayTint('sheet'),
       className,
     )}
     {...props}
@@ -32,17 +38,19 @@ const SheetOverlay = React.forwardRef<
 ));
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
+// A side sheet sets a height as well as its top and bottom, so a caller's `top-*`, `bottom-*`
+// or `h-*` still works.
 const sheetVariants = cva(
   'fixed z-50 gap-4 bg-surface-elevated p-8 shadow-lg transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:animate-in data-[state=open]:duration-500',
   {
     variants: {
       side: {
-        top: 'inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
+        top: 'top-[var(--ghost-safe-area-inset-top,0px)] right-[var(--ghost-safe-area-inset-right,0px)] left-[var(--ghost-safe-area-inset-left,0px)] border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
         bottom:
-          'inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
-        left: 'inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm',
+          'right-[var(--ghost-safe-area-inset-right,0px)] bottom-[var(--ghost-safe-area-inset-bottom,0px)] left-[var(--ghost-safe-area-inset-left,0px)] border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+        left: 'top-[var(--ghost-safe-area-inset-top,0px)] bottom-[var(--ghost-safe-area-inset-bottom,0px)] left-[var(--ghost-safe-area-inset-left,0px)] h-[calc(100%_-_var(--ghost-safe-area-inset-top,0px)_-_var(--ghost-safe-area-inset-bottom,0px))] w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm',
         right:
-          'inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm',
+          'top-[var(--ghost-safe-area-inset-top,0px)] right-[var(--ghost-safe-area-inset-right,0px)] bottom-[var(--ghost-safe-area-inset-bottom,0px)] h-[calc(100%_-_var(--ghost-safe-area-inset-top,0px)_-_var(--ghost-safe-area-inset-bottom,0px))] w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm',
       },
     },
     defaultVariants: {
@@ -59,29 +67,54 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = 'right', className, children, ...props }, ref) => (
-  <SheetPortal>
-    <ShadeScope>
-      <SheetOverlay />
-      <SheetPrimitive.Content
-        ref={ref}
-        className={cn(sheetVariants({ side }), className)}
-        {...props}
-      >
-        <SheetPrimitive.Close
-          className={cn(
-            'top-4 right-4 z-50 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary',
-            side === 'bottom' ? 'absolute' : 'fixed',
-          )}
-        >
-          <X className="size-4" />
-          <span className="sr-only">Close</span>
-        </SheetPrimitive.Close>
-        {children}
-      </SheetPrimitive.Content>
-    </ShadeScope>
-  </SheetPortal>
-));
+>(({ side = 'right', className, children, ...props }, ref) => {
+  const { container, inApp, overlayStyle, ref: contentRef, wrap } = useHostedModal('sheet', ref);
+  return (
+    <SheetPortal container={container}>
+      <ShadeScope>
+        <SheetOverlay style={overlayStyle} />
+        {wrap(
+          <SheetPrimitive.Content
+            ref={contentRef}
+            className={cn(
+              sheetVariants({ side }),
+              inApp && 'overflow-y-auto',
+              inApp &&
+                (side === 'top' || side === 'bottom') &&
+                'max-h-[calc(100dvh_-_var(--ghost-safe-area-inset-top,0px)_-_var(--ghost-safe-area-inset-bottom,0px))]',
+              // On the width, not max-width, so a caller's `max-w-*` only narrows it.
+              inApp &&
+                (side === 'left' || side === 'right') &&
+                'w-[min(75%,calc(100vw_-_var(--ghost-safe-area-inset-left,0px)_-_var(--ghost-safe-area-inset-right,0px)))]',
+              className,
+            )}
+            {...props}
+            onInteractOutside={(event) => keepOpenOnToast(event, props.onInteractOutside)}
+          >
+            <SheetPrimitive.Close
+              className={cn(
+                'top-4 right-4 z-50 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary',
+                // In an app, the window's corner is under Admin's chrome, so use the sheet's.
+                inApp || side === 'bottom' ? 'absolute' : 'fixed',
+              )}
+              // Radix's focus loop focuses this without scrolling, which can leave it out of sight
+              // in a scrolled sheet.
+              onFocus={
+                inApp
+                  ? (event) => event.currentTarget.scrollIntoView({ block: 'nearest' })
+                  : undefined
+              }
+            >
+              <X className="size-4" />
+              <span className="sr-only">Close</span>
+            </SheetPrimitive.Close>
+            {children}
+          </SheetPrimitive.Content>,
+        )}
+      </ShadeScope>
+    </SheetPortal>
+  );
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

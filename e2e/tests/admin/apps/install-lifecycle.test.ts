@@ -15,7 +15,13 @@ const isHeldCall = (request: Request | URL) => {
 };
 
 test.describe('Ghost Admin - App install lifecycle', () => {
-  test.use({ labs: { apps: true } });
+  // Apps get tokens from Better Auth's OAuth provider, which is registered only when the flag
+  // is on at boot, so they run in the Better Auth project only.
+  test.skip(
+    process.env.GHOST_E2E_AUTH_ENGINE !== 'better-auth',
+    'Apps need auth:engine better-auth',
+  );
+  test.use({ labs: { apps: true }, config: { labs__apps: 'true' } });
 
   test('installs an app that opens and calls the Admin API', async ({ page, fixtureApp }) => {
     const appsPage = new AppsPage(page);

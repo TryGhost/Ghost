@@ -4,11 +4,11 @@ const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const membersService = require('../../services/members');
+const { callerOf } = require('../../services/members-metafields');
 
 const tpl = require('@tryghost/tpl');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
-const { ADMIN } = require('../../services/members-metafields');
 
 // Shape the import service's outcome into the API response envelope: an inline import
 // reports its stats and label, a deferred one only how much it accepted.
@@ -93,7 +93,7 @@ const controller = {
     async query(frame) {
       const member = await membersService.api.memberBREADService.read(frame.data, {
         ...frame.options,
-        metafieldsFor: ADMIN,
+        metafieldsFor: callerOf(frame.options.context),
       });
 
       if (!member) {
@@ -128,10 +128,10 @@ const controller = {
         logging.warn(tpl(messages.notSendingWelcomeEmail));
         frame.options.send_email = false;
       }
-      const member = await membersService.api.memberBREADService.add(
-        frame.data.members[0],
-        frame.options,
-      );
+      const member = await membersService.api.memberBREADService.add(frame.data.members[0], {
+        ...frame.options,
+        metafieldsFor: callerOf(frame.options.context),
+      });
 
       return member;
     },
@@ -152,10 +152,10 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      const member = await membersService.api.memberBREADService.edit(
-        frame.data.members[0],
-        frame.options,
-      );
+      const member = await membersService.api.memberBREADService.edit(frame.data.members[0], {
+        ...frame.options,
+        metafieldsFor: callerOf(frame.options.context),
+      });
 
       return member;
     },
@@ -231,7 +231,7 @@ const controller = {
       }
       const model = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
-        { metafieldsFor: ADMIN },
+        { metafieldsFor: callerOf(frame.options.context) },
       );
       if (!model) {
         throw new errors.NotFoundError({
@@ -274,7 +274,7 @@ const controller = {
       });
       const model = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
-        { metafieldsFor: ADMIN },
+        { metafieldsFor: callerOf(frame.options.context) },
       );
       if (!model) {
         throw new errors.NotFoundError({
@@ -514,7 +514,7 @@ const controller = {
       // Get the member first to retrieve their email
       const member = await membersService.api.memberBREADService.read(
         { id: frame.options.id },
-        { metafieldsFor: ADMIN },
+        { metafieldsFor: callerOf(frame.options.context) },
       );
 
       if (!member) {

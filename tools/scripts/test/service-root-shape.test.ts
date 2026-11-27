@@ -13,7 +13,7 @@ const requireRoot = createRequire(path.join(root, 'package.json'));
 const binary = path.join(path.dirname(requireRoot.resolve('oxlint/package.json')), 'bin/oxlint');
 const config = JSON.parse(readFileSync(path.join(root, '.oxlintrc.json'), 'utf8'));
 const ruleName = 'ghost/service-root-shape';
-const helperImport = '../../../kernel/define-service';
+const helperImport = '../../../support/define-service';
 const prefix = `import { defineService } from '${helperImport}';\n`;
 const factory = `defineService('Example', () => ({}))`;
 
@@ -122,7 +122,7 @@ for (const [name, code] of valid) {
   });
 }
 
-test('accepts an aliased kernel import', () => {
+test('accepts an aliased support import', () => {
   const result = lint(
     `import { defineService as managed } from '${helperImport}'; export default managed('Example', create);`,
   );
@@ -377,7 +377,7 @@ test('fails instead of skipping roots when the legacy service inventory cannot b
   }
 });
 
-test('configures the rule for every service root with the kernel helper', () => {
+test('configures the rule for every service root with the support helper', () => {
   const overrides = config.overrides.filter(
     (override: { rules: Record<string, unknown> }) => override.rules[ruleName],
   );
@@ -391,7 +391,7 @@ test('configures the rule for every service root with the kernel helper', () => 
   assert.equal(
     settings[1].helperImport,
     path
-      .relative('ghost/core/server/services/example', 'ghost/core/kernel/define-service')
+      .relative('ghost/core/server/services/example', 'ghost/core/support/define-service')
       .split(path.sep)
       .join('/'),
   );

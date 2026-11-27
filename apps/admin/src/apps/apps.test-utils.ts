@@ -89,19 +89,36 @@ export function failAppFrame() {
 
 const sessionsPath = (id: string) => `/apps/installations/${id}/sessions/`;
 
+/** The token Ghost issues with an active installation's session. */
+export const SESSION_TOKEN = {
+  access_token: 'ghost_app_session',
+  expires_in: 3600,
+};
+
 /**
  * Fakes starting a session of the installation `id`. Ghost responds with `answer`: either the
  * installation, whose revision the session is pinned to, or a `Response` such as an error. `set`
  * changes the response for later sessions.
  */
 export function fakeSessionStart(id: string, answer: AppInstallation | Response) {
-  let next = answer;
-  const capture = fakeAdminEndpoint('POST', sessionsPath(id), () =>
+  let next: () => AppInstallation | Response = () => answer;
+  const capture = fakeAdminEndpoint('POST', sessionsPath(id), () => {
+    const current = next();
     // A body can only be read once, so each request gets its own copy of a `Response`.
-    next instanceof Response ? next.clone() : { app_sessions: [{ installation: next }] },
-  );
+    return current instanceof Response
+      ? current.clone()
+      : {
+          app_sessions: [
+            { installation: current, token: current.status === 'active' ? SESSION_TOKEN : null },
+          ],
+        };
+  });
   return Object.assign(capture, {
     set: (nextAnswer: AppInstallation | Response) => {
+      next = () => nextAnswer;
+    },
+    /** Answers each later request with what `answer` returns when it arrives. */
+    setAnswer: (nextAnswer: () => AppInstallation | Response) => {
       next = nextAnswer;
     },
   });

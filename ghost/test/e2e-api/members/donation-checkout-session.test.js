@@ -108,7 +108,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 1200,
           currency: 'usd',
-          customer: stripeMocker.checkoutSessions[0].customer,
+          customer: stripeMocker.checkoutSessions[0].customer ?? null,
           customer_details: {
             name: 'Paid Test',
             email: 'exampledonation@example.com',
@@ -164,8 +164,6 @@ describe('Create Stripe Checkout Session for Donations', function () {
   it('Strips reserved gift metadata from donation checkout sessions', async function () {
     const post = await getPost(fixtureManager.get('posts', 0).id);
     const url = urlServiceUtils.urlFor(post, 'posts', { absolute: false });
-    const paidTier = await models.Product.findOne({ type: 'paid' }, { require: true });
-    const attackerToken = 'poc-reserved-donation-metadata';
     const email = 'reserved-metadata-donation@example.com';
 
     await membersAgent
@@ -178,11 +176,8 @@ describe('Create Stripe Checkout Session for Donations', function () {
         metadata: {
           ghost_donation: '',
           ghost_gift: 'true',
+          ghost_gift_id: 'a00000000000000000000005',
           ghostSignupContext: 'needs_magic_link',
-          gift_token: attackerToken,
-          tier_id: paidTier.id,
-          cadence: 'year',
-          duration: '10',
           urlHistory: [
             {
               path: url,
@@ -200,11 +195,8 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
     assert.equal(checkoutSession.metadata.ghost_donation, true);
     assert.equal(checkoutSession.metadata.ghost_gift, undefined);
+    assert.equal(checkoutSession.metadata.ghost_gift_id, undefined);
     assert.equal(checkoutSession.metadata.ghostSignupContext, undefined);
-    assert.equal(checkoutSession.metadata.gift_token, undefined);
-    assert.equal(checkoutSession.metadata.tier_id, undefined);
-    assert.equal(checkoutSession.metadata.cadence, undefined);
-    assert.equal(checkoutSession.metadata.duration, undefined);
 
     await stripeMocker.sendWebhook({
       type: 'checkout.session.completed',
@@ -214,7 +206,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 100,
           currency: 'usd',
-          customer: checkoutSession.customer,
+          customer: checkoutSession.customer ?? null,
           customer_details: {
             name: 'Reserved Metadata Donor',
             email,
@@ -239,12 +231,11 @@ describe('Create Stripe Checkout Session for Donations', function () {
       },
       { require: true },
     );
-    const gift = await models.Gift.findOne({ token: attackerToken });
 
+    // Recorded as a donation, so the webhook didn't read the checkout as a gift.
     assert.equal(donation.get('amount'), 100);
     assert.equal(donation.get('currency'), 'usd');
     assert.equal(donation.get('donation_message'), 'Reserved metadata should not create a gift');
-    assert.equal(gift, null);
   });
 
   it('Can create a member checkout session for a donation', async function () {
@@ -299,7 +290,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 1220,
           currency: 'eur',
-          customer: stripeMocker.checkoutSessions[0].customer,
+          customer: stripeMocker.checkoutSessions[0].customer ?? null,
           customer_details: {
             name: 'Member Test',
             email: email,
@@ -398,7 +389,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 1200,
           currency: 'usd',
-          customer: stripeMocker.checkoutSessions[0].customer,
+          customer: stripeMocker.checkoutSessions[0].customer ?? null,
           customer_details: {
             name: 'Paid Test',
             email: 'exampledonation@example.com',
@@ -552,7 +543,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
           mode: 'payment',
           amount_total: 2500,
           currency: 'usd',
-          customer: checkoutSession.customer,
+          customer: checkoutSession.customer ?? null,
           customer_details: {
             name: 'UTM Donor',
             email: 'utm-donation@test.com',

@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { setImmediate } = require('node:timers/promises');
 
 const _ = require('lodash');
 const sinon = require('sinon');
@@ -59,15 +60,16 @@ class ModelStub {
     return knownSetting;
   }
 
-  async destroy(options) {
-    const destroyedSetting = this.knownSettings.find((setting) => setting.id === options.id);
-    this.knownSettings = this.knownSettings.filter((setting) => setting !== destroyedSetting);
-    return destroyedSetting;
+  async destroyMany(ids) {
+    this.knownSettings = this.knownSettings.filter((setting) => !ids.includes(setting.id));
   }
 
   async transaction(fn) {
     const snapshot = this.knownSettings.slice();
-    this.lastTransacting = {};
+    this.lastTransacting = sinon.stub().returns({
+      where: () => ({ forUpdate: () => ({ first: async () => this.lockHeld }) }),
+      whereIn: (column, ids) => ({ del: () => this.destroyMany(ids) }),
+    });
 
     try {
       return await fn(this.lastTransacting);
@@ -131,12 +133,11 @@ describe('Service', function () {
       });
 
       sinon.assert.calledTwice(model.findAll);
-      assert.deepEqual(model.findAll.getCall(0).firstArg, { filter: `theme:'test'` });
-      assert.deepEqual(model.findAll.getCall(1).firstArg, { filter: `theme:'test'` });
+      assert.equal(model.findAll.getCall(0).firstArg.filter, `theme:'test'`);
+      assert.equal(model.findAll.getCall(1).firstArg.filter, `theme:'test'`);
 
       // destroys records that no longer exist in theme
-      sinon.assert.calledOnce(model.destroy);
-      assert.deepEqual(model.destroy.getCall(0).firstArg, { id: 1 });
+      sinon.assert.calledOnceWithExactly(model.destroyMany, [1]);
 
       // internal cache is correct
       assert.deepEqual(service.listSettings(), [
@@ -175,8 +176,7 @@ describe('Service', function () {
       });
 
       // destroys and recreates record
-      sinon.assert.calledOnce(model.destroy);
-      assert.deepEqual(model.destroy.getCall(0).firstArg, { id: 2 });
+      sinon.assert.calledOnceWithExactly(model.destroyMany, [2]);
 
       sinon.assert.calledOnce(model.add);
       assert.deepEqual(model.add.getCall(0).firstArg, {
@@ -234,7 +234,11 @@ describe('Service', function () {
       // updates known setting to match new default
       sinon.assert.calledOnce(model.edit);
       assert.deepEqual(model.edit.getCall(0).firstArg, { value: 'two' });
-      assert.deepEqual(model.edit.getCall(0).lastArg, { id: 2, method: 'update' });
+      assert.deepEqual(model.edit.getCall(0).lastArg, {
+        id: 2,
+        method: 'update',
+        transacting: model.lastTransacting,
+      });
     });
 
     it('handles new settings', async function () {
@@ -342,12 +346,11 @@ describe('Service', function () {
         },
       });
 
-      // looks for existing settings, then re-fetches after sync. Twice for each activation
-      sinon.assert.callCount(model.findAll, 4);
-      assert.deepEqual(model.findAll.getCall(0).firstArg, { filter: `theme:'test'` });
-      assert.deepEqual(model.findAll.getCall(1).firstArg, { filter: `theme:'test'` });
-      assert.deepEqual(model.findAll.getCall(2).firstArg, { filter: `theme:'new'` });
-      assert.deepEqual(model.findAll.getCall(3).firstArg, { filter: `theme:'new'` });
+      // looks for existing settings once when they match, twice when they need syncing
+      sinon.assert.calledThrice(model.findAll);
+      assert.equal(model.findAll.getCall(0).firstArg.filter, `theme:'test'`);
+      assert.equal(model.findAll.getCall(1).firstArg.filter, `theme:'new'`);
+      assert.equal(model.findAll.getCall(2).firstArg.filter, `theme:'new'`);
 
       // adds new settings
       sinon.assert.calledTwice(model.add);
@@ -420,6 +423,164 @@ describe('Service', function () {
 
       assert(model.findAll.getCall(1).firstArg.filter);
       assert.doesNotThrow(() => nql.parse(model.findAll.getCall(1).firstArg.filter));
+    });
+
+    it('takes the repository lock, then reads and writes in the same transaction', async function () {
+      const lock = Promise.withResolvers();
+      model.lockHeld = lock.promise;
+
+      const activation = service.activateTheme('test', {
+        name: 'test',
+        customSettings: {
+          // 'one' custom setting no longer exists
+          // 'two' - value is no longer an option
+          two: {
+            type: 'select',
+            options: ['3', '4'],
+            default: '3',
+          },
+          // 'three' - new
+          three: {
+            type: 'select',
+            options: ['uno', 'dos'],
+            default: 'uno',
+          },
+        },
+      });
+
+      await setImmediate();
+      const transacting = model.lastTransacting;
+      sinon.assert.calledOnceWithExactly(transacting, 'settings');
+      sinon.assert.notCalled(model.findAll);
+
+      lock.resolve();
+      await activation;
+
+      assert.equal(model.findAll.getCall(0).firstArg.transacting, transacting);
+      assert.equal(model.findAll.getCall(1).firstArg.transacting, transacting);
+      sinon.assert.calledWithExactly(transacting, 'custom_theme_settings');
+      sinon.assert.calledOnceWithExactly(model.destroyMany, [1]);
+      assert.equal(model.edit.getCall(0).lastArg.transacting, transacting);
+      assert.equal(model.add.getCall(0).lastArg.transacting, transacting);
+    });
+
+    it('writes nothing when another sync finished while it waited for the lock', async function () {
+      const lock = Promise.withResolvers();
+      model.lockHeld = lock.promise;
+
+      const activation = service.activateTheme('test', {
+        name: 'test',
+        customSettings: {
+          // 'one' custom setting no longer exists
+          // 'two' - no change
+          two: {
+            type: 'select',
+            options: ['1', '2'],
+            default: '1',
+          },
+        },
+      });
+
+      await setImmediate();
+      await model.destroyMany([1]);
+      model.destroyMany.resetHistory();
+      lock.resolve();
+      await activation;
+
+      sinon.assert.notCalled(model.destroyMany);
+      sinon.assert.notCalled(model.edit);
+      sinon.assert.notCalled(model.add);
+      assert.deepEqual(
+        service.listSettings().map((setting) => setting.key),
+        ['two'],
+      );
+    });
+
+    it('completes when a record it is removing has already been removed', async function () {
+      const originalFindAll = model.findAll;
+      model.findAll = async function (options) {
+        const collection = await originalFindAll.call(model, options);
+        if (options.transacting) {
+          model.knownSettings = model.knownSettings.filter((setting) => setting.id !== 1);
+        }
+        return collection;
+      };
+
+      await service.activateTheme('test', {
+        name: 'test',
+        customSettings: {
+          // 'one' custom setting no longer exists
+          // 'two' - no change
+          two: {
+            type: 'select',
+            options: ['1', '2'],
+            default: '1',
+          },
+        },
+      });
+
+      model.findAll = originalFindAll;
+      assert.deepEqual(
+        service.listSettings().map((setting) => setting.key),
+        ['two'],
+      );
+    });
+
+    it('writes nothing when the stored settings already match', async function () {
+      await service.activateTheme('test', {
+        name: 'test',
+        customSettings: {
+          one: {
+            type: 'select',
+            options: ['1', '2'],
+            default: '2',
+          },
+          two: {
+            type: 'select',
+            options: ['1', '2'],
+            default: '1',
+          },
+        },
+      });
+
+      sinon.assert.calledOnce(model.findAll);
+      sinon.assert.notCalled(model.destroyMany);
+      sinon.assert.notCalled(model.edit);
+      sinon.assert.notCalled(model.add);
+      assert.deepEqual(
+        service.listSettings().map((setting) => setting.key),
+        ['one', 'two'],
+      );
+    });
+
+    it('leaves the stored settings as they were when the sync fails part-way', async function () {
+      const originalAdd = model.add;
+      model.add = async () => {
+        throw new Error('add failed');
+      };
+
+      await assert.rejects(
+        service.activateTheme('test', {
+          name: 'test',
+          customSettings: {
+            // 'one' and 'two' no longer exist
+            // 'three' - new
+            three: {
+              type: 'select',
+              options: ['uno', 'dos'],
+              default: 'uno',
+            },
+          },
+        }),
+        /add failed/,
+      );
+
+      model.add = originalAdd;
+      const stored = (await model.findAll({ filter: `theme:'test'` })).toJSON();
+      assert.deepEqual(
+        stored.map((setting) => setting.key),
+        ['one', 'two'],
+      );
     });
 
     it('does not allow simultaneous calls for same theme', async function () {
@@ -594,7 +755,7 @@ describe('Service', function () {
         return originalAdd.call(model, data, options);
       };
       // atomicity must not depend on individual deletes succeeding
-      model.destroy = async () => {
+      model.destroyMany = async () => {
         throw new Error('destroy failed');
       };
 

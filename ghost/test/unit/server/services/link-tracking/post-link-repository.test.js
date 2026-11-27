@@ -9,11 +9,6 @@ describe('PostLinkRepository class', function () {
   beforeAll(function () {
     postLinkRepository = new PostLinkRepository({
       LinkRedirect: {
-        getFilteredCollectionQuery: sinon.stub().returns({
-          select: sinon.stub().returns({
-            distinct: sinon.stub().returns([]),
-          }),
-        }),
         bulkEdit: sinon.stub().returns({
           successful: 0,
           unsuccessful: 0,

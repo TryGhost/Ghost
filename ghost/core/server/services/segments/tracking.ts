@@ -9,11 +9,26 @@ import type { Tracer } from '../../lib/tracing/tracer';
  * - `not_found`: no segment has the id in the request.
  * - `name_taken`: another segment already has the name, or a name the database counts as the
  *   same.
- * - `filter_changed`: the request has a filter that isn't the segment's own.
+ * - `filter_unparseable`: the filter the segment would be saved with isn't valid NQL.
+ * - `slug_changed`: the request has a slug that isn't the segment's own.
+ * - `slug_taken`: another segment has the slug the new segment was given.
+ * - `slug_unusable`: a filter can't name a segment by the slug the new segment was given.
+ * - `no_free_slug`: every slug minted from the new segment's name is taken.
+ * - `filter_names_segment`: the filter the segment would be saved with names a segment.
+ * - `order_out_of_date`: a new order doesn't name every segment exactly once.
  *
  * Any other error is a failure.
  */
-export type SegmentRejection = 'not_found' | 'name_taken' | 'filter_changed';
+export type SegmentRejection =
+  | 'not_found'
+  | 'name_taken'
+  | 'filter_unparseable'
+  | 'slug_changed'
+  | 'slug_taken'
+  | 'slug_unusable'
+  | 'no_free_slug'
+  | 'filter_names_segment'
+  | 'order_out_of_date';
 
 /** What a command that changes a segment reports. */
 export interface SegmentChangeAttempt {
@@ -30,6 +45,7 @@ export interface SegmentChangeAttempt {
 const CHANGE_SPANS = {
   add: 'segments.add',
   edit: 'segments.edit',
+  reorder: 'segments.reorder',
   delete: 'segments.delete',
 } as const;
 

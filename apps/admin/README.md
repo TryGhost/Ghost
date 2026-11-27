@@ -54,6 +54,11 @@ Ghost Apps is the exception while `apps` is a private Labs flag: its Admin code
 assumes a matching Core, with no older-backend fallbacks or tests. Origin,
 framing, identity and allowlist checks still apply.
 
+Admin's segment screens, behind `memberSegments`, are another exception, on the
+condition the
+[feature flags guide](../../docs/practices/feature-flags.md#choose-the-right-gate)
+records.
+
 ### Code that fails to load
 
 Screens, the editor and the search modal load their code when first needed. A

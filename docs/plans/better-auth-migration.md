@@ -171,7 +171,7 @@ CommonJS; Better Auth 1.7 is ESM-only and loads with `require(esm)`, which
 Ghost already relies on. Express 4: Better Auth's `toNodeHandler` must mount before
 `body-parser`. MySQL 8 via Knex (Kysely would add a second pool outside Ghost's
 transactions). Rate limiting is the `spam` limiters (rate-limiter-flexible on
-the `rate_limits` table, `shared.middleware.rateLimiting`) with success resets. Boot owns service initialisation (`kernel/define-service.ts`).
+the `rate_limits` table, `shared.middleware.rateLimiting`) with success resets. Boot owns service initialisation (`support/define-service.ts`).
 
 ## 3. Target architecture
 

@@ -7,6 +7,7 @@ const inputGroupVariants = cva(
     // Shared surface chrome (border, bg, radius, transition, invalid state).
     inputSurfaceClasses.base,
     inputSurfaceClasses.invalidWithin,
+    inputSurfaceClasses.disabledFieldWithin,
 
     // Wrapper layout + group context (input-group specific).
     'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-field-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
