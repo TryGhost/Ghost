@@ -18,6 +18,7 @@ import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
 import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
+import { getBlueskyVideoSources, isVideoAttachment } from '../../utils/video-attachment';
 import { handleProfileClick } from '../../utils/handle-profile-click';
 import { openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
 import { renderTimestamp } from '../../utils/render-timestamp';
@@ -73,6 +74,41 @@ export function getAttachment(
   }
 
   return attachment;
+}
+
+function AttachmentVideo({
+  attachment,
+  className,
+  controls,
+}: {
+  attachment: ActivityPubAttachment;
+  className?: string;
+  controls?: boolean;
+}) {
+  const blueskyVideo = getBlueskyVideoSources(attachment.url);
+
+  if (!blueskyVideo) {
+    return (
+      <video key={attachment.url} className={className} controls={controls} src={attachment.url} />
+    );
+  }
+
+  // Videos bridged from Bluesky point at the author's PDS, which ignores Range
+  // requests: Safari can't play them and other browsers can't seek. Prefer
+  // Bluesky's HLS stream, which Safari plays natively, and fall back to the
+  // original file elsewhere. With a poster, nothing is fetched until playback.
+  return (
+    <video
+      key={attachment.url}
+      className={className}
+      controls={controls}
+      poster={blueskyVideo.thumbnailUrl}
+      preload="none"
+    >
+      <source src={blueskyVideo.playlistUrl} type="application/vnd.apple.mpegurl" />
+      <source src={attachment.url} type="video/mp4" />
+    </video>
+  );
 }
 
 export function renderFeedAttachment(
@@ -148,6 +184,18 @@ export function renderFeedAttachment(
     );
   }
 
+  if (isVideoAttachment(attachment)) {
+    return (
+      <div className="attachment-video relative mt-3 mb-4">
+        <AttachmentVideo
+          attachment={attachment}
+          className="h-[300px] w-full rounded object-cover"
+          controls
+        />
+      </div>
+    );
+  }
+
   switch (attachment.mediaType) {
     case 'image/jpeg':
     case 'image/png':
@@ -168,13 +216,6 @@ export function renderFeedAttachment(
           onClick={onImageClick ? handleImageClick(attachment.url) : undefined}
           onError={() => handleImageError(attachment.url)}
         />
-      );
-    case 'video/mp4':
-    case 'video/webm':
-      return (
-        <div className="relative mt-3 mb-4">
-          <video className="h-[300px] w-full rounded object-cover" src={attachment.url} controls />
-        </div>
       );
     case 'audio/mpeg':
     case 'audio/ogg':
@@ -429,6 +470,30 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
     );
   }
 
+  if (isVideoAttachment(attachment)) {
+    const blueskyVideo = getBlueskyVideoSources(attachment.url);
+
+    return (
+      <div className={videoAttachmentStyles}>
+        {blueskyVideo ? (
+          // The Bluesky blob has no byte-range support, so loading it just for a
+          // preview frame would download the whole file. Use its thumbnail.
+          <img
+            className="h-[80px] w-full rounded object-cover"
+            referrerPolicy="no-referrer"
+            src={blueskyVideo.thumbnailUrl}
+          />
+        ) : (
+          <video className="h-[80px] w-full rounded object-cover" src={attachment.url} />
+        )}
+        <div className="absolute inset-0 rounded bg-gray-900 opacity-50"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <LucideIcon.Play color="white" fill="white" size={40} />
+        </div>
+      </div>
+    );
+  }
+
   switch (attachment.mediaType) {
     case 'image/jpeg':
     case 'image/png':
@@ -436,18 +501,6 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
       return (
         <img className={imageAttachmentStyles} referrerPolicy="no-referrer" src={attachment.url} />
       );
-    case 'video/mp4':
-    case 'video/webm':
-      return (
-        <div className={videoAttachmentStyles}>
-          <video className="h-[80px] w-full rounded object-cover" src={attachment.url} />
-          <div className="absolute inset-0 rounded bg-gray-900 opacity-50"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <LucideIcon.Play color="white" fill="white" size={40} />
-          </div>
-        </div>
-      );
-
     case 'audio/mpeg':
     case 'audio/ogg':
       return (
@@ -661,7 +714,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
       }
 
       const mediaWrapperClassName = clsx(
-        'relative mt-3 overflow-hidden rounded-md [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
+        'relative mt-3 overflow-hidden rounded-md [&>.attachment-gallery]:mt-0 [&>.attachment-video]:my-0 [&>img]:mt-0 [&>img]:block',
         Array.isArray(getAttachment(object)) ? 'w-full' : 'w-fit max-w-full',
       );
 
@@ -681,7 +734,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     if (canHideSensitiveMedia) {
       const mediaWrapperClassName = clsx(
-        'relative mt-3 [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
+        'relative mt-3 [&>.attachment-gallery]:mt-0 [&>.attachment-video]:my-0 [&>img]:mt-0 [&>img]:block',
         Array.isArray(getAttachment(object)) ? 'w-full' : 'w-fit max-w-full',
       );
 
