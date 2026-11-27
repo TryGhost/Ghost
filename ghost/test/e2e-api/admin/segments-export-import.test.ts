@@ -340,7 +340,7 @@ describe('Segments in a site export and import', function () {
   });
 
   it('numbers a name the database counts as another segment’s', async function () {
-    // The site and the file have names that differ by an accent, which the segments service
+    // The site and the file have names that differ by an accent, which the import's numbering
     // tells apart and MySQL's default collation doesn't. The file's numbered names are its own.
     await add('Café', 'label:accent');
     const views = [

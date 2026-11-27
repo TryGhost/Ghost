@@ -199,7 +199,7 @@ export class SegmentsImporter {
       entry.number ??= take(entry.segment.name, 2);
     }
 
-    // Each rejected name leads to one the service has free, and the database can only count
+    // Each rejected name leads to one `take` counts as free, and the database can only count
     // it as taken by a segment that is stored, so one more try than there are segments is enough.
     const tries = stored.length + wanted.length + 1;
     for (const { segment, filter, number } of wanted) {
@@ -208,9 +208,9 @@ export class SegmentsImporter {
   }
 
   /**
-   * Adds `segment` under its name with `names.number`. The service compares names as `take`
-   * does, but the database can count a name as another segment's where that comparison
-   * doesn't, as MySQL's default collation does for "Cafe" and "Café". The segment is then tried
+   * Adds `segment` under its name with `names.number`. The database decides whether the name is
+   * taken, and can count a name as another segment's where `take`'s comparison doesn't, as
+   * MySQL's default collation does for "Cafe" and "Café". The segment is then tried
    * with the next free number, up to `names.tries` times. A rejected add has written nothing, so
    * the import goes on.
    */
