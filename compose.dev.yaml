@@ -4,8 +4,8 @@ services:
   mysql:
     image: mysql:8.4.11@sha256:0f51e63e537a1f176423fa03ef559aabe6fa4372a53160a44bc7e75da7d15364
     container_name: ghost-dev-mysql
-    # Shared by every checkout's Ghost and DB test runs, which outgrow MySQL's default 151 connections
-    # and would fill the volume with binary logs that only replication and point-in-time recovery read
+    # Shared by every checkout's Ghost and DB test runs: they outgrow MySQL's default 151 connections,
+    # and their binary logs, read only by replication and point-in-time recovery, would fill the volume
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1 --max-connections=1000 --disable-log-bin
     ports:
       - '127.0.0.1:3306:3306'

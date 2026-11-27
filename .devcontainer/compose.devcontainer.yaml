@@ -3,8 +3,9 @@ services:
     # Smaller InnoDB buffer pool than the baseline compose.dev.yaml (1G).
     # Lets the dev stack stay within a 2-core / 8 GB Codespace's budget
     # after Ghost + the default Admin/Portal dev watchers are running.
-    # 256 MB is plenty for dev data volumes.
-    command: --innodb-buffer-pool-size=256M --innodb-log-buffer-size=64M --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    # 256 MB is plenty for dev data volumes. Replaces the baseline command
+    # wholesale, so it repeats --disable-log-bin.
+    command: --innodb-buffer-pool-size=256M --innodb-log-buffer-size=64M --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --disable-log-bin
     # mem_limit is a hard cgroup ceiling, separate from the buffer pool size
     # above. Measured via `docker stats` under real usage: actual RSS sits
     # around 440-460MiB, so the previous 512m cap left MySQL pinned at
