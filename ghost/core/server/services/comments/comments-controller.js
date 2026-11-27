@@ -81,6 +81,41 @@ module.exports = class CommentsController {
   }
 
   /**
+   * The reportCount option for the count.reports part of a parsed filter. The query applies it as
+   * a single comparison, so any other shape, such as two comparisons or a group of them, is
+   * rejected rather than left out of the query.
+   *
+   * @param {object} countReportsFilter
+   * @returns {{op: string, value: number}}
+   */
+  #toReportCount(countReportsFilter) {
+    const keys = Object.keys(countReportsFilter);
+    const val =
+      keys.length === 1 && keys[0] === 'count.reports' ? countReportsFilter[keys[0]] : null;
+
+    if (typeof val === 'number') {
+      return { op: '=', value: val };
+    }
+    if (val !== null && typeof val === 'object') {
+      if (val.$gt !== undefined) {
+        return { op: '>', value: val.$gt };
+      } else if (val.$gte !== undefined) {
+        return { op: '>=', value: val.$gte };
+      } else if (val.$lt !== undefined) {
+        return { op: '<', value: val.$lt };
+      } else if (val.$lte !== undefined) {
+        return { op: '<=', value: val.$lte };
+      } else if (val.$ne !== undefined) {
+        return { op: '!=', value: val.$ne };
+      }
+    }
+
+    throw new errors.BadRequestError({
+      message: tpl(messages.unsupportedReportCountFilter),
+    });
+  }
+
+  /**
    * Extract count.reports from filter string.
    * Returns the remaining filter, a reportCount option, and a mongoTransformer.
    *
@@ -92,33 +127,22 @@ module.exports = class CommentsController {
       return { filter: filterString, reportCount: undefined, mongoTransformer: undefined };
     }
 
-    const parsed = nql(filterString).parse();
-    const [countReportsFilter, remainingFilter] = splitFilter(parsed, ['count.reports']);
-
-    // Convert count.reports to reportCount option
-    let reportCount;
-    if (countReportsFilter?.['count.reports'] !== undefined) {
-      const val = countReportsFilter['count.reports'];
-      if (typeof val === 'number') {
-        reportCount = { op: '=', value: val };
-      } else if (val.$gt !== undefined) {
-        reportCount = { op: '>', value: val.$gt };
-      } else if (val.$gte !== undefined) {
-        reportCount = { op: '>=', value: val.$gte };
-      } else if (val.$lt !== undefined) {
-        reportCount = { op: '<', value: val.$lt };
-      } else if (val.$lte !== undefined) {
-        reportCount = { op: '<=', value: val.$lte };
-      } else if (val.$ne !== undefined) {
-        reportCount = { op: '!=', value: val.$ne };
-      }
-
-      if (!reportCount) {
-        throw new errors.BadRequestError({
-          message: tpl(messages.unsupportedReportCountFilter),
-        });
-      }
+    let countReportsFilter;
+    let remainingFilter;
+    try {
+      [countReportsFilter, remainingFilter] = splitFilter(nql(filterString).parse(), [
+        'count.reports',
+      ]);
+    } catch (err) {
+      // The filter doesn't parse, or joins count.reports to other conditions in a way that
+      // can't be split into a report count and the rest
+      throw new errors.BadRequestError({
+        message: tpl(messages.unsupportedReportCountFilter),
+        context: err.message,
+      });
     }
+
+    const reportCount = countReportsFilter ? this.#toReportCount(countReportsFilter) : undefined;
 
     // If there's remaining filter, use transformer to replace parsed result
     // Otherwise, no filter needed

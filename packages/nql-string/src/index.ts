@@ -18,3 +18,19 @@
 export function escapeNqlString(value: string): string {
   return `'${value.replace(/(['"])/g, '\\$1')}'`;
 }
+
+// Combining filters brackets every part, so a comma inside one part can't change which other
+// parts it groups with. `+` binds tighter than `,`, so `status:free,status:paid` joined with
+// `label:vip` as `status:free,status:paid+label:vip` would match every free member. Each part must
+// be a valid filter on its own: a part with an unmatched bracket, such as `label:vip),(id:-null`,
+// closes the bracket around it and joins the parts beside it.
+
+/**
+ * A filter that matches what every one of `filters` matches. A part that is undefined adds no
+ * condition, and with no parts left the result is undefined: no condition, so every record
+ * matches.
+ */
+export function allOf(...filters: Array<string | undefined>): string | undefined {
+  const parts = filters.filter((filter) => filter !== undefined);
+  return parts.length > 1 ? parts.map((filter) => `(${filter})`).join('+') : parts[0];
+}

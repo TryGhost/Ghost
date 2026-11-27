@@ -23,6 +23,17 @@ export const CONNECT_MESSAGE_TYPE = 'ghost-app:connect';
  */
 export const START_TIMEOUT_MS = 10_000;
 
+/**
+ * The name Admin gives the overlay frame, a second copy of the app's page that its dialogs and
+ * sheets render into. Only Admin can set a frame's name, so the app's URL can't fake it.
+ */
+export const OVERLAY_FRAME_NAME = 'ghost-app-overlay';
+
+/** Admin's tint while the overlay shows: as dark as Shade's for a dialog, or for a sheet. */
+export const OVERLAY_TINTS = ['dialog', 'sheet'] as const;
+
+export type OverlayTint = (typeof OVERLAY_TINTS)[number];
+
 /** Long enough for any real page title, short enough that Admin's own name still shows. */
 export const TITLE_MAX_LENGTH = 200;
 
@@ -79,6 +90,7 @@ export const ARGUMENT_MESSAGES = {
   pathMove: 'Expected a move of push or replace',
   place:
     'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
+  overlayOptions: `Expected overlay options such as { tint: 'dialog' }, with a tint of: ${OVERLAY_TINTS.join(', ')}`,
 } as const;
 
 /**
@@ -169,6 +181,21 @@ export type Theme = {
   accent_color: string;
 };
 
+const SAFE_AREA_EDGES = ['top', 'right', 'bottom', 'left'] as const;
+
+/**
+ * How far in from each edge of the page's frame Admin's chrome floats over the page, in CSS
+ * pixels. What the publisher must see or reach stays inside it; a backdrop can fill the frame.
+ */
+export type SafeArea = Record<(typeof SAFE_AREA_EDGES)[number], number>;
+
+/** How Admin lays out the page's frame, and the overlay frame above it. */
+export type Layout = {
+  safeArea: SafeArea;
+  /** The part of the overlay frame Admin shows, as insets from the window's edges. */
+  overlaySafeArea: SafeArea;
+};
+
 /**
  * What Admin sends an app's page when the session starts. An older SDK ignores fields a newer
  * Admin adds rather than refusing them, so they don't stop it from starting.
@@ -203,6 +230,8 @@ export type StartContext = {
    * frame at it, so it's where the page already is, unless the page's server redirected it.
    */
   path: string;
+  /** Sent again with `layoutChanged` whenever it changes. */
+  layout: Layout;
 };
 
 // `Place` is written out rather than inferred from its schema, so the SDK's declarations, which
@@ -303,6 +332,20 @@ export function isTheme(value: unknown): value is Theme {
   );
 }
 
+export function isSafeArea(value: unknown): value is SafeArea {
+  return (
+    isRecord(value) &&
+    SAFE_AREA_EDGES.every((edge) => {
+      const inset = value[edge];
+      return typeof inset === 'number' && Number.isFinite(inset) && inset >= 0;
+    })
+  );
+}
+
+export function isLayout(value: unknown): value is Layout {
+  return isRecord(value) && isSafeArea(value.safeArea) && isSafeArea(value.overlaySafeArea);
+}
+
 export function isStartContext(value: unknown): value is StartContext {
   return (
     isRecord(value) &&
@@ -312,7 +355,8 @@ export function isStartContext(value: unknown): value is StartContext {
     isRecord(value.session) &&
     Number.isSafeInteger(value.session.revision) &&
     (value.session.revision as number) >= 0 &&
-    isContainedPath(value.path)
+    isContainedPath(value.path) &&
+    isLayout(value.layout)
   );
 }
 

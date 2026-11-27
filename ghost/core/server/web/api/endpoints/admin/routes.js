@@ -113,6 +113,7 @@ module.exports = function apiRoutes() {
   // ## Segments
   router.get('/segments', mw.authAdminApi, http(api.segments.browse));
   router.post('/segments', mw.authAdminApi, http(api.segments.add));
+  router.put('/segments', mw.authAdminApi, http(api.segments.reorder));
   router.get('/segments/:id', mw.authAdminApi, http(api.segments.read));
   router.put('/segments/:id', mw.authAdminApi, http(api.segments.edit));
   router.delete('/segments/:id', mw.authAdminApi, http(api.segments.destroy));
@@ -255,6 +256,7 @@ module.exports = function apiRoutes() {
   appsRouter.get('/installations/:id', http(api.appInstallations.read));
   appsRouter.put('/installations/:id', http(api.appInstallations.edit));
   appsRouter.post('/installations/:id/sessions', http(api.appSessions.start));
+  appsRouter.post('/installations/:id/tokens', http(api.appTokens.add));
   appsRouter.delete('/installations/:id', http(api.appInstallations.destroy));
 
   router.get('/members/:id', mw.authAdminApi, http(api.members.read));

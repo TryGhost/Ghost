@@ -1,5 +1,5 @@
 export { default as headers } from './headers.ts';
-export { default as http } from './http.ts';
+export { default as http, routedMethod, type RoutedMethod } from './http.ts';
 export { default as Frame } from './frame.ts';
 export { default as pipeline, STAGES } from './pipeline.ts';
 export { default as validators } from './validators/index.ts';

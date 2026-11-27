@@ -17,7 +17,7 @@ complete the root instead.
 
 - Read the root and nearest `AGENTS.md`, the
   [services guide](../../../ghost/core/server/services/README.md),
-  [kernel contract](../../../ghost/core/kernel/README.md#service-initialization),
+  [Support contract](../../../ghost/core/support/README.md#service-initialization),
   [testing guide](../../../docs/contributing/testing.md) and
   [contribution workflow](../../../docs/contributing/workflow.md).
 - Inspect status, existing branches/worktrees and related PRs. Preserve unrelated
@@ -100,7 +100,7 @@ Run those suites with their neighboring consumers in one worker to check isolati
 Cover the real risk: retained consumers, configuration timing, transaction or
 cache behavior, boot ordering and resource cleanup. Use existing cold-boot
 HTTP/job coverage where it already proves readiness. Do not copy a boot harness
-for every service or duplicate generic kernel concurrency/retry tests.
+for every service or duplicate generic Support concurrency/retry tests.
 For async ordering tests, verify both a missing required await and a harmless
 extra await: the first must fail and the second must pass. Avoid checks that
 count microtask turns; follow the testing guide's async-ordering advice.
@@ -121,7 +121,7 @@ when existing tests protect it.
 ## 4. Make the smallest initializer change
 
 - Create a TypeScript top-level `index.ts` default-exporting `defineService`
-  from the kernel. Return one fully ready instance from its factory, or one
+  from Support. Return one fully ready instance from its factory, or one
   typed object when several objects are built together.
 - Expose normal operations on `.service`. Keep classes and implementation
   contracts in implementation files; root named exports are type-only.
@@ -141,7 +141,7 @@ when existing tests protect it.
 - If startup acquires resources, clean up that attempt before rejecting. Do not
   dispose borrowed shared resources or change normal shutdown ownership.
 
-If the service requires new kernel features, a restart/replacement policy, an API
+If the service requires new Support features, a restart/replacement policy, an API
 redesign or broad boot orchestration, record the concrete mismatch and separate
 that decision from the small migration. Do not silently expand its scope.
 

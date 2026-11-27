@@ -10,7 +10,7 @@ import type { SingleWriteOrigin } from './schema';
 
 type Fields = readonly { type: FieldType }[];
 
-/** How each change an edit makes, named as its action is, reads on a dashboard. */
+/** How each change an edit makes reads on a dashboard. */
 const CHANGES = {
   rename: 'rename',
   changeAccess: 'change_access',
@@ -18,9 +18,6 @@ const CHANGES = {
   archive: 'archive',
   restore: 'restore',
 } as const;
-
-/** A change an edit of a definition makes, as tracking names it. */
-export type DefinitionChange = keyof typeof CHANGES;
 
 /** What a command on the field definitions reports about its attempt. */
 interface DefinitionAttempt {

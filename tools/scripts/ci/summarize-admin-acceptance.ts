@@ -42,7 +42,7 @@ const cell = (value: unknown) =>
     .replaceAll('[', '&#91;')
     .replaceAll(']', '&#93;')
     .replace(/\s+/g, ' ');
-const relativeFile = (file: string) => file.replaceAll('\\', '/').split('/apps/admin/').at(-1);
+const relativeFile = (file: string) => file.replaceAll('\\', '/').split('/clients/admin/').at(-1);
 const duration = (assertion: AssertionResult) => Math.max(0, assertion.duration ?? 0);
 
 /** Render Vitest's JSON report as a bounded GitHub Actions step summary. */

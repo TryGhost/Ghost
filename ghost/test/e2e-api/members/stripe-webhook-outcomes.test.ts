@@ -155,6 +155,7 @@ describe('Stripe webhook outcomes', function () {
   const { stripeMocker } = mockManager;
   let membersAgent: Agents['membersAgent'];
   let metrics: MockedMetrics;
+  let mail: { getSentEmail(index: number): { to?: string; subject?: string } | undefined };
 
   /** Makes Stripe fail every request, or only those for one object, with `reply`. */
   function stripeFails(reply: StripeFailure, only?: { resource: string; id: string }) {
@@ -327,6 +328,8 @@ describe('Stripe webhook outcomes', function () {
     email = `${stripeId('payer')}@example.com`,
     name = 'Payer',
     id = stripeId('cs'),
+    customer = null,
+    customFields = [],
   }: {
     paymentStatus?: 'paid' | 'unpaid';
     metadata?: Record<string, string>;
@@ -334,6 +337,8 @@ describe('Stripe webhook outcomes', function () {
     email?: string;
     name?: string;
     id?: string;
+    customer?: string | null;
+    customFields?: object[];
   } = {}) {
     return {
       id,
@@ -346,7 +351,7 @@ describe('Stripe webhook outcomes', function () {
       amount_subtotal: amount,
       amount_total: amount,
       currency: 'usd',
-      customer: null,
+      customer,
       customer_email: email,
       customer_details: {
         email,
@@ -361,16 +366,35 @@ describe('Stripe webhook outcomes', function () {
       subscription: null,
       payment_link: null,
       shipping: null,
-      custom_fields: [],
+      custom_fields: customFields,
       metadata,
+    };
+  }
+
+  /**
+   * The custom field Ghost adds to a donation's checkout for a message, as Stripe sends it once the
+   * donor has filled it in, or with a null value when they left it empty.
+   */
+  function donationMessage(value: string | null) {
+    return {
+      key: 'donation_message',
+      label: { type: 'custom', custom: 'Add a personal note' },
+      optional: true,
+      type: 'text',
+      text: { maximum_length: null, minimum_length: null, value },
     };
   }
 
   /**
    * A completed card update, as Stripe sends one for the session Ghost creates: Ghost names the
    * member's Stripe customer only in the setup intent's metadata, so the session has no customer.
+   * Setup intents from older Ghost versions also name the subscription the card is for, and a
+   * setup intent Ghost didn't create, with a null `customerId`, names no customer.
    */
-  function cardUpdateCheckout(customerId: string, { last4 = '1881' }: { last4?: string } = {}) {
+  function cardUpdateCheckout(
+    customerId: string | null,
+    { last4 = '1881', subscriptionId }: { last4?: string; subscriptionId?: string } = {},
+  ) {
     const paymentMethod = {
       id: stripeId('pm'),
       object: 'payment_method',
@@ -384,7 +408,10 @@ describe('Stripe webhook outcomes', function () {
       object: 'setup_intent',
       status: 'succeeded',
       payment_method: paymentMethod.id,
-      metadata: { customer_id: customerId },
+      metadata: {
+        ...(customerId ? { customer_id: customerId } : {}),
+        ...(subscriptionId ? { subscription_id: subscriptionId } : {}),
+      },
     };
     stripeMocker.paymentMethods.push(paymentMethod);
     stripeMocker.setupIntents.push(setupIntent);
@@ -548,12 +575,17 @@ describe('Stripe webhook outcomes', function () {
   }
 
   /**
-   * A paid member, created by a completed checkout, whose Stripe customer and subscription Stripe
-   * holds.
+   * A paid member, created by a completed checkout with `metadata` for the buyer's Stripe customer
+   * `bought`, a new one by default, whose customer and subscription Stripe holds.
    */
-  async function paidMember() {
-    const bought = stripeCustomer();
-    assert.equal(await send('checkout.session.completed', subscriptionCheckout(bought)), 200);
+  async function paidMember(
+    metadata: Record<string, string> = {},
+    bought: ReturnType<typeof stripeCustomer> = stripeCustomer(),
+  ) {
+    assert.equal(
+      await send('checkout.session.completed', subscriptionCheckout(bought, metadata)),
+      200,
+    );
     // The checkout starts the buyer's signup email without waiting for it, and the new member's
     // events run after it commits. Wait for both, while this test's mocks still catch them.
     await DomainEvents.allSettled();
@@ -566,6 +598,11 @@ describe('Stripe webhook outcomes', function () {
 
   async function memberByEmail(email: string) {
     return await models.Member.findOne({ email }, { withRelated: ['stripeCustomers'] });
+  }
+
+  /** A subscription as Stripe holds it now. */
+  function heldSubscription(subscriptionId: string) {
+    return stripeMocker.subscriptions.find((held: { id: string }) => held.id === subscriptionId);
   }
 
   async function linkedSubscription(subscriptionId: string) {
@@ -658,7 +695,7 @@ describe('Stripe webhook outcomes', function () {
   });
 
   beforeEach(function () {
-    mockManager.mockMail();
+    mail = mockManager.mockMail();
     metrics = mockManager.mockMetrics();
     mockManager.mockStripe();
   });
@@ -766,7 +803,7 @@ describe('Stripe webhook outcomes', function () {
             writes: 'nothing',
             webhook: span({
               type: 'customer.subscription.updated',
-              kind: 'subscription',
+              kind: 'ignored',
               result: 'ignored',
               reason: 'listed_customer',
             }),
@@ -832,9 +869,130 @@ describe('Stripe webhook outcomes', function () {
       );
     });
 
+    describe('the signup email, which signs a new paid member in', function () {
+      /** How many signup emails have been sent to `email`. */
+      function signupEmailsTo(email: string) {
+        const sent = [];
+        for (let index = 0; mail.getSentEmail(index); index += 1) {
+          sent.push(mail.getSentEmail(index));
+        }
+        return sent.filter(
+          (message) =>
+            message?.to === email && /Thank you for signing up/.test(message.subject ?? ''),
+        ).length;
+      }
+
+      /** Turns on the site's welcome email for new paid members, and returns what turns it off. */
+      async function paidWelcomeEmailOn() {
+        const design = await models.EmailDesignSetting.findOne(
+          { slug: 'default-automated-email' },
+          { require: true },
+        );
+        const automation = await models.Automation.add({
+          name: 'Paid welcome email',
+          slug: 'member-welcome-email-paid',
+          status: 'active',
+        });
+        await models.WelcomeEmailAutomatedEmail.add({
+          welcome_email_automation_id: automation.id,
+          delay_days: 0,
+          subject: 'Welcome to the paid tier!',
+          lexical: JSON.stringify({
+            root: { children: [{ type: 'paragraph', children: [{ text: 'Welcome' }] }] },
+          }),
+          email_design_setting_id: design.id,
+        });
+        return async () => {
+          // The welcome emails it started finish first, while this test's mocks still catch them.
+          await DomainEvents.allSettled();
+          await db
+            .knex('welcome_email_automation_runs')
+            .where({ welcome_email_automation_id: automation.id })
+            .del();
+          await models.Automation.destroy({ id: automation.id });
+        };
+      }
+
+      // Portal marks an upgrade with `checkoutType`, and Ghost sets `ghostSignupContext` to how
+      // the buyer can sign in once they've paid. The paid welcome email greets a buyer who can
+      // already sign in in place of the signup email.
+      const cases: {
+        upgrade: boolean;
+        context: string | undefined;
+        welcomeEmail: boolean;
+        sent: boolean;
+      }[] = [
+        { upgrade: false, context: 'needs_magic_link_email', welcomeEmail: false, sent: true },
+        { upgrade: false, context: 'needs_magic_link_email', welcomeEmail: true, sent: true },
+        { upgrade: false, context: 'has_precheckout_magic_link', welcomeEmail: false, sent: true },
+        { upgrade: false, context: 'has_precheckout_magic_link', welcomeEmail: true, sent: false },
+        { upgrade: false, context: 'already_authenticated', welcomeEmail: false, sent: true },
+        { upgrade: false, context: 'already_authenticated', welcomeEmail: true, sent: false },
+        { upgrade: false, context: undefined, welcomeEmail: false, sent: true },
+        { upgrade: false, context: undefined, welcomeEmail: true, sent: true },
+        { upgrade: true, context: 'needs_magic_link_email', welcomeEmail: false, sent: true },
+        { upgrade: true, context: 'needs_magic_link_email', welcomeEmail: true, sent: true },
+        { upgrade: true, context: 'has_precheckout_magic_link', welcomeEmail: false, sent: false },
+        { upgrade: true, context: 'has_precheckout_magic_link', welcomeEmail: true, sent: false },
+        { upgrade: true, context: 'already_authenticated', welcomeEmail: false, sent: false },
+        { upgrade: true, context: 'already_authenticated', welcomeEmail: true, sent: false },
+        { upgrade: true, context: undefined, welcomeEmail: false, sent: false },
+        { upgrade: true, context: undefined, welcomeEmail: true, sent: false },
+      ];
+
+      it.each(
+        cases.map(
+          (testCase) =>
+            [
+              `${testCase.sent ? 'sends' : 'doesn’t send'} it for ${testCase.upgrade ? 'an upgrade' : 'a signup'} with ${testCase.context ?? 'no signup context'} while the paid welcome email is ${testCase.welcomeEmail ? 'on' : 'off'}`,
+              testCase,
+            ] as const,
+        ),
+      )('%s', async (_name, { upgrade, context, welcomeEmail, sent }) => {
+        const email = `${stripeId('buyer')}@example.com`;
+        if (upgrade) {
+          // A member who signed up before the checkout started, which Ghost compares to the
+          // second.
+          const membersService = require('../../../core/server/services/members');
+          await membersService.api.members.create({ email });
+          await db
+            .knex('members')
+            .where({ email })
+            .update({ created_at: new Date(Date.now() - 60 * 1000) });
+        }
+        const turnOff = welcomeEmail ? await paidWelcomeEmailOn() : async () => {};
+        try {
+          const metadata: Record<string, string> = {
+            ...(upgrade ? { checkoutType: 'upgrade' } : {}),
+            ...(context ? { ghostSignupContext: context } : {}),
+          };
+          assert.equal(
+            await send(completed, subscriptionCheckout(stripeCustomer({ email }), metadata)),
+            200,
+          );
+
+          if (sent) {
+            await mockManager.assert.sentEmailEventually({
+              to: email,
+              subject: /Thank you for signing up/,
+            });
+          } else {
+            // The webhook starts the signup email without waiting for it. Another buyer's,
+            // started once this webhook has responded, arrives after this one would have.
+            await paidMember();
+          }
+          assert.equal(signupEmailsTo(email), sent ? 1 : 0);
+        } finally {
+          await turnOff();
+        }
+      });
+    });
+
     itWritesNothing([
       {
-        name: 'responds with 500 on every attempt when the checkout’s metadata has newsletters this site doesn’t have, as a checkout another site created before sites recorded their checkouts does',
+        // Saving the member tries to create the newsletters it names. Their validation fails with
+        // an array of ValidationErrors, which Ghost reads as its first error.
+        name: 'responds with 422 on every attempt when the checkout’s metadata has newsletters this site doesn’t have, as a checkout another site created before sites recorded their checkouts does',
         event: () => ({
           type: completed,
           object: subscriptionCheckout(stripeCustomer(), {
@@ -842,18 +1000,18 @@ describe('Stripe webhook outcomes', function () {
           }),
         }),
         attempts: 2,
-        status: 500,
+        status: 422,
         webhook: span(
           {
             type: completed,
             kind: 'subscription_checkout',
             ...failedBecause('unclassified', 'ghost'),
           },
-          '_OTHER',
+          'ValidationError',
         ),
         checkout: checkoutSpan(
           { type: 'subscription', member: 'new', ...failedBecause('unclassified', 'ghost') },
-          '_OTHER',
+          'ValidationError',
         ),
       },
       {
@@ -876,6 +1034,42 @@ describe('Stripe webhook outcomes', function () {
           'ValidationError',
         ),
       },
+      ...(
+        [
+          [
+            'Stripe no longer has the buyer’s customer, as when it was deleted after the checkout',
+            ({ id }: { id: string }) => ({ id, object: 'customer', deleted: true }),
+          ],
+          [
+            'the buyer’s customer no longer has an email address',
+            (customer: object) => ({ ...customer, email: null }),
+          ],
+        ] as const
+      ).map(([which, heldAs]): NothingWritten => ({
+        name: `responds with 422 on every attempt when ${which}`,
+        event: () => {
+          const bought = stripeCustomer();
+          const held = stripeMocker.customers.findIndex(
+            ({ id }: { id: string }) => id === bought.customer.id,
+          );
+          stripeMocker.customers[held] = heldAs(stripeMocker.customers[held]);
+          return { type: completed, object: subscriptionCheckout(bought) };
+        },
+        attempts: 2,
+        status: 422,
+        webhook: span(
+          {
+            type: completed,
+            kind: 'subscription_checkout',
+            ...failedBecause('unusable_customer', 'site'),
+          },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+        checkout: checkoutSpan(
+          { type: 'subscription', ...failedBecause('unusable_customer', 'site') },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+      })),
       {
         name: 'responds with 429 when Stripe returns a lock timeout for the customer',
         event: () => {
@@ -967,11 +1161,82 @@ describe('Stripe webhook outcomes', function () {
         checkout: null,
       },
       {
+        name: 'responds with 500 on every attempt to a checkout whose metadata Ghost can’t read',
+        event: () => ({
+          type: completed,
+          object: { ...paymentCheckout(), metadata: 'not an object' },
+        }),
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: completed, ...failedBecause('unreadable_stripe_event', 'ghost') },
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
+        ),
+        checkout: null,
+      },
+      {
         name: 'responds with 200 to a card update when no member has the Stripe customer',
         event: () => ({ type: completed, object: cardUpdateCheckout(stripeId('cus')).session }),
         status: 200,
         webhook: span({ type: completed, kind: 'card_update_checkout', result: 'handled' }),
         checkout: checkoutSpan({ type: 'setup' }),
+      },
+      {
+        name: 'responds with 200 to a card update whose setup intent Ghost didn’t create, such as another app’s on the same Stripe account, and records it as ignored rather than as a completed checkout',
+        event: () => ({ type: completed, object: cardUpdateCheckout(null).session }),
+        status: 200,
+        webhook: span({
+          type: completed,
+          kind: 'card_update_checkout',
+          result: 'ignored',
+          reason: 'not_a_ghost_checkout',
+        }),
+        checkout: checkoutSpan({}),
+      },
+      ...(
+        [
+          ['without the donor’s email', null],
+          ['whose donor’s email is blank', '  '],
+        ] as const
+      ).map(([which, email]): NothingWritten => ({
+        name: `responds with 422 on every attempt to a donation ${which}`,
+        event: () => {
+          const object = paymentCheckout({ metadata: { ghost_donation: 'true' } });
+          return {
+            type: completed,
+            object: { ...object, customer_details: { ...object.customer_details, email } },
+          };
+        },
+        attempts: 2,
+        status: 422,
+        webhook: span(
+          {
+            type: completed,
+            kind: 'donation_checkout',
+            ...failedBecause('unusable_customer', 'site'),
+          },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+        checkout: checkoutSpan(
+          { type: 'donation', ...failedBecause('unusable_customer', 'site') },
+          'STRIPE_WEBHOOK_UNUSABLE_CUSTOMER',
+        ),
+      })),
+      {
+        name: 'responds with 500 on every attempt to a donation without fields Ghost reads',
+        event: () => {
+          const { currency: _currency, ...withoutCurrency } = paymentCheckout({
+            metadata: { ghost_donation: 'true' },
+          });
+          return { type: completed, object: withoutCurrency };
+        },
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: completed, ...failedBecause('unreadable_stripe_event', 'ghost') },
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
+        ),
+        checkout: null,
       },
       {
         name: 'responds with 200 and leaves a gift purchase pending when its payment hasn’t arrived yet',
@@ -1103,6 +1368,61 @@ describe('Stripe webhook outcomes', function () {
       );
     });
 
+    it('names a new member with the name they gave the signup form over the cardholder’s, and with the cardholder’s when they gave none', async function () {
+      const named = await paidMember(
+        { name: 'Signup Name' },
+        stripeCustomer({ cardholder: 'Card Holder' }),
+      );
+      const unnamed = await paidMember({ name: '' }, stripeCustomer({ cardholder: 'Card Holder' }));
+
+      assert.equal((await memberByEmail(named.customer.email)).get('name'), 'Signup Name');
+      assert.equal((await memberByEmail(unnamed.customer.email)).get('name'), 'Card Holder');
+    });
+
+    it('gives a new member the site’s default newsletters when Ghost can’t read the newsletters their checkout names', async function () {
+      const newslettersOf = async (email: string) =>
+        (await models.Member.findOne({ email }, { withRelated: ['newsletters'] }))
+          .related('newsletters')
+          .map(({ id }: { id: string }) => id)
+          .sort();
+      const unreadable = await paidMember({ newsletters: 'not JSON' });
+      const unchosen = await paidMember();
+
+      const defaults = await newslettersOf(unchosen.customer.email);
+      assert.notDeepEqual(defaults, []);
+      assert.deepEqual(await newslettersOf(unreadable.customer.email), defaults);
+    });
+
+    it('gives the cardholder’s name to a member that signing in after paying created before the checkout completed', async function () {
+      const email = `${stripeId('member')}@example.com`;
+      // Portal's success link is a signup magic link, which can create the member first.
+      const membersService = require('../../../core/server/services/members');
+      await membersService.api.members.create({ email });
+      const bought = stripeCustomer({ email, cardholder: 'Card Holder' });
+      const checkout = subscriptionCheckout(bought, {
+        ghostSignupContext: 'has_precheckout_magic_link',
+      });
+
+      await pinOutcome(
+        { type: completed, object: { ...checkout, created: now() - 60 } },
+        {
+          status: 200,
+          writes: async () => {
+            await DomainEvents.allSettled();
+            await mockManager.assert.sentEmailEventually({
+              to: email,
+              subject: /Thank you for signing up/,
+            });
+            const member = await memberByEmail(email);
+            assert.equal(member.get('status'), 'paid');
+            assert.equal(member.get('name'), 'Card Holder');
+          },
+          webhook: span({ type: completed, kind: 'subscription_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'subscription', member: 'new' }),
+        },
+      );
+    });
+
     it('saves the new card on Stripe and on each of the member’s subscriptions when a member updates their card', async function () {
       const { customer, subscription } = await paidMember();
       const second = addSubscription(customer);
@@ -1129,6 +1449,60 @@ describe('Stripe webhook outcomes', function () {
       );
     });
 
+    it('leaves the card of a member’s canceled subscription as it was when they update their card', async function () {
+      const { customer, subscription } = await paidMember();
+      const canceled = addSubscription(customer);
+      canceled.status = 'canceled';
+      assert.equal(await send('customer.subscription.updated', canceled), 200);
+      const { paymentMethod, session } = cardUpdateCheckout(customer.id, { last4: '1881' });
+
+      await pinOutcome(
+        { type: completed, object: session },
+        {
+          status: 200,
+          writes: async () => {
+            assert.equal(
+              heldSubscription(subscription.id).default_payment_method,
+              paymentMethod.id,
+            );
+            assert.equal(heldSubscription(canceled.id).default_payment_method, null);
+            assert.equal((await linkedSubscription(canceled.id)).default_payment_card_last4, null);
+          },
+          webhook: span({ type: completed, kind: 'card_update_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'setup' }),
+        },
+      );
+    });
+
+    it('saves the new card only on the subscription a card update from an older Ghost version names', async function () {
+      const { customer, subscription } = await paidMember();
+      const named = addSubscription(customer);
+      assert.equal(await send('customer.subscription.updated', named), 200);
+      const { paymentMethod, session } = cardUpdateCheckout(customer.id, {
+        last4: '4444',
+        subscriptionId: named.id,
+      });
+
+      await pinOutcome(
+        { type: completed, object: session },
+        {
+          status: 200,
+          writes: async () => {
+            assert.equal(paymentMethod.customer, customer.id);
+            assert.equal(heldSubscription(named.id).default_payment_method, paymentMethod.id);
+            assert.equal((await linkedSubscription(named.id)).default_payment_card_last4, '4444');
+            assert.equal(heldSubscription(subscription.id).default_payment_method, null);
+            assert.equal(
+              (await linkedSubscription(subscription.id)).default_payment_card_last4,
+              null,
+            );
+          },
+          webhook: span({ type: completed, kind: 'card_update_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'setup' }),
+        },
+      );
+    });
+
     it('records a donation under the donor’s name, shortened to fit, when it’s longer than Ghost stores', async function () {
       const email = `${stripeId('donor')}@example.com`;
 
@@ -1142,6 +1516,65 @@ describe('Stripe webhook outcomes', function () {
           writes: async () => {
             const donation = await db.knex('donation_payment_events').where({ email }).first();
             assert.equal(donation.name, FITTED_NAME);
+          },
+          webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'donation' }),
+        },
+      );
+    });
+
+    it.each([
+      ['the message the donor left', 'Keep writing!', 'Keep writing!'],
+      ['no message when the donor left it empty', null, null],
+    ] as const)('records a donation with %s', async (_name, left, saved) => {
+      const email = `${stripeId('donor')}@example.com`;
+
+      await pinOutcome(
+        {
+          type: completed,
+          object: paymentCheckout({
+            metadata: { ghost_donation: 'true' },
+            email,
+            customFields: [donationMessage(left)],
+          }),
+        },
+        {
+          status: 200,
+          writes: async () => {
+            const donation = await db.knex('donation_payment_events').where({ email }).first();
+            assert.equal(donation.donation_message, saved);
+          },
+          webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
+          checkout: checkoutSpan({ type: 'donation' }),
+        },
+      );
+    });
+
+    it('records a member’s donation under the member’s name and email rather than those the donor gave Stripe', async function () {
+      const { customer } = await paidMember({ name: 'A member' });
+      const member = await memberByEmail(customer.email);
+
+      await pinOutcome(
+        {
+          type: completed,
+          object: paymentCheckout({
+            metadata: { ghost_donation: 'true' },
+            customer: customer.id,
+            email: `${stripeId('payer')}@example.com`,
+            name: 'Card Holder',
+          }),
+        },
+        {
+          status: 200,
+          writes: async () => {
+            const donation = await db
+              .knex('donation_payment_events')
+              .where({ member_id: member.id })
+              .first();
+            assert.deepEqual(
+              { name: donation.name, email: donation.email },
+              { name: 'A member', email: customer.email },
+            );
           },
           webhook: span({ type: completed, kind: 'donation_checkout', result: 'handled' }),
           checkout: checkoutSpan({ type: 'donation' }),
@@ -1200,6 +1633,58 @@ describe('Stripe webhook outcomes', function () {
         );
       },
     );
+
+    it('records the email the buyer gave Stripe, trimmed, on a gift Ghost holds no buyer email for', async function () {
+      const { sessionId, giftId } = await startGiftCheckout();
+      await db.knex('gifts').where({ id: giftId }).update({ buyer_email: null });
+      const bought = paymentCheckout({
+        id: sessionId,
+        metadata: { ghost_gift_id: giftId },
+        amount: 500,
+        email: '  stripe-buyer@example.com  ',
+      });
+
+      await pinOutcome(
+        { type: 'checkout.session.completed', object: bought },
+        {
+          status: 200,
+          writes: async () => {
+            const gift = await models.Gift.findOne({ id: giftId }, { require: true });
+            assert.equal(gift.get('status'), 'purchased');
+            assert.equal(gift.get('buyer_email'), 'stripe-buyer@example.com');
+          },
+          webhook: span({
+            type: 'checkout.session.completed',
+            kind: 'gift_checkout',
+            result: 'handled',
+          }),
+          checkout: checkoutSpan({ type: 'gift' }),
+        },
+      );
+    });
+
+    // Before 2026-08-19, Ghost marked a gift's checkout with `ghost_gift` and created the gift
+    // only once it was paid. A site that upgraded while such a gift's delayed payment settled
+    // still receives its payment, which has no gift id for Ghost to complete, so it fails loudly.
+    itWritesNothing([
+      {
+        name: 'responds with 500 on every attempt to a paid gift whose checkout started before Ghost recorded gifts ahead of their checkout',
+        event: () => ({
+          type: 'checkout.session.async_payment_succeeded',
+          object: paymentCheckout({ metadata: { ghost_gift: 'true' }, amount: 500 }),
+        }),
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          {
+            type: 'checkout.session.async_payment_succeeded',
+            ...failedBecause('unreadable_stripe_event', 'ghost'),
+          },
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
+        ),
+        checkout: null,
+      },
+    ]);
   });
 
   describe('checkout.session.async_payment_succeeded and async_payment_failed', function () {
@@ -1395,6 +1880,7 @@ describe('Stripe webhook outcomes', function () {
             coupon,
             customer: customer.id,
             start: now(),
+            end: null,
           };
           return { type: updated, object: addSubscription(customer, { discount }) };
         },
@@ -1429,6 +1915,140 @@ describe('Stripe webhook outcomes', function () {
         checkout: null,
       },
     ]);
+
+    it('saves the card a member’s Stripe customer pays with on a subscription without a card of its own, as when they change their card in the billing portal', async function () {
+      const { customer } = await paidMember();
+      const paymentMethod = {
+        id: stripeId('pm'),
+        object: 'payment_method',
+        type: 'card',
+        customer: customer.id,
+        billing_details: { name: 'Card Holder', email: null, phone: null, address: null },
+        card: { brand: 'visa', last4: '1881', exp_month: 12, exp_year: 2034, country: 'GB' },
+      };
+      stripeMocker.paymentMethods.push(paymentMethod);
+      Object.assign(customer, { invoice_settings: { default_payment_method: paymentMethod.id } });
+      const subscription = addSubscription(customer);
+
+      assert.equal(await send(updated, subscription), 200);
+
+      assert.equal((await linkedSubscription(subscription.id)).default_payment_card_last4, '1881');
+    });
+
+    it('saves no card on a subscription when neither it nor the member’s Stripe customer has one', async function () {
+      const { customer } = await paidMember();
+      Object.assign(customer, { invoice_settings: { default_payment_method: null } });
+      const subscription = addSubscription(customer);
+
+      assert.equal(await send(updated, subscription), 200);
+
+      assert.equal((await linkedSubscription(subscription.id)).default_payment_card_last4, null);
+    });
+
+    /**
+     * A discount of half off for three months, from a coupon Stripe holds, as Stripe sends it on a
+     * subscription of `customer`: it started a minute ago and ends in 90 days.
+     */
+    function repeatingDiscount(customer: { id: string }) {
+      const coupon = {
+        // Short enough to fit in the name of the offer Ghost creates for the coupon.
+        id: `co_${crypto.randomBytes(5).toString('hex')}`,
+        object: 'coupon',
+        amount_off: null,
+        currency: null,
+        duration: 'repeating',
+        duration_in_months: 3,
+        name: '50% off',
+        percent_off: 50,
+        valid: true,
+      };
+      stripeMocker.coupons.push(coupon);
+      const start = now() - 60;
+      return {
+        id: stripeId('di'),
+        object: 'discount',
+        coupon,
+        customer: customer.id,
+        start,
+        end: start + 60 * 60 * 24 * 90,
+      };
+    }
+
+    it('saves when the discount on a subscription started and when it ends', async function () {
+      const { customer } = await paidMember();
+      const discount = repeatingDiscount(customer);
+      const subscription = addSubscription(customer, { discount });
+
+      assert.equal(await send(updated, subscription), 200);
+
+      const linked = await linkedSubscription(subscription.id);
+      assert.equal(new Date(linked.discount_start).getTime(), discount.start * 1000);
+      assert.equal(new Date(linked.discount_end).getTime(), discount.end * 1000);
+    });
+
+    it('clears when the discount on a subscription started and ends once Stripe removes the discount', async function () {
+      const { customer } = await paidMember();
+      const subscription = addSubscription(customer, { discount: repeatingDiscount(customer) });
+      assert.equal(await send(updated, subscription), 200);
+      assert.notEqual((await linkedSubscription(subscription.id)).discount_start, null);
+
+      Object.assign(subscription, { discount: null });
+      assert.equal(await send(updated, subscription), 200);
+
+      const linked = await linkedSubscription(subscription.id);
+      assert.equal(linked.discount_start, null);
+      assert.equal(linked.discount_end, null);
+    });
+
+    it('saves when a subscription’s trial started and when it ends', async function () {
+      const { customer } = await paidMember();
+      const trialStart = now() - 60;
+      const trialEnd = trialStart + 60 * 60 * 24 * 7;
+      const subscription = addSubscription(customer);
+      Object.assign(subscription, {
+        status: 'trialing',
+        trial_start: trialStart,
+        trial_end: trialEnd,
+      });
+
+      assert.equal(await send(updated, subscription), 200);
+
+      const linked = await linkedSubscription(subscription.id);
+      assert.equal(new Date(linked.trial_start_at).getTime(), trialStart * 1000);
+      assert.equal(new Date(linked.trial_end_at).getTime(), trialEnd * 1000);
+    });
+  });
+
+  describe('customer.subscription.created', function () {
+    it('records where the member came from, with the UTM parameters of the link they followed, from the metadata of a subscription Stripe sends without a checkout', async function () {
+      const { customer } = await paidMember();
+      const post = await db.knex('posts').first();
+      // Every key Ghost writes into a subscription's metadata for where the member came from.
+      const metadata = {
+        attribution_id: post.id,
+        attribution_url: '/a-post/',
+        attribution_type: 'post',
+        referrer_source: 'Google',
+        referrer_medium: 'search',
+        referrer_url: 'https://www.google.com/',
+        utm_source: 'newsletter',
+        utm_medium: 'email',
+        utm_campaign: 'summer',
+        utm_term: 'stripe',
+        utm_content: 'header',
+      };
+      const subscription = addSubscription(customer);
+      Object.assign(subscription, { metadata });
+
+      assert.equal(await send('customer.subscription.created', subscription), 200);
+
+      const { id } = await linkedSubscription(subscription.id);
+      const started = await db
+        .knex('members_subscription_created_events')
+        .where({ subscription_id: id })
+        .first(Object.keys(metadata));
+      assert.deepEqual({ ...started }, metadata);
+    });
   });
 
   describe('invoice.payment_succeeded', function () {
@@ -1538,6 +2158,39 @@ describe('Stripe webhook outcomes', function () {
         ),
         checkout: null,
       },
+      {
+        name: 'responds with 500 on every attempt when Stripe returns the invoice’s subscription without fields Ghost reads',
+        event: async () => {
+          const { subscription } = await paidMember();
+          const onStripe = stripeMocker.subscriptions.find(
+            (held: { id: string }) => held.id === subscription.id,
+          );
+          delete onStripe.items;
+          return { type: paid, object: invoiceFor(subscription) };
+        },
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: paid, kind: 'invoice', ...failedBecause('unreadable_stripe_response', 'ghost') },
+          'STRIPE_RESPONSE_UNREADABLE',
+        ),
+        checkout: null,
+      },
+      {
+        name: 'responds with 500 on every attempt to an invoice without fields Ghost reads',
+        event: async () => {
+          const { subscription } = await paidMember();
+          const { currency: _currency, ...withoutCurrency } = invoiceFor(subscription);
+          return { type: paid, object: withoutCurrency };
+        },
+        attempts: 2,
+        status: 500,
+        webhook: span(
+          { type: paid, ...failedBecause('unreadable_stripe_event', 'ghost') },
+          'STRIPE_WEBHOOK_UNREADABLE_EVENT',
+        ),
+        checkout: null,
+      },
     ]);
   });
 
@@ -1582,6 +2235,22 @@ describe('Stripe webhook outcomes', function () {
             id: stripeId('ch'),
             object: 'charge',
             payment_intent: stripeId('pi'),
+            invoice: null,
+            refunded: true,
+          },
+        }),
+        status: 200,
+        webhook: span({ type: 'charge.refunded', kind: 'refund', result: 'handled' }),
+        checkout: null,
+      },
+      {
+        name: 'responds with 200 to a refund of a charge made without a payment intent',
+        event: () => ({
+          type: 'charge.refunded',
+          object: {
+            id: stripeId('ch'),
+            object: 'charge',
+            payment_intent: null,
             invoice: null,
             refunded: true,
           },

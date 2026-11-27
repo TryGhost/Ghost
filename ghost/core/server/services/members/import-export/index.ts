@@ -3,7 +3,7 @@ import type { CsvField } from '@tryghost/metafield-csv';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
 import {
   type MemberMetafieldValues,
-  type MetafieldDefinitionsService,
+  type MemberDefinitions,
   type PlannedWrite,
 } from '../../members-metafields';
 import MembersCSVImporter, {
@@ -20,6 +20,9 @@ import type MembersImportJob from '../jobs/members-import-job';
 import { tracer } from '../../../lib/tracing';
 import { importExportTracking } from './tracking';
 import MembersCSVExporter, { type ExportOptions } from './export/exporter';
+
+/** An import is Ghost's own work, which reaches every field whoever started it. */
+const INTERNAL = { kind: 'internal' } as const;
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
@@ -51,14 +54,14 @@ interface ImporterServices {
   productRepository: unknown;
   // The metafields services the members service hands the import composition root.
   metafields: {
-    definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+    definitions: Pick<MemberDefinitions, 'browse'>;
     values: Pick<MemberMetafieldValues, 'planWrite' | 'applyImportedWrite'>;
   };
 }
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
-  definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+  definitions: Pick<MemberDefinitions, 'browse'>;
   values: Pick<MemberMetafieldValues, 'getValuesForMany'>;
 }
 
@@ -115,8 +118,8 @@ export function makeImporter(deps: ImporterServices) {
     // Only the publisher's own fields: a file exported and imported again must not rewrite
     // the values another namespace's owner keeps.
     activeFields: async () =>
-      deps.metafields.definitions.browse({ namespace: CUSTOM_NAMESPACE }, 'internal'),
-    planWrite: (values) => deps.metafields.values.planWrite(values, 'internal'),
+      deps.metafields.definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
+    planWrite: (values) => deps.metafields.values.planWrite(values, INTERNAL),
     applyWrite: (memberId, plan, executor) =>
       deps.metafields.values.applyImportedWrite(memberId, plan, executor),
   };
@@ -187,7 +190,8 @@ export function makeExporter({
           { ...options, transacting, activeNewsletterIds },
           'findPage',
         );
-        const query: Knex.QueryBuilder = models.Member.getFilteredCollectionQuery(filterOptions);
+        const filter = await models.Member.resolveFilter(filterOptions);
+        const query: Knex.QueryBuilder = filter.query();
         return (columns, limit, afterId) => {
           const batch = query.clone();
           if (afterId !== undefined) {
@@ -206,9 +210,9 @@ export function makeExporter({
       // are always present -- no not-initialised state to guard.
       // The same fields the import reads back.
       activeDefinitions: async (): Promise<CsvField[]> =>
-        definitions.browse({ namespace: CUSTOM_NAMESPACE }, 'internal'),
+        definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
       valuesForMembers: (memberIds, executor) =>
-        values.getValuesForMany(memberIds, 'internal', executor),
+        values.getValuesForMany(memberIds, INTERNAL, executor),
     },
 
     tracking: importExportTracking(tracer),

@@ -188,6 +188,92 @@ describe('Pipeline', function () {
         });
       });
 
+      it('waits for the unchecked handler before a method that checks for itself', async function () {
+        let finishUnchecked = () => {};
+        const unchecked = new Promise<void>((resolve) => {
+          finishUnchecked = resolve;
+        });
+        const utils = {
+          permissions: {
+            handle: sinon.stub().resolves(),
+            handleUnchecked: sinon.stub().returns(unchecked),
+          },
+        };
+        const apiConfig = { docName: 'posts', method: 'browse' };
+        const apiImpl = { permissions: sinon.stub().resolves() };
+        const frame = new shared.Frame();
+
+        const stage = shared.pipeline.STAGES.permissions(utils, apiConfig, apiImpl, frame);
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+
+        assert.equal(utils.permissions.handleUnchecked.calledWith(apiConfig, frame), true);
+        assert.equal(apiImpl.permissions.called, false);
+
+        finishUnchecked();
+        await stage;
+
+        assert.equal(apiImpl.permissions.calledOnceWith(frame), true);
+      });
+
+      it('runs the unchecked handler for a method with no permission check', async function () {
+        const utils = {
+          permissions: {
+            handle: sinon.stub().resolves(),
+            handleUnchecked: sinon.stub().resolves(),
+          },
+        };
+        const apiConfig = { docName: 'posts', method: 'browse' };
+        const frame = new shared.Frame();
+
+        await shared.pipeline.STAGES.permissions(utils, apiConfig, { permissions: false }, frame);
+
+        assert.equal(utils.permissions.handleUnchecked.calledOnceWith(apiConfig, frame), true);
+      });
+
+      it('stops before the method when the unchecked handler refuses', async function () {
+        const refusal = new errors.NoPermissionError();
+        const utils = {
+          permissions: {
+            handle: sinon.stub().resolves(),
+            handleUnchecked: sinon.stub().rejects(refusal),
+          },
+        };
+        const apiImpl = { permissions: sinon.stub().resolves() };
+
+        await assert.rejects(
+          shared.pipeline.STAGES.permissions(
+            utils,
+            { docName: 'posts', method: 'browse' },
+            apiImpl,
+            new shared.Frame(),
+          ),
+          refusal,
+        );
+        assert.equal(apiImpl.permissions.called, false);
+      });
+
+      it("doesn't run the unchecked handler for a standard permission check", async function () {
+        const utils = {
+          permissions: {
+            handle: sinon.stub().resolves(),
+            handleUnchecked: sinon.stub().resolves(),
+          },
+        };
+        const frame = new shared.Frame();
+
+        await shared.pipeline.STAGES.permissions(
+          utils,
+          { docName: 'posts', method: 'browse' },
+          { permissions: true },
+          frame,
+        );
+
+        assert.equal(utils.permissions.handleUnchecked.called, false);
+        assert.equal(utils.permissions.handle.calledOnce, true);
+      });
+
       it('default', function () {
         const apiConfig = { docName: '', method: '' };
         const apiImpl = {
@@ -409,6 +495,24 @@ describe('Pipeline', function () {
         assert.equal(queryStub.called, false);
         assert.equal(serialisationOutputStub.called, false);
       });
+    });
+
+    it('runs an api controller fn only once handleUnchecked allows it', async function () {
+      const refusal = new errors.NoPermissionError();
+      const add = sinon.stub().resolves('response');
+      const handleUnchecked = sinon.stub().rejects(refusal);
+      const result = shared.pipeline(
+        { docName: 'posts', add },
+        { permissions: { handle: sinon.stub().resolves(), handleUnchecked } },
+      );
+
+      await assert.rejects(result.add({ context: { principal: { kind: 'app' } } }), refusal);
+      assert.equal(add.called, false);
+
+      handleUnchecked.resolves();
+      assert.equal(await result.add({ context: {} }), 'response');
+      const frame = add.firstCall.args[0];
+      assert.equal(handleUnchecked.calledWith({ docName: 'posts', method: 'add' }, frame), true);
     });
 
     it('uses existing frame instance and generateCacheKeyData', async function () {

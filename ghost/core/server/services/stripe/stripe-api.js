@@ -15,7 +15,16 @@ const {
   taxSessionParams,
   withoutParts,
 } = require('./checkout-session-params');
-const { StripeCustomer } = require('./stripe-api-responses');
+const {
+  StripeCustomer,
+  StripePaymentMethod,
+  StripeProduct,
+  StripeSetupIntent,
+  StripeSubscription,
+  SubscriptionReference,
+  readResponse,
+} = require('./stripe-api-responses');
+const { loadSubscriptionDescription } = require('./subscription-description');
 
 /** @import { CheckoutDefinition } from '../stripe-checkout-config' */
 /** @import { CheckoutSessionParts, Refusal } from './checkout-session-params' */
@@ -364,13 +373,13 @@ module.exports = class StripeAPI {
    * Create a new Stripe Product.
    * @param {IProductCreateParams} options
    *
-   * @returns {Promise<IProduct>}
+   * @returns {Promise<import('./stripe-api-responses').StripeProduct>}
    */
   async createProduct(options) {
     await this._rateLimitBucket.throttle();
     const product = await this._stripe.products.create(options);
 
-    return product;
+    return readResponse(StripeProduct, product, 'new product');
   }
 
   /**
@@ -416,16 +425,14 @@ module.exports = class StripeAPI {
    * @param {boolean} [options.active]
    * @param {string} [options.nickname]
    *
-   * @returns {Promise<IPrice>}
+   * @returns {Promise<void>}
    */
   async updatePrice(id, options) {
     await this._rateLimitBucket.throttle();
-    const price = await this._stripe.prices.update(id, {
+    await this._stripe.prices.update(id, {
       active: options.active,
       nickname: options.nickname,
     });
-
-    return price;
   }
 
   /**
@@ -435,15 +442,13 @@ module.exports = class StripeAPI {
    * @param {object} options
    * @param {string} options.name
    *
-   * @returns {Promise<IProduct>}
+   * @returns {Promise<void>}
    */
   async updateProduct(id, options) {
     await this._rateLimitBucket.throttle();
-    const product = await this._stripe.products.update(id, {
+    await this._stripe.products.update(id, {
       name: options.name,
     });
-
-    return product;
   }
 
   /**
@@ -468,7 +473,7 @@ module.exports = class StripeAPI {
       const customer = await this._stripe.customers.retrieve(id, options);
       debug(`getCustomer(${id}, ${JSON.stringify(options)}) -> Success`);
       // Ghost saves a customer's names, which Stripe allows to be longer than Ghost stores.
-      return StripeCustomer.parse(customer);
+      return readResponse(StripeCustomer, customer, `customer ${id}`);
     } catch (err) {
       debug(`getCustomer(${id}, ${JSON.stringify(options)}) -> ${err.type ?? err.name}`);
       throw err;
@@ -1143,21 +1148,32 @@ module.exports = class StripeAPI {
    * Retrieve the Stripe Subscription object by ID.
    *
    * @param {string} id
-   * @param {ISubscriptionRetrieveParams} options
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').StripeSubscription>}
    */
-  async getSubscription(id, options = {}) {
-    debug(`getSubscription(${id}, ${JSON.stringify(options)})`);
+  async getSubscription(id) {
+    debug(`getSubscription(${id})`);
     try {
       await this._rateLimitBucket.throttle();
-      const subscription = await this._stripe.subscriptions.retrieve(id, options);
-      debug(`getSubscription(${id}, ${JSON.stringify(options)}) -> Success`);
-      return subscription;
+      const subscription = await this._stripe.subscriptions.retrieve(id);
+      debug(`getSubscription(${id}) -> Success`);
+      return readResponse(StripeSubscription, subscription, `subscription ${id}`);
     } catch (err) {
-      debug(`getSubscription(${id}, ${JSON.stringify(options)}) -> ${err.type}`);
+      debug(`getSubscription(${id}) -> ${err.type}`);
       throw err;
     }
+  }
+
+  /**
+   * Stripe subscription `id` as Ghost links it to a member: Ghost's description of the subscription
+   * and the card it's paid with, read from Stripe (see `subscription-description.ts`).
+   *
+   * @param {string} id
+   *
+   * @returns {Promise<import('./subscription-description').SubscriptionDescription>}
+   */
+  async getSubscriptionToLink(id) {
+    return await loadSubscriptionDescription(this, id);
   }
 
   /**
@@ -1165,7 +1181,7 @@ module.exports = class StripeAPI {
    *
    * @param {string} id
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async cancelSubscription(id) {
     debug(`cancelSubscription(${id})`);
@@ -1173,7 +1189,7 @@ module.exports = class StripeAPI {
       await this._rateLimitBucket.throttle();
       const subscription = await this._stripe.subscriptions.del(id);
       debug(`cancelSubscription(${id}) -> Success`);
-      return subscription;
+      return readResponse(SubscriptionReference, subscription, `subscription ${id}`);
     } catch (err) {
       debug(`cancelSubscription(${id}) -> ${err.type}`);
       throw err;
@@ -1186,7 +1202,7 @@ module.exports = class StripeAPI {
    * @param {string} id - The ID of the Subscription to modify
    * @param {string} [reason=''] - The user defined cancellation reason
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async cancelSubscriptionAtPeriodEnd(id, reason = '') {
     await this._rateLimitBucket.throttle();
@@ -1196,7 +1212,7 @@ module.exports = class StripeAPI {
         cancellation_reason: reason,
       },
     });
-    return subscription;
+    return readResponse(SubscriptionReference, subscription, `subscription ${id}`);
   }
 
   /**
@@ -1204,7 +1220,7 @@ module.exports = class StripeAPI {
    *
    * @param {string} id - The ID of the Subscription to modify
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async continueSubscriptionAtPeriodEnd(id) {
     await this._rateLimitBucket.throttle();
@@ -1214,7 +1230,7 @@ module.exports = class StripeAPI {
         cancellation_reason: null,
       },
     });
-    return subscription;
+    return readResponse(SubscriptionReference, subscription, `subscription ${id}`);
   }
 
   /**
@@ -1222,14 +1238,14 @@ module.exports = class StripeAPI {
    *
    * @param {string} id - The ID of the subscription to remove coupon from
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async removeCouponFromSubscription(id) {
     await this._rateLimitBucket.throttle();
     const subscription = await this._stripe.subscriptions.update(id, {
       coupon: '',
     });
-    return subscription;
+    return readResponse(SubscriptionReference, subscription, `subscription ${id}`);
   }
 
   /**
@@ -1238,14 +1254,14 @@ module.exports = class StripeAPI {
    * @param {string} id - The ID of the subscription to add coupon to
    * @param {string} couponId - The ID of the coupon to apply
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async addCouponToSubscription(id, couponId) {
     await this._rateLimitBucket.throttle();
     const subscription = await this._stripe.subscriptions.update(id, {
       coupon: couponId,
     });
-    return subscription;
+    return readResponse(SubscriptionReference, subscription, `subscription ${id}`);
   }
 
   /**
@@ -1260,7 +1276,7 @@ module.exports = class StripeAPI {
    * @param {string} [options.cancellationReason=null] - The user defined cancellation reason
    * @param {boolean} [options.preserveCancellation=false] - Leave a scheduled cancellation and its reason as they are, instead of reactivating the subscription
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async updateSubscriptionItemPrice(subscriptionId, id, price, options = {}) {
     await this._rateLimitBucket.throttle();
@@ -1280,7 +1296,7 @@ module.exports = class StripeAPI {
       };
     }
     const subscription = await this._stripe.subscriptions.update(subscriptionId, params);
-    return subscription;
+    return readResponse(SubscriptionReference, subscription, `subscription ${subscriptionId}`);
   }
 
   /**
@@ -1289,7 +1305,7 @@ module.exports = class StripeAPI {
    * @param {string} customer - The ID of the Customer to create the subscription for
    * @param {string} price - The ID of the new Price
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async createSubscription(customer, price) {
     await this._rateLimitBucket.throttle();
@@ -1297,7 +1313,7 @@ module.exports = class StripeAPI {
       customer,
       items: [{ price }],
     });
-    return subscription;
+    return readResponse(SubscriptionReference, subscription, `new subscription for ${customer}`);
   }
 
   /**
@@ -1306,11 +1322,12 @@ module.exports = class StripeAPI {
    * @param {string} id
    * @param {import('stripe').Stripe.SetupIntentRetrieveParams} options
    *
-   * @returns {Promise<import('stripe').Stripe.SetupIntent>}
+   * @returns {Promise<import('./stripe-api-responses').StripeSetupIntent>}
    */
   async getSetupIntent(id, options = {}) {
     await this._rateLimitBucket.throttle();
-    return await this._stripe.setupIntents.retrieve(id, options);
+    const setupIntent = await this._stripe.setupIntents.retrieve(id, options);
+    return readResponse(StripeSetupIntent, setupIntent, `setup intent ${id}`);
   }
 
   /**
@@ -1332,11 +1349,16 @@ module.exports = class StripeAPI {
    *
    * @param {string} id
    *
-   * @returns {Promise<import('stripe').Stripe.PaymentMethod|null>}
+   * @returns {Promise<import('./stripe-api-responses').StripePaymentMethod|null>} The payment
+   *   method, or null when it isn't a card.
    */
   async getCardPaymentMethod(id) {
     await this._rateLimitBucket.throttle();
-    const paymentMethod = await this._stripe.paymentMethods.retrieve(id);
+    const paymentMethod = readResponse(
+      StripePaymentMethod,
+      await this._stripe.paymentMethods.retrieve(id),
+      `payment method ${id}`,
+    );
     if (paymentMethod.type !== 'card') {
       return null;
     }
@@ -1350,13 +1372,14 @@ module.exports = class StripeAPI {
    * @param {string} subscription
    * @param {string} paymentMethod
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async updateSubscriptionDefaultPaymentMethod(subscription, paymentMethod) {
     await this._rateLimitBucket.throttle();
-    return await this._stripe.subscriptions.update(subscription, {
+    const updated = await this._stripe.subscriptions.update(subscription, {
       default_payment_method: paymentMethod,
     });
+    return readResponse(SubscriptionReference, updated, `subscription ${subscription}`);
   }
 
   /**
@@ -1364,13 +1387,14 @@ module.exports = class StripeAPI {
    *
    * @param {string} id - The ID of the subscription to cancel the trial for
    *
-   * @returns {Promise<ISubscription>}
+   * @returns {Promise<import('./stripe-api-responses').SubscriptionReference>}
    */
   async cancelSubscriptionTrial(id) {
     await this._rateLimitBucket.throttle();
-    return this._stripe.subscriptions.update(id, {
+    const subscription = await this._stripe.subscriptions.update(id, {
       trial_end: 'now',
     });
+    return readResponse(SubscriptionReference, subscription, `subscription ${id}`);
   }
 
   /**

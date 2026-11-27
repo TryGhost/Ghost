@@ -1,27 +1,35 @@
 import { z } from 'zod';
-import type { Knex } from 'knex';
-import { FieldTypeSchema, type MetafieldChangeEntry } from '@tryghost/metafield-types';
-import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
-import { DbDate } from '../../lib/db-types/date';
+import type { MetafieldChangeEntry } from '@tryghost/metafield-types';
+import type { NewRow, SchemaTable } from '../../lib/db-types/tables';
+import type { Caller } from './callers';
+import type { EditedDefinition } from './metafields/definitions-service';
 import { metafieldsRelation } from './metafields/filter';
-import type { MetafieldResource } from './metafields/resource';
-import {
-  DbMetafieldChangeEvent,
-  DbMetafieldValue,
-  type FieldsTable,
-  type MetafieldChangeEventInsert,
-  type MetafieldChangeEventRow,
-  type MetafieldValueRow,
-} from './metafields/schema';
+import type { Definition } from './metafields/models';
+import type { Namespaces } from './metafields/namespaces';
+import type { MetafieldResource, ResourceKind } from './metafields/resource';
+import { FIELD_STATUS, DbMetafieldChangeEvent, type FieldsTable } from './metafields/schema';
+
+/**
+ * What members bring to metafields: the APIs a request for a member's fields can come through,
+ * and the permission staff manage the custom fields with.
+ */
+export interface Members extends ResourceKind {
+  Name: 'members';
+  Caller: Caller;
+  StaffPermission: 'member_custom_field';
+}
 
 /** Members, the one resource that holds metafields so far. */
-export const MEMBERS_RESOURCE: MetafieldResource = {
+export const MEMBERS_RESOURCE: MetafieldResource<Members> = {
+  name: 'members',
   tables: {
     fields: 'members_metafields',
     values: 'members_metafield_values',
-    changeEvents: 'members_metafield_change_events',
+    bindings: 'members_metafield_bindings',
   },
   idColumn: 'member_id',
+  // Each field stores what its member may do with it, which a publisher sets per field.
+  storedLevelFor: 'member',
 };
 
 /**
@@ -30,8 +38,30 @@ export const MEMBERS_RESOURCE: MetafieldResource = {
  */
 export const METAFIELDS_RELATION = metafieldsRelation(MEMBERS_RESOURCE);
 
-/** The column a member's values and change events hold the member's id in. */
-type OwnedByMember = { member_id: string };
+/**
+ * Whether an edit started or stopped members reading the definition: archiving or restoring it,
+ * or keeping it from members or opening it to them. An edit is only made while the namespace is
+ * available, so availability can't differ between the two.
+ */
+export function changedForMembers(
+  namespaces: Pick<Namespaces<Members>, 'canRead'>,
+  { previous, next }: EditedDefinition,
+): boolean {
+  return readByMembers(namespaces, previous) !== readByMembers(namespaces, next);
+}
+
+function readByMembers(namespaces: Pick<Namespaces<Members>, 'canRead'>, definition: Definition) {
+  return (
+    definition.status === FIELD_STATUS.active &&
+    namespaces.canRead(
+      { kind: 'member' },
+      {
+        namespace: definition.namespace,
+        memberAccess: definition.access.member,
+      },
+    )
+  );
+}
 
 const { id, ...entryColumns } = DbMetafieldChangeEvent.shape;
 
@@ -62,51 +92,25 @@ export const DbMetafieldChangeEventWithMember = z
   .object({ event: DbMemberChangeEvent, member: DbChangeEventMember })
   .transform(({ event, member }): MetafieldChangeEvent => ({ ...event, member }));
 
-export const DbMetafieldBinding = z.object({
-  id: z.string(),
-  port: z.string(),
-  metafield_namespace: z.string(),
-  metafield_key: z.string(),
-  created_at: DbDate,
-  updated_at: DbDate.nullable(),
-});
-
-export type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
-
-/** A binding joined to the field it points at, which is how a collected value is routed. */
-export const DbBoundField = z.object({
-  port: z.string(),
-  binding_id: z.string(),
-  namespace: NamespaceSchema,
-  key: KeySchema,
-  type: FieldTypeSchema,
-});
-
-/** A binding joined to the field it points at, by that field's identity. */
-export const DbNamedBinding = z.object({
-  port: z.string(),
-  namespace: NamespaceSchema,
-  key: KeySchema,
-});
-
 declare module 'knex/types/tables' {
   interface Tables {
     members_metafields: FieldsTable;
-    members_metafield_values: Knex.CompositeTableType<
-      MetafieldValueRow & OwnedByMember,
-      Omit<z.input<typeof DbMetafieldValue>, 'updated_at'> & OwnedByMember,
-      Partial<MetafieldValueRow & OwnedByMember>
+    members_metafield_values: SchemaTable<'members_metafield_values'>;
+    members_metafield_change_events: SchemaTable<
+      'members_metafield_change_events',
+      // An entry is written with its date already in the string form SQLite orders against the
+      // feed's time filters, which a `Date` would silently break.
+      {
+        insert: Omit<NewRow<'members_metafield_change_events'>, 'created_at'> & {
+          created_at: string;
+        };
+      }
     >;
-    members_metafield_change_events: Knex.CompositeTableType<
-      MetafieldChangeEventRow & OwnedByMember,
-      MetafieldChangeEventInsert & OwnedByMember
-    >;
-    members_metafield_bindings: Knex.CompositeTableType<
-      MetafieldBindingRow,
+    members_metafield_bindings: SchemaTable<
+      'members_metafield_bindings',
       // `updated_at` is set on insert as well as update: a binding is a setting, and
       // "when was this last stated" is the same question whichever way it got there.
-      z.input<typeof DbMetafieldBinding>,
-      Partial<MetafieldBindingRow>
+      { insert: Required<NewRow<'members_metafield_bindings'>> }
     >;
   }
 }

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { IncorrectUsageError } from '@tryghost/errors';
 import createKnex from 'knex';
 import sinon from 'sinon';
 
@@ -12,7 +13,8 @@ const models = require('../../../../../core/server/models');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const urlService = require('../../../../../core/server/services/url');
-const oembedService = require('../../../../../core/server/services/oembed');
+const oembedRoot = require('../../../../../core/server/services/oembed').default;
+const OEMBED_PATH = require.resolve('../../../../../core/server/services/oembed');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const InMemoryJobsBackend =
   require('../../../../../core/server/adapters/jobs/InMemoryJobsBackend').default;
@@ -67,6 +69,11 @@ describe('Mentions service root', function () {
   const targetUrl = new URL('https://publication.example/target-post/');
   const targetPostId = '6400000000000000000000a1';
 
+  // Boot initializes oEmbed before this root reads it.
+  beforeAll(async function () {
+    await oembedRoot.init();
+  });
+
   afterAll(async function () {
     await knex.destroy();
   });
@@ -105,7 +112,7 @@ describe('Mentions service root', function () {
       .resolves({ type: 'posts', id: targetPostId });
     mentionFindOne = sandbox.stub(models.Mention, 'findOne').resolves(null);
     mentionAdd = sandbox.stub(models.Mention, 'add').resolves();
-    fetchOembedData = sandbox.stub(oembedService, 'fetchOembedDataFromUrl').resolves({
+    fetchOembedData = sandbox.stub(oembedRoot.service, 'fetchOembedDataFromUrl').resolves({
       metadata: {
         publisher: 'Source Site',
         title: 'Source Title',
@@ -359,6 +366,34 @@ describe('Mentions service root', function () {
       /is not a valid URL for this site/,
     );
     sinon.assert.calledOnce(mentionAdd);
+  });
+
+  it('rejects init without listening while oEmbed is not ready, and initializes once it is', async function () {
+    // A fresh oEmbed root stands in for one boot has not initialized yet. The
+    // shared root is restored for the other files in this worker.
+    const sharedOembed = require.cache[OEMBED_PATH];
+    delete require.cache[OEMBED_PATH];
+    try {
+      await assert.rejects(
+        root.init(),
+        (error: unknown) =>
+          error instanceof IncorrectUsageError &&
+          /^oEmbed used before init\(\)/.test(error.message),
+      );
+
+      assert.throws(() => root.service, IncorrectUsageError);
+      assert.equal(ownedListenerCount(), 0);
+
+      await require(OEMBED_PATH).default.init();
+      await root.init();
+
+      assert.ok(root.service.sendingService instanceof MentionSendingService);
+    } finally {
+      delete require.cache[OEMBED_PATH];
+      if (sharedOembed) {
+        require.cache[OEMBED_PATH] = sharedOembed;
+      }
+    }
   });
 
   it('publishes nothing when construction fails and allows an explicit retry', async function () {

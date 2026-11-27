@@ -1,4 +1,3 @@
-import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
@@ -9,7 +8,6 @@ import {
   matchField,
   shaped,
   type AcceptedValue,
-  type MetafieldChangeEventField,
   type TypedSettings,
 } from '@tryghost/metafield-types';
 import {
@@ -26,13 +24,12 @@ import {
   DbMetafieldValue,
   FIELD_STATUS,
   storedField,
-  StoredFieldList,
-  type MetafieldChangeEventInsert,
   type SingleWriteOrigin,
   type WriteOrigin,
 } from './schema';
-import { toDatabaseDate } from '../../../lib/db-types/date';
+import schema from '../../../data/schema/schema';
 import type { MetafieldsTracking } from './tracking';
+import { ValuesWritten, type OnValuesWritten } from './changes';
 import { ensureTransaction, transactionOf } from '../../../lib/ensure-transaction';
 import {
   ACTIVE_ONLY,
@@ -43,7 +40,7 @@ import {
 } from './queries';
 import { MemberAccessSchema } from '@tryghost/metafield-types';
 import type { Namespaces } from './namespaces';
-import type { MetafieldResource } from './resource';
+import type { Asking, MetafieldResource, ResourceKind } from './resource';
 import { readStoredField } from './stored-fields';
 import {
   VALUE_COLUMNS,
@@ -185,14 +182,15 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
  * definitions service because a value belongs to its member or post and a definition belongs to
  * the site's settings, which are different aggregates rather than different layers.
  */
-export class MetafieldValuesService<Caller> {
+export class MetafieldValuesService<R extends ResourceKind> {
   protected knex: Knex;
   protected resource: MetafieldResource;
-  private fields: FieldSource<Caller>;
-  private namespaces: Pick<Namespaces<Caller>, 'canWrite'>;
+  private fields: FieldSource<R>;
+  private namespaces: Pick<Namespaces<R>, 'canWrite'>;
   /** A getter, not a number: the ceiling is an operator setting that changes between requests. */
   private getMaxDefinitions: () => number;
   private tracking: MetafieldsTracking;
+  private onValuesWritten: OnValuesWritten;
   /**
    * The columns a value row is keyed by, from the canonical schema, so a write's conflict target
    * cannot fall behind the table's primary key. Only SQLite would notice if it did: MySQL ignores
@@ -208,14 +206,17 @@ export class MetafieldValuesService<Caller> {
     namespaces,
     getMaxDefinitions,
     tracking,
+    onValuesWritten,
   }: {
     knex: Knex;
     resource: MetafieldResource;
-    fields: FieldSource<Caller>;
+    fields: FieldSource<R>;
     /** Whose grant decides what a caller may write, namespace by namespace. */
-    namespaces: Pick<Namespaces<Caller>, 'canWrite'>;
+    namespaces: Pick<Namespaces<R>, 'canWrite'>;
     getMaxDefinitions: () => number;
     tracking: MetafieldsTracking;
+    /** Called with each write, inside its transaction. */
+    onValuesWritten: OnValuesWritten;
   }) {
     this.knex = knex;
     this.resource = resource;
@@ -223,11 +224,15 @@ export class MetafieldValuesService<Caller> {
     this.namespaces = namespaces;
     this.getMaxDefinitions = getMaxDefinitions;
     this.tracking = tracking;
+    this.onValuesWritten = onValuesWritten;
 
-    const schema = require('../../../data/schema').tables;
     this.valueKey = z
-      .array(z.union([DbMetafieldValue.keyof(), z.literal(resource.idColumn)]))
-      .parse(schema[resource.tables.values]['@@PRIMARY_KEY@@']);
+      .object({
+        '@@PRIMARY_KEY@@': z.array(
+          z.union([DbMetafieldValue.keyof(), z.literal(resource.idColumn)]),
+        ),
+      })
+      .parse(schema[resource.tables.values])['@@PRIMARY_KEY@@'];
     // From the fields table's `key` column, so no key a site could hold is rejected.
     this.valuesInput = z.record(z.string().max(fields.maxLength.key * 2 + 1), z.unknown());
   }
@@ -239,7 +244,7 @@ export class MetafieldValuesService<Caller> {
   private async allowedFieldsByIdentity(
     executor: Knex,
     identities: string[],
-    caller: Caller,
+    caller: Asking<R>,
   ): Promise<Map<string, AllowedField>> {
     // A write names whole fields, so an identity naming a part is one no field answers to.
     const keysByNamespace = new Map<Namespace, Key[]>();
@@ -294,7 +299,7 @@ export class MetafieldValuesService<Caller> {
    */
   async getValuesFor(
     resourceId: string,
-    caller: Caller,
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<Record<string, Record<string, unknown>> | undefined> {
     return (await this.getValuesForMany([resourceId], caller, executor)).get(resourceId);
@@ -305,7 +310,10 @@ export class MetafieldValuesService<Caller> {
    * whose settings can't be read is read with its type's defaults, and one that can't be read even
    * so is left out, and its values with it.
    */
-  private async typedFields(executor: Knex, caller: Caller): Promise<Map<string, TypedSettings>> {
+  private async typedFields(
+    executor: Knex,
+    caller: Asking<R>,
+  ): Promise<Map<string, TypedSettings>> {
     const rows = await this.fields
       .definitions(executor, { caller, status: ACTIVE_ONLY })
       .read.select(...TYPED_FIELD_COLUMNS);
@@ -329,7 +337,7 @@ export class MetafieldValuesService<Caller> {
    */
   async getValuesForMany(
     resourceIds: string[],
-    caller: Caller,
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<Map<string, Record<string, Record<string, unknown>>>> {
     if (resourceIds.length === 0) {
@@ -456,7 +464,7 @@ export class MetafieldValuesService<Caller> {
    */
   async planWrite(
     input: unknown,
-    caller: Caller,
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<PlannedWrite[]> {
     const { writes, refusals } = await this.planOrRefuse(input, caller, undefined, executor);
@@ -481,7 +489,7 @@ export class MetafieldValuesService<Caller> {
    */
   async planOrRefuse(
     input: unknown,
-    caller: Caller,
+    caller: Asking<R>,
     named?: (identity: string) => string,
     executor: Knex = this.knex,
   ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
@@ -622,7 +630,7 @@ export class MetafieldValuesService<Caller> {
   }
 
   /**
-   * Stores a write and its activity feed entry inside `trx`.
+   * Stores a write inside `trx`, and reports it there.
    *
    * The existing values are read without a lock. On MySQL that read sees the database as it was
    * when the transaction first read anything without a lock, so it can miss values another
@@ -634,8 +642,9 @@ export class MetafieldValuesService<Caller> {
     trx: Knex.Transaction,
     resourceId: string,
     writes: PlannedWrite[],
-    { writtenBy, source }: WriteOrigin,
+    origin: WriteOrigin,
   ): Promise<void> {
+    const { writtenBy } = origin;
     const { tables, idColumn } = this.resource;
     // Built first, then sent as whole statements: a handful per write rather
     // than one per part, under one timestamp, because a write happened once
@@ -741,22 +750,19 @@ export class MetafieldValuesService<Caller> {
       }
     }
 
-    const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
-      namespace: field.namespace,
-      key: field.key,
-      name: field.name,
-    }));
-    await trx<MetafieldChangeEventInsert>(tables.changeEvents).insert({
-      id: new ObjectID().toHexString(),
-      [idColumn]: resourceId,
-      written_by_type: writtenBy.type,
-      written_by_id: writtenBy.id,
-      source,
-      metafields: StoredFieldList.encode(fields),
-      // A string rather than the Date the value rows take: SQLite stores a bound Date
-      // as a number, which sorts before every string the feed pages through time with.
-      created_at: toDatabaseDate(now),
-    });
+    await this.onValuesWritten(
+      trx,
+      new ValuesWritten({
+        resourceId,
+        origin,
+        fields: writes.map(({ field }) => ({
+          namespace: field.namespace,
+          key: field.key,
+          name: field.name,
+        })),
+        at: now,
+      }),
+    );
   }
 
   /**
@@ -774,7 +780,7 @@ export class MetafieldValuesService<Caller> {
    */
   async heldValues(
     field: FieldIdentity,
-    caller: Caller,
+    caller: Asking<R>,
     executor: Knex = this.knex,
   ): Promise<string[]> {
     const values = this.resource.tables.values;

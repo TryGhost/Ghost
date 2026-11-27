@@ -69,6 +69,8 @@ const PRIVATE_FEATURES = [
   'editorLease',
   'commentsAnalytics',
   'oauthBridge',
+  'memberSegments',
+  'settingsGroupedNav',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

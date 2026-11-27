@@ -1,38 +1,46 @@
 import errors from '@tryghost/errors';
 import { ActionLog } from '../../lib/action-log/action-log';
+import { recordMemberDefinitionChanges } from '../../lib/action-log/custom-fields';
 import { limitService } from '../limits';
-import { MetafieldDefinitionsService } from './custom-fields/definitions-service';
-import { MemberMetafieldValues } from './member-values';
-import { MEMBERS_RESOURCE } from './members-resource';
-import { MetafieldBindingsService } from './bindings-service';
-import { resolveMaxDefinitions } from './custom-fields/config';
-import { customFields, memberAccessPolicy } from './custom-fields/namespace';
-import { createNamespaces, type Namespaces } from './metafields/namespaces';
-import { fieldSource, type FieldSource as ResourceFieldSource } from './metafields/queries';
-import type { Caller } from './callers';
+import type { MetafieldDefinitionsService } from './metafields/definitions-service';
+import { MemberMetafieldActivity } from './member-activity';
+import type { MetafieldValuesService } from './metafields/values-service';
+import { MEMBERS_RESOURCE, type Members } from './members-resource';
+export { changedForMembers } from './members-resource';
+import type { MetafieldBindingsService } from './metafields/bindings-service';
+import { resolveMaxDefinitions } from './config';
+import { definitionLimit } from './definition-limit';
+import { CUSTOM_FIELDS_ACCESS, customFields } from './custom-fields/namespace';
+import { metafieldsFor } from './metafields/metafields';
+import type { Namespaces } from './metafields/namespaces';
+import type { FieldSource as ResourceFieldSource } from './metafields/queries';
 import { meter, tracer } from '../../lib/tracing';
 import { metafieldsTracking } from './metafields/tracking';
 
 export type { Definition } from './metafields/models';
 /** The members' fields as this site reads them, for every read here and in the domains that join them. */
-export type FieldSource = ResourceFieldSource<Caller>;
-export type { MemberMetafieldValues } from './member-values';
+export type FieldSource = ResourceFieldSource<Members>;
+/** What each member holds for each field. */
+export type MemberMetafieldValues = MetafieldValuesService<Members>;
+export type { MemberMetafieldActivity } from './member-activity';
 export {
   refusalError,
   type MetafieldPlan,
   type PlannedWrite,
   type Refusal,
 } from './metafields/values-service';
-export type { MetafieldBindingsService } from './bindings-service';
-export type { MetafieldDefinitionsService } from './custom-fields/definitions-service';
+/** Which member field each port another domain declares writes into. */
+export type MemberBindings = MetafieldBindingsService<Members>;
+/** The members' definitions, read and changed for every namespace. */
+export type MemberDefinitions = MetafieldDefinitionsService<Members>;
 export { adminWriteOrigin } from './write-origin';
-export type { BoundField } from './bindings-service';
+export type { BoundField } from './metafields/bindings-service';
 export type { FieldStatus, WriteOrigin, WrittenBy } from './metafields/schema';
-export type { MetafieldChangeEvent } from './members-resource';
+export type { MetafieldChangeEvent, Members } from './members-resource';
 
 // The API a request came through decides which custom fields it can read and write. Every read
 // and write takes one, so a new caller has to state which API it is rather than get a default.
-export { MEMBER_ACCESS, type Caller, type MemberAccess } from './callers';
+export { MEMBER_ACCESS, callerOf, type Caller, type MemberAccess } from './callers';
 
 // Three services from one module, split along aggregate boundaries rather than
 // technical layers: `definitions` owns the field definitions, which belong to the
@@ -44,35 +52,38 @@ export { MEMBER_ACCESS, type Caller, type MemberAccess } from './callers';
 //
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 /** The namespaces fields can be defined in, each with its owner, limits and access policy. */
-export let namespaces: Namespaces<Caller> | undefined;
+export let namespaces: Namespaces<Members> | undefined;
 /** The fields as this site reads them, for every read here and in the domains that join them. */
 export let fields: FieldSource | undefined;
-export let definitions: MetafieldDefinitionsService | undefined;
+export let definitions: MemberDefinitions | undefined;
 export let values: MemberMetafieldValues | undefined;
-export let bindings: MetafieldBindingsService | undefined;
+/** The activity feed members' metafield writes leave. */
+export let activity: MemberMetafieldActivity | undefined;
+export let bindings: MemberBindings | undefined;
 
 /**
  * Boot builds these before any request is served, so a call before then is a wiring fault and
  * throws.
  */
 export function booted(): {
-  namespaces: Namespaces<Caller>;
-  definitions: MetafieldDefinitionsService;
+  namespaces: Namespaces<Members>;
+  definitions: MemberDefinitions;
   values: MemberMetafieldValues;
-  bindings: MetafieldBindingsService;
+  bindings: MemberBindings;
+  activity: MemberMetafieldActivity;
 } {
-  if (!namespaces || !definitions || !values || !bindings) {
+  if (!namespaces || !definitions || !values || !bindings || !activity) {
     throw new errors.IncorrectUsageError({
       message: 'Members metafields were used before boot initialised them.',
     });
   }
-  return { namespaces, definitions, values, bindings };
+  return { namespaces, definitions, values, bindings, activity };
 }
 
 export function init(): void {
-  // The five are constructed together below, so checking all of them keeps the "all or
+  // These are constructed together below, so checking all of them keeps the "all or
   // none" invariant explicit rather than trusting one to stand in for the rest.
-  if (namespaces && fields && definitions && values && bindings) {
+  if (namespaces && fields && definitions && values && bindings && activity) {
     return;
   }
 
@@ -81,46 +92,33 @@ export function init(): void {
   // Resolved here, not in the service: reading config is this module's job, and
   // the service is handed a number. A getter rather than a value because the
   // ceiling is an operator setting that can change between requests, and a Ghost
-  // container holds no state across them.
+  // container holds no state across them. It is Members' limit on each namespace's
+  // fields, counted for each namespace alone.
   const config = require('../../../shared/config');
   const getMaxDefinitions = () =>
     resolveMaxDefinitions(config.get('members:metafields:maxDefinitions'));
 
-  // Custom fields are the one application of metafields so far, and the only namespace
-  // anyone can define fields in.
-  namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })], {
-    // Nobody owns another namespace yet, so a field stored in one, as an app's would be, is
-    // reached by its member access, the way a custom field is. An app that owns its namespace
-    // will state its own grants.
-    unowned: memberAccessPolicy,
-  });
-  fields = fieldSource(MEMBERS_RESOURCE, namespaces);
-
-  const tracking = metafieldsTracking({ tracer, meter });
+  // Each write of a member's values is recorded on the member's activity feed, inside the write.
+  activity = new MemberMetafieldActivity({ knex });
   // A field type still in development can be created only where its Labs flag is on.
   const labs = require('../../../shared/labs');
-  definitions = new MetafieldDefinitionsService({
-    knex,
-    fields,
-    actionLog: new ActionLog(),
-    namespaces,
-    tracking,
-    labs,
-  });
-  // The values service reads the field definitions itself, so it needs knex, the fields and
-  // the ceiling, which also caps how many values one request can carry — no handle on the
-  // definitions service.
-  values = new MemberMetafieldValues({
-    knex,
-    resource: MEMBERS_RESOURCE,
-    fields,
-    namespaces,
-    getMaxDefinitions,
-    tracking,
-  });
 
-  // Built after the values, which is what a binding routes into. It has no handle on the
-  // definitions: making a field is not part of binding to one, so a caller that needs both
-  // asks for both.
-  bindings = new MetafieldBindingsService({ knex, fields, values });
+  ({ namespaces, fields, definitions, values, bindings } = metafieldsFor(MEMBERS_RESOURCE, {
+    knex,
+    // Custom fields are the one namespace registered on members so far, and the only one anyone
+    // can define fields in.
+    namespaces: [customFields({ limitService })],
+    // Nobody owns another namespace yet, so a field stored in one, as an app's would be, is
+    // reached the way a custom field is, by its member access. An app that owns its namespace
+    // will state its own access.
+    unowned: CUSTOM_FIELDS_ACCESS,
+    definitionLimit: definitionLimit(getMaxDefinitions),
+    maxDefinitions: getMaxDefinitions,
+    internal: { kind: 'internal' },
+    // Each change to a definition is logged as a staff action inside the command that made it.
+    onDefinitionUpdated: recordMemberDefinitionChanges(new ActionLog()),
+    onValuesWritten: activity.record,
+    tracking: metafieldsTracking({ tracer, meter }),
+    labs,
+  }));
 }

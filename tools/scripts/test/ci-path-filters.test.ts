@@ -235,7 +235,7 @@ describe('CI path filters', () => {
       const patterns = await getFilterPatterns(filterName);
       const matches = (path: string) =>
         patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
-      const docsPaths = ['.github/CODEOWNERS', 'ghost/core/kernel/README.md'];
+      const docsPaths = ['.github/CODEOWNERS', 'ghost/core/support/README.md'];
 
       assert.strictEqual(docsPaths.some(matches), false, filterName);
       for (const path of ['ghost/core/index.js', '.github/workflows/ci.yml']) {
@@ -256,13 +256,13 @@ describe('CI path filters', () => {
     const matches = (patterns: string[], path: string) =>
       patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
     const testPaths = [
-      'apps/admin/src/members/detail/member-event.test.ts',
-      'apps/admin/src/tags/tags.acceptance.test.tsx',
-      'apps/admin/src/editor/editor.component.test.tsx',
-      'apps/admin/src/tags/tags.screen.ts',
-      'apps/admin/test-utils/acceptance/setup.ts',
-      'apps/admin/test-utils/acceptance/public/mockServiceWorker.js',
-      'apps/admin/vitest.acceptance.config.ts',
+      'clients/admin/src/members/detail/member-event.test.ts',
+      'clients/admin/src/tags/tags.acceptance.test.tsx',
+      'clients/admin/src/editor/editor.component.test.tsx',
+      'clients/admin/src/tags/tags.screen.ts',
+      'clients/admin/test-utils/acceptance/setup.ts',
+      'clients/admin/test-utils/acceptance/public/mockServiceWorker.js',
+      'clients/admin/vitest.acceptance.config.ts',
     ];
     for (const path of testPaths) {
       assert.strictEqual(matches(e2e, path), false, path);
@@ -270,16 +270,16 @@ describe('CI path filters', () => {
     }
 
     const runtimePaths = [
-      'apps/admin/src/tags/tags.tsx',
-      'apps/admin/src/index.css',
-      'apps/admin/src/editor/engine/__fixtures__/index.ts',
-      'apps/admin/src/automations/run-history.test-utils.ts',
-      'apps/admin/vite.config.ts',
-      'apps/admin/vite.shared.ts',
-      'apps/admin/tsconfig.app.json',
-      'apps/admin/package.json',
-      'apps/admin/.env.test',
-      'apps/shade/src/components/ui/button.tsx',
+      'clients/admin/src/tags/tags.tsx',
+      'clients/admin/src/index.css',
+      'clients/admin/src/editor/engine/__fixtures__/index.ts',
+      'clients/admin/src/automations/run-history.test-utils.ts',
+      'clients/admin/vite.config.ts',
+      'clients/admin/vite.shared.ts',
+      'clients/admin/tsconfig.app.json',
+      'clients/admin/package.json',
+      'clients/admin/.env.test',
+      'clients/shade/src/components/ui/button.tsx',
       'pnpm-lock.yaml',
       '.github/workflows/ci.yml',
     ];

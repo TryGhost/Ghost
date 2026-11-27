@@ -7,14 +7,19 @@ import PropTypes from 'prop-types';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin.jsx';
 import clsx from 'clsx';
 import defaultTheme from '../../../themes/default.js';
+import {BASIC_TRANSFORMERS} from '../../../plugins/MarkdownShortcutPlugin';
 import {Button} from '../Button.jsx';
 import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
 import {CALLTOACTION_COLORS} from '../../../utils/callToActionColors.js';
+import {HEADING} from '@lexical/markdown';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay.jsx';
 import {RestrictContentPlugin} from '../../../index.js';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useState} from 'react';
+
+// Typing "## " or "### " at the start of a line turns it into a heading, as in the post body
+const CTA_TEXT_TRANSFORMERS = [HEADING, ...BASIC_TRANSFORMERS];
 
 const getTheme = () => ({
     ...defaultTheme,
@@ -369,6 +374,7 @@ export function CallToActionCard({
                             initialEditor={htmlEditor}
                             initialEditorState={htmlEditorInitialState}
                             initialTheme={theme}
+                            markdownTransformers={CTA_TEXT_TRANSFORMERS}
                             nodes='basic'
                             placeholderClassName={`bg-transparent whitespace-normal font-body text-body text-grey-500 dark:text-grey-800`}
                             placeholderText="Write something worth clicking..."

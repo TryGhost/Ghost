@@ -2,9 +2,11 @@ import { unreachable } from '../../../lib/unreachable';
 import type { Knex } from 'knex';
 import untypedNql from '@tryghost/nql';
 import knexify from '@tryghost/mongo-knex';
+import { z } from 'zod';
 import type { Identity, Key, Namespace } from '@tryghost/metafield-types/identity';
+import schema from '../../../data/schema/schema';
 import type { Grant, Grants, Namespaces } from './namespaces';
-import type { MetafieldResource } from './resource';
+import type { Asking, MetafieldResource, ResourceKind } from './resource';
 import { FIELD_STATUS, type FieldsTable, type MetafieldRow } from './schema';
 
 /**
@@ -68,7 +70,7 @@ function narrowTo(where: Knex.QueryBuilder, fieldsName: string, grant: Grant): v
       // An empty `IN` matches nothing.
       where.whereIn(`${fieldsName}.namespace`, []);
       return;
-    case 'by member access':
+    case 'by stored level':
       where.whereIn(`${fieldsName}.member_access`, grant.levels);
       return;
     default:
@@ -116,8 +118,8 @@ class ScopedDefinitions {
 export type DefinitionQuery = ScopedDefinitions;
 
 /** Which fields a definitions read is for, and who for. */
-export interface DefinitionScope<Caller> {
-  caller: Caller;
+export interface DefinitionScope<R extends ResourceKind> {
+  caller: Asking<R>;
   status: StatusScope;
   /** One namespace's fields. Without it, every namespace's. */
   namespace?: Namespace;
@@ -136,7 +138,7 @@ export interface DefinitionScope<Caller> {
  * holds for every one of them. That includes the check before writing a value. Writes, and
  * the reads a change to the field list is compared with, name the table itself.
  */
-export interface FieldSource<Caller> {
+export interface FieldSource<R extends ResourceKind> {
   /**
    * The name the fields are read under: their table's, so a column is qualified the same way
    * whether a read names the table or the fields as this reads them.
@@ -146,7 +148,7 @@ export interface FieldSource<Caller> {
    * Narrows a read that joins the fields to the ones `caller` may read, as each namespace's
    * owner grants them.
    */
-  readable<T extends Knex.QueryBuilder>(query: T, caller: Caller): T;
+  readable<T extends Knex.QueryBuilder>(query: T, caller: Asking<R>): T;
   /** The longest name and key the fields table can store. */
   maxLength: { name: number; key: number };
   /**
@@ -160,7 +162,7 @@ export interface FieldSource<Caller> {
    */
   asRead(db: Knex, alias?: string): Knex.TableDescriptor;
   /** The fields `scope` names, in no particular order. */
-  definitions(db: Knex, scope: DefinitionScope<Caller>): DefinitionQuery;
+  definitions(db: Knex, scope: DefinitionScope<R>): DefinitionQuery;
   /**
    * The fields `keys` name in `namespace`, held against change until `trx` ends. The lock is
    * taken in the same statement as the read, on the rows as stored.
@@ -168,19 +170,25 @@ export interface FieldSource<Caller> {
   locked(trx: Knex.Transaction, namespace: Namespace, keys: readonly Key[]): Knex.QueryBuilder;
 }
 
+/** How long a field's name and key can be, as the schema defines the columns they are kept in. */
+const FieldColumnLengths = z.object({
+  name: z.object({ maxlength: z.number() }),
+  key: z.object({ maxlength: z.number() }),
+});
+
 /**
  * The fields as a site reads them: as stored, except that a field in a namespace that isn't
  * available reads as archived. Which namespaces aren't is asked on every read, as it can change
  * while Ghost runs.
  */
-export function fieldSource<Caller>(
+export function fieldSource<R extends ResourceKind>(
   resource: MetafieldResource,
-  namespaces: Pick<Namespaces<Caller>, 'unavailable' | 'readable'>,
-): FieldSource<Caller> {
+  namespaces: Pick<Namespaces<R>, 'unavailable' | 'readable'>,
+): FieldSource<R> {
   const tableName = resource.tables.fields;
   // The canonical schema, which the migrations and models also read, so these can't drift from
   // the database.
-  const columns = require('../../../data/schema').tables[tableName];
+  const columns = FieldColumnLengths.parse(schema[tableName]);
   const asRead = (db: Knex, rows: Knex.QueryBuilder) => {
     const unavailable = namespaces.unavailable();
     return rows.select(
@@ -199,7 +207,7 @@ export function fieldSource<Caller>(
     );
   };
 
-  const source: FieldSource<Caller> = {
+  const source: FieldSource<R> = {
     name: tableName,
 
     maxLength: { name: columns.name.maxlength, key: columns.key.maxlength },

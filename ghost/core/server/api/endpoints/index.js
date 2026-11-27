@@ -51,9 +51,8 @@ module.exports = {
     return apiFramework.pipeline(require('./integrations'), localUtils);
   },
 
-  // @TODO: transform
   get session() {
-    return require('./session');
+    return apiFramework.pipeline(require('./session'), localUtils);
   },
 
   get schedules() {
@@ -362,6 +361,10 @@ module.exports = {
 
   get appSessions() {
     return apiFramework.pipeline(require('./app-sessions'), localUtils);
+  },
+
+  get appTokens() {
+    return apiFramework.pipeline(require('./app-tokens'), localUtils);
   },
 
   get giftLinks() {

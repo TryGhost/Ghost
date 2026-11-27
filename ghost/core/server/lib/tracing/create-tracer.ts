@@ -3,6 +3,7 @@ import { InternalServerError } from '@tryghost/errors';
 import { z } from 'zod';
 import type { GhostLogger } from '@tryghost/logging';
 import type { GhostMetrics } from '@tryghost/metrics';
+import { firstError } from '../first-error';
 import { noLabels, setLabel, type Labels } from './labels';
 import type { Span, Tracer } from './tracer';
 
@@ -38,10 +39,13 @@ const METRIC = 'ghost-spans';
 const CodedError = z.object({ code: z.string().min(1) });
 
 /**
- * The type a failed span records for its error. An error's code, such as Stripe's
- * `email_invalid`, says more than the error's class, so the code comes first when there is one.
+ * The type a failed span records for its error, read from the error Ghost reads from what was
+ * thrown (see `firstError`), such as the first `ValidationError` of a model's validation. An
+ * error's code, such as Stripe's `email_invalid`, says more than the error's class, so the code
+ * comes first when there is one.
  */
-function errorTypeOf(err: unknown): string {
+function errorTypeOf(thrown: unknown): string {
+  const err = firstError(thrown);
   const coded = CodedError.safeParse(err);
   if (coded.success) {
     return coded.data.code;
@@ -57,11 +61,15 @@ function errorTypeOf(err: unknown): string {
 }
 
 /**
- * Ghost's logger only fills a line's message and error fields from an `Error`. When an operation
- * throws something else, such as a string, the thrown value is wrapped in an InternalServerError
- * whose message is the thrown value, so the log line still says what was thrown.
+ * The error a failed span's exception line logs: the error Ghost reads from what was thrown (see
+ * `firstError`), so a model's validation logs its first `ValidationError` with that error's own
+ * message and stack. Ghost's logger only fills a line's message and error fields from an `Error`.
+ * When an operation throws something else, such as a string, the thrown value is wrapped in an
+ * InternalServerError whose message is the thrown value, so the log line still says what was
+ * thrown.
  */
-function loggable(err: unknown): Error {
+function loggable(thrown: unknown): Error {
+  const err = firstError(thrown);
   return err instanceof Error ? err : new InternalServerError({ message: String(err) });
 }
 

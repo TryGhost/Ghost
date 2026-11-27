@@ -30,3 +30,14 @@ function fitName(name: string): string {
  * Admin or through the Admin API, are still refused when they're too long.
  */
 export const StripeName = z.string().transform(fitName);
+
+/** A time Stripe sends as a timestamp in seconds, read as a date. */
+export const StripeTimestamp = z.number().transform((seconds) => new Date(seconds * 1000));
+
+/**
+ * A reference from one Stripe object to another, such as a subscription's customer: the other
+ * object's id, or the object itself when the request expanded it. Ghost reads only the id.
+ */
+export const ExpandableId = z
+  .union([z.string(), z.object({ id: z.string() }).loose()])
+  .transform((reference) => (typeof reference === 'string' ? reference : reference.id));

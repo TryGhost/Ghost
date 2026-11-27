@@ -1,5 +1,5 @@
 import logging from '@tryghost/logging';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { TierRequirements } from './requirements';
 
 // Publishes the API and the cached tiers behind it together, once the tiers have loaded.
@@ -19,7 +19,8 @@ export default defineService('Tiers', async () => {
   // themselves stay cached.
   const requirements = new TierRequirements({
     knex,
-    boundPorts: (ports, executor) => bindings.boundPorts(ports, executor),
+    // Tiers list a requirement's fields to anyone, so a port names its field as a member reads it.
+    boundPorts: (ports, executor) => bindings.boundPorts(ports, { kind: 'member' }, executor),
     logging,
   });
 

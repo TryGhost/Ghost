@@ -136,8 +136,6 @@ export const DbMetafieldValue = z.object({
   updated_at: DbDate.nullable(),
 });
 
-export type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
-
 // `type` drops a value whose type has left the catalog: its definition is no longer listed either,
 // and the row fails to parse. What a field's rows add up to is read once per field, with its
 // settings, from its definition rather than from each row.
@@ -201,12 +199,6 @@ export const DbMetafieldChangeEvent = z.object({
 });
 
 /**
- * An entry as the table holds it, derived from the schema that reads it. The pairing of
- * writer and source is held by `WriteOrigin` at the write rather than by this row type.
- */
-export type MetafieldChangeEventRow = z.input<typeof DbMetafieldChangeEvent>;
-
-/**
  * Every resource's fields table, as a query builder types it. A resource's tables are named by
  * its descriptor rather than registered with knex, so a query names this type instead.
  */
@@ -218,10 +210,30 @@ export type FieldsTable = Knex.CompositeTableType<
   Partial<MetafieldRow>
 >;
 
-/**
- * An entry as it is written: with the date already in the string form SQLite orders against the
- * feed's time filters, which a `Date` would silently break.
- */
-export type MetafieldChangeEventInsert = Omit<MetafieldChangeEventRow, 'created_at'> & {
-  created_at: string;
-};
+/** A port pointed at a field: the name another domain collects a thing under, and where it lands. */
+export const DbMetafieldBinding = z.object({
+  id: z.string(),
+  port: z.string(),
+  metafield_namespace: z.string(),
+  metafield_key: z.string(),
+  created_at: DbDate,
+  updated_at: DbDate.nullable(),
+});
+
+export type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
+
+/** A binding joined to the field it points at, which is how a collected value is routed. */
+export const DbBoundField = z.object({
+  port: z.string(),
+  binding_id: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+  type: FieldTypeSchema,
+});
+
+/** A binding joined to the field it points at, by that field's identity. */
+export const DbNamedBinding = z.object({
+  port: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+});

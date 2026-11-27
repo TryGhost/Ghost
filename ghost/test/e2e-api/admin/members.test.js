@@ -42,6 +42,7 @@ const Papa = require('papaparse');
 const models = require('../../../core/server/models');
 const { knex } = require('../../../core/server/data/db');
 const membersService = require('../../../core/server/services/members');
+const { StripeSubscription } = require('../../../core/server/services/stripe/stripe-api-responses');
 const memberAttributionService =
   require('../../../core/server/services/member-attribution').default;
 const urlServiceUtils = require('../../utils/url-service-utils');
@@ -1815,6 +1816,7 @@ describe('Members API', function () {
       customer: 'cus_1',
       status: 'active',
       cancel_at_period_end: false,
+      canceled_at: null,
       metadata: {},
       current_period_end: Date.now() / 1000,
       start_date: Date.now() / 1000,
@@ -1822,6 +1824,7 @@ describe('Members API', function () {
       items: {
         data: [
           {
+            id: 'si_1234',
             price: fakePrice,
           },
         ],
@@ -1835,7 +1838,10 @@ describe('Members API', function () {
     });
     sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
     sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
-    sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+    // Read as the Stripe client reads what Stripe returns, with its times as dates.
+    sinon
+      .stub(stripeService.api, 'getSubscription')
+      .resolves(StripeSubscription.parse(fakeSubscription));
     sinon.stub(stripeService.api, 'getCustomer').resolves({
       id: 'cus_1',
       invoice_settings: {
@@ -1918,6 +1924,7 @@ describe('Members API', function () {
       customer: 'cus_1',
       status: 'active',
       cancel_at_period_end: false,
+      canceled_at: null,
       metadata: {},
       current_period_end: Date.now() / 1000,
       start_date: Date.now() / 1000,
@@ -1925,6 +1932,7 @@ describe('Members API', function () {
       items: {
         data: [
           {
+            id: 'si_1234',
             price: fakePrice,
           },
         ],
@@ -1938,7 +1946,10 @@ describe('Members API', function () {
     });
     sinon.stub(stripeService.api, 'createPrice').resolves(fakePrice);
     sinon.stub(stripeService.api, 'createSubscription').resolves(fakeSubscription);
-    sinon.stub(stripeService.api, 'getSubscription').resolves(fakeSubscription);
+    // Read as the Stripe client reads what Stripe returns, with its times as dates.
+    sinon
+      .stub(stripeService.api, 'getSubscription')
+      .resolves(StripeSubscription.parse(fakeSubscription));
     sinon.stub(stripeService.api, 'getCustomer').resolves({
       id: 'cus_1',
       invoice_settings: {
@@ -2232,6 +2243,7 @@ describe('Members API', function () {
       customer: 'cus_1234',
       status: 'active',
       cancel_at_period_end: false,
+      canceled_at: null,
       metadata: {},
       current_period_end: Date.now() / 1000 + 1000,
       start_date: Date.now() / 1000,
@@ -2239,6 +2251,7 @@ describe('Members API', function () {
       items: {
         data: [
           {
+            id: 'si_1234',
             price: fakePrice,
           },
         ],
@@ -2373,6 +2386,7 @@ describe('Members API', function () {
       customer: 'cus_12345',
       status: 'active',
       cancel_at_period_end: false,
+      canceled_at: null,
       metadata: {},
       current_period_end: Date.now() / 1000 + 1000,
       start_date: Date.now() / 1000,
@@ -3385,6 +3399,7 @@ describe('Members API', function () {
             200,
             {
               id,
+              customer: 'cus_1234',
               status: 'canceled',
             },
           ];
@@ -3425,6 +3440,7 @@ describe('Members API', function () {
             200,
             {
               id,
+              customer: 'cus_1234',
               status: 'canceled',
             },
           ];

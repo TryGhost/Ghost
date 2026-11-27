@@ -52,6 +52,7 @@ function betterAuth() {
     isEmailMfaRequired: () => false,
     sendDeviceVerificationCode: async () => {},
     getRequestOrigin: (headers) => headers.get('origin'),
+    apps: false,
   });
   const origin = urlUtils.getAdminOrigin();
 

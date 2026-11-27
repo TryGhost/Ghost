@@ -1,63 +1,35 @@
-import errors from '@tryghost/errors';
 import type { LimitService } from '@tryghost/limit-service';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { MEMBER_ACCESS, type Caller } from '../callers';
-import type {
-  AvailabilityLimit,
-  CountLimit,
-  Grant,
-  AccessPolicy,
-  NamespaceRegistration,
-} from '../metafields/namespaces';
+import type { Members } from '../members-resource';
+import type { Access, AvailabilityLimit, NamespaceRegistration } from '../metafields/namespaces';
 
 /**
- * Custom fields: the publisher's own namespace, with its owner, limits and access policy. Staff with
- * the custom fields permission manage them. A host can switch them off, and an operational
- * ceiling caps how many a site can hold. Staff reach every field, and the publisher opens each
- * one to members, or not, with its member access.
+ * Custom fields: the publisher's own namespace on members, with its owner, limits and access.
+ * Staff with the custom fields permission manage them, and a host can switch them off. How many
+ * a site can hold is Members' limit, the one every namespace on members has.
  */
 export function customFields({
   limitService,
-  getMaxDefinitions,
 }: {
   limitService: Pick<LimitService, 'isDisabled' | 'errorIfWouldGoOverLimit'>;
-  /** Asked on every add, as an operator can change it while Ghost runs. */
-  getMaxDefinitions: () => number;
-}): NamespaceRegistration<Caller> {
+}): NamespaceRegistration<Members> {
   return {
     namespace: CUSTOM_NAMESPACE,
     owner: { staff: 'member_custom_field' },
-    limits: [hostSwitch(limitService, 'limitCustomFields'), operationalCeiling(getMaxDefinitions)],
-    accessPolicy: memberAccessPolicy,
+    limits: [hostSwitch(limitService, 'limitCustomFields')],
+    access: CUSTOM_FIELDS_ACCESS,
   };
 }
 
-const EVERY_FIELD: Grant = { fields: 'all' };
-
 /**
- * What each caller can read: staff and Ghost itself can read every custom field, and a member
- * can read the ones whose member access is set to read or write.
+ * Staff, integrations and Ghost itself read and write every custom field. Members get nothing
+ * from the namespace: each field stores what its member may do, which the publisher sets per
+ * field. Apps and anonymous requests get nothing.
  */
-const READABLE: Record<Caller, Grant> = {
-  admin: EVERY_FIELD,
-  internal: EVERY_FIELD,
-  members: { fields: 'by member access', levels: [MEMBER_ACCESS.read, MEMBER_ACCESS.write] },
-};
-
-/**
- * What each caller can write: a member can write only the custom fields whose member access
- * is set to write.
- */
-const WRITABLE: Record<Caller, Grant> = {
-  admin: EVERY_FIELD,
-  internal: EVERY_FIELD,
-  members: { fields: 'by member access', levels: [MEMBER_ACCESS.write] },
-};
-
-/** The custom namespace's access policy, which depends on each field's member access setting. */
-export const memberAccessPolicy: AccessPolicy<Caller> = {
-  read: (caller) => READABLE[caller],
-  write: (caller) => WRITABLE[caller],
+export const CUSTOM_FIELDS_ACCESS: Access<Members> = {
+  staff: 'write',
+  integration: 'write',
+  internal: 'write',
 };
 
 /**
@@ -72,45 +44,5 @@ function hostSwitch(
     kind: 'availability',
     isAvailable: () => limitService.isDisabled(name) !== true,
     refuse: () => limitService.errorIfWouldGoOverLimit(name),
-  };
-}
-
-/**
- * A safeguard against the database load unbounded fields would create, not a pricing or
- * packaging limit, so it applies wherever custom fields are available. It counts the
- * publisher's fields alone, as each namespace states its own limits.
- *
- * Both active and archived fields count: an archived field still occupies a row and still
- * carries its members' values, so archiving alone frees no space. Deleting an archived field
- * is what releases a slot.
- */
-function operationalCeiling(getMax: () => number): CountLimit {
-  return {
-    kind: 'count',
-    async assertRoom(held, adding) {
-      const max = getMax();
-      if (held + adding <= max) {
-        return;
-      }
-
-      // Two different situations reach here and they need different advice. At or over the
-      // ceiling there is nothing to do but free a slot. With slots still free the request was
-      // simply too big, and telling that operator to delete something is wrong: they have
-      // room, just not this much.
-      const remaining = max - held;
-      const advice =
-        remaining > 0
-          ? `You can add ${remaining} more.`
-          : 'Delete a field you no longer need to make room.';
-
-      throw new errors.HostLimitError({
-        message: `Custom fields are limited to ${max} per site. ${advice}`,
-        code: 'CUSTOM_FIELDS_LIMIT_REACHED',
-        // `requested` is carried alongside the limit-service shape so a batch rejection is
-        // self-describing: without it a client sees free slots and a refusal, and has to
-        // re-derive its own payload size to explain why.
-        errorDetails: { limit: max, total: held, requested: adding },
-      });
-    },
   };
 }

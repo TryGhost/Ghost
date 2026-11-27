@@ -74,16 +74,17 @@ function extractGiftToken(input) {
   return input.trim();
 }
 
+/**
+ * The metadata keys Ghost sets on the Checkout sessions it creates, which the Stripe webhook reads
+ * to tell which site created a session, what kind of checkout it is and how its buyer can sign in.
+ * A buyer's request can't set them.
+ */
 const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
   'ghost_donation',
   'ghost_gift',
   'ghost_gift_id',
   'ghost_site_uuid',
   'ghostSignupContext',
-  'gift_token',
-  'tier_id',
-  'cadence',
-  'duration',
 ]);
 
 function removeReservedCheckoutMetadata(metadata) {

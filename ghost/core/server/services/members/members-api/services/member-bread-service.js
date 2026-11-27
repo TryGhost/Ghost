@@ -1,6 +1,9 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const { adminWriteOrigin } = require('../../../members-metafields');
+const { adminWriteOrigin, callerOf } = require('../../../members-metafields');
+
+/** @type {import('../../../members-metafields').Caller} */
+const INTERNAL = { kind: 'internal' };
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
@@ -485,7 +488,7 @@ module.exports = class MemberBREADService {
     }
 
     // Planned before the member is touched, so a bad value refuses the whole request.
-    const writes = await this.metafieldValues.planWrite(metafields, 'admin');
+    const writes = await this.metafieldValues.planWrite(metafields, callerOf(options.context));
     if (writes.length === 0) {
       return null;
     }
@@ -524,7 +527,13 @@ module.exports = class MemberBREADService {
     });
   }
 
-  async add(data, options) {
+  /**
+   * @param {object} data
+   * @param {object} [allOptions]
+   * @param {import('../../../members-metafields').Caller | null} [allOptions.metafieldsFor]
+   *   Who the member added is read back for, as `read` takes it.
+   */
+  async add(data, { metafieldsFor = null, ...options } = {}) {
     const metafields = await this.planStaffMetafields(data, options);
 
     if (!this.stripeService.configured && (data.comped || data.stripe_customer_id)) {
@@ -617,10 +626,16 @@ module.exports = class MemberBREADService {
       await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
     }
 
-    return this.read({ id: model.id }, { ...options, metafieldsFor: 'admin' });
+    return this.read({ id: model.id }, { ...options, metafieldsFor });
   }
 
-  async edit(data, options) {
+  /**
+   * @param {object} data
+   * @param {object} [allOptions]
+   * @param {import('../../../members-metafields').Caller | null} [allOptions.metafieldsFor]
+   *   Who the member edited is read back for, as `read` takes it.
+   */
+  async edit(data, { metafieldsFor = null, ...options } = {}) {
     delete data.last_seen_at;
 
     const metafields = await this.planStaffMetafields(data, options);
@@ -677,7 +692,7 @@ module.exports = class MemberBREADService {
       }
     }
 
-    return this.read({ id: model.id }, { ...options, metafieldsFor: 'admin' });
+    return this.read({ id: model.id }, { ...options, metafieldsFor });
   }
 
   /**
@@ -703,11 +718,12 @@ module.exports = class MemberBREADService {
       const model = await this.memberRepository.update(data, { ...options, transacting });
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
 
-      const before = await this.readMetafieldsForMember(model.id, 'admin', { transacting });
+      // Read as Ghost itself, as the change it finds is what the site's webhooks are sent.
+      const before = await this.readMetafieldsForMember(model.id, INTERNAL, { transacting });
       for (const { writes, origin } of plans) {
         await this.metafieldValues.applyWrite(model.id, writes, origin, transacting);
       }
-      const after = await this.readMetafieldsForMember(model.id, 'admin', { transacting });
+      const after = await this.readMetafieldsForMember(model.id, INTERNAL, { transacting });
       if (!_.isEqual(before, after)) {
         // Metafields aren't member columns, so the model doesn't keep their old values.
         model._previousMetafields = before;
@@ -760,7 +776,7 @@ module.exports = class MemberBREADService {
       );
     }
 
-    return this.read({ id: memberId }, { metafieldsFor: 'admin' });
+    return this.read({ id: memberId }, { metafieldsFor: callerOf(context) });
   }
 
   /**
@@ -782,7 +798,7 @@ module.exports = class MemberBREADService {
 
     await this.memberRepository.saveCommenting(memberId, updated, 'commenting_enabled', context);
 
-    return this.read({ id: memberId }, { metafieldsFor: 'admin' });
+    return this.read({ id: memberId }, { metafieldsFor: callerOf(context) });
   }
 
   async logout(options) {
@@ -845,7 +861,7 @@ module.exports = class MemberBREADService {
     const metafieldsByMember = options.includeMetafields
       ? await this.readMetafieldsForMembers(
           page.data.map((model) => model.id),
-          'admin',
+          callerOf(options.context),
         )
       : null;
 

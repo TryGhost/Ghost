@@ -22,6 +22,9 @@ describe('the bridge entry point', () => {
       'HELLO_MESSAGE_TYPE',
       'HOST_ERROR_CODES',
       'HelloMessageSchema',
+      'OVERLAY_FRAME_NAME',
+      'OVERLAY_TINTS',
+      'OverlayOptionsSchema',
       'PathMoveSchema',
       'PlaceSchema',
       'START_TIMEOUT_MS',
@@ -33,8 +36,10 @@ describe('the bridge entry point', () => {
       'isConnectMessage',
       'isContainedPath',
       'isFetchResponse',
+      'isLayout',
       'isRecord',
       'isReservedRequestHeader',
+      'isSafeArea',
       'isStartContext',
       'isTheme',
       'methodAllowsBody',
@@ -54,5 +59,6 @@ describe('the bridge entry point', () => {
     expectTypeOf<AppExports>().toHaveProperty('start');
     expectTypeOf<AppExports>().toHaveProperty('themeChanged');
     expectTypeOf<AppExports>().toHaveProperty('pathChanged');
+    expectTypeOf<AppExports>().toHaveProperty('layoutChanged');
   });
 });

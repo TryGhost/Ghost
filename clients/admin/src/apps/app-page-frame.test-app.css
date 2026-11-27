@@ -1,0 +1,8 @@
+@import '@tryghost/shade/styles.css';
+
+@source '../../../shade/src/**/*.{ts,tsx}';
+@source './app-page-frame.test-app.tsx';
+
+html {
+  font-size: 62.5%;
+}

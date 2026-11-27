@@ -18,7 +18,7 @@ once the type has settled in. Why it goes in this order is explained in
    Ghost(Pro) servers have picked it up, move the flag from `PRIVATE_FEATURES` to `GA_FEATURES`
    in Ghost's [`labs.js`](../../../../ghost/core/shared/labs.js), and remove its toggle from
    Admin's
-   [`private-features.tsx`](../../../../apps/admin/src/settings/advanced/labs/private-features.tsx).
+   [`private-features.tsx`](../../../../clients/admin/src/settings/advanced/labs/private-features.tsx).
    The type keeps its entry in `FIELD_TYPE_FLAGS`. Self-hosted sites get the type in the next
    public release, with Admin and Ghost together. Don't do this while the manifest still holds
    the flag at a percentage: each Ghost(Pro) server offers the type to every site once it runs

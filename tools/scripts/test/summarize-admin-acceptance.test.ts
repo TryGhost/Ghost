@@ -28,7 +28,7 @@ const file = (
   assertions: AssertionResult[],
   extra: Partial<TestFileResult> = {},
 ): TestFileResult => ({
-  name: `/home/runner/work/Ghost/Ghost/apps/admin/${name}`,
+  name: `/home/runner/work/Ghost/Ghost/clients/admin/${name}`,
   startTime: 1000,
   endTime: 5000,
   status: 'passed',

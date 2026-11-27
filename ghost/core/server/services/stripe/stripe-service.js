@@ -4,10 +4,7 @@ const StripeAPI = require('./stripe-api');
 const { WebhookController } = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const { StripeLiveEnabledEvent, StripeLiveDisabledEvent } = require('./events');
-const SubscriptionEventService = require('./services/webhook/subscription-event-service');
-const InvoiceEventService = require('./services/webhook/invoice-event-service');
-const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
-const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
+const { webhookCommands } = require('./webhook/commands');
 const memberWelcomeEmails = require('../member-welcome-emails').default;
 const metafields = require('../members-metafields');
 
@@ -83,13 +80,13 @@ module.exports = class StripeService {
       settingsCache,
     });
 
-    const subscriptionEventService = new SubscriptionEventService({
+    const subscriptionDeps = {
       get memberRepository() {
         return membersService.api.members;
       },
-    });
+    };
 
-    const invoiceEventService = new InvoiceEventService({
+    const invoiceDeps = {
       api,
       get memberRepository() {
         return membersService.api.members;
@@ -100,28 +97,13 @@ module.exports = class StripeService {
       get productRepository() {
         return membersService.api.productRepository;
       },
-    });
+    };
 
-    const checkoutSessionEventService = new CheckoutSessionEventService({
+    const subscriptionCheckoutDeps = {
       api,
       tracking,
       get memberRepository() {
         return membersService.api.members;
-      },
-      get productRepository() {
-        return membersService.api.productRepository;
-      },
-      get eventRepository() {
-        return membersService.api.events;
-      },
-      get donationRepository() {
-        return donationService.service;
-      },
-      get giftService() {
-        return giftService.service;
-      },
-      get staffServiceEmails() {
-        return staffService.service.emails;
       },
       sendSignupEmail(email) {
         return membersService.api.sendEmailWithMagicLink({
@@ -145,22 +127,57 @@ module.exports = class StripeService {
       get memberBREADService() {
         return membersService.api.memberBREADService;
       },
-    });
+    };
 
-    const chargeRefundedEventService = new ChargeRefundedEventService({
+    const cardUpdateCheckoutDeps = {
+      api,
+      tracking,
+      get memberRepository() {
+        return membersService.api.members;
+      },
+    };
+
+    const giftCheckoutDeps = {
+      tracking,
       get giftService() {
         return giftService.service;
       },
+    };
+
+    const donationCheckoutDeps = {
+      tracking,
+      get memberRepository() {
+        return membersService.api.members;
+      },
+      get donationRepository() {
+        return donationService.service;
+      },
+      get staffServiceEmails() {
+        return staffService.service.emails;
+      },
+    };
+
+    const refundDeps = {
+      get giftService() {
+        return giftService.service;
+      },
+    };
+
+    const commands = webhookCommands({
+      subscription_checkout: subscriptionCheckoutDeps,
+      card_update_checkout: cardUpdateCheckoutDeps,
+      gift_checkout: giftCheckoutDeps,
+      donation_checkout: donationCheckoutDeps,
+      subscription: subscriptionDeps,
+      invoice: invoiceDeps,
+      refund: refundDeps,
     });
 
     const webhookController = new WebhookController({
       apiVersion: StripeAPI.API_VERSION,
       siteUuid,
       webhookManager,
-      subscriptionEventService,
-      invoiceEventService,
-      checkoutSessionEventService,
-      chargeRefundedEventService,
+      commands,
       tracking,
       sentry,
     });
@@ -169,7 +186,7 @@ module.exports = class StripeService {
     this.api = api;
     this.webhookManager = webhookManager;
     this.webhookController = webhookController;
-    this.checkoutSessionEventService = checkoutSessionEventService;
+    this.webhookCommands = commands;
     this.billingPortalManager = billingPortalManager;
     /** @private */
     this.ephemeralWebhook = false;

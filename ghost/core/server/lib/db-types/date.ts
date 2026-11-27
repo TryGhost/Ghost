@@ -44,6 +44,12 @@ export const toDatabaseDate = (date: DatabaseDate): string =>
 
 export const fromDatabaseDate = (date: DatabaseDate): Date => parseDatabaseDate(date).toJSDate();
 
+/**
+ * The time now as a datetime column holds it: to the second. A write that stores it can return it
+ * as a later read of the row will.
+ */
+export const databaseNow = (): Date => new Date(Math.floor(Date.now() / 1000) * 1000);
+
 // A zod codec for datetime columns: MySQL returns a Date, SQLite a string/number;
 // normalise to a Date on read and pass a Date through on write.
 // On SQLite, Knex binds the Date that DbDate passes through as epoch milliseconds (stored as

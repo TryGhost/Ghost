@@ -1,0 +1,182 @@
+import FeatureToggle from './feature-toggle';
+import LabItem from './lab-item';
+import React, { useEffect, useState } from 'react';
+import { List } from '@tryghost/shade/components';
+import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useLimiter } from '@tryghost/admin-x-framework/hooks';
+
+type Feature = {
+  title: string;
+  description: string;
+  flag: string;
+  limitName?: string;
+};
+
+const features: Feature[] = [
+  {
+    title: 'Automations',
+    description:
+      'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
+    flag: 'automations',
+  },
+  {
+    title: 'Automations lead magnets',
+    description: '"Label added" automation trigger.',
+    flag: 'automationsLeadMagnets',
+  },
+  {
+    title: 'Stripe Automatic Tax (private beta)',
+    description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
+    flag: 'stripeAutomaticTax',
+  },
+  {
+    title: 'Import Member Tier',
+    description: 'Enables tier to be specified when importing members',
+    flag: 'importMemberTier',
+  },
+  {
+    title: 'CSV Content Importer',
+    description: 'Enables importing posts from CSV files in the Universal Importer',
+    flag: 'csvContentImporter',
+  },
+  {
+    title: 'Admin 7 · Design',
+    description: 'Preview the floating Admin 7 sidebar and its navigation layout.',
+    flag: 'admin7Design',
+  },
+  {
+    title: 'Admin 7 · Mobile hardening',
+    description: 'Preview responsive Admin improvements, independently of Admin 7 · Design.',
+    flag: 'admin7Mobile',
+  },
+  {
+    title: 'Admin 7 · Customize from View site',
+    description:
+      'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
+    flag: 'admin7CustomizeFromViewSite',
+  },
+  {
+    title: 'Email Unique ID',
+    description:
+      'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
+    flag: 'emailUniqueid',
+  },
+  {
+    title: 'Updated theme translation (beta)',
+    description: 'Enable theme translation using i18next instead of the old translation package.',
+    flag: 'themeTranslation',
+  },
+  {
+    title: 'Picture Element',
+    description:
+      'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
+    flag: 'pictureImageFormats',
+  },
+  {
+    title: 'Get helper deduplication',
+    description:
+      'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
+    flag: 'getHelperDeduplication',
+  },
+  {
+    title: 'Paywall improvements',
+    description: 'Enables paywall usability, discoverability and email customization improvements',
+    flag: 'paywallImprovements',
+  },
+  {
+    title: 'Machine payments',
+    description:
+      'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
+    flag: 'machinePayments',
+  },
+  {
+    title: 'Apps',
+    description:
+      'Install and manage third-party apps that run on their own servers. Early and incomplete.',
+    flag: 'apps',
+  },
+  {
+    title: 'Editor presence polling',
+    description:
+      'Record which staff have a post open in the editor and poll for it. Shows nothing yet.',
+    flag: 'editorPresencePolling',
+  },
+  {
+    title: 'Editor presence indicators',
+    description:
+      'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
+    flag: 'editorPresence',
+  },
+  {
+    title: 'Editor lease',
+    description:
+      'Let one editor tab at a time edit a post or page. Others open it read-only and can take over. Needs editor presence polling.',
+    flag: 'editorLease',
+  },
+  {
+    title: 'Comments analytics',
+    description: 'Show comment volume, top posts and top commenters beside the comments list.',
+    flag: 'commentsAnalytics',
+  },
+  {
+    title: 'OAuth bridge',
+    description:
+      'Connect Stripe through account.ghost.org, which sends the connection back to Admin, instead of pasting a secure key.',
+    flag: 'oauthBridge',
+  },
+  {
+    title: 'Member segments',
+    description:
+      "Work in progress. Members filters that name a segment, Admin's segment screens and emailing posts to segments. So far, members filters in the Admin API can name segments.",
+    flag: 'memberSegments',
+  },
+  {
+    title: 'Grouped settings navigation',
+    description:
+      'Collapse the Settings navigation to its groups and show one group of settings at a time.',
+    flag: 'settingsGroupedNav',
+  },
+];
+
+const AlphaFeatures: React.FC = () => {
+  const limiter = useLimiter();
+  const [allowedFeatures, setAllowedFeatures] = useState<Feature[]>([]);
+
+  useEffect(() => {
+    const filterFeatures = async () => {
+      const filtered = [];
+      // Remove all features that are limited according to the subscribed plan (given these are beta, is optional to use)
+      for (const feature of features) {
+        if (feature.limitName && limiter?.isLimited(feature.limitName)) {
+          try {
+            await limiter.errorIfWouldGoOverLimit(feature.limitName);
+            filtered.push(feature);
+          } catch (error) {
+            if (!(error instanceof HostLimitError)) {
+              filtered.push(feature);
+            }
+          }
+        } else {
+          filtered.push(feature);
+        }
+      }
+      setAllowedFeatures(filtered);
+    };
+    void filterFeatures();
+  }, [limiter]);
+
+  return (
+    <List>
+      {allowedFeatures.map((feature) => (
+        <LabItem
+          key={feature.flag}
+          action={<FeatureToggle flag={feature.flag} label={feature.title} />}
+          detail={feature.description}
+          title={feature.title}
+        />
+      ))}
+    </List>
+  );
+};
+
+export default AlphaFeatures;

@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'fs-extra';
 import sinon from 'sinon';
+import configUtils from '../../../../utils/config-utils';
 
 // Loaded with require so the stubs land on the same instances storage.js requires
 const storage = require('../../../../../core/server/services/themes/storage');
@@ -18,6 +22,43 @@ describe('Themes storage', function () {
       await assert.rejects(storage.zipToFile('not-installed', '/tmp/not-installed.zip'), {
         name: 'BadRequestError',
       });
+    });
+  });
+
+  describe('content folder', function () {
+    const contentFolders: string[] = [];
+
+    const createContentFolderWithTheme = async (themeName: string) => {
+      const contentFolder = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-theme-storage-'));
+      contentFolders.push(contentFolder);
+      await fs.ensureDir(path.join(contentFolder, 'themes', themeName));
+
+      return contentFolder;
+    };
+
+    afterEach(async function () {
+      sinon.restore();
+      await configUtils.restore();
+      await Promise.all(contentFolders.splice(0).map((contentFolder) => fs.remove(contentFolder)));
+    });
+
+    it('uses the themes folder configured when each operation runs', async function () {
+      const firstContentFolder = await createContentFolderWithTheme('my-theme');
+      const secondContentFolder = await createContentFolderWithTheme('my-theme');
+      sinon.stub(list, 'get').returns({});
+      sinon.stub(list, 'del');
+      sinon.stub(settingsCache, 'get').withArgs('active_theme').returns('source');
+
+      configUtils.set('paths:contentPath', firstContentFolder);
+      await storage.destroy('my-theme');
+      assert.equal(await fs.pathExists(path.join(firstContentFolder, 'themes', 'my-theme')), false);
+
+      configUtils.set('paths:contentPath', secondContentFolder);
+      await storage.destroy('my-theme');
+      assert.equal(
+        await fs.pathExists(path.join(secondContentFolder, 'themes', 'my-theme')),
+        false,
+      );
     });
   });
 

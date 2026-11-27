@@ -13,8 +13,8 @@ interface ActionOf<K extends ActionKind> {
   context?: ExtraContext;
 }
 
-/** The context keys the row's own fields are stored under, which extra context can't replace. */
-type ReservedKey = 'primary_name' | 'action_name' | 'count';
+/** The context keys the row's own fields and the acting app are stored under, which extra context can't replace. */
+type ReservedKey = 'primary_name' | 'action_name' | 'count' | 'app_installation_id';
 
 type ExtraContext = Record<string, unknown> & { [key in ReservedKey]?: never };
 
@@ -72,19 +72,20 @@ export class ActionLog {
       actor_id: actor.id,
       actor_type: actor.type,
       event: row.event,
-      context: contextOf(row),
+      context: contextOf(row, context.appInstallationId),
       created_at: toDatabaseDate(new Date()),
     });
   }
 }
 
 // Only the fields that carry meaning are stored, as Bookshelf's action log does.
-function contextOf(row: ActionRow): string | null {
+function contextOf(row: ActionRow, appInstallationId: string | undefined): string | null {
   const context = {
     ...(row.primaryName === undefined ? {} : { primary_name: row.primaryName }),
     ...withoutReservedKeys(row.context),
     ...(row.actionName === undefined ? {} : { action_name: row.actionName }),
     ...(row.count === undefined ? {} : { count: row.count }),
+    ...(appInstallationId === undefined ? {} : { app_installation_id: appInstallationId }),
   };
   return Object.keys(context).length ? JSON.stringify(context) : null;
 }
@@ -93,6 +94,7 @@ const RESERVED_KEYS: ReadonlySet<string> = new Set<ReservedKey>([
   'primary_name',
   'action_name',
   'count',
+  'app_installation_id',
 ]);
 
 // The type already rules these out; this keeps an untyped caller from replacing them too.

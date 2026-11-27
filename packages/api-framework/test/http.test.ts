@@ -323,4 +323,57 @@ describe('HTTP', function () {
       shared.http(apiImpl)(req, res, next);
     });
   });
+
+  describe('routedMethod', function () {
+    it('names the pipeline method a handler runs, with its permissions', function () {
+      const ownCheck = () => Promise.resolve();
+      const controller = shared.pipeline(
+        {
+          docName: 'posts',
+          browse: { permissions: true, query: () => [] },
+          upload: { permissions: false, query: () => [] },
+          poll: { permissions: ownCheck, query: () => [] },
+          importCSV: { permissions: { docName: 'content_imports' }, query: () => [] },
+        },
+        {},
+      );
+
+      assert.deepEqual(shared.routedMethod(shared.http(controller.browse)), {
+        controller: controller.browse,
+        docName: 'posts',
+        method: 'browse',
+        permissions: true,
+      });
+      assert.equal(shared.routedMethod(shared.http(controller.upload))?.permissions, false);
+      assert.equal(shared.routedMethod(shared.http(controller.poll))?.permissions, ownCheck);
+      assert.deepEqual(shared.routedMethod(shared.http(controller.importCSV))?.permissions, {
+        docName: 'content_imports',
+      });
+    });
+
+    it('knows no method for a controller outside the pipeline', function () {
+      const outside = Object.assign(() => Promise.resolve(), {});
+      assert.deepEqual(shared.routedMethod(shared.http(outside)), {
+        controller: outside,
+        permissions: undefined,
+      });
+    });
+
+    it('knows a handler from http() of a method the API does not have', function () {
+      const handler = shared.http(undefined as never);
+
+      assert.deepEqual(shared.routedMethod(handler), {
+        controller: undefined,
+        permissions: undefined,
+      });
+    });
+
+    it('knows nothing of any other handler', function () {
+      assert.equal(
+        shared.routedMethod(() => {}),
+        undefined,
+      );
+      assert.equal(shared.routedMethod(undefined), undefined);
+    });
+  });
 });

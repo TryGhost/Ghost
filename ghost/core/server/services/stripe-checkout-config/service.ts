@@ -26,7 +26,7 @@ import {
 } from '@tryghost/metafield-types/identity';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RequestContext } from '../../lib/actor';
-import type { ActionLog } from '../../lib/action-log/action-log';
+import { StripeCheckoutConfigSaved, type OnStripeCheckoutConfigUpdated } from './changes';
 import { configRow, type ConfigRowSchema } from './codec';
 import {
   COLLECTED_NOUNS,
@@ -268,7 +268,7 @@ export type TierRequirements = Pick<TierRequirementsService, 'browse' | 'require
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
-  private actionLog: ActionLog;
+  private onStripeCheckoutConfigUpdated: OnStripeCheckoutConfigUpdated;
   private bindings: PortBinder;
   private fields: FieldReads;
   private requirements: () => TierRequirements;
@@ -276,14 +276,15 @@ export class StripeCheckoutConfigService {
 
   constructor({
     knex,
-    actionLog,
+    onStripeCheckoutConfigUpdated,
     bindings,
     fields,
     requirements,
     logging,
   }: {
     knex: Knex;
-    actionLog: ActionLog;
+    /** Called with each change a command makes, inside the command's transaction. */
+    onStripeCheckoutConfigUpdated: OnStripeCheckoutConfigUpdated;
     bindings: PortBinder;
     fields: FieldReads;
     /** Looked up on each use, as tiers are set up after the config. */
@@ -291,7 +292,7 @@ export class StripeCheckoutConfigService {
     logging: GhostLogger;
   }) {
     this.knex = knex;
-    this.actionLog = actionLog;
+    this.onStripeCheckoutConfigUpdated = onStripeCheckoutConfigUpdated;
     this.bindings = bindings;
     this.fields = fields;
     this.requirements = requirements;
@@ -390,8 +391,8 @@ export class StripeCheckoutConfigService {
   }
 
   /**
-   * Saves the parts of the config that the request includes, and records the save in the staff
-   * history.
+   * Saves the parts of the config that the request includes, and reports the save as an edit of
+   * the config.
    *
    * The tiers and fields the collected parts name are checked inside the same transaction as
    * the write, with their rows locked, so nothing can change between the check and the write.
@@ -415,37 +416,43 @@ export class StripeCheckoutConfigService {
     const now = toDatabaseDate(at);
 
     return ensureTransaction(executor, async (trx) => {
-      await assertTargets(trx, changes, this.fields);
-      const before = await this.requirements().browse(trx);
-
+      // The config row is locked before anything is read, so saves run one at a time and each
+      // reads what the save before it committed. A site that has never saved has no row to lock,
+      // so an empty one is inserted first. An existing row is left as it is: merging its own slug
+      // changes nothing, and unlike ignoring the conflict it takes the row's exclusive lock, so
+      // two saves can't each hold a shared lock while waiting for the other's.
       await trx(CONFIG_TABLE)
         .insert({
           id: new ObjectID().toHexString(),
           slug: CONFIG_SLUG,
           created_at: now,
           updated_at: now,
-          ...columns,
         })
         .onConflict('slug')
-        .merge({ ...columns, updated_at: now });
+        .merge(['slug']);
+      const saved = await trx(CONFIG_TABLE).where('slug', CONFIG_SLUG).forUpdate().first('id');
+      if (!saved) {
+        throw new errors.InternalServerError({
+          message: 'The Stripe Checkout config was not found right after inserting it.',
+        });
+      }
+
+      await assertTargets(trx, changes, this.fields);
+      const before = await this.requirements().browse(trx);
+      const previous = await this.readSaved(trx);
+
+      await trx(CONFIG_TABLE)
+        .where('id', saved.id)
+        .update({ ...columns, updated_at: now });
 
       for (const change of changes) {
         await this.writeTargets(trx, change, at);
       }
-      // An existing row keeps its id, so read the id back for the history entry.
-      const saved = await trx(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
-      if (!saved) {
-        throw new errors.InternalServerError({
-          message: 'The Stripe Checkout config was not found right after saving it.',
-        });
-      }
-      await this.actionLog.record(trx, context, {
-        resourceType: 'stripe_checkout_config',
-        event: 'edited',
-        resourceId: saved.id,
-        // The config has no name of its own, so the entry is named after what it configures.
-        primaryName: 'Stripe Checkout',
-      });
+      await this.onStripeCheckoutConfigUpdated(
+        trx,
+        context,
+        new StripeCheckoutConfigSaved(previous, await this.readSaved(trx), saved.id),
+      );
       return {
         changedRequirements: !isDeepStrictEqual(before, await this.requirements().browse(trx)),
       };

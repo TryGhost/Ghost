@@ -144,7 +144,7 @@ A service that is not listed is standard. It must be:
 
 - A directory with an `index.ts` root. The inventory test checks this.
 - A root that default-exports the
-  [kernel's `defineService` initializer](../../kernel/README.md#service-initialization).
+  [Support `defineService` initializer](../../support/README.md#service-initialization).
   See the [standard root contract](#standard-root-contract).
 - Free of hidden dependencies. See [dependency boundaries](#dependency-boundaries).
 
@@ -174,7 +174,7 @@ violations. Git history keeps the audit record. Move any extra it declares into
 The service checks apply to this directory only. A `defineService` root
 anywhere else gets none of them: no root-shape rule, no dependency rules and no
 boot checks. [Better Auth](../auth/better-auth/index.ts) is the one such root.
-It follows the [kernel contract](../../kernel/README.md#service-initialization)
+It follows the [Support contract](../../support/README.md#service-initialization)
 by review.
 
 Extending the checks to roots elsewhere is out of scope for this migration. It
@@ -200,7 +200,7 @@ Implementation files may import:
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
 Migrating a service does not require rewriting date logic that uses the
-[clock's](../../kernel/clock.ts) deprecated `moment` export.
+[clock's](../../support/clock.ts) deprecated `moment` export.
 
 Import allowlisted libraries directly where they are used; do not pass the
 library or its exports through the service's dependencies. Local use in the
@@ -342,7 +342,7 @@ Each legacy entry has a source-based `migration` assessment:
   this assessment, independently of the contract audit's `auditedAt`. Like every
   audit revision, it is a commit on main (see [Audit revisions](#audit-revisions)).
 
-These are migration estimates, not proof that the kernel must change or permission
+These are migration estimates, not proof that Support must change or permission
 to redesign a service. Recheck the evidence before implementation. An assessment
 neither completes the contract audit nor establishes test coverage or passing tests.
 
@@ -377,7 +377,7 @@ initializer migration. A straightforward dependency assessment does not establis
 an easy lifecycle migration, sufficient test coverage or passing tests. Existing
 `blockers` and contract evidence still apply. Recheck the assessment against current
 source before use. It is deleted with the entry when the service is migrated.
-Do not store report totals in the inventory or infer kernel requirements from
+Do not store report totals in the inventory or infer Support requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
 
@@ -489,7 +489,7 @@ initializer with `init`, `stop`, a guarded `service` getter, and optional typed 
 exports are allowed; other runtime exports belong in `extras` during migration.
 Implementation files may still export their classes and supporting contracts.
 
-Use the kernel helper directly, or default-export a local `const` created by it:
+Use the Support helper directly, or default-export a local `const` created by it:
 
 ```ts
 const extras = { isAvailable };
@@ -534,7 +534,7 @@ the comment and expect it to be questioned.
 
 Ghost's boot sequence owns service construction. A new service root must
 default-export the
-[kernel's `defineService` helper](../../kernel/README.md#service-initialization)
+[Support `defineService` helper](../../support/README.md#service-initialization)
 and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
 phase. Existing legacy roots keep their shape until migrated. Do not make the
 first request responsible for constructing the service.
@@ -551,7 +551,7 @@ whether the order between services is right; that needs its own boot test.
 
 With `defineService`, the service author supplies a `create` callback that constructs and returns a
 ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
-The kernel guide describes the full contract, including concurrent calls and
+The Support guide describes the full contract, including concurrent calls and
 explicit retries after failure.
 
 ### What `create` returns
@@ -584,7 +584,7 @@ together.
 ### Starting and stopping
 
 A service that owns listeners, timers or work to drain passes
-[lifecycle hooks](../../kernel/README.md#starting-and-stopping) instead of a
+[lifecycle hooks](../../support/README.md#starting-and-stopping) instead of a
 callback. `create` builds the instance once per process; `start` and `stop`
 acquire and release what it needs on each boot. [IndexNow](indexnow-ping/index.ts)
 subscribes in `start` and unsubscribes in `stop`:

@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { createAuth, type GhostAuth } from './create-auth';
 import { createSignInCodeEmail } from '../emails/sign-in-code';
 
@@ -17,6 +17,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const { GhostMailer } = require('../../lib/mail');
   const { t } = require('../../../shared/i18n');
   const { blogIcon } = require('../../lib/image');
+  const labs = require('../../../shared/labs');
 
   const auth = createAuth({
     db: knex,
@@ -55,6 +56,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
     }),
     getRequestOrigin: (headers) =>
       require('../session').default.getOriginOfRequest({ headers: Object.fromEntries(headers) }),
+    apps: labs.isSet('apps'),
   });
   // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
   await auth.$context;

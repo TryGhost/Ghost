@@ -146,41 +146,41 @@ Caddyfile
 /test-results
 
 # Admin
-/apps/admin/test-results/
+/clients/admin/test-results/
 
 # Admin Toolbar
-/apps/admin-toolbar/umd
+/clients/admin-toolbar/umd
 
 # Comments-UI
-/apps/comments-ui/umd
-/apps/comments-ui/playwright-report
+/clients/comments-ui/umd
+/clients/comments-ui/playwright-report
 /ghost/comments-ui/playwright/.cache/
-/apps/comments-ui/test-results/
+/clients/comments-ui/test-results/
 
 # Portal
-!/apps/portal/.env
-/apps/portal/umd
+!/clients/portal/.env
+/clients/portal/umd
 
 # Sodo-Search
-/apps/sodo-search/public/main.css
-/apps/sodo-search/umd
-/apps/sodo-search/.vitest-attachments
-/apps/sodo-search/test/acceptance/__screenshots__
+/clients/sodo-search/public/main.css
+/clients/sodo-search/umd
+/clients/sodo-search/.vitest-attachments
+/clients/sodo-search/test/acceptance/__screenshots__
 
 # Signup Form and local environments
-/apps/signup-form/umd
-/apps/signup-form/.env*.local
-/apps/signup-form/test-results/
-/apps/signup-form/playwright-report/
-/apps/signup-form/playwright/.cache/
+/clients/signup-form/umd
+/clients/signup-form/.env*.local
+/clients/signup-form/test-results/
+/clients/signup-form/playwright-report/
+/clients/signup-form/playwright/.cache/
 
 # Announcement-Bar
-/apps/announcement-bar/umd
-/apps/announcement-bar/.vitest-attachments
-/apps/announcement-bar/test/acceptance/__screenshots__
+/clients/announcement-bar/umd
+/clients/announcement-bar/.vitest-attachments
+/clients/announcement-bar/test/acceptance/__screenshots__
 
 # Build files
-/apps/*/build
+/clients/*/build
 /ghost/*/build
 /koenig/*/build
 /packages/**/build

@@ -35,7 +35,7 @@ COPY patches patches
 # closure — ghost itself, koenig/* (the kg-* packages), and tools/configs/* (the
 # shared eslint config, a dev dep in the graph).
 # --parents preserves each file's directory structure (plain COPY globs would
-# flatten them); node_modules is excluded by .dockerignore. apps/* and e2e
+# flatten them); node_modules is excluded by .dockerignore. clients/* and e2e
 # are deliberately omitted: nothing in ghost's closure lives there,
 # so leaving them out keeps this layer (and the install below) from
 # busting cache when an unrelated frontend package.json changes. `pnpm install
@@ -67,7 +67,7 @@ ENV pnpm_config_enable_global_virtual_store=false
 
 # Install ONLY ghost's workspace closure (its name is "ghost"; the trailing
 # "..." selects it plus every workspace dependency). Deps live in the shared
-# root store; non-selected projects (apps/*, e2e, ...) have their
+# root store; non-selected projects (clients/*, e2e, ...) have their
 # manifests present but are not installed.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline

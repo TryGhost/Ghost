@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 
 const run = promisify(execFile);
 const root = resolve(import.meta.dirname, '../../..');
-const admin = resolve(root, 'apps/admin');
+const admin = resolve(root, 'clients/admin');
 
 for (const configFile of ['vite.config.ts', 'vitest.acceptance.config.ts']) {
   it(`${configFile} resolves workspace source, package-local aliases and SVG components`, async () => {
@@ -54,22 +54,22 @@ for (const configFile of ['vite.config.ts', 'vitest.acceptance.config.ts']) {
     };
     assert.equal(
       result.ids['@tryghost/admin-x-framework'],
-      resolve(root, 'apps/admin-x-framework/src/index.ts'),
+      resolve(root, 'clients/admin-x-framework/src/index.ts'),
     );
     assert.equal(
       result.ids['@tryghost/admin-x-framework/api/config'],
-      resolve(root, 'apps/admin-x-framework/src/api/config.ts'),
+      resolve(root, 'clients/admin-x-framework/src/api/config.ts'),
     );
     assert.equal(
       result.ids['@tryghost/admin-x-framework/test/setup'],
-      resolve(root, 'apps/admin-x-framework/src/test/setup.ts'),
+      resolve(root, 'clients/admin-x-framework/src/test/setup.ts'),
     );
     assert.equal(
       result.ids['@tryghost/shade/components'],
-      resolve(root, 'apps/shade/src/components.ts'),
+      resolve(root, 'clients/shade/src/components.ts'),
     );
-    assert.equal(result.ids['@tryghost/shade/utils'], resolve(root, 'apps/shade/src/utils.ts'));
-    assert.equal(result.alias, resolve(root, 'apps/shade/src/lib/utils.ts'));
+    assert.equal(result.ids['@tryghost/shade/utils'], resolve(root, 'clients/shade/src/utils.ts'));
+    assert.equal(result.alias, resolve(root, 'clients/shade/src/lib/utils.ts'));
     assert.ok(result.react[0]);
     assert.ok(result.queries[0]);
     assert.equal(new Set(result.react).size, 1);
@@ -105,7 +105,7 @@ describe('compiled export compatibility', () => {
 
   it('retains compiled CommonJS exports and points every source condition at a source file', () => {
     for (const app of ['admin-x-framework', 'shade']) {
-      const pkgPath = resolve(root, 'apps', app, 'package.json');
+      const pkgPath = resolve(root, 'clients', app, 'package.json');
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
         exports: Record<string, string | Record<string, string>>;
       };

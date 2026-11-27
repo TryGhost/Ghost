@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { UsersService } from './users-service';
 
 // Runs in the services phase: the users and authentication endpoints read the ready instance

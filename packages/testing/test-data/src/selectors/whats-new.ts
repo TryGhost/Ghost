@@ -1,8 +1,8 @@
 /**
  * What's-new banner, menu and dialog selector strings, consumed by the admin
  * screen helpers and the e2e page objects. Source of truth:
- * apps/admin/src/whats-new plus the user-menu badges in
- * apps/admin/src/layout/app-sidebar/user-menu.tsx.
+ * clients/admin/src/whats-new plus the user-menu badges in
+ * clients/admin/src/layout/app-sidebar/user-menu.tsx.
  */
 
 // testids

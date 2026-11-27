@@ -159,8 +159,8 @@ test('unknown and dynamic dependencies make a candidate harder', () => {
 
 test('splits production by codebase area while preserving tests and tooling', () => {
   for (const file of [
-    'apps/admin/src/app.tsx',
-    'apps/portal/src/index.js',
+    'clients/admin/src/app.tsx',
+    'clients/portal/src/index.js',
     'koenig/koenig-lexical/src/index.ts',
     'koenig/kg-simplemde/src/js/simplemde.js',
     'koenig/kg-unsplash-selector/src/index.tsx',
@@ -177,10 +177,10 @@ test('splits production by codebase area while preserving tests and tooling', ()
   ]) {
     assert.equal(category(file), 'backend', file);
   }
-  assert.equal(category('apps/admin/src/app.test.tsx'), 'tests');
+  assert.equal(category('clients/admin/src/app.test.tsx'), 'tests');
   assert.equal(category('koenig/kg-default-nodes/test/index.test.ts'), 'tests');
   assert.equal(category('ghost/test/unit/frontend/public/private.test.js'), 'tests');
-  assert.equal(category('apps/portal/vite.config.js'), 'tooling');
+  assert.equal(category('clients/portal/vite.config.js'), 'tooling');
   assert.equal(category('koenig/koenig-lexical/scripts/build.js'), 'tooling');
 });
 
@@ -188,9 +188,9 @@ test('counts maintained fixture modules and classifies test support without hidi
   const root = mkdtempSync(path.join(os.tmpdir(), 'inventory-fixtures-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const included: [string, string][] = [
-    ['apps/admin/src/editor/engine/__fixtures__/after-load.test.tsx', 'tests'],
-    ['apps/admin/src/editor/engine/__fixtures__/index.ts', 'tests'],
-    ['apps/admin/test-utils/fixtures/query-client.tsx', 'tests'],
+    ['clients/admin/src/editor/engine/__fixtures__/after-load.test.tsx', 'tests'],
+    ['clients/admin/src/editor/engine/__fixtures__/index.ts', 'tests'],
+    ['clients/admin/test-utils/fixtures/query-client.tsx', 'tests'],
     ['ghost/core/server/data/schema/fixtures/fixture-manager.ts', 'backend'],
     ['ghost/core/server/data/schema/fixtures/index.ts', 'backend'],
     ['ghost/test/unit/server/data/schema/fixtures/fixture-manager.test.js', 'tests'],
@@ -267,32 +267,32 @@ test('classifies retired Ember tooling in revisions after its deletion', (t) => 
       message,
     );
   const tooling = [
-    'apps/ember-admin/ember-cli-build.js',
-    'apps/ember-admin/testem.js',
-    'apps/ember-admin/config/coverage.js',
-    'apps/ember-admin/config/deprecation-workflow.js',
-    'apps/ember-admin/config/environment.js',
-    'apps/ember-admin/config/targets.js',
-    'apps/ember-admin/lib/asset-delivery/index.js',
-    'apps/ember-admin/lib/check-node-version.js',
-    'apps/ember-admin/lib/ember-power-calendar-moment/index.js',
-    'apps/ember-admin/lib/ember-power-calendar-utils/index.js',
-    'apps/admin/vite-ember-assets.ts',
+    'clients/ember-admin/ember-cli-build.js',
+    'clients/ember-admin/testem.js',
+    'clients/ember-admin/config/coverage.js',
+    'clients/ember-admin/config/deprecation-workflow.js',
+    'clients/ember-admin/config/environment.js',
+    'clients/ember-admin/config/targets.js',
+    'clients/ember-admin/lib/asset-delivery/index.js',
+    'clients/ember-admin/lib/check-node-version.js',
+    'clients/ember-admin/lib/ember-power-calendar-moment/index.js',
+    'clients/ember-admin/lib/ember-power-calendar-utils/index.js',
+    'clients/admin/vite-ember-assets.ts',
   ];
   git('init');
   for (const file of [
     ...tooling,
-    'apps/ember-admin/app/services/config-manager.js',
-    'apps/ember-admin/lib/ember-power-calendar-utils/addon/index.js',
-    'apps/ember-admin/mirage/config/settings.js',
-    'apps/admin/src/config.ts',
+    'clients/ember-admin/app/services/config-manager.js',
+    'clients/ember-admin/lib/ember-power-calendar-utils/addon/index.js',
+    'clients/ember-admin/mirage/config/settings.js',
+    'clients/admin/src/config.ts',
   ]) {
     put(file);
   }
   git('add', '.');
   commit('Added historical fixtures');
   const beforeDeletion = inventoryAtRevision(root, 'HEAD');
-  git('rm', '-r', 'apps/ember-admin', 'apps/admin/vite-ember-assets.ts');
+  git('rm', '-r', 'clients/ember-admin', 'clients/admin/vite-ember-assets.ts');
   commit('Removed Ember fixtures');
 
   const historical = inventoryAtRevision(root, 'HEAD^');
@@ -321,26 +321,26 @@ test('separates developer tooling from runtime configuration', () => {
     'tools/configs/eslint-react/index.mjs',
     'tools/configs/vitest/index.mjs',
     'tools/configs/vite-public-app/index.mjs',
-    'apps/admin/vite.shared.ts',
-    'apps/admin/vite-backend-proxy.ts',
-    'apps/comments-ui/vite-plugin-strip-fingerprinting.ts',
+    'clients/admin/vite.shared.ts',
+    'clients/admin/vite-backend-proxy.ts',
+    'clients/comments-ui/vite-plugin-strip-fingerprinting.ts',
     'koenig/vitest.shared.ts',
     'packages/i18n/generate-context.js',
     'e2e/playwright.config.mjs',
     'e2e/eslint.config.js',
     'e2e/scripts/capture-stripe-fixtures.ts',
     'ghost/vitest.config.db.ts',
-    'apps/admin/vitest.acceptance.config.ts',
-    'apps/shade/.storybook/main.ts',
+    'clients/admin/vitest.acceptance.config.ts',
+    'clients/shade/.storybook/main.ts',
     'tools/scripts/release.js',
   ]) {
     assert.equal(category(file), 'tooling', file);
   }
   for (const file of [
-    'apps/admin/src/editor/card-config.ts',
-    'apps/admin/src/sentry/sentry-config.ts',
-    'apps/admin-toolbar/src/config.js',
-    'apps/admin-x-framework/src/api/config.ts',
+    'clients/admin/src/editor/card-config.ts',
+    'clients/admin/src/sentry/sentry-config.ts',
+    'clients/admin-toolbar/src/config.js',
+    'clients/admin-x-framework/src/api/config.ts',
   ]) {
     assert.equal(category(file), 'frontend', file);
   }
@@ -355,7 +355,7 @@ test('separates developer tooling from runtime configuration', () => {
   for (const file of [
     'tools/scripts/test/config.test.ts',
     'tools/configs/eslint/test/rules.test.ts',
-    'apps/ember-admin/mirage/config/settings.js',
+    'clients/ember-admin/mirage/config/settings.js',
     'e2e/data-factory/setup.ts',
     'packages/testing/test-data/src/fixtures/data/config.ts',
   ]) {

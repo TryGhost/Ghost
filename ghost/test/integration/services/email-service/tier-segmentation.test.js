@@ -14,7 +14,7 @@ const ObjectID = require('bson-objectid').default;
  * is dropped and no member appears in both — including a member holding multiple
  * tiers.
  *
- * The segments are resolved through the same Member.getFilteredCollectionQuery
+ * The segments are resolved through the same Member.resolveFilter and query()
  * path that batch-sending-service uses to select recipients, so this exercises
  * the real query engine (not the in-memory NQL queryJSON the web path uses).
  */
@@ -100,9 +100,10 @@ describe('Email tier segmentation (recipient partition)', function () {
    * fixtures never leak in.
    */
   async function membersForSegment(segment) {
-    const rows = await models.Member.getFilteredCollectionQuery({
+    const filter = await models.Member.resolveFilter({
       filter: `label:${LABEL}+(${segment})`,
-    }).select('members.email');
+    });
+    const rows = await filter.query().select('members.email');
     return new Set(rows.map((row) => row.email));
   }
 
