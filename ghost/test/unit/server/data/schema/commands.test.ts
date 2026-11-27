@@ -203,6 +203,23 @@ describe('schema commands', function () {
     });
   });
 
+  describe('a column default expression', function () {
+    // The database suites run on MySQL only, so this is what covers SQLite.
+    it('is left out on SQLite, which is being removed', function () {
+      const knex = createKnex({ client: 'better-sqlite3', useNullAsDefault: true });
+      try {
+        const ddl = commands
+          .createTable('test_table', knex, {
+            created_at: { type: 'dateTime', nullable: false, defaultExpression: 'now' },
+          })
+          .toString();
+        assert.doesNotMatch(ddl, /default/i);
+      } finally {
+        knex.destroy();
+      }
+    });
+  });
+
   // The database suites run on MySQL only, so this is what covers SQLite, which can only
   // declare a foreign key while creating the table.
   describe('a foreign key over several columns, on SQLite', function () {

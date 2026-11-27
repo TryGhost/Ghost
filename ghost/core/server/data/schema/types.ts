@@ -1,5 +1,6 @@
 // Shapes of the column and table definitions in schema.ts, as migration helpers accept them.
 
+import type { DefaultExpressionColumn } from './lib/column-defaults';
 import type { PatternColumn } from './lib/column-patterns';
 import type { ForeignKeyColumn, ForeignKeySpec } from './lib/foreign-keys';
 import type { SortableDefinition } from './lib/sortable';
@@ -45,10 +46,11 @@ export interface IntegerColumn extends BaseColumn<number> {
   unsigned?: boolean;
 }
 
-export interface DateTimeColumn extends BaseColumn<string> {
-  type: 'dateTime';
-  precision?: number;
-}
+export type DateTimeColumn = BaseColumn<string> &
+  DefaultExpressionColumn<'now'> & {
+    type: 'dateTime';
+    precision?: number;
+  };
 
 export interface BinaryColumn extends BaseColumn<never> {
   type: 'binary';

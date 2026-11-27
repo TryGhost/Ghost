@@ -15,6 +15,10 @@ import * as commands from '../../../core/server/data/schema/commands';
 import { isInDevelopmentTable } from '../../../core/server/data/schema/in-development';
 import { type ForeignKey, foreignKeysOf } from '../../../core/server/data/schema/lib/foreign-keys';
 import {
+  type DefaultExpression,
+  defaultExpressionSql,
+} from '../../../core/server/data/schema/lib/column-defaults';
+import {
   type PatternCheck,
   patternChecksOf,
 } from '../../../core/server/data/schema/lib/column-patterns';
@@ -32,6 +36,8 @@ type ColumnSpec = {
   fieldtype?: string;
   nullable?: boolean;
   defaultTo?: unknown;
+  defaultExpression?: DefaultExpression;
+  precision?: number;
   unsigned?: boolean;
   primary?: boolean;
   unique?: boolean;
@@ -46,6 +52,7 @@ type NormalizedColumn = {
   fieldtype?: string;
   nullable: boolean;
   defaultTo?: string;
+  defaultExpression?: string;
   unsigned?: true;
 };
 
@@ -68,6 +75,7 @@ type ColumnRow = {
   CHARACTER_MAXIMUM_LENGTH: number | null;
   IS_NULLABLE: 'YES' | 'NO';
   COLUMN_DEFAULT: string | null;
+  EXTRA: string;
 };
 
 type IndexRow = {
@@ -176,6 +184,9 @@ function normalizeSchema(tables: SchemaTables): NormalizedSchema {
       }
       if (Object.hasOwn(spec, 'defaultTo')) {
         column.defaultTo = normalizeDefault(spec.defaultTo);
+      }
+      if (spec.defaultExpression !== undefined) {
+        column.defaultExpression = defaultExpressionSql(spec.defaultExpression, spec.precision);
       }
       if (spec.unsigned) {
         column.unsigned = true;
@@ -299,7 +310,10 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
     } else if (row.DATA_TYPE === 'longtext') {
       column.fieldtype = 'long';
     }
-    if (row.COLUMN_DEFAULT !== null) {
+    // MySQL marks a default that is an expression rather than a value in EXTRA.
+    if (row.EXTRA.includes('DEFAULT_GENERATED')) {
+      column.defaultExpression = row.COLUMN_DEFAULT ?? '';
+    } else if (row.COLUMN_DEFAULT !== null) {
       column.defaultTo = row.COLUMN_DEFAULT;
     }
     if (row.COLUMN_TYPE.includes('unsigned')) {
