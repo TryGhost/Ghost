@@ -600,8 +600,8 @@ catalogs:
       specifier: 16.0.0
       version: 16.0.0
     hono:
-      specifier: 4.13.19
-      version: 4.13.19
+      specifier: 4.13.21
+      version: 4.13.21
     html-minifier-next:
       specifier: 8.11.0
       version: 8.11.0
@@ -2405,7 +2405,7 @@ importers:
         version: 2.29.0
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.29.0(hono@4.13.19)
+        version: 2.29.0(hono@4.13.21)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2528,7 +2528,7 @@ importers:
         version: 2.1.0
       hono:
         specifier: 'catalog:'
-        version: 4.13.19
+        version: 4.13.21
       html-to-text:
         specifier: 'catalog:'
         version: 10.0.1
@@ -2603,7 +2603,7 @@ importers:
         version: 0.6.6
       mppx:
         specifier: 'catalog:'
-        version: 0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.19))(express@4.22.3(supports-color@10.2.2))(hono@4.13.19)(viem@2.57.13)
+        version: 0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.21))(express@4.22.3(supports-color@10.2.2))(hono@4.13.21)(viem@2.57.13)
       multer:
         specifier: 2.5.0
         version: 2.5.0
@@ -12148,8 +12148,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.13.19:
-    resolution: {integrity: sha512-KmXvQAXwcAHV+muzbIwoJ23niEB5nMoDVr9WcRkU8mvjUECm/1+7v4Jgp7P7a+H6MLFrh+vXrGonGrGS+RQfkA==}
+  hono@4.13.21:
+    resolution: {integrity: sha512-h9UsguqfVk4kjUwLvQpHOmOaJpW10jz9lp8bvKUUa04wJG/fabKFBqXZ06D6LFaeKQZtUZRVeg0gfkTTEsX7Mw==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@7.0.2:
@@ -21848,11 +21848,11 @@ snapshots:
       - ethers
       - utf-8-validate
 
-  '@x402/hono@2.29.0(hono@4.13.19)':
+  '@x402/hono@2.29.0(hono@4.13.21)':
     dependencies:
       '@x402/core': 2.29.0
       '@x402/extensions': 2.29.0
-      hono: 4.13.19
+      hono: 4.13.21
     transitivePeerDependencies:
       - bufferutil
       - ethers
@@ -24659,7 +24659,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.13.19: {}
+  hono@4.13.21: {}
 
   hosted-git-info@7.0.2:
     dependencies:
@@ -26475,7 +26475,7 @@ snapshots:
 
   moment@2.31.0: {}
 
-  mppx@0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.19))(express@4.22.3(supports-color@10.2.2))(hono@4.13.19)(viem@2.57.13):
+  mppx@0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.21))(express@4.22.3(supports-color@10.2.2))(hono@4.13.21)(viem@2.57.13):
     dependencies:
       ox: 0.14.59
       structured-headers: 2.1.0
@@ -26483,9 +26483,9 @@ snapshots:
       zod: 4.6.7(patch_hash=011cbd2c390354e6d9b4a7c1d83ee357aec0ab419beb9a74d91587ce9b33c6a6)
     optionalDependencies:
       '@x402/core': 2.29.0
-      '@x402/hono': 2.29.0(hono@4.13.19)
+      '@x402/hono': 2.29.0(hono@4.13.21)
       express: 4.22.3(supports-color@10.2.2)
-      hono: 4.13.19
+      hono: 4.13.21
 
   mrmime@2.0.1: {}
 
