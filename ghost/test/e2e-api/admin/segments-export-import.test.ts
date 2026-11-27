@@ -14,6 +14,8 @@ type Segment = {
   filter: string;
   created_at: string;
   updated_at: string;
+  created_by: { id: string; name: string | null } | null;
+  updated_by: { id: string; name: string | null } | null;
 };
 type Setting = { key: string; value: unknown };
 type ExportData = { segments?: unknown[]; settings: Setting[] };
@@ -22,7 +24,12 @@ type Export = { db: [{ meta: { version: string }; data: ExportData }] };
 type Problem = { help: string; message: string; context: string };
 
 type ApiRequest = Promise<{
-  body: { segments: Segment[]; settings: Setting[]; problems: Problem[] } & Export;
+  body: {
+    segments: Segment[];
+    settings: Setting[];
+    problems: Problem[];
+    users: { id: string }[];
+  } & Export;
 }> & {
   body(payload: object): ApiRequest;
   attach(field: string, file: string): ApiRequest;
@@ -158,7 +165,11 @@ describe('Segments in a site export and import', function () {
     );
   });
 
-  it('adds each segment as new, created when it is imported and not edited since', async function () {
+  // The file holds the ids of the staff users who added and last edited each segment, which
+  // name nobody on another site, so an import records no staff user.
+  it('adds each segment as new, created by nobody when it is imported and not edited since', async function () {
+    const { body } = await agent.get('users/me/').expectStatus(200);
+    const ownerId = body.users[0].id;
     const vip = await add('VIP', 'label:vip');
     await rename(vip.id, 'Very important');
     // Earlier than the import can be, so the times in the file can be told from the import's.
@@ -172,6 +183,8 @@ describe('Segments in a site export and import', function () {
         name: 'Very important',
         created_at: '2020-01-01T00:00:00.000Z',
         updated_at: '2021-01-01T00:00:00.000Z',
+        created_by: ownerId,
+        updated_by: ownerId,
       },
     ]);
     await removeSegments();
@@ -183,6 +196,8 @@ describe('Segments in a site export and import', function () {
     assert.equal(imported.name, 'Very important');
     assertTimeSince(imported.created_at, importing);
     assert.equal(imported.updated_at, imported.created_at);
+    assert.equal(imported.created_by, null);
+    assert.equal(imported.updated_by, null);
   });
 
   // A version from before segments had a table imports them from the setting alone.

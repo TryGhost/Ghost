@@ -1418,6 +1418,14 @@ const schema = {
     created_at: { type: 'dateTime', nullable: false },
     // The time the segment was added until it is first edited.
     updated_at: { type: 'dateTime', nullable: false },
+    // The staff users who added and last edited the segment, null where no staff user did.
+    // Without a foreign key, as posts.published_by, so a deleted user's id stays. The lint rule
+    // against these columns points to the action log, but only administrators can read History,
+    // and every staff user who reads segments is shown who made one.
+    // eslint-disable-next-line no-restricted-syntax
+    created_by: { type: 'string', maxlength: 24, nullable: true },
+    // eslint-disable-next-line no-restricted-syntax
+    updated_by: { type: 'string', maxlength: 24, nullable: true },
   },
   members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

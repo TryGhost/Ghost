@@ -8,12 +8,17 @@ import type { Segment } from './models';
  */
 type SegmentRow = Omit<StoredRow<'segments'>, 'sort_order' | 'id'> & Pick<Segment, 'id'>;
 
-/** What an insert names. The collection adds the position. */
-type NewSegmentRow = Omit<NewRow<'segments'>, 'sort_order' | 'id'> & Pick<Segment, 'id'>;
+/** What an insert names, which includes who added the segment. The collection adds the position. */
+type NewSegmentRow = Omit<NewRow<'segments'>, 'sort_order' | 'id'> &
+  Pick<Segment, 'id'> &
+  Required<Pick<NewRow<'segments'>, 'created_by' | 'updated_by'>>;
 
-/** A segment's name and filter can change once it is stored, and an edit sets when it was edited. */
+/**
+ * A segment's name and filter can change once it is stored, and an edit sets when it was edited
+ * and by whom.
+ */
 type SegmentUpdate = Pick<RowUpdate<'segments'>, 'name' | 'filter'> &
-  Required<Pick<RowUpdate<'segments'>, 'updated_at'>>;
+  Required<Pick<RowUpdate<'segments'>, 'updated_at' | 'updated_by'>>;
 
 declare module 'knex/types/tables' {
   interface Tables {

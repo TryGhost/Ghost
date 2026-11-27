@@ -1,10 +1,19 @@
 import { z } from 'zod';
 import { ObjectIdSchema } from '../../lib/db-types/object-id';
-import { Segment, SegmentFilter, SegmentName, SegmentSlug } from './models';
+import { Segment, SegmentFilter, SegmentName, SegmentSlug, type SegmentStaffUser } from './models';
 import type { NewSegment, SegmentEdit } from './service';
 
 /** The segment a route names. A malformed id is rejected rather than looked up. */
 export const SegmentRoute = z.object({ id: ObjectIdSchema });
+
+// A staff user a segment records, as the API returns one. Names every field of one, as the
+// segment's resource below does.
+const StaffUserResource = z
+  .object({
+    id: z.string(),
+    name: z.string().nullable(),
+  } satisfies Record<keyof SegmentStaffUser, z.ZodType>)
+  .nullable();
 
 // A request can send a segment back as the API returned it, so the fields the server sets are
 // accepted and dropped. Any other field the schema doesn't name is rejected. A field added to a
@@ -13,6 +22,8 @@ const readOnlyFields = {
   id: z.string().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
+  created_by: StaffUserResource.optional(),
+  updated_by: StaffUserResource.optional(),
 } satisfies Record<Exclude<keyof Segment, keyof NewSegment>, z.ZodType>;
 
 /**
@@ -58,6 +69,8 @@ const SegmentResource = z.object({
   // Each is sent as an ISO 8601 time in UTC, as other resources' times are.
   created_at: z.date(),
   updated_at: z.date(),
+  created_by: StaffUserResource,
+  updated_by: StaffUserResource,
 } satisfies Record<keyof Segment, z.ZodType>);
 const SegmentsResponse = z.object({ segments: z.array(SegmentResource) });
 

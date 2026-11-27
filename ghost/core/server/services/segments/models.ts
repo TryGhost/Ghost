@@ -99,6 +99,10 @@ export function isParseableFilter(filter: SegmentFilter): boolean {
   }
 }
 
+/** A staff user who added or edited a segment. The name is null once the user has been deleted. */
+export const SegmentStaffUser = z.object({ id: z.string(), name: z.string().nullable() });
+export type SegmentStaffUser = z.infer<typeof SegmentStaffUser>;
+
 /** A named filter over members. */
 export const Segment = z.object({
   id: SegmentId,
@@ -116,5 +120,16 @@ export const Segment = z.object({
    * its name or its filter last changed.
    */
   updated_at: DbDate,
+  /**
+   * The staff user who added the segment. Null when no staff user did, as for a segment an import
+   * added, and for one added before segments recorded who added them, which includes every
+   * segment moved from the saved views setting.
+   */
+  created_by: SegmentStaffUser.nullable(),
+  /**
+   * The staff user who last edited the segment, as `updated_at` is when, and who added it until it
+   * is first edited. Null when no staff user made that change.
+   */
+  updated_by: SegmentStaffUser.nullable(),
 });
 export type Segment = z.infer<typeof Segment>;

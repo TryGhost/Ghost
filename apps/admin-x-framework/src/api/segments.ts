@@ -5,6 +5,9 @@ import { createMutation, createQuery } from '../utils/api/hooks';
 
 // Types
 
+/** A staff user a segment records. `name` is null once the user has been deleted. */
+const SegmentStaffUserSchema = z.object({ id: z.string(), name: z.string().nullable() });
+
 /** A saved member view: a named member filter. `filter` is NQL; `id` is opaque. */
 const SegmentSchema = z.object({
   id: z.string(),
@@ -16,6 +19,11 @@ const SegmentSchema = z.object({
   // had times leaves both out. The segment has been edited when `updated_at` is later.
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
+  // The staff users who added and last edited the segment, as `created_at` and `updated_at` are
+  // when. Null when no staff user did, as for an imported segment or one from before segments
+  // recorded them. A server from before then leaves both out.
+  created_by: SegmentStaffUserSchema.nullable().optional(),
+  updated_by: SegmentStaffUserSchema.nullable().optional(),
 });
 
 const SegmentsResponseSchema = z.object({
