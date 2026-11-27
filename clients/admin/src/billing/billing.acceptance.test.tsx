@@ -9,6 +9,7 @@ import {
   fakeAdminEndpoint,
   fakeEndpoint,
   fakeFrameOrigin,
+  fakeMembers,
   fakeTags,
   fakeUsers,
   renderAdminApp,
@@ -709,6 +710,28 @@ describe('Ghost(Pro) billing', () => {
     });
 
     await expect.poll(currentRoute).toBe('/pro');
+  });
+
+  it('opens a page that reads config when config fails to load, requesting it once more', async () => {
+    fakeMembers([]);
+    let configRequests = 0;
+    await renderAdminApp('/members', {
+      boot: {
+        browseConfig: {
+          response: () => {
+            configRequests += 1;
+            return { errors: [{ type: 'InternalServerError', message: 'Config unavailable' }] };
+          },
+          responseStatus: 500,
+        },
+      },
+    });
+
+    await expect.element(page.getByRole('heading', { name: 'Members' })).toBeVisible();
+    await settleRequests({ quietMs: 500 });
+
+    // The shell's request, then the one the page makes when it mounts.
+    expect(configRequests).toBe(2);
   });
 
   it('loads the hidden billing app at the size it will show at', async () => {
