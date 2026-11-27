@@ -6,7 +6,7 @@
 # Stripe API version, so the messages always have the same shape. By default this
 # script reproduces that: it makes Ghost's webhook URL reachable from the internet
 # through Tailscale, nothing else on the machine, and Ghost registers that URL with
-# Stripe at boot and removes it on shutdown. The site and Admin stay on localhost.
+# Stripe at boot and removes it on shutdown. The site and Admin stay local.
 #
 # With --listen, webhooks are instead forwarded by Stripe's command line tool. That
 # needs no Tailscale, but the tool delivers events at the Stripe account's default
@@ -14,13 +14,16 @@
 # sends. Use it only when the payload shape does not matter for your work.
 #
 # Usage: ./docker/stripe/with-stripe.sh <command> [--listen]
-# Example: ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev
+# Example: ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:dev:host
 
 set -euo pipefail
 
 FUNNEL_PORT=443
-GATEWAY_PORT=2368
 WEBHOOK_PATH=/members/webhooks/stripe
+# This checkout's Admin dev server hostname and port, assigned by tools/scripts/ghost-dev-env.ts
+node tools/scripts/ghost-dev-env.ts >/dev/null
+GATEWAY_HOSTNAME=${GHOST_DEV_HOSTNAME:-$(sed -n 's/^GHOST_DEV_HOSTNAME=//p' .ghost-dev.env)}
+GATEWAY_PORT=${GHOST_DEV_PORT:-$(sed -n 's/^GHOST_DEV_PORT=//p' .ghost-dev.env)}
 
 fail() {
     echo ""
@@ -52,7 +55,7 @@ set -- "${args[@]+"${args[@]}"}"
 
 [ "$#" -gt 0 ] || fail "no command given" \
     "Usage: $0 <command> [--listen]" \
-    "Example: $0 pnpm nx run ghost-monorepo:docker:dev"
+    "Example: $0 pnpm nx run ghost-monorepo:dev:host"
 
 if [ "$listen" = true ]; then
     # Forwarding needs a Stripe API key for the command line tool.
@@ -76,12 +79,13 @@ if [ "$listen" = true ]; then
     echo "--listen to receive webhooks exactly as production does."
 
     export COMPOSE_PROFILES="${COMPOSE_PROFILES:+$COMPOSE_PROFILES,}stripe"
+    export GHOST_URL="${GHOST_URL:-http://host.docker.internal:${GATEWAY_PORT}}"
+    # On Linux that name is the Docker bridge, which a loopback-only Admin dev server doesn't accept
+    if [ "$(uname -s)" = Linux ]; then
+        export GHOST_DEV_LISTEN="${GHOST_DEV_LISTEN:-0.0.0.0}"
+    fi
     exec "$@"
 fi
-
-FUNNEL_PORT=443
-GATEWAY_PORT=2368
-WEBHOOK_PATH=/members/webhooks/stripe
 
 # The macOS app bundle does not put its CLI on PATH.
 TAILSCALE=$(command -v tailscale || true)
@@ -172,9 +176,9 @@ export COMPOSE_PROFILES="$profiles"
 export DEV_COMPOSE_FILES="${DEV_COMPOSE_FILES:-} -f compose.dev.stripe-tunnel.yaml"
 
 echo "Ghost registers its webhook endpoint at boot once Stripe is connected in Ghost Admin (Settings > Tiers)."
-echo "Open the site and Admin on http://localhost:${GATEWAY_PORT} as usual."
-echo "Watch the ghost-dev logs: it warns if Stripe is not connected."
+echo "Open the site and Admin on http://${GATEWAY_HOSTNAME}:${GATEWAY_PORT} as usual."
+echo "Watch Ghost's logs: it warns if Stripe is not connected."
 
-# The wrapped command stops the containers before it returns, and Ghost removes its
-# Stripe registration during that stop. The funnel is closed after that, on exit.
+# The wrapped command stops Ghost before it returns, and Ghost removes its Stripe
+# registration during that stop. The funnel is closed after that, on exit.
 "$@"

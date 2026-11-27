@@ -1,0 +1,352 @@
+import React from 'react';
+import moment from 'moment-timezone';
+import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { isSafeHref } from './is-safe-href';
+import { parseMemberEvent } from './member-event';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useMemberActivityFeed } from '@tryghost/admin-x-framework/api/members';
+import { activityQueryOptions } from '@/members/activity/activity-filters';
+import { useActivitySettings } from '@/members/activity/use-activity-settings';
+import type { MemberActivityEvent } from '@tryghost/admin-x-framework/api/members';
+import type { ParsedMemberEvent } from './member-event';
+
+interface MemberActivityFeedProps {
+  // Optional so the create screen (/members/new) can render just the empty
+  // state without a member yet (there's no member id to fetch events for).
+  memberId?: string;
+  hasMultipleNewsletters: boolean;
+  hasMultipleTiers: boolean;
+  paidMembersEnabled: boolean;
+}
+
+/**
+ * Renders a Lucide icon for each event icon name
+ * (`event-signed-up`, `event-comment`, …). Intentional visual approximation
+ * — the full table lives behind the "View all member activity" link.
+ * Anything unmapped falls back to the generic
+ * `Activity` icon so a new server-side event type never crashes the row.
+ *
+ * A switch (rather than a `Record<string, React.ComponentType>` map) sidesteps
+ * a repo-wide type-mismatch: React 17 and 18 typings coexist in node_modules,
+ * and Lucide's `ForwardRefExoticComponent` type doesn't fit `React.ElementType`
+ * under that mix. Inline JSX resolves each icon at its use-site, which is what
+ * every other member-detail component already does.
+ */
+export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
+  const iconProps = { className: 'shrink-0 text-muted-foreground', size: 16 };
+  switch (iconName) {
+    case 'event-signed-up':
+      return <LucideIcon.UserPlus {...iconProps} />;
+    case 'event-logged-in':
+      return <LucideIcon.LogIn {...iconProps} />;
+    case 'event-subscriptions':
+      return <LucideIcon.CreditCard {...iconProps} />;
+    case 'event-canceled-subscription':
+      return <LucideIcon.CircleSlash {...iconProps} />;
+    case 'event-subscribed-to-email':
+      return <LucideIcon.MailPlus {...iconProps} />;
+    case 'event-unsubscribed-from-email':
+      return <LucideIcon.MailMinus {...iconProps} />;
+    case 'event-opened-email':
+      return <LucideIcon.MailOpen {...iconProps} />;
+    case 'event-received-email':
+      return <LucideIcon.Mail {...iconProps} />;
+    case 'event-sent-email':
+      return <LucideIcon.Send {...iconProps} />;
+    case 'event-email-delivery-failed':
+      return <LucideIcon.MailX {...iconProps} />;
+    case 'event-email-delivery-spam':
+      return <LucideIcon.MailWarning {...iconProps} />;
+    case 'event-email-changed':
+      return <LucideIcon.AtSign {...iconProps} />;
+    case 'event-metafields-changed':
+      return <LucideIcon.UserPen {...iconProps} />;
+    case 'event-comment':
+      return <LucideIcon.MessageSquare {...iconProps} />;
+    case 'event-click':
+      return <LucideIcon.MousePointerClick {...iconProps} />;
+    case 'event-more-like-this':
+      return <LucideIcon.ThumbsUp {...iconProps} />;
+    case 'event-less-like-this':
+      return <LucideIcon.ThumbsDown {...iconProps} />;
+    case 'event-gift':
+      return <LucideIcon.Gift {...iconProps} />;
+    default:
+      return <LucideIcon.Activity {...iconProps} />;
+  }
+};
+
+// admin7Design: each kind of event gets a color pair from Shade's event tokens.
+// Written out in full so Tailwind can see the classes. Anything not listed, like
+// profile changes and logins, stays neutral.
+const EMAIL_TONE =
+  'in-data-[admin7-design=true]:bg-event-email-surface in-data-[admin7-design=true]:[&_svg]:text-event-email-icon';
+const GAIN_TONE =
+  'in-data-[admin7-design=true]:bg-event-gain-surface in-data-[admin7-design=true]:[&_svg]:text-event-gain-icon';
+const LOSS_TONE =
+  'in-data-[admin7-design=true]:bg-event-loss-surface in-data-[admin7-design=true]:[&_svg]:text-event-loss-icon';
+const WARNING_TONE =
+  'in-data-[admin7-design=true]:bg-event-warning-surface in-data-[admin7-design=true]:[&_svg]:text-event-warning-icon';
+const ENGAGEMENT_TONE =
+  'in-data-[admin7-design=true]:bg-event-engagement-surface in-data-[admin7-design=true]:[&_svg]:text-event-engagement-icon';
+const GIFT_TONE =
+  'in-data-[admin7-design=true]:bg-event-gift-surface in-data-[admin7-design=true]:[&_svg]:text-event-gift-icon';
+
+const EVENT_TONES: Record<string, string> = {
+  'event-received-email': EMAIL_TONE,
+  'event-opened-email': EMAIL_TONE,
+  'event-sent-email': EMAIL_TONE,
+  'event-signed-up': GAIN_TONE,
+  'event-subscribed-to-email': GAIN_TONE,
+  'event-subscriptions': GAIN_TONE,
+  'event-unsubscribed-from-email': LOSS_TONE,
+  'event-canceled-subscription': LOSS_TONE,
+  'event-email-delivery-failed': LOSS_TONE,
+  'event-email-delivery-spam': WARNING_TONE,
+  'event-comment': ENGAGEMENT_TONE,
+  'event-click': ENGAGEMENT_TONE,
+  'event-more-like-this': ENGAGEMENT_TONE,
+  'event-less-like-this': ENGAGEMENT_TONE,
+  'event-gift': GIFT_TONE,
+};
+
+/** "View all member activity →" link to the member's full activity feed. */
+const ViewAllLink: React.FC<{ memberId: string; className?: string }> = ({
+  memberId,
+  className = 'mt-3',
+}) => {
+  return (
+    <Button className={className} variant="ghost" asChild>
+      <a data-testid="member-activity-view-all" href={`#/members-activity?member=${memberId}`}>
+        View all member activity →
+      </a>
+    </Button>
+  );
+};
+
+const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';
+
+const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+
+/**
+ * Delivery/open/sent rows with `event.email` get a plain subject or "Email" label
+ * in the inline feed; the full activity page provides the preview.
+ */
+function getEmailLabel(email: unknown): string | undefined {
+  if (email && typeof email === 'object') {
+    const subject = (email as { subject?: string }).subject;
+    return subject ? `“${subject}”` : 'Email';
+  }
+  return undefined;
+}
+
+const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
+  // Unknown event types produce an empty action. Rather than shipping a
+  // ghost row with just an icon + timestamp when a new server-side event
+  // type appears, skip the row entirely.
+  if (!event.action) {
+    return null;
+  }
+
+  const emailLabel = getEmailLabel(event.email);
+  const hasObjectLink = event.object && (event.route || isSafeHref(event.url));
+  const hasEmailFallback = !hasObjectLink && emailLabel;
+
+  const relativeTime = event.timestamp
+    ? moment(event.timestamp).fromNow()
+    : // Silent misleading "a few seconds ago" from `moment(undefined)` is
+      // worse than an honest hyphen — the row still renders, just without
+      // a fake timestamp.
+      '—';
+
+  return (
+    <div
+      className="flex items-start gap-3 py-3 in-data-[admin7-design=true]:items-center in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
+      data-testid="member-activity-event"
+    >
+      <div
+        className={cn(
+          'flex size-8 shrink-0 items-center justify-center rounded-full bg-muted',
+          EVENT_TONES[event.icon],
+        )}
+      >
+        <EventIcon iconName={event.icon} />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="text-sm leading-snug in-data-[admin7-design=true]:text-md">
+          <span data-testid="member-activity-action">{capitalize(event.action)}</span>
+          {event.info && <span className="ml-1 text-muted-foreground">({event.info})</span>}
+          {hasObjectLink && (
+            <>
+              <span className="mx-1 text-muted-foreground">{event.join}</span>
+              {event.route ? (
+                // Internal Ghost route (hash-based). React
+                // Router only intercepts real `<Link>`s; a
+                // plain anchor + `#/...` hits the hash router.
+                <a className="hover:underline" href={event.route}>
+                  {event.object}
+                </a>
+              ) : (
+                <a
+                  className="hover:underline"
+                  // isSafeHref narrowed this to a real URL.
+                  href={event.url}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  {event.object}
+                </a>
+              )}
+            </>
+          )}
+          {hasEmailFallback && (
+            // A plain subject label in place of an email preview link.
+            <>
+              <span className="mx-1 text-muted-foreground">{event.join}</span>
+              <span className="text-muted-foreground">{emailLabel}</span>
+            </>
+          )}
+        </div>
+        {event.description && (
+          <div className="truncate text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+            {event.description}
+          </div>
+        )}
+        <div className="text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+          {relativeTime}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
+  memberId,
+  hasMultipleNewsletters,
+  hasMultipleTiers,
+  paidMembersEnabled,
+}) => {
+  const admin7Design = useFeatureFlag('admin7Design');
+  // Cap the inline feed to 5 events. Anything beyond that lives
+  // behind the "View all" link. On the create screen there's no memberId
+  // to query against, so disable the fetch entirely — an unsaved member has
+  // no events by definition.
+  // Leaves out the same events the member's full activity page does, so following
+  // "View all" never shows a different set of events.
+  const { settingsQuery, activitySettings } = useActivitySettings();
+  const { excludedEvents } = activityQueryOptions({
+    settings: activitySettings,
+    memberId,
+    excluded: null,
+  });
+  // Waits for settings rather than asking twice. If they fail to load it still asks, with
+  // the defaults: the preview may then include newsletter or comment events a site has
+  // turned off, where the full page shows an error instead, but that beats a preview
+  // stuck showing no activity.
+  const { data, isLoading: feedLoading } = useMemberActivityFeed(memberId ?? '', {
+    limit: '5',
+    enabled: !!memberId && !settingsQuery.isLoading,
+    excludedEvents,
+  });
+  const isLoading = settingsQuery.isLoading || feedLoading;
+  const rawEvents: MemberActivityEvent[] = data?.events ?? [];
+  const events = rawEvents.map((rawEvent) =>
+    parseMemberEvent(rawEvent, {
+      hasMultipleNewsletters,
+      hasMultipleTiers,
+      paidMembersEnabled,
+    }),
+  );
+  // Track duplicate composite keys as a defensive tie-break — if the server
+  // ever returns two events with the same id (or missing id), append the
+  // slot index so React's diff still gets a stable per-row identity.
+  const seen = new Set<string>();
+
+  // Create mode (`/members/new`) — no member id, no fetch, no "View all"
+  // link; only the empty-state copy via Shade's `EmptyIndicator`.
+  if (!memberId) {
+    return (
+      <section
+        aria-labelledby="member-activity-heading"
+        className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
+      >
+        <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
+          Activity
+        </h3>
+        <Card variant={admin7Design ? 'ruled' : 'outline'}>
+          {/* Same wrapper padding as the Subscriptions empty state
+                        (`member-subscriptions-section.tsx`) so both cards line
+                        up visually when they render side-by-side. */}
+          <CardContent className={admin7Design ? undefined : 'pt-6'}>
+            <div className="flex flex-col items-center gap-3 py-4">
+              <EmptyIndicator description={NEW_MEMBER_ACTIVITY_COPY} title="Activity">
+                <LucideIcon.Activity />
+              </EmptyIndicator>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
+  const showViewAll = !isLoading && events.length > 0;
+
+  return (
+    <section
+      aria-labelledby="member-activity-heading"
+      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-x-4">
+        <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
+          Activity
+        </h3>
+        {admin7Design && showViewAll && <ViewAllLink className="-mr-3" memberId={memberId} />}
+      </div>
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className="pt-3">
+          {isLoading ? (
+            // Held back like the loading spinners, so a quick feed never flashes skeletons
+            <div className="delayed-fade-in flex flex-col gap-3">
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+            </div>
+          ) : events.length === 0 ? (
+            <p
+              className="py-4 text-center text-sm text-muted-foreground"
+              data-testid="member-activity-empty"
+            >
+              No activity yet
+            </p>
+          ) : (
+            <div className="divide-y divide-border">
+              {events.map((event) => {
+                // Prefer the server-side event id. Fall back
+                // through timestamp+type+action, then append
+                // an increasing suffix to guarantee uniqueness
+                // even when two events collide on all of those
+                // (server tie-breaks same `created_at` events
+                // by id — this is a defensive backstop only).
+                const base = event.id || `${event.timestamp ?? '?'}-${event.icon}-${event.action}`;
+                let key = base;
+                let bump = 1;
+                while (seen.has(key)) {
+                  key = `${base}#${bump}`;
+                  bump += 1;
+                }
+                seen.add(key);
+                return <ActivityRow key={key} event={event} />;
+              })}
+            </div>
+          )}
+          {/* Only meaningful once there is activity to view — an empty
+                        feed has nothing for the link to lead to. */}
+          {!admin7Design && showViewAll && <ViewAllLink memberId={memberId} />}
+        </CardContent>
+      </Card>
+    </section>
+  );
+};
+
+export default MemberActivityFeed;

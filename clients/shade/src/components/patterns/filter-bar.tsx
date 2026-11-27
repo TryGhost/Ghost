@@ -1,0 +1,94 @@
+import React from 'react';
+import { Button, type ButtonProps } from '@/components/ui/button';
+import { Inline, type InlineProps } from '@/components/primitives/inline';
+import { FilterBarContext, useFilterBarContext } from '@/components/patterns/filter-bar-context';
+import { cn } from '@/lib/utils';
+import { useShade } from '@/providers/shade-context';
+
+type FilterBarProps = React.PropsWithChildren & {
+  className?: string;
+};
+
+/**
+ * FilterBar is a full-width horizontal row for active filters and related
+ * controls (clear, save view, etc.). It renders null when it has no children,
+ * so consumers can always mount it without conditional wrapping.
+ *
+ * Typical usage:
+ *   <FilterBar>
+ *     <Filters ... />
+ *     <FilterBar.Actions>
+ *       <FilterBar.Action variant="ghost">Clear</FilterBar.Action>
+ *       <FilterBar.Action variant="outline">Save view</FilterBar.Action>
+ *     </FilterBar.Actions>
+ *   </FilterBar>
+ */
+function FilterBarRoot({ className, children }: FilterBarProps) {
+  const { controlShape } = useShade();
+
+  if (React.Children.count(children) === 0) {
+    return null;
+  }
+
+  return (
+    <FilterBarContext.Provider value={true}>
+      <Inline
+        align="start"
+        className={cn(
+          'relative w-full [&>[data-slot=filter-bar-actions]]:static',
+          '-mt-1 rounded-control bg-filter-bar-background p-2 [&_[data-slot=filter-item]>*]:bg-background! [&_[data-slot=filter-item]>*:hover]:bg-filter-bar-item-hover! [&_[data-slot=filter-item]>*[data-state=open]]:bg-filter-bar-item-hover! [&_[data-slot=filters-add]]:bg-transparent! [&_[data-slot=filters-add]:hover]:bg-tab-active!',
+          className,
+        )}
+        data-control-shape={controlShape}
+        data-slot="filter-bar"
+        gap="sm"
+        justify="between"
+      >
+        {children}
+      </Inline>
+    </FilterBarContext.Provider>
+  );
+}
+
+const FilterBarActions = React.forwardRef<HTMLElement, InlineProps>(
+  ({ className, gap = 'sm', ...props }, ref) => (
+    <Inline
+      ref={ref}
+      className={cn('shrink-0 sm:absolute sm:top-0 sm:right-0', className)}
+      data-slot="filter-bar-actions"
+      gap={gap}
+      {...props}
+    />
+  ),
+);
+FilterBarActions.displayName = 'FilterBar.Actions';
+
+const FilterBarAction = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, size, variant, ...props }, ref) => {
+    const isInFilterBar = useFilterBarContext();
+
+    return (
+      <Button
+        ref={ref}
+        className={cn(
+          isInFilterBar && variant === 'outline' && 'bg-background',
+          isInFilterBar &&
+            variant === 'ghost' &&
+            'hover:bg-tab-active enabled:active:bg-tab-active',
+          className,
+        )}
+        size={size ?? (isInFilterBar ? 'sm' : undefined)}
+        variant={variant}
+        {...props}
+      />
+    );
+  },
+);
+FilterBarAction.displayName = 'FilterBar.Action';
+
+const FilterBar = Object.assign(FilterBarRoot, {
+  Actions: FilterBarActions,
+  Action: FilterBarAction,
+});
+
+export { FilterBar };

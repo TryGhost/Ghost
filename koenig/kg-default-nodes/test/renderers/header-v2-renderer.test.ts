@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/header-v2-renderer', function () {
     function getTestData(overrides = {}) {
@@ -29,6 +29,13 @@ describe('renderers/header-v2-renderer', function () {
         };
     }
 
+    // Values containing characters that are special in HTML and in CSS
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+    const badImage = 'https://example.org/it\'s "a" (header).jpg';
+    const encodedBadImage = 'https://example.org/it%27s%20%22a%22%20(header).jpg';
+    const badColor = 'red; width: 100%';
+
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('header', data, options);
     }
@@ -38,12 +45,12 @@ describe('renderers/header-v2-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide"
                     data-background-color="#000000">
@@ -90,7 +97,7 @@ describe('renderers/header-v2-renderer', function () {
             assert.equal(result.element.querySelector('.kg-header-card-button'), null);
         });
 
-        it('renders without subheader', function () {
+        it('renders without subheader', async function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '',
                 buttonEnabled: false,
@@ -98,7 +105,7 @@ describe('renderers/header-v2-renderer', function () {
                 subheader: ''
             }));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide"
                     style="background-color: #000000"
@@ -118,7 +125,7 @@ describe('renderers/header-v2-renderer', function () {
             `);
         });
 
-        it('renders with srcset', function () {
+        it('renders with srcset', async function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
                 backgroundImageWidth: 3840,
@@ -128,7 +135,7 @@ describe('renderers/header-v2-renderer', function () {
                 subheader: ''
             }));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide"
                     data-background-color="#000000">
@@ -152,21 +159,76 @@ describe('renderers/header-v2-renderer', function () {
                 </div>
             `);
         });
+
+        it('writes button text as text', function () {
+            const result = renderForWeb(getTestData({buttonText: badText}));
+            const link = createDocument(result.html).querySelector('.kg-header-card-button');
+
+            assert.equal(link?.textContent, badText);
+            assert.equal(link?.children.length, 0);
+        });
+
+        it('renders a button URL, background image and layout containing special characters', function () {
+            const result = renderForWeb(getTestData({buttonUrl: badUrl, backgroundImageSrc: badImage, layout: 'wide" x="<y>'}));
+            const document = createDocument(result.html);
+            const card = document.body.firstElementChild;
+            const image = document.querySelector('.kg-header-card-image');
+            const link = document.querySelector('.kg-header-card-button');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-background-color']);
+            assert.equal(card?.getAttribute('class'), 'kg-card kg-header-card kg-v2 kg-width-wide" x="<y> ');
+            assert.deepEqual(image?.getAttributeNames(), ['class', 'src', 'loading', 'alt']);
+            assert.equal(image?.getAttribute('src'), badImage);
+            assert.deepEqual(link?.getAttributeNames(), ['href', 'class', 'style', 'data-button-color', 'data-button-text-color']);
+            assert.equal(link?.getAttribute('href'), badUrl);
+        });
+
+        it('renders a srcset containing special characters', function () {
+            const result = renderForWeb(getTestData({backgroundImageSrc: '/content/images/2022/11/a"b <c>.jpg', backgroundImageWidth: 3840, backgroundImageHeight: 2160}));
+            const image = createDocument(result.html).querySelector('.kg-header-card-image');
+
+            assert.deepEqual(image?.getAttributeNames(), ['class', 'src', 'srcset', 'loading', 'alt']);
+            assert.equal(image?.getAttribute('src'), '/content/images/2022/11/a"b <c>.jpg');
+            assert.equal(image?.getAttribute('srcset')?.split(', ')[0], '/content/images/size/w600/2022/11/a"b <c>.jpg 600w');
+        });
+
+        it('ignores a colour that isn\'t in a supported format', function () {
+            const result = renderForWeb(getTestData({
+                backgroundImageSrc: '',
+                backgroundColor: badColor,
+                textColor: badColor,
+                buttonColor: 'rgb(255, 255, 255)',
+                buttonTextColor: badColor
+            }));
+            const document = createDocument(result.html);
+            const card = document.body.firstElementChild as HTMLElement;
+            const heading = document.querySelector('.kg-header-card-heading') as HTMLElement;
+            const link = document.querySelector('.kg-header-card-button') as HTMLElement;
+
+            assert.equal(card.style.length, 0);
+            assert.equal(card.getAttribute('data-background-color'), '');
+            assert.equal(heading.style.length, 0);
+            assert.equal(heading.getAttribute('data-text-color'), '');
+            assert.deepEqual(Array.from(link.style), ['background-color']);
+            assert.equal(link.getAttribute('data-button-color'), 'rgb(255, 255, 255)');
+            assert.equal(link.getAttribute('data-button-text-color'), '');
+        });
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div
                     class="kg-header-card kg-v2 kg-header-card-dark-bg"
                     style="
                         color: #ffffff;
                         text-align: center;
-                        background-image: url(https://example.com/image.jpg);
+                        background-image: url('https://example.com/image.jpg');
                         background-size: cover;
                         background-position: center center;
                 ">
@@ -178,7 +240,7 @@ describe('renderers/header-v2-renderer', function () {
                         style="
                             color: #ffffff;
                             text-align: center;
-                            background-image: url(https://example.com/image.jpg);
+                            background-image: url('https://example.com/image.jpg');
                             background-size: cover;
                             background-position: center center;
                     ">
@@ -245,14 +307,70 @@ describe('renderers/header-v2-renderer', function () {
             `);
         });
 
-        it('has expected button output for outline buttons', function () {
+        it('has expected button output for outline buttons', async function () {
             const result = renderForEmail(getTestData(), {design: {buttonStyle: 'outline'}, feature: {}});
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <td align="center" style="color: #ffffff !important; border: 1px solid #ffffff; border-color: currentColor; background-color: transparent;">
                     <a href="https://example.com/" style="color: #ffffff !important">The button</a>
                 </td>
             `);
+        });
+
+        it('renders a button URL and text containing special characters', function () {
+            const result = renderForEmail(getTestData({buttonUrl: badUrl, buttonText: badText}));
+            const link = createDocument(result.html).querySelector('table.btn a');
+
+            assert.deepEqual(link?.getAttributeNames(), ['href', 'style']);
+            assert.equal(link?.getAttribute('href'), badUrl);
+            assert.equal(link?.textContent, badText);
+            assert.equal(link?.children.length, 0);
+        });
+
+        it('renders a background image and alignment containing special characters', function () {
+            const badAlignment = 'center" x="<y>';
+            const result = renderForEmail(getTestData({backgroundImageSrc: badImage, alignment: badAlignment}));
+            const document = createDocument(result.html);
+            const card = document.body.firstElementChild as HTMLElement;
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card.getAttributeNames(), ['class', 'style']);
+            assert.equal(card.style.backgroundImage, `url("${encodedBadImage}")`);
+            assert.deepEqual(Array.from(document.querySelectorAll('h2, p')).map(el => el.parentElement?.getAttribute('align')), [badAlignment, badAlignment]);
+            assert.ok(result.html.includes('<v:fill src="https://example.org/it&#039;s &quot;a&quot; (header).jpg" color="#000000"'));
+        });
+
+        it('renders a split layout background image containing special characters', function () {
+            const result = renderForEmail(getTestData({backgroundImageSrc: badImage, layout: 'split'}));
+            const document = createDocument(result.html);
+            const cell = document.querySelector('td.kg-header-card-image') as HTMLElement;
+
+            assert.deepEqual(cell.getAttributeNames(), ['background', 'style', 'class', 'bgcolor', 'align']);
+            assert.equal(cell.getAttribute('background'), badImage);
+            assert.equal(cell.style.backgroundImage, `url("${encodedBadImage}")`);
+            assert.ok(result.html.includes('src="https://example.org/it&#039;s &quot;a&quot; (header).jpg" color="#000000"'));
+        });
+
+        it('ignores a colour that isn\'t in a supported format', function () {
+            const result = renderForEmail(getTestData({
+                backgroundImageSrc: '',
+                backgroundColor: badColor,
+                textColor: badColor,
+                buttonColor: badColor
+            }));
+            const document = createDocument(result.html);
+            const card = document.body.firstElementChild as HTMLElement;
+
+            assert.deepEqual(Array.from(card.style), ['text-align']);
+            assert.equal((document.querySelector('.kg-header-card-heading') as HTMLElement).style.length, 0);
+            assert.deepEqual(document.querySelector('table.btn td')?.getAttributeNames(), ['align']);
+        });
+
+        it('ignores an accent colour that isn\'t in a supported format', function () {
+            const result = renderForEmail(getTestData({backgroundImageSrc: '', backgroundColor: 'accent', accentColor: badColor}));
+            const card = createDocument(result.html).body.firstElementChild as HTMLElement;
+
+            assert.deepEqual(Array.from(card.style), ['color', 'text-align']);
         });
     });
 });

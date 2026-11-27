@@ -1,3 +1,4 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -16,11 +17,10 @@ describe('ButtonNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -74,7 +74,8 @@ describe('ButtonNode', function () {
             const buttonNodeDataset = buttonNode.getDataset();
 
             expect(buttonNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -112,15 +113,15 @@ describe('ButtonNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('creates a button card', editorTest(function () {
+        it('creates a button card', editorTest(async function () {
             const buttonNode = $createButtonNode(dataset);
             const result = buttonNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
 
-            assertPrettifiesTo(element.outerHTML, html`<div class="kg-card kg-button-card kg-align-center"><a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a></div>`);
+            await assertPrettifiesTo(element.outerHTML, html`<div class="kg-card kg-button-card kg-align-center"><a href="http://blog.com/post1" class="kg-btn kg-btn-accent">click me</a></div>`);
         }));
 
-        it('renders for email target', editorTest(function () {
+        it('renders for email target', editorTest(async function () {
             const buttonNode = $createButtonNode(dataset);
             const options = {
                 target: 'email'
@@ -129,7 +130,7 @@ describe('ButtonNode', function () {
             const element = result.element as HTMLElement;
             const output = element.innerHTML;
 
-            assertPrettifiesTo(output, html`
+            await assertPrettifiesTo(output, html`
                 <table class="kg-card kg-button-card" border="0" cellpadding="0" cellspacing="0">
                     <tbody>
                         <tr>
@@ -157,6 +158,7 @@ describe('ButtonNode', function () {
             const json = buttonNode.exportJSON();
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'button',
                 version: 1,
                 buttonUrl: dataset.buttonUrl,

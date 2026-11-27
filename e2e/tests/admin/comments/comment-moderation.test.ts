@@ -11,7 +11,7 @@ import { SettingsService } from '@/helpers/services/settings/settings-service';
 import { expect, test } from '@/helpers/playwright';
 
 // Deep-link filtering and the thread sidebar are covered by
-// apps/admin/src/comments/comments.acceptance.test.tsx.
+// clients/admin/src/comments/comments.acceptance.test.tsx.
 test.describe('Ghost Admin - Comment Moderation', () => {
   let postFactory: PostFactory;
   let memberFactory: MemberFactory;

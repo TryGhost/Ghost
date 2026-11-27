@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import MasonryService from '../../src/api/MasonryService';
 import { IUnsplashService, UnsplashService } from '../../src/api/UnsplashService';
 import { InMemoryUnsplashProvider } from '../../src/api/InMemoryUnsplashProvider';
+import { Photo } from '../../src/UnsplashTypes';
 import { PhotoUseCases } from '../../src/api/PhotoUseCase';
 import { fixturePhotos } from '../../src/api/unsplashFixtures';
 
@@ -52,5 +53,44 @@ describe('UnsplashService', () => {
     await unsplashService.loadNextPage();
     const photos = unsplashService.photos;
     expect(photos.length).toBe(29);
+  });
+
+  it('ignores results from a search that a newer one superseded', async function () {
+    const resolvers: Record<string, (photos: Photo[]) => void> = {};
+    const deferredProvider = new InMemoryUnsplashProvider();
+    deferredProvider.searchPhotos = (term: string) =>
+      new Promise<Photo[]>((resolve) => {
+        resolvers[term] = resolve;
+      });
+    const service = new UnsplashService(new PhotoUseCases(deferredProvider), new MasonryService(3));
+
+    const partialSearch = service.updateSearch('Germ');
+    const fullSearch = service.updateSearch('Germany');
+
+    resolvers.Germany([fixturePhotos[0]]);
+    expect(await fullSearch).toBe(true);
+
+    resolvers.Germ([fixturePhotos[1], fixturePhotos[2]]);
+    expect(await partialSearch).toBe(false);
+
+    expect(service.photos).toEqual([fixturePhotos[0]]);
+  });
+
+  it('does not append a next page that finished after a new search', async function () {
+    let resolveNextPage: (photos: Photo[]) => void = () => {};
+    const deferredProvider = new InMemoryUnsplashProvider();
+    deferredProvider.fetchNextPage = () =>
+      new Promise<Photo[]>((resolve) => {
+        resolveNextPage = resolve;
+      });
+    const service = new UnsplashService(new PhotoUseCases(deferredProvider), new MasonryService(3));
+
+    const nextPage = service.loadNextPage();
+    await service.updateSearch('train station');
+
+    resolveNextPage([fixturePhotos[1]]);
+    expect(await nextPage).toBe(false);
+
+    expect(service.photos.length).toBe(1);
   });
 });

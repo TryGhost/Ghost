@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
-import { JobsBackendBase, JobEnvelope, RecurringSchedule, JobsStartOptions } from '../src/base.ts';
+import {
+  JobsBackendBase,
+  DispatchEnvelope,
+  RecurringSchedule,
+  JobsStartOptions,
+} from '../src/base.ts';
 
 class TestBackend extends JobsBackendBase {
   start(_options: JobsStartOptions) {}
-  enqueue(_envelope: JobEnvelope) {}
-  scheduleRecurring(_envelope: JobEnvelope, _schedule: RecurringSchedule) {}
+  enqueue(_id: string, _envelope: DispatchEnvelope) {}
+  scheduleRecurring(_envelope: DispatchEnvelope, _schedule: RecurringSchedule) {}
   shutdown() {}
 }
 

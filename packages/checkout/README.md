@@ -1,32 +1,50 @@
 # @tryghost/checkout
 
-What Ghost's Stripe Checkout can collect, and where it lands.
+What Ghost's Stripe Checkout can collect, where it lands, and how the page can be styled.
 
-Three parties have to agree on this and none of them can import another's source:
+Four parties have to agree on this and none of them can import another's source:
 Ghost Core builds the checkout session and validates what a publisher saves, Admin
-offers the publisher only what that save would accept, and the end-to-end harness
-models Stripe. A divergence between the first two is a setting that looks saved and
-collects nothing.
+offers the publisher only what that save would accept, Portal asks a member changing
+tier for what the new tier requires, and the end-to-end harness models Stripe. A
+divergence between the first two is a setting that looks saved and collects nothing.
+
+Portal imports the requirements on their own, from `@tryghost/checkout/field-ports`,
+as the rest of the package is built out of zod, which Portal's bundle leaves out.
 
 ## What is in here
 
 - `STRIPE_ALLOWED_COUNTRIES` / `isStripeAllowedCountry` — the countries Stripe
   Checkout accepts in `shipping_address_collection`.
-- `STRIPE_PORTS` / `STRIPE_PORT` / `isStripePort` — the names Stripe returns
-  collected values under.
+- `CHECKOUT_PORTS` / `CHECKOUT_PORT` / `isCheckoutPort` — the fixed names a checkout
+  collects values under, such as `checkout.shipping.address`, whichever page asks.
+- `REQUIREMENTS` / `isRequirementName` / `portsOf` — what a tier can require its
+  members to give, by name, and the port each of its answers is collected under, by
+  the role it plays in the requirement.
+- `RequirementSettings` — what each requirement is set to beyond its tiers, such as
+  the countries shipping is limited to.
+- `ListedRequirement` / `ListedPort` — a requirement as tiers list it, each port with
+  the custom field it saves into while members can read it there, and its own
+  settings, each requirement in its own shape told apart by name. Ghost Core lists
+  them and Portal reads them, so both build against this one shape.
+- `matchRequirement` / `RequirementHandlers` — handles a requirement by its name,
+  given in its own shape, so a requirement added here has to be handled wherever
+  requirements are.
 - `PORT_FIELD` — what each port supplies, and the custom field type that can hold it.
-- `MAX_CHECKOUT_CUSTOM_FIELDS`, `MAX_CHECKOUT_LABEL_LENGTH`,
-  `CHECKOUT_ELIGIBLE_FIELD_TYPES` / `isCheckoutEligible` — the caps Stripe enforces
-  on checkout questions.
+- `STRIPE_CHECKOUT_BORDER_STYLES` / `STRIPE_CHECKOUT_FONTS` — what Checkout's
+  `branding_settings` accepts for the parts of the page a publisher can style.
+- `COLLECTED_PARTS` / `CHECKOUT_PART_SETTINGS` — what a checkout can ask the buyer
+  for, and each part's shape in the Admin API's checkout config, which previews take
+  too. Ghost Core and Admin each keep what they do with a part in a record keyed by
+  `COLLECTED_PARTS`, so a new part is a type error on both sides until each has its
+  entry.
 
 ## Measured, not read
 
-Every value here was established by `e2e/scripts/probe-stripe-constraints.ts` against
-the live API at Ghost's pinned version, because the published artefacts disagree with
-it: the OpenAPI spec carries no `maxItems` on `custom_fields` and states the
-`customer_update` rule only in prose, and the SDK's `AllowedCountry` union omits `SD`,
-which the API accepts. Re-probe before changing a value; do not read a new one off the
-documentation.
+Every Stripe value here except the branding values was established by
+`e2e/scripts/probe-stripe-constraints.ts` against the live API at Ghost's pinned
+version, because the published artefacts disagree with it: the SDK's `AllowedCountry`
+union omits `SD`, which the API accepts. Re-probe before changing a value; do not read
+a new one off the documentation.
 
 Two consequences of the country list are worth knowing before touching it. A code
 Stripe rejects fails the whole session create, so it is checked when a publisher
@@ -37,7 +55,7 @@ address. Any internal "all countries" representation has to be expanded to the f
 before the session is built.
 
 Two guards live outside this package, where the things they compare live:
-`ghost/core/test/unit/server/services/stripe/allowed-countries.test.ts` holds the list
+`ghost/test/unit/server/services/stripe/allowed-countries.test.ts` holds the list
 against the Stripe SDK that Ghost pins, and against the separate copy the end-to-end
 harness keeps. That copy is deliberate — a fake that shared this list could never catch
 Ghost offering a country Stripe refuses.
@@ -57,6 +75,6 @@ compiled `build/` output.
 
 This package is ESM-only and compiled with `tsc` (`module: nodenext`). Relative imports
 in `src/` must carry an explicit extension; write the real `.ts` one and `tsc` rewrites
-it to `.js` on emit. `ghost/core` is CommonJS and consumes this through `require(esm)`,
+it to `.js` on emit. `ghost` is CommonJS and consumes this through `require(esm)`,
 which forbids top-level `await` anywhere in the module graph — keep module-level
 initialization synchronous.

@@ -11,16 +11,17 @@ const fileProperties = {
     fileSize: {default: 0}
 } satisfies DecoratorNodePropertyMap;
 
-export type FileData = DecoratorNodeData<typeof fileProperties>;
+export type FileData = DecoratorNodeData<typeof fileProperties, true>;
 
 export class FileNode extends generateDecoratorNode({
     nodeType: 'file',
+    hasVisibility: true,
     properties: fileProperties,
     defaultRenderFn: renderFileNode
 }) {
     /* @override */
     exportJSON() {
-        const {src, fileTitle, fileCaption, fileName, fileSize} = this;
+        const {src, fileTitle, fileCaption, fileName, fileSize, visibility} = this;
         const isBlob = src && src.startsWith('data:');
 
         return {
@@ -30,7 +31,8 @@ export class FileNode extends generateDecoratorNode({
             fileTitle,
             fileCaption,
             fileName,
-            fileSize
+            fileSize,
+            visibility
         };
     }
 

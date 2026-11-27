@@ -1,0 +1,293 @@
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { MoreHorizontal } from 'lucide-react';
+import { useShade } from '@/providers/shade-context';
+import { tabSurfaceVariants } from '@/components/ui/tabs-variants';
+import { Button, type ButtonProps } from './button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu';
+
+interface PageMenuContextValue {
+  value?: string;
+  onSelect: (value: string) => void;
+}
+
+const PageMenuContext = React.createContext<PageMenuContextValue | null>(null);
+
+export interface PageMenuProps {
+  children: React.ReactNode;
+  responsive?: boolean;
+  /** The active item's value. Pass with `onValueChange` to control the menu, e.g. from the current route. */
+  value?: string;
+  /** The item active on first render when the menu manages its own selection. */
+  defaultValue?: string;
+  /** Called with the item's value when the user picks a different item. */
+  onValueChange?: (value: string) => void;
+  className?: string;
+}
+
+export interface PageMenuItemProps extends Omit<ButtonProps, 'children'> {
+  value: string;
+  children: React.ReactNode;
+}
+
+const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
+  (
+    { children, responsive = false, value, defaultValue, onValueChange, className, ...props },
+    ref,
+  ) => {
+    const { admin7Design } = useShade();
+    const [visibleCount, setVisibleCount] = React.useState(React.Children.count(children));
+    const [resizeKey, setResizeKey] = React.useState(0);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const measureRef = React.useRef<HTMLDivElement>(null);
+    const overflowTriggerRef = React.useRef<HTMLButtonElement>(null);
+
+    // Controlled when `value` is passed, otherwise tracks its own selection
+    // starting from `defaultValue` (same contract as Radix Tabs).
+    const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+    const isControlled = value !== undefined;
+    const activeValue = isControlled ? value : uncontrolledValue;
+    const measuredActiveValue = admin7Design ? activeValue : undefined;
+    const measuredVisibleCount = admin7Design ? visibleCount : undefined;
+
+    const handleSelect = React.useCallback(
+      (nextValue: string) => {
+        if (nextValue === activeValue) {
+          return;
+        }
+        if (!isControlled) {
+          setUncontrolledValue(nextValue);
+        }
+        onValueChange?.(nextValue);
+      },
+      [activeValue, isControlled, onValueChange],
+    );
+
+    const contextValue = React.useMemo(
+      () => ({ value: activeValue, onSelect: handleSelect }),
+      [activeValue, handleSelect],
+    );
+
+    React.useLayoutEffect(() => {
+      if (!responsive || !containerRef.current || !measureRef.current) {
+        setVisibleCount(React.Children.count(children));
+        return;
+      }
+
+      // Use requestAnimationFrame to ensure DOM is fully rendered
+      const calculateSizes = () => {
+        if (!containerRef.current || !measureRef.current) {
+          return;
+        }
+
+        const container = containerRef.current;
+        const measureContainer = measureRef.current;
+        const containerWidth = container.clientWidth;
+        const dropdownWidth = admin7Design
+          ? overflowTriggerRef.current?.getBoundingClientRect().width || 60
+          : 60;
+        const gap = admin7Design
+          ? Number.parseFloat(getComputedStyle(container).columnGap) || 0
+          : 6;
+
+        // Get all child elements from the measure container
+        const items = Array.from(measureContainer.children) as HTMLElement[];
+
+        // First, check if ALL items fit without any dropdown
+        let totalWidth = 0;
+        for (let i = 0; i < items.length; i++) {
+          const itemWidth = items[i].getBoundingClientRect().width;
+          const gapWidth = i > 0 ? gap : 0;
+          totalWidth += gapWidth + itemWidth;
+        }
+
+        // If all items fit with some buffer space, show them all
+        const safetyBuffer = 8; // Add 8px buffer for safe rendering
+        if (totalWidth <= containerWidth - safetyBuffer) {
+          setVisibleCount(items.length);
+          return;
+        }
+
+        // Otherwise, calculate how many fit with dropdown space reserved
+        let currentWidth = 0;
+        let count = 0;
+
+        for (let i = 0; i < items.length; i++) {
+          const itemWidth = items[i].getBoundingClientRect().width;
+          const gapWidth = i > 0 ? gap : 0;
+          const newWidth = currentWidth + gapWidth + itemWidth;
+
+          // Reserve space for dropdown (since we know not all items fit)
+          const totalNeededWidth = newWidth + (admin7Design ? gap : 0) + dropdownWidth;
+
+          if (totalNeededWidth <= containerWidth) {
+            currentWidth = newWidth;
+            count += 1;
+          } else {
+            break;
+          }
+        }
+
+        setVisibleCount(count);
+      };
+
+      requestAnimationFrame(calculateSizes);
+    }, [responsive, children, resizeKey, admin7Design, measuredActiveValue, measuredVisibleCount]);
+
+    React.useLayoutEffect(() => {
+      if (!responsive || !containerRef.current) {
+        return;
+      }
+
+      const resizeObserver = new ResizeObserver(() => {
+        // Trigger re-calculation by updating the resize key
+        setResizeKey((prev) => prev + 1);
+      });
+
+      resizeObserver.observe(containerRef.current);
+      return () => resizeObserver.disconnect();
+    }, [responsive]);
+
+    const childrenArray = React.Children.toArray(children);
+    const visibleItems = childrenArray.slice(0, visibleCount);
+    const hiddenItems = childrenArray.slice(visibleCount);
+    const hasOverflow = hiddenItems.length > 0;
+
+    // Find selected hidden item
+    const selectedHiddenItem = hiddenItems.find(
+      (child) => React.isValidElement(child) && child.props?.value === activeValue,
+    ) as React.ReactElement | undefined;
+
+    if (!responsive) {
+      return (
+        <PageMenuContext.Provider value={contextValue}>
+          <div ref={ref} className={cn('flex items-center gap-2', className)} {...props}>
+            {children}
+          </div>
+        </PageMenuContext.Provider>
+      );
+    }
+
+    return (
+      <PageMenuContext.Provider value={contextValue}>
+        {/* Hidden container to measure all items */}
+        <div
+          ref={measureRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute flex items-center gap-2 opacity-0"
+          style={{ top: -9999, left: -9999 }}
+        >
+          {children}
+        </div>
+
+        {/* Visible container */}
+        <div ref={containerRef} className="flex w-full min-w-0 flex-1 items-center gap-2">
+          <div ref={ref} className={cn('flex min-w-0 items-center gap-2', className)} {...props}>
+            {visibleItems}
+          </div>
+
+          {hasOverflow && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  ref={overflowTriggerRef}
+                  className={cn(
+                    'h-[30px] flex-shrink-0 px-3 py-2',
+                    admin7Design
+                      ? tabSurfaceVariants({ admin7Design })
+                      : selectedHiddenItem && 'bg-accent text-accent-foreground',
+                  )}
+                  {...(admin7Design
+                    ? { 'data-state': selectedHiddenItem ? 'active' : undefined }
+                    : {})}
+                  variant="ghost"
+                >
+                  {selectedHiddenItem ? (
+                    <span className="max-w-[100px] truncate">
+                      {selectedHiddenItem.props.children}
+                    </span>
+                  ) : (
+                    <MoreHorizontal className="size-6" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {hiddenItems.map((item, index) => {
+                  if (!React.isValidElement(item) || !item.props?.value) {
+                    return null;
+                  }
+
+                  return (
+                    <DropdownMenuItem
+                      key={item.props.value || index}
+                      className={cn(
+                        item.props.value === activeValue && 'bg-accent text-accent-foreground',
+                      )}
+                      disabled={item.props.disabled}
+                      onClick={(event) => {
+                        // Radix still fires onClick on disabled items and relies on CSS to block pointer clicks
+                        if (item.props.disabled) {
+                          return;
+                        }
+                        item.props.onClick?.(event);
+                        if (!event.defaultPrevented) {
+                          handleSelect(item.props.value);
+                        }
+                      }}
+                    >
+                      {item.props.children}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      </PageMenuContext.Provider>
+    );
+  },
+);
+
+PageMenu.displayName = 'PageMenu';
+
+const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
+  ({ children, value, className, onClick, ...props }, ref) => {
+    const pageMenu = React.useContext(PageMenuContext);
+    const { admin7Design } = useShade();
+    const isActive = pageMenu?.value === value;
+
+    return (
+      <Button
+        ref={ref}
+        aria-current={isActive ? 'page' : undefined}
+        className={cn(
+          'relative gap-1.5 px-3 text-control font-medium',
+          admin7Design
+            ? tabSurfaceVariants({ admin7Design })
+            : 'text-text-secondary hover:text-foreground focus-visible:ring-0 data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground dark:hover:bg-tab-hover dark:data-[state=active]:bg-tab-active dark:data-[state=active]:hover:bg-tab-active',
+          className,
+        )}
+        data-state={isActive ? 'active' : undefined}
+        variant="ghost"
+        onClick={(event) => {
+          onClick?.(event);
+          if (!event.defaultPrevented) {
+            pageMenu?.onSelect(value);
+          }
+        }}
+        {...props}
+      >
+        {children}
+      </Button>
+    );
+  },
+);
+
+PageMenuItem.displayName = 'PageMenuItem';
+
+export { PageMenu, PageMenuItem };

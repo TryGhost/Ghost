@@ -6,10 +6,10 @@
   "configurations": [
     {
       "args": ["run", "-c", "vitest.config.db.ts", "--project", "e2e-api"],
-      "cwd": "${workspaceFolder}/ghost/core",
+      "cwd": "${workspaceFolder}/ghost",
       "internalConsoleOptions": "openOnSessionStart",
       "name": "E2E API Tests",
-      "program": "${workspaceFolder}/ghost/core/node_modules/.bin/vitest",
+      "program": "${workspaceFolder}/ghost/node_modules/.bin/vitest",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "env": {

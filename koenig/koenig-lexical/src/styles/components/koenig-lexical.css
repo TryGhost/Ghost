@@ -175,9 +175,9 @@ em-emoji-picker {
 
 /* Table */
 .koenig-lexical table {
-    font-size: 1.75rem;
+    font-size: calc(1.75rem * var(--kg-font-body-scale, 1));
     margin: 0;
-    font-family: georgia,Times,serif;
+    font-family: var(--kg-font-body, georgia,Times,serif);
     letter-spacing: .02rem;
     line-height: 1.6em;
 }

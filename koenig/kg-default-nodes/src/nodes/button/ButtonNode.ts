@@ -8,10 +8,11 @@ const buttonProperties = {
     buttonUrl: {default: '', urlType: 'url'}
 } satisfies DecoratorNodePropertyMap;
 
-export type ButtonData = DecoratorNodeData<typeof buttonProperties>;
+export type ButtonData = DecoratorNodeData<typeof buttonProperties, true>;
 
 export class ButtonNode extends generateDecoratorNode({
     nodeType: 'button',
+    hasVisibility: true,
     properties: buttonProperties,
     defaultRenderFn: renderButtonNode
 }) {

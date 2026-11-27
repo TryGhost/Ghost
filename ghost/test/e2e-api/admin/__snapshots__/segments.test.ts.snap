@@ -1,0 +1,418 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Segments Admin API DELETE /segments/:id/ removes the segment 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API DELETE /segments/:id/ returns a 404 for an id no segment has 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Segment not found.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot delete segment.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API DELETE /segments/:id/ returns a 404 for an id no segment has 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API GET /segments/ lists the segments 1: [body] 1`] = `
+Object {
+  "segments": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "filter": "label:vip",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "VIP",
+      "slug": "vip",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API GET /segments/ lists the segments 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "175",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API GET /segments/ returns no segments when none are saved 1: [body] 1`] = `
+Object {
+  "segments": Array [],
+}
+`;
+
+exports[`Segments Admin API GET /segments/ returns no segments when none are saved 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "15",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API GET /segments/:id/ returns a 404 for an id no segment has 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Segment not found.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot read segment.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API GET /segments/:id/ returns a 404 for an id no segment has 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API GET /segments/:id/ returns the segment 1: [body] 1`] = `
+Object {
+  "segments": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "filter": "label:vip",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "VIP",
+      "slug": "vip",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API GET /segments/:id/ returns the segment 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "175",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API POST /segments/ adds a segment 1: [body] 1`] = `
+Object {
+  "segments": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "filter": "label:vip",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "VIP",
+      "slug": "vip",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API POST /segments/ adds a segment 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/segments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API POST /segments/ rejects a field it does not know 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Validation failed for body.",
+      "details": Array [
+        Object {
+          "code": "unrecognized_keys",
+          "keys": Array [
+            "colour",
+          ],
+          "message": "Unrecognized key: \\"colour\\"",
+          "path": Array [
+            "body",
+            "segments",
+            0,
+          ],
+        },
+      ],
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save segment.",
+      "property": "body.segments.0",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API POST /segments/ rejects a field it does not know 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API POST /segments/ rejects a name another segment has, ignoring case and whitespace 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "SEGMENT_NAME_TAKEN",
+      "context": "A segment with this name already exists",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save segment.",
+      "property": "name",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API POST /segments/ rejects a name another segment has, ignoring case and whitespace 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API PUT /segments/ puts the segments in the order given, and returns them in it 1: [body] 1`] = `
+Object {
+  "segments": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "filter": "status:comped",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Comped",
+      "slug": "comped",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "filter": "status:free",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Free",
+      "slug": "free",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "filter": "status:paid",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Paid",
+      "slug": "paid",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API PUT /segments/ puts the segments in the order given, and returns them in it 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API PUT /segments/ rejects an order that leaves a segment out, names one twice or names a deleted one, and changes nothing 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "SEGMENT_ORDER_OUT_OF_DATE",
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "The order must name every segment exactly once. Reload and try again.",
+      "property": "id",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API PUT /segments/ rejects an order that leaves a segment out, names one twice or names a deleted one, and changes nothing 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API PUT /segments/:id/ renames the segment 1: [body] 1`] = `
+Object {
+  "segments": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "filter": "label:vip",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Very important",
+      "slug": "vip",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API PUT /segments/:id/ renames the segment 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API PUT /segments/:id/ returns a 404 for an id no segment has 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Segment not found.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Resource not found error, cannot edit segment.",
+      "property": null,
+      "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API PUT /segments/:id/ returns a 404 for an id no segment has 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Segments Admin API permissions keeps out an integration that cannot read settings 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "You do not have permission to browse segments",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot list segments.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Segments Admin API permissions keeps out an integration that cannot read settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

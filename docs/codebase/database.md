@@ -1,9 +1,9 @@
 # Database Structure
 
 Ghost's database schema is defined in
-[`schema.js`](../../ghost/core/core/server/data/schema/schema.js). It is the
+[`schema.ts`](../../ghost/core/server/data/schema/schema.ts). It is the
 current shape expected after every migration has run. Bookshelf models in
-[`models/`](../../ghost/core/core/server/models/) define relationships and
+[`models/`](../../ghost/core/server/models/) define relationships and
 application behavior; do not infer those rules from the table shape alone.
 
 The sections below are domain maps, not a replacement for the schema. They
@@ -55,10 +55,12 @@ Related data is separated by responsibility:
 
 `labels` has a many-to-many relationship with `members` through
 `members_labels`. Newsletter subscriptions use the same pattern through
-`members_newsletters`. Metafield definitions are stored once in `members_metafields`;
-`members_metafield_values` stores the values a member has supplied, one row per
-leaf. `custom` is the one namespace a publisher defines fields in, and the admin
-UI calls those custom fields.
+`members_newsletters`. Metafield definitions are stored once in `members_metafields`,
+each in a namespace and with a key unique within it. `members_metafield_values`
+stores the values a member has supplied, one row for a field's value or for each part
+of a record value, and names each field by its namespace and key rather than an id.
+`custom` is the namespace a publisher defines fields in, and the admin UI calls those
+custom fields.
 
 Ghost keeps a provider-independent subscription in `subscriptions`. The Stripe
 tables cache the provider records needed to synchronize paid membership state.
@@ -116,4 +118,156 @@ For changing this structure, follow the
 [database migrations guide](../practices/database-migrations.md). Keep the
 schema definition, migration, exporter table lists, and integrity tests in sync.
 For initial data and settings defaults, see the
-[schema and default data guide](../../ghost/core/core/server/data/schema/README.md).
+[schema and default data guide](../../ghost/core/server/data/schema/README.md).
+
+## Typed queries
+
+A service that queries a table with Knex gives the table an entry in Knex's
+`Tables`, built from the table's definition in `schema.ts` with `SchemaTable`
+from [`server/lib/db-types/tables.ts`](../../ghost/core/server/lib/db-types/tables.ts):
+
+```ts
+declare module 'knex/types/tables' {
+  interface Tables {
+    gift_links: SchemaTable<'gift_links'>;
+  }
+}
+```
+
+`knex('gift_links')` then takes its columns from the schema. Don't restate a
+table's columns in a row type of your own: a column that is renamed or removed
+in `schema.ts` then fails to compile where a write names it.
+
+- A read returns `StoredRow<'gift_links'>`: every column as the database
+  returns it, before anything parses it. SQLite and MySQL return dates and
+  booleans differently, so read them through `DbDate` and `DbBoolean`. A column
+  that holds JSON is the JSON text. A column that lists its values with `isIn`
+  reads as any string, because the database doesn't check the list.
+- An insert takes `NewRow<'gift_links'>`: every column, where a column that can
+  be null or has a default may be left out. A column that lists its values
+  with `isIn` takes only those.
+- An update takes `RowUpdate<'gift_links'>`: any of the columns.
+
+A service that allows less than the table does says so in the entry, with
+types built from those three so the columns still come from the schema. A
+table whose rows are never updated is:
+
+```ts
+app_installation_manifests: SchemaTable<'app_installation_manifests', { update: never }>;
+```
+
+Only a table with an entry is typed. An entry applies to every query that
+names the table, in any file.
+
+## Sortable collections
+
+A sortable collection is a table's rows kept in an order, such as a list a
+publisher arranges. A table becomes one in `schema.ts` by spreading
+`sortableBy` among its columns:
+
+```ts
+segments: {
+  id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+  name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+  ...sortableBy({ tieBreak: ['created_at'] }),
+  created_at: { type: 'dateTime', nullable: false },
+},
+```
+
+`sortableBy` gives the table its position column, `sort_order`, defined as
+every ordered table in Ghost defines it, and the `@@SORTABLE@@` declaration
+the primitive reads. A table has one collection.
+
+- `within` names the column that scopes the order to a parent, such as
+  `post_id` for a post's tags. Leave it out when the whole table is one
+  collection.
+- `tieBreak` lists the columns that order rows with the same position. The id
+  always comes last, so the order is the same on every read.
+
+`sortable(table)` in `server/lib/sortable.ts` gives the collection's three
+operations. Each takes a connection or transaction, and the collection's
+parent as `{[within]: id}`, or `{}` without one. The compiler checks the table
+and the scope of every call:
+
+```ts
+const collection = sortable('<table>');
+
+await collection.inOrder(db, scope); // the rows in order
+await collection.insert(db, scope, row); // add a row at the end
+await collection.reorder(db, scope, orderedIds); // replace the whole order
+```
+
+A position only says where a row comes in the order. Code outside the
+primitive doesn't read or write the position column: rows are inserted
+through `insert`, which sets the position, and for a scoped collection the
+parent column. The column has no unique constraint: two rows can hold the
+same position, and the tie-break orders them. `reorder` takes the id of every
+row exactly once and rejects anything else, so an order made from an
+out-of-date list isn't half applied.
+
+The compiler enforces this for a table with an entry in Knex's `Tables`, as
+[typed queries](#typed-queries) describes. Declare the insert type as
+`SortableInsert<Row>`, and leave the position column out of the row, insert
+and update types:
+
+```ts
+declare module 'knex/types/tables' {
+  interface Tables {
+    segments: SchemaTable<
+      'segments',
+      { row: SegmentRow; insert: SortableInsert<NewSegmentRow>; update: SegmentUpdate }
+    >;
+  }
+}
+```
+
+`knex('segments').insert()` then doesn't compile, the collection's `insert`
+checks the row against `NewSegmentRow`, and an update can't name `sort_order`.
+
+The three operations take no lock that keeps other writers out of the
+collection. Where the order under writes at the same time matters, take a lock
+that every writer of the collection takes before calling them, and before the
+transaction reads anything else. For a collection scoped to a parent, that is
+the parent's row lock, as [row locking](#row-locking) requires. Without one,
+rows inserted at the same time can share a position, or get positions out of
+the order they were added, and a reorder can deadlock with another write to
+the parent's rows, such as a delete.
+
+Don't index the position column. A reorder locks rows in id order so that two
+reorders can't deadlock, and MySQL would read through an index that contains
+the position and lock them in position order. The schema's unit test rejects
+one.
+
+`sortableBy` changes no SQL in an existing database. A new table gets the
+column when its migration creates the table from the schema; an existing
+table needs a migration that adds it. The collections Ghost already orders
+(newsletters, a post's tags and authors, a tier's benefits, custom fields)
+have their own code and don't use the primitive yet. Each already has a
+`sort_order` column with this definition.
+
+## Row locking
+
+Inside a transaction (`options.transacting`), `Model.edit` and
+`Model.destroy` lock only the record's own row; without one they take no
+lock. Eager-loaded relations such as tags, authors, labels, tiers and
+newsletters are read without locks, because many records share them and
+locking them made concurrent edits of different records deadlock. A record's row lock is what
+serialises changes to its relations.
+
+Code that changes a record's relations without editing it must take that lock
+too. This includes writes to link tables like `posts_tags` or
+`members_labels`, `attach`/`detach`, and bulk tag, label or author changes:
+
+- Lock the parent rows first with `Model.lockForUpdate(ids, {transacting})`,
+  which locks them in id order so overlapping writers can't deadlock.
+- When the parents are found through the link table itself, such as the posts
+  of a tag being deleted, use `lockLinkedForUpdate(linkTable, foreignKey,
+  where, {transacting})` inside `Model.transactionLockingLinked(fn)`. It starts
+  the transaction again if a record is linked while it runs.
+- Once the locks are held, reads that decide what to write must be locking
+  reads (`.forUpdate()`). Plain reads come from the transaction's snapshot,
+  which can predate the lock. A caller passing its own transaction to `edit`
+  must lock the row before any plain read in it.
+- Take parent locks before link rows, and gift locks before member locks.
+- Keep transactions over large sets short by chunking them, as
+  `MemberRepository.bulkEdit` does.

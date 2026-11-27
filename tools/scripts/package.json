@@ -1,0 +1,95 @@
+{
+  "name": "@internal/scripts",
+  "version": "private",
+  "private": true,
+  "description": "Repo automation scripts, invoked from CI workflows and local pnpm aliases",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "test:unit": "node --test test/*.test.ts",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc6 --noEmit"
+  },
+  "dependencies": {
+    "@octokit/core": "catalog:",
+    "@octokit/plugin-retry": "catalog:",
+    "@octokit/plugin-throttling": "catalog:",
+    "@sentry/bundler-plugin-core": "catalog:",
+    "camelcase-keys": "10.0.3",
+    "execa": "catalog:",
+    "js-yaml": "catalog:",
+    "semver": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-oxlint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@types/js-yaml": "catalog:",
+    "@types/node": "catalog:",
+    "@types/picomatch": "catalog:",
+    "@types/semver": "catalog:",
+    "dependency-cruiser": "catalog:",
+    "eslint": "catalog:",
+    "picomatch": "4.0.7"
+  },
+  "nx": {
+    "namedInputs": {
+      "serviceDependencyContracts": [
+        "{workspaceRoot}/.dependency-cruiser.cjs",
+        "{workspaceRoot}/.dependency-cruiser-known-violations.json",
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
+      ],
+      "adminTestContracts": [
+        "{workspaceRoot}/clients/admin/package.json",
+        "{workspaceRoot}/.github/workflows/ci.yml"
+      ],
+      "adminSourceContracts": [
+        "{workspaceRoot}/clients/admin-x-framework/package.json",
+        "{workspaceRoot}/clients/shade/package.json",
+        "{workspaceRoot}/clients/admin/vite*.ts",
+        "{workspaceRoot}/clients/admin/vitest.acceptance.config.ts",
+        "{workspaceRoot}/clients/admin/tsconfig*.json",
+        "{workspaceRoot}/clients/shade/tsconfig.json"
+      ],
+      "oxlintContracts": [
+        "{workspaceRoot}/.oxlintrc.json",
+        "{workspaceRoot}/tools/configs/oxlint/**/*",
+        "{workspaceRoot}/**/eslint.config.*",
+        "{workspaceRoot}/tools/configs/eslint*/**/*.mjs",
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
+      ]
+    },
+    "targets": {
+      "test": {
+        "inputs": [
+          "default",
+          "^default",
+          "adminTestContracts",
+          "adminSourceContracts",
+          "serviceDependencyContracts",
+          {
+            "runtime": "node -v"
+          },
+          "oxlintContracts"
+        ]
+      },
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "adminTestContracts",
+          "adminSourceContracts",
+          "serviceDependencyContracts",
+          {
+            "runtime": "node -v"
+          },
+          "oxlintContracts"
+        ]
+      }
+    }
+  }
+}

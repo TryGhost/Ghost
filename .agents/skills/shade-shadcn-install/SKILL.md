@@ -1,8 +1,8 @@
 ---
 name: Shade ShadCN install
-description: Guardrails for running `pnpm dlx shadcn@latest add` in Shade — never overwrite existing components, fresh branch first, swap raw colours for semantic tokens after integrating. Trigger when the user proposes a shadcn add, or when a fresh ShadCN-shaped file lands in apps/shade/src/components/ui.
+description: Guardrails for running `pnpm dlx shadcn@latest add` in Shade — never overwrite existing components, fresh branch first, swap raw colours for semantic tokens after integrating. Trigger when the user proposes a shadcn add, or when a fresh ShadCN-shaped file lands in clients/shade/src/components/ui.
 autoTrigger:
-  - fileEdit: "apps/shade/src/components/ui/**/*.tsx"
+  - fileEdit: "clients/shade/src/components/ui/**/*.tsx"
 ---
 
 # Shade — ShadCN install guardrails
@@ -20,7 +20,7 @@ pnpm dlx shadcn@latest add <component-name>
 ## Before running
 
 1. **Be on a fresh branch.** The CLI's diff is mixed in with your branch's changes otherwise.
-2. **Check if the component already exists in `apps/shade/src/components/ui/`.** If it does, **do not run the CLI against the repo** — generate into a scratch repo and manually port the parts you want. The CLI will offer to overwrite, and you'd lose Shade customisations.
+2. **Check if the component already exists in `clients/shade/src/components/ui/`.** If it does, **do not run the CLI against the repo** — generate into a scratch repo and manually port the parts you want. The CLI will offer to overwrite, and you'd lose Shade customisations.
 
 ## During the prompts
 
@@ -58,5 +58,6 @@ Raw ShadCN output is not Shade-quality yet. Do all of these:
 
 ## Source of truth
 
-Storybook → Overview / Contributing. This skill adds the agent-specific safety
-steps for running the destructive ShadCN CLI.
+[ShadCN](../../../clients/shade/CONTRIBUTING.md#shadcn) in Shade's
+`CONTRIBUTING.md`. This skill adds the agent-specific safety steps for running
+the destructive ShadCN CLI.

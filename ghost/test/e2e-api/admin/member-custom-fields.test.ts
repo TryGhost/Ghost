@@ -1,0 +1,3425 @@
+import assert from 'node:assert/strict';
+import { transactionsWaitingOn } from '../../utils/lock-waits';
+import { z } from 'zod';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
+
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  configUtils,
+  dbUtils,
+  hostLimits,
+} = require('../../utils/e2e-framework');
+const DatabaseInfo = require('@tryghost/database-info');
+const { knex } = require('../../../core/server/data/db');
+const models = require('../../../core/server/models');
+const events = require('../../../core/server/lib/common/events');
+const settingsService = require('../../../core/server/services/settings/settings-service');
+
+describe('Member Custom Fields Admin API', function () {
+  let agent: {
+    get: (_url: string) => any;
+    put: (_url: string) => any;
+    post: (_url: string) => any;
+    delete: (_url: string) => any;
+    loginAsOwner: () => Promise<void>;
+    loginAsEditor: () => Promise<void>;
+    useZapierAdminAPIKey: () => Promise<void>;
+    useStaffTokenForOwner: () => Promise<void>;
+  };
+
+  // The key is minted server-side from the name, so callers pass just a name
+  // (and optionally a type) and read the derived key off the result.
+  async function createField(field: { name: string; type?: string; settings?: unknown }) {
+    const { body } = await agent
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ type: 'short_text', ...field }] })
+      .expectStatus(201);
+    return body.members_metafields[0];
+  }
+
+  // Archiving is a status change over the same PUT the rename uses (no dedicated
+  // /archive route), matching how newsletters move between active and archived.
+  async function setStatus(key: string, status: 'active' | 'archived') {
+    const { body } = await agent
+      .put(`members/metafields/custom/${key}/`)
+      .body({ members_metafields: [{ status }] })
+      .expectStatus(200);
+    return body.members_metafields[0];
+  }
+
+  let memberCounter = 0;
+  async function createMember(): Promise<string> {
+    memberCounter += 1;
+    const { body } = await agent
+      .post('members/')
+      .body({ members: [{ email: `custom-fields-${memberCounter}@example.com` }] })
+      .expectStatus(201);
+    return body.members[0].id;
+  }
+
+  // No `metafields` key means no values.
+  async function readValues(memberId: string) {
+    const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+    return body.members[0].metafields?.custom ?? {};
+  }
+
+  async function setValues(memberId: string, customFields: Record<string, unknown>, status = 200) {
+    const { body } = await agent
+      .put(`members/${memberId}/`)
+      .body({ members: [{ metafields: { custom: customFields } }] })
+      .expectStatus(status);
+    return body;
+  }
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users');
+    await agent.loginAsOwner();
+  });
+
+  afterEach(async function () {
+    mockManager.restore();
+    await models.Base.knex('members_metafield_values').del();
+    await models.Base.knex('members_metafields').del();
+    await models.Base.knex('members').del();
+    await models.Base.knex('actions')
+      .whereIn('resource_type', ['member', 'member_custom_field'])
+      .del();
+  });
+
+  describe('Definitions', function () {
+    it('returns an empty list when no fields exist', async function () {
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(body.members_metafields, []);
+    });
+
+    it('creates a field, minting an underscored key from the name', async function () {
+      const created = await createField({ name: 'Favourite topic' });
+      assert.equal(created.namespace, 'custom');
+      assert.equal(created.key, 'favourite_topic');
+      assert.equal(created.name, 'Favourite topic');
+      assert.equal(created.type, 'short_text');
+      // A new field is active; status travels with the definition so the UI
+      // can group active and archived fields from one list.
+      assert.equal(created.status, 'active');
+      // id is the DB primary key and must never be exposed over the API.
+      assert.equal(created.id, undefined);
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+      assert.equal(list.members_metafields.length, 1);
+
+      const read = (await agent.get(`members/metafields/custom/${created.key}/`).expectStatus(200))
+        .body;
+      assert.equal(read.members_metafields[0].key, 'favourite_topic');
+    });
+
+    // A key is referenced from filters, CSV columns, replacement strings and
+    // themes, and the hyphen is the character those disagree about. Nothing a
+    // publisher can type may put one in a key, including typing one themselves.
+    it('mints underscores for a name that already contains hyphens', async function () {
+      const created = await createField({ name: 'T-Shirt size' });
+      assert.equal(created.key, 't_shirt_size');
+    });
+
+    it('mints a suffixed key when the derived base collides', async function () {
+      // Two distinct names can derive the same base ("!" is stripped), so
+      // the key is suffixed even though the names stay unique.
+      const first = await createField({ name: 'Favourite topic' });
+      const second = await createField({ name: 'Favourite topic!' });
+      assert.equal(first.key, 'favourite_topic');
+      assert.equal(second.key, 'favourite_topic_2');
+    });
+
+    it('rejects a duplicate name, case-insensitively', async function () {
+      // The name is the human label and is unique in its namespace; this 422 is what
+      // the Settings UI surfaces as an inline error on the name field.
+      await createField({ name: 'Company' });
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'company', type: 'short_text' }] })
+        .expectStatus(422);
+    });
+
+    it('rejects a name with no usable characters', async function () {
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: '!!!', type: 'short_text' }] })
+        .expectStatus(422);
+    });
+
+    // A key names a property on the plain objects carrying a member's values, so
+    // one naming a member of Object.prototype reads back as inherited rather than
+    // absent wherever it is indexed. That key is already taken, so the publisher
+    // keeps the name and the key takes a suffix. The match is on the key rather
+    // than the name, which is what catches every spelling that collapses onto it.
+    const reservedSpellings = [
+      { name: 'Constructor', key: 'constructor_2' },
+      { name: 'constructor', key: 'constructor_2' },
+    ];
+    for (const { name, key } of reservedSpellings) {
+      it(`mints ${key} for the name ${name}, and the value round-trips`, async function () {
+        const field = await createField({ name });
+        assert.equal(field.key, key);
+
+        const memberId = await createMember();
+        await setValues(memberId, { [key]: 'Bex' });
+
+        assert.deepEqual(await readValues(memberId), { [key]: 'Bex' });
+      });
+    }
+
+    // The other prototype name a publisher could reach for needs no reserving:
+    // minting trims leading and trailing separators, so no spelling of it can
+    // produce the key itself.
+    for (const name of ['__proto__', '__PROTO__', '＿＿ｐｒｏｔｏ＿＿']) {
+      it(`cannot mint __proto__ from the name ${name}`, async function () {
+        const field = await createField({ name });
+        assert.equal(field.key, 'proto');
+
+        const memberId = await createMember();
+        await setValues(memberId, { proto: 'Bex' });
+
+        assert.deepEqual(await readValues(memberId), { proto: 'Bex' });
+      });
+    }
+
+    // A reserved key is claimed by whichever field takes the suffix first, so the
+    // next one along has to keep counting rather than collide with it.
+    it('keeps counting past a reserved key already claimed by another field', async function () {
+      const first = await createField({ name: 'Constructor' });
+      const second = await createField({ name: 'Constructor!' });
+
+      assert.equal(first.key, 'constructor_2');
+      assert.equal(second.key, 'constructor_3');
+    });
+
+    // The batch runs in one transaction, so mintKey sees the rows minted earlier
+    // in the same request — reserving a key must hold within a batch too, not
+    // just across separate requests.
+    it('mints distinct keys when two definitions in one batch both derive a reserved key', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Constructor', type: 'short_text' },
+            { name: 'Constructor!', type: 'short_text' },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(
+        body.members_metafields.map((f: { key: string }) => f.key),
+        ['constructor_2', 'constructor_3'],
+      );
+    });
+
+    // A reserved key must not take a whole prefix with it, only the exact key.
+    it('leaves a name that merely starts with a reserved word unsuffixed', async function () {
+      const field = await createField({ name: 'Constructor role' });
+      assert.equal(field.key, 'constructor_role');
+
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Foreman' });
+
+      assert.deepEqual(await readValues(memberId), { constructor_role: 'Foreman' });
+    });
+
+    // The key column is shorter than the name column, so a long name is cut to
+    // fit. The cut can land mid-separator, and a key ending in one is a shape
+    // minting is not allowed to produce.
+    it('mints a key that fits the column without ending in a separator', async function () {
+      const created = await createField({ name: `${'a'.repeat(185)} bcdef` });
+
+      assert.ok(created.key.length <= 191, `key was ${created.key.length} characters`);
+      assert.doesNotMatch(created.key, /_$/);
+
+      // And the suffix a collision adds lands against that trimmed base.
+      const second = await createField({ name: `${'a'.repeat(185)} bcdeg` });
+      assert.doesNotMatch(second.key, /__/);
+    });
+
+    it('rejects a name that exceeds the maximum length', async function () {
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'a'.repeat(192), type: 'short_text' }] })
+        .expectStatus(422);
+    });
+
+    it('rejects an unsupported type', async function () {
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Topic', type: 'not_a_type' }] })
+        .expectStatus(422);
+    });
+
+    // A type still in development can be created only where its Labs flag is on, whoever asks.
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'refuses a $field.type field while $flag is off',
+      async function ({ field, flag }) {
+        mockManager.mockLabsDisabled(flag);
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'In development', ...field }] })
+          .expectStatus(422);
+
+        assert.equal(body.errors[0].property, 'type');
+        const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+        assert.deepEqual(list.members_metafields, []);
+      },
+    );
+
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'creates a $field.type field once $flag is on',
+      async function ({ field, flag }) {
+        mockManager.mockLabsEnabled(flag);
+
+        const created = await createField({ name: 'In development', ...field });
+
+        assert.equal(created.type, field.type);
+      },
+    );
+
+    it('rejects a create with no root key', async function () {
+      // The framework rejects an empty/malformed body before the query runs,
+      // so the service always receives a non-empty array to create from.
+      await agent.post('members/metafields/custom/').body({}).expectStatus(400);
+    });
+
+    it('renames a field but keeps the key and type immutable', async function () {
+      const created = await createField({ name: 'Favourite topic' });
+
+      const renamed = (
+        await agent
+          .put(`members/metafields/custom/${created.key}/`)
+          .body({ members_metafields: [{ name: 'Topic' }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+      assert.equal(renamed.name, 'Topic');
+      assert.equal(renamed.key, created.key);
+
+      await agent
+        .put(`members/metafields/custom/${created.key}/`)
+        .body({ members_metafields: [{ key: 'different-key' }] })
+        .expectStatus(422);
+
+      await agent
+        .put(`members/metafields/custom/${created.key}/`)
+        .body({ members_metafields: [{ type: 'long_text' }] })
+        .expectStatus(422);
+    });
+
+    it("rejects renaming a field to another field's name", async function () {
+      await createField({ name: 'Company' });
+      const other = await createField({ name: 'Role' });
+      await agent
+        .put(`members/metafields/custom/${other.key}/`)
+        .body({ members_metafields: [{ name: 'Company' }] })
+        .expectStatus(422);
+    });
+
+    it('404s reading, editing or deleting a non-existent field', async function () {
+      // A key that doesn't exist reaches the service's not-found.
+      const missing = 'does_not_exist';
+      await agent.get(`members/metafields/custom/${missing}/`).expectStatus(404);
+      await agent
+        .put(`members/metafields/custom/${missing}/`)
+        .body({ members_metafields: [{ name: 'Topic' }] })
+        .expectStatus(404);
+      await agent.delete(`members/metafields/custom/${missing}/`).expectStatus(404);
+    });
+
+    it('refuses a route naming something that cannot be a namespace or key', async function () {
+      // No field could be stored under either, so the request is malformed rather than
+      // asking after something missing.
+      const { body } = await agent
+        .get('members/metafields/custom/does-not-exist/')
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'key');
+      assert.equal(
+        body.errors[0].context,
+        'A key can only contain lowercase letters, numbers and underscores.',
+      );
+
+      const namespace = await agent.get('members/metafields/Custom/').expectStatus(422);
+      assert.equal(namespace.body.errors[0].property, 'namespace');
+    });
+
+    it('hides archived fields from the default list', async function () {
+      const active = await createField({ name: 'Favourite topic' });
+      const archived = await createField({ name: 'Company' });
+      await setStatus(archived.key, 'archived');
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body
+        .members_metafields;
+      assert.equal(list.length, 1);
+      assert.equal(list[0].key, active.key);
+      assert.equal(list[0].status, 'active');
+    });
+
+    it('includes archived fields when the caller filters by status', async function () {
+      const active = await createField({ name: 'Favourite topic' });
+      const archived = await createField({ name: 'Company' });
+      await setStatus(archived.key, 'archived');
+
+      // Settings pulls active and archived in one request by overriding the
+      // active-only default with an explicit status filter.
+      const both = (
+        await agent
+          .get('members/metafields/custom/?filter=status:[active,archived]')
+          .expectStatus(200)
+      ).body.members_metafields;
+      const byKey = Object.fromEntries(both.map((f: { key: string }) => [f.key, f]));
+      assert.equal(both.length, 2);
+      assert.equal(byKey[active.key].status, 'active');
+      assert.equal(byKey[archived.key].status, 'archived');
+
+      // And archived-only for a dedicated view.
+      const onlyArchived = (
+        await agent.get('members/metafields/custom/?filter=status:archived').expectStatus(200)
+      ).body.members_metafields;
+      assert.equal(onlyArchived.length, 1);
+      assert.equal(onlyArchived[0].key, archived.key);
+    });
+
+    it('keeps archived fields hidden when filtering on a non-status field', async function () {
+      // A filter that doesn't mention status must not surface archived fields:
+      // the active-only default still applies, so filtering by (say) type
+      // can't leak them.
+      const active = await createField({ name: 'Favourite topic', type: 'short_text' });
+      const archived = await createField({ name: 'Company', type: 'short_text' });
+      await setStatus(archived.key, 'archived');
+
+      const list = (
+        await agent.get('members/metafields/custom/?filter=type:short_text').expectStatus(200)
+      ).body.members_metafields;
+      assert.equal(list.length, 1);
+      assert.equal(list[0].key, active.key);
+    });
+
+    it('treats a namespace with no fields as an ordinary empty collection', async function () {
+      const { body } = await agent.get('members/metafields/transistor/').expectStatus(200);
+      assert.deepEqual(body.members_metafields, []);
+      await agent.get('members/metafields/transistor/some_key/').expectStatus(404);
+      const refused = await agent
+        .post('members/metafields/transistor/')
+        .body({ members_metafields: [{ name: 'Nope', type: 'short_text' }] })
+        .expectStatus(422);
+      assert.equal(refused.body.errors[0].property, 'namespace');
+    });
+
+    it('rejects a malformed filter with a 400 rather than a 500', async function () {
+      await createField({ name: 'Favourite topic' });
+      await agent
+        .get('members/metafields/custom/?filter=' + encodeURIComponent('status:'))
+        .expectStatus(400);
+    });
+
+    it('archives a field, keeping its name and key reserved', async function () {
+      const first = await createField({ name: 'Favourite topic' });
+
+      const archived = await setStatus(first.key, 'archived');
+      assert.equal(archived.status, 'archived');
+
+      // Archived: gone from the default list...
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body
+        .members_metafields;
+      assert.deepEqual(list, []);
+
+      // ...but still there, so its name stays reserved (uniqueness spans
+      // archived fields too)...
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Favourite topic', type: 'short_text' }] })
+        .expectStatus(422);
+
+      // ...and so does its key: a different name deriving the same base is
+      // suffixed rather than reusing (and resurrecting) the old key.
+      const second = await createField({ name: 'Favourite topic!' });
+      assert.equal(second.key, 'favourite_topic_2');
+    });
+
+    it('restores an archived field', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      await setStatus(field.key, 'archived');
+
+      const restored = await setStatus(field.key, 'active');
+      assert.equal(restored.status, 'active');
+
+      const read = (await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200))
+        .body;
+      assert.equal(read.members_metafields[0].status, 'active');
+    });
+
+    it('frees a name for reuse once the archived field is renamed', async function () {
+      const original = await createField({ name: 'Company' });
+      await setStatus(original.key, 'archived');
+
+      // The archived field still owns "Company", so rename it to release it...
+      await agent
+        .put(`members/metafields/custom/${original.key}/`)
+        .body({ members_metafields: [{ name: 'Company (old)' }] })
+        .expectStatus(200);
+
+      // ...now a fresh "Company" is accepted, with its own new key.
+      const fresh = await createField({ name: 'Company' });
+      assert.equal(fresh.name, 'Company');
+      assert.notEqual(fresh.key, original.key);
+    });
+
+    it('refuses to permanently delete an active field', async function () {
+      // Deleting is gated on the archived state: a publisher must archive
+      // first, so permanent data loss is always a deliberate two-step.
+      const field = await createField({ name: 'Favourite topic' });
+
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(422);
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body
+        .members_metafields;
+      assert.equal(list.length, 1);
+    });
+
+    it('permanently deletes an archived field, freeing its name and key', async function () {
+      const original = await createField({ name: 'Favourite topic' });
+      await setStatus(original.key, 'archived');
+
+      await agent.delete(`members/metafields/custom/${original.key}/`).expectStatus(204);
+
+      // Gone entirely — not in the list, and no longer readable.
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body
+        .members_metafields;
+      assert.deepEqual(list, []);
+      await agent.get(`members/metafields/custom/${original.key}/`).expectStatus(404);
+
+      // The row is gone, so the name and its base key are free again: a
+      // fresh field with the same name reclaims the original (unsuffixed) key.
+      const fresh = await createField({ name: 'Favourite topic' });
+      assert.equal(fresh.key, 'favourite_topic');
+    });
+
+    it('does not find a field to delete once its stored type cannot be read', async function () {
+      // A deleted field is reported as it was read, so one that can't be read at all is not
+      // found, as it is for an edit, and stays where it is.
+      const stale = await createField({ name: 'Legacy field' });
+      await setStatus(stale.key, 'archived');
+      // Corrupt the stored field's type directly, past the service's immutability.
+      await models.Base.knex('members_metafields')
+        .where('key', stale.key)
+        .update({ type: 'no_longer_a_type' });
+
+      await agent.delete(`members/metafields/custom/${stale.key}/`).expectStatus(404);
+
+      const stored = await models.Base.knex('members_metafields').where('key', stale.key);
+      assert.equal(stored.length, 1);
+    });
+  });
+
+  // Written straight to the table: the database has to refuse these whoever writes them.
+  describe('What a field can be called', function () {
+    const insertField = (namespace: string, key: string) =>
+      models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000b1',
+        namespace,
+        key,
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+
+    it('refuses a namespace or key that an identity cannot name', async function () {
+      await assert.rejects(insertField('Shop', 'company'), /members_metafields_namespace_check/);
+      await assert.rejects(insertField('sh.op', 'company'), /members_metafields_namespace_check/);
+      await assert.rejects(insertField('shop', 'Company'), /members_metafields_key_check/);
+      await assert.rejects(insertField('shop', 'com-pany'), /members_metafields_key_check/);
+      await assert.rejects(insertField('shop', 'company\n'), /members_metafields_key_check/);
+
+      await insertField('shop', 'company');
+    });
+  });
+
+  // A definition takes the key it is given, or one derived from its name when it is given none.
+  describe('Keys', function () {
+    const addKeyed = (status: number, ...definitions: Array<{ name: string; key: string }>) =>
+      agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: definitions.map((definition) => ({
+            ...definition,
+            type: 'short_text',
+          })),
+        })
+        .expectStatus(status);
+
+    it('adds a definition under the key it is given', async function () {
+      const { body } = await addKeyed(201, { name: 'Delivery notes', key: 'shipping_notes' });
+      assert.equal(body.members_metafields[0].key, 'shipping_notes');
+
+      const read = await agent.get('members/metafields/custom/shipping_notes/').expectStatus(200);
+      assert.equal(read.body.members_metafields[0].name, 'Delivery notes');
+    });
+
+    it('refuses a key an archived definition already has', async function () {
+      await addKeyed(201, { name: 'Favourite topic', key: 'topic' });
+      await agent
+        .put('members/metafields/custom/topic/')
+        .body({ members_metafields: [{ status: 'archived' }] })
+        .expectStatus(200);
+
+      const { body } = await addKeyed(422, { name: 'Topic', key: 'topic' });
+      assert.equal(body.errors[0].property, 'key');
+      assert.match(body.errors[0].context, /A custom field with this key already exists\./);
+    });
+
+    it('refuses two definitions given the same key in one batch, adding neither', async function () {
+      const { body } = await addKeyed(
+        422,
+        { name: 'Favourite topic', key: 'topic' },
+        { name: 'Topic', key: 'topic' },
+      );
+      assert.equal(body.errors[0].property, 'key');
+      assert.match(body.errors[0].context, /Custom field 2 of 2\./);
+
+      const list = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(list.body.members_metafields, []);
+    });
+
+    // A key becomes a property name on the plain objects that carry a member's values, so one
+    // naming a member of Object.prototype is never taken, given or derived.
+    it('refuses a key that names a member of Object.prototype', async function () {
+      const { body } = await addKeyed(422, { name: 'Builder', key: 'constructor' });
+      assert.equal(body.errors[0].property, 'key');
+    });
+
+    // A key given with a new field is written, so it has to be an underscore slug, as a minted
+    // key is: no separator at either end and none doubled, although a key that is read can have
+    // them.
+    it('refuses a key that is not a slug, or that the fields table cannot store', async function () {
+      for (const key of ['_vip_', 'a__b', 'vip_', 'VIP', 'a-b', '']) {
+        const malformed = await addKeyed(422, { name: 'Topic', key });
+        assert.equal(malformed.body.errors[0].property, 'key', JSON.stringify(key));
+        assert.match(
+          malformed.body.errors[0].context,
+          /A custom field key can only contain lowercase letters and digits, in words joined by single underscores/,
+        );
+      }
+
+      const long = await addKeyed(422, { name: 'Topic', key: 'k'.repeat(1000) });
+      assert.equal(long.body.errors[0].property, 'key');
+      assert.match(long.body.errors[0].context, /Custom field key is too long\./);
+    });
+  });
+
+  // A key given with a new field has to be a slug, but a field can have a key that is only a key,
+  // such as `a__b`, from before that rule. Everything that reads or addresses a key still takes it.
+  describe('A key that is not a slug', function () {
+    const KEY = 'a__b';
+
+    const listedKeys = async (): Promise<string[]> =>
+      (await agent.get('members/metafields/custom/').expectStatus(200)).body.members_metafields.map(
+        (field: { key: string }) => field.key,
+      );
+
+    beforeEach(async function () {
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000c1',
+        namespace: 'custom',
+        key: KEY,
+        name: 'Legacy',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+    });
+
+    it('is listed, read, renamed and given back on an edit', async function () {
+      assert.deepEqual(await listedKeys(), [KEY]);
+      await agent.get(`members/metafields/custom/${KEY}/`).expectStatus(200);
+
+      const { body } = await agent
+        .put(`members/metafields/custom/${KEY}/`)
+        .body({ members_metafields: [{ name: 'Legacy renamed', key: KEY }] })
+        .expectStatus(200);
+      assert.equal(body.members_metafields[0].key, KEY);
+      assert.equal(body.members_metafields[0].name, 'Legacy renamed');
+    });
+
+    it("holds a member's value, which a filter and the export find", async function () {
+      const memberId = await createMember();
+      await setValues(memberId, { [KEY]: 'Ghost' });
+      assert.deepEqual(await readValues(memberId), { [KEY]: 'Ghost' });
+
+      const filter = encodeURIComponent(
+        `metafields.identity:'custom.${KEY}'+metafields.value:'Ghost'`,
+      );
+      const { body } = await agent.get(`members/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.members.map((member: { id: string }) => member.id),
+        [memberId],
+      );
+
+      const exported = await agent.get('members/upload/?limit=all').expectStatus(200);
+      const [header, ...rows]: string[] = exported.text.trim().split(/\r?\n/);
+      assert.ok(header.split(',').includes(`metafields.custom.${KEY}`), header);
+      assert.ok(rows.some((row) => row.includes('Ghost')));
+    });
+
+    it('is archived and deleted', async function () {
+      await setStatus(KEY, 'archived');
+      await agent.delete(`members/metafields/custom/${KEY}/`).expectStatus(204);
+
+      await agent.get(`members/metafields/custom/${KEY}/`).expectStatus(404);
+    });
+  });
+
+  // The API defines fields only in `custom`, so the other namespace's field is written
+  // straight to the table, as an app's would be.
+  describe('Fields in another namespace', function () {
+    beforeEach(async function () {
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000a1',
+        namespace: 'shop',
+        key: 'company',
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+    });
+
+    it('leaves the publisher free to use the same key and name', async function () {
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        body.members_metafields.map(({ key }: { key: string }) => key),
+        ['company'],
+      );
+      const { body: shop } = await agent.get('members/metafields/shop/company/').expectStatus(200);
+      assert.equal(shop.members_metafields[0].namespace, 'shop');
+    });
+
+    it('keeps a filter inside the namespace the route names', async function () {
+      const created = await createField({ name: 'Favourite topic' });
+
+      // An "or" naming the other namespace still only reaches the publisher's fields.
+      const { body } = await agent
+        .get(
+          'members/metafields/custom/?filter=' + encodeURIComponent('namespace:shop,status:active'),
+        )
+        .expectStatus(200);
+      assert.deepEqual(
+        body.members_metafields.map(({ key }: { key: string }) => key),
+        [created.key],
+      );
+    });
+
+    it('clears only the publisher’s value', async function () {
+      await createField({ name: 'Company' });
+      const memberId = await createMember();
+      await agent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ metafields: { custom: { company: 'Ghost' }, shop: { company: 'Acme' } } }],
+        })
+        .expectStatus(200);
+
+      const { members } = await setValues(memberId, { company: null });
+
+      assert.deepEqual(members[0].metafields, { shop: { company: 'Acme' } });
+    });
+
+    it('renames, archives and reorders the publisher’s fields and nothing else', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Industry' });
+
+      await agent
+        .put('members/metafields/custom/company/')
+        .body({ members_metafields: [{ name: 'Employer' }] })
+        .expectStatus(200);
+      await setStatus('company', 'archived');
+      await agent
+        .put('members/metafields/custom/')
+        .body({ members_metafields: [{ key: 'industry' }, { key: 'company' }] })
+        .expectStatus(200);
+
+      const { body } = await agent.get('members/metafields/shop/company/').expectStatus(200);
+      const [shop] = body.members_metafields;
+      assert.equal(shop.name, 'Company');
+      assert.equal(shop.status, 'active');
+    });
+
+    it('keeps each namespace’s value apart on the member, in filters, and when one is deleted', async function () {
+      const publisherField = await createField({ name: 'Company' });
+      const memberId = await createMember();
+
+      const { body: written } = await agent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ metafields: { custom: { company: 'Ghost' }, shop: { company: 'Acme' } } }],
+        })
+        .expectStatus(200);
+      assert.deepEqual(written.members[0].metafields, {
+        custom: { company: 'Ghost' },
+        shop: { company: 'Acme' },
+      });
+
+      const matching = async (identity: string, value: string) => {
+        const filter = `(metafields.identity:'${identity}'+metafields.value:'${value}')`;
+        const { body } = await agent
+          .get(`members/?filter=${encodeURIComponent(filter)}`)
+          .expectStatus(200);
+        return body.members.map(({ id }: { id: string }) => id);
+      };
+      assert.deepEqual(await matching('shop.company', 'Acme'), [memberId]);
+      assert.deepEqual(await matching('custom.company', 'Acme'), []);
+
+      await setStatus(publisherField.key, 'archived');
+      await agent.delete(`members/metafields/custom/${publisherField.key}/`).expectStatus(204);
+
+      const { body: read } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.deepEqual(read.members[0].metafields, { shop: { company: 'Acme' } });
+    });
+  });
+
+  describe('Member access', function () {
+    it('creates a field closed to members', async function () {
+      const created = await createField({ name: 'Internal note' });
+      assert.deepEqual(created.access, { member: 'none' });
+    });
+
+    it('creates a field open to members when the publisher says so', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Shoe size', type: 'short_text', access: { member: 'write' } },
+          ],
+        })
+        .expectStatus(201);
+      assert.deepEqual(body.members_metafields[0].access, { member: 'write' });
+    });
+
+    it('opens and closes a field after the fact', async function () {
+      const field = await createField({ name: 'Shoe size' });
+
+      const opened = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ access: { member: 'read' } }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(opened.access, { member: 'read' });
+
+      const closed = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ access: { member: 'none' } }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(closed.access, { member: 'none' });
+    });
+
+    it('leaves access alone when an edit says nothing about it', async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'write' } }] })
+        .expectStatus(200);
+
+      const renamed = (
+        await agent
+          .put(`members/metafields/custom/${field.key}/`)
+          .body({ members_metafields: [{ name: 'Shoe size (EU)' }] })
+          .expectStatus(200)
+      ).body.members_metafields[0];
+
+      assert.equal(renamed.name, 'Shoe size (EU)');
+      assert.deepEqual(renamed.access, { member: 'write' });
+    });
+
+    it('refuses a level it does not recognise', async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'admin' } }] })
+        .expectStatus(422);
+
+      const unchanged = (
+        await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200)
+      ).body.members_metafields[0];
+      assert.deepEqual(unchanged.access, { member: 'none' });
+    });
+  });
+
+  // Admin sends `?include=` on resources that have relations to load. This one has none,
+  // so the parameter has nothing to act on — which is a request that returns a definition,
+  // not a request that got something wrong.
+  describe('Asking for relations', function () {
+    it('ignores an include, rather than failing on it', async function () {
+      const field = await createField({ name: 'T-shirt size' });
+
+      const { body } = await agent
+        .get('members/metafields/custom/?include=bindings')
+        .expectStatus(200);
+
+      assert.equal(body.members_metafields[0].key, field.key);
+      assert.equal('bindings' in body.members_metafields[0], false);
+    });
+  });
+
+  describe('Creating several definitions at once', function () {
+    it('creates every definition in the request, in order', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Company', type: 'short_text' },
+            { name: 'Role', type: 'short_text' },
+            { name: 'Bio', type: 'long_text' },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(
+        body.members_metafields.map((field: { key: string }) => field.key),
+        ['company', 'role', 'bio'],
+      );
+      assert.equal(body.members_metafields[2].type, 'long_text');
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+      assert.equal(list.members_metafields.length, 3);
+    });
+
+    it('mints distinct keys when two definitions in the batch derive the same base', async function () {
+      // Within a batch each insert is visible to the next, so a collision
+      // resolves exactly as it would across two separate requests.
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Favourite topic', type: 'short_text' },
+            { name: 'Favourite topic!', type: 'short_text' },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(
+        body.members_metafields.map((field: { key: string }) => field.key),
+        ['favourite_topic', 'favourite_topic_2'],
+      );
+    });
+
+    it('writes nothing when any definition in the batch is invalid', async function () {
+      await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Company', type: 'short_text' },
+            { name: 'Role', type: 'not_a_type' },
+          ],
+        })
+        .expectStatus(422);
+
+      // The valid first item must not survive the rejected request.
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+      assert.deepEqual(list.members_metafields, []);
+    });
+
+    it('writes nothing when two definitions in the batch share a name', async function () {
+      await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Company', type: 'short_text' },
+            { name: 'company', type: 'short_text' },
+          ],
+        })
+        .expectStatus(422);
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+      assert.deepEqual(list.members_metafields, []);
+    });
+
+    it('names the offending field, and which one it was, when a batch item is invalid', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Company', type: 'short_text' },
+            { name: 'Role', type: 'short_text' },
+            { name: 'Bio', type: 'not_a_type' },
+          ],
+        })
+        .expectStatus(422);
+
+      // `property` stays the bare field name so a client can map it onto a
+      // form input; the item pointer rides alongside it in context, which is
+      // where the framework relocates the detail of a validation failure.
+      assert.equal(body.errors[0].property, 'type');
+      assert.match(body.errors[0].context, /Custom field 3 of 3\./);
+    });
+
+    it('does not point at an item when only one definition was sent', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Bio', type: 'not_a_type' }] })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].property, 'type');
+      // context still carries the reason the item was rejected, just no
+      // pointer to which one. Asserted as a string first so that if the
+      // framework ever stops populating it this fails as an assertion
+      // rather than throwing inside doesNotMatch.
+      assert.equal(typeof body.errors[0].context, 'string');
+      assert.doesNotMatch(body.errors[0].context, /Custom field \d+ of \d+/);
+    });
+
+    it('rejects a batch larger than a single request may create', async function () {
+      // Work per request is bounded independently of the site ceiling: even
+      // with room to spare, one request cannot ask for unbounded work.
+      configUtils.set('members:metafields:maxDefinitions', 100000);
+      const oversized = Array.from({ length: 101 }, (_unused, index) => ({
+        name: `Field ${index}`,
+        type: 'short_text',
+      }));
+
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: oversized })
+        .expectStatus(422);
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+      assert.deepEqual(list.members_metafields, []);
+      await configUtils.restore();
+    });
+
+    it('writes nothing when a definition in the batch clashes with an existing one', async function () {
+      await createField({ name: 'Company' });
+
+      await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Role', type: 'short_text' },
+            { name: 'Company', type: 'short_text' },
+          ],
+        })
+        .expectStatus(422);
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body
+        .members_metafields;
+      assert.deepEqual(
+        list.map((field: { key: string }) => field.key),
+        ['company'],
+      );
+    });
+  });
+
+  describe('Ordering', function () {
+    // Order is a property of the list, not of a field: it is set by PUTting the
+    // whole collection in the order it should have, and read back as the order
+    // the list comes out in. No field ever carries a sort order over the API.
+    async function reorder(keys: string[], status = 200) {
+      const { body } = await agent
+        .put('members/metafields/custom/')
+        .body({ members_metafields: keys.map((key) => ({ key })) })
+        .expectStatus(status);
+      return body;
+    }
+
+    async function browseKeys(filter?: string): Promise<string[]> {
+      const url = filter
+        ? `members/metafields/custom/?filter=${encodeURIComponent(filter)}`
+        : 'members/metafields/custom/';
+      const { body } = await agent.get(url).expectStatus(200);
+      return body.members_metafields.map((field: { key: string }) => field.key);
+    }
+
+    it('returns definitions in the order they were created until they are reordered', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      await createField({ name: 'Address' });
+
+      assert.deepEqual(await browseKeys(), ['company', 'shirt_size', 'address']);
+    });
+
+    it('returns definitions in the order a reorder gave them', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      await createField({ name: 'Address' });
+
+      const { members_metafields: reordered } = await reorder(['address', 'company', 'shirt_size']);
+
+      // The response is the new list, so a client re-syncs from it rather than
+      // trusting the order it just guessed.
+      assert.deepEqual(
+        reordered.map((field: { key: string }) => field.key),
+        ['address', 'company', 'shirt_size'],
+      );
+      assert.deepEqual(await browseKeys(), ['address', 'company', 'shirt_size']);
+    });
+
+    // The state every existing site is in the moment the column is added: the
+    // migration writes no ranks, so every row holds the same default and nothing
+    // tells them apart but creation time. Creating fields through the API cannot
+    // reach this state — each create appends a distinct rank — so it is set up
+    // directly, which is exactly what the migration does to a real site.
+    async function asNeverReordered() {
+      await models.Base.knex('members_metafields').update({ sort_order: 0 });
+    }
+
+    it('falls back to creation order while every field holds the default rank', async function () {
+      await createField({ name: 'One' });
+      await createField({ name: 'Two' });
+      await createField({ name: 'Three' });
+      await asNeverReordered();
+
+      assert.deepEqual(await browseKeys(), ['one', 'two', 'three']);
+    });
+
+    it('appends a newly created field to the end of a reordered list', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      await reorder(['shirt_size', 'company']);
+
+      await createField({ name: 'Address' });
+
+      assert.deepEqual(await browseKeys(), ['shirt_size', 'company', 'address']);
+    });
+
+    it('appends every field of a batch create in the order the batch gave them', async function () {
+      await createField({ name: 'Company' });
+      await reorder(['company']);
+
+      await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Shirt size', type: 'short_text' },
+            { name: 'Address', type: 'address' },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(await browseKeys(), ['company', 'shirt_size', 'address']);
+    });
+
+    // Order is one total order over every definition, so archiving takes a field
+    // out of sight without disturbing it and restoring puts it back where it was.
+    it('keeps an archived field in its place and restores it there', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      await createField({ name: 'Address' });
+      await reorder(['address', 'company', 'shirt_size']);
+
+      await setStatus('company', 'archived');
+      assert.deepEqual(await browseKeys(), ['address', 'shirt_size']);
+      assert.deepEqual(await browseKeys('status:[active,archived]'), [
+        'address',
+        'company',
+        'shirt_size',
+      ]);
+
+      await setStatus('company', 'active');
+      assert.deepEqual(await browseKeys(), ['address', 'company', 'shirt_size']);
+    });
+
+    it('reorders around an archived field', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      await createField({ name: 'Address' });
+      await setStatus('shirt_size', 'archived');
+
+      // Settings holds both statuses, so the list it sends names all three.
+      const { members_metafields: reordered } = await reorder(['address', 'shirt_size', 'company']);
+
+      // The response mirrors the request: an order names every definition, so it
+      // returns every definition. This is the one read that does not hide archived
+      // fields, and a caller re-syncing from it gets back exactly what it sent.
+      assert.deepEqual(
+        reordered.map((field: { key: string }) => field.key),
+        ['address', 'shirt_size', 'company'],
+      );
+      assert.equal(reordered[1].status, 'archived');
+
+      assert.deepEqual(await browseKeys(), ['address', 'company']);
+      assert.deepEqual(await browseKeys('status:[active,archived]'), [
+        'address',
+        'shirt_size',
+        'company',
+      ]);
+    });
+
+    // A list that does not name every definition exactly once is rejected rather
+    // than partly applied. This is also what makes a stale client safe: if a
+    // colleague added a field since this client loaded, its list no longer names
+    // every definition and the reorder bounces instead of silently demoting the
+    // new field.
+    it('rejects a list that leaves a definition out', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+
+      await reorder(['shirt_size'], 422);
+
+      assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
+    });
+
+    it('rejects a list naming a field that does not exist', async function () {
+      await createField({ name: 'Company' });
+
+      await reorder(['company', 'nonexistent'], 422);
+
+      assert.deepEqual(await browseKeys(), ['company']);
+    });
+
+    it('rejects a list naming the same field twice', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+
+      await reorder(['company', 'company'], 422);
+
+      assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
+    });
+
+    it('rejects a list naming something that cannot be a key', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+
+      const { errors } = await reorder(['shirt_size', 'Company'], 422);
+
+      assert.equal(errors[0].property, 'key');
+      assert.equal(
+        errors[0].message,
+        'A key can only contain lowercase letters, numbers and underscores.',
+      );
+      assert.deepEqual(await browseKeys(), ['company', 'shirt_size']);
+    });
+
+    // A member's values are an object keyed by field, and an object cannot carry an
+    // order: JSON says nothing about member order, and JavaScript hoists any key
+    // that looks like an array index — a field named "2024" enumerates first however
+    // it was inserted. The definition list is the array that carries the order, and
+    // it is what every surface renders from. All this pins is that reordering does
+    // not disturb the values themselves.
+    it("leaves a member's values untouched when the list is reordered", async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      const memberId = await createMember();
+      await setValues(memberId, { company: 'Ghost', shirt_size: 'M' });
+
+      await reorder(['shirt_size', 'company']);
+
+      assert.deepEqual(await readValues(memberId), { company: 'Ghost', shirt_size: 'M' });
+    });
+
+    // `updated_at` says when the definition changed, and a definition does not change
+    // when the list around it is reordered. Left alone so one drag does not read as
+    // an edit to every field on the site.
+    it('does not mark the fields as edited', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+
+      await reorder(['shirt_size', 'company']);
+
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      for (const field of body.members_metafields) {
+        assert.equal(field.updated_at, null, `${field.key} should not have been touched`);
+      }
+    });
+
+    it('never exposes a sort order on a field', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      const { members_metafields: reordered } = await reorder(['shirt_size', 'company']);
+
+      for (const field of reordered) {
+        assert.equal(field.sort_order, undefined);
+        assert.equal(field.sortOrder, undefined);
+      }
+
+      const { body } = await agent.get('members/metafields/custom/shirt_size/').expectStatus(200);
+      assert.equal(body.members_metafields[0].sort_order, undefined);
+    });
+  });
+
+  describe('Operational limit on the number of definitions', function () {
+    // The cap is an operator setting, not a release constant. Ghost containers
+    // are stateless, so it is read from config on every create: these tests set
+    // it directly and the very next request honours it, with no re-boot.
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    async function createFieldExpecting(name: string, status: number) {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name, type: 'short_text' }] })
+        .expectStatus(status);
+      return body;
+    }
+
+    it('rejects a create once the site is at the limit', async function () {
+      configUtils.set('members:metafields:maxDefinitions', 2);
+
+      await createField({ name: 'Company' });
+      await createField({ name: 'Role' });
+
+      const body = await createFieldExpecting('Bio', 403);
+      assert.equal(body.errors[0].code, 'CUSTOM_FIELDS_LIMIT_REACHED');
+      assert.deepEqual(body.errors[0].details, { limit: 2, total: 2, requested: 1 });
+      // At the ceiling, freeing a slot is the only way forward.
+      assert.match(body.errors[0].context, /Delete a field you no longer need/);
+
+      // The rejected field was not written.
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+      assert.equal(list.members_metafields.length, 2);
+    });
+
+    it('applies a limit change to the very next request, with no restart', async function () {
+      // This is the behaviour that makes the cap operable: raising it must take
+      // effect immediately, which is only true if config is read per request.
+      configUtils.set('members:metafields:maxDefinitions', 1);
+      await createField({ name: 'Company' });
+      await createFieldExpecting('Role', 403);
+
+      configUtils.set('members:metafields:maxDefinitions', 2);
+      const created = await createField({ name: 'Role' });
+      assert.equal(created.key, 'role');
+
+      // ...and lowering it blocks the next create just as immediately.
+      configUtils.set('members:metafields:maxDefinitions', 1);
+      await createFieldExpecting('Bio', 403);
+    });
+
+    it('leaves definitions already over a lowered limit in place', async function () {
+      configUtils.set('members:metafields:maxDefinitions', 3);
+      await createField({ name: 'Company' });
+      await createField({ name: 'Role' });
+      await createField({ name: 'Bio' });
+
+      // Lowering the cap below the current count is a valid operator action.
+      // It stops new definitions; it never removes existing ones.
+      configUtils.set('members:metafields:maxDefinitions', 1);
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+      assert.equal(list.members_metafields.length, 3);
+
+      const body = await createFieldExpecting('Location', 403);
+      assert.deepEqual(body.errors[0].details, { limit: 1, total: 3, requested: 1 });
+    });
+
+    it('counts archived definitions towards the limit, and frees a slot only on delete', async function () {
+      configUtils.set('members:metafields:maxDefinitions', 2);
+      await createField({ name: 'Company' });
+      const spare = await createField({ name: 'Role' });
+
+      // Archiving is reversible and keeps the row (and its members' values),
+      // so it releases nothing.
+      await setStatus(spare.key, 'archived');
+      const body = await createFieldExpecting('Bio', 403);
+      assert.deepEqual(body.errors[0].details, { limit: 2, total: 2, requested: 1 });
+
+      // Deleting the archived field is what actually frees the slot.
+      await agent.delete(`members/metafields/custom/${spare.key}/`).expectStatus(204);
+      const created = await createField({ name: 'Bio' });
+      assert.equal(created.key, 'bio');
+    });
+
+    it("counts only the publisher's own fields, as each namespace has its own limits", async function () {
+      configUtils.set('members:metafields:maxDefinitions', 1);
+      // Written straight to the table, as an app's would be.
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000c1',
+        namespace: 'shop',
+        key: 'company',
+        name: 'Company',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+
+      const body = await createFieldExpecting('Role', 403);
+      assert.deepEqual(body.errors[0].details, { limit: 1, total: 1, requested: 1 });
+    });
+
+    it('restores an archived definition while at the limit', async function () {
+      // Restoring changes no row count, so the cap has nothing to say about it.
+      configUtils.set('members:metafields:maxDefinitions', 2);
+      await createField({ name: 'Company' });
+      const archived = await createField({ name: 'Role' });
+      await setStatus(archived.key, 'archived');
+
+      const restored = await setStatus(archived.key, 'active');
+      assert.equal(restored.status, 'active');
+    });
+
+    it('rejects a batch that would cross the limit, writing none of it', async function () {
+      configUtils.set('members:metafields:maxDefinitions', 3);
+      await createField({ name: 'Company' });
+
+      // Two slots remain, so a batch of three is refused outright rather than
+      // being applied up to the remaining space.
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Role', type: 'short_text' },
+            { name: 'Bio', type: 'short_text' },
+            { name: 'Location', type: 'short_text' },
+          ],
+        })
+        .expectStatus(403);
+      assert.deepEqual(body.errors[0].details, { limit: 3, total: 1, requested: 3 });
+
+      // The site still has room, just not for three. Telling this operator to
+      // delete something would be wrong, so the message says how much room
+      // is actually left.
+      assert.match(body.errors[0].context, /You can add 2 more\./);
+
+      const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body
+        .members_metafields;
+      assert.deepEqual(
+        list.map((field: { key: string }) => field.key),
+        ['company'],
+      );
+    });
+
+    it('accepts a batch that exactly fills the remaining space', async function () {
+      configUtils.set('members:metafields:maxDefinitions', 3);
+      await createField({ name: 'Company' });
+
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            { name: 'Role', type: 'short_text' },
+            { name: 'Bio', type: 'short_text' },
+          ],
+        })
+        .expectStatus(201);
+      assert.equal(body.members_metafields.length, 2);
+    });
+
+    it('rejects every create when the limit is zero', async function () {
+      configUtils.set('members:metafields:maxDefinitions', 0);
+      const body = await createFieldExpecting('Company', 403);
+      assert.deepEqual(body.errors[0].details, { limit: 0, total: 0, requested: 1 });
+    });
+
+    // A setting that can't be read as a ceiling must neither disable the feature
+    // nor remove the safeguard. Several of these coerce to 0 through `Number()`,
+    // which would stop creation site-wide; treating them as "no limit" instead
+    // would mean a typo silently removes the protection. Both are wrong: they
+    // fall back to the default. Only an explicit 0 disables creation.
+    const unreadableSettings: [string, unknown][] = [
+      ['an unreadable string', 'not-a-number'],
+      ['false', false],
+      ['null', null],
+      ['an empty string', ''],
+      ['an array', []],
+      ['a negative number', -5],
+      ['a fraction', 2.5],
+      ['an unsafely large number', 1e21],
+    ];
+
+    unreadableSettings.forEach(([description, value]) => {
+      it(`falls back to the default ceiling when the setting is ${description}`, async function () {
+        configUtils.set('members:metafields:maxDefinitions', value);
+        await createField({ name: 'Company' });
+
+        const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+        assert.equal(list.members_metafields.length, 1);
+      });
+    });
+
+    it('enforces the shipped ceiling, not an absent one, when the setting is unreadable', async function () {
+      // The checks above only prove creation still works. This proves a
+      // ceiling is genuinely still in force: fill the shipped one exactly,
+      // then watch the next create be refused against it.
+      //
+      // The expected ceiling comes from the config provider rather than from
+      // the module that resolves it, so this asserts against what Ghost
+      // actually ships rather than against the implementation's own idea of
+      // it. Read before the override, which is what makes it unreadable.
+      const shipped = configUtils.config.get('members:metafields:maxDefinitions');
+      configUtils.set('members:metafields:maxDefinitions', 'not-a-number');
+
+      // Filled in batches rather than one create at a time: a hundred-odd
+      // sequential authenticated requests trip Ghost's spam prevention and
+      // leave later tests failing on 403s. The chunk sits comfortably under
+      // the per-request cap so this holds if the shipped ceiling moves.
+      const chunk = 50;
+      for (let created = 0; created < shipped; created += chunk) {
+        await agent
+          .post('members/metafields/custom/')
+          .body({
+            members_metafields: Array.from(
+              { length: Math.min(chunk, shipped - created) },
+              (_unused, index) => ({ name: `Field ${created + index}`, type: 'short_text' }),
+            ),
+          })
+          .expectStatus(201);
+      }
+
+      const body = await createFieldExpecting('One too many', 403);
+      assert.deepEqual(body.errors[0].details, { limit: shipped, total: shipped, requested: 1 });
+    });
+
+    it('honours a numeric limit supplied as a string', async function () {
+      // Config set through an environment variable arrives as a string.
+      configUtils.set('members:metafields:maxDefinitions', '1');
+      await createField({ name: 'Company' });
+      await createFieldExpecting('Role', 403);
+    });
+
+    it('does not record an activity-log entry for a create the limit rejected', async function () {
+      configUtils.set('members:metafields:maxDefinitions', 1);
+      await createField({ name: 'Company' });
+      await createFieldExpecting('Role', 403);
+
+      // The key identifies the field publicly; it rides in the action's context
+      // because resource_id holds the row id.
+      const actions = await models.Base.knex('actions')
+        .where('resource_type', 'member_custom_field')
+        .select('context');
+      assert.deepEqual(
+        actions.map((action: { context: string | null }) => JSON.parse(action.context ?? '{}').key),
+        ['company'],
+      );
+    });
+  });
+
+  describe('Field types', function () {
+    // Data-driven over every declared field type: adding a type here (or in the
+    // shared catalog) is a one-line change, not a whole new test. `value` is a
+    // valid example, and proves the type survives a round trip through
+    // whichever storage column it routes to.
+    const CASES = [
+      { type: 'short_text', name: 'A short text field', value: 'Ghosts' },
+      { type: 'long_text', name: 'A long text field', value: 'A '.repeat(5000).trim() },
+      {
+        type: 'address',
+        name: 'A home address',
+        value: {
+          line1: '62 Ghost Lane',
+          line2: 'Apt 3',
+          city: 'Dublin',
+          state: 'Leinster',
+          postal_code: 'D02 AF30',
+          country: 'IE',
+        },
+      },
+    ];
+
+    CASES.forEach(({ type, name }) => {
+      it(`creates a ${type} field`, async function () {
+        const created = await createField({ name, type });
+        assert.equal(created.type, type);
+        assert.ok(created.key);
+      });
+    });
+
+    CASES.forEach(({ type, name, value }) => {
+      it(`round-trips a ${type} value`, async function () {
+        const field = await createField({ name, type });
+        const memberId = await createMember();
+
+        await setValues(memberId, { [field.key]: value });
+
+        assert.deepEqual(await readValues(memberId), { [field.key]: value });
+      });
+    });
+  });
+
+  describe('Values', function () {
+    it('leaves the key off a member with no values set', async function () {
+      await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
+    });
+
+    it('echoes the values back on the edit response', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+
+      const { body } = await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ metafields: { custom: { [field.key]: 'Ghosts' } } }] })
+        .expectStatus(200);
+
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+    });
+
+    it('carries values on browse only when asked, like tiers', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+
+      const plain = (await agent.get('members/').expectStatus(200)).body;
+      assert.equal(plain.members[0].metafields, undefined);
+
+      const included = (await agent.get('members/?include=metafields').expectStatus(200)).body;
+      assert.deepEqual(included.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+    });
+
+    it('gives each member on a browse page its own values', async function () {
+      // Behaviour, not mechanism: every member on the page gets their own
+      // values and no one else's, and a member with none gets no key. (The bulk-lookup implementation is the reason browse stays
+      // off an N+1, but that's an implementation detail this doesn't couple
+      // to — it asserts the result, not the query count.)
+      const field = await createField({ name: 'Favourite topic' });
+      const first = await createMember();
+      const second = await createMember();
+      const third = await createMember();
+      await setValues(first, { [field.key]: 'Ghosts' });
+      await setValues(third, { [field.key]: 'Opera' });
+
+      const { body } = await agent.get('members/?include=metafields').expectStatus(200);
+      const listed = z
+        .object({
+          members: z.array(
+            z.object({
+              id: z.string(),
+              metafields: z.object({ custom: z.record(z.string(), z.unknown()) }).optional(),
+            }),
+          ),
+        })
+        .parse(body);
+      const byId = new Map(listed.members.map((member) => [member.id, member]));
+
+      assert.deepEqual(byId.get(first)?.metafields?.custom, { [field.key]: 'Ghosts' });
+      assert.ok(byId.has(second), 'the member with no values is listed');
+      assert.equal(byId.get(second)?.metafields, undefined);
+      assert.deepEqual(byId.get(third)?.metafields?.custom, { [field.key]: 'Opera' });
+    });
+
+    it('updates a value that is already set', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+      await setValues(memberId, { [field.key]: 'Opera' });
+
+      assert.deepEqual(await readValues(memberId), { [field.key]: 'Opera' });
+    });
+
+    it('leaves fields it does not mention alone', async function () {
+      const topic = await createField({ name: 'Favourite topic' });
+      const company = await createField({ name: 'Company' });
+      const memberId = await createMember();
+      await setValues(memberId, { [topic.key]: 'Ghosts', [company.key]: 'Ghost' });
+
+      await setValues(memberId, { [topic.key]: 'Opera' });
+
+      assert.deepEqual(await readValues(memberId), {
+        [topic.key]: 'Opera',
+        [company.key]: 'Ghost',
+      });
+    });
+
+    it('leaves values alone on an edit that does not mention custom fields at all', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+
+      await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ name: 'Renamed' }] })
+        .expectStatus(200);
+
+      assert.deepEqual(await readValues(memberId), { [field.key]: 'Ghosts' });
+    });
+
+    it('clears a value with null, without touching the others', async function () {
+      const topic = await createField({ name: 'Favourite topic' });
+      const company = await createField({ name: 'Company' });
+      const memberId = await createMember();
+      await setValues(memberId, { [topic.key]: 'Ghosts', [company.key]: 'Ghost' });
+
+      await setValues(memberId, { [topic.key]: null });
+
+      assert.deepEqual(await readValues(memberId), { [company.key]: 'Ghost' });
+    });
+
+    // A value is never empty, so there is one way to hold nothing: `null` clears, for every type.
+    it('refuses an empty string for a text field, which clears with null', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+
+      const body = await setValues(memberId, { [field.key]: '' }, 422);
+      assert.equal(body.errors[0].context, 'Enter a value, or send null to clear it.');
+      assert.deepEqual(await readValues(memberId), { [field.key]: 'Ghosts' });
+
+      await setValues(memberId, { [field.key]: null });
+      assert.deepEqual(await readValues(memberId), {});
+    });
+
+    it('keeps a phone number in one international form, however it was written', async function () {
+      // E.164 whatever the separators, and a national (0) after the country code isn't part of
+      // the number, so one number is one value for filters and integrations to rely on.
+      const field = await createField({ name: 'Mobile', type: 'phone' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: '+44 (0)20 7946-0000' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+442079460000' });
+
+      await setValues(memberId, { [field.key]: '+1 (415) 555 0100' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+14155550100' });
+    });
+
+    it('rejects an empty string for a non-text field rather than clearing it', async function () {
+      // '' is no value of any type, so it's an invalid value, and nothing is coerced.
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: '' }, 422);
+    });
+
+    describe('what a rejected value says', function () {
+      // `message` is the generic "cannot edit member" every rejection carries; the
+      // reason a person reads is `context`.
+      async function reasonFor(customFields: Record<string, unknown>, memberId: string) {
+        const body = await setValues(memberId, customFields, 422);
+        return body.errors[0].context;
+      }
+
+      it('gives a length failure the limit rather than the measurement', async function () {
+        const field = await createField({ name: 'Job title' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: 'x'.repeat(256) }, memberId),
+          'Use 255 characters or fewer.',
+        );
+      });
+
+      it("gives a part failure the part's own limit, not the field's", async function () {
+        // postal_code is bounded well under the 255 its siblings carry, and the
+        // reason has to name the bound that actually stopped the save.
+        const field = await createField({ name: 'Home address', type: 'address' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: { postal_code: 'x'.repeat(33) } }, memberId),
+          'Use 32 characters or fewer.',
+        );
+      });
+
+      it('says what a country code should be, whichever way it was wrong', async function () {
+        // One rule broken three ways; fixing any of them needs the same sentence.
+        const field = await createField({ name: 'Home address', type: 'address' });
+        const memberId = await createMember();
+        const expected = 'Enter a 2-letter country code, like US.';
+
+        assert.equal(await reasonFor({ [field.key]: { country: 'IRL' } }, memberId), expected);
+        assert.equal(await reasonFor({ [field.key]: { country: '12' } }, memberId), expected);
+        assert.equal(await reasonFor({ [field.key]: { country: 'D' } }, memberId), expected);
+      });
+
+      it('asks for the country code a phone number was written without', async function () {
+        // Without it there is no telling which country's number it is.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '020 7946 0000' }, memberId),
+          'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+        );
+      });
+
+      it('rejects an invalid phone number with an example from its own country', async function () {
+        // A British example is no help to someone writing a Brazilian number.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+44 20 7946 000' }, memberId),
+          'Enter a valid phone number, like +44 7400 123456.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 9612' }, memberId),
+          'This phone number is too short. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 96123 45678 99' }, memberId),
+          'This phone number is too long. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+999 1234567' }, memberId),
+          'Enter a phone number with a valid country code, like +44 20 7946 0000.',
+        );
+      });
+
+      it('refuses a phone number with an extension rather than dropping it', async function () {
+        const field = await createField({ name: 'Office', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+1 415 555 0100 ext. 12' }, memberId),
+          'Enter the phone number without an extension.',
+        );
+      });
+
+      it('asks for a part when an address names none', async function () {
+        const field = await createField({ name: 'Home address', type: 'address' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: {} }, memberId),
+          'Enter at least one part of the address.',
+        );
+      });
+
+      it('hands the caller a sentence rather than schema wording', async function () {
+        // Covers what the API can be sent, not only what the editor sends. The
+        // catalog's own test walks every rule; this proves the sentence survives
+        // the service, the error handler and the wire.
+        const address = await createField({ name: 'Home address', type: 'address' });
+        const text = await createField({ name: 'Job title' });
+        const memberId = await createMember();
+        const schemaWording = /Too big|Too small|Invalid input|Unrecognized|expected /;
+
+        const reasons = [
+          await reasonFor({ [text.key]: 'x'.repeat(256) }, memberId),
+          await reasonFor({ [text.key]: 42 }, memberId),
+          await reasonFor({ [address.key]: { line1: 'x'.repeat(256) } }, memberId),
+          await reasonFor({ [address.key]: { postal_code: 'x'.repeat(33) } }, memberId),
+          await reasonFor({ [address.key]: { country: 'IRL' } }, memberId),
+          await reasonFor({ [address.key]: { city: 42 } }, memberId),
+          await reasonFor({ [address.key]: {} }, memberId),
+        ];
+
+        for (const reason of reasons) {
+          assert.doesNotMatch(reason, schemaWording);
+          // A sentence, not a fragment: something a screen can show unedited.
+          assert.match(reason, /^[A-Z].*\.$/);
+        }
+      });
+    });
+
+    it('omits a stored value whose type is no longer valid, without failing the read', async function () {
+      // Stored data outlives the catalog: if a value's field type is later
+      // dropped or renamed, reading the member must degrade — omit that one
+      // value — not fail the whole payload.
+      const good = await createField({ name: 'Favourite topic' });
+      const stale = await createField({ name: 'Legacy field' });
+      const memberId = await createMember();
+      await setValues(memberId, { [good.key]: 'Ghosts', [stale.key]: 'kept' });
+
+      // Corrupt the stored field's type directly, past the service's immutability.
+      await models.Base.knex('members_metafields')
+        .where('key', stale.key)
+        .update({ type: 'no_longer_a_type' });
+
+      assert.deepEqual(await readValues(memberId), { [good.key]: 'Ghosts' });
+    });
+
+    it('omits a stored value laid out as another shape than its type declares', async function () {
+      // No write through the API stores parts under a text field, so these rows are inserted
+      // directly.
+      const good = await createField({ name: 'Favourite topic' });
+      const stray = await createField({ name: 'Nickname' });
+      const memberId = await createMember();
+      await setValues(memberId, { [good.key]: 'Ghosts', [stray.key]: 'Bex' });
+
+      await models.Base.knex('members_metafield_values')
+        .where({ metafield_key: stray.key, member_id: memberId })
+        .update({ path: 'first' });
+
+      assert.deepEqual(await readValues(memberId), { [good.key]: 'Ghosts' });
+    });
+
+    it('reads the parts its type lays out from a stored record, beside stray rows', async function () {
+      // No write through the API stores a row anywhere but where the type lays out its value, so
+      // these rows are inserted directly.
+      const good = await createField({ name: 'Favourite topic' });
+      const address = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+      await setValues(memberId, {
+        [good.key]: 'Ghosts',
+        [address.key]: { city: 'London', country: 'GB' },
+      });
+
+      const values = () => models.Base.knex('members_metafield_values');
+      const [stored] = await values().where({ metafield_key: address.key, member_id: memberId });
+      // Nested under a declared part, beside the declared parts, and at the root a scalar uses.
+      for (const path of ['city.district', 'county', '']) {
+        await values().insert({ ...stored, path, value_text: 'stray' });
+      }
+
+      assert.deepEqual(await readValues(memberId), {
+        [good.key]: 'Ghosts',
+        [address.key]: { city: 'London', country: 'GB' },
+      });
+
+      // A save names only declared parts, so it can't remove the stray rows, and has to read back
+      // beside them.
+      await setValues(memberId, { [address.key]: { city: 'York' } });
+      assert.deepEqual((await readValues(memberId))[address.key], { city: 'York', country: 'GB' });
+    });
+
+    it('reads a member whose only stored value is unreadable as holding none', async function () {
+      const stray = await createField({ name: 'Nickname' });
+      const memberId = await createMember();
+      await setValues(memberId, { [stray.key]: 'Bex' });
+
+      await models.Base.knex('members_metafield_values')
+        .where({ metafield_key: stray.key, member_id: memberId })
+        .update({ path: 'first' });
+
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
+    });
+
+    it('creates a member with their values in one request', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+
+      const { body } = await agent
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'create-with-values@example.com',
+              metafields: { custom: { [field.key]: 'Ghosts' } },
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+      assert.deepEqual(await readValues(body.members[0].id), { [field.key]: 'Ghosts' });
+    });
+
+    it('creates no member when one of their values is refused', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const email = 'create-refused-value@example.com';
+
+      await agent
+        .post('members/')
+        .body({
+          members: [{ email, metafields: { custom: { [field.key]: 'Ghosts', not_a_field: 'x' } } }],
+        })
+        .expectStatus(422);
+
+      const { body } = await agent
+        .get(`members/?filter=${encodeURIComponent(`email:'${email}'`)}`)
+        .expectStatus(200);
+      assert.equal(body.members.length, 0);
+    });
+
+    it('creates a member on a tier with their values', async function () {
+      // The tier is looked up while the member and their values are being saved together.
+      const field = await createField({ name: 'Favourite topic' });
+      const { body: tiers } = await agent.get('tiers/?limit=1&filter=type:paid').expectStatus(200);
+
+      const { body } = await agent
+        .post('members/')
+        .body({
+          members: [
+            {
+              email: 'create-tier-with-values@example.com',
+              tiers: [{ id: tiers.tiers[0].id }],
+              metafields: { custom: { [field.key]: 'Ghosts' } },
+            },
+          ],
+        })
+        .expectStatus(201);
+
+      assert.equal(body.members[0].tiers[0].id, tiers.tiers[0].id);
+      assert.deepEqual(body.members[0].metafields.custom, { [field.key]: 'Ghosts' });
+    });
+
+    it('refuses a value in a namespace holding no fields, as an unknown field', async function () {
+      const memberId = await createMember();
+      const { body } = await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ metafields: { transistor: { private_url: 'https://x' } } }] })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'metafields.transistor.private_url');
+      assert.match(body.errors[0].context, /Unknown custom field/);
+    });
+
+    it('rejects a key too long to name a field, without echoing it back', async function () {
+      // Keys are minted into a bounded column, so a longer one cannot name a
+      // field. Refused as input rather than looked up, so the response never
+      // carries it back — the unknown-key error names the key it was given.
+      const memberId = await createMember();
+      const hugeKey = 'k'.repeat(200000);
+
+      const body = await setValues(memberId, { [hugeKey]: 'v' }, 422);
+      assert.equal(body.errors[0].property, 'metafields');
+      assert.ok(body.errors[0].context.length < 1000, 'the key must not be echoed back');
+    });
+
+    it('rejects a write naming more fields than the site may define', async function () {
+      // The ceiling is the operator's configured definitions limit, so it moves
+      // with the setting rather than being fixed in the service.
+      configUtils.set('members:metafields:maxDefinitions', 3);
+      const memberId = await createMember();
+
+      const atCeiling = Object.fromEntries(Array.from({ length: 3 }, (_, i) => [`k${i}`, 'v']));
+      // At the ceiling it gets as far as resolving the keys, which is where an
+      // undefined field is the thing rejected — not the ceiling.
+      const allowed = await setValues(memberId, atCeiling, 422);
+      assert.match(allowed.errors[0].context ?? allowed.errors[0].message, /Unknown custom field/);
+
+      const overCeiling = Object.fromEntries(Array.from({ length: 4 }, (_, i) => [`k${i}`, 'v']));
+      const refused = await setValues(memberId, overCeiling, 422);
+      assert.equal(refused.errors[0].property, 'metafields');
+      assert.match(refused.errors[0].context ?? refused.errors[0].message, /limited to 3 fields/);
+    });
+
+    it('refuses a malformed metafields identically on create and on edit', async function () {
+      // The schema lets every shape through, so the service is the only thing
+      // judging it, and both verbs judge it the same way. A body too malformed
+      // to be a write is refused rather than accepted and dropped.
+      const memberId = await createMember();
+
+      for (const [index, malformed] of [null, 'not-an-object', 42, true, [], ['a']].entries()) {
+        const created = await agent
+          .post('members/')
+          .body({
+            members: [{ email: `create-malformed-${index}@example.com`, metafields: malformed }],
+          })
+          .expectStatus(422);
+        assert.equal(created.body.errors[0].property, 'metafields');
+
+        const edited = await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ metafields: malformed }] })
+          .expectStatus(422);
+        assert.equal(edited.body.errors[0].property, 'metafields');
+      }
+    });
+
+    it('refuses a __proto__ key as an unknown field rather than dropping it', async function () {
+      // `__proto__` is special to JavaScript objects: assigned rather than treated as a plain
+      // map key, it can poison every object in the process. It is refused like any unmintable
+      // key, and the final assertion checks nothing leaked into the prototype on the way.
+      const payload = JSON.parse('{"__proto__": {"polluted": true}}');
+      await createField({ name: 'Favourite topic' });
+
+      await agent
+        .post('members/')
+        .body({ members: [{ email: 'create-proto@example.com', metafields: { custom: payload } }] })
+        .expectStatus(422);
+
+      const memberId = await createMember();
+      const { body } = await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ metafields: { custom: payload } }] })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'metafields.custom.__proto__');
+
+      assert.deepEqual(await readValues(memberId), {});
+      assert.equal('polluted' in {}, false, 'the prototype must not be polluted');
+    });
+
+    it('accepts an empty metafields when creating a member', async function () {
+      // `{}` asks for nothing, and an edit treats it as a no-op, so a client
+      // whose serializer always emits the key can still create members.
+      await agent
+        .post('members/')
+        .body({
+          members: [{ email: 'create-empty-values@example.com', metafields: { custom: {} } }],
+        })
+        .expectStatus(201);
+    });
+
+    it('clearing a value that was never set is a no-op', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: null });
+
+      assert.deepEqual(await readValues(memberId), {});
+    });
+
+    it('rejects an unknown field key', async function () {
+      const memberId = await createMember();
+
+      const body = await setValues(memberId, { not_a_field: 'x' }, 422);
+
+      assert.equal(body.errors[0].property, 'metafields.custom.not_a_field');
+    });
+
+    it('rejects a value for an archived field', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setStatus(field.key, 'archived');
+
+      await setValues(memberId, { [field.key]: 'Ghosts' }, 422);
+    });
+
+    it('hides the values of an archived field, but keeps them', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+
+      await setStatus(field.key, 'archived');
+
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
+      // The row survives archiving — only the definition was hidden, and the
+      // value is still attached to it (restoring the field brings it back).
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
+      assert.equal(rows.length, 1);
+    });
+
+    // The record has to be made at the moment of the write; nothing can reconstruct it
+    // later. What reads it is a separate question — this pins only that it is written,
+    // and that it names where the value currently held came from rather than the first.
+    // Provenance is observable nowhere else yet, so this reads the columns directly.
+    //
+    // The second write comes from an integration rather than the owner, because a
+    // re-write by the same writer cannot tell "the writer follows the value" apart from
+    // "the writer is whoever wrote first" — the two agree on every row.
+    it('records who wrote each value, and re-records it on every write', async function () {
+      const field = await createField({ name: 'Postal address', type: 'address' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: { line1: '1 High Street', city: 'London' } });
+
+      type WrittenRow = { path: string; written_by_type: string; written_by_id: string | null };
+      const writersOf = async (): Promise<WrittenRow[]> =>
+        models.Base.knex('members_metafield_values')
+          .where('member_id', memberId)
+          .orderBy('path')
+          .select('path', 'written_by_type', 'written_by_id');
+
+      const firstWrite = await writersOf();
+      assert.deepEqual(
+        firstWrite.map(({ path, written_by_type: type }) => ({ path, type })),
+        [
+          { path: 'city', type: 'user' },
+          { path: 'line1', type: 'user' },
+        ],
+      );
+
+      // The owner made the write, so every part names them rather than only the
+      // first, and the id resolves back to the actual person.
+      const owner = firstWrite[0].written_by_id;
+      assert.ok(owner, 'the writer is identified, not merely named');
+      assert.deepEqual(
+        firstWrite.map(({ written_by_id: id }) => id),
+        [owner, owner],
+      );
+
+      await agent.useZapierAdminAPIKey();
+      try {
+        await setValues(memberId, { [field.key]: { city: 'Bristol' } });
+      } finally {
+        await agent.loginAsOwner();
+      }
+
+      // Only the part the second write touched changes hands, and it names the writer
+      // of the value there now rather than the one who put the first value there.
+      const secondWrite = await writersOf();
+      assert.deepEqual(
+        secondWrite.map(({ path, written_by_type: type }) => ({ path, type })),
+        [
+          { path: 'city', type: 'integration' },
+          { path: 'line1', type: 'user' },
+        ],
+      );
+      assert.notEqual(secondWrite[0].written_by_id, owner, 'the integration is identified too');
+      assert.ok(secondWrite[0].written_by_id);
+      assert.equal(secondWrite[1].written_by_id, owner);
+
+      // Each write also shows on the member's activity feed, saying where it was made.
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { source: string; written_by_type: string } }) => ({
+          source: data.source,
+          writer: data.written_by_type,
+        })),
+        [
+          { source: 'admin_api', writer: 'integration' },
+          { source: 'admin', writer: 'user' },
+        ],
+      );
+    });
+
+    // A staff token belongs to a person rather than an integration, but whoever holds it is
+    // calling the API rather than using Admin, and the feed has to say so.
+    it('says a change made with a staff token was made through the Admin API', async function () {
+      const field = await createField({ name: 'Company' });
+      const memberId = await createMember();
+
+      await agent.useStaffTokenForOwner();
+      try {
+        await setValues(memberId, { [field.key]: 'Acme' });
+      } finally {
+        await agent.loginAsOwner();
+      }
+
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { source: string; written_by_type: string } }) => ({
+          source: data.source,
+          writer: data.written_by_type,
+        })),
+        [{ source: 'admin_api', writer: 'user' }],
+      );
+    });
+
+    // No API writes an entry the feed can't read, so the only way to show what happens to
+    // one is to put it in the table directly.
+    it('shows an unreadable activity entry as naming no fields rather than failing the feed', async function () {
+      const field = await createField({ name: 'Department' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Sales' });
+
+      await models.Base.knex('members_metafield_change_events').insert({
+        id: '0123456789abcdef01234567',
+        member_id: memberId,
+        written_by_type: 'import',
+        written_by_id: null,
+        source: 'import',
+        metafields: '{not json',
+        created_at: '2020-01-01 00:00:00',
+      });
+
+      const filter = encodeURIComponent(`data.member_id:'${memberId}'+type:metafield_change_event`);
+      const { body } = await agent.get(`members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }: { data: { metafields: Array<{ name: string }> } }) =>
+          data.metafields.map(({ name }) => name),
+        ),
+        [['Department'], []],
+      );
+    });
+
+    it("drops a field's values when the field is permanently deleted", async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+
+      // Archive then delete — the FK cascade removes the member's value with
+      // the definition, so a permanent delete takes the data with it.
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
+      assert.equal(rows.length, 0);
+    });
+
+    it('rejects a value that is the wrong type for the field', async function () {
+      const field = await createField({ name: 'Favourite topic', type: 'short_text' });
+      const memberId = await createMember();
+
+      const body = await setValues(memberId, { [field.key]: { not: 'a string' } }, 422);
+
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
+    });
+
+    it('points at the offending part of a composite value', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      const body = await setValues(
+        memberId,
+        { [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IRL' } },
+        422,
+      );
+
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}.country`);
+    });
+
+    it('round-trips an address that omits the parts its country has no use for', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+      // Hong Kong has no postal code, so an address without one is complete.
+      const address = { line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', country: 'HK' };
+
+      await setValues(memberId, { [field.key]: address });
+
+      assert.deepEqual(await readValues(memberId), { [field.key]: address });
+    });
+
+    it('writes the parts a request names and leaves the rest alone', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, {
+        [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
+      });
+      await setValues(memberId, { [field.key]: { city: 'Cork' } });
+
+      // A part of a value is a field, so the rule is the same one level down as it
+      // is one level up: naming a field writes it and omitting one leaves it.
+      assert.deepEqual(await readValues(memberId), {
+        [field.key]: { line1: '62 Ghost Lane', city: 'Cork', country: 'IE' },
+      });
+    });
+
+    it('clears the part a request names as null', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, {
+        [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
+      });
+      await setValues(memberId, { [field.key]: { city: null } });
+
+      // Clearing is said out loud, because absence already means "no change".
+      assert.deepEqual(await readValues(memberId), {
+        [field.key]: { line1: '62 Ghost Lane', country: 'IE' },
+      });
+    });
+
+    it('clears a part whose rule is a format, not only one bounded by length', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, {
+        [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
+      });
+      await setValues(memberId, { [field.key]: { country: null } });
+
+      // Every part clears the same way. A country's rule is a pattern that nothing
+      // empty can match, so a clear per part's rule would make this the one part a
+      // member could be given but never rid of.
+      assert.deepEqual(await readValues(memberId), {
+        [field.key]: { line1: '62 Ghost Lane', city: 'Dublin' },
+      });
+    });
+
+    it('stores a country code in one case whichever case it arrives in', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: { city: 'Bristol', country: 'gb' } });
+
+      assert.deepEqual(await readValues(memberId), {
+        [field.key]: { city: 'Bristol', country: 'GB' },
+      });
+    });
+
+    it('refuses a part sent as an empty string rather than storing it as one', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      // There is no place to record "this part is empty" separately from "this part is unset":
+      // a part holding nothing has no row. So an empty part is refused rather than read as one
+      // of the two.
+      await setValues(memberId, { [field.key]: { line1: '62 Ghost Lane', city: '' } }, 422);
+
+      assert.deepEqual(await readValues(memberId), {});
+    });
+
+    it('rejects an address with nothing in it', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      const body = await setValues(memberId, { [field.key]: {} }, 422);
+
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
+    });
+
+    it('refuses a part of a composite value it does not recognise', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+      const address = { line1: '62 Ghost Lane', city: 'Dublin', postal_code: 'D02', country: 'IE' };
+
+      await setValues(memberId, { [field.key]: address });
+
+      // The same answer an unknown field key gets, one level down. A misspelled part
+      // used to be dropped in silence, which loses what somebody typed and tells
+      // them it saved.
+      const body = await setValues(
+        memberId,
+        { [field.key]: { ...address, city: 'Cork', citty: 'Dublin' } },
+        422,
+      );
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}`);
+
+      // The parts it named alongside the typo are not written either: a refused write
+      // leaves what was already stored exactly as it was.
+      assert.deepEqual(await readValues(memberId), { [field.key]: address });
+    });
+
+    it('applies nothing when one value in the batch is invalid', async function () {
+      const topic = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [topic.key]: 'Ghosts', not_a_field: 'x' }, 422);
+
+      assert.deepEqual(await readValues(memberId), {});
+    });
+
+    it('does not apply the rest of the member edit when a value is invalid', async function () {
+      const memberId = await createMember();
+
+      await agent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ name: 'Should not persist', metafields: { custom: { not_a_field: 'x' } } }],
+        })
+        .expectStatus(422);
+
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.equal(body.members[0].name, null);
+    });
+
+    it("drops a member's values when the member is deleted", async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+
+      await agent.delete(`members/${memberId}/`).expectStatus(204);
+
+      const rows = await models.Base.knex('members_metafield_values').where('member_id', memberId);
+      assert.deepEqual(rows, []);
+    });
+
+    it('accepts a long_text value at the byte limit', async function () {
+      const field = await createField({ name: 'Bio', type: 'long_text' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: 'a'.repeat(65535) });
+
+      assert.equal((await readValues(memberId))[field.key].length, 65535);
+    });
+
+    it('rejects a long_text value over the byte limit', async function () {
+      const field = await createField({ name: 'Bio', type: 'long_text' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: 'a'.repeat(65536) }, 422);
+    });
+
+    it('bounds long_text in bytes, not characters', async function () {
+      // 21,846 three-byte characters is 65,538 bytes: comfortably inside any
+      // character-based reading of the limit, and past what the column holds.
+      const field = await createField({ name: 'Bio', type: 'long_text' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: '€'.repeat(21846) }, 422);
+
+      // One character fewer is 65,535 bytes exactly, and is accepted.
+      await setValues(memberId, { [field.key]: '€'.repeat(21845) });
+      assert.equal((await readValues(memberId))[field.key].length, 21845);
+    });
+
+    it('rejects an over-long address part', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      const body = await setValues(
+        memberId,
+        {
+          [field.key]: {
+            line1: 'a'.repeat(256),
+            city: 'Dublin',
+            postal_code: 'D02',
+            country: 'IE',
+          },
+        },
+        422,
+      );
+
+      assert.equal(body.errors[0].property, `metafields.custom.${field.key}.line1`);
+    });
+
+    it('rejects an over-long postal code', async function () {
+      const field = await createField({ name: 'Home address', type: 'address' });
+      const memberId = await createMember();
+
+      await setValues(
+        memberId,
+        {
+          [field.key]: {
+            line1: '62 Ghost Lane',
+            city: 'Dublin',
+            postal_code: 'D'.repeat(33),
+            country: 'IE',
+          },
+        },
+        422,
+      );
+    });
+
+    it('keeps values separate per member', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      const first = await createMember();
+      const second = await createMember();
+
+      await setValues(first, { [field.key]: 'Ghosts' });
+      await setValues(second, { [field.key]: 'Opera' });
+
+      assert.deepEqual(await readValues(first), { [field.key]: 'Ghosts' });
+      assert.deepEqual(await readValues(second), { [field.key]: 'Opera' });
+    });
+
+    async function memberEditedActions(memberId: string) {
+      return models.Base.knex('actions').where({
+        resource_id: memberId,
+        resource_type: 'member',
+        event: 'edited',
+      });
+    }
+
+    // An action is inserted once the edit's transaction commits, which can be after the
+    // response, so this waits for the first one to land.
+    async function recordedMemberEditedActions(memberId: string) {
+      return vi.waitFor(async () => {
+        const actions = await memberEditedActions(memberId);
+        assert.ok(actions.length > 0, 'no member edited action recorded yet');
+        return actions;
+      });
+    }
+
+    // Runs `fn` while counting `member.edited` common events (the signal
+    // webhooks listen to) for the given member.
+    async function countMemberEditedEvents(
+      memberId: string,
+      fn: () => Promise<void>,
+    ): Promise<number> {
+      let fired = 0;
+      const handler = (model: { id: string }) => {
+        if (model && model.id === memberId) {
+          fired += 1;
+        }
+      };
+      events.on('member.edited', handler);
+      try {
+        await fn();
+      } finally {
+        events.removeListener('member.edited', handler);
+      }
+      return fired;
+    }
+
+    it('fires member.edited (audit action and the webhook event) when only custom fields change', async function () {
+      // A values-only edit doesn't touch the member row, so the member's own
+      // save fires nothing — the custom-field write re-fires the member's
+      // edited signals itself, like a labels edit: the audit action and the
+      // member.edited event webhooks listen to.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await models.Base.knex('actions').where('resource_id', memberId).del();
+
+      const editedEvents = await countMemberEditedEvents(memberId, () =>
+        setValues(memberId, { [field.key]: 'Ghosts' }),
+      );
+
+      assert.equal(editedEvents, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
+    });
+
+    it('fires member.edited for an edit that changes the member too only once the new values are stored', async function () {
+      // Anything that reads the values when member.edited fires, such as a webhook, has to
+      // see the new ones.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: 'Reading' });
+
+      let readAtEvent: Promise<unknown> | undefined;
+      const handler = (model: { id: string }) => {
+        if (model.id === memberId) {
+          readAtEvent = models.Base.knex('members_metafield_values')
+            .where({ member_id: memberId, metafield_key: field.key })
+            .first('value_text')
+            // Started now, when the event fires; a knex query otherwise waits to be awaited.
+            .then((row: unknown) => row);
+        }
+      };
+      events.on('member.edited', handler);
+      try {
+        await agent
+          .put(`members/${memberId}/`)
+          .body({
+            members: [{ name: 'Renamed', metafields: { custom: { [field.key]: 'Ghosts' } } }],
+          })
+          .expectStatus(200);
+      } finally {
+        events.removeListener('member.edited', handler);
+      }
+
+      assert.ok(readAtEvent, 'member.edited fired');
+      assert.deepEqual(await readAtEvent, { value_text: 'Ghosts' });
+    });
+
+    it('fires a single member.edited when the edit changes the member too', async function () {
+      // The member's own save already fires it; the custom-field write must
+      // not add a second.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      await models.Base.knex('actions').where('resource_id', memberId).del();
+
+      const editedEvents = await countMemberEditedEvents(memberId, async () => {
+        await agent
+          .put(`members/${memberId}/`)
+          .body({
+            members: [{ name: 'Renamed', metafields: { custom: { [field.key]: 'Ghosts' } } }],
+          })
+          .expectStatus(200);
+      });
+
+      assert.equal(editedEvents, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
+    });
+
+    it('fires member.edited when a full PUT resends unchanged member fields with a custom-field change', async function () {
+      // A client may PUT the whole member unchanged except for a custom field.
+      // The native save is then a no-op, so keying off the actual save
+      // (model._changed), not the request body, is what still fires the event.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      const { email } = body.members[0];
+      await models.Base.knex('actions').where('resource_id', memberId).del();
+
+      const editedEvents = await countMemberEditedEvents(memberId, async () => {
+        await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ email, metafields: { custom: { [field.key]: 'Ghosts' } } }] })
+          .expectStatus(200);
+      });
+
+      assert.equal(editedEvents, 1);
+      assert.equal((await recordedMemberEditedActions(memberId)).length, 1);
+    });
+
+    it('fires no member.edited when the metafields object is empty', async function () {
+      const memberId = await createMember();
+      await models.Base.knex('actions').where('resource_id', memberId).del();
+
+      const editedEvents = await countMemberEditedEvents(memberId, () => setValues(memberId, {}));
+
+      assert.equal(editedEvents, 0);
+      assert.equal((await memberEditedActions(memberId)).length, 0);
+    });
+  });
+
+  // Saving custom field values must lock only the rows it changes, or two members created at
+  // once each wait for the other's lock until MySQL cancels one of the requests. These tests
+  // create members rather than edit them, because editing two members who get the same
+  // newsletter makes the second edit wait for the first, so their saves never overlap.
+  describe.runIf(DatabaseInfo.isMySQL(knex))('Two members created at once', function () {
+    // Sends both creates while a transaction holds a lock on the whole members_metafield_values
+    // table, so neither create can write a value yet. Once both creates are waiting on that
+    // lock, or one has already answered, the lock is released and both write their values at
+    // the same time, which is when a deadlock can happen. The table is empty at the start of
+    // each test, so a locking read of every row blocks every insert into the table.
+    async function createBothAtOnce(
+      values: [Record<string, unknown>, Record<string, unknown>],
+    ): Promise<Array<Record<string, unknown>>> {
+      const gate = await models.Base.knex.transaction();
+      let created: Array<{ statusCode: number; body: { members: Array<{ id: string }> } }>;
+      let creates: Array<Promise<(typeof created)[number]>> = [];
+      try {
+        await gate('members_metafield_values').forUpdate();
+        let answered = 0;
+        creates = values.map((custom) => {
+          memberCounter += 1;
+          return agent
+            .post('members/')
+            .body({
+              members: [
+                { email: `custom-fields-${memberCounter}@example.com`, metafields: { custom } },
+              ],
+            })
+            .then((response: (typeof created)[number]) => {
+              answered += 1;
+              return response;
+            });
+        });
+        await vi.waitFor(
+          async () =>
+            assert.equal(
+              (await transactionsWaitingOn(knex, 'members_metafield_values')) + answered,
+              2,
+            ),
+          { timeout: 5000 },
+        );
+        await gate.commit();
+        created = await Promise.all(creates);
+      } finally {
+        if (!gate.isCompleted()) {
+          await gate.rollback();
+        }
+        // Waited for however the test ends, so no create is still writing when the next test
+        // starts.
+        await Promise.allSettled(creates);
+      }
+
+      assert.deepEqual(
+        created.map(({ statusCode }) => statusCode),
+        [201, 201],
+        'one of the creates failed',
+      );
+      return Promise.all(created.map(({ body }) => readValues(body.members[0].id)));
+    }
+
+    it('keeps both lists', async function () {
+      const animals = await createField({
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+      });
+
+      const saved = await createBothAtOnce([
+        { [animals.key]: ['Dog'] },
+        { [animals.key]: ['Cat'] },
+      ]);
+
+      assert.deepEqual(saved, [{ [animals.key]: ['Dog'] }, { [animals.key]: ['Cat'] }]);
+    });
+
+    it('keeps both when each clears a field and fills another', async function () {
+      const topic = await createField({ name: 'Favourite topic' });
+      const company = await createField({ name: 'Company' });
+
+      const saved = await createBothAtOnce([
+        { [topic.key]: null, [company.key]: 'Ghost' },
+        { [topic.key]: null, [company.key]: 'Acme' },
+      ]);
+
+      assert.deepEqual(saved, [{ [company.key]: 'Ghost' }, { [company.key]: 'Acme' }]);
+    });
+  });
+
+  describe('Values on a site that defines no fields', function () {
+    it('omits metafields from the member payload entirely', async function () {
+      const memberId = await createMember();
+
+      const { body } = await agent.get(`members/${memberId}/?include=metafields`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
+    });
+
+    it('refuses a write naming a field rather than discarding it', async function () {
+      const memberId = await createMember();
+
+      const { body } = await agent
+        .put(`members/${memberId}/`)
+        .body({
+          members: [{ name: 'Renamed', metafields: { custom: { favourite_topic: 'Opera' } } }],
+        })
+        .expectStatus(422);
+      assert.equal(body.errors[0].property, 'metafields.custom.favourite_topic');
+
+      const { body: read } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.notEqual(read.members[0].name, 'Renamed');
+    });
+
+    it('leaves the key off until the member holds a value, even once a field exists', async function () {
+      const memberId = await createMember();
+      await createField({ name: 'Favourite topic' });
+
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      assert.equal(Object.hasOwn(body.members[0], 'metafields'), false);
+    });
+  });
+
+  describe('records actions in the history (via the actions API)', function () {
+    let actorId: string;
+
+    const customFieldActions = async () => {
+      const { body } = await agent
+        .get('actions/?filter=resource_type:member_custom_field&include=actor,resource')
+        .expectStatus(200);
+      return body.actions;
+    };
+
+    // A field is addressed publicly by its namespace and key, and both ride in the action's
+    // context rather than in resource_id, which holds the row id.
+    const ActionContext = z.object({
+      primary_name: z.string().optional(),
+      namespace: z.string().optional(),
+      key: z.string().optional(),
+      previous_name: z.string().optional(),
+      member_access: z.string().optional(),
+      previous_member_access: z.string().optional(),
+      action_name: z.string().optional(),
+      count: z.number().optional(),
+    });
+    const contextOf = (a: { context: unknown }) =>
+      ActionContext.parse(typeof a.context === 'string' ? JSON.parse(a.context) : a.context);
+
+    beforeAll(async function () {
+      actorId = (await agent.get('users/me/').expectStatus(200)).body.users[0].id;
+    });
+
+    it("records what a field's member access became, and what it was", async function () {
+      const field = await createField({ name: 'Shoe size' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ access: { member: 'write' } }] })
+        .expectStatus(200);
+
+      const actions = await customFieldActions();
+      const opened = actions.find((a: { event: string }) => a.event === 'edited');
+
+      assert.ok(opened, 'an edited action was recorded');
+      assert.equal(contextOf(opened).member_access, 'write');
+      assert.equal(contextOf(opened).previous_member_access, 'none');
+    });
+
+    it('records an "added" action when a field is created', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+
+      const actions = await customFieldActions();
+      assert.equal(actions.length, 1);
+      assert.equal(actions[0].event, 'added');
+      assert.equal(contextOf(actions[0]).namespace, 'custom');
+      assert.equal(contextOf(actions[0]).key, field.key);
+      assert.equal(actions[0].actor_type, 'user');
+      assert.equal(actions[0].actor_id, actorId);
+      assert.equal(actions[0].resource.name, field.name);
+    });
+
+    // `resource_id` holds 24 characters and a key derived from a publisher-chosen
+    // name can be far longer, so only the row id fits every field. The action is
+    // written in the add's transaction, so a row that did not fit would fail the add.
+    it('records an action for a field whose key is longer than resource_id allows', async function () {
+      const field = await createField({ name: 'Favourite ice cream flavour' });
+      assert.ok(
+        field.key.length > 24,
+        'the key needs to be longer than resource_id to be a regression test',
+      );
+
+      const actions = await customFieldActions();
+      assert.equal(actions.length, 1);
+      assert.equal(contextOf(actions[0]).key, field.key);
+
+      const row = await models.Base.knex('members_metafields').where('key', field.key).first();
+      assert.equal(actions[0].resource_id, row.id);
+    });
+
+    // A reorder is one act by the publisher, so it is one entry — not one per
+    // field whose position happened to shift. It belongs to no single field, so
+    // it carries no resource_id, and the count is what lets the activity feed
+    // read it as "3 custom fields reordered".
+    it('records a single action when the list is reordered', async function () {
+      await createField({ name: 'Company' });
+      await createField({ name: 'Shirt size' });
+      await createField({ name: 'Address' });
+
+      await agent
+        .put('members/metafields/custom/')
+        .body({
+          members_metafields: [{ key: 'address' }, { key: 'company' }, { key: 'shirt_size' }],
+        })
+        .expectStatus(200);
+
+      const edited = (await customFieldActions()).filter(
+        (a: { event: string }) => a.event === 'edited',
+      );
+      assert.equal(edited.length, 1, 'a reorder records one action, not one per field');
+      assert.equal(edited[0].resource_id, null);
+      assert.equal(contextOf(edited[0]).action_name, 'reordered');
+      assert.equal(contextOf(edited[0]).namespace, 'custom');
+      assert.equal(contextOf(edited[0]).count, 3);
+      assert.equal(edited[0].actor_id, actorId);
+    });
+
+    it('records an "edited" action when a field is renamed', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ name: 'Topic' }] })
+        .expectStatus(200);
+
+      const edited = (await customFieldActions()).find(
+        (a: { event: string }) => a.event === 'edited',
+      );
+      assert.ok(edited, 'an edited action should be recorded');
+      assert.equal(contextOf(edited).key, field.key);
+      assert.equal(edited.actor_id, actorId);
+    });
+
+    it('records no action when a rename does not change the name', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ name: 'Favourite topic' }] })
+        .expectStatus(200);
+
+      const edited = (await customFieldActions()).find(
+        (a: { event: string }) => a.event === 'edited',
+      );
+      assert.equal(edited, undefined, 'a no-op rename should not record an action');
+    });
+
+    it('records an "archived" action when a field is archived', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      await setStatus(field.key, 'archived');
+
+      const archived = (await customFieldActions()).find(
+        (a: { event: string }) => a.event === 'archived',
+      );
+      assert.ok(archived, 'an archived action should be recorded');
+      assert.equal(contextOf(archived).key, field.key);
+      assert.equal(archived.actor_id, actorId);
+    });
+
+    it('records a "restored" action when an archived field is restored', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      await setStatus(field.key, 'archived');
+      await setStatus(field.key, 'active');
+
+      const restored = (await customFieldActions()).find(
+        (a: { event: string }) => a.event === 'restored',
+      );
+      assert.ok(restored, 'a restored action should be recorded');
+      assert.equal(contextOf(restored).key, field.key);
+      assert.equal(restored.actor_id, actorId);
+    });
+
+    it('records no action when the status does not change', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      await setStatus(field.key, 'active');
+
+      const archived = (await customFieldActions()).find(
+        (a: { event: string }) => a.event === 'archived',
+      );
+      const restored = (await customFieldActions()).find(
+        (a: { event: string }) => a.event === 'restored',
+      );
+      assert.equal(archived, undefined, 'a no-op status change should not record an action');
+      assert.equal(restored, undefined, 'a no-op status change should not record an action');
+    });
+
+    it('records a "deleted" action when an archived field is permanently deleted', async function () {
+      const field = await createField({ name: 'Favourite topic' });
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+
+      const deleted = (await customFieldActions()).find(
+        (a: { event: string }) => a.event === 'deleted',
+      );
+      assert.ok(deleted, 'a deleted action should be recorded');
+      assert.equal(contextOf(deleted).key, field.key);
+      assert.equal(deleted.actor_id, actorId);
+      assert.deepEqual(deleted.resource, {});
+    });
+
+    it('records the whole lifecycle as an ordered, attributed, named timeline', async function () {
+      // One field, driven through every transition over the public HTTP API;
+      // the assertions read only the action-log API, never the service.
+      const field = await createField({ name: 'Delivery address' });
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ name: 'Shipping address' }] })
+        .expectStatus(200);
+      await setStatus(field.key, 'archived');
+      await setStatus(field.key, 'active');
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+
+      // Oldest-first by id: action ids are bson ObjectIds, so they sort in
+      // creation order even for events that land in the same second (which
+      // created_at ordering can't disambiguate).
+      const timeline = (await customFieldActions())
+        .filter((a: { context: unknown }) => contextOf(a).key === field.key)
+        .sort((a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : 1));
+
+      // The full ordered story, including the repeated archive.
+      assert.deepEqual(
+        timeline.map((a: { event: string }) => a.event),
+        ['added', 'edited', 'archived', 'restored', 'archived', 'deleted'],
+      );
+
+      // Every entry is attributed and carries the field's name — no anonymous
+      // logs, and the delete still says what the field was after its row is gone.
+      for (const a of timeline) {
+        assert.equal(a.actor_id, actorId, `the ${a.event} action is attributed`);
+        assert.ok(contextOf(a)?.primary_name, `the ${a.event} action names the field`);
+        assert.deepEqual(a.resource, {}, `the ${a.event} action tolerates its deleted resource`);
+      }
+
+      // Names track the field at each point; the rename also records what it was.
+      assert.equal(contextOf(timeline[0]).primary_name, 'Delivery address');
+      assert.equal(contextOf(timeline[1]).primary_name, 'Shipping address');
+      assert.equal(contextOf(timeline[1]).previous_name, 'Delivery address');
+      assert.equal(contextOf(timeline[5]).primary_name, 'Shipping address');
+    });
+  });
+
+  describe('records member custom field value changes in the history (via the actions API)', function () {
+    // `context` is a text column, so the API hands it back as a JSON string —
+    // Admin parses it before reading `action_name`, and so does this.
+    const parseContext = (action: { context: string | null }) =>
+      typeof action.context === 'string' ? JSON.parse(action.context) : action.context;
+
+    // Read back over the API the history log is served from, not the table,
+    // so what Admin receives is what's asserted — `context` included.
+    // Waits for the first action, which is inserted once the edit's transaction commits and
+    // can land after the response.
+    const memberEditedActionsViaApi = (memberId: string) =>
+      vi.waitFor(async () => {
+        const { body } = await agent
+          .get(`actions/?filter=resource_id:'${memberId}'%2Bresource_type:member&include=actor`)
+          .expectStatus(200);
+        const edited = body.actions.filter(
+          (action: { event: string }) => action.event === 'edited',
+        );
+        assert.ok(edited.length > 0, 'no member edited action recorded yet');
+        return edited;
+      });
+
+    it('marks a values-only edit as a custom-field change', async function () {
+      // The payload that makes the whole feature auditable: without
+      // action_name the log can't tell this from a name change.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: 'Ghosts' });
+
+      const actions = await memberEditedActionsViaApi(memberId);
+      assert.equal(actions.length, 1);
+      assert.equal(parseContext(actions[0]).action_name, 'custom_fields_edited');
+      assert.equal(actions[0].resource_id, memberId);
+      // The row still has to say who the member is and who changed them —
+      // action_name titles the entry, it doesn't replace the rest of it.
+      assert.ok(parseContext(actions[0]).primary_name, 'the action should name the member');
+      assert.equal(actions[0].actor_type, 'user');
+    });
+
+    it('leaves a plain member edit unmarked', async function () {
+      const memberId = await createMember();
+
+      await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ name: 'Renamed' }] })
+        .expectStatus(200);
+
+      const actions = await memberEditedActionsViaApi(memberId);
+      assert.equal(actions.length, 1);
+      assert.equal(parseContext(actions[0]).action_name, undefined);
+    });
+
+    it('leaves an edit that changes the member too unmarked', async function () {
+      // The member's own save already fired the one action for this edit, and
+      // it covers a change to the member itself — marking it as a custom-field
+      // change would hide the rename behind the wrong label. The generic
+      // "Member edited" is the honest title for a mixed edit.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+
+      await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ name: 'Renamed', metafields: { custom: { [field.key]: 'Ghosts' } } }] })
+        .expectStatus(200);
+
+      const actions = await memberEditedActionsViaApi(memberId);
+      assert.equal(actions.length, 1);
+      assert.equal(parseContext(actions[0]).action_name, undefined);
+    });
+
+    it('marks a full PUT that only really changes a custom field', async function () {
+      // The Admin member editor resends the whole member, so the save is a
+      // no-op and only the custom field actually changed.
+      const field = await createField({ name: 'Favourite topic' });
+      const memberId = await createMember();
+      const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+      const { email } = body.members[0];
+
+      await agent
+        .put(`members/${memberId}/`)
+        .body({ members: [{ email, metafields: { custom: { [field.key]: 'Ghosts' } } }] })
+        .expectStatus(200);
+
+      const actions = await memberEditedActionsViaApi(memberId);
+      assert.equal(actions.length, 1);
+      assert.equal(parseContext(actions[0]).action_name, 'custom_fields_edited');
+    });
+  });
+
+  // Every definition route, and the member routes that carry values, as each kind of
+  // credential the Admin API accepts. Definitions are served by a mounted router, and
+  // mounting changes what the integration-key check sees of the path, so a route that
+  // works from a session can still refuse a key.
+  describe('Credentials', function () {
+    const credentials: Record<string, () => Promise<void>> = {
+      'a staff session': () => agent.loginAsOwner(),
+      'a staff access token': () => agent.useStaffTokenForOwner(),
+      "an integration's Admin API key": () => agent.useZapierAdminAPIKey(),
+    };
+
+    // Switching back to a session means logging in again, and this file already logs in
+    // close to the limit on login attempts, so clear the count before the later blocks do.
+    afterAll(async function () {
+      await dbUtils.truncate('rate_limits');
+      await agent.loginAsOwner();
+    });
+
+    it.each(Object.entries(credentials))(
+      'reaches every definition and value route with %s',
+      async function (_credential, useCredential) {
+        await useCredential();
+
+        const company = await createField({ name: 'Company' });
+        const shirtSize = await createField({ name: 'Shirt size' });
+        await agent.get('members/metafields/custom/').expectStatus(200);
+        await agent.get(`members/metafields/custom/${company.key}/`).expectStatus(200);
+        await agent
+          .put('members/metafields/custom/')
+          .body({ members_metafields: [{ key: shirtSize.key }, { key: company.key }] })
+          .expectStatus(200);
+
+        const memberId = await createMember();
+        await setValues(memberId, { [company.key]: 'Ghost' });
+        assert.deepEqual(await readValues(memberId), { [company.key]: 'Ghost' });
+        await agent.get('members/').expectStatus(200);
+
+        await setStatus(shirtSize.key, 'archived');
+        await agent.delete(`members/metafields/custom/${shirtSize.key}/`).expectStatus(204);
+      },
+    );
+  });
+
+  describe('Authorization', function () {
+    // The full role matrix is pinned in migration.test.js; here we only prove
+    // the endpoint enforces the permission — a role without it may look but not touch.
+    beforeAll(async function () {
+      await agent.loginAsEditor();
+    });
+
+    afterAll(async function () {
+      await agent.loginAsOwner();
+    });
+
+    it('lets a role without permission read what the site collects', async function () {
+      await agent.get('members/metafields/custom/').expectStatus(200);
+      await agent.get('members/metafields/custom/company/').expectStatus(404);
+    });
+
+    it('forbids a role without permission from creating', async function () {
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Topic', type: 'short_text' }] })
+        .expectStatus(403);
+    });
+
+    it('forbids a role without permission from reordering', async function () {
+      await agent
+        .put('members/metafields/custom/')
+        .body({ members_metafields: [{ key: 'topic' }] })
+        .expectStatus(403);
+    });
+
+    it('answers for the namespace before it answers for the caller', async function () {
+      // Nobody can define a field here, so the namespace is the reason and the role is
+      // beside the point. Answering 403 would send this caller after a permission that
+      // would not have helped them.
+      const { body } = await agent
+        .post('members/metafields/shopify/')
+        .body({ members_metafields: [{ name: 'Topic', type: 'short_text' }] })
+        .expectStatus(422);
+      assert.match(body.errors[0].context, /shopify/);
+    });
+  });
+
+  // Custom fields are released, so a site has them whatever its own Labs setting says. That
+  // includes a site that turned them off in Labs while they were private. Ghost no longer
+  // saves a released flag into the setting, so the row is written as that site left it.
+  describe('Released', function () {
+    let storedLabs: string;
+
+    async function storeLabs(value: string) {
+      await models.Base.knex('settings').where({ key: 'labs' }).update({ value });
+      await settingsService.init();
+    }
+
+    beforeEach(async function () {
+      storedLabs = (await models.Settings.findOne({ key: 'labs' })).get('value');
+      await storeLabs(JSON.stringify({ ...JSON.parse(storedLabs), membersCustomFields: false }));
+    });
+
+    afterEach(async function () {
+      await storeLabs(storedLabs);
+    });
+
+    it('lets a site that turned custom fields off in Labs before release define one', async function () {
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+    });
+  });
+
+  // A released flag can still be switched off, from config or remote flags, and the site
+  // then behaves as it did before release. The flag governs whether a publisher can set
+  // custom fields up, not whether the rest of Ghost may ask what they are: Admin reads this
+  // list to draw screens it renders either way. Every route that changes something stays
+  // behind the flag.
+  describe('Flag switched off', function () {
+    beforeEach(async function () {
+      await createField({ name: 'Company' });
+      configUtils.set('labs', { membersCustomFields: false });
+    });
+
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    it('still lists and reads the fields the site has', async function () {
+      const { body: list } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        list.members_metafields.map((field: { key: string }) => field.key),
+        ['company'],
+      );
+      const { body: read } = await agent
+        .get('members/metafields/custom/company/')
+        .expectStatus(200);
+      assert.equal(read.members_metafields[0].key, 'company');
+    });
+
+    it('404s the create endpoint', async function () {
+      await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+        .expectStatus(404);
+    });
+
+    it('404s the reorder endpoint', async function () {
+      await agent
+        .put('members/metafields/custom/')
+        .body({ members_metafields: [{ key: 'company' }] })
+        .expectStatus(404);
+    });
+
+    it('404s the edit endpoint', async function () {
+      await agent
+        .put('members/metafields/custom/company/')
+        .body({ members_metafields: [{ name: 'Employer' }] })
+        .expectStatus(404);
+    });
+
+    it('404s the delete endpoint', async function () {
+      await agent.delete('members/metafields/custom/company/').expectStatus(404);
+    });
+  });
+  // Custom fields can be switched off for a site by its host, separately from the flag,
+  // so the feature can be sold with a plan. The limit is unset everywhere today, which is
+  // what the first test pins: nothing changes for a site nobody has limited. When it is
+  // set, changing definitions answers 403 with the host's copy, distinct from the 404 the
+  // flag gives, because "your plan does not include this" is a different thing to tell a
+  // caller than "this does not exist here". Every field the site has reads as archived
+  // meanwhile, without being stored as archived, so it all comes back as it was.
+  describe('Host limit', function () {
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('leaves every route alone when the limit is unset', async function () {
+      const field = await createField({ name: 'Unlimited' });
+
+      await agent.get('members/metafields/custom/').expectStatus(200);
+      await agent
+        .put(`members/metafields/custom/${field.key}/`)
+        .body({ members_metafields: [{ name: 'Still unlimited' }] })
+        .expectStatus(200);
+      // Deleting is only offered on an archived field, so archiving is the step
+      // that proves the edit route is open, and the delete that follows it too.
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+    });
+
+    it('leaves every route alone when the limit is present but not disabled', async function () {
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: false } });
+
+      const field = await createField({ name: 'Permitted' });
+      await setStatus(field.key, 'archived');
+      await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
+    });
+
+    describe('when the host disables the feature', function () {
+      let existingKey: string;
+
+      beforeEach(async function () {
+        // Created before the limit goes on, standing in for a site whose host switched the
+        // feature off after it was set up.
+        existingKey = (await createField({ name: 'Bought earlier' })).key;
+        await hostLimits.setHostLimits({
+          limitCustomFields: {
+            disabled: true,
+            error: 'Custom fields are available on the Publisher plan and above.',
+          },
+        });
+      });
+
+      it('reads every field the site has as archived', async function () {
+        const { body: active } = await agent.get('members/metafields/custom/').expectStatus(200);
+        assert.deepEqual(active.members_metafields, []);
+
+        const { body: all } = await agent
+          .get('members/metafields/custom/?filter=status:[active,archived]')
+          .expectStatus(200);
+        assert.deepEqual(
+          all.members_metafields.map((field: { key: string; status: string }) => [
+            field.key,
+            field.status,
+          ]),
+          [[existingKey, 'archived']],
+        );
+
+        const { body: one } = await agent
+          .get(`members/metafields/custom/${existingKey}/`)
+          .expectStatus(200);
+        assert.equal(one.members_metafields[0].status, 'archived');
+      });
+
+      it('hides what members hold and refuses new values, keeping what is stored', async function () {
+        const memberId = await createMember();
+        await hostLimits.restoreHostLimits();
+        await setValues(memberId, { [existingKey]: 'Ghost' });
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        assert.deepEqual(await readValues(memberId), {});
+        const refused = await setValues(memberId, { [existingKey]: 'Acme' }, 422);
+        assert.equal(refused.errors[0].property, `metafields.custom.${existingKey}`);
+
+        await hostLimits.restoreHostLimits();
+        assert.deepEqual(await readValues(memberId), { [existingKey]: 'Ghost' });
+      });
+
+      it('brings every field back as it was once the host lifts the limit', async function () {
+        await hostLimits.restoreHostLimits();
+        const memberId = await createMember();
+        await setValues(memberId, { [existingKey]: 'Ghost' });
+        const retired = await createField({ name: 'Retired earlier' });
+        await setStatus(retired.key, 'archived');
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        // What the site can still do meanwhile: edit the member, and be refused a value.
+        await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ name: 'Renamed meanwhile' }] })
+          .expectStatus(200);
+        await setValues(memberId, { [existingKey]: 'Acme' }, 422);
+
+        await hostLimits.restoreHostLimits();
+
+        assert.deepEqual(await readValues(memberId), { [existingKey]: 'Ghost' });
+        const { body } = await agent
+          .get('members/metafields/custom/?filter=status:[active,archived]')
+          .expectStatus(200);
+        assert.deepEqual(
+          body.members_metafields.map((field: { key: string; status: string }) => [
+            field.key,
+            field.status,
+          ]),
+          [
+            [existingKey, 'active'],
+            [retired.key, 'archived'],
+          ],
+        );
+      });
+
+      // The host's limit is custom fields' alone, so it says nothing about the fields an app
+      // defines in its own namespace. Written straight to the table, as an app's would be.
+      it('says nothing about fields in another namespace', async function () {
+        await models.Base.knex('members_metafields').insert({
+          id: '6600000000000000000000e1',
+          namespace: 'shop',
+          key: 'company',
+          name: 'Company',
+          type: 'short_text',
+          created_at: new Date(),
+        });
+
+        const memberId = await createMember();
+        await agent
+          .put(`members/${memberId}/`)
+          .body({ members: [{ metafields: { shop: { company: 'Acme' } } }] })
+          .expectStatus(200);
+        const { body } = await agent.get(`members/${memberId}/`).expectStatus(200);
+        assert.deepEqual(body.members[0].metafields, { shop: { company: 'Acme' } });
+
+        // Refused because nobody can define fields there through this API, not because of a
+        // limit that doesn't apply to them.
+        const { body: refused } = await agent
+          .post('members/metafields/shop/')
+          .body({ members_metafields: [{ name: 'Industry', type: 'short_text' }] })
+          .expectStatus(422);
+        assert.equal(refused.errors[0].property, 'namespace');
+      });
+
+      it('403s the create endpoint, with the host copy', async function () {
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+
+        // Refused inside the API, as every host limit is, so the host's words reach the caller
+        // in `context`, under the API's own sentence, as the ceiling's do.
+        assert.equal(body.errors[0].type, 'HostLimitError');
+        assert.equal(
+          body.errors[0].context,
+          'Custom fields are available on the Publisher plan and above.',
+        );
+        assert.equal(body.errors[0].details.name, 'limitCustomFields');
+      });
+
+      // Upgrading wouldn't help someone who can't manage the fields, so who may is answered
+      // first.
+      it('answers for the caller before the host limit', async function () {
+        await agent.loginAsEditor();
+        try {
+          const { body } = await agent
+            .post('members/metafields/custom/')
+            .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+            .expectStatus(403);
+          assert.equal(body.errors[0].type, 'NoPermissionError');
+        } finally {
+          await agent.loginAsOwner();
+        }
+      });
+
+      // The limit applies to the namespace the route acts on, however the route encodes it.
+      it('403s the publisher’s namespace however the route encodes it', async function () {
+        await agent
+          .post('members/metafields/%63ustom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+        await agent
+          .put(`members/metafields/cust%6Fm/${existingKey}/`)
+          .body({ members_metafields: [{ name: 'Employer' }] })
+          .expectStatus(403);
+      });
+
+      it('403s the reorder endpoint', async function () {
+        await agent
+          .put('members/metafields/custom/')
+          .body({ members_metafields: [{ key: existingKey }] })
+          .expectStatus(403);
+      });
+
+      it('403s the edit endpoint', async function () {
+        await agent
+          .put(`members/metafields/custom/${existingKey}/`)
+          .body({ members_metafields: [{ name: 'Employer' }] })
+          .expectStatus(403);
+      });
+
+      it('403s the delete endpoint', async function () {
+        await agent.delete(`members/metafields/custom/${existingKey}/`).expectStatus(403);
+      });
+
+      it('falls back to generic copy when the host sets no message', async function () {
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+          .expectStatus(403);
+
+        // The wording the limit service builds when a host supplies none, from the limit's
+        // own name.
+        assert.equal(
+          body.errors[0].context,
+          'Your plan does not support custom fields. Please upgrade to enable custom fields.',
+        );
+      });
+    });
+  });
+});

@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error This module lacks type definitions.
+import ProductRepository from '../../../../../../../core/server/services/members/members-api/repositories/product-repository';
+
+describe('MemberRepository', function () {
+  describe('getDefaultProduct', function () {
+    it('calls list method with specific parameters', async function () {
+      const productRepository = new ProductRepository({});
+      const listStub = sinon.stub(productRepository, 'list').resolves({
+        data: [
+          {
+            id: 'default_product_id',
+          },
+        ],
+      });
+
+      const defaultProduct = await productRepository.getDefaultProduct({
+        withRelated: ['stripePrices'],
+      });
+
+      sinon.assert.called(listStub);
+
+      assert.equal(
+        listStub.args[0][0].filter,
+        'type:paid+active:true',
+        'should only take into account paid and active records',
+      );
+      assert.equal(listStub.args[0][0].limit, 1, 'should only fetch a single record');
+      assert.deepEqual(
+        listStub.args[0][0].withRelated,
+        ['stripePrices'],
+        'should extend passed in options',
+      );
+
+      assert.equal(defaultProduct.id, 'default_product_id', 'returns a single product object');
+    });
+  });
+});

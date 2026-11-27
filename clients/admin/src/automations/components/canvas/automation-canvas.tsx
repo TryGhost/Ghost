@@ -1,0 +1,1003 @@
+import '@xyflow/react/dist/style.css';
+import AddStepEdge, { type AddStepEdgeData } from './add-step-edge';
+import EmailContentModal from '@/automations/components/email-modal/email-content-modal';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Banner,
+  Button,
+  LoadingIndicator,
+} from '@tryghost/shade/components';
+import {
+  MAX_AUTOMATION_ACTIONS,
+  insertSendEmailAction,
+  insertWaitAction,
+  removeAction,
+  updateSendEmailAction,
+  updateWaitAction,
+} from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationAction,
+  AutomationDetail,
+  AutomationSendEmailAction,
+} from '@tryghost/admin-x-framework/api/automations';
+import { AutomationCanvasControls } from './controls';
+import { TAIL_CANVAS_ID, TRIGGER_CANVAS_ID } from './nodes';
+import { nodeTypes, toApiAnchor } from './node-helpers';
+import type { AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry } from './nodes';
+import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
+import type { Edge, NodeChange } from '@xyflow/react';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { Box, Inline } from '@tryghost/shade/primitives';
+import { RunHistory } from './run-history';
+import { canvasBackground } from './canvas-background';
+import { AutomationSidebar } from './automation-sidebar';
+import type { TriggerData } from './trigger-card';
+import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
+import { type StepPickerType } from './step-picker';
+import { isEmptyEmailLexical } from '@/automations/utils';
+import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
+import type { EmailModalMode } from '@/automations/components/types';
+import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
+import type { CanvasContentBounds } from './use-canvas-viewport';
+
+const NODE_X = 0;
+const NODE_WIDTH = 256;
+const NODE_COLUMN_CENTER_X = NODE_X + NODE_WIDTH / 2;
+// Visible space between node bottom and the next node's top. Constant across all pairs so the
+// chain reads as evenly spaced regardless of how tall any individual node renders.
+const NODE_VISUAL_GAP_Y = 112;
+// Initial height estimates; React Flow measurements replace these once mounted,
+// keeping the visible gap uniform as content and validation messages change.
+const EDITABLE_NODE_WIDTH = 400;
+const EDITABLE_EMAIL_NODE_HEIGHT = 350;
+const EDITABLE_WAIT_NODE_HEIGHT = 144;
+const FIXED_TRIGGER_NODE_HEIGHT = 156;
+const EXIT_NODE_HEIGHT = 55;
+const INITIAL_VIEWPORT_Y = 40;
+// The pane reaches up behind the editor's header (h-14), so a header sliding in
+// reveals canvas rather than an empty band.
+const HEADER_UNDERLAP_Y = 56;
+const NODE_ENTER_ANIMATION_DURATION = 250;
+const DISABLED_REASON = 'Maximum steps added';
+const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
+const EMAIL_STEP_QUERY_PARAM = 'emailStep';
+
+const edgeTypes = {
+  'add-step-edge': AddStepEdge,
+};
+
+const buildNodeContextMenuItems = ({
+  canDelete = false,
+  canEditEmailBody = false,
+  onDelete,
+  onEditEmailBody,
+  onPreviewEmail,
+  stepId,
+}: {
+  canDelete?: boolean;
+  canEditEmailBody?: boolean;
+  onDelete?: (deleteStepId: string) => void;
+  onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
+  onPreviewEmail?: (previewEmailStepId: string) => void;
+  stepId: string;
+}): NodeContextMenuEntry[] => {
+  const items: NodeContextMenuEntry[] = [];
+
+  if (canEditEmailBody && onEditEmailBody) {
+    items.push({
+      icon: LucideIcon.Pencil,
+      label: 'Edit email body',
+      onSelect: () => onEditEmailBody(stepId),
+    });
+  }
+
+  if (canEditEmailBody && onPreviewEmail) {
+    items.push({
+      icon: LucideIcon.Eye,
+      label: 'Preview',
+      onSelect: () => onPreviewEmail(stepId),
+    });
+  }
+
+  if (canDelete && onDelete) {
+    if (canEditEmailBody) {
+      items.push({ id: 'before-delete', type: 'separator' });
+    }
+    items.push({
+      icon: LucideIcon.Trash2,
+      label: 'Delete',
+      onSelect: () => onDelete(stepId),
+      variant: 'destructive',
+    });
+  }
+
+  return items;
+};
+
+// Returns the actions of `automation` ordered along the chain from the head. Throws on malformed
+// data (cycle, branch, or disconnected nodes). The canvas wraps its render tree in an Error
+// Boundary that catches these and renders the same "Couldn't load automation" banner.
+const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[] => {
+  if (automation.actions.length === 0) {
+    return [];
+  }
+
+  const actionsById = new Map(automation.actions.map((action) => [action.id, action]));
+  const incoming = new Set(automation.edges.map((edge) => edge.target_action_id));
+  const head = automation.actions.find((action) => !incoming.has(action.id));
+
+  if (!head) {
+    throw new Error(`Could not determine the starting step for automation ${automation.id}.`);
+  }
+
+  // NOTE: This doesn't handle branching automations. Our UI doesn't support
+  // them either. If we revisit that, we'll need to revisit this code.
+
+  const nextById = new Map(
+    automation.edges.map((edge) => [edge.source_action_id, edge.target_action_id]),
+  );
+  const ordered: AutomationAction[] = [];
+  const visited = new Set<string>();
+  let cursor: AutomationAction | undefined = head;
+
+  while (cursor) {
+    if (visited.has(cursor.id)) {
+      throw new Error(`Detected a loop in automation ${automation.id}.`);
+    }
+    ordered.push(cursor);
+    visited.add(cursor.id);
+    const nextId = nextById.get(cursor.id);
+    cursor = nextId ? actionsById.get(nextId) : undefined;
+  }
+
+  if (ordered.length !== automation.actions.length) {
+    throw new Error(`Some steps in automation ${automation.id} are missing or disconnected.`);
+  }
+
+  return ordered;
+};
+
+type BuildGraphParams = {
+  canvasErrors: Record<string, string>;
+  validationAttempt: number;
+  // Draw the line to the exit card and bring the card in, for a flow just created.
+  connectIn: boolean;
+  automation: AutomationDetail;
+  savedTriggerTierIds: readonly string[];
+  selectedTriggerLabel: TriggerData['selectedTriggerLabel'];
+  triggerType: TriggerData['triggerType'];
+  tierQuery: TriggerData['tierQuery'];
+  onChange: (next: AutomationDetail) => void;
+  nodeSizes: Record<string, { width: number; height: number }>;
+  newEmailWithoutWarningsId: string | null;
+  onInteract: (stepId: string) => void;
+  onWaitValidityChange: (stepId: string, valid: boolean) => void;
+  onUpdateWait: (stepId: string, hours: number) => void;
+  disabled: boolean;
+  onDelete: (stepId: string) => void;
+  onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
+  onPreviewEmail: (stepId: string) => void;
+  onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
+  newStepId: string | null;
+};
+
+const buildGraph = ({
+  canvasErrors,
+  validationAttempt,
+  connectIn,
+  automation,
+  savedTriggerTierIds,
+  selectedTriggerLabel,
+  triggerType,
+  tierQuery,
+  onChange,
+  nodeSizes,
+  newEmailWithoutWarningsId,
+  onInteract,
+  onWaitValidityChange,
+  onUpdateWait,
+  disabled,
+  onDelete,
+  onEditEmailBody,
+  onPick,
+  onPreviewEmail,
+  newStepId,
+}: BuildGraphParams): {
+  nodes: AutomationFlowNode[];
+  edges: Edge[];
+  contentBounds: CanvasContentBounds;
+} => {
+  const ordered = getInitialActionOrder(automation);
+  // React Flow hides and re-measures any node passed without `measured`; while hidden, the
+  // node's inputs lose focus and keystrokes.
+  const nodeProps = (id: string) => ({
+    draggable: false,
+    selectable: false,
+    connectable: false,
+    focusable: false,
+    measured: nodeSizes[id],
+    // React Flow disables pointer events on nodes that aren't selectable or clicked.
+    style: { pointerEvents: 'all' as const },
+  });
+  const disabledReason = disabled ? DISABLED_REASON : undefined;
+
+  let cursorY = 0;
+  const nodeWidth = EDITABLE_NODE_WIDTH;
+  const nodeX = NODE_COLUMN_CENTER_X - nodeWidth / 2;
+  const nodes: AutomationFlowNode[] = [
+    {
+      id: TRIGGER_CANVAS_ID,
+      type: 'trigger',
+      // Keep the inline tier picker above downstream cards.
+      zIndex: 1,
+      position: {
+        x: nodeX,
+        y: cursorY,
+      },
+      data: {
+        trigger: {
+          isActive: automation.status === 'active',
+          selectedTriggerLabel,
+          tierQuery,
+          triggerType,
+          rules: automation.trigger_rules,
+          savedTierIds: savedTriggerTierIds,
+          onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
+        },
+        errorMessage: canvasErrors[TRIGGER_CANVAS_ID],
+        onInteract: () => onInteract(TRIGGER_CANVAS_ID),
+      },
+      ...nodeProps(TRIGGER_CANVAS_ID),
+    },
+  ];
+  cursorY +=
+    (nodeSizes[TRIGGER_CANVAS_ID]?.height ?? FIXED_TRIGGER_NODE_HEIGHT) + NODE_VISUAL_GAP_Y;
+
+  ordered.forEach((action) => {
+    const editableEmail = action.type === 'send_email';
+    const editableWait = action.type === 'wait';
+    const errorMessage = canvasErrors[action.id];
+
+    nodes.push({
+      id: action.id,
+      type: 'step',
+      position: { x: nodeX, y: cursorY },
+      data: {
+        analytics:
+          action.type === 'send_email' && action.stats
+            ? { automationId: automation.id, actionId: action.id, stats: action.stats }
+            : undefined,
+        ...(editableEmail
+          ? {
+              email: {
+                subject: action.data.email_subject,
+                lexical: action.data.email_lexical,
+                suppressWarning: newEmailWithoutWarningsId === action.id,
+                validationAttempt,
+                onInteract: () => onInteract(action.id),
+                onEditContent: () => onEditEmailBody(action.id),
+              },
+            }
+          : {}),
+        ...(editableWait
+          ? {
+              wait: {
+                hours: action.data.wait_hours,
+                onInteract: () => onInteract(action.id),
+                onValidityChange: (valid: boolean) => onWaitValidityChange(action.id, valid),
+                onUpdate: (hours: number) => onUpdateWait(action.id, hours),
+              },
+            }
+          : {}),
+        contextMenuItems: buildNodeContextMenuItems({
+          canDelete: true,
+          canEditEmailBody: action.type === 'send_email',
+          onDelete,
+          onEditEmailBody,
+          onPreviewEmail: automation.id ? onPreviewEmail : undefined,
+          stepId: action.id,
+        }),
+        errorMessage,
+        isNew: newStepId === action.id,
+      },
+      ...nodeProps(action.id),
+    });
+    const estimatedHeight = editableEmail ? EDITABLE_EMAIL_NODE_HEIGHT : EDITABLE_WAIT_NODE_HEIGHT;
+    cursorY += (nodeSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
+  });
+
+  nodes.push({
+    id: TAIL_CANVAS_ID,
+    type: 'tail',
+    position: {
+      x: nodeX,
+      y: cursorY,
+    },
+    data: { connectIn },
+    ...nodeProps(TAIL_CANVAS_ID),
+  });
+  // Content bounds in flow coordinates, derived from node positions so the pan bound keeps
+  // working if the graph ever grows wider (e.g. branching).
+  const xs = nodes.map((node) => node.position.x);
+  const contentBounds: CanvasContentBounds = {
+    left: Math.min(...xs),
+    right: Math.max(
+      ...nodes.map((node) => node.position.x + (nodeSizes[node.id]?.width ?? nodeWidth)),
+    ),
+    bottom: cursorY + (nodeSizes[TAIL_CANVAS_ID]?.height ?? EXIT_NODE_HEIGHT),
+  };
+
+  // Every connecting line, including the edge to the exit marker, has an insertion control.
+  const edges: Edge[] = [];
+  let previousCanvasId: string = TRIGGER_CANVAS_ID;
+  ordered.forEach((action) => {
+    const edgeData: AddStepEdgeData = {
+      sourceId: previousCanvasId,
+      targetId: action.id,
+      disabled,
+      disabledReason,
+      onPick,
+    };
+    edges.push({
+      id: `e-${previousCanvasId}-${action.id}`,
+      source: previousCanvasId,
+      target: action.id,
+      type: 'add-step-edge',
+      focusable: false,
+      data: edgeData,
+    });
+    previousCanvasId = action.id;
+  });
+
+  edges.push({
+    id: `e-${previousCanvasId}-${TAIL_CANVAS_ID}`,
+    source: previousCanvasId,
+    target: TAIL_CANVAS_ID,
+    type: 'add-step-edge',
+    data: {
+      sourceId: ordered[ordered.length - 1]?.id ?? TRIGGER_CANVAS_ID,
+      targetId: TAIL_CANVAS_ID,
+      disabled,
+      disabledReason,
+      onPick,
+      label: 'Add step',
+      connectIn,
+    } satisfies AddStepEdgeData,
+    focusable: false,
+    style: { stroke: DEFAULT_EDGE_STROKE },
+  });
+
+  // Controlled nodes must carry their measured dimensions through graph
+  // updates. Otherwise React Flow hides them for remeasurement, blurring
+  // focused inputs and removing the handles that keep edge menus mounted.
+  const measuredNodes = nodes.map((node) =>
+    nodeSizes[node.id] ? { ...node, measured: nodeSizes[node.id] } : node,
+  );
+  return { nodes: measuredNodes, edges, contentBounds };
+};
+
+const getInitialViewport = (
+  canvasWidth: number,
+  triggerTop = INITIAL_VIEWPORT_Y,
+): { x: number; y: number; zoom: number } => ({
+  x: Math.round(canvasWidth / 2 - NODE_COLUMN_CENTER_X),
+  y: triggerTop + HEADER_UNDERLAP_Y,
+  zoom: 1,
+});
+
+type AutomationCanvasProps = {
+  initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
+  // Set when a trigger was just picked: the canvas opens with the trigger where the
+  // picker's card was, and the flow below it plays in.
+  initialTriggerTop?: number;
+  canvasErrors?: Record<string, string>;
+  validationAttempt?: number;
+  onWaitValidityChange: (stepId: string, valid: boolean) => void;
+  automation?: AutomationDetail;
+  savedTriggerTierIds?: readonly string[];
+  selectedTriggerLabel?: TriggerData['selectedTriggerLabel'];
+  triggerType?: TriggerData['triggerType'];
+  isLoading: boolean;
+  isError: boolean;
+  onChange: (next: AutomationDetail) => void;
+  selectedRunId: string | null;
+  onSelectRun: (id: string | null) => void;
+};
+
+const insertActionByType = {
+  wait: insertWaitAction,
+  send_email: insertSendEmailAction,
+};
+
+const hasAutomationEmailModalState = (state: unknown): state is { automationEmailModal: boolean } =>
+  !!state &&
+  typeof state === 'object' &&
+  'automationEmailModal' in state &&
+  typeof state.automationEmailModal === 'boolean';
+
+const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
+  initialSidebar,
+  initialTriggerTop,
+  canvasErrors = {},
+  validationAttempt = 0,
+  savedTriggerTierIds = [],
+  selectedTriggerLabel,
+  triggerType,
+  onWaitValidityChange,
+  automation,
+  isLoading,
+  isError,
+  onChange,
+  selectedRunId,
+  onSelectRun,
+}) => {
+  const layoutRef = useRef<HTMLElement>(null);
+  const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
+  const handleNodesChange = useCallback((changes: NodeChange<AutomationFlowNode>[]) => {
+    setNodeSizes((previous) => {
+      let next = previous;
+      for (const change of changes) {
+        if (change.type !== 'dimensions' || !change.dimensions) {
+          continue;
+        }
+        const { width, height } = change.dimensions;
+        if (next[change.id]?.width !== width || next[change.id]?.height !== height) {
+          next = { ...next, [change.id]: { width, height } };
+        }
+      }
+      return next;
+    });
+  }, []);
+  const editingCanvasRef = useRef<HTMLDivElement | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [newEmailWithoutWarningsId, setNewEmailWithoutWarningsId] = useState<string | null>(null);
+  const showWarningsForOtherSteps = useCallback((stepId: string) => {
+    setNewEmailWithoutWarningsId((current) => (current === stepId ? current : null));
+  }, []);
+  const [newStepId, setNewStepId] = useState<string | null>(null);
+  const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
+  const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
+  const tiersEnabled =
+    triggerType === 'paid_subscription_started' || triggerType === 'paid_subscription_changed';
+  const {
+    data: tierData,
+    isLoading: tiersLoading,
+    isError: tiersError,
+    refetch: refetchTiers,
+  } = useBrowseTiers({
+    searchParams: { filter: 'type:paid', limit: 'all' },
+    defaultErrorHandler: false,
+    enabled: tiersEnabled,
+    staleTime: 0,
+  });
+  const tierQuery = useMemo(
+    () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
+    [tierData, tiersLoading, tiersError, refetchTiers],
+  );
+  const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
+  const getEmailCardElement = useCallback(() => {
+    if (!emailModalStepId) {
+      return null;
+    }
+    return (
+      editingCanvasRef.current
+        ?.querySelector(`.react-flow__node[data-id="${CSS.escape(emailModalStepId)}"]`)
+        ?.querySelector<HTMLElement>('[role="article"]') ?? null
+    );
+  }, [emailModalStepId]);
+  const isRouterOpenedEmailModal =
+    hasAutomationEmailModalState(location.state) && location.state.automationEmailModal;
+
+  const removeEmailStepParam = useCallback(
+    (options?: { replace?: boolean }) => {
+      const nextSearchParams = new URLSearchParams(searchParams);
+      nextSearchParams.delete(EMAIL_STEP_QUERY_PARAM);
+      setSearchParams(nextSearchParams, { replace: options?.replace ?? true });
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const handlePick = useCallback(
+    (type: StepPickerType, anchor: CanvasAnchor) => {
+      if (!automation) {
+        return;
+      }
+      if (automation.actions.length >= MAX_AUTOMATION_ACTIONS) {
+        return;
+      }
+      const apiAnchor = toApiAnchor(anchor);
+      const insertAction = insertActionByType[type];
+      const next = insertAction({ detail: automation, anchor: apiAnchor });
+      const insertedAction = next.actions.find(
+        (action) => !automation.actions.some((existingAction) => existingAction.id === action.id),
+      );
+      setNewStepId(insertedAction?.id ?? null);
+      setNewEmailWithoutWarningsId(
+        insertedAction?.type === 'send_email' ? insertedAction.id : null,
+      );
+      onChange(next);
+    },
+    [automation, onChange],
+  );
+
+  useEffect(() => {
+    if (!newStepId) {
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      setNewStepId(null);
+    }, NODE_ENTER_ANIMATION_DURATION);
+    return () => window.clearTimeout(timeout);
+  }, [newStepId]);
+
+  const handleDelete = useCallback(
+    (actionId: string) => {
+      if (!automation) {
+        return;
+      }
+      setNewEmailWithoutWarningsId(null);
+      const next = removeAction({ detail: automation, actionId });
+      if (emailModalStepId === actionId) {
+        removeEmailStepParam();
+      }
+      setDeleteConfirmationActionId(null);
+      onChange(next);
+    },
+    [automation, emailModalStepId, onChange, removeEmailStepParam],
+  );
+
+  const handleRequestDelete = useCallback(
+    (actionId: string) => {
+      if (!automation) {
+        return;
+      }
+
+      const action = automation.actions.find((item) => item.id === actionId);
+      if (action?.type === 'send_email' && !isEmptyEmailLexical(action.data.email_lexical)) {
+        setDeleteConfirmationActionId(action.id);
+        return;
+      }
+
+      handleDelete(actionId);
+    },
+    [automation, handleDelete],
+  );
+
+  const handleUpdateWait = useCallback(
+    (actionId: string, waitHours: number) => {
+      if (!automation) {
+        return;
+      }
+      onChange(updateWaitAction({ detail: automation, actionId, waitHours }));
+    },
+    [automation, onChange],
+  );
+
+  const handleEditEmail = useCallback(
+    (actionId: string, mode: EmailModalMode = 'edit') => {
+      setEmailModalMode(mode);
+      const nextSearchParams = new URLSearchParams(searchParams);
+      nextSearchParams.set(EMAIL_STEP_QUERY_PARAM, actionId);
+      setSearchParams(nextSearchParams, {
+        state: {
+          ...(location.state && typeof location.state === 'object'
+            ? (location.state as Record<string, unknown>)
+            : {}),
+          automationEmailModal: true,
+        },
+      });
+    },
+    [location.state, searchParams, setSearchParams],
+  );
+
+  const handlePreviewEmail = useCallback(
+    (actionId: string) => {
+      handleEditEmail(actionId, 'preview');
+    },
+    [handleEditEmail],
+  );
+
+  const emailModalAction =
+    emailModalStepId && automation
+      ? automation.actions.find(
+          (action): action is AutomationSendEmailAction =>
+            action.id === emailModalStepId && action.type === 'send_email',
+        )
+      : undefined;
+
+  const deleteConfirmationAction =
+    automation && deleteConfirmationActionId
+      ? automation.actions.find(
+          (action): action is AutomationSendEmailAction =>
+            action.id === deleteConfirmationActionId && action.type === 'send_email',
+        )
+      : undefined;
+
+  const [selectedMember, setSelectedMember] = useState<{ runId: string; name: string } | null>(
+    null,
+  );
+  const configQuery = useBrowseConfig();
+  const isPerformanceEnabled = Boolean(configQuery.data?.config.stats);
+  const [sidebar, setSidebar] = useState<{
+    open: boolean;
+    tab: 'unknown' | 'settings' | 'performance';
+  }>({ open: false, tab: 'unknown' });
+  // Resolve once after loading; later updates must not override user choices.
+  if (sidebar.tab === 'unknown' && initialSidebar !== 'unknown') {
+    setSidebar({
+      open: initialSidebar !== 'closed',
+      tab:
+        initialSidebar === 'closed'
+          ? isPerformanceEnabled && automation?.id
+            ? 'performance'
+            : 'settings'
+          : initialSidebar,
+    });
+  }
+  const setAutomationSidebarOpen = useCallback((open: boolean) => {
+    setSidebar((current) => ({
+      open,
+      tab: current.tab === 'unknown' ? 'settings' : current.tab,
+    }));
+  }, []);
+  const initialViewport = getInitialViewport(
+    window.innerWidth - (sidebar.open && window.innerWidth >= 960 ? 480 : 0),
+    initialTriggerTop,
+  );
+  const isHistoryOpen = selectedRunId !== null;
+
+  useEffect(() => {
+    // Opening an email via the URL returns to editing, including browser Back/Forward.
+    if (emailModalStepId && selectedRunId) {
+      onSelectRun(null);
+    }
+  }, [emailModalStepId, selectedRunId, onSelectRun]);
+
+  const handleSelectRun = (id: string, memberName: string) => {
+    setSelectedMember({ runId: id, name: memberName });
+    onSelectRun(id);
+    // Below the sidebar breakpoint, show either the member list or the canvas.
+    if (layoutRef.current && layoutRef.current.clientWidth < 960) {
+      setAutomationSidebarOpen(false);
+    }
+  };
+
+  const handleCloseHistory = () => {
+    onSelectRun(null);
+    requestAnimationFrame(() => editingCanvasRef.current?.focus());
+  };
+
+  // Only for the edges and card that first appear; later ones arrive as usual.
+  const [connecting, setConnecting] = useState(initialTriggerTop !== undefined);
+  useEffect(() => {
+    if (!connecting) {
+      return;
+    }
+    const timer = setTimeout(() => setConnecting(false), 500);
+    return () => clearTimeout(timer);
+  }, [connecting]);
+
+  const graph = useMemo(() => {
+    if (!automation || !triggerType) {
+      return null;
+    }
+    return buildGraph({
+      canvasErrors,
+      validationAttempt,
+      connectIn: connecting,
+      automation,
+      savedTriggerTierIds,
+      selectedTriggerLabel,
+      triggerType,
+      tierQuery,
+      onChange,
+      nodeSizes,
+      newEmailWithoutWarningsId,
+      onInteract: showWarningsForOtherSteps,
+      onWaitValidityChange,
+      onUpdateWait: handleUpdateWait,
+      disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
+      onDelete: handleRequestDelete,
+      onEditEmailBody: handleEditEmail,
+      onPick: handlePick,
+      onPreviewEmail: handlePreviewEmail,
+      newStepId,
+    });
+  }, [
+    canvasErrors,
+    validationAttempt,
+    connecting,
+    savedTriggerTierIds,
+    selectedTriggerLabel,
+    triggerType,
+    tierQuery,
+    onChange,
+    automation,
+    nodeSizes,
+    newEmailWithoutWarningsId,
+    showWarningsForOtherSteps,
+    onWaitValidityChange,
+    handleUpdateWait,
+    handleEditEmail,
+    handlePreviewEmail,
+    handlePick,
+    handleRequestDelete,
+    newStepId,
+  ]);
+
+  const viewport = useCanvasViewport<AutomationFlowNode, Edge>({
+    contentBounds: graph?.contentBounds,
+    initialViewport,
+  });
+
+  useEffect(() => {
+    if (emailModalAction || deleteConfirmationAction || !sidebar.open) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setAutomationSidebarOpen(false);
+      }
+    };
+    // Menus, popovers, and search consume Escape before it reaches window.
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [deleteConfirmationAction, emailModalAction, sidebar.open, setAutomationSidebarOpen]);
+
+  // While the email editor is open, hide the flow and controls and close the sidebar,
+  // restoring it as the editor starts to close.
+  const isEmailModalOpen = Boolean(emailModalAction);
+  const [isEmailModalClosing, setIsEmailModalClosing] = useState(false);
+  const isCanvasCleared = isEmailModalOpen && !isEmailModalClosing;
+  const sidebarOpenBeforeEmailRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (isEmailModalOpen && sidebarOpenBeforeEmailRef.current === null) {
+      sidebarOpenBeforeEmailRef.current = sidebar.open;
+      if (sidebar.open) {
+        setAutomationSidebarOpen(false);
+      }
+    } else if (!isEmailModalOpen) {
+      if (sidebarOpenBeforeEmailRef.current) {
+        setAutomationSidebarOpen(true);
+      }
+      sidebarOpenBeforeEmailRef.current = null;
+      setIsEmailModalClosing(false);
+    }
+  }, [isEmailModalOpen, sidebar.open, setAutomationSidebarOpen]);
+  const handleEmailModalCloseStart = useCallback(() => {
+    setIsEmailModalClosing(true);
+    if (sidebarOpenBeforeEmailRef.current) {
+      setAutomationSidebarOpen(true);
+      sidebarOpenBeforeEmailRef.current = false;
+    }
+  }, [setAutomationSidebarOpen]);
+
+  const closeEmailModal = () => {
+    setEmailModalMode('edit');
+    if (isRouterOpenedEmailModal) {
+      navigate(-1);
+      return;
+    }
+
+    removeEmailStepParam();
+  };
+
+  useEffect(() => {
+    if (!automation || !emailModalStepId) {
+      return;
+    }
+
+    const hasEmailAction = automation.actions.some(
+      (action) => action.id === emailModalStepId && action.type === 'send_email',
+    );
+    if (!hasEmailAction) {
+      removeEmailStepParam();
+    }
+  }, [automation, emailModalStepId, removeEmailStepParam]);
+
+  const handleNodeDoubleClick = useCallback(
+    (event: React.MouseEvent, node: AutomationFlowNode) => {
+      event.stopPropagation();
+      if (!automation || node.id === TAIL_CANVAS_ID || node.id === TRIGGER_CANVAS_ID) {
+        return;
+      }
+      if (('email' in node.data && node.data.email) || ('wait' in node.data && node.data.wait)) {
+        return;
+      }
+      const action = automation.actions.find((item) => item.id === node.id);
+      if (action?.type === 'send_email') {
+        handleEditEmail(action.id);
+      }
+    },
+    [automation, handleEditEmail],
+  );
+
+  if (isLoading) {
+    return (
+      <div
+        className="-mt-14 flex flex-1 items-center justify-center bg-surface-page pt-14"
+        data-testid="automation-canvas-loading"
+      >
+        <div className="delayed-fade-in">
+          <LoadingIndicator size="lg" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !automation || !graph) {
+    return (
+      <div className="flex flex-1 items-start justify-center bg-surface-page px-4 py-8">
+        <Banner className="max-w-md" role="alert" variant="destructive">
+          <div className="flex items-start gap-3">
+            <LucideIcon.CircleAlert className="mt-0.5 size-5 text-red" />
+            <div>
+              <strong className="block">Couldn&apos;t load automation</strong>
+              <p className="text-sm text-muted-foreground">Try refreshing the page.</p>
+            </div>
+          </div>
+        </Banner>
+      </div>
+    );
+  }
+
+  return (
+    <Inline
+      ref={layoutRef}
+      align="stretch"
+      className="@container/automation relative min-h-0 flex-1 overflow-x-clip bg-background"
+      data-testid="automation-canvas"
+      gap="none"
+    >
+      <AutomationSidebar
+        automationId={automation.id}
+        description={automation.description}
+        isOpen={sidebar.open}
+        isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+        isToggleHidden={isCanvasCleared}
+        metadata={isHistoryOpen ? 'readonly' : 'editable'}
+        performanceEnabled={isPerformanceEnabled}
+        selectedRunId={selectedRunId}
+        selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
+        tiers={tierData?.tiers ?? []}
+        triggerRules={automation.trigger_rules}
+        onDescriptionChange={(description) => onChange({ ...automation, description })}
+        onOpenChange={setAutomationSidebarOpen}
+        onSelectRun={handleSelectRun}
+        onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
+      />
+      <Box
+        ref={viewport.measureCanvas}
+        className={cn(
+          'relative min-w-0 flex-1',
+          sidebar.open && '@max-[960px]/automation:invisible',
+        )}
+      >
+        <Box
+          ref={(element) => {
+            editingCanvasRef.current = element;
+            if (element) {
+              element.inert = isHistoryOpen;
+            }
+          }}
+          aria-hidden={isHistoryOpen}
+          aria-label="Editing canvas"
+          className={isHistoryOpen ? 'invisible absolute inset-0' : 'absolute inset-0'}
+          role="region"
+          tabIndex={-1}
+        >
+          {/* Only the pane reaches up behind the header; the region keeps the visible bounds */}
+          <Box
+            className="absolute inset-x-0 -top-14 bottom-0 [&_.react-flow\_\_viewport]:transition-opacity [&_.react-flow\_\_viewport]:duration-200 [&_.react-flow\_\_viewport]:ease-in-out data-cleared:[&_.react-flow\_\_viewport]:opacity-0 motion-reduce:[&_.react-flow\_\_viewport]:transition-none"
+            data-cleared={isCanvasCleared || undefined}
+          >
+            <ReactFlow
+              className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
+              defaultViewport={initialViewport}
+              edges={graph.edges}
+              edgesFocusable={false}
+              edgeTypes={edgeTypes}
+              maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+              minZoom={CANVAS_ZOOM_CONFIG.minZoom}
+              nodes={graph.nodes}
+              nodesConnectable={false}
+              nodesDraggable={false}
+              nodesFocusable={false}
+              nodeTypes={nodeTypes}
+              proOptions={{ hideAttribution: true }}
+              translateExtent={viewport.translateExtent}
+              zoomOnDoubleClick={false}
+              zoomOnScroll={false}
+              panOnScroll
+              onInit={viewport.onInit}
+              onMove={viewport.onMove}
+              onNodeDoubleClick={handleNodeDoubleClick}
+              onNodesChange={handleNodesChange}
+            >
+              <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
+              <AutomationCanvasControls isHidden={isCanvasCleared} />
+            </ReactFlow>
+          </Box>
+        </Box>
+        {isHistoryOpen && (
+          <RunHistory
+            key={selectedRunId}
+            automationId={automation.id}
+            automationSlug={automation.slug}
+            isAutomationSidebarOpen={sidebar.open}
+            memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
+            runId={selectedRunId}
+            onClose={handleCloseHistory}
+          />
+        )}
+      </Box>
+      {emailModalAction && automation && (
+        <EmailContentModal
+          key={emailModalAction.id}
+          automationId={automation.id}
+          emailDraft={{
+            subject: emailModalAction.data.email_subject,
+            lexical: emailModalAction.data.email_lexical,
+          }}
+          getEmailCardElement={getEmailCardElement}
+          initialMode={emailModalMode}
+          onChange={({ subject, lexical }) => {
+            onChange(
+              updateSendEmailAction({
+                detail: automation,
+                actionId: emailModalAction.id,
+                emailSubject: subject,
+                emailLexical: lexical,
+              }),
+            );
+          }}
+          onClose={closeEmailModal}
+          onCloseStart={handleEmailModalCloseStart}
+        />
+      )}
+      <AlertDialog
+        open={Boolean(deleteConfirmationAction)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteConfirmationActionId(null);
+          }
+        }}
+      >
+        <AlertDialogContent onEscapeKeyDown={(event) => event.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this email?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This email will be removed from the automation. Save or publish the automation to
+              apply this change.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (deleteConfirmationAction) {
+                  handleDelete(deleteConfirmationAction.id);
+                }
+              }}
+            >
+              Delete email
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Inline>
+  );
+};
+
+export default AutomationCanvas;

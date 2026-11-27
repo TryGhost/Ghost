@@ -41,12 +41,12 @@ describe('renderers/image-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-image-card kg-width-undefined kg-card-hascaption">
                     <picture>
                         <source
@@ -93,7 +93,7 @@ describe('renderers/image-renderer', function () {
             assert.ok(result.html.includes('<a href="https://example.com"'));
         });
 
-        it('generates srcset for CDN image URLs when imageBaseUrl is configured', function () {
+        it('generates srcset for CDN image URLs when imageBaseUrl is configured', async function () {
             const cdnUrl = 'https://cdn.example.com/c/uuid';
             const result = renderForWeb(
                 getTestData({src: `${cdnUrl}/content/images/2022/11/koenig-lexical.jpg`}),
@@ -102,7 +102,7 @@ describe('renderers/image-renderer', function () {
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-image-card kg-width-undefined kg-card-hascaption">
                     <picture>
                         <source
@@ -170,7 +170,7 @@ describe('renderers/image-renderer', function () {
             assert.ok(result.html.includes('<img'));
         });
 
-        it('renders a minimal image card', function () {
+        it('renders a minimal image card', async function () {
             const result = renderForWeb({
                 src: '/image.png',
                 width: null,
@@ -182,7 +182,7 @@ describe('renderers/image-renderer', function () {
                 cardWidth: 'regular'
             });
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-image-card">
                     <img src="/image.png" class="kg-image" alt="" loading="lazy">
                 </figure>
@@ -268,12 +268,12 @@ describe('renderers/image-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-image-card kg-width-undefined kg-card-hascaption">
                     <img
                         src="/content/images/size/w1600/2022/11/koenig-lexical.jpg"

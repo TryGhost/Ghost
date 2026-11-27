@@ -1,0 +1,252 @@
+const _ = require('lodash');
+const fs = require('fs-extra');
+const models = require('../../models');
+const routeSettings = require('../../services/route-settings');
+const { BadRequestError } = require('@tryghost/errors');
+const settingsService = require('../../services/settings/settings-service');
+const membersService = require('../../services/members');
+const stripeService = require('../../services/stripe');
+const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
+const auth = require('../../auth');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = auth.isBetterAuth;
+
+/**
+ * @param {Object} frame
+ * @param {{state?: string, prop?: string}} checked - Gets the state the token was checked against
+ */
+async function getStripeConnectData(frame, checked) {
+  const stripeConnectIntegrationToken = frame.data.settings.find(
+    (setting) => setting.key === 'stripe_connect_integration_token',
+  );
+
+  if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
+    // Better Auth has no session object
+    const getSessionProp = isBetterAuth
+      ? async () => {
+          checked.state = await auth.stripeConnectState.get(frame.options.context.user);
+          return checked.state;
+        }
+      : (prop) => {
+          checked.prop = prop;
+          checked.state = frame.original.session?.[prop];
+          return checked.state;
+        };
+
+    return await settingsBREADService.getStripeConnectData(
+      stripeConnectIntegrationToken,
+      getSessionProp,
+      membersService.stripeConnect.getStripeConnectTokenData,
+    );
+  }
+}
+
+// Only a saved token uses up its state, so a failed save can be retried and
+// the state is good for one key, under either auth engine
+async function editSettings(frame) {
+  const checked = {};
+  const stripeConnectData = await getStripeConnectData(frame, checked);
+  const result = await settingsBREADService.edit(
+    frame.data.settings,
+    frame.options,
+    stripeConnectData,
+  );
+
+  if (stripeConnectData && checked.state) {
+    if (isBetterAuth) {
+      await auth.stripeConnectState.clear(frame.options.context.user, checked.state);
+    } else if (frame.original.session?.[checked.prop] === checked.state) {
+      // A connection started meanwhile keeps its own state
+      delete frame.original.session[checked.prop];
+    }
+  }
+  return result;
+}
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
+  docName: 'settings',
+
+  browse: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['group'],
+    permissions: true,
+    query(frame) {
+      return settingsBREADService.browse(frame.options.context);
+    },
+  },
+
+  read: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['key'],
+    validation: {
+      options: {
+        key: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      identifier(frame) {
+        return frame.options.key;
+      },
+    },
+    query(frame) {
+      return settingsBREADService.read(frame.options.key, frame.options.context);
+    },
+  },
+
+  verifyKeyUpdate: {
+    headers: {
+      cacheInvalidate: true,
+    },
+    permissions: {
+      method: 'edit',
+    },
+    data: ['token'],
+    async query(frame) {
+      await settingsBREADService.verifyKeyUpdate(frame.data.token);
+
+      // We need to return all settings here, because we have calculated settings that might change
+      const browse = await settingsBREADService.browse(frame.options.context);
+
+      return browse;
+    },
+  },
+
+  disconnectStripeConnectIntegration: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'edit',
+    },
+    async query(frame) {
+      const paidMembers = await membersService.api.memberBREADService.browse({
+        limit: 0,
+        filter: 'status:paid',
+      });
+      if (paidMembers?.meta?.pagination?.total !== 0) {
+        throw new BadRequestError({
+          message: 'Cannot disconnect Stripe whilst you have active subscriptions.',
+        });
+      }
+
+      await stripeService.disconnect();
+
+      return models.Settings.edit(
+        [
+          {
+            key: 'stripe_connect_publishable_key',
+            value: null,
+          },
+          {
+            key: 'stripe_connect_secret_key',
+            value: null,
+          },
+          {
+            key: 'stripe_connect_livemode',
+            value: null,
+          },
+          {
+            key: 'stripe_connect_display_name',
+            value: null,
+          },
+          {
+            key: 'stripe_connect_account_id',
+            value: null,
+          },
+          {
+            key: 'members_stripe_webhook_id',
+            value: null,
+          },
+          {
+            key: 'members_stripe_webhook_secret',
+            value: null,
+          },
+        ],
+        frame.options,
+      );
+    },
+  },
+
+  edit: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      unsafeAttrsObject(frame) {
+        return _.find(frame.data.settings, { key: 'labs' });
+      },
+    },
+    async query(frame) {
+      const result = await editSettings(frame);
+
+      if (!_.isEmpty(result)) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+
+      // We need to return all settings here, because we have calculated settings that might change
+      const browse = await settingsBREADService.browse(frame.options.context);
+      browse.meta = result.meta || {};
+
+      return browse;
+    },
+  },
+
+  regenerateAccessCode: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: {
+      method: 'edit',
+    },
+    async query(frame) {
+      await settingsService.regeneratePrivateSiteAccessCode();
+      frame.setHeader('X-Cache-Invalidate', '/*');
+
+      // We need to return all settings here, because we have calculated settings that might change
+      return await settingsBREADService.browse(frame.options.context);
+    },
+  },
+
+  upload: {
+    headers: {
+      cacheInvalidate: true,
+    },
+    permissions: {
+      method: 'edit',
+    },
+    async query(frame) {
+      const content = await fs.readFile(frame.file.path, 'utf8');
+      await routeSettings.api.upload(content);
+    },
+  },
+
+  download: {
+    headers: {
+      disposition: {
+        type: 'yaml',
+        value: 'routes.yaml',
+      },
+      cacheInvalidate: false,
+    },
+    response: {
+      format: 'plain',
+    },
+    permissions: {
+      method: 'browse',
+    },
+    query() {
+      return routeSettings.api.download();
+    },
+  },
+};
+
+module.exports = controller;

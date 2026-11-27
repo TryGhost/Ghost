@@ -1,0 +1,3013 @@
+import assert from 'node:assert/strict';
+import { transactionsWaitingOn } from '../../utils/lock-waits';
+import logging from '@tryghost/logging';
+import ObjectId from 'bson-objectid';
+import nock from 'nock';
+import sinon from 'sinon';
+import { CHALLENGE_PATH, thumbprintOf } from '@tryghost/app-contracts/identity';
+import {
+  answerTestChallenge,
+  generateTestAppKeys,
+  signTestManifest,
+  type TestAppKeys,
+} from '../../utils/app-identity';
+import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
+
+// Required, not imported, so this is the same module instance Ghost initialised at boot.
+const appInstallations: typeof import('../../../core/server/services/app-installations').default =
+  require('../../../core/server/services/app-installations').default;
+const {
+  AppInstallationsRepository,
+}: typeof import('../../../core/server/services/app-installations/app-installations-repository') = require('../../../core/server/services/app-installations/app-installations-repository');
+const models = require('../../../core/server/models');
+const configUtils = require('../../utils/config-utils');
+
+const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
+
+// Apps get tokens from Better Auth's OAuth provider, so they open only under its engine
+const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+
+/** The app's keys. A test that needs another developer, or a new backend key, makes its own. */
+let keys: TestAppKeys;
+
+/**
+ * The manifest the app signs. `serve` fills in `manifest_url` with the address it serves it
+ * from, unless a test names another.
+ */
+function manifest(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'com.example.podcast',
+    name: 'Podcast',
+    description: 'Publish episodes and embed players.',
+    author: { name: 'Example Audio', url: 'https://example.com' },
+    accent_color: '#ff5500',
+    icon: { name: 'audio-lines' },
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
+    scopes: [],
+    identity_key: keys.identity.publicJwk,
+    backend_key: keys.backend.publicJwk,
+    development: false,
+    ...overrides,
+  };
+}
+
+describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
+  let agent: {
+    get: (_url: string) => any;
+    post: (_url: string) => any;
+    put: (_url: string) => any;
+    delete: (_url: string) => any;
+    loginAsOwner: () => Promise<void>;
+    loginAsAdmin: () => Promise<void>;
+    loginAsEditor: () => Promise<void>;
+    loginAsContributor: () => Promise<void>;
+    useZapierAdminAPIKey: () => Promise<void>;
+    useStaffTokenForAdmin: () => Promise<void>;
+  };
+  let owner: { actor: { id: string; type: 'user' } };
+
+  const service = () => appInstallations.service;
+  const appTokens = () => require('../../../core/server/auth').appTokens;
+  /** The Owner's signed-in staff session, as a session started through the API would have it. */
+  const ownerPrincipal = async () => {
+    const user = fixtureManager.get('users', 0);
+    const session = await models.Base.knex('user_sessions')
+      .where({ user_id: user.id })
+      .orderBy('created_at', 'desc')
+      .first();
+    return {
+      kind: 'user' as const,
+      method: 'session' as const,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        status: 'active',
+        roles: [{ id: 'owner', name: 'Owner' }],
+      },
+      session: {
+        id: session.id,
+        userId: user.id,
+        expiresAt: Date.now() + 60_000,
+        verified: true,
+        origin: null,
+      },
+    };
+  };
+  const MANIFEST_HOST = 'https://podcast.example.com';
+  const MANIFEST_PATH = '/ghost-app.json';
+  /** The backend key each origin answers challenges with, as the last `serve` set it. */
+  const backends = new Map<string, TestAppKeys['backend']>();
+  /**
+   * Answers every challenge to `origin` as the app's backend, with `backend` or the app's
+   * own backend key, until it's told another.
+   */
+  const answerChallenges = (origin: string, backend = keys.backend) => {
+    if (!backends.has(origin)) {
+      nock(origin)
+        .persist()
+        .post(CHALLENGE_PATH)
+        .reply(async (_uri, body) => [
+          200,
+          await answerTestChallenge(
+            typeof body === 'string' ? body : JSON.stringify(body),
+            backends.get(origin)!,
+            origin + CHALLENGE_PATH,
+          ),
+        ]);
+    }
+    backends.set(origin, backend);
+  };
+  /** The manifest as the app serves it from `url`, signed with its identity key. */
+  const signed = (body: Record<string, unknown>, url = MANIFEST_URL) =>
+    signTestManifest({ manifest_url: url, ...body }, keys.identity);
+  /**
+   * Serves the manifest from `url`, signed with the app's identity key or `identity`, and
+   * answers challenges on its origin. The manifest names `url` unless it says otherwise.
+   */
+  const serve = (
+    body: Record<string, unknown>,
+    url = MANIFEST_HOST + MANIFEST_PATH,
+    {
+      identity = keys.identity,
+      backend = keys.backend,
+    }: { identity?: TestAppKeys['identity']; backend?: TestAppKeys['backend'] } = {},
+  ) => {
+    const served: Record<string, unknown> = { manifest_url: url, ...body };
+    const { origin, pathname } = new URL(url);
+    answerChallenges(origin, backend);
+    const signing = signTestManifest(served, identity);
+    return nock(origin)
+      .get(pathname)
+      .reply(async () => [200, await signing]);
+  };
+  const ICON_PATH = '/icon.svg';
+  const ICON =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></svg>';
+  const NEW_ICON =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle r="12"/></svg>';
+  const SVG = { 'content-type': 'image/svg+xml' };
+  /** The copy Ghost stores of an SVG icon. */
+  const copyOf = (svg: string) =>
+    `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  /** A manifest's icon as an image the app serves, rather than one Admin ships. */
+  const servedIcon = { icon: { url: ICON_PATH } };
+  /** Serves the app's icon, `times` times. */
+  const serveIcon = (svg = ICON, times = 1) =>
+    nock(MANIFEST_HOST).get(ICON_PATH).times(times).reply(200, svg, SVG);
+  /** Confirms an install of the app as served, with the digest the publisher reviewed. */
+  const installReviewed = (digest: string, overrides: Record<string, unknown> = {}) => {
+    serve(manifest(overrides));
+    return service().create(owner, { manifestUrl: MANIFEST_URL, digest });
+  };
+  /**
+   * Installs the app as a publisher would: previewed, then confirmed. Hands back the
+   * installation with the digest the publisher confirmed.
+   */
+  const install = async (overrides: Record<string, unknown> = {}) => {
+    serve(manifest(overrides));
+    const { digest } = await service().preview(MANIFEST_URL);
+    return { ...(await installReviewed(digest, overrides)), digest };
+  };
+  const preview = async (manifestUrl = MANIFEST_URL, status = 200) => {
+    const { body } = await agent
+      .post('apps/installations/preview/')
+      .body({ app_installation_previews: [{ manifest_url: manifestUrl }] })
+      .expectStatus(status);
+    return status === 200 ? body.app_installation_previews[0] : body.errors[0];
+  };
+  const actions = () =>
+    models.Base.knex('actions')
+      .where('resource_type', 'app_installation')
+      .orderBy('created_at', 'asc')
+      .orderBy('id', 'asc');
+  const installationRow = (id: string) =>
+    models.Base.knex('app_installations').where({ id }).first();
+  const manifestRows = () => models.Base.knex('app_installation_manifests').orderBy('id', 'asc');
+  /**
+   * Replaces a stored manifest with one the contract rejects, as one stored under an older
+   * contract can be.
+   */
+  const outdate = (manifestId: string) =>
+    models.Base.knex('app_installation_manifests')
+      .where({ id: manifestId })
+      .update({ manifest: JSON.stringify({ id: 'com.example.podcast' }) });
+  /**
+   * Whether `work` comes to wait for a lock on an installation row before it settles, giving up
+   * after five seconds.
+   */
+  const waitsForLock = async (work: Promise<unknown>): Promise<boolean> => {
+    let settled = false;
+    const done = () => {
+      settled = true;
+    };
+    work.then(done, done);
+    const deadline = Date.now() + 5000;
+    while (!settled && Date.now() < deadline) {
+      if ((await transactionsWaitingOn(models.Base.knex, 'app_installations')) > 0) {
+        return true;
+      }
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+    }
+    return false;
+  };
+  /** Starts an app session, as Admin does when an app page opens. */
+  const start = (id: string, status = 200) =>
+    agent.post(`apps/installations/${id}/sessions/`).expectStatus(status);
+
+  beforeAll(async function () {
+    keys = await generateTestAppKeys();
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users', 'integrations', 'api_keys');
+    owner = { actor: { id: fixtureManager.get('users', 0).id, type: 'user' } };
+    await agent.loginAsOwner();
+  });
+
+  beforeEach(function () {
+    mockManager.disableNetwork();
+  });
+
+  afterEach(async function () {
+    sinon.restore();
+    nock.cleanAll();
+    backends.clear();
+    mockManager.restore();
+    await configUtils.restore();
+    await models.Base.knex('app_installation_manifests').del();
+    await models.Base.knex('app_installations').del();
+    await models.Base.knex('actions').where('resource_type', 'app_installation').del();
+  });
+
+  describe('installing', function () {
+    it('stores the validated manifest, with its URLs resolved', async function () {
+      const installation = await install();
+
+      assert.match(installation.id, /^[a-f\d]{24}$/);
+      assert.equal(installation.app_id, 'com.example.podcast');
+      assert.equal(installation.status, 'active');
+      assert.equal(installation.manifest_url, MANIFEST_URL);
+      assert.deepEqual(installation.manifest.surfaces, [
+        { type: 'admin_page', url: 'https://podcast.example.com/admin' },
+      ]);
+      assert.ok(installation.created_at instanceof Date);
+    });
+
+    it('keeps the manifest as the approved one, with its digest', async function () {
+      const installation = await install();
+
+      const [stored] = await manifestRows();
+      assert.equal(stored.installation_id, installation.id);
+      assert.equal(stored.manifest_url, MANIFEST_URL);
+      assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
+      assert.equal(stored.digest, installation.digest);
+      assert.equal(Boolean(stored.requires_approval), false);
+
+      const installed = await installationRow(installation.id);
+      assert.equal(installed.manifest_id, stored.id);
+      assert.equal(installed.pending_manifest_id, null);
+      assert.equal(installed.revision, 0);
+    });
+
+    it('refuses a second installation of an app that is already installed', async function () {
+      await install();
+      await assert.rejects(install(), { errorType: 'ConflictError' });
+      assert.equal((await service().browse()).length, 1);
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('refuses a second installation of an app that is suspended', async function () {
+      const suspended = await install();
+      await models.Base.knex('app_installations')
+        .where({ id: suspended.id })
+        .update({ status: 'suspended' });
+
+      await assert.rejects(install(), { errorType: 'ConflictError' });
+      assert.deepEqual(
+        (await service().browse()).map((installation) => installation.status),
+        ['suspended'],
+      );
+    });
+
+    it('lets only one of three simultaneous confirmations install the app', async function () {
+      serve(manifest());
+      const { digest } = await service().preview(MANIFEST_URL);
+
+      const results = await Promise.allSettled([
+        installReviewed(digest),
+        installReviewed(digest),
+        installReviewed(digest),
+      ]);
+
+      assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          assert.equal(result.reason.errorType, 'ConflictError', result.reason.message);
+          assert.equal(result.reason.code, 'APP_ALREADY_INSTALLED');
+        }
+      }
+      assert.equal((await service().browse()).length, 1);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('installs different apps side by side', async function () {
+      await install();
+      await install({ id: 'com.example.other', name: 'Other' });
+
+      assert.deepEqual(
+        (await service().browse()).map((installation) => installation.app_id),
+        ['com.example.podcast', 'com.example.other'],
+      );
+    });
+
+    it('creates a new installation on reinstall, and never revives the old one', async function () {
+      const first = await install();
+      await service().uninstall(owner, first.id);
+      const second = await install();
+
+      assert.notEqual(second.id, first.id);
+      assert.equal(second.status, 'active');
+      assert.equal((await service().read(first.id)).status, 'uninstalled');
+      assert.equal(
+        await models.Base.knex('app_installations')
+          .count('* as count')
+          .first()
+          .then((row: any) => Number(row.count)),
+        2,
+      );
+    });
+
+    it('records who installed the app in the staff history', async function () {
+      const installation = await install();
+
+      const [action] = await actions();
+      assert.equal(action.event, 'installed');
+      assert.equal(action.resource_id, installation.id);
+      assert.equal(action.actor_type, 'user');
+      assert.equal(action.actor_id, owner.actor.id);
+      assert.deepEqual(JSON.parse(action.context), {
+        primary_name: 'Podcast',
+        app_id: 'com.example.podcast',
+      });
+    });
+  });
+
+  describe('POST /apps/installations/preview/', function () {
+    it('fetches and checks a manifest without storing anything', async function () {
+      serve(manifest());
+
+      const result = await preview();
+
+      assert.equal(result.manifest_url, MANIFEST_URL);
+      assert.equal(result.manifest.surfaces[0].url, `${MANIFEST_HOST}/admin`);
+      assert.match(result.digest, /^[a-f\d]{64}$/);
+      assert.equal(result.installation, null);
+      assert.equal((await service().browse()).length, 0);
+    });
+
+    it('shows what would change for an app that is already installed', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts', description: 'New words.' }));
+
+      const result = await preview();
+
+      assert.deepEqual(result.installation, {
+        id: installed.id,
+        status: 'active',
+        revision: 0,
+        manifest_url: MANIFEST_URL,
+        manifest: installed.manifest,
+        icon_data_url: null,
+        changes: [
+          { kind: 'field', path: 'description', requires_approval: false },
+          { kind: 'field', path: 'name', requires_approval: true },
+        ],
+      });
+    });
+
+    // The manifest names the address Ghost asked for, which is the one it stores.
+    it('follows a redirect on the same host', async function () {
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(302, '', { location: '/v2/ghost-app.json' });
+      serve(manifest({ manifest_url: MANIFEST_URL }), `${MANIFEST_HOST}/v2/ghost-app.json`);
+
+      const result = await preview();
+
+      assert.equal(result.manifest_url, MANIFEST_URL);
+    });
+
+    it('refuses a manifest that redirects to another host', async function () {
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(302, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_REDIRECTED');
+    });
+
+    it('explains when the app cannot be reached, without saying more than its answer', async function () {
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(404);
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_UNREACHABLE');
+      assert.match(error.context, /ghost-app\.json answered with HTTP 404$/);
+    });
+
+    it('checks the manifest URL before fetching anything', async function () {
+      for (const manifestUrl of [
+        'podcast.example.com/ghost-app.json',
+        'http://podcast.example.com/ghost-app.json',
+        Object.assign(new URL(MANIFEST_URL), { username: 'user', password: 'example' }).href,
+        `${MANIFEST_HOST}/${'a'.repeat(2000)}`,
+      ]) {
+        // Nothing is served for these, so a fetch would fail as unreachable instead.
+        const error = await preview(manifestUrl, 422);
+        assert.equal(error.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
+      }
+    });
+
+    it('refuses a manifest that is not JSON', async function () {
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(200, '<html></html>');
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_NOT_JSON');
+    });
+
+    it('refuses a manifest larger than it can store, signed', async function () {
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, JSON.stringify({ payload: 'a'.repeat(100 * 1024) }));
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_TOO_LARGE');
+    });
+
+    it('lists what is wrong with a manifest that is not valid', async function () {
+      serve(manifest({ id: 'Podcast' }));
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_INVALID');
+      assert.match(error.context, /id: /);
+      assert.deepEqual(
+        error.details.map(({ path }: { path: string }) => path),
+        ['id'],
+      );
+    });
+
+    // Every path in a manifest is on the manifest's origin, so this keeps the whole app off
+    // Ghost's host, where browsers would send it Ghost's cookies whatever the port.
+    it('refuses a manifest URL on the site’s own host, on any port, before fetching anything', async function () {
+      // The test site is on the machine itself, which only development accepts. Development
+      // also trusts the machine without a challenge, so the composition root's unit test
+      // checks that no challenge goes out either.
+      configUtils.set('env', 'development');
+      const site = new URL(configUtils.config.get('url'));
+      const sitePort = Number(site.port || (site.protocol === 'https:' ? 443 : 80));
+      const otherPort = new URL(site);
+      otherPort.port = String(sitePort + 1);
+
+      for (const manifestUrl of [
+        new URL('/content/files/ghost-app.json', site).href,
+        new URL(MANIFEST_PATH, otherPort).href,
+      ]) {
+        // Served, so a manifest fetched from there would be accepted.
+        const scope = serve(manifest({ development: true }), manifestUrl);
+
+        const error = await preview(manifestUrl, 422);
+        assert.equal(error.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
+        assert.match(error.context, /Ghost itself is served from, on any port/);
+        assert.equal(scope.isDone(), false, manifestUrl);
+      }
+    });
+  });
+
+  describe('POST /apps/installations/', function () {
+    const confirm = (digest: string, status: number) =>
+      agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
+        .expectStatus(status);
+
+    it('installs the manifest that was reviewed', async function () {
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest());
+
+      const { body } = await confirm(digest, 201);
+
+      assert.equal(body.app_installations[0].app_id, 'com.example.podcast');
+      assert.equal(body.app_installations[0].status, 'active');
+      const [stored] = await manifestRows();
+      assert.equal(stored.digest, digest);
+      assert.equal((await actions())[0].event, 'installed');
+    });
+
+    // The manifest names its own address, and its paths resolve against it, so the digest
+    // covers where it's served from.
+    it('refuses confirming another address with the digest reviewed elsewhere', async function () {
+      serve(manifest());
+      const { digest } = await preview();
+      const elsewhere = 'https://audio.example.org/ghost-app.json';
+      serve(manifest(), elsewhere);
+
+      const { body } = await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: elsewhere, digest }] })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_CHANGED');
+      assert.equal((await service().browse()).length, 0);
+    });
+
+    it('asks for a new review when the app changed in between', async function () {
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest({ name: 'Something else' }));
+
+      const { body } = await confirm(digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_CHANGED');
+      assert.equal(body.errors[0].details.manifest.name, 'Something else');
+      assert.notEqual(body.errors[0].details.digest, digest);
+      assert.equal((await service().browse()).length, 0);
+    });
+
+    it('refuses a manifest that is not valid, and stores nothing', async function () {
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest({ id: 'Podcast' }));
+
+      const { body } = await confirm(digest, 422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.equal((await models.Base.knex('app_installations')).length, 0);
+      assert.equal((await manifestRows()).length, 0);
+      assert.equal((await actions()).length, 0);
+    });
+
+    it('refuses to install an app that is already installed', async function () {
+      await install();
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest());
+
+      const { body } = await confirm(digest, 409);
+      assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
+    });
+
+    it('refuses to install an installed app whose icon fails to load as already installed', async function () {
+      await install();
+      serve(manifest(servedIcon));
+      serveIcon();
+      const { digest } = await preview();
+      serve(manifest(servedIcon));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await confirm(digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
+    });
+
+    it('keeps the manifest URL as it was checked, not as it was confirmed', async function () {
+      const spelled = ' https://Podcast.Example.com/ghost-app.json\n';
+      serve(manifest());
+      const { digest } = await preview(spelled);
+      serve(manifest());
+
+      const { body } = await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: spelled, digest }] })
+        .expectStatus(201);
+
+      assert.equal(body.app_installations[0].manifest_url, MANIFEST_URL);
+      const [stored] = await manifestRows();
+      assert.equal(stored.manifest_url, MANIFEST_URL);
+    });
+
+    it('needs the reviewed digest', async function () {
+      await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL }] })
+        .expectStatus(422);
+    });
+  });
+
+  describe('PUT /apps/installations/:id/', function () {
+    const NEW_URL = 'https://audio.example.org/ghost-app.json';
+    const approve = (
+      id: string,
+      manifestUrl: string,
+      digest: string,
+      status: number,
+      revision = 0,
+    ) =>
+      agent
+        .put(`apps/installations/${id}/`)
+        .body({ app_installations: [{ manifest_url: manifestUrl, digest, revision }] })
+        .expectStatus(status);
+    /**
+     * Serves changes that need approval and starts a session, so the re-check stores them
+     * as pending and suspends the app. Returns the pending manifest's ID.
+     */
+    const suspendWithPending = async (id: string, pending: Record<string, unknown>) => {
+      serve(pending);
+      await start(id);
+      const row = await installationRow(id);
+      assert.equal(row.status, 'suspended');
+      return row.pending_manifest_id as string;
+    };
+
+    it('moves an app to where it is served now, keeping the installation', async function () {
+      const installed = await install();
+      // The same manifest: its paths resolve against where it's served now.
+      const moved = manifest();
+      serve(moved, NEW_URL);
+      const reviewed = await preview(NEW_URL);
+      assert.deepEqual(reviewed.installation.changes, [
+        { kind: 'field', path: 'manifest_url', requires_approval: true },
+        { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
+      ]);
+      serve(moved, NEW_URL);
+
+      const { body } = await approve(installed.id, NEW_URL, reviewed.digest, 200);
+
+      assert.equal(body.app_installations[0].id, installed.id);
+      assert.equal(body.app_installations[0].manifest_url, NEW_URL);
+      assert.equal(
+        body.app_installations[0].manifest.surfaces[0].url,
+        'https://audio.example.org/admin',
+      );
+
+      const [first, second] = await manifestRows();
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, second.id);
+      assert.equal(row.revision, 1);
+      assert.equal(Boolean(second.requires_approval), true);
+
+      const [, action] = await actions();
+      assert.equal(action.event, 'changes_approved');
+      assert.equal(action.actor_id, owner.actor.id);
+      assert.deepEqual(JSON.parse(action.context), {
+        primary_name: 'Podcast',
+        app_id: 'com.example.podcast',
+        from_manifest_id: first.id,
+        to_manifest_id: second.id,
+      });
+      assert.equal(first.source, 'install');
+      assert.equal(second.source, 'approval');
+    });
+
+    it('changes nothing when approving what is already approved', async function () {
+      const installed = await install();
+      serve(manifest());
+      const { digest } = await preview();
+      serve(manifest());
+
+      await approve(installed.id, MANIFEST_URL, digest, 200);
+
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('approves changes that need no approval as an approval row', async function () {
+      const installed = await install();
+      serve(manifest({ description: 'Episodes and players.' }));
+      const reviewed = await preview();
+      assert.deepEqual(reviewed.installation.changes, [
+        { kind: 'field', path: 'description', requires_approval: false },
+      ]);
+      serve(manifest({ description: 'Episodes and players.' }));
+
+      const { body } = await approve(installed.id, MANIFEST_URL, reviewed.digest, 200);
+
+      assert.equal(body.app_installations[0].manifest.description, 'Episodes and players.');
+      const [first, approved] = await manifestRows();
+      assert.equal(approved.source, 'approval');
+      assert.equal(Boolean(approved.requires_approval), false);
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, approved.id);
+      assert.equal(row.revision, 1);
+      const [, action] = await actions();
+      assert.equal(JSON.parse(action.context).from_manifest_id, first.id);
+      assert.equal(JSON.parse(action.context).to_manifest_id, approved.id);
+    });
+
+    it('asks for a new review when the app changed in between', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const { digest } = await preview();
+      serve(manifest({ name: 'Something else' }));
+
+      const { body } = await approve(installed.id, MANIFEST_URL, digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_CHANGED');
+      assert.equal(body.errors[0].details.installation.id, installed.id);
+      assert.equal((await service().read(installed.id)).manifest.name, 'Podcast');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('asks for a new review when the installation changed in between', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const first = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      await approve(installed.id, MANIFEST_URL, first.digest, 200, first.installation.revision);
+
+      serve(manifest({ name: 'Podcasts' }));
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        first.digest,
+        409,
+        first.installation.revision,
+      );
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+      assert.equal(body.errors[0].details.installation.revision, 1);
+      assert.equal((await installationRow(installed.id)).revision, 1);
+      assert.equal((await manifestRows()).length, 2);
+    });
+
+    it('asks for a new review when a re-check changes the installation while the reviewed manifest is fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          // An app session starts during the fetch, and its re-check finds other changes
+          // that need approval, so it suspends the app.
+          serve(manifest({ name: 'Podcasts!' }));
+          await service().startSession(installed.id, await ownerPrincipal());
+          return signed(manifest({ name: 'Podcasts' }));
+        });
+
+      const { body } = await approve(installed.id, MANIFEST_URL, reviewed.digest, 409);
+
+      const [error] = body.errors;
+      assert.equal(error.code, 'APP_INSTALLATION_CHANGED');
+      // A new preview, against the installation as the re-check left it.
+      assert.equal(error.details.digest, reviewed.digest);
+      assert.equal(error.details.installation.status, 'suspended');
+      assert.equal(error.details.installation.revision, 1);
+      assert.deepEqual(error.details.installation.changes, [
+        { kind: 'field', path: 'name', requires_approval: true },
+      ]);
+      const row = await installationRow(installed.id);
+      assert.equal(row.status, 'suspended');
+      assert.equal(row.revision, 1);
+      // The install and the re-check's pending manifest, and nothing from the approval.
+      assert.equal((await manifestRows()).length, 2);
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('needs the revision that was reviewed, as a whole number', async function () {
+      const installed = await install();
+      serve(manifest());
+      const { digest } = await preview();
+      for (const revision of [undefined, '0', 1.5, -1]) {
+        await agent
+          .put(`apps/installations/${installed.id}/`)
+          .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest, revision }] })
+          .expectStatus(422);
+      }
+    });
+
+    it('runs a suspended app again once the changes it waits for are approved', async function () {
+      const installed = await install();
+      await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      assert.equal(reviewed.installation.status, 'suspended');
+      assert.equal(reviewed.installation.revision, 1);
+      serve(manifest({ name: 'Podcasts' }));
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcasts');
+      const row = await installationRow(installed.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+    });
+
+    it('reviews and records scope changes by meaning, in the preview and the history', async function () {
+      const installed = await install({ scopes: ['post:read'] });
+      const widened = manifest({ scopes: ['post:edit', 'post:read'] });
+      serve(widened);
+
+      const reviewed = await preview();
+
+      const added = [{ kind: 'scope', scope: 'post:edit', change: 'added' }];
+      assert.deepEqual(reviewed.installation.changes, added);
+
+      serve(widened);
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes]),
+        [
+          ['changes_approved', added],
+          ['installed', [{ kind: 'scope', scope: 'post:read', change: 'added' }]],
+        ],
+      );
+    });
+
+    it('records what each manifest version changed in the history', async function () {
+      const installed = await install();
+      await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      const renamed = [{ kind: 'field', path: 'name', requires_approval: true }];
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes ?? []]),
+        [
+          ['changes_approved', renamed],
+          ['suspended', renamed],
+          ['installed', []],
+        ],
+      );
+    });
+
+    it('approves the manifest waiting for approval as its own row, not a copy', async function () {
+      const installed = await install();
+      const pendingId = await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, pendingId);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal((await manifestRows()).length, 2);
+      const [, action] = await actions();
+      assert.equal(JSON.parse(action.context).to_manifest_id, pendingId);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      const events = body.app_installations[0].history.map((entry: any) => entry.event);
+      assert.ok(events.includes('suspended'), `expected a suspended entry in ${events}`);
+    });
+
+    it('approves a newer manifest than the pending one, replacing it', async function () {
+      const installed = await install();
+      const pendingId = await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ name: 'Podcasts!' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts!' }));
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcasts!');
+      const [first, waited, approved] = await manifestRows();
+      assert.equal(waited.id, pendingId);
+      assert.equal(approved.source, 'approval');
+      assert.equal(Boolean(approved.requires_approval), true);
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, approved.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+      const [, action] = await actions();
+      assert.deepEqual(JSON.parse(action.context), {
+        primary_name: 'Podcasts!',
+        app_id: 'com.example.podcast',
+        from_manifest_id: first.id,
+        to_manifest_id: approved.id,
+      });
+
+      const { body: details } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        details.app_installations[0].history.map((entry: any) => [
+          entry.event,
+          entry.actor?.name ?? null,
+        ]),
+        [
+          ['changes_approved', 'Joe Bloggs'],
+          ['suspended', null],
+          ['installed', 'Joe Bloggs'],
+        ],
+      );
+    });
+
+    it('approves a newer manifest than a pending one stored under an older contract', async function () {
+      const installed = await install();
+      await outdate(await suspendWithPending(installed.id, manifest({ name: 'Podcasts' })));
+      serve(manifest({ name: 'Podcasts!' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts!' }));
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcasts!');
+      assert.equal((await installationRow(installed.id)).pending_manifest_id, null);
+    });
+
+    // A pending manifest is recognised by its digest alone, which covers the address too.
+    it('does not approve the pending manifest when its contents are approved from another address', async function () {
+      const changed = manifest({ name: 'Podcasts' });
+      const installed = await install();
+      const pendingId = await suspendWithPending(installed.id, changed);
+      serve(changed, NEW_URL);
+      const reviewed = await preview(NEW_URL);
+      serve(changed, NEW_URL);
+
+      await approve(installed.id, NEW_URL, reviewed.digest, 200, reviewed.installation.revision);
+
+      const row = await installationRow(installed.id);
+      assert.notEqual(row.manifest_id, pendingId);
+      const rows = await manifestRows();
+      const pending = rows.find((r: { id: string }) => r.id === pendingId);
+      const approved = rows.find((r: { id: string }) => r.id === row.manifest_id);
+      assert.notEqual(approved.digest, pending.digest);
+      assert.equal(approved.manifest_url, NEW_URL);
+      assert.equal(approved.source, 'approval');
+    });
+
+    it('lets go of a pending manifest the app went back on, keeping no copy', async function () {
+      const installed = await install();
+      await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest());
+      const reviewed = await preview();
+      assert.deepEqual(reviewed.installation.changes, []);
+      serve(manifest());
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcast');
+      const row = await installationRow(installed.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+      // The approved one and the pending one: approving added nothing.
+      assert.equal((await manifestRows()).length, 2);
+      const [, action] = await actions();
+      assert.equal(action.event, 'changes_approved');
+      assert.equal(JSON.parse(action.context).from_manifest_id, row.manifest_id);
+      assert.equal(JSON.parse(action.context).to_manifest_id, row.manifest_id);
+    });
+
+    it('approves silent changes the app kept after going back on the pending ones, as an approval row', async function () {
+      const installed = await install();
+      const pendingId = await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ description: 'Episodes and players.' }));
+      const reviewed = await preview();
+      assert.deepEqual(reviewed.installation.changes, [
+        { kind: 'field', path: 'description', requires_approval: false },
+      ]);
+      serve(manifest({ description: 'Episodes and players.' }));
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].manifest.name, 'Podcast');
+      assert.equal(body.app_installations[0].manifest.description, 'Episodes and players.');
+      const [first, waited, approved] = await manifestRows();
+      assert.equal(waited.id, pendingId);
+      assert.equal(approved.source, 'approval');
+      assert.equal(Boolean(approved.requires_approval), false);
+      const row = await installationRow(installed.id);
+      assert.equal(row.manifest_id, approved.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+      const [, action] = await actions();
+      assert.equal(JSON.parse(action.context).from_manifest_id, first.id);
+      assert.equal(JSON.parse(action.context).to_manifest_id, approved.id);
+    });
+
+    // The challenge goes out with the fetch, before Ghost knows which app it is.
+    it('refuses a manifest for a different app, whatever its origin answered', async function () {
+      const installed = await install();
+      serve(manifest({ id: 'com.example.other' }), NEW_URL);
+      const { digest } = await preview(NEW_URL);
+      nock.cleanAll();
+      backends.clear();
+      const { origin, pathname } = new URL(NEW_URL);
+      nock(origin)
+        .get(pathname)
+        .reply(200, () => signed(manifest({ id: 'com.example.other' }), NEW_URL));
+      const challenged = [origin, MANIFEST_HOST].map((answering) =>
+        nock(answering).post(CHALLENGE_PATH).reply(500),
+      );
+
+      const { body } = await approve(installed.id, NEW_URL, digest, 422);
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_OTHER_APP');
+      assert.deepEqual(
+        challenged.map((scope) => scope.isDone()),
+        [true, false],
+      );
+    });
+
+    it('refuses an installation that has been uninstalled, without fetching', async function () {
+      const installed = await install();
+      serve(manifest());
+      const { digest } = await preview();
+      await service().uninstall(owner, installed.id);
+      const unfetched = serve(manifest());
+
+      const { body } = await approve(installed.id, MANIFEST_URL, digest, 409);
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal(unfetched.isDone(), false);
+    });
+
+    it('refuses an installation uninstalled while the reviewed manifest is fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await service().uninstall(owner, installed.id);
+          return signed(manifest({ name: 'Podcasts' }));
+        });
+
+      const { body } = await approve(installed.id, MANIFEST_URL, reviewed.digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      const row = await installationRow(installed.id);
+      assert.equal(row.status, 'uninstalled');
+      assert.equal(row.revision, 1);
+      assert.equal((await manifestRows()).length, 1);
+      assert.deepEqual(
+        (await actions()).map((action: { event: string }) => action.event),
+        ['installed', 'uninstalled'],
+      );
+    });
+
+    it('refuses an installation uninstalled while an out-of-date review’s manifest is fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      await suspendWithPending(installed.id, manifest({ name: 'Podcasts!' }));
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await service().uninstall(owner, installed.id);
+          return signed(manifest({ name: 'Podcasts' }));
+        });
+
+      const { body } = await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        409,
+        reviewed.installation.revision,
+      );
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal((await installationRow(installed.id)).status, 'uninstalled');
+      assert.equal((await manifestRows()).length, 2);
+    });
+  });
+
+  describe('POST /apps/installations/:id/sessions/', function () {
+    const pendingOf = async (id: string) => {
+      const row = await installationRow(id);
+      return row.pending_manifest_id
+        ? models.Base.knex('app_installation_manifests')
+            .where({ id: row.pending_manifest_id })
+            .first()
+        : null;
+    };
+
+    it('returns the installation, changing nothing when the manifest is unchanged', async function () {
+      const installed = await install();
+      serve(manifest());
+
+      const { body } = await start(installed.id);
+
+      assert.deepEqual(Object.keys(body), ['app_sessions']);
+      const [session] = body.app_sessions;
+      assert.deepEqual(Object.keys(session), ['installation', 'token']);
+      assert.equal(session.installation.id, installed.id);
+      assert.equal(session.installation.status, 'active');
+      assert.equal(session.installation.revision, 0);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+    });
+
+    it('applies changes that need no approval, as a new manifest row', async function () {
+      const installed = await install();
+      serve(manifest({ description: 'Episodes and players.', accent_color: '#00ff00' }));
+
+      const { body } = await start(installed.id);
+
+      const [session] = body.app_sessions;
+      assert.equal(session.installation.revision, 1);
+      assert.equal(session.installation.status, 'active');
+      assert.equal(session.installation.manifest.description, 'Episodes and players.');
+      assert.equal(session.installation.manifest.accent_color, '#00ff00');
+      const rows = await manifestRows();
+      assert.equal(rows.length, 2);
+      const row = await installationRow(installed.id);
+      const applied = rows.find((stored: any) => stored.id === row.manifest_id);
+      assert.equal(applied.source, 'update');
+      assert.equal(Boolean(applied.requires_approval), false);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 1);
+      // No person made this change, so there's no staff history entry.
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('suspends the app on changes that need approval, keeping the approved manifest', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+
+      const { body } = await start(installed.id);
+
+      const { installation } = body.app_sessions[0];
+      assert.equal(installation.status, 'suspended');
+      assert.equal(installation.manifest.name, 'Podcast');
+      const pending = await pendingOf(installed.id);
+      assert.equal(JSON.parse(pending.manifest).name, 'Podcasts');
+      assert.equal(pending.source, 'update');
+      assert.equal(Boolean(pending.requires_approval), true);
+      assert.equal((await installationRow(installed.id)).revision, 1);
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('replaces an older pending manifest with the newer one', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      const first = await pendingOf(installed.id);
+      serve(manifest({ name: 'Podcasts!' }));
+
+      await start(installed.id);
+
+      const second = await pendingOf(installed.id);
+      assert.notEqual(second.id, first.id);
+      assert.equal(JSON.parse(second.manifest).name, 'Podcasts!');
+      assert.equal((await installationRow(installed.id)).revision, 2);
+    });
+
+    it('changes nothing when the manifest is the pending one', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      serve(manifest({ name: 'Podcasts' }));
+
+      await start(installed.id);
+
+      assert.equal((await manifestRows()).length, 2);
+      assert.equal((await installationRow(installed.id)).revision, 1);
+    });
+
+    it('lifts a suspension when the app reverts the pending changes', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      serve(manifest());
+
+      const { body } = await start(installed.id);
+
+      assert.equal(body.app_sessions[0].installation.status, 'active');
+      assert.equal(body.app_sessions[0].installation.manifest.name, 'Podcast');
+      const row = await installationRow(installed.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+      // The approved manifest again, in a new row so the history can show the app resuming.
+      const [approved, waited, resumed] = await manifestRows();
+      assert.equal(row.manifest_id, resumed.id);
+      assert.equal(resumed.source, 'resume');
+      assert.equal(Boolean(resumed.requires_approval), false);
+      assert.equal(resumed.digest, approved.digest);
+      assert.notEqual(resumed.id, waited.id);
+      // No person made this change, so there's no staff history entry.
+      assert.equal((await actions()).length, 1);
+
+      const { body: details } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        details.app_installations[0].history.map((entry: any) => [
+          entry.event,
+          entry.actor?.name ?? null,
+        ]),
+        [
+          ['resumed', null],
+          ['suspended', null],
+          ['installed', 'Joe Bloggs'],
+        ],
+      );
+    });
+
+    it('lifts a suspension whose pending manifest was stored under an older contract', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      await outdate((await pendingOf(installed.id)).id);
+      serve(manifest());
+
+      const { body } = await start(installed.id);
+
+      assert.equal(body.app_sessions[0].installation.status, 'active');
+      const row = await installationRow(installed.id);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal(row.revision, 2);
+    });
+
+    it('applies a silent change while other changes are pending, clearing them', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      serve(manifest({ description: 'Episodes and players.' }));
+
+      const { body } = await start(installed.id);
+
+      const { installation } = body.app_sessions[0];
+      assert.equal(installation.status, 'active');
+      assert.equal(installation.manifest.name, 'Podcast');
+      assert.equal(installation.manifest.description, 'Episodes and players.');
+      const row = await installationRow(installed.id);
+      assert.equal(row.pending_manifest_id, null);
+      const resumed = (await manifestRows()).find((stored: any) => stored.id === row.manifest_id);
+      assert.equal(resumed.source, 'resume');
+      assert.equal(Boolean(resumed.requires_approval), false);
+
+      const { body: details } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        details.app_installations[0].history.map((entry: any) => entry.event),
+        ['resumed', 'suspended', 'installed'],
+      );
+    });
+
+    it('fails with its own code when the app cannot be reached, changing nothing, and opens again once it can', async function () {
+      const installed = await install();
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(503);
+      const warn = sinon.stub(logging, 'warn');
+
+      const { body } = await start(installed.id, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_UNREACHABLE');
+      assert.equal(body.errors[0].context, `${MANIFEST_URL} answered with HTTP 503`);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      // The loader logs why the request failed, which the answer leaves out.
+      assert.ok(warn.calledWith(`Could not load the app manifest at ${MANIFEST_URL}`));
+
+      serve(manifest());
+      const { body: opened } = await start(installed.id);
+      assert.equal(opened.app_sessions[0].installation.status, 'active');
+      assert.equal(opened.app_sessions[0].installation.revision, 0);
+    });
+
+    it('fails with its own code when the fetched manifest is not valid, saying why', async function () {
+      const installed = await install();
+      serve(manifest({ accent_color: 'red' }));
+
+      const { body } = await start(installed.id, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      assert.match(body.errors[0].context, /^accent_color: /);
+    });
+
+    it('fails with its own code when the manifest URL serves another app, saying why', async function () {
+      const installed = await install();
+      serve(manifest({ id: 'com.example.other' }));
+
+      const { body } = await start(installed.id, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_OTHER_APP');
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      assert.match(body.errors[0].message, / now serves com\.example\.other/);
+    });
+
+    it('fails with its own code when the manifest URL redirects to another host, saying where', async function () {
+      const installed = await install();
+      nock(MANIFEST_HOST).get(MANIFEST_PATH).reply(302, undefined, {
+        location: 'https://elsewhere.example.com/ghost-app.json',
+      });
+      const { body } = await start(installed.id, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_REDIRECTED');
+      assert.equal((await manifestRows()).length, 1);
+      assert.match(body.errors[0].context, /redirects to elsewhere\.example\.com$/);
+    });
+
+    it('fails the session on an error that is not about the manifest, then tries again', async function () {
+      const installed = await install();
+      // A fault in Ghost, not the app, so it isn't reported as the app being unavailable.
+      const load = sinon
+        .stub(service() as unknown as { loadManifest: () => Promise<unknown> }, 'loadManifest')
+        .rejects(new Error('Ghost broke'));
+      sinon.stub(logging, 'error');
+
+      await start(installed.id, 500);
+
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      // The failed re-check is not shared with the next session.
+      load.restore();
+      serve(manifest({ description: 'Changed' }));
+      const { body } = await start(installed.id);
+      assert.equal(body.app_sessions[0].installation.revision, 1);
+    });
+
+    it('answers 404 for an installation that has been uninstalled, without fetching', async function () {
+      const installed = await install();
+      await agent.delete(`apps/installations/${installed.id}/`).expectStatus(204);
+      const served = serve(manifest());
+
+      const { body } = await start(installed.id, 404);
+
+      assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+      assert.equal(served.isDone(), false);
+    });
+
+    it('doesn’t bring back an installation uninstalled while the manifest was being fetched', async function () {
+      const installed = await install();
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await service().uninstall(owner, installed.id);
+          return signed(manifest({ description: 'Changed' }));
+        });
+
+      // The installation is gone by the time the fetch returns, so there's no session to start.
+      const { body } = await start(installed.id, 404);
+
+      assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+      const row = await installationRow(installed.id);
+      assert.equal(row.status, 'uninstalled');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('answers 404 for an app uninstalled while fetching a manifest it can’t use', async function () {
+      const installed = await install();
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await service().uninstall(owner, installed.id);
+          return signed(manifest({ accent_color: 'red' }));
+        });
+
+      const { body } = await start(installed.id, 404);
+
+      assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+    });
+
+    it('doesn’t change a new installation of the same app made while the manifest was being fetched', async function () {
+      const installed = await install();
+      let reinstalled: { id: string } | undefined;
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await service().uninstall(owner, installed.id);
+          reinstalled = await install();
+          return signed(manifest({ name: 'Podcasts' }));
+        });
+
+      await start(installed.id, 404);
+
+      assert.notEqual(reinstalled!.id, installed.id);
+      assert.equal((await installationRow(installed.id)).status, 'uninstalled');
+      const later = await installationRow(reinstalled!.id);
+      assert.equal(later.status, 'active');
+      assert.equal(later.revision, 0);
+      assert.equal(later.pending_manifest_id, null);
+      // The approved manifest of each installation, and nothing from the re-check.
+      assert.equal((await manifestRows()).length, 2);
+    });
+
+    it('shows up in the app’s history as an update or a suspension', async function () {
+      const installed = await install();
+      serve(manifest({ description: 'Episodes and players.' }));
+      await start(installed.id);
+      serve(manifest({ description: 'Episodes and players.', name: 'Podcasts' }));
+      await start(installed.id);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+
+      const { history } = body.app_installations[0];
+      assert.deepEqual(
+        history.map((entry: any) => [entry.event, entry.actor?.name ?? null]),
+        [
+          ['suspended', null],
+          ['updated', null],
+          ['installed', 'Joe Bloggs'],
+        ],
+      );
+    });
+
+    it('makes one fetch for two sessions started at the same time', async function () {
+      const installed = await install();
+      // The app only responds once both sessions have started, so the second one starts
+      // while the first one's re-check is still running, however slow its request is.
+      const startSession = service().startSession;
+      let started = 0;
+      let bothStarted!: () => void;
+      const bothStartedPromise = new Promise<void>((resolve) => {
+        bothStarted = resolve;
+      });
+      sinon.stub(service(), 'startSession').callsFake(function (id, principal) {
+        started += 1;
+        if (started === 2) {
+          bothStarted();
+        }
+        return startSession.call(service(), id, principal);
+      });
+      // The wait is bounded, so a second session that never starts fails the check below
+      // with a reason, rather than the test by timing out.
+      let gaveUp = false;
+      let giveUpWaiting!: () => void;
+      const secondStartedOrGaveUp = Promise.race([
+        bothStartedPromise,
+        new Promise<void>((resolve) => {
+          giveUpWaiting = resolve;
+        }),
+      ]);
+      const first = nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          await secondStartedOrGaveUp;
+          return signed(manifest({ description: 'Changed' }));
+        });
+      const second = serve(manifest({ description: 'Changed' }));
+
+      // Calling `then` sends a request, so the bound starts once both are sent.
+      const sending = Promise.all([start(installed.id).then(), start(installed.id).then()]);
+      const giveUp = setTimeout(() => {
+        gaveUp = true;
+        giveUpWaiting();
+      }, 2000);
+      const sessions = await sending.finally(() => clearTimeout(giveUp));
+
+      assert.equal(gaveUp, false, 'The second session never started while the re-check was out');
+      assert.equal(first.isDone(), true);
+      assert.equal(second.isDone(), false);
+      assert.deepEqual(
+        sessions.map(({ body }) => body.app_sessions[0].installation.revision),
+        [1, 1],
+      );
+      assert.equal((await manifestRows()).length, 2);
+      assert.equal((await installationRow(installed.id)).revision, 1);
+    });
+
+    it('does nothing when the installation changed while the manifest was being fetched', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await service().preview(MANIFEST_URL);
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          // A publisher approves a newer version while the re-check is running, so the
+          // manifest the re-check loaded may be older than the approved one.
+          serve(manifest({ name: 'Podcasts' }));
+          await service().approve(owner, installed.id, {
+            manifestUrl: MANIFEST_URL,
+            digest: reviewed.digest,
+            revision: 0,
+          });
+          return signed(manifest());
+        });
+
+      const { body } = await start(installed.id);
+
+      const [session] = body.app_sessions;
+      assert.equal(session.installation.revision, 1);
+      assert.equal(session.installation.status, 'active');
+      assert.equal(session.installation.manifest.name, 'Podcasts');
+      const row = await installationRow(installed.id);
+      assert.equal(row.revision, 1);
+      assert.equal(row.pending_manifest_id, null);
+      // The install and the approval, and nothing from the re-check.
+      assert.equal((await manifestRows()).length, 2);
+    });
+
+    it('doesn’t fail the session over an unusable manifest when the installation changed during the fetch', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await service().preview(MANIFEST_URL);
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, async () => {
+          serve(manifest({ name: 'Podcasts' }));
+          await service().approve(owner, installed.id, {
+            manifestUrl: MANIFEST_URL,
+            digest: reviewed.digest,
+            revision: 0,
+          });
+          return signed(manifest({ id: 'com.example.other' }));
+        });
+
+      const { body } = await start(installed.id);
+
+      const [session] = body.app_sessions;
+      assert.equal(session.installation.revision, 1);
+      assert.equal(session.installation.manifest.name, 'Podcasts');
+    });
+
+    describe('app tokens', function () {
+      /** The installation's app user tokens, as the provider stores them. */
+      const tokenRowsOf = (id: string) =>
+        models.Base.knex('oauth_access_tokens').where({ client_id: `ghost-app-user-${id}` });
+
+      /** Resolves once `check` holds, for work Ghost does after a commit it doesn't await. */
+      const waitFor = async (check: () => Promise<boolean>) => {
+        for (let attempt = 0; attempt < 50; attempt += 1) {
+          if (await check()) {
+            return;
+          }
+          await new Promise((resolve) => {
+            setTimeout(resolve, 20);
+          });
+        }
+        assert.fail('never happened');
+      };
+
+      /** Disables or enables the installation's client, as reconciling it would. */
+      const reconcileAs = (id: string, active: boolean) =>
+        appTokens().reconcileClient({ id, active, scopes: [] });
+
+      /** Renews a session started at `revision`, as Admin does before its token expires. */
+      const renew = (id: string, revision: number, status = 201) =>
+        agent
+          .post(`apps/installations/${id}/tokens/`)
+          .body({ app_tokens: [{ revision }] })
+          .expectStatus(status);
+
+      it('gives an active installation an app user token for an hour, holding no more than its approved scopes', async function () {
+        const installed = await install({ scopes: ['post:browse', 'tag:browse'] });
+        serve(manifest({ scopes: ['post:browse', 'tag:browse'] }));
+
+        const { body } = await start(installed.id);
+
+        const { token } = body.app_sessions[0];
+        assert.deepEqual(Object.keys(token), ['access_token', 'expires_in']);
+        assert.ok(token.access_token.startsWith('ghost_app_'));
+        // Seconds, counted from when Ghost answered, so the browser's clock doesn't matter
+        assert.equal(token.expires_in, 3600);
+        const validated = await appTokens().validate(token.access_token);
+        assert.equal(validated?.userId, fixtureManager.get('users', 0).id);
+        const [row] = await tokenRowsOf(installed.id);
+        assert.deepEqual(JSON.parse(row.scopes).sort(), ['post:browse', 'tag:browse']);
+      });
+
+      it('gives a suspended installation no token, and refuses the tokens it had', async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body: opened } = await start(installed.id);
+        serve(manifest({ name: 'Podcasts' }));
+
+        const { body } = await start(installed.id);
+
+        assert.equal(body.app_sessions[0].installation.status, 'suspended');
+        assert.equal(body.app_sessions[0].token, null);
+        assert.equal(await appTokens().validate(opened.app_sessions[0].token.access_token), null);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it("refuses an installation's tokens once it is uninstalled", async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body } = await start(installed.id);
+
+        assert.equal((await tokenRowsOf(installed.id)).length, 1);
+
+        await agent.delete(`apps/installations/${installed.id}/`).expectStatus(204);
+
+        assert.equal(await appTokens().validate(body.app_sessions[0].token.access_token), null);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it('renews the token for the revision the session started with, without fetching the manifest', async function () {
+        const installed = await install({ scopes: ['post:browse'] });
+        serve(manifest({ scopes: ['post:browse'] }));
+        const { body: started } = await start(installed.id);
+
+        const { body } = await renew(installed.id, 0);
+
+        assert.deepEqual(Object.keys(body), ['app_tokens']);
+        const [token] = body.app_tokens;
+        // The shape session start returns its token in
+        assert.deepEqual(Object.keys(token), Object.keys(started.app_sessions[0].token));
+        assert.notEqual(token.access_token, started.app_sessions[0].token.access_token);
+        assert.ok(await appTokens().validate(token.access_token));
+        const rows = await tokenRowsOf(installed.id);
+        assert.deepEqual(
+          rows.map((row: { scopes: string }) => JSON.parse(row.scopes)),
+          [['post:browse'], ['post:browse']],
+        );
+      });
+
+      it('ends the session when the installation changed since it started', async function () {
+        const installed = await install();
+        serve(manifest({ description: 'Changed' }));
+        await start(installed.id);
+
+        const { body } = await renew(installed.id, 0, 409);
+
+        assert.equal(body.errors[0].code, 'APP_SESSION_ENDED');
+      });
+
+      it('ends the session when the installation is suspended', async function () {
+        const installed = await install();
+        serve(manifest({ name: 'Podcasts' }));
+        const { body: started } = await start(installed.id);
+        const { revision } = started.app_sessions[0].installation;
+
+        const { body } = await renew(installed.id, revision, 409);
+
+        assert.equal(body.errors[0].code, 'APP_SESSION_ENDED');
+      });
+
+      it('answers 404 once the app is uninstalled', async function () {
+        const installed = await install();
+        await service().uninstall(owner, installed.id);
+
+        const { body } = await renew(installed.id, 1, 404);
+
+        assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+      });
+
+      /** The installation's user client, as the provider stores it. */
+      const clientOf = (id: string) =>
+        models.Base.knex('oauth_clients')
+          .where({ client_id: `ghost-app-user-${id}` })
+          .first();
+
+      /** The installation id the client's metadata names it the client of */
+      const ownerIdOf = async (id: string) =>
+        JSON.parse((await clientOf(id)).metadata).ghost_app_installation_id;
+
+      it('issues a session started with the id in uppercase at the first attempt', async function () {
+        const installed = await install();
+        serve(manifest());
+        const issue = sinon.spy(appTokens(), 'issue');
+
+        const { body } = await start(installed.id.toUpperCase());
+
+        assert.ok(body.app_sessions[0].token);
+        assert.equal(issue.callCount, 1);
+        assert.equal(await ownerIdOf(installed.id), installed.id);
+      });
+
+      it('names the installation by its stored id in the client of an app uninstalled with the id in uppercase', async function () {
+        const installed = await install();
+        serve(manifest());
+        await start(installed.id);
+
+        await agent.delete(`apps/installations/${installed.id.toUpperCase()}/`).expectStatus(204);
+
+        assert.equal((await clientOf(installed.id)).disabled, 1);
+        assert.equal(await ownerIdOf(installed.id), installed.id);
+      });
+
+      it('answers a session start that races an uninstall as not installed, leaving no token', async function () {
+        const installed = await install();
+        serve(manifest());
+        const tokens = appTokens();
+        const reconcile = tokens.reconcileClient.bind(tokens);
+        let raced = false;
+        // The uninstall lands after the session read the installation as active, so the
+        // session's own reconcile turns the client back on
+        sinon.stub(tokens, 'reconcileClient').callsFake(async (...args: unknown[]) => {
+          const installation = args[0] as { active: boolean };
+          if (installation.active && !raced) {
+            raced = true;
+            await service().uninstall(owner, installed.id);
+          }
+          return reconcile(installation);
+        });
+
+        const { body } = await start(installed.id, 404);
+
+        assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+        assert.equal((await clientOf(installed.id)).disabled, 1);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it('answers a session start that races a suspension with no token', async function () {
+        const installed = await install();
+        serve(manifest());
+        const tokens = appTokens();
+        const issue = tokens.issue.bind(tokens);
+        sinon.stub(tokens, 'issue').callsFake(async (...args: unknown[]) => {
+          const request = args[0] as Parameters<typeof issue>[0];
+          await models.Base.knex('app_installations')
+            .where({ id: installed.id })
+            .update({ status: 'suspended' });
+          await reconcileAs(installed.id, false);
+          return issue(request);
+        });
+
+        const { body } = await start(installed.id);
+
+        assert.equal(body.app_sessions[0].installation.status, 'suspended');
+        assert.equal(body.app_sessions[0].token, null);
+        assert.equal((await tokenRowsOf(installed.id)).length, 0);
+      });
+
+      it('ends a renewal that races a suspension, rather than failing', async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body: started } = await start(installed.id);
+        const tokens = appTokens();
+        const issue = tokens.issue.bind(tokens);
+        sinon.stub(tokens, 'issue').callsFake(async (...args: unknown[]) => {
+          const request = args[0] as Parameters<typeof issue>[0];
+          await models.Base.knex('app_installations')
+            .where({ id: installed.id })
+            .update({ status: 'suspended' });
+          await reconcileAs(installed.id, false);
+          return issue(request);
+        });
+
+        const { body } = await renew(
+          installed.id,
+          started.app_sessions[0].installation.revision,
+          409,
+        );
+
+        assert.equal(body.errors[0].code, 'APP_SESSION_ENDED');
+      });
+
+      it('answers a renewal that races an uninstall as not installed, rather than failing', async function () {
+        const installed = await install();
+        serve(manifest());
+        const { body: started } = await start(installed.id);
+        const tokens = appTokens();
+        const issue = tokens.issue.bind(tokens);
+        sinon.stub(tokens, 'issue').callsFake(async (...args: unknown[]) => {
+          const request = args[0] as Parameters<typeof issue>[0];
+          await service().uninstall(owner, installed.id);
+          return issue(request);
+        });
+
+        const { body } = await renew(
+          installed.id,
+          started.app_sessions[0].installation.revision,
+          404,
+        );
+
+        assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+      });
+
+      it("keeps the client as it was when a caller's transaction rolls an uninstall back", async function () {
+        const installed = await install();
+        serve(manifest());
+        await start(installed.id);
+        const rollback = new Error('rolled back');
+
+        await assert.rejects(
+          models.Base.knex.transaction(async (transaction: unknown) => {
+            await service().uninstall(owner, installed.id, transaction as never);
+            throw rollback;
+          }),
+          (thrown) => thrown === rollback,
+        );
+
+        assert.equal((await installationRow(installed.id)).status, 'active');
+        assert.equal((await clientOf(installed.id)).disabled, 0);
+        assert.equal((await tokenRowsOf(installed.id)).length, 1);
+      });
+
+      it("disables the client once a caller's transaction commits an uninstall", async function () {
+        const installed = await install();
+        serve(manifest());
+        await start(installed.id);
+        let disabledBeforeCommit: number | undefined;
+
+        await models.Base.knex.transaction(async (transaction: unknown) => {
+          await service().uninstall(owner, installed.id, transaction as never);
+          disabledBeforeCommit = (await clientOf(installed.id)).disabled;
+        });
+
+        assert.equal(disabledBeforeCommit, 0);
+        // The client is disabled, then its tokens deleted, in two writes
+        await waitFor(
+          async () =>
+            (await clientOf(installed.id)).disabled === 1 &&
+            (await tokenRowsOf(installed.id)).length === 0,
+        );
+      });
+
+      it('needs the revision the session started with, as a whole number', async function () {
+        const installed = await install();
+
+        await agent
+          .post(`apps/installations/${installed.id}/tokens/`)
+          .body({ app_tokens: [{ revision: 'latest' }] })
+          .expectStatus(422);
+        // Refused by the framework before the revision is read
+        await agent.post(`apps/installations/${installed.id}/tokens/`).expectStatus(400);
+        await agent.post(`apps/installations/${installed.id}/tokens/`).body({}).expectStatus(400);
+        await agent
+          .post(`apps/installations/${installed.id}/tokens/`)
+          .body({ app_tokens: [] })
+          .expectStatus(400);
+      });
+    });
+
+    it('answers 404 for an installation that does not exist, saying it is not installed', async function () {
+      const { body } = await start(new ObjectId().toHexString(), 404);
+
+      assert.equal(body.errors[0].code, 'APP_NOT_INSTALLED');
+    });
+  });
+
+  describe('proving the app’s identity', function () {
+    const COPY_URL = 'https://copies.example.net/ghost-app.json';
+    let other: TestAppKeys;
+
+    beforeAll(async function () {
+      other = await generateTestAppKeys();
+    });
+
+    /** The same app ID from another developer, with their own keys. */
+    const impostor = (overrides: Record<string, unknown> = {}) =>
+      manifest({
+        identity_key: other.identity.publicJwk,
+        backend_key: other.backend.publicJwk,
+        ...overrides,
+      });
+    const serveImpostor = (overrides: Record<string, unknown> = {}) =>
+      serve(impostor(overrides), MANIFEST_URL, {
+        identity: other.identity,
+        backend: other.backend,
+      });
+    const confirm = (digest: string, status: number) =>
+      agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
+        .expectStatus(status);
+
+    it('pins the identity key at install, and records each manifest’s backend key', async function () {
+      const installation = await install();
+
+      const row = await installationRow(installation.id);
+      assert.equal(row.identity_key_thumbprint, await thumbprintOf(keys.identity.publicJwk));
+      const [stored] = await manifestRows();
+      assert.equal(stored.backend_key_thumbprint, await thumbprintOf(keys.backend.publicJwk));
+    });
+
+    it('refuses a manifest that is not signed, saying what was expected', async function () {
+      nock(MANIFEST_HOST)
+        .get(MANIFEST_PATH)
+        .reply(200, { ...manifest(), manifest_url: MANIFEST_URL });
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_UNSIGNED');
+      assert.match(error.context, /flattened JWS/);
+    });
+
+    it('refuses a manifest signed with a key other than the one it names', async function () {
+      serve(manifest(), MANIFEST_URL, { identity: other.identity });
+
+      const error = await preview(MANIFEST_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_SIGNATURE_INVALID');
+    });
+
+    // The copy is the app's own signed bytes, so its surfaces even answer the challenge.
+    it('refuses a copy of an app’s manifest served from another address', async function () {
+      serve(manifest({ manifest_url: MANIFEST_URL }), COPY_URL);
+
+      const error = await preview(COPY_URL, 422);
+      assert.equal(error.code, 'APP_MANIFEST_URL_MISMATCH');
+      assert.match(error.context, /manifest_url: Expected https:\/\/copies\.example\.net/);
+    });
+
+    describe('for an app the site has', function () {
+      it('refuses another developer’s app with the same ID, saying nothing about keys', async function () {
+        await install();
+        serveImpostor();
+
+        const error = await preview(MANIFEST_URL, 422);
+        assert.equal(error.code, 'APP_IDENTITY_MISMATCH');
+        assert.doesNotMatch(error.context, /key|com\.example/i);
+        assert.equal(error.details, null);
+      });
+
+      it('refuses to confirm another developer’s app over an uninstalled one only once it is gone', async function () {
+        const installed = await install();
+        serveImpostor();
+        await preview(MANIFEST_URL, 422);
+
+        await service().uninstall(owner, installed.id);
+        serveImpostor();
+        const { digest } = await preview();
+        serveImpostor();
+        await confirm(digest, 201);
+
+        const reinstalled = await service().browse();
+        assert.equal(reinstalled.length, 1);
+        assert.notEqual(reinstalled[0].id, installed.id);
+        assert.equal(
+          (await installationRow(reinstalled[0].id)).identity_key_thumbprint,
+          await thumbprintOf(other.identity.publicJwk),
+        );
+      });
+
+      it('refuses to approve another developer’s app, even from a new address', async function () {
+        const installed = await install();
+        serve(impostor(), 'https://audio.example.org/ghost-app.json', {
+          identity: other.identity,
+          backend: other.backend,
+        });
+
+        const { body } = await agent
+          .put(`apps/installations/${installed.id}/`)
+          .body({
+            app_installations: [
+              {
+                manifest_url: 'https://audio.example.org/ghost-app.json',
+                digest: installed.digest,
+                revision: 0,
+              },
+            ],
+          })
+          .expectStatus(422);
+
+        assert.equal(body.errors[0].code, 'APP_IDENTITY_MISMATCH');
+        assert.equal((await installationRow(installed.id)).revision, 0);
+      });
+
+      // The manifest is for neither app's keys, so checking it against the other app's
+      // installation would fail on identity instead. Its origin was challenged with the
+      // fetch, but the answer is never read.
+      it('refuses to approve another installed app before checking its identity', async function () {
+        const NEW_URL = 'https://audio.example.org/ghost-app.json';
+        const installed = await install();
+        const otherApp = (overrides: Record<string, unknown> = {}) =>
+          impostor({
+            id: 'com.example.other',
+            ...overrides,
+          });
+        serve(otherApp(), NEW_URL, { identity: other.identity, backend: other.backend });
+        const { digest } = await service().preview(NEW_URL);
+        serve(otherApp(), NEW_URL, { identity: other.identity, backend: other.backend });
+        await service().create(owner, { manifestUrl: NEW_URL, digest });
+        nock.cleanAll();
+        backends.clear();
+        nock(new URL(NEW_URL).origin)
+          .get(new URL(NEW_URL).pathname)
+          .reply(200, () =>
+            signed(
+              otherApp({
+                identity_key: keys.identity.publicJwk,
+                backend_key: keys.backend.publicJwk,
+              }),
+              NEW_URL,
+            ),
+          );
+        const challenged = nock(new URL(NEW_URL).origin).post(CHALLENGE_PATH).reply(500);
+
+        const { body } = await agent
+          .put(`apps/installations/${installed.id}/`)
+          .body({
+            app_installations: [{ manifest_url: NEW_URL, digest: installed.digest, revision: 0 }],
+          })
+          .expectStatus(422);
+
+        assert.equal(body.errors[0].code, 'APP_MANIFEST_OTHER_APP');
+        assert.equal(challenged.isDone(), true);
+        assert.equal((await installationRow(installed.id)).revision, 0);
+      });
+    });
+
+    describe('the challenge', function () {
+      it('refuses an app whose backend answers with another key', async function () {
+        serve(manifest(), MANIFEST_URL, { backend: other.backend });
+
+        const error = await preview(MANIFEST_URL, 422);
+        assert.equal(error.code, 'APP_CHALLENGE_FAILED');
+        assert.match(
+          error.context,
+          /https:\/\/podcast\.example\.com: The signature was not made with backend_key$/,
+        );
+      });
+
+      it('challenges the manifest’s own host as well as the surface’s', async function () {
+        const cdn = 'https://cdn.example.net/ghost-app.json';
+        nock('https://cdn.example.net')
+          .get('/ghost-app.json')
+          .reply(async () => [200, await signed(manifest(), cdn)]);
+        answerChallenges(MANIFEST_HOST);
+        nock('https://cdn.example.net').post(CHALLENGE_PATH).reply(404);
+
+        const error = await preview(cdn, 422);
+        assert.equal(error.code, 'APP_CHALLENGE_UNREACHABLE');
+        assert.match(
+          error.context,
+          /https:\/\/cdn\.example\.net answered the challenge with HTTP 404$/,
+        );
+      });
+
+      it('never follows a redirect for a challenge', async function () {
+        nock(MANIFEST_HOST)
+          .get(MANIFEST_PATH)
+          .reply(async () => [200, await signed(manifest())]);
+        nock(MANIFEST_HOST)
+          .post(CHALLENGE_PATH)
+          .reply(307, '', { location: 'https://podcast.example.com/challenge' });
+        answerChallenges(MANIFEST_HOST);
+
+        const error = await preview(MANIFEST_URL, 422);
+        assert.equal(error.code, 'APP_CHALLENGE_UNREACHABLE');
+        assert.match(error.context, /answered the challenge with HTTP 307$/);
+      });
+
+      it('reports a backend that can’t be reached without saying why', async function () {
+        nock(MANIFEST_HOST)
+          .get(MANIFEST_PATH)
+          .reply(async () => [200, await signed(manifest())]);
+        nock(MANIFEST_HOST)
+          .post(CHALLENGE_PATH)
+          .replyWithError('Connection failed at a private upstream address');
+
+        const error = await preview(MANIFEST_URL, 422);
+        assert.equal(error.code, 'APP_CHALLENGE_UNREACHABLE');
+        assert.match(error.context, /developer\. https:\/\/podcast\.example\.com$/);
+        assert.doesNotMatch(error.context, /upstream/);
+      });
+    });
+
+    describe('trusted origins', function () {
+      it('skips the challenge for an origin the site trusts, and says which', async function () {
+        configUtils.set('apps:trustedOrigins', [MANIFEST_HOST]);
+        nock(MANIFEST_HOST)
+          .get(MANIFEST_PATH)
+          .reply(async () => [200, await signed(manifest())]);
+
+        const result = await preview();
+        assert.deepEqual(result.trusted_origins, [MANIFEST_HOST]);
+      });
+
+      it('says no origin was trusted when every one answered the challenge', async function () {
+        serve(manifest());
+
+        const result = await preview();
+        assert.deepEqual(result.trusted_origins, []);
+      });
+
+      it('still refuses another developer’s app on a trusted origin', async function () {
+        await install();
+        configUtils.set('apps:trustedOrigins', [MANIFEST_HOST]);
+        serveImpostor();
+
+        const error = await preview(MANIFEST_URL, 422);
+        assert.equal(error.code, 'APP_IDENTITY_MISMATCH');
+      });
+
+      it('fails rather than guess at a trusted origin that isn’t one', async function () {
+        configUtils.set('apps:trustedOrigins', ['https://podcast.example.com/apps']);
+        serve(manifest());
+
+        const error = await preview(MANIFEST_URL, 500);
+        assert.equal(error.code, 'APP_CONFIG_INVALID');
+      });
+    });
+
+    describe('backend keys', function () {
+      it('applies a new backend key silently, and challenges with it from then on', async function () {
+        const installed = await install();
+        const replacement = await generateTestAppKeys();
+        const rotated = manifest({ backend_key: replacement.backend.publicJwk });
+        serve(rotated, MANIFEST_URL, { backend: replacement.backend });
+
+        await start(installed.id);
+
+        const row = await installationRow(installed.id);
+        assert.equal(row.status, 'active');
+        assert.equal(row.revision, 1);
+        serve(rotated, MANIFEST_URL, { backend: keys.backend });
+        const { body } = await start(installed.id, 409);
+        assert.equal(body.errors[0].code, 'APP_CHALLENGE_FAILED');
+      });
+
+      // Otherwise whoever held the replaced key could serve the old manifest again.
+      it('refuses the replaced key from then on, leaving the installation as it was', async function () {
+        const installed = await install();
+        const replacement = await generateTestAppKeys();
+        serve(manifest({ backend_key: replacement.backend.publicJwk }), MANIFEST_URL, {
+          backend: replacement.backend,
+        });
+        await start(installed.id);
+        const before = await installationRow(installed.id);
+
+        serve(manifest());
+        const { body } = await start(installed.id, 409);
+
+        assert.equal(body.errors[0].code, 'APP_BACKEND_KEY_RETIRED');
+        assert.deepEqual(await installationRow(installed.id), before);
+        serve(manifest());
+        assert.equal((await preview(MANIFEST_URL, 422)).code, 'APP_BACKEND_KEY_RETIRED');
+      });
+
+      // Otherwise whoever held the replaced key could resume a suspended app by serving
+      // the approved manifest again.
+      it('retires a key as soon as a pending manifest names a newer one', async function () {
+        const installed = await install();
+        const replacement = await generateTestAppKeys();
+        serve(
+          manifest({ name: 'Podcasts', backend_key: replacement.backend.publicJwk }),
+          MANIFEST_URL,
+          { backend: replacement.backend },
+        );
+        await start(installed.id);
+        assert.equal((await installationRow(installed.id)).status, 'suspended');
+
+        serve(manifest());
+        const { body } = await start(installed.id, 409);
+
+        assert.equal(body.errors[0].code, 'APP_BACKEND_KEY_RETIRED');
+        assert.equal((await installationRow(installed.id)).status, 'suspended');
+      });
+
+      it('still refuses the replaced key once the app is installed again', async function () {
+        const installed = await install();
+        const replacement = await generateTestAppKeys();
+        const rotated = manifest({ backend_key: replacement.backend.publicJwk });
+        serve(rotated, MANIFEST_URL, { backend: replacement.backend });
+        await start(installed.id);
+        await service().uninstall(owner, installed.id);
+
+        serve(manifest());
+        assert.equal((await preview(MANIFEST_URL, 422)).code, 'APP_BACKEND_KEY_RETIRED');
+        serve(rotated, MANIFEST_URL, { backend: replacement.backend });
+        await preview();
+      });
+
+      // A platform's rollback serves the earlier deployment's signed manifest as it was.
+      it('lets the app roll back to an earlier manifest with the same backend key', async function () {
+        const installed = await install();
+        serve(manifest({ description: 'A newer description.' }));
+        await start(installed.id);
+
+        serve(manifest());
+        const { body } = await start(installed.id);
+
+        assert.equal(
+          body.app_sessions[0].installation.manifest.description,
+          manifest().description,
+        );
+      });
+    });
+
+    describe('when a session starts', function () {
+      it('fails with the identity check’s own code, leaving the installation as it was', async function () {
+        const installed = await install();
+        const before = await installationRow(installed.id);
+
+        serveImpostor();
+        const mismatch = await start(installed.id, 409);
+        serve(manifest(), MANIFEST_URL, { backend: other.backend });
+        const failed = await start(installed.id, 409);
+        nock(MANIFEST_HOST)
+          .get(MANIFEST_PATH)
+          .reply(200, { ...manifest(), manifest_url: MANIFEST_URL });
+        const unsigned = await start(installed.id, 409);
+
+        assert.deepEqual(
+          [mismatch, failed, unsigned].map(({ body }) => body.errors[0].code),
+          ['APP_IDENTITY_MISMATCH', 'APP_CHALLENGE_FAILED', 'APP_MANIFEST_UNSIGNED'],
+        );
+        assert.deepEqual(await installationRow(installed.id), before);
+      });
+
+      it('runs once the app passes again', async function () {
+        const installed = await install();
+        serve(manifest(), MANIFEST_URL, { backend: other.backend });
+        await start(installed.id, 409);
+
+        serve(manifest());
+        await start(installed.id, 200);
+      });
+    });
+  });
+
+  describe('the app’s icon', function () {
+    const approve = (id: string, digest: string, revision: number) =>
+      agent
+        .put(`apps/installations/${id}/`)
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest, revision }] })
+        .expectStatus(200);
+    /** Installs the app with its own SVG icon. The review and the install each fetch it. */
+    const installWithIcon = async () => {
+      serveIcon(ICON, 2);
+      return install(servedIcon);
+    };
+    const iconOf = async (manifestId: string) =>
+      (await models.Base.knex('app_installation_manifests').where({ id: manifestId }).first())
+        .icon_data_url;
+
+    it('previews a copy of the icon the app serves, as a data URL', async function () {
+      serve(manifest(servedIcon));
+      serveIcon();
+
+      const result = await preview();
+
+      assert.equal(result.manifest.icon.url, `${MANIFEST_HOST}${ICON_PATH}`);
+      assert.equal(result.icon_data_url, copyOf(ICON));
+    });
+
+    it('keeps no copy of an icon Admin ships', async function () {
+      const installed = await install();
+
+      assert.equal(installed.icon_data_url, null);
+      assert.equal((await manifestRows())[0].icon_data_url, null);
+    });
+
+    it('stores the copy with the installed manifest, and shows it with the installation', async function () {
+      const installed = await installWithIcon();
+
+      assert.equal(installed.icon_data_url, copyOf(ICON));
+      const [stored] = await manifestRows();
+      assert.equal(stored.icon_data_url, copyOf(ICON));
+      const { body: list } = await agent.get('apps/installations/').expectStatus(200);
+      assert.equal(list.app_installations[0].icon_data_url, copyOf(ICON));
+      const { body: read } = await agent
+        .get(`apps/installations/${installed.id}/`)
+        .expectStatus(200);
+      assert.equal(read.app_installations[0].icon_data_url, copyOf(ICON));
+    });
+
+    it('shows the approved copy beside the reviewed one', async function () {
+      await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+
+      const result = await preview();
+
+      assert.equal(result.icon_data_url, copyOf(NEW_ICON));
+      assert.equal(result.installation.icon_data_url, copyOf(ICON));
+    });
+
+    it('refuses an app whose icon can’t be used, saying why at icon.url', async function () {
+      const cases: Array<[() => nock.Scope, string]> = [
+        [
+          () => nock(MANIFEST_HOST).get(ICON_PATH).reply(404),
+          'Expected an icon that loads, not HTTP 404',
+        ],
+        [
+          () =>
+            nock(MANIFEST_HOST)
+              .get(ICON_PATH)
+              .reply(302, '', { location: 'https://elsewhere.example.net/icon.svg' }),
+          'Expected an icon on its own host, not a redirect to elsewhere.example.net',
+        ],
+        [
+          () => serveIcon(ICON.replace('</svg>', `<desc>${'x'.repeat(16 * 1024)}</desc></svg>`)),
+          'Expected an icon of at most 16 KB',
+        ],
+        [
+          () =>
+            nock(MANIFEST_HOST)
+              .get(ICON_PATH)
+              .reply(200, '<html><body>Not found</body></html>', { 'content-type': 'text/html' }),
+          'Expected an SVG, PNG or WebP image with a transparent background',
+        ],
+      ];
+      for (const [serveBadIcon, message] of cases) {
+        serve(manifest(servedIcon));
+        serveBadIcon();
+
+        const error = await preview(MANIFEST_URL, 422);
+
+        assert.equal(error.code, 'APP_MANIFEST_INVALID', message);
+        assert.ok(error.context.endsWith(`icon.url: ${message}`), error.context);
+        assert.deepEqual(error.details, [{ path: 'icon.url', message }]);
+      }
+    });
+
+    it('refuses an install whose icon stopped loading after the review, storing nothing', async function () {
+      serve(manifest(servedIcon));
+      serveIcon();
+      const { digest } = await preview();
+      serve(manifest(servedIcon));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(body.errors[0].details, [
+        { path: 'icon.url', message: 'Expected an icon that loads, not HTTP 503' },
+      ]);
+      assert.equal((await manifestRows()).length, 0);
+    });
+
+    // A re-check that stores nothing never contacts the icon URL, so the icon can't change
+    // by itself.
+    it('never fetches the icon again for a re-check that stores nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest(servedIcon));
+      const unchanged = serveIcon(NEW_ICON);
+
+      const { body } = await start(installed.id);
+
+      assert.equal(unchanged.isDone(), false);
+      assert.equal(body.app_sessions[0].installation.icon_data_url, copyOf(ICON));
+
+      // Same when the app serves the pending manifest, which already has its own copy.
+      nock.cleanAll();
+      backends.clear();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      await start(installed.id);
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      const pending = serveIcon(ICON);
+
+      await start(installed.id);
+
+      assert.equal(pending.isDone(), false);
+      const row = await installationRow(installed.id);
+      assert.equal(await iconOf(row.pending_manifest_id), copyOf(NEW_ICON));
+      assert.equal(await iconOf(row.manifest_id), copyOf(ICON));
+    });
+
+    it('fetches the icon again for a re-check that stores a new manifest', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      serveIcon(NEW_ICON);
+
+      const { body } = await start(installed.id);
+
+      assert.equal(body.app_sessions[0].installation.revision, 1);
+      assert.equal(body.app_sessions[0].installation.icon_data_url, copyOf(NEW_ICON));
+      assert.deepEqual(
+        (await manifestRows()).map((row: { icon_data_url: string }) => row.icon_data_url).sort(),
+        [copyOf(NEW_ICON), copyOf(ICON)].sort(),
+      );
+    });
+
+    it('fails as unavailable when a re-check that stores a new manifest can’t use its icon, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+      const warn = sinon.stub(logging, 'warn');
+
+      const { body } = await start(installed.id, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.equal(body.errors[0].context, 'icon.url: Expected an icon that loads, not HTTP 503');
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      assert.ok(warn.calledWith(`Could not load the app icon at ${MANIFEST_HOST}${ICON_PATH}`));
+
+      // Once the icon loads again, so does the app.
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      serveIcon(NEW_ICON);
+      const { body: opened } = await start(installed.id);
+      assert.equal(opened.app_sessions[0].installation.revision, 1);
+      assert.equal(opened.app_sessions[0].installation.icon_data_url, copyOf(NEW_ICON));
+    });
+
+    // The icon is fetched between planning a write and storing it, so a revision change
+    // during the fetch must stop the write.
+    const changeDuringIconFetch = (id: string, svg: string) =>
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(
+          200,
+          async () => {
+            await models.Base.knex('app_installations').where({ id }).increment('revision', 1);
+            return svg;
+          },
+          SVG,
+        );
+
+    it('stores nothing when the installation changes while a re-check fetches the icon', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      changeDuringIconFetch(installed.id, NEW_ICON);
+
+      const { body } = await start(installed.id);
+
+      assert.equal(body.app_sessions[0].installation.revision, 1);
+      assert.equal(body.app_sessions[0].installation.icon_data_url, copyOf(ICON));
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('asks for a new review when the installation changes while an approval fetches the icon', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      changeDuringIconFetch(installed.id, NEW_ICON);
+      // For the fresh preview the refusal includes.
+      serveIcon(NEW_ICON);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+      assert.equal(body.errors[0].details.installation.revision, 1);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('asks for a new review when the installation changes while its icon fails to load', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(503, async () => {
+          await models.Base.knex('app_installations')
+            .where({ id: installed.id })
+            .increment('revision', 1);
+          return '';
+        });
+      // For the fresh preview the refusal includes.
+      serveIcon(NEW_ICON);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+      assert.equal(body.errors[0].details.installation.revision, 1);
+      assert.equal(body.errors[0].details.manifest.name, 'Podcasts');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('reports an app uninstalled while its icon fails to load as uninstalled', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(503, async () => {
+          await service().uninstall(owner, installed.id);
+          return '';
+        });
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('refuses an approval when the app is uninstalled while it fetches the icon, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(
+          200,
+          async () => {
+            await service().uninstall(owner, installed.id);
+            return NEW_ICON;
+          },
+          SVG,
+        );
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal((await manifestRows()).length, 1);
+      assert.deepEqual(
+        (await actions()).map(({ event }: { event: string }) => event),
+        ['installed', 'uninstalled'],
+      );
+    });
+
+    it('refuses an approval whose icon stopped loading after the review, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(body.errors[0].details, [
+        { path: 'icon.url', message: 'Expected an icon that loads, not HTTP 503' },
+      ]);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+    });
+
+    // The digest doesn't cover the icon, so the copy is whatever the app serves on approval.
+    it('stores the icon fetched on approval for an approval that stores a new manifest', async function () {
+      const approvedIcon =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="12" height="12"/></svg>';
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(approvedIcon);
+
+      const { body } = await approve(installed.id, reviewed.digest, reviewed.installation.revision);
+
+      assert.equal(reviewed.icon_data_url, copyOf(NEW_ICON));
+      assert.equal(body.app_installations[0].icon_data_url, copyOf(approvedIcon));
+      assert.equal(
+        await iconOf((await installationRow(installed.id)).manifest_id),
+        copyOf(approvedIcon),
+      );
+    });
+
+    // When approving reuses an existing row, nothing fetches the icon, so one that stopped
+    // loading doesn't get in the way.
+    const iconStopsLoading = () => nock(MANIFEST_HOST).get(ICON_PATH).times(2).reply(503);
+
+    it('reviews and approves the pending manifest with the copy it already has', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      await start(installed.id);
+      iconStopsLoading();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+
+      const { body } = await approve(installed.id, reviewed.digest, reviewed.installation.revision);
+
+      assert.equal(reviewed.icon_data_url, copyOf(NEW_ICON));
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].icon_data_url, copyOf(NEW_ICON));
+    });
+
+    it('reviews and approves what is already approved with the installed copy', async function () {
+      const installed = await installWithIcon();
+      iconStopsLoading();
+      serve(manifest(servedIcon));
+      const reviewed = await preview();
+      serve(manifest(servedIcon));
+
+      const { body } = await approve(installed.id, reviewed.digest, reviewed.installation.revision);
+
+      assert.deepEqual(reviewed.installation.changes, []);
+      assert.equal(reviewed.icon_data_url, copyOf(ICON));
+      assert.equal(body.app_installations[0].icon_data_url, copyOf(ICON));
+    });
+  });
+
+  describe('GET /apps/installations/', function () {
+    it('lists the active installations', async function () {
+      const ended = await install({ id: 'com.example.ended' });
+      await service().uninstall(owner, ended.id);
+      const active = await install();
+
+      const { body } = await agent.get('apps/installations/').expectStatus(200);
+
+      assert.deepEqual(Object.keys(body), ['app_installations']);
+      assert.equal(body.app_installations.length, 1);
+      assert.deepEqual(Object.keys(body.app_installations[0]).sort(), [
+        'app_id',
+        'created_at',
+        'icon_data_url',
+        'id',
+        'manifest',
+        'manifest_url',
+        'revision',
+        'status',
+        'updated_at',
+      ]);
+      assert.equal(body.app_installations[0].id, active.id);
+      assert.equal(body.app_installations[0].manifest.name, 'Podcast');
+    });
+
+    it('answers with an empty list when nothing is installed', async function () {
+      const { body } = await agent.get('apps/installations/').expectStatus(200);
+      assert.deepEqual(body, { app_installations: [] });
+    });
+  });
+
+  describe('GET /apps/installations/:id/', function () {
+    it('shows one installation, ended or not', async function () {
+      const installation = await install();
+      await service().uninstall(owner, installation.id);
+
+      const { body } = await agent.get(`apps/installations/${installation.id}/`).expectStatus(200);
+
+      assert.equal(body.app_installations.length, 1);
+      assert.equal(body.app_installations[0].id, installation.id);
+      assert.equal(body.app_installations[0].status, 'uninstalled');
+    });
+
+    it('leaves out the history unless it is asked for', async function () {
+      const installation = await install();
+
+      const { body } = await agent.get(`apps/installations/${installation.id}/`).expectStatus(200);
+
+      assert.equal(body.app_installations[0].history, undefined);
+    });
+
+    it('tells what happened to the installation, newest first, and who decided', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const { digest, installation } = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [
+            { manifest_url: MANIFEST_URL, digest, revision: installation.revision },
+          ],
+        })
+        .expectStatus(200);
+      await agent.delete(`apps/installations/${installed.id}/`).expectStatus(204);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+
+      const { history } = body.app_installations[0];
+      assert.deepEqual(
+        history.map((entry: any) => [entry.event, entry.actor?.name]),
+        [
+          ['uninstalled', 'Joe Bloggs'],
+          ['changes_approved', 'Joe Bloggs'],
+          ['installed', 'Joe Bloggs'],
+        ],
+      );
+      assert.deepEqual(Object.keys(history[0]).sort(), ['actor', 'created_at', 'event', 'id']);
+      assert.equal(history[2].actor.id, owner.actor.id);
+      assert.match(history[0].created_at, /^\d{4}-\d{2}-\d{2}T/);
+    });
+
+    it('says where an approval moved the app to', async function () {
+      const installed = await install();
+      const movedTo = 'https://audio.example.org/ghost-app.json';
+      serve(manifest(), movedTo);
+      const { digest, installation } = await preview(movedTo);
+      serve(manifest(), movedTo);
+      await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: movedTo, digest, revision: installation.revision }],
+        })
+        .expectStatus(200);
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+
+      const [approval] = body.app_installations[0].history;
+      assert.equal(approval.event, 'changes_approved');
+      assert.equal(approval.moved_to, 'audio.example.org');
+    });
+
+    it('answers 404 for an installation that does not exist', async function () {
+      await agent.get('apps/installations/abcdefabcdefabcdefabcdef/').expectStatus(404);
+    });
+  });
+
+  describe('DELETE /apps/installations/:id/', function () {
+    it('marks the installation as uninstalled and keeps the record', async function () {
+      const installation = await install();
+
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+
+      assert.equal((await service().browse()).length, 0);
+      const kept = await service().read(installation.id);
+      assert.equal(kept.status, 'uninstalled');
+      assert.deepEqual(kept.manifest, installation.manifest);
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('ends any open app sessions, by moving the revision on', async function () {
+      const installation = await install();
+
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+
+      const ended = await installationRow(installation.id);
+      assert.equal(ended.revision, 1);
+      assert.equal(ended.current_app_id, null);
+    });
+
+    it('records who uninstalled the app in the staff history', async function () {
+      const installation = await install();
+
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+
+      const [, action] = await actions();
+      assert.equal(action.event, 'uninstalled');
+      assert.equal(action.resource_id, installation.id);
+      assert.equal(action.actor_id, owner.actor.id);
+      assert.equal(JSON.parse(action.context).primary_name, 'Podcast');
+    });
+
+    // The action is part of the uninstall, so failing to write it keeps the app installed.
+    it('keeps the app installed when its action cannot be written', async function () {
+      const installation = await install();
+      sinon.stub(logging, 'error');
+      await models.Base.knex.raw(`
+        CREATE TRIGGER fail_app_installation_action
+        BEFORE INSERT ON actions FOR EACH ROW
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'action write failed'
+      `);
+      try {
+        await agent.delete(`apps/installations/${installation.id}/`).expectStatus(500);
+      } finally {
+        await models.Base.knex.raw('DROP TRIGGER fail_app_installation_action');
+      }
+
+      const row = await installationRow(installation.id);
+      assert.equal(row.status, 'active');
+      assert.equal(row.current_app_id, 'com.example.podcast');
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('uninstalls while a session start applies a manifest change', async function () {
+      const installation = await install();
+      serve(manifest({ description: 'Episodes and players.' }));
+      const applied = Promise.withResolvers<void>();
+      const released = Promise.withResolvers<void>();
+      // The session's change holds the installation's row until the uninstall is waiting on it.
+      const whileUnchanged = AppInstallationsRepository.prototype.whileUnchanged;
+      sinon.stub(AppInstallationsRepository.prototype, 'whileUnchanged').callsFake(function (
+        this: InstanceType<typeof AppInstallationsRepository>,
+        row,
+        write,
+        options,
+      ) {
+        return whileUnchanged.call(
+          this,
+          row,
+          async (locked) => {
+            const written = await write(locked);
+            applied.resolve();
+            await released.promise;
+            return written;
+          },
+          options,
+        );
+      });
+
+      // The session can finish after the uninstall and find the app gone, which is fine here.
+      const principal = await ownerPrincipal();
+      const session = service()
+        .startSession(installation.id, principal)
+        .catch(() => {});
+      const paused = await Promise.race([
+        applied.promise.then(() => true),
+        session.then(() => false),
+      ]);
+      assert.ok(paused, 'the session should pause holding its change');
+      const uninstalling = service().uninstall(owner, installation.id);
+      let waited = false;
+      try {
+        waited = await waitsForLock(uninstalling);
+      } finally {
+        released.resolve();
+      }
+      await session;
+      await uninstalling;
+      assert.ok(waited, 'the uninstall should wait for the session');
+
+      const manifests = await manifestRows();
+      assert.equal(manifests.length, 2);
+      const row = await installationRow(installation.id);
+      assert.equal(row.status, 'uninstalled');
+      assert.equal(row.manifest_id, manifests[1].id);
+      assert.deepEqual(
+        (await actions()).map((action: { event: string }) => action.event),
+        ['installed', 'uninstalled'],
+      );
+    });
+
+    it('does nothing, and records nothing, the second time', async function () {
+      const installation = await install();
+
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
+
+      assert.equal((await actions()).length, 2);
+    });
+
+    it('answers 404 for an installation that does not exist', async function () {
+      await agent.delete('apps/installations/abcdefabcdefabcdefabcdef/').expectStatus(404);
+    });
+  });
+
+  describe('staff history', function () {
+    it('still lists actions alongside their resources', async function () {
+      const installation = await install();
+      await service().uninstall(owner, installation.id);
+
+      const { body } = await agent
+        .get('actions/?include=actor,resource&filter=resource_type:app_installation')
+        .expectStatus(200);
+
+      assert.deepEqual(body.actions.map((action: any) => action.event).sort(), [
+        'installed',
+        'uninstalled',
+      ]);
+    });
+  });
+
+  describe('where it is available', function () {
+    it('answers 404 when the apps flag is off', async function () {
+      const installation = await install();
+      mockManager.mockLabsDisabled('apps');
+
+      await agent.get('apps/installations/').expectStatus(404);
+      await agent.get(`apps/installations/${installation.id}/`).expectStatus(404);
+      await start(installation.id, 404);
+      await agent
+        .post(`apps/installations/${installation.id}/tokens/`)
+        .body({ app_tokens: [{ revision: 0 }] })
+        .expectStatus(404);
+      await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
+      assert.equal((await service().read(installation.id)).status, 'active');
+    });
+
+    it('refuses to read a stored manifest it cannot make sense of', async function () {
+      const installation = await install();
+      await models.Base.knex('app_installation_manifests').update({ manifest: '{"id":' });
+
+      await assert.rejects(service().read(installation.id), { name: 'ZodError' });
+    });
+  });
+
+  // Last, because it signs in as other users and sign-ins are rate limited.
+  describe('who may use it', function () {
+    let installationId: string;
+
+    beforeEach(async function () {
+      installationId = (await install()).id;
+    });
+
+    const assertRefused = async function () {
+      await agent
+        .post('apps/installations/preview/')
+        .body({ app_installation_previews: [{ manifest_url: MANIFEST_URL }] })
+        .expectStatus(403);
+      await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest: 'a' }] })
+        .expectStatus(403);
+      await agent
+        .put(`apps/installations/${installationId}/`)
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest: 'a' }] })
+        .expectStatus(403);
+      await agent.get('apps/installations/').expectStatus(403);
+      await agent.get(`apps/installations/${installationId}/`).expectStatus(403);
+      await agent.post(`apps/installations/${installationId}/sessions/`).expectStatus(403);
+      await agent
+        .post(`apps/installations/${installationId}/tokens/`)
+        .body({ app_tokens: [{ revision: 0 }] })
+        .expectStatus(403);
+      await agent.delete(`apps/installations/${installationId}/`).expectStatus(403);
+      assert.equal((await service().read(installationId)).status, 'active');
+    };
+
+    it('administrators', async function () {
+      await agent.loginAsAdmin();
+      await agent.get('apps/installations/').expectStatus(200);
+      await agent.get(`apps/installations/${installationId}/`).expectStatus(200);
+      serve(manifest());
+      await agent.post(`apps/installations/${installationId}/sessions/`).expectStatus(200);
+      await agent.delete(`apps/installations/${installationId}/`).expectStatus(204);
+    });
+
+    it('not editors', async function () {
+      await agent.loginAsEditor();
+      await assertRefused();
+    });
+
+    it('not contributors', async function () {
+      await agent.loginAsContributor();
+      await assertRefused();
+    });
+
+    it('not integrations', async function () {
+      await agent.useZapierAdminAPIKey();
+      await assertRefused();
+    });
+
+    it("an administrator's staff token, which acts as the administrator but gets no app token", async function () {
+      await agent.useStaffTokenForAdmin();
+      await agent.get('apps/installations/').expectStatus(200);
+      const { body } = await agent
+        .post(`apps/installations/${installationId}/sessions/`)
+        .expectStatus(403);
+      assert.equal(body.errors[0].code, 'APP_STAFF_SESSION_REQUIRED');
+      await agent.delete(`apps/installations/${installationId}/`).expectStatus(204);
+
+      const [, action] = await actions();
+      assert.equal(action.event, 'uninstalled');
+      assert.equal(action.actor_type, 'user');
+    });
+  });
+});
+
+describe.skipIf(isBetterAuth)('App sessions under auth:engine legacy', function () {
+  let agent: { loginAsOwner(): Promise<void>; post(path: string): any };
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users');
+    await agent.loginAsOwner();
+  });
+
+  it('refuses to start, since app tokens need the Better Auth engine', async function () {
+    const { body } = await agent
+      .post(`apps/installations/${new ObjectId().toHexString()}/sessions/`)
+      .expectStatus(409);
+
+    assert.equal(body.errors[0].code, 'APP_AUTH_ENGINE_UNSUPPORTED');
+  });
+});

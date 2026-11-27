@@ -34,23 +34,25 @@ setup, development variants, and troubleshooting.
 
 ```text
 Ghost/
-├── apps/              # Admin and public frontend apps
+├── clients/           # Admin and public frontend clients
 │   ├── admin/          # React Admin
-│   ├── ember-admin/    # Legacy Ember Admin
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments
 │   └── shade/          # Admin design system
-├── ghost/core/        # Ghost server and frontend rendering
+├── ghost/             # Ghost server and frontend rendering
 │   ├── core/server/    # APIs, models, and services
 │   ├── core/frontend/  # Theme rendering and helpers
 │   ├── content/        # Default themes, adapters, and local content
 │   └── test/           # Server tests
 ├── koenig/            # Editor and content-format packages
 ├── packages/          # Shared libraries and adapter contracts
-├── configs/           # Shared build, lint, test, and TypeScript config
+├── contracts/         # Data shapes shared across boundaries
+├── tools/             # Repository tooling workspaces
+│   ├── configs/       # Shared build, lint, test, and TypeScript config
+│   ├── scripts/       # Repository automation
+│   └── gx/            # Contributor CLI and code generators
 ├── e2e/               # Browser end-to-end tests
-├── docker/            # Local development containers and services
-└── scripts/           # Repository tooling
+└── docker/            # Local development containers and services
 ```
 
 pnpm links the workspaces and Nx runs their tasks in dependency order. For more
@@ -78,6 +80,8 @@ Codebase guides explain how the main systems fit together:
 
 - [Codebase direction](codebase/direction.md)
 - [Runtime architecture](codebase/runtime-architecture.md)
+- [Ghost Core services](../ghost/core/server/services/README.md)
+- [Support](../ghost/core/support/README.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
 - [Database structure](codebase/database.md)
@@ -92,6 +96,7 @@ Practice and contributor guides explain how to make and verify changes:
 
 - [API design](practices/api-design.md)
 - [Database migrations](practices/database-migrations.md)
+- [Dependencies](practices/dependencies.md)
 - [Browser E2E testing](contributing/e2e-testing.md)
 - [Codebase documentation](contributing/documentation.md)
 - [Email testing](contributing/testing-email.md)
@@ -99,8 +104,10 @@ Practice and contributor guides explain how to make and verify changes:
 - [Feature flags](practices/feature-flags.md)
 - [Internationalization](practices/internationalization.md)
 - [Internal package migrations](contributing/internal-package-migrations.md)
+- [Tooling ownership](../tools/README.md)
 - [Performance testing](contributing/performance-testing.md)
 - [Stripe testing](contributing/testing-stripe.md)
+- [Testing Ghost updates](contributing/testing-ghost-updates.md)
 - [Test data](contributing/test-data.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
 
@@ -108,6 +115,7 @@ Reference guides provide tables and other information to look up while working
 on Ghost:
 
 - [Node.js compatibility](reference/node-compatibility.md)
+- [TypeScript inventory](reference/typescript-inventory.md)
 
 ### Finding Issues to Work On
 
@@ -129,11 +137,11 @@ For more detail, see the [contribution workflow](contributing/workflow.md).
 
 Use `pnpm check` as the default one-stop command for formatting checks, linting,
 and testing. Add tests at the closest layer to the behavior you changed. Browser
-end-to-end tests and Ember Admin tests run separately from `pnpm check`.
+end-to-end tests run separately from `pnpm check`.
 
 For more detail, see the [testing guide](contributing/testing.md) including how
-to choose a test suite, run focused tests, and use the separate browser and
-Ember Admin test lanes.
+to choose a test suite, run focused tests, and use the separate browser test
+lane.
 
 ### Shipping
 

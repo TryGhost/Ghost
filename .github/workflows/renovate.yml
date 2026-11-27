@@ -68,7 +68,7 @@ jobs:
     steps:
       - name: Get GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.TRYGHOST_RENOVATE_APP_ID }}
           private-key: ${{ secrets.TRYGHOST_RENOVATE_APP_PRIVATE_KEY }}
@@ -76,7 +76,7 @@ jobs:
           repositories: Ghost
 
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Enforce a live cap on open Renovate PRs while still letting Renovate
       # maintain and automerge the PRs that already exist.
@@ -157,7 +157,7 @@ jobs:
           echo "RENOVATE_FORCE=$force" >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@e09d604f8f803bb527bd8321ed5be06c460b8682 # v46.2.2
+        uses: renovatebot/github-action@230ce922b08968d0a4f6f70f295601daff09ef1d # v46.3.7
         with:
           token: ${{ steps.app-token.outputs.token }}
         env:
@@ -181,4 +181,4 @@ jobs:
           # `allowedCommands` is the current name; the old
           # `allowedPostUpgradeCommands` is silently ignored on Renovate >= 41,
           # which left every npm PR with a failed `renovate/artifacts` status.
-          RENOVATE_ALLOWED_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node scripts/generate-changeset\\.js$"]'
+          RENOVATE_ALLOWED_COMMANDS: '["^pnpm install --no-frozen-lockfile --filter @internal/scripts --prod --ignore-scripts$", "^node tools/scripts/release/generate-changeset\\.ts$"]'

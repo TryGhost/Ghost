@@ -27,6 +27,10 @@ describe('serializers/handle', function () {
         });
     });
 
+    it('no frame passed', async function () {
+      await assert.rejects(shared.serializers.handle.input({}, {}), errors.IncorrectUsageError);
+    });
+
     it('ensure default serializers are called with apiConfig and frame', function () {
       const allStub = sinon.stub();
       sinon.stub(shared.serializers.input.all, 'all').get(() => allStub);
@@ -133,6 +137,13 @@ describe('serializers/handle', function () {
         .catch((err) => {
           assert.equal(err instanceof errors.IncorrectUsageError, true);
         });
+    });
+
+    it('no frame passed', async function () {
+      await assert.rejects(
+        shared.serializers.handle.output([], {}, {}),
+        errors.IncorrectUsageError,
+      );
     });
 
     describe('Specific serializers only', function () {

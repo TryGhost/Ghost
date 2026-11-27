@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/parse-email-address",
-  "version": "0.0.0",
+  "version": "private",
   "private": true,
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -20,6 +20,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./mailbox": {
+      "source": "./src/mailbox.ts",
+      "types": "./build/mailbox.d.ts",
+      "default": "./build/mailbox.js"
     }
   },
   "scripts": {
@@ -32,6 +37,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
+    "nodemailer": "catalog:",
     "parse-email-address": "catalog:"
   },
   "devDependencies": {
@@ -39,6 +45,7 @@
     "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@types/nodemailer": "catalog:",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",

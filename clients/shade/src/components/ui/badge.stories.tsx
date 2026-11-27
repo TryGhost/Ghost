@@ -1,0 +1,172 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Inline } from '@/components/primitives/inline';
+import { Badge } from './badge';
+
+const meta = {
+  title: 'Components / Badge',
+  component: Badge,
+  tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Small status indicators and labels with multiple variants. Use for displaying tags, statuses, categories, or any short descriptive text that needs visual emphasis.',
+      },
+    },
+  },
+  argTypes: {
+    size: {
+      control: { type: 'select' },
+      options: ['default', 'sm', 'md'],
+    },
+    shape: {
+      control: { type: 'select' },
+      options: ['rounded', 'pill'],
+    },
+    variant: {
+      control: { type: 'select' },
+      options: ['default', 'secondary', 'destructive', 'success', 'warning', 'purple', 'outline'],
+    },
+  },
+} satisfies Meta<typeof Badge>;
+
+export default meta;
+type Story = StoryObj<typeof Badge>;
+
+export const Default: Story = {
+  args: {
+    children: 'Badge',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: 'Secondary',
+  },
+};
+
+export const SmallSecondaryPill: Story = {
+  args: {
+    size: 'sm',
+    variant: 'secondary',
+    children: 'Small pill',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the small pill for compact labels in dense interfaces.',
+      },
+    },
+  },
+};
+
+export const MediumSecondaryPill: Story = {
+  args: {
+    size: 'md',
+    variant: 'secondary',
+    children: 'Medium pill',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the medium pill when a label needs more visual presence.',
+      },
+    },
+  },
+};
+
+export const Destructive: Story = {
+  args: {
+    variant: 'destructive',
+    children: 'Error',
+  },
+};
+
+export const Success: Story = {
+  args: {
+    variant: 'success',
+    children: 'Success',
+  },
+};
+
+export const Warning: Story = {
+  args: {
+    variant: 'warning',
+    children: 'Warning',
+  },
+};
+
+export const Purple: Story = {
+  args: {
+    variant: 'purple',
+    children: 'Purple',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Use the purple treatment for a softly tinted label with strong text contrast.',
+      },
+    },
+  },
+};
+
+export const Outline: Story = {
+  args: {
+    variant: 'outline',
+    children: 'Outline',
+  },
+};
+
+export const AllVariants: Story = {
+  render: () => (
+    <Inline gap="sm" wrap>
+      <Badge>Default</Badge>
+      <Badge variant="secondary">Secondary</Badge>
+      <Badge variant="destructive">Error</Badge>
+      <Badge variant="success">Success</Badge>
+      <Badge variant="warning">Warning</Badge>
+      <Badge variant="purple">Purple</Badge>
+      <Badge variant="outline">Outline</Badge>
+    </Inline>
+  ),
+};
+
+export const Interactive: Story = {
+  render: () => (
+    <Badge variant="warning" asChild>
+      <button type="button">Pinned</button>
+    </Badge>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use asChild when a badge is an action, preserving the native button semantics and inherited design.',
+      },
+    },
+  },
+};
+
+export const PurpleInteractive: Story = {
+  render: () => (
+    <Inline gap="sm">
+      <Badge className="cursor-pointer" variant="purple" asChild>
+        <button type="button">Category</button>
+      </Badge>
+      <Badge className="disabled:cursor-not-allowed disabled:opacity-50" variant="purple" asChild>
+        <button type="button" disabled>
+          Unavailable category
+        </button>
+      </Badge>
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Compose a purple badge with a native button for keyboard focus and disabled semantics.',
+      },
+    },
+  },
+};

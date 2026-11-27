@@ -8,7 +8,13 @@ node_modules
 
 **/*.log
 
-build
+# Workspace outputs; tools/scripts/build contains source.
+clients/**/build
+ghost/**/build
+koenig/**/build
+packages/**/build
+contracts/*/build
+e2e/build
 dist
 
 coverage
@@ -39,4 +45,4 @@ compose.yml
 # leak into the core image.
 
 # Ignore local config files (.json and .jsonc)
-ghost/core/config.local.json*
+ghost/config.local.json*

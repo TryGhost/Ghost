@@ -1,0 +1,522 @@
+/*
+ * CSS-first token source for Tailwind v4 runtime generation.
+ */
+
+@custom-variant dark (&:is(.dark *):not(.light *));
+
+@theme {
+  /* Breakpoints */
+  /* ---------------------------------------------------------------------- */
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 640px;
+  --breakpoint-sidebar: 800px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-sidebarlg: 1240px;
+  --breakpoint-xl: 1320px;
+  --breakpoint-xxl: 1440px;
+  --breakpoint-xxxl: 1600px;
+  --breakpoint-tablet: 860px;
+
+  /* Colors */
+  /* ---------------------------------------------------------------------- */
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: oklch(100% 0 0);
+  /* Admin 7 palette (admin7Design). Gray keeps Shade's lightness at each step
+     and is a slightly cool neutral (hue 255, chroma 0.0032 at most, about an
+     eighth of the previous slate greys). It departs from Shapeshifter's warm
+     sand on purpose, so Admin doesn't read brown or dated. The
+     colour families are Shapeshifter's ramps (TryGhost/shapeshifter
+     src/styles/tokens.css at 53cd116): red, orange = coral, yellow,
+     green = emerald, blue = sky, purple = indigo, pink. Lime has no
+     Shapeshifter family and is unchanged. The previous palette lives in
+     theme-variables.css under [data-admin7-design='false']. */
+  --color-black: oklch(16% 0.002 255);
+  --color-gray-50: oklch(99% 0.0004 255);
+  --color-gray-100: oklch(97.83% 0.0006 255);
+  --color-gray-200: oklch(94.47% 0.0009 255);
+  --color-gray-300: oklch(90.78% 0.0012 255);
+  --color-gray-400: oklch(86.68% 0.0015 255);
+  --color-gray-500: oklch(77.55% 0.0022 255);
+  --color-gray-600: oklch(70.33% 0.0027 255);
+  --color-gray-700: oklch(62.98% 0.0032 255);
+  --color-gray-800: oklch(52.97% 0.003 255);
+  --color-gray-900: oklch(36.77% 0.0022 255);
+  --color-gray-950: oklch(25.95% 0.0018 255);
+  --color-green-50: oklch(0.985 0.008 158);
+  --color-green-100: oklch(0.965 0.0192 158);
+  --color-green-200: oklch(0.925 0.04 158);
+  --color-green-300: oklch(0.865 0.08 158);
+  --color-green-400: oklch(0.78 0.1312 158);
+  --color-green-500: oklch(0.685 0.16 158);
+  --color-green-600: oklch(0.58 0.16 158);
+  --color-green-700: oklch(0.475 0.136 158);
+  --color-green-800: oklch(0.37 0.088 158);
+  --color-green-900: oklch(0.3 0.048 158);
+  --color-blue-50: oklch(0.985 0.009 230);
+  --color-blue-100: oklch(0.965 0.0216 230);
+  --color-blue-200: oklch(0.925 0.045 230);
+  --color-blue-300: oklch(0.865 0.09 230);
+  --color-blue-400: oklch(0.78 0.1476 230);
+  --color-blue-500: oklch(0.685 0.18 230);
+  --color-blue-600: oklch(0.58 0.18 230);
+  --color-blue-700: oklch(0.475 0.153 230);
+  --color-blue-800: oklch(0.37 0.099 230);
+  --color-blue-900: oklch(0.3 0.054 230);
+  --color-purple-50: oklch(0.985 0.009 280);
+  --color-purple-100: oklch(0.965 0.0216 280);
+  --color-purple-200: oklch(0.925 0.045 280);
+  --color-purple-300: oklch(0.865 0.09 280);
+  --color-purple-400: oklch(0.78 0.1476 280);
+  --color-purple-500: oklch(0.685 0.18 280);
+  --color-purple-600: oklch(0.58 0.18 280);
+  --color-purple-700: oklch(0.475 0.153 280);
+  --color-purple-800: oklch(0.37 0.099 280);
+  --color-purple-900: oklch(0.3 0.054 280);
+  --color-pink-50: oklch(0.985 0.009 355);
+  --color-pink-100: oklch(0.965 0.0216 355);
+  --color-pink-200: oklch(0.925 0.045 355);
+  --color-pink-300: oklch(0.865 0.09 355);
+  --color-pink-400: oklch(0.78 0.1476 355);
+  --color-pink-500: oklch(0.685 0.18 355);
+  --color-pink-600: oklch(0.58 0.18 355);
+  --color-pink-700: oklch(0.475 0.153 355);
+  --color-pink-800: oklch(0.37 0.099 355);
+  --color-pink-900: oklch(0.3 0.054 355);
+  --color-red-50: oklch(0.985 0.01 28);
+  --color-red-100: oklch(0.965 0.024 28);
+  --color-red-200: oklch(0.925 0.05 28);
+  --color-red-300: oklch(0.865 0.1 28);
+  --color-red-400: oklch(0.78 0.164 28);
+  --color-red-500: oklch(0.685 0.2 28);
+  --color-red-600: oklch(0.58 0.2 28);
+  --color-red-700: oklch(0.475 0.17 28);
+  --color-red-800: oklch(0.37 0.11 28);
+  --color-red-900: oklch(0.3 0.06 28);
+  --color-orange-50: #fff8f6;
+  --color-orange-100: #ffefe9;
+  --color-orange-200: #ffe2d5;
+  --color-orange-300: #ffc5aa;
+  --color-orange-400: #ff9b70;
+  --color-orange-500: #f5723a;
+  --color-orange-600: #d0500c;
+  --color-orange-700: #9d3500;
+  --color-orange-800: #682b10;
+  --color-orange-900: #442418;
+  --color-yellow-50: #fffef6;
+  --color-yellow-100: #fffedf;
+  --color-yellow-200: #fffbc0;
+  --color-yellow-300: #fff78d;
+  --color-yellow-400: #f6dc2f;
+  --color-yellow-500: #d8b915;
+  --color-yellow-600: #ac8a08;
+  --color-yellow-700: #7d6006;
+  --color-yellow-800: #513d08;
+  --color-yellow-900: #2a2107;
+  --color-lime-50: oklch(99.02% 0.0305 116.9);
+  --color-lime-100: oklch(97.56% 0.0795 117.7);
+  --color-lime-200: oklch(95.67% 0.1502 118.9);
+  --color-lime-300: oklch(93.89% 0.2043 121.8);
+  --color-lime-400: oklch(92.75% 0.2253 124.7);
+  --color-lime-500: oklch(91.69% 0.2361 128.1);
+  --color-lime-600: oklch(82.9% 0.2186 128.6);
+  --color-lime-700: oklch(68.43% 0.1796 128.3);
+  --color-lime-800: oklch(56.49% 0.1478 128.1);
+  --color-lime-900: oklch(44.57% 0.1156 127.4);
+
+  /* Typography */
+  /* ---------------------------------------------------------------------- */
+  --font-body: var(--font-sans);
+  --font-heading: var(--font-sans);
+  --font-code: var(--font-mono);
+  --font-sans:
+    Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica,
+    ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
+  --font-inherit: inherit;
+  --font-weight-title: 540;
+  --font-weight-settings-heading: 540;
+  --tracking-section-heading: -0.01em;
+  --tracking-settings-heading: -0.01em;
+  --tracking-tightest: -0.05em;
+  --tracking-tighter: -0.025em;
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.01em;
+  --tracking-wider: 0.025em;
+  --tracking-widest: 0.5em;
+  --shadow: 0 0 1px rgba(0, 0, 0, 0.05), 0 5px 18px rgba(0, 0, 0, 0.08);
+  --shadow-xs:
+    0 0 1px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03), 0 8px 10px -12px rgba(0, 0, 0, 0.1);
+  --shadow-sm:
+    0 0 1px rgba(0, 0, 0, 0.12), 0 1px 6px rgba(0, 0, 0, 0.03), 0 8px 10px -8px rgba(0, 0, 0, 0.1);
+  --shadow-md:
+    0 0 1px rgba(0, 0, 0, 0.12), 0 1px 6px rgba(0, 0, 0, 0.03), 0 8px 10px -8px rgba(0, 0, 0, 0.05),
+    0px 24px 37px -21px rgba(0, 0, 0, 0.05);
+  --shadow-md-heavy:
+    0 0 1px rgba(0, 0, 0, 0.22), 0 1px 6px rgba(0, 0, 0, 0.15), 0 8px 10px -8px rgba(0, 0, 0, 0.16),
+    0px 24px 37px -21px rgba(0, 0, 0, 0.46);
+  --shadow-lg:
+    0 0 7px rgba(0, 0, 0, 0.08), 0 2.1px 2.2px -5px rgba(0, 0, 0, 0.011),
+    0 5.1px 5.3px -5px rgba(0, 0, 0, 0.016), 0 9.5px 10px -5px rgba(0, 0, 0, 0.02),
+    0 17px 17.9px -5px rgba(0, 0, 0, 0.024), 0 31.8px 33.4px -5px rgba(0, 0, 0, 0.029),
+    0 76px 80px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl:
+    0 2.8px 2.2px rgba(0, 0, 0, 0.02), 0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+    0 12.5px 10px rgba(0, 0, 0, 0.035), 0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+    0 41.8px 33.4px rgba(0, 0, 0, 0.05), 0 100px 80px rgba(0, 0, 0, 0.07);
+  --shadow-inner: inset 0 0 4px 0 rgb(0 0 0 / 0.08);
+  --shadow-none: 0 0 #0000;
+  --spacing: 0.4rem;
+  --container-0: 0rem;
+  --container-xs: 32rem;
+  --container-sm: 38.4rem;
+  --container-md: 44.8rem;
+  --container-lg: 51.2rem;
+  --container-xl: 57.6rem;
+  --container-2xl: 67.2rem;
+  --container-3xl: 76.8rem;
+  --container-4xl: 89.6rem;
+  --container-5xl: 102.4rem;
+  --container-6xl: 115.2rem;
+  --container-7xl: 132rem;
+  --container-8xl: 140rem;
+  --container-9xl: 156rem;
+  --container-prose: 65ch;
+  --container-page: 120rem;
+  --container-pageminsidebar: 116rem;
+
+  --text-base: 1.3rem;
+  --text-control: 1.3rem;
+  --text-control-lg: 1.4rem;
+  --text-2xs: 1rem;
+  --text-xs: 1.1rem;
+  --text-sm: 1.2rem;
+  --text-md: 1.4rem;
+  --text-lg: 1.5rem;
+  --text-xl: 1.7rem;
+  --text-2xl: 2.2rem;
+  --text-3xl: 2.8rem;
+  --text-4xl: 3.2rem;
+  --text-5xl: 4rem;
+  --text-5xl--line-height: 1.15;
+  --text-6xl: 5.8rem;
+  --text-6xl--line-height: 1;
+  --text-7xl: 7rem;
+  --text-7xl--line-height: 1;
+  --text-8xl: 9.6rem;
+  --text-8xl--line-height: 1;
+  --text-9xl: 12.8rem;
+  --text-9xl--line-height: 1;
+  --text-body-sm: var(--text-sm);
+  --text-body-md: var(--text-base);
+  --text-body-lg: var(--text-lg);
+  --leading-none: 1;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  --leading-base: 1.5em;
+  --leading-tight: 1.35em;
+  --leading-tighter: 1.25em;
+  --leading-supertight: 1.1em;
+  --leading-body: var(--leading-base);
+  --leading-heading: var(--leading-tight);
+
+  /* Border radius */
+  /* ---------------------------------------------------------------------- */
+  /* Preserve legacy Tailwind v3 border radius scale for v4 rounded* utilities. */
+  --radius: 0.4rem;
+  --radius-xs: 0.3rem;
+  --radius-sm: 0.4rem;
+  --radius-md: 0.6rem;
+  --radius-lg: 0.8rem;
+  --radius-xl: 1.2rem;
+  --radius-2xl: 1.6rem;
+  --radius-3xl: 2.4rem;
+  --radius-full: 9999px;
+  --radius-control: var(--radius-md);
+  --radius-control-sm: var(--radius-sm);
+  --radius-field: var(--radius-control);
+  --radius-card: var(--radius-xl);
+  --radius-menu: var(--radius-md);
+  --radius-menu-item: var(--radius-xs);
+  --radius-surface: var(--radius-lg);
+  --radius-badge: var(--radius-full);
+  --radius-pill: var(--radius-full);
+  --radius-trend-badge: var(--radius-xs);
+
+  /* Animation */
+  /* ---------------------------------------------------------------------- */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-toaster-in: toasterIn 0.8s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+  --animate-toaster-out: toasterOut 0.4s 0s 1 ease forwards;
+  --animate-toaster-top-in: toasterTopIn 0.8s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+  --animate-fade-in: fadeIn 0.15s ease forwards;
+  --animate-fade-out: fadeOut 0.15s ease forwards;
+  --animate-modal-backdrop-in: fadeIn 0.15s ease forwards;
+  --animate-modal-in: modalIn 0.25s ease forwards;
+  --animate-modal-in-from-right: modalInFromRight 0.25s ease forwards;
+  --animate-modal-in-reverse: modalInReverse 0.25s ease forwards;
+  --animate-spin: spin 1s linear infinite;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* Colour aliases are inline: utilities read the variable they point at
+   (bg-muted is var(--muted)), so they follow the palette in effect on each
+   Shade scope, including admin7Design off. As ordinary theme variables they
+   would be resolved once at the document root. */
+@theme inline {
+  --color-ghostaccent: var(--accent-color, #ff0095);
+  --color-gray: var(--color-gray-500);
+  --color-green: var(--color-green-500);
+  --color-blue: var(--color-blue-500);
+  --color-purple: var(--color-purple-500);
+  --color-pink: var(--color-pink-500);
+  --color-red: var(--color-red-500);
+  --color-orange: var(--color-orange-500);
+  --color-yellow: var(--color-yellow-500);
+  --color-lime: var(--color-lime-500);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface-page: var(--surface-page);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-elevated-2: var(--surface-elevated-2);
+  --color-modal-backdrop: var(--modal-backdrop);
+  --color-form-sheet-backdrop: var(--form-sheet-backdrop);
+  --color-preview-canvas: var(--preview-canvas);
+  --color-preview-gradient-start: var(--preview-gradient-start);
+  --color-preview-gradient-end: var(--preview-gradient-end);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-surface-inverse-foreground: var(--surface-inverse-foreground);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-surface-glass: var(--surface-glass);
+  --color-border-glass: var(--border-glass);
+  --color-focus-ring: var(--focus-ring);
+  --color-search-result-title: var(--search-result-title);
+  --color-search-result-description: var(--search-result-description);
+  --color-state-info: var(--state-info);
+  --color-state-info-foreground: var(--state-info-foreground);
+  --color-state-success: var(--state-success);
+  --color-state-success-foreground: var(--state-success-foreground);
+  --color-state-warning: var(--state-warning);
+  --color-state-warning-surface: var(--state-warning-surface);
+  --color-state-warning-border: var(--state-warning-border);
+  --color-state-warning-fill: var(--state-warning-fill);
+  --color-state-warning-foreground: var(--state-warning-foreground);
+  --color-state-danger: var(--state-danger);
+  --color-state-danger-foreground: var(--state-danger-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-gray: var(--chart-gray);
+  --color-chart-darkgray: var(--chart-darkgray);
+  --color-chart-rose: var(--chart-rose);
+  --color-chart-orange: var(--chart-orange);
+  --color-chart-amber: var(--chart-amber);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-chart-green: var(--chart-green);
+  --color-chart-teal: var(--chart-teal);
+  --color-chart-blue: var(--chart-blue);
+  --color-chart-purple: var(--chart-purple);
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-tab-hover: var(--tab-hover);
+  --color-tab-inactive: var(--tab-inactive);
+  --color-tab-inactive-hover: var(--tab-inactive-hover);
+  --color-tab-active: var(--tab-active);
+  --color-button-hover: var(--button-hover);
+  --color-button-ghost-hover: var(--button-ghost-hover);
+  --color-button-pressed: var(--button-pressed);
+  /* Control shadows change with the palette too (the outline hairline is
+     darker under admin7Design), so they resolve on each scope as well */
+  --shadow-control-pressed: var(--control-pressed-shadow);
+  --shadow-control-outline: var(--control-outline-shadow);
+  --shadow-control-outline-pressed: var(--control-outline-pressed-shadow);
+  --color-badge-warning: var(--badge-warning);
+  --color-badge-warning-hover: var(--badge-warning-hover);
+  --color-badge-warning-foreground: var(--badge-warning-foreground);
+  --color-badge-purple: var(--badge-purple);
+  --color-badge-purple-foreground: var(--badge-purple-foreground);
+  --color-interactive-hover: var(--interactive-hover);
+  --color-filter-bar-background: var(--filter-bar-background);
+  --color-filter-bar-item-hover: var(--filter-bar-item-hover);
+  --color-table-row-hover: var(--table-row-hover);
+  --color-map-surface: var(--map-surface);
+  --color-publish-accent: var(--publish-accent);
+  --color-character-count: var(--character-count);
+  --color-event-email-surface: var(--event-email-surface);
+  --color-event-email-icon: var(--event-email-icon);
+  --color-event-gain-surface: var(--event-gain-surface);
+  --color-event-gain-icon: var(--event-gain-icon);
+  --color-event-loss-surface: var(--event-loss-surface);
+  --color-event-loss-icon: var(--event-loss-icon);
+  --color-event-warning-surface: var(--event-warning-surface);
+  --color-event-warning-icon: var(--event-warning-icon);
+  --color-event-engagement-surface: var(--event-engagement-surface);
+  --color-event-engagement-icon: var(--event-engagement-icon);
+  --color-event-gift-surface: var(--event-gift-surface);
+  --color-event-gift-icon: var(--event-gift-icon);
+  --color-table-row-selected: var(--table-row-selected);
+  --color-control-surface: var(--control-surface);
+  --color-control-readonly-surface: var(--control-readonly-surface);
+  --color-control-disabled-surface: var(--control-disabled-surface);
+  --color-control-border: var(--control-border);
+  --color-field-surface: var(--field-surface);
+  --color-field-readonly-surface: var(--field-readonly-surface);
+  --color-field-disabled-surface: var(--field-disabled-surface);
+  --color-field-border: var(--field-border);
+  --shadow-field: var(--field-shadow);
+  --color-field-chip-surface: var(--field-chip-surface);
+  --color-field-chip-internal-surface: var(--field-chip-internal-surface);
+  --color-field-chip-internal-border: var(--field-chip-internal-border);
+}
+
+@keyframes toasterIn {
+  0% {
+    transform: translateY(100%);
+  }
+  26.52% {
+    transform: translateY(-3.9px);
+  }
+  63.26% {
+    transform: translateY(1.2px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes toasterTopIn {
+  0% {
+    transform: translateY(-82px);
+  }
+  26.52% {
+    transform: translateY(5.9px);
+  }
+  63.26% {
+    transform: translateY(-1.77px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes toasterOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes modalIn {
+  0% {
+    transform: translateY(32px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes modalInFromRight {
+  0% {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes modalInReverse {
+  0% {
+    transform: translateY(-32px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}

@@ -1,0 +1,609 @@
+import {
+  FIELD_STRUCTURES,
+  FIELD_TYPE_IDS,
+  MEMBER_ACCESS_LEVELS,
+  MetafieldDefinitionSchema,
+  SHAPES,
+  isCreatableType,
+  matchLeaf,
+  matchShape,
+  shapedType,
+  type AnyLeafValue,
+  type FieldShape,
+  type FieldTypeOfShape,
+  type MemberAccess,
+  type ShapeValue,
+  type ShapedType,
+  type MetafieldDefinition,
+  partsOf,
+  type FieldType,
+  type Leaf,
+  type ListSource,
+  type PartsOf,
+  type SettingsOf,
+} from '@tryghost/metafield-types';
+import { z } from 'zod';
+import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
+import { csvColumnsForField } from '@tryghost/metafield-csv';
+import { LucideIcon } from '@tryghost/shade/utils';
+import { useMemo } from 'react';
+import { useFeatureFlags } from '../hooks/use-feature-flag';
+import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
+import { countryName, countryOptions } from '../utils/countries';
+import { ValidationError } from '../utils/errors';
+
+// Re-exported so the import mapping can recognize a custom_fields.* column (same reason
+// as the re-exports below).
+export { isMetafieldColumn, splitOptions as splitListCell } from '@tryghost/metafield-csv';
+
+export type { Address as MemberCustomFieldAddress } from '@tryghost/metafield-types';
+export { valueSchemaFor as memberCustomFieldValueSchema } from '@tryghost/metafield-types';
+
+/**
+ * A field definition. It has no `id`: a field is addressed by its namespace and key, and a key is
+ * never reissued once minted. Browsing leaves out archived fields unless they are asked for.
+ */
+export type MemberCustomField = MetafieldDefinition;
+
+/**
+ * A field's identity as text, or the identity of one part of its value when parts are given.
+ * Written by the shared codec, so every identity Admin keys or compares by is spelled the way
+ * the server spells it.
+ */
+export const memberCustomFieldIdentity = (
+  field: Pick<MemberCustomField, 'namespace' | 'key'>,
+  parts: Part[] = [],
+): string => z.encode(IdentityTextSchema, { namespace: field.namespace, key: field.key, parts });
+
+// The levels themselves are the shared vocabulary; what a publisher is told they mean
+// is presentation, and stays below.
+export type MemberCustomFieldAccess = MemberAccess;
+
+const ACCESS_PRESENTATION: {
+  [A in MemberCustomFieldAccess]: { label: string; description: string };
+} = {
+  none: {
+    label: 'Only staff',
+    description: 'Members never see this field or what you record in it',
+  },
+  read: {
+    label: 'Members can view',
+    description: 'Shown in their account, but only staff can change it',
+  },
+  write: {
+    label: 'Members can edit',
+    description: 'Members fill this in and keep it up to date themselves',
+  },
+};
+
+export const MEMBER_CUSTOM_FIELD_ACCESS_OPTIONS = MEMBER_ACCESS_LEVELS.map((value) => ({
+  value,
+  ...ACCESS_PRESENTATION[value],
+}));
+
+export const memberAccessLabel = (access: MemberCustomFieldAccess): string =>
+  ACCESS_PRESENTATION[access].label;
+
+/**
+ * How each field type is presented to a publisher: its name and its icon. The shared catalog says
+ * what a type is; this says what a publisher is told it is. How a value is edited and shown comes
+ * from the leaves the type is composed of, so every type made of the same leaves is edited alike.
+ */
+export type MemberCustomFieldUserType = {
+  id: FieldType;
+  label: string;
+  icon: typeof LucideIcon.Type;
+};
+
+/**
+ * A record type also names each part, and says which parts take a full row in a form. Both are
+ * typed against the parts the shared catalog declares, so adding, removing or renaming a part
+ * fails the build here rather than reaching a publisher as a raw key.
+ */
+export type FieldTypePresentation<T extends FieldType> = {
+  label: string;
+  icon: MemberCustomFieldUserType['icon'];
+} & ([PartsOf<T>] extends [never]
+  ? { partLabels?: never; fullRowParts?: never }
+  : { partLabels: Record<PartsOf<T>, string>; fullRowParts: readonly PartsOf<T>[] });
+
+const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
+  short_text: { label: 'Short text', icon: LucideIcon.Type },
+  long_text: { label: 'Long text', icon: LucideIcon.AlignLeft },
+  list: { label: 'List', icon: LucideIcon.List },
+  address: {
+    label: 'Address',
+    icon: LucideIcon.MapPin,
+    fullRowParts: ['line1', 'line2'],
+    partLabels: {
+      line1: 'Address line 1',
+      line2: 'Address line 2',
+      city: 'City',
+      state: 'State',
+      postal_code: 'Postal code',
+      country: 'Country',
+    },
+  },
+  phone: { label: 'Phone', icon: LucideIcon.Phone },
+};
+
+/**
+ * A type's part labels, keyed by part, and empty for a type with none. Every part the type declares
+ * has a label, because `FieldTypePresentation` won't compile an entry that misses one.
+ */
+const partLabelsFor = (type: FieldType): Record<string, string> => {
+  const labels: Record<string, string> | undefined = fieldTypePresentation[type].partLabels;
+  return labels ?? {};
+};
+
+// The catalog in the shared catalog's declared order, so every admin surface
+// offers and renders the field types in the same order.
+const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYPE_IDS.map((id) => ({
+  id,
+  ...fieldTypePresentation[id],
+}));
+
+/**
+ * Types a field can be created with on this site. Only `useCreatableMemberCustomFieldTypes` and
+ * `creatableTypesAmong` give a list of them, and every form that creates a field takes one, so no
+ * place can offer a type that hasn't been checked.
+ */
+const CreatableTypesSchema = z
+  .array(z.custom<MemberCustomFieldUserType>())
+  .readonly()
+  .brand<'CreatableMemberCustomFieldTypes'>();
+export type CreatableMemberCustomFieldTypes = z.output<typeof CreatableTypesSchema>;
+
+/**
+ * The types a field can be created with on this site, in the catalog's order: every released
+ * type, and a type still in development only where its Labs flag is on. Admin goes live before the
+ * servers it talks to, and a type's flag is switched on only once every server can store it, so
+ * Admin offers a type only where the site's Ghost will create it. The one exception is a `?labs=`
+ * session override, which shows a type in Admin that Ghost still refuses.
+ */
+export const useCreatableMemberCustomFieldTypes = (): CreatableMemberCustomFieldTypes => {
+  const isFlagOn = useFeatureFlags();
+  return useMemo(
+    () =>
+      CreatableTypesSchema.parse(
+        memberCustomFieldUserTypes.filter(({ id }) => isCreatableType(id, isFlagOn)),
+      ),
+    [isFlagOn],
+  );
+};
+
+/** The types among `ids` that a field can be created with, for a place that takes only those. */
+export const creatableTypesAmong = (
+  creatable: CreatableMemberCustomFieldTypes,
+  ids: readonly FieldType[],
+): CreatableMemberCustomFieldTypes =>
+  CreatableTypesSchema.parse(creatable.filter(({ id }) => ids.includes(id)));
+
+export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => ({
+  id: type,
+  ...fieldTypePresentation[type],
+});
+
+// As above, for a field loaded from the API.
+export const userTypeForField = (field: MemberCustomField): MemberCustomFieldUserType =>
+  userTypeForFieldType(field.type);
+
+/**
+ * A custom field CSV column offered as an import mapping target.
+ *
+ * Name and part are given apart as well as joined: a name a publisher chose can hold brackets
+ * of its own, so the joined form cannot be split back into them. Every column of a composite
+ * carries the composite's own type, which is what its icon is drawn from.
+ */
+export type MemberCustomFieldCsvColumn = {
+  /** The CSV column the exporter writes and the importer reads. */
+  value: string;
+  fieldName: string;
+  partLabel?: string;
+  /** `fieldName`, or `fieldName (partLabel)`. */
+  label: string;
+  type: FieldType;
+};
+
+/**
+ * The CSV import mapping targets for a set of custom fields: one per column the export
+ * writes, labeled for the field (and part, for a composite). Column names come from
+ * the shared codec the exporter writes and the importer reads, so a target is exactly a
+ * round-tripping column rather than one hand-kept in sync.
+ */
+export const memberCustomFieldCsvColumns = (
+  fields: MemberCustomField[],
+): MemberCustomFieldCsvColumn[] => {
+  return fields.flatMap((field) => {
+    const labels = partLabelsFor(field.type);
+    return csvColumnsForField(field).map(({ column, part }) => {
+      const partLabel = part === null ? undefined : labels[part];
+      return {
+        value: column,
+        fieldName: field.name,
+        ...(partLabel === undefined ? {} : { partLabel }),
+        label: partLabel === undefined ? field.name : `${field.name} (${partLabel})`,
+        type: field.type,
+      };
+    });
+  });
+};
+
+/** How a list a choice picks from is offered in Admin, and how one of its keys reads. */
+export interface MemberCustomFieldChoiceList {
+  options: (held?: string | readonly string[]) => { value: string; label: string }[];
+  label: (key: string) => string;
+  placeholder: string;
+  searchPlaceholder: string;
+}
+
+export const memberCustomFieldChoiceLists: { [F in ListSource]: MemberCustomFieldChoiceList } = {
+  countries: {
+    options: (held) => countryOptions(held),
+    label: countryName,
+    placeholder: 'Select countries...',
+    searchPlaceholder: 'Search countries...',
+  },
+};
+
+/** A leaf's value as a publisher reads it: text as written, and a choice by its name. */
+export const memberCustomFieldLeafText = (leaf: Leaf, value: AnyLeafValue): string =>
+  matchLeaf(leaf, {
+    text: () => String(value),
+    choice: ({ from }) => memberCustomFieldChoiceLists[from].label(String(value)),
+  });
+
+export type MemberCustomFieldPart = {
+  key: string;
+  label: string;
+  leaf: Leaf;
+  fullRow: boolean;
+};
+
+/**
+ * The parts of a composite field type, or null for a scalar.
+ *
+ * Which parts exist, and in what order, comes from the value schema; naming them is this
+ * catalog's job.
+ */
+export const memberCustomFieldParts = (type: FieldType): MemberCustomFieldPart[] | null =>
+  matchShape<MemberCustomFieldPart[] | null>(type, {
+    scalar: () => null,
+    record: (_structure, recordType) => {
+      const { partLabels, fullRowParts } = fieldTypePresentation[recordType];
+      const fullRow: readonly string[] = fullRowParts;
+      const labels: Record<string, string> = partLabels;
+      return Object.entries(FIELD_STRUCTURES[recordType].parts).map(([key, leaf]) => ({
+        key,
+        label: labels[key],
+        leaf,
+        fullRow: fullRow.includes(key),
+      }));
+    },
+    set: () => null,
+  });
+
+/**
+ * Parts that read as one run rather than as separate items — "NY 00001", not "NY, 00001".
+ *
+ * This is the whole of what a composite's one-line form needs stated. Everything else
+ * comes from the value schema's declaration order, so a part added to a type upstream
+ * appears in the line on its own, without anyone knowing to come here. That was the point:
+ * the previous version wrote each type's line out by hand, and a part left out of it was
+ * collected, stored, exported and filtered on while being invisible in every summary —
+ * a silent omission, which is the worst way for this to fail.
+ *
+ * Typed against the parts each type declares, so renaming or removing one upstream fails
+ * the build here. Deliberately not exhaustive: a part nobody mentions is one that reads
+ * perfectly well on its own, and requiring an entry for each would put the omission
+ * problem straight back.
+ */
+export type CompositePartRuns = { [T in FieldType]?: ReadonlyArray<readonly PartsOf<T>[]> };
+
+const fusedParts: CompositePartRuns = {
+  address: [['state', 'postal_code']],
+};
+
+/**
+ * A composite type's parts grouped into the runs its line is built from: declaration
+ * order, with anything fused above kept together.
+ *
+ * A fused pair that is not adjacent in declaration order simply reads as two runs, so
+ * reordering a type upstream costs a comma rather than a wrong sentence.
+ */
+function partRunsFor(type: FieldType): string[][] {
+  const parts: string[] | null = partsOf(type);
+  if (!parts) {
+    return [];
+  }
+
+  const runOf = new Map<string, number>();
+  const fused: ReadonlyArray<readonly string[]> = fusedParts[type] ?? [];
+  fused.forEach((group, index) => {
+    group.forEach((part) => runOf.set(part, index));
+  });
+
+  const runs: string[][] = [];
+  let openRun: number | undefined;
+  for (const part of parts) {
+    const run = runOf.get(part);
+    if (run !== undefined && run === openRun) {
+      runs[runs.length - 1].push(part);
+      continue;
+    }
+    runs.push([part]);
+    openRun = run;
+  }
+  return runs;
+}
+
+// Resolved once: the catalog is static, and this is read for every row of a member list.
+const partRuns = new Map(FIELD_TYPE_IDS.map((type) => [type, partRunsFor(type)]));
+
+/** How a held value of each shape reads as one line, for a field of the given type. */
+const VALUE_LINES: {
+  readonly [S in FieldShape]: (type: FieldTypeOfShape<S>, value: ShapeValue[S]) => string;
+} = {
+  scalar: (type, value) => memberCustomFieldLeafText(FIELD_STRUCTURES[type].leaf, value),
+  record: (type, value) => {
+    const leaves: Readonly<Record<string, Leaf | undefined>> = FIELD_STRUCTURES[type].parts;
+    const parts: Readonly<Record<string, AnyLeafValue | undefined>> = value;
+    return (partRuns.get(type) ?? [])
+      .map((run) =>
+        run
+          .flatMap((part) => {
+            const leaf = leaves[part];
+            const held = parts[part];
+            return leaf && held !== undefined ? [memberCustomFieldLeafText(leaf, held)] : [];
+          })
+          .join(' '),
+      )
+      .filter(Boolean)
+      .join(', ');
+  },
+  // In the order the server reads them back, which is the field's own.
+  set: (_type, value) => value.join(', '),
+};
+
+function lineOf<S extends FieldShape>({ shape, type }: ShapedType<S>, raw: unknown): string {
+  const value = SHAPES[shape].parse(type, raw);
+  return value === undefined ? '' : VALUE_LINES[shape](type, value);
+}
+
+/**
+ * A member's value for one field as a single readable line: the leaf's text for a scalar, for a
+ * composite its parts joined the way that type reads — e.g.
+ * "1 Main St, 12 apt B, New York, NY 00001, US" — and for a list the options picked. Missing
+ * parts drop out, so a partial value still reads naturally.
+ *
+ * Empty string for a value that isn't laid out as its type's shape. Callers own their own
+ * placeholder, since "no value" reads differently in a table cell than in a detail row.
+ */
+export const formatMemberCustomFieldValue = (
+  field: Pick<MemberCustomField, 'type'>,
+  value: unknown,
+): string => lineOf(shapedType(field.type), value);
+
+const MemberCustomFieldList = z.array(MetafieldDefinitionSchema);
+const MemberCustomFieldsResponse = z.object({ members_metafields: MemberCustomFieldList });
+
+export type MemberCustomFieldsResponseType = z.output<typeof MemberCustomFieldsResponse>;
+const readMemberCustomFieldsResponse = (raw: unknown) => MemberCustomFieldsResponse.parse(raw);
+
+const dataType = 'MemberCustomFieldsResponseType';
+// Exported so a screen can move the list in its own cache before the request lands —
+// a drag that waits for a round-trip snaps back under the cursor.
+export const memberCustomFieldsDataType = dataType;
+
+/**
+ * A response this build can't read, such as one naming a type added after it shipped, fails the
+ * request rather than leaving the field out. Settings has to show every field to reorder the list,
+ * and a hidden field still holds its name and a place under the site's limit.
+ */
+export const useBrowseMemberCustomFields = createQuery<MemberCustomField[]>({
+  dataType,
+  path: '/members/metafields/custom/',
+  parseResponse: (raw) => readMemberCustomFieldsResponse(raw).members_metafields,
+});
+
+/** The Admin API's answer to a read of the values members hold for a field. */
+export interface MemberCustomFieldHeldValuesResponseType {
+  values: { value: string }[];
+}
+
+const heldValuesDataType = 'MemberCustomFieldHeldValuesResponseType';
+
+const useHeldValuesAt = createQueryWithId<MemberCustomFieldHeldValuesResponseType>({
+  dataType: heldValuesDataType,
+  path: (field) => `/members/metafields/${field}/values/`,
+});
+
+/**
+ * The text of every option members hold for a list field, including options the field no longer
+ * offers, so the filter can offer them all. Call it only for a list field. A failed read degrades
+ * quietly, as the field definitions read does in Admin's use-definitions: the filter still offers
+ * the field's own options. A failed read isn't asked again each time a filter opens, so an Admin
+ * running against a Core without this read doesn't keep asking.
+ */
+export const useMemberCustomFieldHeldValues = (
+  field: Pick<MemberCustomField, 'namespace' | 'key'> | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) =>
+  useHeldValuesAt(field ? `${field.namespace}/${field.key}` : '', {
+    enabled: enabled && field !== undefined,
+    defaultErrorHandler: false,
+    retryOnMount: false,
+  });
+
+// Browse hides archived fields by default. Settings is the one surface that
+// manages both, so it opts into every status through this variant rather than
+// hand-writing the filter grammar in the view.
+export const useBrowseMemberCustomFieldsIncludingArchived = (
+  options?: Parameters<typeof useBrowseMemberCustomFields>[0],
+) =>
+  useBrowseMemberCustomFields({ ...options, searchParams: { filter: 'status:[active,archived]' } });
+
+/** What a field of a type that takes settings is set up with, as a create or an edit sends it. */
+type SentSettings = { settings?: NonNullable<SettingsOf<FieldType>> };
+
+/**
+ * Everything a new field is created from, with the settings its type takes, if any. The server
+ * checks the two together. The backend mints the key from the name.
+ */
+export type NewMemberCustomField = Pick<MemberCustomField, 'name' | 'type' | 'access'> &
+  SentSettings;
+
+/**
+ * A change to one field, addressed by key. Anything omitted is left as it is. A list's settings
+ * are stated whole, its options in order.
+ */
+export type MemberCustomFieldEdit = Pick<MemberCustomField, 'key'> &
+  Partial<Pick<MemberCustomField, 'name' | 'status' | 'access'>> &
+  SentSettings;
+
+/**
+ * How Ghost refuses a custom field it was sent: each problem by the path of what was refused, such
+ * as `name` or `settings.options.2` for a list's third option, with its reason, which Ghost moves
+ * into `context`. It names one problem today. It's a list so that a refusal naming every problem
+ * at once needs nothing new here.
+ */
+const FieldRefusalSchema = z.object({
+  errors: z.array(z.object({ property: z.string(), context: z.string() })).min(1),
+});
+
+/** One problem with a field that was sent: where it is, by its path, and what to say about it. */
+export interface MemberCustomFieldProblem {
+  property: string;
+  message: string;
+}
+
+/** The problems a refusal names, or null for an error that isn't Ghost refusing what was sent. */
+export function memberCustomFieldProblemsOf(error: unknown): MemberCustomFieldProblem[] | null {
+  if (!(error instanceof ValidationError)) {
+    return null;
+  }
+  const refusal = FieldRefusalSchema.safeParse(error.data);
+  return refusal.success
+    ? refusal.data.errors.map(({ property, context }) => ({ property, message: context }))
+    : null;
+}
+
+export const useCreateMemberCustomField = createMutation<
+  MemberCustomFieldsResponseType,
+  NewMemberCustomField
+>({
+  method: 'POST',
+  path: () => '/members/metafields/custom/',
+  body: (field) => ({ members_metafields: [field] }),
+  parseResponse: readMemberCustomFieldsResponse,
+  invalidateQueries: { dataType },
+  // The created field is put into the cached lists as well as refetched, so a screen that
+  // has just made one can use it in the same breath instead of waiting for a round trip or
+  // keeping its own copy until one arrives. The refetch above remains the truth; this only
+  // decides what is on screen until it lands.
+  //
+  // Appended, because the API assigns a new field the last position. Keyed de-dup because
+  // the refetch may already have landed, and a list that does not hold the created field is
+  // left alone: a browse filtered to active fields should not be handed an archived one, and
+  // by the same token no list here is asked to take a field it did not ask for.
+  updateQueries: {
+    dataType,
+    update: (newData, currentData) => {
+      const current = MemberCustomFieldList.safeParse(currentData);
+      if (!current.success) {
+        return currentData;
+      }
+      const created = newData.members_metafields.filter(
+        (field) => !current.data.some((existing) => existing.key === field.key),
+      );
+      return [...current.data, ...created];
+    },
+  },
+});
+
+// Keys are immutable after creation (the API rejects changes); `name`, `status` and
+// `access` are the editable surface — a status flip to 'active' is how an archived
+// field is reactivated, and an access change is what opens a field to members.
+export const useEditMemberCustomField = createMutation<
+  MemberCustomFieldsResponseType,
+  MemberCustomFieldEdit
+>({
+  method: 'PUT',
+  path: (field) => `/members/metafields/custom/${field.key}/`,
+  parseResponse: readMemberCustomFieldsResponse,
+  body: ({ key: _key, ...patch }) => ({ members_metafields: [patch] }),
+  // Editing a field can stop it offering an option members hold. The filter then offers that
+  // option only because the values read returns it, so an edit refreshes that read. A member's
+  // write doesn't: it can only add an option the field offers, which the filter already offers, or
+  // remove the last answer naming a removed option, which leaves the filter offering an option that
+  // finds nobody until the values read is next made.
+  invalidateQueries: { dataType: [dataType, heldValuesDataType] },
+});
+
+/**
+ * Set the order of the whole list.
+ *
+ * Order is a property of the list rather than of a field — no definition carries a rank
+ * — so it is stated by PUTting the collection in the order it should have. The payload
+ * has to name every field the site has, archived ones included: the API rejects a list
+ * that doesn't, which is what stops a client that loaded before a colleague added a
+ * field from writing an order that was never true of the whole list.
+ */
+export const useReorderMemberCustomFields = createMutation<
+  MemberCustomFieldsResponseType,
+  MemberCustomField[]
+>({
+  method: 'PUT',
+  path: () => '/members/metafields/custom/',
+  body: (fields) => ({ members_metafields: fields.map(({ key }) => ({ key })) }),
+  parseResponse: readMemberCustomFieldsResponse,
+  // The response is the settled order, so it is written straight to the cached lists
+  // rather than refetched. A reorder only succeeds when it named exactly the fields the
+  // site has, so a success carries no news about the set — only about its order — and
+  // there is nothing a GET would add.
+  //
+  // Several lists live under this data type, one per set of query params, and they do
+  // not hold the same fields: Settings asked for every status, a member's details and
+  // the importer asked for active fields only. So each is put into the new order rather
+  // than replaced by the response, which would hand those two archived fields they are
+  // written to assume they never see.
+  updateQueries: {
+    dataType,
+    update: (newData, currentData) => {
+      const current = MemberCustomFieldList.safeParse(currentData);
+      if (!current.success) {
+        return currentData;
+      }
+      const settledOrder = newData.members_metafields.map(({ key }) => key);
+      return inOrderOf(settledOrder, current.data);
+    },
+  },
+});
+
+/**
+ * A list of fields arranged to match an order given as keys, keeping whatever it holds.
+ *
+ * Takes keys rather than fields because an order is only ever a sequence of keys — which
+ * is what the API is told, and what a screen holds while a drag settles.
+ *
+ * A field the order does not mention keeps to the end rather than jumping to the front,
+ * which is where an unknown place would otherwise sort it.
+ */
+export const inOrderOf = (
+  order: readonly string[],
+  fields: MemberCustomField[],
+): MemberCustomField[] => {
+  const placeOf = new Map(order.map((key, place) => [key, place]));
+  return [...fields].sort(
+    (a, b) => (placeOf.get(a.key) ?? Infinity) - (placeOf.get(b.key) ?? Infinity),
+  );
+};
+
+// DELETE permanently removes an archived field and its collected values;
+// addressed by key. The API only allows it on an already-archived field —
+// archiving and reactivating are separate status edits over PUT.
+export const useDeleteMemberCustomField = createMutation<void, string>({
+  method: 'DELETE',
+  path: (key) => `/members/metafields/custom/${key}/`,
+  invalidateQueries: { dataType },
+});

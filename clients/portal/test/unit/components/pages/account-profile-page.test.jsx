@@ -1,0 +1,1175 @@
+import { render, fireEvent, within } from '../../../utils/test-utils';
+import { getSiteData, getMemberData } from '../../../../src/utils/fixtures-generator';
+import { COUNTRY_CODES } from '@tryghost/metafield-types/countries';
+import AccountProfilePage from '../../../../src/components/pages/account-profile-page';
+
+const setup = (overrides = {}) => {
+  const { mockDoActionFn, context, ...utils } = render(<AccountProfilePage />, {
+    overrideContext: {
+      ...overrides,
+    },
+  });
+  const emailInputEl = utils.getByLabelText('Email');
+  const nameInputEl = utils.getByLabelText('Name');
+  const saveBtn = utils.queryByRole('button', { name: 'Save' });
+  return {
+    emailInputEl,
+    nameInputEl,
+    saveBtn,
+    mockDoActionFn,
+    context,
+    ...utils,
+  };
+};
+
+describe('Account Profile Page', () => {
+  test('renders', () => {
+    const { emailInputEl, nameInputEl, saveBtn } = setup();
+
+    expect(emailInputEl).toBeInTheDocument();
+    expect(nameInputEl).toBeInTheDocument();
+    expect(saveBtn).toBeInTheDocument();
+  });
+
+  test('can call save', () => {
+    const { mockDoActionFn, saveBtn, context } = setup();
+
+    fireEvent.click(saveBtn);
+    const { email, name } = context.member;
+    expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', { email, name });
+  });
+
+  test('orders Back before Close in keyboard navigation', () => {
+    const { getByRole } = setup({ lastPage: 'accountHome' });
+
+    const backBtn = getByRole('button', { name: 'Back' });
+    const closeBtn = getByRole('button', { name: 'Close popup' });
+
+    expect(
+      backBtn.compareDocumentPosition(closeBtn) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  test('uses the accent color for Back and Close', () => {
+    const { getByRole, getByTestId } = setup({
+      brandColor: '#ff0099',
+      lastPage: 'accountHome',
+    });
+
+    const backBtn = getByRole('button', { name: 'Back' });
+    const closeIcon = getByTestId('close-popup').querySelector('.gh-portal-closeicon');
+
+    expect(backBtn).toHaveStyle({ color: '#ff0099' });
+    expect(closeIcon).toHaveStyle({ color: '#ff0099' });
+  });
+
+  describe('Custom fields', () => {
+    const site = getSiteData({ labs: { membersCustomFields: true } });
+
+    // jsdom has neither, and a list picker asks both: whether the screen is a touch screen, and
+    // to bring the highlighted option into view.
+    beforeEach(() => {
+      vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
+      Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      delete Element.prototype.scrollIntoView;
+    });
+
+    // The button that opens the list and, while a long list is open, its search box are both
+    // comboboxes named after the field. The button is the one that isn't a text box.
+    const picker = (utils, name) =>
+      utils
+        .getAllByRole('combobox', { name: new RegExp(`^${name}`) })
+        .find((element) => element.tagName === 'BUTTON');
+    const searchBox = (utils, name) =>
+      utils.getAllByRole('combobox', { name }).find((element) => element.tagName === 'INPUT');
+
+    const nickname = {
+      key: 'nickname',
+      name: 'Nickname',
+      type: 'short_text',
+      access: { member: 'write' },
+    };
+    const bio = { key: 'bio', name: 'Bio', type: 'long_text', access: { member: 'write' } };
+    const address = {
+      key: 'shipping_address',
+      name: 'Shipping address',
+      type: 'address',
+      access: { member: 'read' },
+    };
+    const member = {
+      ...getMemberData({ name: 'Jamie Larson', email: 'jamie@example.com' }),
+      metafields: { custom: { nickname: 'Jam', shipping_address: { city: 'Berlin' } } },
+    };
+    test('shows the opened fields, editable or read-only as the publisher chose', () => {
+      const customFields = [nickname, bio, address];
+      const { getByLabelText, getByText } = setup({ site, member, customFields });
+
+      const nicknameInput = getByLabelText('Nickname');
+      expect(nicknameInput).toHaveValue('Jam');
+      expect(nicknameInput).toBeEnabled();
+      expect(getByLabelText('Bio').tagName).toBe('TEXTAREA');
+
+      expect(getByText('Shipping address')).toBeInTheDocument();
+      const city = getByLabelText('City');
+      expect(city).toHaveValue('Berlin');
+      expect(city).toHaveAttribute('readonly');
+      expect(getByLabelText('Address line 1')).toHaveAttribute('readonly');
+      // The part names stay as placeholders either way: they are what tells the
+      // parts of an address apart once their labels are hidden.
+      expect(getByLabelText('Postal code')).toHaveAttribute('placeholder', 'Postal code');
+    });
+
+    // The country shows the number's code, so the number is shown after it, as one typed beside it is.
+    test('offers a phone field as a phone number, so phones show a keypad and can fill it in', () => {
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText } = setup({
+        site,
+        member: { ...member, metafields: { custom: { mobile: '+442079460000' } } },
+        customFields: [mobile],
+      });
+
+      const input = getByLabelText('Mobile');
+      expect(input).toHaveAttribute('type', 'tel');
+      expect(input).toHaveAttribute('autocomplete', 'tel');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
+      expect(input).toHaveValue('2079460000');
+    });
+
+    // A member rewriting the number they hold as they dial it at home keeps its country, whatever
+    // language their browser speaks.
+    test('keeps the country of the number a member holds when they rewrite it', () => {
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText } = setup({
+        site,
+        member: { ...member, metafields: { custom: { mobile: '+33612345678' } } },
+        customFields: [mobile],
+      });
+
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
+      fireEvent.change(getByLabelText('Mobile'), { target: { value: '06 12 34 56 79' } });
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
+    });
+
+    describe("a phone number's country", () => {
+      const holdingMobile = (access = 'write', mobile = '+442079460000') =>
+        setup({
+          site,
+          member: { ...member, metafields: { custom: { mobile } } },
+          customFields: [
+            { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: access } },
+          ],
+        });
+
+      // Every country a number can be from is offered, too many to scroll through, so a member
+      // finds theirs by its name or by its code. The number they hold goes with the country they
+      // pick.
+      test('is found by its name or its code', () => {
+        const utils = holdingMobile();
+        const offered = () => utils.getAllByRole('option').map(({ textContent }) => textContent);
+
+        fireEvent.click(picker(utils, 'Country code'));
+        expect(searchBox(utils, 'Country code')).toHaveFocus();
+        fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'germ' } });
+        expect(offered()).toEqual(['Germany (+49)']);
+        fireEvent.change(searchBox(utils, 'Country code'), { target: { value: '+33' } });
+        expect(offered()).toEqual(['France (+33)']);
+        fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+
+        expect(picker(utils, 'Country code')).toHaveTextContent(/^\+33$/);
+        fireEvent.click(utils.saveBtn);
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { mobile: '+33 2079460000' } } }),
+        );
+      });
+
+      // The list opens on the country shown, so Enter picks it again. As a select changes nothing
+      // when its own option is picked, the number stays as the member holds it.
+      test('leaves the number alone when the country shown is picked again', () => {
+        const utils = holdingMobile();
+
+        fireEvent.click(picker(utils, 'Country code'));
+        fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.getByLabelText('Mobile')).toHaveValue('2079460000');
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+          email: member.email,
+          name: member.name,
+        });
+      });
+
+      // Shown as the number's is, read-only rather than disabled, with nothing to pick from.
+      test('is shown as its code, with nothing to pick, where the member may only read the number', () => {
+        const utils = holdingMobile('read');
+
+        expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent(/^\+44$/);
+        expect(utils.queryByRole('combobox', { name: 'Country code' })).not.toBeInTheDocument();
+        expect(utils.getByLabelText('Mobile')).toHaveAttribute('readonly');
+      });
+
+      // The flags are files published beside Portal's script, so a reader downloads only the flag
+      // they are shown, from wherever the site loads Portal.
+      describe('flag', () => {
+        let script;
+
+        beforeEach(() => {
+          script = document.createElement('script');
+          script.dataset.ghost = 'https://portal.localhost';
+          script.src = 'https://cdn.example.com/portal@~2.72/umd/portal.min.js?v=1';
+          document.head.appendChild(script);
+        });
+
+        afterEach(() => {
+          script.remove();
+        });
+
+        const flags = 'https://cdn.example.com/portal@~2.72/umd/flags';
+
+        test("is its country's, named for a screen reader, loaded from beside Portal's script", () => {
+          const utils = holdingMobile();
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+44$/);
+          expect(within(country).getByRole('img', { name: 'United Kingdom' })).toHaveAttribute(
+            'src',
+            `${flags}/GB.svg`,
+          );
+        });
+
+        test('is shown where the member may only read the number', () => {
+          const utils = holdingMobile('read');
+
+          expect(
+            within(utils.getByRole('group', { name: 'Country code' })).getByRole('img', {
+              name: 'United Kingdom',
+            }),
+          ).toHaveAttribute('src', `${flags}/GB.svg`);
+        });
+
+        // Canada shares +1 with the United States, and an Ottawa number is Canadian whoever
+        // reads it.
+        test("is the country a number's digits place it in, where countries share its code", () => {
+          const utils = holdingMobile('write', '+16135550123');
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+1$/);
+          expect(within(country).getByRole('img', { name: 'Canada' })).toHaveAttribute(
+            'src',
+            `${flags}/CA.svg`,
+          );
+        });
+
+        // The Isle of Man shares +44 with the United Kingdom. A number written as it is dialled
+        // at home keeps the country the member picked, as it does in Stripe Checkout.
+        test('is the country a member picks, where countries share its code', () => {
+          const utils = holdingMobile();
+
+          fireEvent.click(picker(utils, 'Country code'));
+          fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'isle of man' } });
+          fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+44$/);
+          expect(within(country).getByRole('img', { name: 'Isle of Man' })).toHaveAttribute(
+            'src',
+            `${flags}/IM.svg`,
+          );
+        });
+
+        // A number started with + has no country yet, so no flag is loaded until there is one
+        // to show.
+        test('is not loaded while a number has no country yet', () => {
+          const utils = holdingMobile();
+
+          fireEvent.change(utils.getByLabelText('Mobile'), { target: { value: '+' } });
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+$/);
+          expect(within(country).queryByRole('img')).not.toBeInTheDocument();
+        });
+
+        // A copy of Portal's script hosted without its flags, or a site that doesn't allow
+        // images from where the script is hosted. The code is shown as it is without a flag,
+        // for this country and any picked after it.
+        test("gives way to the code alone once a flag can't be loaded", () => {
+          const utils = holdingMobile();
+
+          fireEvent.error(within(picker(utils, 'Country code')).getByRole('img'));
+          expect(picker(utils, 'Country code')).toHaveTextContent(/^\+44$/);
+          expect(within(picker(utils, 'Country code')).queryByRole('img')).not.toBeInTheDocument();
+
+          fireEvent.click(picker(utils, 'Country code'));
+          fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'france' } });
+          fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+          expect(picker(utils, 'Country code')).toHaveTextContent(/^\+33$/);
+          expect(within(picker(utils, 'Country code')).queryByRole('img')).not.toBeInTheDocument();
+        });
+
+        // With no script, or one loaded from a URL with no folder beside it, there is nowhere
+        // to load a flag from.
+        test.each([
+          ['has no Portal script', () => script.remove()],
+          [
+            "loads Portal's script from a URL with no folder beside it",
+            () => (script.src = 'data:text/javascript,'),
+          ],
+        ])('is left out where the page %s', (_page, arrange) => {
+          arrange();
+          const utils = holdingMobile();
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+44$/);
+          expect(within(country).queryByRole('img')).not.toBeInTheDocument();
+        });
+      });
+    });
+
+    // A reason that says how to put a value right is too long for the label's line, where
+    // Portal puts a short one such as a missing name. It sits under the input, like an
+    // address's reasons, and the input points at it so it is read out too.
+    test("shows why a field's value was refused under its input", () => {
+      const message =
+        'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.';
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, getByText } = setup({
+        site,
+        member,
+        customFields: [mobile],
+        fieldErrors: { 'custom:mobile': message },
+      });
+
+      const input = getByLabelText('Mobile');
+      const reason = getByText(message).closest('ul');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-describedby', reason.id);
+      expect(input.compareDocumentPosition(reason) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      // A phone number is refused as a whole, and its country is often what puts it right.
+      const country = getByLabelText('Country code');
+      expect(country).toHaveAttribute('aria-invalid', 'true');
+      expect(country).toHaveAttribute('aria-describedby', reason.id);
+    });
+
+    // A letter is never valid in a phone number, so the member sees the error while typing, in
+    // place of the server's error about the last number sent.
+    test('shows an error while typing an invalid character in a phone number', () => {
+      const mistyped = 'Enter the phone number using only digits, spaces and symbols like + - ( ).';
+      const refused = 'Enter a valid phone number, like +44 20 7946 0000.';
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, getByText, queryByText } = setup({
+        site,
+        member,
+        customFields: [mobile],
+        fieldErrors: { 'custom:mobile': refused },
+      });
+      const input = getByLabelText('Mobile');
+
+      fireEvent.change(input, { target: { value: '+44 20 7946 000o' } });
+      expect(input).toHaveValue('+44 20 7946 000o');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-describedby', getByText(mistyped).closest('ul').id);
+      // Focus is in the input, so only a live region gets the error announced.
+      expect(getByText(mistyped).closest('[aria-live]')).toHaveAttribute('aria-live', 'polite');
+      expect(queryByText(refused)).not.toBeInTheDocument();
+
+      fireEvent.change(input, { target: { value: '+44 (20) 7946-0000' } });
+      expect(queryByText(mistyped)).not.toBeInTheDocument();
+      expect(getByText(refused)).toBeInTheDocument();
+    });
+
+    test('saves only the writable fields the member changed', () => {
+      const customFields = [nickname, address];
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({ site, member, customFields });
+
+      fireEvent.change(getByLabelText('Nickname'), { target: { value: 'Jamie' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+        email: member.email,
+        name: member.name,
+        metafields: { custom: { nickname: 'Jamie' } },
+      });
+    });
+
+    test('saves a long text field', () => {
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member,
+        customFields: [bio],
+      });
+
+      fireEvent.change(getByLabelText('Bio'), { target: { value: 'Runs. Eats rice.' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateProfile',
+        expect.objectContaining({ metafields: { custom: { bio: 'Runs. Eats rice.' } } }),
+      );
+    });
+
+    // An address is one field drawn as several boxes, so a reason wedged between its
+    // rows breaks the shape the group exists to have. The box is marked, and the reasons
+    // are listed under the whole field, in the order the parts are shown, each saying
+    // which part it belongs to.
+    test('marks the refused parts and lists their reasons under the field', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const { getByLabelText, getByRole } = setup({
+        site,
+        member,
+        customFields: [editable],
+        fieldErrors: {
+          'custom:shipping_address:line1': 'Use 255 characters or fewer.',
+          'custom:shipping_address:country': 'Enter a 2-letter country code, like US.',
+        },
+      });
+
+      expect(getByLabelText('Address line 1')).toHaveClass('error');
+      expect(getByLabelText('Country')).toHaveClass('error');
+      expect(getByLabelText('City')).not.toHaveClass('error');
+
+      // Marked for a screen reader too, not only to the eye, and pointed at the reasons
+      // since they are not printed beside the box.
+      expect(getByLabelText('Address line 1')).toHaveAttribute('aria-invalid', 'true');
+      expect(getByLabelText('Address line 1')).toHaveAttribute(
+        'aria-describedby',
+        'custom-shipping_address-errors',
+      );
+      expect(getByLabelText('City')).not.toHaveAttribute('aria-invalid');
+
+      // In field order, not the order the refusals arrived in.
+      const listed = within(getByRole('group', { name: 'Shipping address' }))
+        .getAllByRole('listitem')
+        .map((item) => item.textContent);
+      expect(listed).toEqual([
+        'Address line 1: Use 255 characters or fewer.',
+        'Country: Enter a 2-letter country code, like US.',
+      ]);
+    });
+
+    test('never sends a field the member may only read, even when its input changed', () => {
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member,
+        customFields: [address],
+      });
+
+      fireEvent.change(getByLabelText('City'), { target: { value: 'Munich' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+        email: member.email,
+        name: member.name,
+      });
+    });
+
+    test('offers the country as a list of the countries an address may name', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member,
+        customFields: [editable],
+      });
+
+      const country = getByLabelText('Country');
+      expect(country.tagName).toBe('SELECT');
+      const labels = Array.from(country.options).map((option) => option.textContent);
+      expect(labels).toContain('Finland');
+      expect(labels).toContain('Germany');
+      expect(labels).toContain('Iran');
+      // Every country, plus the placeholder option.
+      expect(labels).toHaveLength(COUNTRY_CODES.length + 1);
+
+      fireEvent.change(country, { target: { value: 'FI' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateProfile',
+        expect.objectContaining({
+          metafields: { custom: { shipping_address: { country: 'FI' } } },
+        }),
+      );
+    });
+
+    test('shows a stored country the list does not hold rather than nothing', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      // Stripe's "unknown region" code: a checkout can store it, the list never offers it.
+      const stored = { ...member, metafields: { custom: { shipping_address: { country: 'ZZ' } } } };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member: stored,
+        customFields: [editable],
+      });
+
+      const country = getByLabelText('Country');
+      expect(country).toHaveValue('ZZ');
+      // Named the way Admin names it, rather than shown as the bare code.
+      expect(country.options[country.selectedIndex]).toHaveTextContent('Unknown Region');
+      fireEvent.click(saveBtn);
+      expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+        email: stored.email,
+        name: stored.name,
+      });
+    });
+
+    test('renders a view-only country as a disabled select', () => {
+      const { getByLabelText } = setup({ site, member, customFields: [address] });
+
+      const country = getByLabelText('Country');
+      expect(country.tagName).toBe('SELECT');
+      expect(country).toBeDisabled();
+    });
+
+    test('clears a country through the empty option', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const stored = {
+        ...member,
+        metafields: { custom: { shipping_address: { city: 'Berlin', country: 'DE' } } },
+      };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member: stored,
+        customFields: [editable],
+      });
+
+      const country = getByLabelText('Country');
+      // With a country chosen the empty option is offered as the way to clear it.
+      expect(country.options[0]).toHaveTextContent('(None)');
+      expect(country.options[0]).not.toBeDisabled();
+      fireEvent.change(country, { target: { value: '' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateProfile',
+        expect.objectContaining({
+          metafields: { custom: { shipping_address: { country: null } } },
+        }),
+      );
+    });
+
+    test('sends only the parts of an address the member changed', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member,
+        customFields: [editable],
+      });
+
+      fireEvent.change(getByLabelText('Postal code'), { target: { value: '10115' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateProfile',
+        expect.objectContaining({
+          metafields: { custom: { shipping_address: { postal_code: '10115' } } },
+        }),
+      );
+    });
+
+    // Emptying every part this build draws still names those parts rather than the
+    // field. Naming the field clears it whole, and a build only knows the parts it
+    // draws: a part added to the type after it shipped would go too, deleted by a
+    // member who only meant to empty what was in front of them.
+    test('clears the parts of an address the member emptied, not the field', () => {
+      const editable = { ...address, access: { member: 'write' } };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member,
+        customFields: [editable],
+      });
+
+      fireEvent.change(getByLabelText('City'), { target: { value: '' } });
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateProfile',
+        expect.objectContaining({ metafields: { custom: { shipping_address: { city: null } } } }),
+      );
+    });
+
+    describe('a list', () => {
+      const animals = {
+        key: 'favourite_animals',
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat', 'Fish'], multiple: true },
+        access: { member: 'write' },
+      };
+      const animal = {
+        ...animals,
+        key: 'favourite_animal',
+        name: 'Favourite animal',
+        settings: { ...animals.settings, multiple: false },
+      };
+      const holding = (custom) => ({ ...member, metafields: { custom } });
+
+      test('shows the options a member picked as chips, and saves every option picked', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Fish'] }),
+          customFields: [animals],
+        });
+
+        expect(utils.getByRole('button', { name: 'Remove Fish' })).toBeInTheDocument();
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        expect(utils.getByRole('option', { name: 'Fish' })).toHaveAttribute(
+          'aria-selected',
+          'true',
+        );
+        fireEvent.click(utils.getByRole('option', { name: 'Dog' }));
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({
+            metafields: { custom: { favourite_animals: ['Dog', 'Fish'] } },
+          }),
+        );
+      });
+
+      test('clears an answer whose last chip is removed', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Fish'] }),
+          customFields: [animals],
+        });
+
+        fireEvent.click(utils.getByRole('button', { name: 'Remove Fish' }));
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animals: null } } }),
+        );
+      });
+
+      test('picks one option where the field takes one, and closes the list', () => {
+        const utils = setup({ site, member, customFields: [animal] });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.click(utils.getByRole('option', { name: 'Cat' }));
+
+        expect(utils.queryByRole('listbox')).not.toBeInTheDocument();
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Cat');
+        fireEvent.click(utils.saveBtn);
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animal: ['Cat'] } } }),
+        );
+      });
+
+      test('picks from the keyboard', () => {
+        const utils = setup({ site, member, customFields: [animal] });
+
+        fireEvent.keyDown(picker(utils, 'Favourite animal'), { key: 'ArrowDown' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'c' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animal: ['Cat'] } } }),
+        );
+      });
+
+      // The field took several answers when they gave them. Showing one of them as the answer
+      // would choose it for the member, so the picker shows none, and saving sends what it shows.
+      test('shows several answers to a field that now takes one as unanswered, and clears them on save', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Dog', 'Cat'] }),
+          customFields: [animal],
+        });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Choose an option');
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animal: null } } }),
+        );
+      });
+
+      test('offers only the options the field still offers, and clears the rest on save', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Dolphin', 'Dog'] }),
+          customFields: [animals],
+        });
+
+        expect(utils.queryByText('Dolphin')).not.toBeInTheDocument();
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        expect(utils.queryByRole('option', { name: 'Dolphin' })).not.toBeInTheDocument();
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animals: ['Dog'] } } }),
+        );
+      });
+
+      test('clears an answer the field no longer offers when the member saves without touching it', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Dolphin'] }),
+          customFields: [animals],
+        });
+
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animals: null } } }),
+        );
+      });
+
+      test('sends nothing for a list whose answers the field still offers until they change', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Fish', 'Dog'] }),
+          customFields: [animals],
+        });
+
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+          email: member.email,
+          name: member.name,
+        });
+      });
+
+      test('finds an option by its text in a long list, searching by the field name', () => {
+        const long = {
+          ...animals,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: true,
+          },
+        };
+        const utils = setup({ site, member, customFields: [long] });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        const search = searchBox(utils, 'Favourite animals');
+        expect(search).toHaveAttribute('placeholder', 'Favourite animals');
+        fireEvent.change(search, { target: { value: 'animal 1' } });
+
+        expect(utils.getByRole('option', { name: 'Animal 1' })).toBeInTheDocument();
+        expect(utils.getByRole('option', { name: 'Animal 10' })).toBeInTheDocument();
+        expect(utils.queryByRole('option', { name: 'Animal 2' })).not.toBeInTheDocument();
+      });
+
+      test('opens a long list on a touch screen with the list focused rather than its search box', () => {
+        vi.stubGlobal(
+          'matchMedia',
+          vi.fn((query) => ({ matches: query === '(pointer: coarse)' })),
+        );
+        const long = {
+          ...animals,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: true,
+          },
+        };
+        const utils = setup({ site, member, customFields: [long] });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+
+        expect(searchBox(utils, 'Favourite animals')).not.toHaveFocus();
+        expect(utils.getByRole('listbox')).toHaveFocus();
+      });
+
+      test('shows a view-only list as chips the member cannot change', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Dog', 'Cat'] }),
+          customFields: [{ ...animal, access: { member: 'read' } }],
+        });
+
+        // Every answer the field still offers, though the field now takes one answer.
+        const answers = within(utils.getByRole('group', { name: 'Favourite animal' }));
+        expect(answers.getAllByRole('listitem').map((chip) => chip.textContent)).toEqual([
+          'Dog',
+          'Cat',
+        ]);
+        expect(utils.queryByRole('button', { name: /^Favourite animal/ })).not.toBeInTheDocument();
+        expect(utils.queryByRole('button', { name: /^Remove/ })).not.toBeInTheDocument();
+      });
+
+      test('names a view-only list that holds no answers', () => {
+        const utils = setup({
+          site,
+          member,
+          customFields: [{ ...animal, access: { member: 'read' } }],
+        });
+
+        const answers = utils.getByRole('group', { name: 'Favourite animal' });
+        expect(within(answers).queryByRole('listitem')).not.toBeInTheDocument();
+      });
+
+      test('keeps the one answer when it is picked again, and clears it with (None)', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Cat'] }),
+          customFields: [animal],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Cat');
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.click(utils.getByRole('option', { name: '(None)' }));
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { favourite_animal: null } } }),
+        );
+      });
+
+      test('opens on the answer held, whatever was searched for last time', () => {
+        const long = {
+          ...animal,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: false,
+          },
+        };
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Animal 3'] }),
+          customFields: [long],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.change(searchBox(utils, 'Favourite animal'), {
+          target: { value: 'animal 1' },
+        });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Tab' });
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Animal 3');
+      });
+
+      // Without a search, a list that takes one answer and holds one starts with the row that
+      // clears it, which Enter would otherwise pick.
+      test('keeps the answer held when Enter is pressed after the search is emptied', () => {
+        const long = {
+          ...animal,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: false,
+          },
+        };
+        const utils = setup({
+          site,
+          member: holding({ favourite_animal: ['Animal 3'] }),
+          customFields: [long],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        const search = searchBox(utils, 'Favourite animal');
+        fireEvent.change(search, { target: { value: 'animal 1' } });
+        fireEvent.change(search, { target: { value: '' } });
+        fireEvent.keyDown(search, { key: 'Enter' });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Animal 3');
+      });
+
+      test('opens with Space, and keeps the release of the Space that picks from opening it again', () => {
+        const utils = setup({ site, member, customFields: [animal] });
+
+        fireEvent.keyDown(picker(utils, 'Favourite animal'), { key: ' ' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'ArrowDown' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: ' ' });
+
+        expect(utils.queryByRole('listbox')).not.toBeInTheDocument();
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Cat');
+        expect(picker(utils, 'Favourite animal')).toHaveFocus();
+        // Firefox clicks the focused button when Space is released unless its default is
+        // prevented, which would open the list again.
+        expect(fireEvent.keyUp(picker(utils, 'Favourite animal'), { key: ' ' })).toBe(false);
+      });
+
+      test('goes back to the field when a click on the field closes the list', () => {
+        const utils = setup({ site, member, customFields: [animals] });
+        const field = utils.container.querySelector('.gh-portal-listpicker-field');
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        expect(utils.getByRole('listbox')).toHaveFocus();
+        fireEvent.click(picker(utils, 'Favourite animals'));
+
+        expect(utils.queryByRole('listbox')).not.toBeInTheDocument();
+        expect(picker(utils, 'Favourite animals')).toHaveFocus();
+
+        fireEvent.click(field);
+        expect(utils.getByRole('listbox')).toHaveFocus();
+        fireEvent.click(field);
+
+        expect(utils.queryByRole('listbox')).not.toBeInTheDocument();
+        expect(picker(utils, 'Favourite animals')).toHaveFocus();
+      });
+
+      test('scrolls to a row the keyboard highlights, but not to one the pointer does', () => {
+        const utils = setup({ site, member, customFields: [animals] });
+        const scrolled = vi.mocked(Element.prototype.scrollIntoView);
+
+        // A pointer's click counts its presses in `detail`, where a key's click has 0.
+        fireEvent.click(picker(utils, 'Favourite animals'), { detail: 1 });
+        expect(scrolled).toHaveBeenCalled();
+
+        scrolled.mockClear();
+        fireEvent.mouseMove(utils.getByRole('option', { name: 'Cat' }));
+        expect(scrolled).not.toHaveBeenCalled();
+
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'ArrowDown' });
+        expect(scrolled).toHaveBeenCalled();
+      });
+
+      test('shows a refusal of the list beside its picker, and marks the picker invalid', () => {
+        const utils = setup({
+          site,
+          member,
+          customFields: [animals],
+          fieldErrors: { 'custom:favourite_animals': 'Pick no more than two.' },
+        });
+
+        expect(utils.getByText('Pick no more than two.')).toBeInTheDocument();
+        expect(picker(utils, 'Favourite animals')).toHaveAccessibleDescription(
+          'Pick no more than two.',
+        );
+        expect(picker(utils, 'Favourite animals')).toBeInvalid();
+      });
+
+      test('says so when a search finds no options', () => {
+        const long = {
+          ...animals,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: true,
+          },
+        };
+        const utils = setup({ site, member, customFields: [long] });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        fireEvent.change(searchBox(utils, 'Favourite animals'), {
+          target: { value: 'giraffe' },
+        });
+
+        expect(utils.queryByRole('option')).not.toBeInTheDocument();
+        expect(utils.getByText('No options found')).toBeInTheDocument();
+      });
+
+      // A list read with its type's defaults, as when its stored settings can't be read, offers
+      // none.
+      test('says so when the list offers no options', () => {
+        const utils = setup({
+          site,
+          member,
+          customFields: [{ ...animals, settings: { options: [], multiple: false } }],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+
+        expect(utils.getByText('No options found')).toBeInTheDocument();
+      });
+
+      test('steps through the options starting with a letter pressed again', () => {
+        const pets = { ...animal, settings: { options: ['Cat', 'Dog', 'Duck'], multiple: false } };
+        const utils = setup({ site, member, customFields: [pets] });
+
+        fireEvent.keyDown(picker(utils, 'Favourite animal'), { key: 'ArrowDown' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'd' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'd' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Duck');
+      });
+
+      test('finds the option starting with the letters typed together', () => {
+        const pets = { ...animal, settings: { options: ['Cat', 'Dog', 'Duck'], multiple: false } };
+        const utils = setup({ site, member, customFields: [pets] });
+
+        fireEvent.keyDown(picker(utils, 'Favourite animal'), { key: 'ArrowDown' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'd' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'u' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Duck');
+      });
+
+      test('starts what is typed afresh each time the list opens', () => {
+        const pets = { ...animal, settings: { options: ['Cat', 'Dog', 'Duck'], multiple: false } };
+        const utils = setup({ site, member, customFields: [pets] });
+
+        fireEvent.keyDown(picker(utils, 'Favourite animal'), { key: 'ArrowDown' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'c' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Escape' });
+        fireEvent.keyDown(picker(utils, 'Favourite animal'), { key: 'ArrowDown' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'd' });
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Enter' });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Dog');
+      });
+
+      test('leaves the keys an input method composes with to it in the search box', () => {
+        const long = {
+          ...animal,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: false,
+          },
+        };
+        const utils = setup({ site, member, customFields: [long] });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        const search = searchBox(utils, 'Favourite animal');
+        fireEvent.keyDown(search, { key: 'ArrowDown', isComposing: true });
+        fireEvent.keyDown(search, { key: 'Enter', keyCode: 229 });
+
+        expect(utils.getByRole('listbox')).toBeInTheDocument();
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Choose an option');
+      });
+
+      test('leaves Home and End in the search box to move its caret', () => {
+        const long = {
+          ...animal,
+          settings: {
+            options: Array.from({ length: 13 }, (_, n) => `Animal ${n + 1}`),
+            multiple: false,
+          },
+        };
+        const utils = setup({ site, member, customFields: [long] });
+
+        fireEvent.click(picker(utils, 'Favourite animal'));
+        const search = searchBox(utils, 'Favourite animal');
+        fireEvent.keyDown(search, { key: 'ArrowDown' });
+        fireEvent.keyDown(search, { key: 'ArrowDown' });
+        fireEvent.keyDown(search, { key: 'End' });
+        fireEvent.keyDown(search, { key: 'Enter' });
+
+        expect(picker(utils, 'Favourite animal')).toHaveTextContent('Animal 3');
+      });
+
+      test('closes the list on Escape and goes back to the field', () => {
+        const utils = setup({ site, member, customFields: [animals] });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        fireEvent.keyDown(utils.getByRole('listbox'), { key: 'Escape' });
+
+        expect(utils.queryByRole('listbox')).not.toBeInTheDocument();
+        expect(picker(utils, 'Favourite animals')).toHaveFocus();
+      });
+
+      describe('on a phone', () => {
+        beforeEach(() => {
+          vi.stubGlobal('innerWidth', 375);
+        });
+
+        test('opens the list in a sheet named after the field', () => {
+          const utils = setup({ site, member, customFields: [animals] });
+
+          fireEvent.click(picker(utils, 'Favourite animals'));
+          const sheet = utils.getByRole('dialog', { name: 'Favourite animals' });
+          fireEvent.click(within(sheet).getByRole('option', { name: 'Cat' }));
+          fireEvent.click(utils.saveBtn);
+
+          expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+            'updateProfile',
+            expect.objectContaining({ metafields: { custom: { favourite_animals: ['Cat'] } } }),
+          );
+        });
+
+        test('closes the sheet from its close button', () => {
+          const utils = setup({ site, member, customFields: [animals] });
+
+          fireEvent.click(picker(utils, 'Favourite animals'));
+          const sheet = utils.getByRole('dialog', { name: 'Favourite animals' });
+          fireEvent.click(within(sheet).getByRole('button', { name: 'Close' }));
+
+          expect(utils.queryByRole('dialog')).not.toBeInTheDocument();
+          expect(picker(utils, 'Favourite animals')).toHaveFocus();
+        });
+
+        // The browser cancels a pointer when the browser or the system takes the gesture over.
+        test('puts the sheet back rather than closing it when a drag is cancelled', () => {
+          vi.useFakeTimers();
+          Element.prototype.setPointerCapture = vi.fn();
+          try {
+            const utils = setup({ site, member, customFields: [animals] });
+
+            fireEvent.click(picker(utils, 'Favourite animals'));
+            const sheet = utils.getByRole('dialog', { name: 'Favourite animals' });
+            const header = sheet.querySelector('.gh-portal-sheet-header');
+            fireEvent.pointerDown(header, { clientY: 100, pointerId: 1 });
+            fireEvent.pointerMove(header, { clientY: 600, pointerId: 1 });
+            fireEvent.pointerCancel(header, { pointerId: 1 });
+            vi.runAllTimers();
+
+            expect(utils.getByRole('dialog', { name: 'Favourite animals' })).toBe(sheet);
+            expect(sheet.style.transform).toBe('');
+          } finally {
+            delete Element.prototype.setPointerCapture;
+            vi.useRealTimers();
+          }
+        });
+
+        // The backdrop is hidden from assistive tech, which closes the sheet with its button.
+        test('closes the sheet with a tap on the backdrop', () => {
+          const utils = setup({ site, member, customFields: [animals] });
+
+          fireEvent.click(picker(utils, 'Favourite animals'));
+          fireEvent.click(document.querySelector('.gh-portal-sheet-backdrop'));
+
+          expect(utils.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        test('keeps Tab and Shift+Tab inside the sheet', () => {
+          const utils = setup({ site, member, customFields: [animals] });
+
+          fireEvent.click(picker(utils, 'Favourite animals'));
+          const sheet = utils.getByRole('dialog', { name: 'Favourite animals' });
+          const close = within(sheet).getByRole('button', { name: 'Close' });
+          const list = within(sheet).getByRole('listbox');
+          expect(list).toHaveFocus();
+
+          fireEvent.keyDown(document.activeElement, { key: 'Tab' });
+          expect(close).toHaveFocus();
+          fireEvent.keyDown(document.activeElement, { key: 'Tab' });
+          expect(list).toHaveFocus();
+          fireEvent.keyDown(document.activeElement, { key: 'Tab', shiftKey: true });
+          expect(close).toHaveFocus();
+        });
+      });
+
+      test('keeps the keyboard in the open list after a chip is removed', () => {
+        const utils = setup({
+          site,
+          member: holding({ favourite_animals: ['Dog', 'Cat'] }),
+          customFields: [animals],
+        });
+
+        fireEvent.click(picker(utils, 'Favourite animals'));
+        fireEvent.click(utils.getByRole('button', { name: 'Remove Dog' }));
+
+        expect(utils.getByRole('listbox')).toHaveFocus();
+      });
+    });
+
+    test('leaves custom fields out of the save when nothing changed', () => {
+      const customFields = [nickname, address];
+      const { saveBtn, mockDoActionFn } = setup({ site, member, customFields });
+
+      fireEvent.click(saveBtn);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+        email: member.email,
+        name: member.name,
+      });
+    });
+  });
+});

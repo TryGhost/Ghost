@@ -1,6 +1,6 @@
 /**
  * Members screen selector strings, consumed by the admin screen helpers and
- * the e2e page objects. Source of truth: apps/admin/src/members.
+ * the e2e page objects. Source of truth: clients/admin/src/members.
  */
 
 // testids
@@ -17,6 +17,7 @@ export const memberSigninUrl = 'member-signin-url';
 export const confirmDeleteMember = 'confirm-delete-member';
 export const cancelDeleteMember = 'cancel-delete-member';
 export const memberCustomFieldsField = 'member-custom-fields-field';
+export const memberLabelsField = 'member-labels-field';
 export const memberCustomFieldEditModal = 'member-custom-field-edit-modal';
 export const importCreateCustomField = 'import-create-custom-field';
 

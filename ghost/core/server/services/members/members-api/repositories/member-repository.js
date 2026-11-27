@@ -1,0 +1,2890 @@
+const _ = require('lodash');
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+const tpl = require('@tryghost/tpl');
+const DomainEvents = require('@tryghost/domain-events');
+const {
+  SubscriptionActivatedEvent,
+  MemberCreatedEvent,
+  SubscriptionCreatedEvent,
+  MemberSubscribeEvent,
+  SubscriptionCancelledEvent,
+  OfferRedemptionEvent,
+} = require('../../../../../shared/events');
+const ObjectId = require('bson-objectid').default;
+const { NotFoundError } = require('@tryghost/errors');
+const validator = require('@tryghost/validator');
+const crypto = require('crypto');
+const { hasActiveOffer } = require('../utils/has-active-offer');
+const { afterCommit } = require('../../../../lib/after-commit');
+const {
+  LabelAddedToMembersEvent,
+} = require('../../../../../shared/events/label-added-to-members-event');
+const {
+  StartAutomationsPollEvent,
+} = require('../../../automations/events/start-automations-poll-event');
+const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
+const db = require('../../../../data/db');
+const { truncateCharacters } = require('../../../../lib/truncate-characters');
+const schema = require('../../../../data/schema');
+const labs = require('../../../../../shared/labs');
+const {
+  cancellationDates,
+  changedPayingEvent,
+  couponOffer,
+  firstLinkEventDate,
+  givesAccess,
+  hasActiveTrial,
+  isActiveStatus,
+  isComplimentaryNickname,
+  isIncomplete,
+  isReplacedByMigration,
+  memberStatusFrom,
+  startAttribution,
+  startedPayingEvent,
+  subscriptionRow,
+  tierFilter,
+  tierPrice,
+} = require('./linked-subscription');
+/** @import {Knex} from 'knex' */
+/** @import * as automationsApi from '../../../automations/automations-api' */
+
+const BULK_EDIT_CHUNK_SIZE = 1000;
+
+const messages = {
+  noStripeConnection: 'Cannot {action} without a Stripe Connection',
+  moreThanOneProduct: 'A member cannot have more than one Product',
+  addProductWithActiveSubscription:
+    'Cannot add comped Products to a Member with active Subscriptions',
+  deleteProductWithActiveSubscription:
+    'Cannot delete a non-comped Product from a Member, because it has an active Subscription for the same product',
+  memberNotFound: 'Could not find Member {id}',
+  subscriptionNotFound: 'Could not find Subscription {id}',
+  productNotFound: 'Could not find Product {id}',
+  bulkActionRequiresFilter: 'Cannot perform {action} without a filter, search, or all=true',
+  tierArchived: 'Cannot use archived Tiers',
+  invalidEmail: 'Invalid Email',
+  offerNotFound: 'Could not find Offer {id}',
+  offerNotActive: 'Offer is not active',
+  offerIsTrialOffer: 'Trial offers cannot be applied to existing subscriptions',
+  offerIsSignupOffer: 'Signup offers cannot be applied to existing subscriptions',
+  offerNoCoupon: 'Offer does not have a valid coupon',
+  offerTierMismatch: 'Offer is not valid for this subscription tier',
+  offerCadenceMismatch: 'Offer is not valid for this subscription cadence',
+  offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
+  subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
+  subscriptionHasOffer: 'Subscription already has an offer applied',
+  subscriptionCancelling:
+    'Cannot apply retention offer to a subscription that is already cancelling',
+  invalidMemberStatus: 'Invalid member status, must be one of {statuses}',
+};
+
+const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
+const WELCOME_EMAIL_SOURCES = ['member'];
+const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
+
+/**
+ * @internal
+ * @typedef {object} MemberModel
+ * @prop {string} id
+ * @prop {(get: 'email') => string} get
+ * @prop {(related: 'products') => {fetch: (options: {transacting: unknown}) => Promise<null | {models: {id: string}[]}>}} related
+ */
+
+/**
+ * @typedef {object} ITokenService
+ * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
+ */
+
+/**
+ * The attribution columns shared by the member and subscription created records.
+ *
+ * The URLs, referrer and UTM tags come from the visitor's browser and have no length
+ * limit, so each is cut to its column's length: a value too long to store would
+ * otherwise fail the signup or Stripe webhook it is recorded with.
+ *
+ * @param {'members_created_events' | 'members_subscription_created_events'} table
+ * @param {Partial<import('../../../member-attribution/attribution-builder').Attribution> | undefined} attribution
+ */
+function attributionColumns(table, attribution) {
+  const columns = schema.tables[table];
+  /** @param {'attribution_url' | 'referrer_source' | 'referrer_medium' | 'referrer_url' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content'} column */
+  const fitted = (column, /** @type {string | null | undefined} */ value) =>
+    value ? truncateCharacters(value, columns[column].maxlength) : null;
+
+  return {
+    attribution_id: attribution?.id ?? null,
+    attribution_url: fitted('attribution_url', attribution?.url),
+    attribution_type: attribution?.type ?? null,
+    referrer_source: fitted('referrer_source', attribution?.referrerSource),
+    referrer_medium: fitted('referrer_medium', attribution?.referrerMedium),
+    referrer_url: fitted('referrer_url', attribution?.referrerUrl),
+    utm_source: fitted('utm_source', attribution?.utmSource),
+    utm_medium: fitted('utm_medium', attribution?.utmMedium),
+    utm_campaign: fitted('utm_campaign', attribution?.utmCampaign),
+    utm_term: fitted('utm_term', attribution?.utmTerm),
+    utm_content: fitted('utm_content', attribution?.utmContent),
+  };
+}
+
+/**
+ * @param {MemberModel} member
+ * @param {'free' | 'paid'} memberStatus
+ * @param {object} bookshelfOptions
+ * @param {Knex.Transaction} [bookshelfOptions.transacting]
+ * @returns {Promise<string[]>}
+ */
+const getMemberTierIds = async (member, memberStatus, bookshelfOptions) => {
+  switch (memberStatus) {
+    case 'free':
+      return [];
+    case 'paid': {
+      const productCollection = await member
+        .related('products')
+        .fetch({ transacting: bookshelfOptions?.transacting });
+      const products = productCollection?.models ?? [];
+      return products.map((product) => product.id);
+    }
+    default: {
+      /** @type {never} */
+      const _exhaustive = memberStatus;
+      throw new errors.InternalServerError({
+        message: `Invalid member status ${_exhaustive}`,
+      });
+    }
+  }
+};
+
+module.exports = class MemberRepository {
+  /**
+   * @param {object} deps
+   * @param {any} deps.Member
+   * @param {any} deps.MemberNewsletter
+   * @param {any} deps.MemberCancelEvent
+   * @param {any} deps.MemberSubscribeEventModel
+   * @param {any} deps.MemberEmailChangeEvent
+   * @param {any} deps.MemberPaidSubscriptionEvent
+   * @param {any} deps.MemberStatusEvent
+   * @param {any} deps.MemberProductEvent
+   * @param {any} deps.MemberCreatedEvent
+   * @param {any} deps.SubscriptionCreatedEvent
+   * @param {any} deps.StripeCustomer
+   * @param {any} deps.StripeCustomerSubscription
+   * @param {any} deps.OfferRedemption
+   * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
+   * @param {any} deps.productRepository
+   * @param {any} deps.offersAPI
+   * @param {import('../../../members-metafields').MemberMetafieldValues} deps.metafieldValues
+   * @param {ITokenService} deps.tokenService
+   * @param {any} deps.newslettersService
+   * @param {Pick<automationsApi, 'notify'>} deps.automationsApi
+   * @param {any} deps.Automation
+   * @param {any} deps.WelcomeEmailAutomationRun
+   */
+  constructor({
+    Member,
+    MemberNewsletter,
+    MemberCancelEvent,
+    MemberSubscribeEventModel,
+    MemberEmailChangeEvent,
+    MemberPaidSubscriptionEvent,
+    MemberStatusEvent,
+    MemberProductEvent,
+    MemberCreatedEvent: MemberCreatedEventModel,
+    SubscriptionCreatedEvent: SubscriptionCreatedEventModel,
+    StripeCustomer,
+    StripeCustomerSubscription,
+    OfferRedemption,
+    stripeAPIService,
+    productRepository,
+    offersAPI,
+    metafieldValues,
+    tokenService,
+    newslettersService,
+    automationsApi,
+    Automation,
+    WelcomeEmailAutomationRun,
+  }) {
+    this._Member = Member;
+    this._MemberNewsletter = MemberNewsletter;
+    this._MemberCancelEvent = MemberCancelEvent;
+    this._MemberSubscribeEvent = MemberSubscribeEventModel;
+    this._MemberEmailChangeEvent = MemberEmailChangeEvent;
+    this._MemberPaidSubscriptionEvent = MemberPaidSubscriptionEvent;
+    this._MemberStatusEvent = MemberStatusEvent;
+    this._MemberProductEvent = MemberProductEvent;
+    this._MemberCreatedEvent = MemberCreatedEventModel;
+    this._SubscriptionCreatedEvent = SubscriptionCreatedEventModel;
+    this._OfferRedemption = OfferRedemption;
+    this._StripeCustomer = StripeCustomer;
+    this._StripeCustomerSubscription = StripeCustomerSubscription;
+    this._stripeAPIService = stripeAPIService;
+    this._productRepository = productRepository;
+    this._offersAPI = offersAPI;
+    this._metafieldValues = metafieldValues;
+    this.tokenService = tokenService;
+    this._newslettersService = newslettersService;
+    this._automationsApi = automationsApi;
+    this._Automation = Automation;
+    this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
+  }
+
+  /**
+   * Records that a subscription redeemed an offer, once: Stripe can deliver the same
+   * subscription update more than once, so a redemption already recorded is left alone.
+   * A new redemption sends `OfferRedemptionEvent` once the change commits.
+   *
+   * @param {{memberId: string, subscriptionId: string, offerId: string, createdAt?: Date}} redemption
+   * @param {object} [options] joins `options.transacting` when given
+   */
+  async recordOfferRedemption({ memberId, subscriptionId, offerId, createdAt }, options) {
+    const transacting = _.pick(options, 'transacting');
+    const existing = await this._OfferRedemption.findOne(
+      { member_id: memberId, subscription_id: subscriptionId, offer_id: offerId },
+      transacting,
+    );
+    if (existing) {
+      return;
+    }
+    await this._OfferRedemption.add(
+      {
+        member_id: memberId,
+        subscription_id: subscriptionId,
+        offer_id: offerId,
+        created_at: createdAt ?? new Date(),
+      },
+      transacting,
+    );
+    this.dispatchEvent(
+      OfferRedemptionEvent.create({ memberId, subscriptionId, offerId }, createdAt),
+      options,
+    );
+  }
+
+  /**
+   * @param {Parameters<typeof DomainEvents.dispatch>[0]} event
+   * @param {object} options
+   * @param {object} options.transacting
+   * @param {Promise<unknown>} options.transacting.executionPromise
+   * @returns {void}
+   */
+  dispatchEvent(event, options) {
+    afterCommit(
+      options?.transacting,
+      () => DomainEvents.dispatch(event),
+      (err) => {
+        let memberMessageFragment = '';
+        if (event.data && typeof event.data === 'object' && 'memberId' in event.data) {
+          memberMessageFragment = `for member ${event.data.memberId} `;
+        }
+        logging.error({
+          err,
+          message: `Error dispatching event ${event.constructor.name} ${memberMessageFragment}after transaction finished`,
+        });
+      },
+    );
+  }
+
+  /**
+   * @param {Parameters<typeof automationsApi.notify>[0]} payload
+   * @param {object} options
+   * @param {Knex.Transaction} [options.transacting]
+   * @returns {Promise<void>}
+   */
+  async #notifyAutomations(payload, options) {
+    const notify = () => this._automationsApi.notify(payload);
+    if (options.transacting) {
+      options.transacting.executionPromise.then(notify).catch((err) => {
+        logging.error({
+          err,
+          message: `Error notifying automations for ${payload.eventName} event`,
+        });
+      });
+    } else {
+      await notify();
+    }
+  }
+
+  /**
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid' | 'comped' | 'gift'} options.previousStatus
+   * @param {ReadonlyArray<string>} options.previousTierIds
+   * @param {ReadonlyArray<string>} options.tierIds
+   * @param {object} options.options
+   * @param {object} [options.options.context]
+   * @param {Knex.Transaction} [options.options.transacting]
+   * @returns {Promise<void>}
+   */
+  async notifyPaidSubscriptionChangedAutomation({
+    member,
+    previousStatus,
+    previousTierIds,
+    tierIds,
+    options,
+  }) {
+    const payload = {
+      eventName: /** @type {const} */ ('paid_subscription_changed'),
+      source: this._resolveContextSource(options.context || {}),
+      memberId: member.id,
+      memberStatus: member.get('status'),
+      previousMemberStatus: previousStatus,
+      memberTierIds: tierIds,
+      previousMemberTierIds: previousTierIds,
+    };
+    await this.#notifyAutomations(payload, options);
+  }
+
+  isActiveSubscriptionStatus(status) {
+    return isActiveStatus(status);
+  }
+
+  isComplimentaryPlanNickname(nickname) {
+    return isComplimentaryNickname(nickname);
+  }
+
+  /**
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid'} options.memberStatus
+   * @param {'free' | 'paid' | 'comped' | 'gift' | null} options.previousMemberStatus
+   * @param {object} options.bookshelfOptions
+   * @param {Knex.Transaction} [options.bookshelfOptions.transacting]
+   * @returns {Promise<void>}
+   */
+  async #notifyMembershipStartedAutomation({
+    member,
+    memberStatus,
+    previousMemberStatus,
+    bookshelfOptions,
+  }) {
+    const memberId = member.id;
+    const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
+
+    await this.#notifyAutomations(
+      {
+        eventName: 'membership_started',
+        source: this._resolveContextSource(bookshelfOptions.context || {}),
+        memberId,
+        memberStatus,
+        previousMemberStatus,
+        memberTierIds,
+      },
+      bookshelfOptions,
+    );
+  }
+
+  /**
+   * Looks up the active welcome email automation for the given slug and enqueues a
+   * `WelcomeEmailAutomationRun` for the member. Dispatches `StartAutomationsPollEvent`
+   * so the poll picks it up.
+   *
+   * @param {string} memberId
+   * @param {'free' | 'paid'} memberStatus
+   * @param {object} options
+   * @returns {Promise<void>}
+   */
+  async #triggerMembershipStartedLegacyAutomation(memberId, memberStatus, options) {
+    if (!this._Automation || !this._WelcomeEmailAutomationRun) {
+      return;
+    }
+
+    if (labs.isSet('automations')) {
+      return;
+    }
+
+    const automation = await this._Automation.findOne(
+      { slug: MEMBER_WELCOME_EMAIL_SLUGS[memberStatus] },
+      { ...options, withRelated: ['welcomeEmailAutomatedEmail'] },
+    );
+    const email = automation?.related('welcomeEmailAutomatedEmail');
+    const isActive = Boolean(
+      automation && email && email.get('lexical') && automation.get('status') === 'active',
+    );
+
+    if (!isActive) {
+      return;
+    }
+
+    await this._WelcomeEmailAutomationRun.add(
+      {
+        welcome_email_automation_id: automation.id,
+        member_id: memberId,
+        next_welcome_email_automated_email_id: email.id,
+        ready_at: new Date(),
+        step_started_at: null,
+        step_attempts: 0,
+        exit_reason: null,
+      },
+      options,
+    );
+
+    this.dispatchEvent(StartAutomationsPollEvent.create(), options);
+  }
+
+  /**
+   * Notify the automations system about member signup.
+   *
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid'} options.memberStatus
+   * @param {'free' | 'paid' | 'comped' | 'gift' | null} [options.previousMemberStatus]
+   * @param {object} options.bookshelfOptions
+   * @returns {Promise<void>}
+   */
+  async notifyMembershipStartedAutomation({
+    member,
+    memberStatus,
+    previousMemberStatus = null,
+    bookshelfOptions,
+  }) {
+    const promises = [
+      this.#notifyMembershipStartedAutomation({
+        member,
+        memberStatus,
+        previousMemberStatus,
+        bookshelfOptions,
+      }),
+    ];
+
+    const source = this._resolveContextSource(bookshelfOptions.context || {});
+    const shouldTriggerLegacyAutomation =
+      WELCOME_EMAIL_SOURCES.includes(source) &&
+      !(memberStatus === 'paid' && previousMemberStatus === 'gift');
+    if (shouldTriggerLegacyAutomation) {
+      promises.push(
+        this.#triggerMembershipStartedLegacyAutomation(member.id, memberStatus, bookshelfOptions),
+      );
+    }
+
+    await Promise.all(promises);
+  }
+
+  /**
+   * Maps the framework context to members_*.source table record value
+   * @param {Object} context instance of ghost framework context object
+   * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
+   */
+  _resolveContextSource(context) {
+    if (context.import || context.importer) {
+      return 'import';
+    } else if (context.internal) {
+      return 'system';
+    } else if (context.api_key) {
+      return 'api';
+    } else if (context.user) {
+      return 'admin';
+    } else {
+      return 'member';
+    }
+  }
+
+  async get(data, options) {
+    if (data.customer_id) {
+      const customer = await this._StripeCustomer.findOne(
+        {
+          customer_id: data.customer_id,
+        },
+        {
+          withRelated: ['member'],
+        },
+      );
+      if (customer) {
+        return customer.related('member');
+      }
+      return null;
+    }
+    return await this._Member.findOne(data, options);
+  }
+
+  async getByToken(token, options) {
+    const data = await this.tokenService.decodeToken(token);
+
+    return this.get(
+      {
+        email: data.sub,
+      },
+      options,
+    );
+  }
+
+  _generateTransientId() {
+    return crypto.randomUUID();
+  }
+
+  async cycleTransientId({ id, email }) {
+    await this.update(
+      {
+        transient_id: this._generateTransientId(),
+      },
+      { id, email },
+    );
+  }
+
+  /**
+   * Create a member
+   * @param {Object} data
+   * @param {string} data.email
+   * @param {string} [data.name]
+   * @param {string} [data.note]
+   * @param {(string|Object)[]} [data.labels]
+   * @param {boolean} [data.subscribed] (deprecated)
+   * @param {string} [data.geolocation]
+   * @param {Date} [data.created_at]
+   * @param {Object[]} [data.products]
+   * @param {Object[]} [data.newsletters]
+   * @param {Object} [data.stripeCustomer]
+   * @param {string} [data.offerId]
+   * @param {string} [data.status]
+   * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
+   * @param {boolean} [data.email_disabled]
+   * @param {*} options
+   * @returns
+   */
+  async create(data, options) {
+    if (!options) {
+      options = {};
+    }
+
+    if (!options.batch_id) {
+      // We'll use this to link related events
+      options.batch_id = ObjectId().toHexString();
+    }
+
+    const { labels, stripeCustomer, offerId, attribution } = data;
+
+    if (labels) {
+      labels.forEach((label, index) => {
+        if (typeof label === 'string') {
+          labels[index] = { name: label };
+        }
+      });
+    }
+
+    const memberData = _.pick(data, [
+      'email',
+      'name',
+      'note',
+      'subscribed',
+      'geolocation',
+      'created_at',
+      'products',
+      'newsletters',
+      'email_disabled',
+      'status',
+    ]);
+
+    // Generate a random transient_id
+    memberData.transient_id = await this._generateTransientId();
+
+    // Throw error if email is invalid using latest validator
+    if (!validator.isEmail(memberData.email, { legacy: false })) {
+      throw new errors.ValidationError({
+        message: tpl(messages.invalidEmail),
+        property: 'email',
+      });
+    }
+
+    memberData.email_disabled = !!memberData.email_disabled;
+
+    if (memberData.status && !MEMBER_STATUSES.includes(memberData.status)) {
+      throw new errors.ValidationError({
+        message: tpl(messages.invalidMemberStatus, { statuses: MEMBER_STATUSES.join(', ') }),
+        property: 'status',
+      });
+    }
+
+    if (!memberData.status) {
+      if (memberData.products && memberData.products.length === 1) {
+        memberData.status = 'comped';
+      } else {
+        memberData.status = 'free';
+      }
+    }
+
+    if (memberData.products && memberData.products.length > 1) {
+      throw new errors.BadRequestError({ message: tpl(messages.moreThanOneProduct) });
+    }
+
+    // Don't allow to use archived tiers
+    // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+    if (memberData.products && memberData.status !== 'gift') {
+      for (const productData of memberData.products) {
+        const product = await this._productRepository.get(
+          productData,
+          _.pick(options, 'transacting'),
+        );
+        if (product.get('active') !== true) {
+          throw new errors.BadRequestError({ message: tpl(messages.tierArchived) });
+        }
+      }
+    }
+
+    // Subscribe members to default newsletters
+    if (memberData.subscribed !== false && !memberData.newsletters) {
+      const browseOptions = _.pick(options, 'transacting');
+      memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
+    }
+
+    const withRelated = options.withRelated ? options.withRelated : [];
+    if (!withRelated.includes('labels')) {
+      withRelated.push('labels');
+    }
+    if (!withRelated.includes('newsletters')) {
+      withRelated.push('newsletters');
+    }
+
+    const context = (options && options.context) || {};
+    const source = this._resolveContextSource(context);
+    const eventData = _.pick(data, ['created_at']);
+
+    const memberAddOptions = { ...(options || {}), withRelated };
+    let member;
+
+    const isFreeSignup = !stripeCustomer && memberData.status === 'free';
+
+    if (isFreeSignup && WELCOME_EMAIL_SOURCES.includes(source)) {
+      const runMemberCreation = async (transacting) => {
+        const newMember = await this._Member.add(
+          {
+            ...memberData,
+            labels,
+          },
+          { ...memberAddOptions, transacting },
+        );
+
+        await this.notifyMembershipStartedAutomation({
+          member: newMember,
+          memberStatus: 'free',
+          bookshelfOptions: { context, transacting },
+        });
+
+        return newMember;
+      };
+
+      if (memberAddOptions.transacting) {
+        member = await runMemberCreation(memberAddOptions.transacting);
+      } else {
+        member = await this._Member.transaction(runMemberCreation);
+      }
+    } else {
+      member = await this._Member.add(
+        {
+          ...memberData,
+          labels,
+        },
+        memberAddOptions,
+      );
+      if (isFreeSignup) {
+        await this.#notifyMembershipStartedAutomation({
+          member,
+          memberStatus: 'free',
+          previousMemberStatus: null,
+          bookshelfOptions: memberAddOptions,
+        });
+      }
+    }
+
+    if (!eventData.created_at) {
+      eventData.created_at = member.get('created_at');
+    }
+
+    for (const product of member.related('products').models) {
+      await this._MemberProductEvent.add(
+        {
+          member_id: member.id,
+          product_id: product.id,
+          action: 'added',
+        },
+        options,
+      );
+    }
+
+    await this._MemberStatusEvent.add(
+      {
+        member_id: member.id,
+        from_status: null,
+        to_status: member.get('status'),
+        batch_id: options.batch_id ?? null,
+        ...eventData,
+      },
+      options,
+    );
+
+    const newsletters = member.related('newsletters').models;
+
+    for (const newsletter of newsletters) {
+      await this._MemberSubscribeEvent.add(
+        {
+          member_id: member.id,
+          newsletter_id: newsletter.id,
+          subscribed: true,
+          source,
+          ...eventData,
+        },
+        options,
+      );
+    }
+
+    if (newsletters && newsletters.length > 0) {
+      this.dispatchEvent(
+        MemberSubscribeEvent.create(
+          {
+            memberId: member.id,
+            source: source,
+          },
+          eventData.created_at,
+        ),
+        options,
+      );
+    }
+
+    // For paid members created via stripe checkout webhook event, link subscription
+    if (stripeCustomer) {
+      await this.upsertCustomer({
+        member_id: member.id,
+        customer_id: stripeCustomer.id,
+        name: stripeCustomer.name,
+        email: stripeCustomer.email,
+      });
+
+      for (const subscription of stripeCustomer.subscriptions.data) {
+        try {
+          await this.linkSubscription(
+            {
+              id: member.id,
+              subscription,
+              offerId,
+              attribution,
+            },
+            { batch_id: options.batch_id },
+          );
+        } catch (err) {
+          if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+            throw err;
+          }
+          throw new errors.ConflictError({
+            err,
+          });
+        }
+      }
+    }
+    // Saved with the member rather than by a subscriber to the event below, so a read
+    // straight after the create already shows where the member came from.
+    await this._MemberCreatedEvent.add(
+      {
+        member_id: member.id,
+        created_at: eventData.created_at,
+        source,
+        batch_id: options.batch_id ?? null,
+        ...attributionColumns('members_created_events', data.attribution),
+      },
+      options,
+    );
+
+    this.dispatchEvent(
+      MemberCreatedEvent.create(
+        {
+          memberId: member.id,
+          batchId: options.batch_id,
+          attribution: data.attribution,
+          source,
+        },
+        eventData.created_at,
+      ),
+      options,
+    );
+
+    return member;
+  }
+
+  async getSubscribeOnSignupNewsletters(browseOptions) {
+    // By default subscribe to all active auto opt-in newsletters with members visibility
+    //TODO: Will mostly need to be updated later for paid-only newsletters
+    browseOptions.filter = 'status:active+subscribe_on_signup:true+visibility:members';
+    const newsletters = await this._newslettersService.getAll(browseOptions);
+    return newsletters || [];
+  }
+
+  async update(data, options) {
+    const sharedOptions = {
+      transacting: options.transacting,
+    };
+
+    if (!options) {
+      options = {};
+    }
+
+    const withRelated = options.withRelated ? options.withRelated : [];
+    if (!withRelated.includes('labels')) {
+      withRelated.push('labels');
+    }
+    if (!withRelated.includes('newsletters')) {
+      withRelated.push('newsletters');
+    }
+
+    const memberData = _.pick(data, [
+      'email',
+      'name',
+      'note',
+      'subscribed',
+      'labels',
+      'geolocation',
+      'products',
+      'newsletters',
+      'enable_comment_notifications',
+      'enable_updates_and_announcements',
+      'last_seen_at',
+      'last_commented_at',
+      'expertise',
+      'email_disabled',
+      'transient_id',
+    ]);
+
+    // Trim whitespaces from expertise
+    if (memberData.expertise) {
+      memberData.expertise = memberData.expertise.trim();
+    }
+
+    // Determine if we need to fetch the initial member with relations
+    const shouldUpdateProducts = this._stripeAPIService.configured && data.products;
+
+    // only update newsletters if we are receiving newsletter data
+    const needsNewsletters = memberData.newsletters || typeof memberData.subscribed === 'boolean';
+
+    // Build list for withRelated
+    const requiredRelations = [];
+    if (needsNewsletters) {
+      requiredRelations.push('newsletters');
+    }
+    if (shouldUpdateProducts) {
+      requiredRelations.push('products');
+    }
+
+    // Fetch the member
+    const initialMember = await this._Member.findOne(
+      {
+        id: options.id,
+      },
+      { ...sharedOptions, withRelated: requiredRelations, require: false },
+    );
+
+    // Make sure we throw the right error if it doesn't exist
+    if (!initialMember) {
+      throw new NotFoundError({ message: tpl(messages.memberNotFound, { id: options.id }) });
+    }
+
+    // Throw error if email is invalid and it's been changed
+    if (
+      initialMember?.get('email') &&
+      memberData.email &&
+      initialMember.get('email') !== memberData.email &&
+      !validator.isEmail(memberData.email, { legacy: false })
+    ) {
+      throw new errors.ValidationError({
+        message: tpl(messages.invalidEmail),
+        property: 'email',
+      });
+    }
+
+    if (data.status && !MEMBER_STATUSES.includes(data.status)) {
+      throw new errors.ValidationError({
+        message: tpl(messages.invalidMemberStatus, { statuses: MEMBER_STATUSES.join(', ') }),
+        property: 'status',
+      });
+    }
+
+    const memberStatusData = {};
+
+    let productsToAdd = [];
+    let productsToRemove = [];
+    if (shouldUpdateProducts) {
+      const existingProducts = initialMember.related('products').models;
+      const existingProductIds = existingProducts.map((product) => product.id);
+      const incomingProductIds = data.products.map((product) => product.id);
+
+      if (incomingProductIds.length > 1 && incomingProductIds.length > existingProductIds.length) {
+        throw new errors.BadRequestError({ message: tpl(messages.moreThanOneProduct) });
+      }
+
+      productsToAdd = _.differenceWith(incomingProductIds, existingProductIds);
+      productsToRemove = _.differenceWith(existingProductIds, incomingProductIds);
+      const productsToModify = productsToAdd.concat(productsToRemove);
+
+      if (productsToModify.length !== 0) {
+        // Load active subscriptions information
+        await initialMember.load(
+          [
+            'stripeSubscriptions',
+            'stripeSubscriptions.stripePrice',
+            'stripeSubscriptions.stripePrice.stripeProduct',
+            'stripeSubscriptions.stripePrice.stripeProduct.product',
+          ],
+          sharedOptions,
+        );
+
+        const exisitingSubscriptions = initialMember.related('stripeSubscriptions')?.models ?? [];
+
+        if (productsToRemove.length > 0) {
+          // Only allow to delete comped products without a subscription attached to them
+          // Other products should be removed by canceling them via the related stripe subscription
+          const dontAllowToRemoveProductsIds = exisitingSubscriptions
+            .filter((sub) => this.isActiveSubscriptionStatus(sub.get('status')))
+            .map((sub) => sub.related('stripePrice')?.related('stripeProduct')?.get('product_id'));
+
+          for (const deleteId of productsToRemove) {
+            if (dontAllowToRemoveProductsIds.includes(deleteId)) {
+              throw new errors.BadRequestError({
+                message: tpl(messages.deleteProductWithActiveSubscription),
+              });
+            }
+          }
+
+          if (incomingProductIds.length === 0) {
+            // CASE: We are removing all (comped) products from a member & there were no active subscriptions - the member is "free"
+            memberStatusData.status = 'free';
+          }
+        }
+
+        if (productsToAdd.length > 0) {
+          // Don't allow to add complimentary subscriptions (= creating a new product) when the member already has an active
+          // subscription
+          const existingActiveSubscriptions = exisitingSubscriptions.filter((subscription) => {
+            return this.isActiveSubscriptionStatus(subscription.get('status'));
+          });
+
+          if (existingActiveSubscriptions.length) {
+            throw new errors.BadRequestError({
+              message: tpl(messages.addProductWithActiveSubscription),
+            });
+          }
+
+          // CASE: We are changing products & there were no active stripe subscriptions - the member gets non-Stripe access
+          memberStatusData.status = data.status || 'comped';
+        }
+      }
+    }
+
+    for (const productId of productsToAdd) {
+      const product = await this._productRepository.get({ id: productId }, sharedOptions);
+      if (!product) {
+        throw new errors.BadRequestError({
+          message: tpl(messages.productNotFound, {
+            id: productId,
+          }),
+        });
+      }
+
+      // Don't allow to use archived tiers
+      // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+      if (product.get('active') !== true && memberStatusData.status !== 'gift') {
+        throw new errors.BadRequestError({ message: tpl(messages.tierArchived) });
+      }
+    }
+
+    // Keep track of the newsletters that were added and removed of a member so we can generate the corresponding events
+    let newslettersToAdd = [];
+    let newslettersToRemove = [];
+
+    if (needsNewsletters) {
+      const existingNewsletters = initialMember.related('newsletters').models;
+      // This maps the old subscribed property to the new newsletters field and is only used to keep backward compatibility
+      if (!memberData.newsletters) {
+        if (memberData.subscribed === false) {
+          memberData.newsletters = [];
+        } else if (
+          memberData.subscribed === true &&
+          !existingNewsletters.find((n) => n.get('status') === 'active')
+        ) {
+          const browseOptions = _.pick(options, 'transacting');
+          memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
+        }
+      }
+
+      // only ever populated with active newsletters - never archived ones
+      if (memberData.newsletters) {
+        const archivedNewsletters = existingNewsletters
+          .filter((n) => n.get('status') === 'archived')
+          .map((n) => n.id);
+        const existingNewsletterIds = existingNewsletters
+          .filter((newsletter) => newsletter.attributes.status !== 'archived')
+          .map((newsletter) => newsletter.id);
+        const incomingNewsletterIds = memberData.newsletters.map((newsletter) => newsletter.id);
+        // make sure newslettersToAdd does not contain archived newsletters (since that creates false events)
+        newslettersToAdd = _.differenceWith(
+          _.differenceWith(incomingNewsletterIds, existingNewsletterIds),
+          archivedNewsletters,
+        );
+        newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
+      }
+
+      // need to maintain archived newsletters; these are not exposed by the members api
+      const archivedNewsletters = existingNewsletters.filter(
+        (n) => n.attributes.status === 'archived',
+      );
+
+      // bookshelf-relations only touches the join table when the key is present,
+      // so an update that does not set newsletters leaves them all attached and
+      // has nothing to preserve.
+      if (memberData.newsletters && archivedNewsletters.length > 0) {
+        archivedNewsletters.forEach((n) => memberData.newsletters.push(n));
+      }
+    }
+
+    const previousMemberStatus = initialMember.get('status');
+    const previousMemberTierIds = shouldUpdateProducts
+      ? initialMember.related('products').models.map((product) => product.id)
+      : [];
+    const member = await this._Member.edit(
+      {
+        ...memberData,
+        ...memberStatusData,
+      },
+      { ...options, withRelated },
+    );
+
+    for (const productToAdd of productsToAdd) {
+      await this._MemberProductEvent.add(
+        {
+          member_id: member.id,
+          product_id: productToAdd,
+          action: 'added',
+        },
+        options,
+      );
+    }
+
+    for (const productToRemove of productsToRemove) {
+      await this._MemberProductEvent.add(
+        {
+          member_id: member.id,
+          product_id: productToRemove,
+          action: 'removed',
+        },
+        options,
+      );
+    }
+
+    // Add subscribe events for all (un)subscribed newsletters
+    const context = (options && options.context) || {};
+    const source = this._resolveContextSource(context);
+
+    for (const newsletterToAdd of newslettersToAdd) {
+      await this._MemberSubscribeEvent.add(
+        {
+          member_id: member.id,
+          newsletter_id: newsletterToAdd,
+          subscribed: true,
+          source,
+        },
+        sharedOptions,
+      );
+    }
+
+    for (const newsletterToRemove of newslettersToRemove) {
+      await this._MemberSubscribeEvent.add(
+        {
+          member_id: member.id,
+          newsletter_id: newsletterToRemove,
+          subscribed: false,
+          source,
+        },
+        sharedOptions,
+      );
+    }
+
+    if (newslettersToAdd.length > 0 || newslettersToRemove.length > 0) {
+      this.dispatchEvent(
+        MemberSubscribeEvent.create(
+          {
+            memberId: member.id,
+            source: source,
+          },
+          member.updated_at,
+        ),
+        sharedOptions,
+      );
+    }
+
+    if (member.attributes.email !== member._previousAttributes.email) {
+      await this._MemberEmailChangeEvent.add(
+        {
+          member_id: member.id,
+          from_email: member._previousAttributes.email,
+          to_email: member.get('email'),
+        },
+        sharedOptions,
+      );
+    }
+
+    if (member.attributes.status !== member._previousAttributes.status) {
+      await this._MemberStatusEvent.add(
+        {
+          member_id: member.id,
+          from_status: member._previousAttributes.status,
+          to_status: member.get('status'),
+          batch_id: options.batch_id ?? null,
+        },
+        sharedOptions,
+      );
+    }
+
+    if (shouldUpdateProducts) {
+      await this.notifyPaidSubscriptionChangedAutomation({
+        member,
+        previousStatus: previousMemberStatus,
+        previousTierIds: previousMemberTierIds,
+        tierIds: data.products.map((product) => product.id),
+        options,
+      });
+    }
+
+    if (this._stripeAPIService.configured && member._changed.email) {
+      // Stripe can't be rolled back, so it only hears about an address Ghost has saved.
+      await afterCommit(
+        options?.transacting,
+        () => this.updateStripeCustomerEmails(member),
+        (err) => {
+          logging.error(
+            {
+              event: { name: 'members.stripe_customer_email.not_updated' },
+              err,
+              memberId: member.id,
+            },
+            'The Stripe customer email was not updated after a member edit',
+          );
+        },
+      );
+    }
+
+    return member;
+  }
+
+  /**
+   * Sends a member's email address to every Stripe customer linked to them.
+   *
+   * @private
+   * @param {object} member
+   */
+  async updateStripeCustomerEmails(member) {
+    await member.related('stripeCustomers').fetch();
+    const customers = member.related('stripeCustomers');
+    for (const customer of customers.models) {
+      await this._stripeAPIService.updateCustomerEmail(
+        customer.get('customer_id'),
+        member.get('email'),
+      );
+    }
+  }
+
+  async list(options) {
+    return this._Member.findPage(options);
+  }
+
+  async destroy(data, options) {
+    const member = await this._Member.findOne(data, options);
+
+    if (!member) {
+      // throw error?
+      return;
+    }
+
+    if (this._stripeAPIService.configured && options.cancelStripeSubscriptions) {
+      await member.related('stripeSubscriptions').fetch();
+      const subscriptions = member.related('stripeSubscriptions');
+      for (const subscription of subscriptions.models) {
+        if (subscription.get('status') !== 'canceled') {
+          const updatedSubscription = await this._stripeAPIService.cancelSubscription(
+            subscription.get('subscription_id'),
+          );
+
+          await this._StripeCustomerSubscription.upsert(
+            {
+              status: updatedSubscription.status,
+              mrr: 0,
+            },
+            {
+              subscription_id: updatedSubscription.id,
+            },
+          );
+
+          await this._MemberPaidSubscriptionEvent.add(
+            {
+              member_id: member.id,
+              source: 'stripe',
+              subscription_id: subscription.id,
+              from_plan: subscription.get('plan_id'),
+              to_plan: null,
+              currency: subscription.get('plan_currency'),
+              mrr_delta: -1 * subscription.get('mrr'),
+            },
+            options,
+          );
+        }
+      }
+    }
+
+    // The member's metafields are deleted with them. They're read first, in the same
+    // transaction, and kept on the deleted member, whose member.deleted webhook is sent
+    // once the transaction commits.
+    const destroy = async (transacting) => {
+      // Read as Ghost itself, as what it finds is what the site's webhooks are sent.
+      const previousMetafields = await this._metafieldValues.getValuesFor(
+        member.id,
+        { kind: 'internal' },
+        transacting,
+      );
+      // require: false so concurrent deletes don't throw "No Rows Deleted"
+      const deleted = await this._Member.destroy({
+        ...options,
+        id: data.id,
+        transacting,
+        require: false,
+      });
+      if (deleted && previousMetafields) {
+        deleted._previousMetafields = previousMetafields;
+      }
+      return deleted;
+    };
+
+    return options.transacting ? destroy(options.transacting) : this._Member.transaction(destroy);
+  }
+
+  async bulkDestroy(options) {
+    const { all, filter, search } = options;
+
+    if (!filter && !search && (!all || all !== true)) {
+      throw new errors.IncorrectUsageError({
+        message: tpl(messages.bulkActionRequiresFilter, { action: 'bulk delete' }),
+      });
+    }
+
+    const filterOptions = _.pick(options, ['transacting', 'context']);
+
+    if (all !== true) {
+      // mongoTransformer carries the caller's checks on the filter, such as the Admin API's
+      // rejection of restricted fields
+      Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+    }
+
+    const selected = await this._Member.resolveFilter(filterOptions);
+    const memberRows = await selected.query().select('members.id').distinct();
+
+    const memberIds = memberRows.map((row) => row.id);
+
+    const bulkDestroyResult = await this._Member.bulkDestroy(memberIds);
+
+    bulkDestroyResult.unsuccessfulIds = bulkDestroyResult.unsuccessfulData;
+
+    delete bulkDestroyResult.unsuccessfulData;
+
+    return bulkDestroyResult;
+  }
+
+  async bulkEdit(data, options) {
+    const { all, filter, search } = options;
+
+    if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
+      throw new errors.IncorrectUsageError({
+        message: 'Unsupported bulk action',
+      });
+    }
+
+    if (!filter && !search && (!all || all !== true)) {
+      throw new errors.IncorrectUsageError({
+        message: tpl(messages.bulkActionRequiresFilter, { action: 'bulk edit' }),
+      });
+    }
+
+    const filterOptions = _.pick(options, ['transacting', 'context']);
+
+    if (all !== true) {
+      // mongoTransformer carries the caller's checks on the filter, such as the Admin API's
+      // rejection of restricted fields
+      Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+    }
+    const selected = await this._Member.resolveFilter(filterOptions);
+    const memberRows = await selected.query().select('members.id').distinct();
+
+    const memberIds = memberRows.map((row) => row.id);
+
+    // Each action changes the members' relations, so lock them as an edit would.
+    // A chunk at a time, so a bulk action across every member doesn't hold
+    // every member's lock until it finishes. Earlier chunks stay committed when
+    // a later one fails, so its members are reported as unsuccessful rather
+    // than failing the whole action
+    const results = [];
+    for (const chunk of _.chunk(memberIds.sort(), BULK_EDIT_CHUNK_SIZE)) {
+      try {
+        results.push(
+          await this._Member.transaction(async (transacting) => {
+            await this._Member.lockForUpdate(chunk, { transacting });
+            return this.#bulkEditChunk(data, chunk, { transacting });
+          }),
+        );
+      } catch (err) {
+        results.push({
+          successful: 0,
+          unsuccessful: chunk.length,
+          unsuccessfulData: chunk,
+          errors: chunk.map((id) => {
+            const e = Object.create(err);
+            e.errorDetails = id;
+            return e;
+          }),
+        });
+      }
+    }
+
+    return {
+      successful: _.sumBy(results, 'successful'),
+      unsuccessful: _.sumBy(results, 'unsuccessful'),
+      unsuccessfulData: results.flatMap((result) => result.unsuccessfulData),
+      errors: results.flatMap((result) => result.errors),
+    };
+  }
+
+  async #bulkEditChunk(data, memberIds, { transacting }) {
+    if (data.action === 'unsubscribe') {
+      const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
+      if (hasNewsletterSelected) {
+        const membersArr = memberIds.map((i) => `'${i}'`).join(',');
+        const subscriptions = await this._MemberNewsletter.resolveFilter({
+          filter: `newsletter_id:'${data.newsletter}'+member_id:[${membersArr}]`,
+          transacting,
+        });
+        const unsubscribeRows = await subscriptions.query();
+        const toUnsubscribe = unsubscribeRows.map((row) => row.id);
+
+        return await this._MemberNewsletter.bulkDestroy(toUnsubscribe, undefined, { transacting });
+      }
+
+      return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {
+        column: 'member_id',
+        transacting,
+      });
+    }
+
+    if (data.action === 'removeLabel') {
+      const membersLabelsRows = await this._Member.getLabelRelations(
+        {
+          labelId: data.meta.label.id,
+          memberIds,
+        },
+        { transacting },
+      );
+
+      const membersLabelsIds = membersLabelsRows.map((row) => row.id);
+
+      return this._Member.bulkDestroy(membersLabelsIds, 'members_labels', { transacting });
+    }
+
+    const existingLabelRelations = await this._Member.getLabelRelations(
+      { labelId: data.meta.label.id, memberIds },
+      { transacting },
+    );
+    const memberIdsWhoAlreadyHaveThisLabel = new Set(
+      existingLabelRelations.map((row) => row.member_id),
+    );
+
+    const relations = memberIds
+      .filter((id) => !memberIdsWhoAlreadyHaveThisLabel.has(id))
+      .map((id) => ({
+        member_id: id,
+        label_id: data.meta.label.id,
+        id: ObjectId().toHexString(),
+      }));
+
+    const result = await this._Member.bulkAdd(relations, 'members_labels', { transacting });
+
+    const failedIds = new Set(result.unsuccessfulData.map((row) => row.member_id));
+
+    const addedMemberIds = relations
+      .filter((row) => !failedIds.has(row.member_id))
+      .map((row) => row.member_id);
+    if (addedMemberIds.length) {
+      this.dispatchEvent(new LabelAddedToMembersEvent(data.meta.label.id, addedMemberIds), {
+        transacting,
+      });
+    }
+
+    return {
+      ...result,
+      // This addition is for API backwards compatibility. Callers expect it to
+      // be the number of affected members before any filtering (like we do
+      // above).
+      successful: result.successful + memberIdsWhoAlreadyHaveThisLabel.size,
+    };
+  }
+
+  async upsertCustomer(data) {
+    return await this._StripeCustomer.upsert({
+      customer_id: data.customer_id,
+      member_id: data.member_id,
+      name: data.name,
+      email: data.email,
+    });
+  }
+
+  async linkStripeCustomer(data, options) {
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'link Stripe Customer' }),
+      });
+    }
+    const customer = await this._stripeAPIService.getCustomer(data.customer_id);
+
+    if (!customer) {
+      return;
+    }
+
+    // Add instead of upsert ensures that we do not link existing customer
+    await this._StripeCustomer.add(
+      {
+        customer_id: data.customer_id,
+        member_id: data.member_id,
+        name: customer.name,
+        email: customer.email,
+      },
+      options,
+    );
+
+    for (const subscription of customer.subscriptions.data) {
+      await this.linkSubscription(
+        {
+          id: data.member_id,
+          subscription,
+        },
+        options,
+      );
+    }
+  }
+
+  async getCustomerIdByEmail(email) {
+    return this._stripeAPIService.getCustomerIdByEmail(email);
+  }
+
+  async getSubscriptionByStripeID(id, options) {
+    const subscription = await this._StripeCustomerSubscription.findOne(
+      {
+        subscription_id: id,
+      },
+      options,
+    );
+
+    return subscription;
+  }
+
+  /**
+   * Saves a Stripe subscription on a member, as Ghost describes it once it's read it from Stripe
+   * again, and updates the member's status and tiers to match.
+   *
+   * @param {Object} data
+   * @param {string} data.id - member ID
+   * @param {{id: string, customer: string}} data.subscription - the subscription and its customer
+   * @param {string | null} [data.offerId]
+   * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
+   * @param {object} [options]
+   * @param {Knex.Transaction} [options.transacting]
+   * @returns
+   */
+  async linkSubscription(data, options = {}) {
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'link Stripe Subscription' }),
+      });
+    }
+
+    if (!options.transacting) {
+      return this._Member.transaction((transacting) => {
+        return this.linkSubscription(data, {
+          ...options,
+          transacting,
+        });
+      });
+    }
+
+    if (!options.batch_id) {
+      options.batch_id = ObjectId().toHexString();
+    }
+
+    const memberModel = await this._Member.findOne(
+      {
+        id: data.id,
+      },
+      { ...options, forUpdate: true },
+    );
+
+    if (!memberModel) {
+      throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.id }) });
+    }
+
+    const memberStripeCustomerModel = await memberModel
+      .related('stripeCustomers')
+      .query({
+        where: {
+          customer_id: data.subscription.customer,
+        },
+      })
+      .fetchOne(options);
+
+    if (!memberStripeCustomerModel) {
+      // Maybe just link the customer?
+      throw new errors.NotFoundError({ message: tpl(messages.subscriptionNotFound) });
+    }
+
+    const description = await this._stripeAPIService.getSubscriptionToLink(data.subscription.id);
+
+    const stripeCustomerSubscriptionModel = await this.getSubscriptionByStripeID(
+      data.subscription.id,
+      {
+        ...options,
+        forUpdate: true,
+      },
+    );
+
+    let ghostProduct;
+    try {
+      ghostProduct = await this._productRepository.get(tierFilter(description), options);
+      // Use first Ghost product as default product in case of missing link
+      if (!ghostProduct) {
+        ghostProduct = await this._productRepository.getDefaultProduct(options);
+      }
+
+      // Link Stripe Product & Price to Ghost Product
+      if (ghostProduct) {
+        await this._productRepository.update(
+          {
+            id: ghostProduct.get('id'),
+            name: ghostProduct.get('name'),
+            stripe_prices: [tierPrice(description)],
+          },
+          options,
+        );
+      } else {
+        // Log error if no Ghost products found
+        logging.error(
+          `There was an error linking subscription - ${data.subscription.id}, no Products exist.`,
+        );
+      }
+    } catch (e) {
+      logging.error(`Failed to handle prices and product for - ${data.subscription.id}.`);
+      logging.error(e);
+    }
+
+    const fromCoupon = couponOffer(description);
+
+    // For trial offers, offer id is passed from metadata as there is no stripe coupon
+    let offerId = data.offerId || null;
+
+    if (fromCoupon && !offerId && ghostProduct) {
+      const { coupon, cadence } = fromCoupon;
+      const tier = { id: ghostProduct.get('id'), name: ghostProduct.get('name') };
+
+      try {
+        const offer = await this._offersAPI.ensureOfferForStripeCoupon(
+          coupon,
+          cadence,
+          tier,
+          options,
+        );
+        offerId = offer.id;
+      } catch (e) {
+        if (e.code === 'INVALID_YEARLY_DURATION') {
+          // During migrations, some Stripe coupons from other platforms may not be compatible with Ghost offers.
+          // For example, a `yearly` coupon set to `repeating` (Ghost only accepts `once` or `forever` for `yearly` coupons).
+          //
+          // In this case, we skip creating the offer, but still create the paid member
+          logging.error(`Failed to create offer for Stripe coupon - ${coupon.id}`);
+          logging.error(e);
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    const subscriptionData = subscriptionRow(description, offerId);
+
+    const getStatus = (modelToCheck) => {
+      const status = modelToCheck.get('status');
+      const canceled = modelToCheck.get('cancel_at_period_end');
+
+      if (status === 'canceled') {
+        return 'expired';
+      }
+
+      if (canceled) {
+        return 'canceled';
+      }
+
+      if (this.isActiveSubscriptionStatus(status)) {
+        return 'active';
+      }
+
+      return 'inactive';
+    };
+    let eventData = {};
+    const incomplete = isIncomplete(description);
+    let subscriptionToRecord = null;
+
+    // A cancellation (or reactivation) changes no `members` column, so the member
+    // model event would be suppressed by `wasChanged()`. Remember the pre-update
+    // subscription so the event can be marked and carry its prior state.
+    let subscriptionBeforeCancelFlagChange = null;
+
+    const stripeCustomerSubscriptionModelShouldBeDeleted = isReplacedByMigration(description);
+    if (stripeCustomerSubscriptionModelShouldBeDeleted) {
+      logging.warn(
+        `Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`,
+      );
+
+      if (stripeCustomerSubscriptionModel) {
+        // Delete all paid subscription events manually for this subscription
+        // This is the only related event without a foreign key constraint
+        await this._MemberPaidSubscriptionEvent
+          .query()
+          .where('subscription_id', stripeCustomerSubscriptionModel.id)
+          .delete()
+          .transacting(options.transacting);
+
+        // Delete the subscription in the database because we don't want to show it in the UI or in our data calculations
+        await stripeCustomerSubscriptionModel.destroy(options);
+      }
+    } else if (stripeCustomerSubscriptionModel) {
+      const previousOfferId = stripeCustomerSubscriptionModel.get('offer_id');
+
+      // CASE: Only preserve offer_id for active trials (trial offers don't have Stripe discounts)
+      // Otherwise, allow offer_id to be cleared when the Stripe discount expires
+      if (!subscriptionData.offer_id && hasActiveTrial(description)) {
+        delete subscriptionData.offer_id;
+      }
+
+      const updatedStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.edit(
+        subscriptionData,
+        {
+          ...options,
+          id: stripeCustomerSubscriptionModel.id,
+        },
+      );
+
+      if (
+        stripeCustomerSubscriptionModel.get('status') === 'incomplete' &&
+        givesAccess(description)
+      ) {
+        // Older Ghost versions recorded incomplete subscriptions as conversions. Avoid
+        // recording them twice when a checkout already in progress completes.
+        const createdEvent = await this._MemberPaidSubscriptionEvent.findOne(
+          {
+            member_id: memberModel.id,
+            subscription_id: stripeCustomerSubscriptionModel.id,
+            type: 'created',
+          },
+          options,
+        );
+        if (!createdEvent) {
+          subscriptionToRecord = updatedStripeCustomerSubscriptionModel;
+        }
+      }
+
+      // CASE: Record offer redemption when offer_id changes to a new non-null value
+      // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
+      if (
+        !incomplete &&
+        !subscriptionToRecord &&
+        previousOfferId !== subscriptionData.offer_id &&
+        subscriptionData.offer_id
+      ) {
+        const redemptionTimestamp =
+          subscriptionData.discount_start ||
+          updatedStripeCustomerSubscriptionModel.get('created_at');
+        await this.recordOfferRedemption(
+          {
+            memberId: memberModel.id,
+            offerId: subscriptionData.offer_id,
+            subscriptionId: updatedStripeCustomerSubscriptionModel.id,
+            createdAt: redemptionTimestamp,
+          },
+          options,
+        );
+      }
+
+      if (
+        stripeCustomerSubscriptionModel.get('cancel_at_period_end') !==
+        updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end')
+      ) {
+        subscriptionBeforeCancelFlagChange = stripeCustomerSubscriptionModel;
+      }
+
+      if (
+        !incomplete &&
+        !subscriptionToRecord &&
+        (stripeCustomerSubscriptionModel.get('mrr') !==
+          updatedStripeCustomerSubscriptionModel.get('mrr') ||
+          stripeCustomerSubscriptionModel.get('plan_id') !==
+            updatedStripeCustomerSubscriptionModel.get('plan_id') ||
+          stripeCustomerSubscriptionModel.get('status') !==
+            updatedStripeCustomerSubscriptionModel.get('status') ||
+          stripeCustomerSubscriptionModel.get('cancel_at_period_end') !==
+            updatedStripeCustomerSubscriptionModel.get('cancel_at_period_end'))
+      ) {
+        const originalMrrDelta = stripeCustomerSubscriptionModel.get('mrr');
+        const updatedMrrDelta = updatedStripeCustomerSubscriptionModel.get('mrr');
+
+        const getEventType = (originalStatus, updatedStatus) => {
+          if (originalStatus === updatedStatus) {
+            return 'updated';
+          }
+
+          if (originalStatus === 'canceled' && updatedStatus === 'active') {
+            return 'reactivated';
+          }
+
+          return updatedStatus;
+        };
+
+        const originalStatus = getStatus(stripeCustomerSubscriptionModel);
+        const updatedStatus = getStatus(updatedStripeCustomerSubscriptionModel);
+        const eventType = getEventType(originalStatus, updatedStatus);
+
+        const mrrDelta = updatedMrrDelta - originalMrrDelta;
+
+        await this._MemberPaidSubscriptionEvent.add(
+          {
+            member_id: memberModel.id,
+            source: 'stripe',
+            type: eventType,
+            subscription_id: updatedStripeCustomerSubscriptionModel.id,
+            from_plan: stripeCustomerSubscriptionModel.get('plan_id'),
+            ...changedPayingEvent(description),
+            mrr_delta: mrrDelta,
+          },
+          options,
+        );
+
+        // Did we activate this subscription?
+        // This happens when an incomplete subscription is completed
+        // This always happens during the 3D secure flow, so it is important to catch
+        if (originalStatus !== 'active' && updatedStatus === 'active') {
+          const context = options?.context || {};
+          const source = this._resolveContextSource(context);
+
+          const subscriptionActivatedEvent = SubscriptionActivatedEvent.create({
+            source,
+            tierId: ghostProduct?.get('id'),
+            memberId: memberModel.id,
+            subscriptionId: updatedStripeCustomerSubscriptionModel.get('id'),
+            offerId: offerId,
+            batchId: options.batch_id,
+          });
+          this.dispatchEvent(subscriptionActivatedEvent, options);
+        }
+
+        // Dispatch cancellation event, i.e. send paid cancellation staff notification, if:
+        // 1. The subscription has been set to cancel at period end, by the member in Portal, status 'canceled'
+        // 2. The subscription has been immediately canceled (e.g. due to multiple failed payments), status 'expired'
+        if (
+          this.isActiveSubscriptionStatus(originalStatus) &&
+          (updatedStatus === 'canceled' || updatedStatus === 'expired')
+        ) {
+          const context = options?.context || {};
+          const source = this._resolveContextSource(context);
+          const cancelNow = updatedStatus === 'expired';
+          const { canceledAt, expiryAt } = cancellationDates(description, cancelNow);
+
+          const subscriptionCancelledEvent = SubscriptionCancelledEvent.create({
+            source,
+            tierId: ghostProduct?.get('id'),
+            memberId: memberModel.id,
+            subscriptionId: updatedStripeCustomerSubscriptionModel.get('id'),
+            cancelNow,
+            canceledAt,
+            expiryAt,
+          });
+
+          this.dispatchEvent(subscriptionCancelledEvent, options);
+        }
+      }
+    } else {
+      eventData = firstLinkEventDate(description);
+      const newStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.add(
+        subscriptionData,
+        options,
+      );
+      if (!incomplete) {
+        subscriptionToRecord = newStripeCustomerSubscriptionModel;
+      }
+    }
+
+    // A checkout attempt is not a paid conversion. Record the start only once
+    // the subscription leaves incomplete, retaining attribution from Stripe metadata.
+    if (subscriptionToRecord) {
+      await this._MemberPaidSubscriptionEvent.add(
+        {
+          member_id: memberModel.id,
+          subscription_id: subscriptionToRecord.id,
+          type: 'created',
+          source: 'stripe',
+          ...startedPayingEvent(description),
+          mrr_delta: subscriptionToRecord.get('mrr'),
+          ...eventData,
+        },
+        options,
+      );
+
+      const context = options?.context || {};
+      const source = this._resolveContextSource(context);
+      const attribution = startAttribution(data.attribution, description);
+
+      const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
+        source,
+        tierId: ghostProduct?.get('id'),
+        memberId: memberModel.id,
+        subscriptionId: subscriptionToRecord.get('id'),
+        offerId: offerId,
+        attribution: attribution,
+        batchId: options.batch_id,
+      });
+
+      // Saved with the subscription, as the member's created record is, so a read
+      // straight after already shows where the subscription came from.
+      await this._SubscriptionCreatedEvent.add(
+        {
+          member_id: memberModel.id,
+          subscription_id: subscriptionToRecord.get('id'),
+          created_at: subscriptionCreatedEvent.timestamp,
+          batch_id: options.batch_id ?? null,
+          ...attributionColumns('members_subscription_created_events', attribution),
+        },
+        options,
+      );
+
+      this.dispatchEvent(subscriptionCreatedEvent, options);
+
+      if (offerId) {
+        await this.recordOfferRedemption(
+          {
+            memberId: memberModel.id,
+            offerId: offerId,
+            subscriptionId: subscriptionToRecord.get('id'),
+          },
+          options,
+        );
+      }
+
+      if (getStatus(subscriptionToRecord) === 'active') {
+        const subscriptionActivatedEvent = SubscriptionActivatedEvent.create({
+          source,
+          tierId: ghostProduct?.get('id'),
+          memberId: memberModel.id,
+          subscriptionId: subscriptionToRecord.get('id'),
+          offerId: offerId,
+          attribution: attribution,
+          batchId: options.batch_id,
+        });
+        this.dispatchEvent(subscriptionActivatedEvent, options);
+      }
+    }
+
+    let memberProducts = (await memberModel.related('products').fetch(options)).toJSON();
+    const oldMemberProducts = memberModel.related('products').toJSON();
+    let status = memberProducts.length === 0 ? 'free' : 'comped';
+    const statusFromSubscription = memberStatusFrom(description);
+    if (!stripeCustomerSubscriptionModelShouldBeDeleted && statusFromSubscription) {
+      status = statusFromSubscription;
+
+      if (stripeCustomerSubscriptionModel) {
+        // We might need to...
+        // 1. delete the previous product from the linked member products (in case an existing subscription changed product/price)
+        // 2. fix the list of products linked to a member (an existing subscription doesn't have a linked product to this member)
+
+        const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
+
+        const previousProduct = await this._productRepository.get(
+          {
+            stripe_price_id: stripeCustomerSubscriptionModel.get('stripe_price_id'),
+          },
+          options,
+        );
+
+        if (previousProduct) {
+          let activeSubscriptionForPreviousProduct = false;
+
+          for (const subscriptionModel of subscriptions.models) {
+            if (
+              this.isActiveSubscriptionStatus(subscriptionModel.get('status')) &&
+              subscriptionModel.id !== stripeCustomerSubscriptionModel.id
+            ) {
+              try {
+                const subscriptionProduct = await this._productRepository.get(
+                  { stripe_price_id: subscriptionModel.get('stripe_price_id') },
+                  options,
+                );
+                if (
+                  subscriptionProduct &&
+                  previousProduct &&
+                  subscriptionProduct.id === previousProduct.id
+                ) {
+                  activeSubscriptionForPreviousProduct = true;
+                }
+
+                if (
+                  subscriptionProduct &&
+                  !memberProducts.find((p) => p.id === subscriptionProduct.id)
+                ) {
+                  // Due to a bug in the past it is possible that this subscription's product wasn't added to the member products
+                  // So we need to add it again
+                  memberProducts.push(subscriptionProduct.toJSON());
+                }
+              } catch (e) {
+                logging.error(`Failed to attach products to member - ${data.id}`);
+                logging.error(e);
+              }
+            }
+          }
+
+          if (!activeSubscriptionForPreviousProduct) {
+            // We can safely remove the product from this member because it doesn't have any other remaining active subscription for it
+            memberProducts = memberProducts.filter((product) => {
+              return product.id !== previousProduct.id;
+            });
+          }
+        }
+      }
+
+      if (ghostProduct) {
+        // Note: we add the product here
+        // We don't override the products because in an edge case a member can have multiple subscriptions
+        // We'll need to keep all the products related to those subscriptions to avoid creating other issues
+        // Replace any existing entry for this tier so a comp or gift expiry_at doesn't carry over
+        memberProducts = memberProducts.filter((product) => product.id !== ghostProduct.id);
+        memberProducts.push(ghostProduct.toJSON());
+      }
+    } else {
+      const subscriptions = await memberModel.related('stripeSubscriptions').fetch(options);
+      let activeSubscriptionForGhostProduct = false;
+      for (const subscriptionModel of subscriptions.models) {
+        if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
+          status = 'paid';
+          try {
+            const subscriptionProduct = await this._productRepository.get(
+              { stripe_price_id: subscriptionModel.get('stripe_price_id') },
+              options,
+            );
+            if (subscriptionProduct && ghostProduct && subscriptionProduct.id === ghostProduct.id) {
+              activeSubscriptionForGhostProduct = true;
+            }
+
+            if (
+              subscriptionProduct &&
+              !memberProducts.find((p) => p.id === subscriptionProduct.id)
+            ) {
+              // Due to a bug in the past it is possible that this subscription's product wasn't added to the member products
+              // So we need to add it again
+              memberProducts.push(subscriptionProduct.toJSON());
+            }
+          } catch (e) {
+            logging.error(`Failed to attach products to member - ${data.id}`);
+            logging.error(e);
+          }
+        }
+      }
+
+      if (!activeSubscriptionForGhostProduct) {
+        // We don't have an active subscription for this product anymore, so we can safely unlink it from the member
+        memberProducts = memberProducts.filter((product) => {
+          return product.id !== ghostProduct.id;
+        });
+      }
+
+      if (memberProducts.length === 0) {
+        // If all products were removed, set the status back to 'free'
+        status = 'free';
+      }
+    }
+
+    let updatedMember;
+    try {
+      // Remove duplicate products from the list
+      memberProducts = _.uniqBy(memberProducts, function (e) {
+        return e.id;
+      });
+      // Edit member with updated products assoicated
+      updatedMember = await this._Member.edit(
+        { status: status, products: memberProducts },
+        { ...options, id: data.id },
+      );
+    } catch (e) {
+      logging.error(`Failed to update member - ${data.id} - with related products`);
+      logging.error(e);
+      updatedMember = await this._Member.edit({ status: status }, { ...options, id: data.id });
+      // The relation edit may have failed partially; report saved access, not the proposed tiers.
+      memberProducts = (await updatedMember.related('products').fetch(options)).toJSON();
+    }
+
+    // Cancelling (or reactivating) touches no `members` column, so mark the
+    // subscription relation as the change and carry its prior state. This lets the
+    // webhook payload express before/after — see `services/webhooks/serialize.js`.
+    //
+    // No explicit `emitChange` is needed, and adding one would emit twice: inside a
+    // transaction `emitChange` queues onto the `committed` handler and defers its
+    // `wasChanged()` check to commit time (see `models/base/plugins/events.js`), so
+    // the event already queued by `_Member.edit` above is still pending and setting
+    // `_changed` here is what lets it through. The e2e test asserting exactly one
+    // `member.edited` per cancellation guards this.
+    if (subscriptionBeforeCancelFlagChange && updatedMember) {
+      // Price/tier relations are needed for the serialized subscription shape
+      // to match the Admin API member resource (price, tier, plan)
+      await updatedMember.load(
+        [
+          'stripeSubscriptions',
+          'stripeSubscriptions.stripePrice',
+          'stripeSubscriptions.stripePrice.stripeProduct',
+          'stripeSubscriptions.stripePrice.stripeProduct.product',
+        ],
+        options,
+      );
+      await subscriptionBeforeCancelFlagChange.load(
+        ['stripePrice', 'stripePrice.stripeProduct', 'stripePrice.stripeProduct.product'],
+        options,
+      );
+      updatedMember._changed = {
+        ...updatedMember._changed,
+        stripeSubscriptions: {
+          cancel_at_period_end: subscriptionBeforeCancelFlagChange.get('cancel_at_period_end'),
+        },
+      };
+      // `previous` must be the full collection — a member can have multiple
+      // subscriptions — with only the changed one swapped for its prior state
+      updatedMember._previousRelations = {
+        ...updatedMember._previousRelations,
+        stripeSubscriptions: {
+          models: updatedMember.related('stripeSubscriptions').models.map((subscription) => {
+            return subscription.id === subscriptionBeforeCancelFlagChange.id
+              ? subscriptionBeforeCancelFlagChange
+              : subscription;
+          }),
+        },
+      };
+    }
+
+    const newMemberProductIds = memberProducts.map((product) => product.id);
+    const oldMemberProductIds = oldMemberProducts.map((product) => product.id);
+
+    const productsToAdd = _.differenceWith(newMemberProductIds, oldMemberProductIds);
+    const productsToRemove = _.differenceWith(oldMemberProductIds, newMemberProductIds);
+
+    for (const productToAdd of productsToAdd) {
+      await this._MemberProductEvent.add(
+        {
+          member_id: memberModel.id,
+          product_id: productToAdd,
+          action: 'added',
+        },
+        options,
+      );
+    }
+
+    for (const productToRemove of productsToRemove) {
+      await this._MemberProductEvent.add(
+        {
+          member_id: memberModel.id,
+          product_id: productToRemove,
+          action: 'removed',
+        },
+        options,
+      );
+    }
+
+    if (updatedMember.attributes.status !== updatedMember._previousAttributes.status) {
+      await this._MemberStatusEvent.add(
+        {
+          member_id: data.id,
+          from_status: updatedMember._previousAttributes.status,
+          to_status: updatedMember.get('status'),
+          batch_id: options.batch_id ?? null,
+          ...eventData,
+        },
+        options,
+      );
+
+      if (updatedMember.get('status') === 'paid') {
+        await this.notifyMembershipStartedAutomation({
+          member: memberModel,
+          memberStatus: 'paid',
+          previousMemberStatus: updatedMember._previousAttributes.status,
+          bookshelfOptions: options,
+        });
+      }
+    }
+
+    await this.notifyPaidSubscriptionChangedAutomation({
+      member: updatedMember,
+      previousStatus: updatedMember._previousAttributes.status,
+      previousTierIds: oldMemberProductIds,
+      tierIds: newMemberProductIds,
+      options,
+    });
+
+    // Update the members_current_subscription lookup table
+    await this._updateCurrentSubscription(data.id, options);
+  }
+
+  async _updateCurrentSubscription(memberId, options) {
+    try {
+      const knex = db.knex;
+      const trx = options.transacting || knex;
+
+      // Resolve the best subscription for this member via the VIEW
+      // (single source of truth for subscription priority logic)
+      const best = await trx('members_resolved_subscription').where('member_id', memberId).first();
+
+      if (best) {
+        // The lookup table has a UNIQUE constraint on `subscription_id`
+        // — a sub can be at most one member's current. The view's
+        // owning-member can change (member merges, Stripe customer
+        // re-link, test fixtures reusing customer IDs), in which case
+        // the lookup may still hold a stale row from the previous
+        // owner. Delete that stale row first so the upsert isn't
+        // rejected by the UNIQUE constraint. The displaced member's
+        // row will re-resolve next time their subscriptions change.
+        await trx('members_current_subscription')
+          .where('subscription_id', best.subscription_id)
+          .whereNot('member_id', best.member_id)
+          .del();
+
+        await trx('members_current_subscription')
+          .insert({ member_id: best.member_id, subscription_id: best.subscription_id })
+          .onConflict('member_id')
+          .merge();
+      } else {
+        // No subscriptions remain — remove the lookup row
+        await trx('members_current_subscription').where({ member_id: memberId }).del();
+      }
+    } catch (e) {
+      logging.error({
+        err: e,
+        message: `Failed to update members_current_subscription for member ${memberId}`,
+      });
+      throw e;
+    }
+  }
+
+  async getSubscription(data, options) {
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'get Stripe Subscription' }),
+      });
+    }
+
+    const member = await this._Member.findOne({
+      email: data.email,
+    });
+
+    if (!member) {
+      throw new errors.NotFoundError({ message: tpl(messages.memberNotFound, { id: data.email }) });
+    }
+
+    const subscription = await member
+      .related('stripeSubscriptions')
+      .query({
+        where: {
+          subscription_id: data.subscription.subscription_id,
+        },
+      })
+      .fetchOne(options);
+
+    if (!subscription) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.subscriptionNotFound, { id: data.subscription.subscription_id }),
+      });
+    }
+
+    return subscription.toJSON();
+  }
+
+  async cancelSubscription(data, options) {
+    const sharedOptions = {
+      transacting: options ? options.transacting : null,
+    };
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'update Stripe Subscription' }),
+      });
+    }
+
+    let findQuery = null;
+    if (data.id) {
+      findQuery = { id: data.id };
+    } else if (data.email) {
+      findQuery = { email: data.email };
+    }
+
+    if (!findQuery) {
+      throw new errors.NotFoundError({ message: tpl(messages.subscriptionNotFound) });
+    }
+
+    const member = await this._Member.findOne(findQuery);
+
+    if (!member) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: data.id || data.email }),
+      });
+    }
+
+    const subscription = await member
+      .related('stripeSubscriptions')
+      .query({
+        where: {
+          subscription_id: data.subscription.subscription_id,
+        },
+      })
+      .fetchOne(options);
+
+    if (!subscription) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.subscriptionNotFound, { id: data.subscription.subscription_id }),
+      });
+    }
+
+    const updatedSubscription = await this._stripeAPIService.cancelSubscription(
+      data.subscription.subscription_id,
+    );
+
+    await this.linkSubscription(
+      {
+        id: member.id,
+        subscription: updatedSubscription,
+      },
+      options,
+    );
+
+    await this._MemberCancelEvent.add(
+      {
+        member_id: member.id,
+        from_plan: subscription.get('plan_id'),
+      },
+      sharedOptions,
+    );
+  }
+
+  async updateSubscription(data, options) {
+    const sharedOptions = {
+      transacting: options ? options.transacting : null,
+    };
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'update Stripe Subscription' }),
+      });
+    }
+
+    let findQuery = null;
+    if (data.id) {
+      findQuery = { id: data.id };
+    } else if (data.email) {
+      findQuery = { email: data.email };
+    }
+
+    if (!findQuery) {
+      throw new errors.NotFoundError({ message: tpl(messages.subscriptionNotFound) });
+    }
+
+    const member = await this._Member.findOne(findQuery);
+
+    if (!member) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: data.id || data.email }),
+      });
+    }
+
+    const subscriptionModel = await member
+      .related('stripeSubscriptions')
+      .query({
+        where: {
+          subscription_id: data.subscription.subscription_id,
+        },
+      })
+      .fetchOne(options);
+
+    if (!subscriptionModel) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.subscriptionNotFound, { id: data.subscription.subscription_id }),
+      });
+    }
+
+    let updatedSubscription;
+    if (data.subscription.price) {
+      const subscription = await this._stripeAPIService.getSubscription(
+        data.subscription.subscription_id,
+      );
+
+      const subscriptionItem = subscription.items.data[0];
+
+      if (data.subscription.price !== subscription.price) {
+        updatedSubscription = await this._stripeAPIService.updateSubscriptionItemPrice(
+          subscription.id,
+          subscriptionItem.id,
+          data.subscription.price,
+        );
+        updatedSubscription = await this._stripeAPIService.removeCouponFromSubscription(
+          subscription.id,
+        );
+
+        if (subscriptionModel.get('status') === SUBSCRIPTION_STATUS_TRIALING) {
+          updatedSubscription = await this._stripeAPIService.cancelSubscriptionTrial(
+            subscription.id,
+          );
+        }
+      }
+    }
+
+    if (data.subscription.cancel_at_period_end !== undefined) {
+      if (data.subscription.cancel_at_period_end) {
+        updatedSubscription = await this._stripeAPIService.cancelSubscriptionAtPeriodEnd(
+          data.subscription.subscription_id,
+          data.subscription.cancellationReason,
+        );
+
+        await this._MemberCancelEvent.add(
+          {
+            member_id: member.id,
+            from_plan: subscriptionModel.get('plan_id'),
+          },
+          sharedOptions,
+        );
+      } else {
+        updatedSubscription = await this._stripeAPIService.continueSubscriptionAtPeriodEnd(
+          data.subscription.subscription_id,
+        );
+      }
+    }
+
+    if (updatedSubscription) {
+      await this.linkSubscription(
+        {
+          id: member.id,
+          subscription: updatedSubscription,
+        },
+        options,
+      );
+    }
+  }
+
+  /**
+   * @param {Object} data
+   * @param {string} [data.id] - Member ID
+   * @param {string} [data.email] - Member email
+   * @param {Object} data.subscription
+   * @param {string} data.subscription.subscription_id - Stripe subscription ID
+   * @param {string} data.offerId - Offer ID to apply
+   * @param {string} data.couponId - Stripe coupon ID for the offer
+   * @param {Object} [options]
+   */
+  async applyOfferToSubscription(data, options = {}) {
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'apply offer to Subscription' }),
+      });
+    }
+
+    if (!options.transacting) {
+      return this._Member.transaction((transacting) => {
+        return this.applyOfferToSubscription(data, {
+          ...options,
+          transacting,
+        });
+      });
+    }
+
+    // Find member
+    let findQuery = null;
+    if (data.id) {
+      findQuery = { id: data.id };
+    } else if (data.email) {
+      findQuery = { email: data.email };
+    }
+
+    if (!findQuery) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: 'unknown' }),
+      });
+    }
+
+    const member = await this._Member.findOne(findQuery, options);
+    if (!member) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.memberNotFound, { id: data.id || data.email }),
+      });
+    }
+
+    // Fetch subscription with related data
+    const subscriptionModel = await member
+      .related('stripeSubscriptions')
+      .query({
+        where: {
+          subscription_id: data.subscription.subscription_id,
+        },
+      })
+      .fetchOne({
+        ...options,
+        forUpdate: true,
+        withRelated: [
+          'stripePrice',
+          'stripePrice.stripeProduct',
+          'stripePrice.stripeProduct.product',
+        ],
+      });
+
+    if (!subscriptionModel) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.subscriptionNotFound, { id: data.subscription.subscription_id }),
+      });
+    }
+
+    // Validate subscription is active
+    const subscriptionStatus = subscriptionModel.get('status');
+    if (!this.isActiveSubscriptionStatus(subscriptionStatus)) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.subscriptionNotActive),
+      });
+    }
+
+    // Check subscription doesn't already have an active offer
+    if (await hasActiveOffer(subscriptionModel, this._offersAPI, options)) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.subscriptionHasOffer),
+      });
+    }
+
+    // Get tier and cadence from subscription
+    const stripePrice = subscriptionModel.related('stripePrice');
+    const stripeProduct = stripePrice.related('stripeProduct');
+    const product = stripeProduct.related('product');
+
+    const tierId = product.id;
+    const cadence = stripePrice.get('interval');
+
+    // Fetch and validate offer
+    const offer = await this._offersAPI.getOffer({ id: data.offerId }, options);
+
+    if (!offer) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.offerNotFound, { id: data.offerId }),
+      });
+    }
+
+    if (offer.status !== 'active') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.offerNotActive),
+      });
+    }
+
+    if (offer.type === 'trial') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.offerIsTrialOffer),
+      });
+    }
+
+    if (offer.redemption_type === 'signup') {
+      throw new errors.BadRequestError({
+        message: tpl(messages.offerIsSignupOffer),
+      });
+    }
+
+    if (offer.redemption_type === 'retention' && subscriptionModel.get('cancel_at_period_end')) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.subscriptionCancelling),
+      });
+    }
+
+    if (offer.tier && offer.tier.id !== tierId) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.offerTierMismatch),
+      });
+    }
+
+    if (offer.cadence !== cadence) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.offerCadenceMismatch),
+      });
+    }
+
+    // Check not already redeemed on this subscription
+    const existingRedemption = await this._OfferRedemption.findOne(
+      {
+        offer_id: data.offerId,
+        subscription_id: subscriptionModel.id,
+      },
+      options,
+    );
+
+    if (existingRedemption) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.offerAlreadyRedeemed),
+      });
+    }
+
+    const stripeSubscriptionId = subscriptionModel.get('subscription_id');
+
+    // Besides trial offers, all other offers rely on a Stripe Coupon
+    if (!data.couponId) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.offerNoCoupon),
+      });
+    }
+
+    const updatedSubscription = await this._stripeAPIService.addCouponToSubscription(
+      stripeSubscriptionId,
+      data.couponId,
+    );
+
+    return this.linkSubscription(
+      {
+        id: member.id,
+        subscription: updatedSubscription,
+        offerId: data.offerId,
+      },
+      options,
+    );
+  }
+
+  async createSubscription(data, options) {
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'create Stripe Subscription' }),
+      });
+    }
+    const member = await this._Member.findOne(
+      {
+        id: data.id,
+      },
+      options,
+    );
+
+    let stripeCustomer;
+
+    await member.related('stripeCustomers').fetch(options);
+
+    for (const customer of member.related('stripeCustomers').models) {
+      try {
+        const fetchedCustomer = await this._stripeAPIService.getCustomer(
+          customer.get('customer_id'),
+        );
+        stripeCustomer = fetchedCustomer;
+      } catch (err) {
+        logging.info('Ignoring error for fetching customer for checkout');
+      }
+    }
+
+    if (!stripeCustomer) {
+      stripeCustomer = await this._stripeAPIService.createCustomer({
+        email: member.get('email'),
+      });
+
+      await this._StripeCustomer.add(
+        {
+          customer_id: stripeCustomer.id,
+          member_id: data.id,
+          email: stripeCustomer.email,
+          name: stripeCustomer.name,
+        },
+        options,
+      );
+    }
+
+    const subscription = await this._stripeAPIService.createSubscription(
+      stripeCustomer.id,
+      data.subscription.stripe_price_id,
+    );
+
+    await this.linkSubscription(
+      {
+        id: member.id,
+        subscription,
+      },
+      options,
+    );
+  }
+
+  /**
+   *
+   * @param {Object} data
+   * @param {string} data.id - member ID
+   * @param {Object} options
+   * @param {Object} [options.transacting]
+   */
+  async setComplimentarySubscription(data, options = {}) {
+    if (!options.transacting) {
+      return this._Member.transaction((transacting) => {
+        return this.setComplimentarySubscription(data, {
+          ...options,
+          transacting,
+        });
+      });
+    }
+
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'create Complimentary Subscription' }),
+      });
+    }
+    const member = await this._Member.findOne(
+      {
+        id: data.id,
+      },
+      options,
+    );
+
+    const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+
+    const activeSubscriptions = subscriptions.models.filter((subscription) => {
+      return this.isActiveSubscriptionStatus(subscription.get('status'));
+    });
+    const sharedOptions = _.pick(options, ['context', 'transacting']);
+
+    const ghostProductModel = await this._productRepository.getDefaultProduct({
+      withRelated: ['stripePrices'],
+      ...sharedOptions,
+    });
+
+    const defaultProduct = ghostProductModel?.toJSON();
+
+    if (!defaultProduct) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.productNotFound, { id: '"default"' }),
+      });
+    }
+
+    const complimentaryPrices = defaultProduct.stripePrices.filter((price) => {
+      return price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
+    });
+
+    if (activeSubscriptions.length) {
+      for (const subscription of activeSubscriptions) {
+        const price = await subscription.related('stripePrice').fetch(options);
+
+        let zeroValuePrice = complimentaryPrices.find((p) => {
+          return p.currency.toLowerCase() === price.get('currency').toLowerCase();
+        });
+
+        if (!zeroValuePrice) {
+          const product = (
+            await this._productRepository.update(
+              {
+                id: defaultProduct.id,
+                name: defaultProduct.name,
+                description: defaultProduct.description,
+                stripe_prices: [
+                  {
+                    nickname: 'Complimentary',
+                    currency: price.get('currency'),
+                    type: 'recurring',
+                    interval: 'year',
+                    amount: 0,
+                  },
+                ],
+              },
+              options,
+            )
+          ).toJSON();
+          zeroValuePrice = product.stripePrices.find((p) => {
+            return (
+              p.currency.toLowerCase() === price.get('currency').toLowerCase() &&
+              p.amount === 0 &&
+              this.isComplimentaryPlanNickname(p.nickname)
+            );
+          });
+          if (!zeroValuePrice) {
+            throw new errors.NotFoundError({
+              message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "${price.get('currency')}" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`,
+            });
+          }
+          complimentaryPrices.push(zeroValuePrice);
+        }
+
+        const stripeSubscription = await this._stripeAPIService.getSubscription(
+          subscription.get('subscription_id'),
+        );
+
+        const subscriptionItem = stripeSubscription.items.data[0];
+
+        const updatedSubscription = await this._stripeAPIService.updateSubscriptionItemPrice(
+          stripeSubscription.id,
+          subscriptionItem.id,
+          zeroValuePrice.stripe_price_id,
+        );
+
+        await this.linkSubscription(
+          {
+            id: member.id,
+            subscription: updatedSubscription,
+          },
+          sharedOptions,
+        );
+      }
+    } else {
+      const stripeCustomer = await this._stripeAPIService.createCustomer({
+        email: member.get('email'),
+      });
+
+      await this._StripeCustomer.upsert(
+        {
+          customer_id: stripeCustomer.id,
+          member_id: data.id,
+          email: stripeCustomer.email,
+          name: stripeCustomer.name,
+        },
+        sharedOptions,
+      );
+
+      let zeroValuePrice = complimentaryPrices[0];
+
+      if (!zeroValuePrice) {
+        const product = (
+          await this._productRepository.update(
+            {
+              id: defaultProduct.id,
+              name: defaultProduct.name,
+              description: defaultProduct.description,
+              stripe_prices: [
+                {
+                  nickname: 'Complimentary',
+                  currency: 'USD',
+                  type: 'recurring',
+                  interval: 'year',
+                  amount: 0,
+                },
+              ],
+            },
+            sharedOptions,
+          )
+        ).toJSON();
+        zeroValuePrice = product.stripePrices.find((price) => {
+          return (
+            price.currency.toLowerCase() === 'usd' &&
+            price.amount === 0 &&
+            this.isComplimentaryPlanNickname(price.nickname)
+          );
+        });
+        if (!zeroValuePrice) {
+          throw new errors.NotFoundError({
+            message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "USD" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`,
+          });
+        }
+        complimentaryPrices.push(zeroValuePrice);
+      }
+
+      const subscription = await this._stripeAPIService.createSubscription(
+        stripeCustomer.id,
+        zeroValuePrice.stripe_price_id,
+      );
+
+      await this.linkSubscription(
+        {
+          id: member.id,
+          subscription,
+        },
+        sharedOptions,
+      );
+    }
+  }
+
+  /**
+   *
+   * @param {Object} data
+   * @param {string} data.id - member ID
+   * @param {Object} options
+   * @param {Object} [options.transacting]
+   */
+  /**
+   * Removes all complimentary access for a member.
+   * Handles two types:
+   * 1. Stripe-backed: Subscriptions with plan_nickname 'Complimentary' — cancelled via Stripe, then synced via linkSubscription
+   * 2. Ghost-only: Products in members_products not backed by any active Stripe subscription — removed directly
+   *
+   * @param {{id: string}} data - member identifier
+   * @param {Object} options
+   */
+  async removeComplimentarySubscription({ id }, options) {
+    if (!this._stripeAPIService.configured) {
+      throw new errors.BadRequestError({
+        message: tpl(messages.noStripeConnection, { action: 'cancel Complimentary Subscription' }),
+      });
+    }
+
+    const member = await this._Member.findOne({ id });
+    const subscriptions = await member.related('stripeSubscriptions').fetch(options);
+
+    // 1. Cancel Stripe-backed complimentary subscriptions
+    for (const subscription of subscriptions.models) {
+      const isComp = this.isComplimentaryPlanNickname(subscription.get('plan_nickname'));
+      const isActive = this.isActiveSubscriptionStatus(subscription.get('status'));
+
+      if (isActive && isComp) {
+        try {
+          const updatedSubscription = await this._stripeAPIService.cancelSubscription(
+            subscription.get('subscription_id'),
+          );
+          await this.linkSubscription(
+            {
+              id: id,
+              subscription: updatedSubscription,
+            },
+            options,
+          );
+        } catch (err) {
+          logging.error(
+            `Error cancelling complimentary subscription ${subscription.get('subscription_id')}`,
+          );
+          logging.error(err);
+        }
+      }
+    }
+
+    // 2. Remove Ghost-only comp products (products not backed by any active Stripe subscription)
+    await member.load(
+      [
+        'products',
+        'stripeSubscriptions',
+        'stripeSubscriptions.stripePrice',
+        'stripeSubscriptions.stripePrice.stripeProduct',
+      ],
+      options,
+    );
+
+    const activeSubscriptionProductIds = new Set(
+      member
+        .related('stripeSubscriptions')
+        .models.filter((sub) => this.isActiveSubscriptionStatus(sub.get('status')))
+        .map((sub) => sub.related('stripePrice')?.related('stripeProduct')?.get('product_id'))
+        .filter(Boolean),
+    );
+
+    const currentProducts = member.related('products').toJSON();
+    const filteredProducts = currentProducts.filter((product) =>
+      activeSubscriptionProductIds.has(product.id),
+    );
+
+    if (filteredProducts.length !== currentProducts.length) {
+      await this._Member.edit({ products: filteredProducts }, { id });
+    }
+
+    return true;
+  }
+
+  /**
+   * @param {string} memberId
+   * @param {import('../../commenting').MemberCommenting} commenting
+   * @param {string} actionName
+   * @param {Object} context
+   */
+  async saveCommenting(memberId, commenting, actionName, context) {
+    return this._Member.edit(
+      { commenting },
+      {
+        id: memberId,
+        context,
+        actionName,
+      },
+    );
+  }
+};

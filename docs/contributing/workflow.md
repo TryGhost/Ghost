@@ -33,6 +33,19 @@ Keep unrelated changes on separate branches and in separate pull requests. If a
 larger effort needs a shared or release branch, agree that with the maintainers
 first; ordinary pull requests target `main`.
 
+## Generate an internal package
+
+Run `pnpm gx generate package <name>` to scaffold a private TypeScript package
+from the repository template. `pnpm gx --help` lists developer commands; the
+[Ghost Dev Tools README](../../tools/gx/README.md) explains options and verification.
+
+## Generate a Ghost Core service
+
+Run `pnpm gx generate service <name>` to scaffold a boot-owned TypeScript
+service and its starter test. The command prints the remaining steps; the
+[services guide](../../ghost/core/server/services/README.md#creating-a-service)
+explains them.
+
 ## Make and validate the change
 
 Add or update automated tests when behavior changes. Run the most focused checks
@@ -45,8 +58,8 @@ pnpm check
 ```
 
 `pnpm check` runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`. It does
-not include the browser E2E suite or Ember Admin tests, so run those separately
-when the affected area requires them. CI uses the Nx affected graph and path
+not include app acceptance suites or the browser E2E suite, so run them separately
+when the affected area requires it. CI uses the Nx affected graph and path
 filters to select the relevant lint, unit, integration, acceptance, build, and
 browser-test jobs for a pull request.
 
@@ -76,8 +89,8 @@ git config --local blame.ignoreRevsFile .git-blame-ignore-revs
 
 ## Record package release intent
 
-Changes that affect a publishable `@tryghost/*` package under `koenig/` or
-`packages/`, including changes to catalog entries consumed by that package, need
+Changes that affect a publishable `@tryghost/*` package under `koenig/`,
+`packages/` or `contracts/`, including changes to catalog entries consumed by that package, need
 a changeset so the package receives an appropriate version and changelog entry:
 
 ```bash

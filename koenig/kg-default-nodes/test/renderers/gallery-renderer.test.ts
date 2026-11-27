@@ -86,12 +86,12 @@ describe('renderers/gallery-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -183,7 +183,7 @@ describe('renderers/gallery-renderer', function () {
             assert.equal(result.html, '');
         });
 
-        it('skips invalid images', function () {
+        it('skips invalid images', async function () {
             const result = renderForWeb({
                 images: [
                     {
@@ -253,7 +253,7 @@ describe('renderers/gallery-renderer', function () {
                 caption: 'Test caption'
             }, {canTransformImage: () => false});
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -298,7 +298,7 @@ describe('renderers/gallery-renderer', function () {
             assert.match(result.html, /height="1800"/);
         });
 
-        it('renders all 9 images in a 3x3 grid', function () {
+        it('renders all 9 images in a 3x3 grid', async function () {
             const result = renderForWeb({
                 images: [
                     {
@@ -368,7 +368,7 @@ describe('renderers/gallery-renderer', function () {
                 caption: ''
             }, {imageOptimization: {defaultMaxWidth: 2000}});
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-gallery-card kg-width-wide">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -392,7 +392,7 @@ describe('renderers/gallery-renderer', function () {
         });
 
         describe('srcset attribute', function () {
-            it('is included when image src is relative or Unsplash', function () {
+            it('is included when image src is relative or Unsplash', async function () {
                 const result = renderForWeb({
                     images: [{
                         row: 0,
@@ -416,7 +416,7 @@ describe('renderers/gallery-renderer', function () {
                     caption: ''
                 });
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <figure class="kg-card kg-gallery-card kg-width-wide">
                         <div class="kg-gallery-container">
                             <div class="kg-gallery-row">
@@ -429,7 +429,7 @@ describe('renderers/gallery-renderer', function () {
                 `);
             });
 
-            it('is included when image src is absolute or __GHOST_URL__', function () {
+            it('is included when image src is absolute or __GHOST_URL__', async function () {
                 const result = renderForWeb({
                     images: [{
                         row: 0,
@@ -447,7 +447,7 @@ describe('renderers/gallery-renderer', function () {
                     caption: ''
                 }, {siteUrl: 'https://localhost:2368'});
 
-                assertPrettifiesTo(result.html, html`
+                await assertPrettifiesTo(result.html, html`
                     <figure class="kg-card kg-gallery-card kg-width-wide">
                         <div class="kg-gallery-container">
                             <div class="kg-gallery-row">
@@ -621,12 +621,12 @@ describe('renderers/gallery-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">

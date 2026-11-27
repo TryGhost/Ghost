@@ -2,7 +2,9 @@ import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import {
   DEV_ENVIRONMENT,
+  E2E_CONTAINER_PREFIX,
   EGRESS_ALLOWLIST,
+  EGRESS_BROWSER_URL_ALLOWLIST,
   EGRESS_COREFILE_PATH,
   EGRESS_DNS_IMAGE,
   TEST_ENVIRONMENT,
@@ -59,7 +61,7 @@ export class EgressMonitor {
   constructor(docker: Docker, config: EgressMonitorConfig) {
     this.docker = docker;
     this.config = config;
-    this.containerName = `ghost-e2e-egress-worker-${config.workerIndex}`;
+    this.containerName = `${E2E_CONTAINER_PREFIX}-egress-worker-${config.workerIndex}`;
   }
 
   /** IP the Ghost container should use as its DNS server, or null if unavailable. */
@@ -278,4 +280,12 @@ export function isAllowedHost(host: string): boolean {
     return true;
   }
   return EGRESS_ALLOWLIST.some((allowed) => name === allowed || name.endsWith(`.${allowed}`));
+}
+
+/** Whether a URL the browser requested is allowed, by host or by URL prefix. */
+export function isAllowedBrowserUrl(url: URL): boolean {
+  return (
+    isAllowedHost(url.hostname) ||
+    EGRESS_BROWSER_URL_ALLOWLIST.some((prefix) => url.href.startsWith(prefix))
+  );
 }

@@ -1,0 +1,178 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
+import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import { detail, setup } from './run-history.test-utils';
+import { editEmailSubject, fakeEmailEditorData } from './email-editor.test-utils';
+
+const lexical = JSON.stringify({
+  root: { children: [{ type: 'paragraph', children: [{ type: 'text', text: 'Welcome' }] }] },
+});
+
+const serve = (status: AutomationDetail['status'] = 'inactive', failSave = false) => {
+  setup();
+  fakeEmailEditorData();
+  const data: AutomationDetail = {
+    ...detail('first'),
+    status,
+    actions: [
+      {
+        id: 'email',
+        type: 'send_email',
+        data: {
+          email_subject: 'Welcome',
+          email_lexical: lexical,
+          email_design_setting_id: 'design',
+        },
+      },
+      ...detail('first').actions,
+    ],
+    edges: [{ source_action_id: 'email', target_action_id: 'draft-wait' }],
+  };
+  fakeAdminEndpoint('GET', '/automations/first/', { automations: [data] });
+  return fakeAdminEndpoint(
+    'PUT',
+    '/automations/first/',
+    ({ body }) =>
+      failSave
+        ? { errors: [{ message: 'Something went wrong', type: 'InternalServerError' }] }
+        : {
+            automations: [
+              { ...data, ...(body as { automations: Partial<AutomationDetail>[] }).automations[0] },
+            ],
+          },
+    { status: failSave ? 500 : 200 },
+  );
+};
+
+const boot = () =>
+  renderAdminApp('/automations/first', {
+    labs: { automations: true },
+  });
+
+const emailCard = () => page.getByRole('article', { name: /^Send email/ });
+const clearSubject = () => editEmailSubject(emailCard(), '');
+
+describe('Automation action validation feedback', () => {
+  // Keep the wait card's field in view below the email card.
+  beforeEach(() => page.viewport(1280, 1600));
+  afterEach(() => page.viewport(1280, 800));
+
+  it('shows a missing subject as an error under the email preview', async () => {
+    serve();
+    await boot();
+    await clearSubject();
+    await expect.element(emailCard().getByText('Add a subject', { exact: true })).toBeVisible();
+    await expect
+      .element(emailCard().getByRole('button', { name: 'Edit email content' }))
+      .toHaveAttribute('aria-invalid', 'true');
+  });
+
+  for (const status of ['inactive', 'active'] as const) {
+    it('shows a text popover when ' + status + ' publishing is blocked', async () => {
+      const save = serve(status);
+      await boot();
+      await clearSubject();
+      const publish = page.getByRole('button', {
+        name: status === 'active' ? 'Publish changes' : 'Publish',
+        exact: true,
+      });
+      await publish.click();
+      const message = page.getByText('Fix all issues to publish this automation.', {
+        exact: true,
+      });
+      const toast = page.getByText('Automation needs a few details', { exact: true });
+      await expect.element(message).toBeVisible();
+      await expect.element(toast).not.toBeInTheDocument();
+      await expect.element(emailCard().getByText('Add a subject', { exact: true })).toBeVisible();
+      await userEvent.keyboard('{Escape}');
+      await expect.element(message).not.toBeInTheDocument();
+      await expect.element(publish).toHaveFocus();
+      await publish.click();
+      await expect.element(message).toBeVisible();
+      await editEmailSubject(emailCard(), 'Fixed');
+      await expect.element(message).not.toBeInTheDocument();
+      await publish.click();
+      await expect.element(page.getByRole('alertdialog')).toBeVisible();
+      await page
+        .getByRole('alertdialog')
+        .getByRole('button', { name: 'Cancel', exact: true })
+        .click();
+      await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
+      // The existing confirmation has no DialogTrigger and restores focus to body.
+      // Wait for that cleanup before mounting the next test's editor.
+      await expect.poll(() => document.activeElement === document.body).toBe(true);
+      expect(save.requests).toHaveLength(0);
+    });
+  }
+
+  it('keeps genuine save failures as toasts', async () => {
+    serve('inactive', true);
+    await boot();
+    await editEmailSubject(emailCard(), 'Updated');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect
+      .element(page.getByText('Automation couldn’t be saved', { exact: true }))
+      .toBeVisible();
+    await expect
+      .element(page.getByText('Fix all issues to save this automation.', { exact: true }))
+      .not.toBeInTheDocument();
+  });
+
+  it('anchors invalid wait feedback to Save and leaves the typed value alone', async () => {
+    const save = serve();
+    await boot();
+    const wait = page.getByRole('textbox', { name: 'Wait for' });
+    await wait.fill('31');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    const message = page.getByText('Fix all issues to save this automation.', { exact: true });
+    await expect.element(message).toBeVisible();
+    await expect
+      .element(page.getByText('Automation needs a few details', { exact: true }))
+      .not.toBeInTheDocument();
+    await expect.element(wait).toHaveValue('31');
+    expect(save.requests).toHaveLength(0);
+    await wait.click();
+    await wait.fill('2');
+    await expect.element(wait).toHaveValue('2');
+    await expect.element(wait).toHaveFocus();
+    await expect.element(message).not.toBeInTheDocument();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(() => save.requests.length).toBe(1);
+  });
+
+  it('blocks turning off an invalid draft before confirmation and recovers after correction', async () => {
+    const save = serve('active');
+    await boot();
+    const wait = page.getByRole('textbox', { name: 'Wait for' });
+    await wait.fill('31');
+    await page.getByRole('button', { name: 'Turn off', exact: true }).click();
+    await expect
+      .element(page.getByText('Fix all issues to turn off this automation.', { exact: true }))
+      .toBeVisible();
+    await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
+    expect(save.requests).toHaveLength(0);
+    await wait.click();
+    await wait.fill('2');
+    await page.getByRole('button', { name: 'Turn off', exact: true }).click();
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button', { name: 'Turn off', exact: true })
+      .click();
+    await expect.poll(() => save.requests.length).toBe(1);
+    expect(
+      (save.requests[0].body as { automations: AutomationDetail[] }).automations[0].status,
+    ).toBe('inactive');
+  });
+
+  it('still permits saving incomplete inactive emails', async () => {
+    const save = serve();
+    await boot();
+    await clearSubject();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.poll(() => save.requests.length).toBe(1);
+    await expect
+      .element(page.getByText('Fix all issues to save this automation.', { exact: true }))
+      .not.toBeInTheDocument();
+  });
+});

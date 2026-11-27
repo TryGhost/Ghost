@@ -4,6 +4,7 @@ import {
     $isTextNode
 } from 'lexical';
 import {getSelectedNode} from '../utils/getSelectedNode.js';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -15,6 +16,11 @@ export const EmEnDashPlugin = () => {
     // added markdown shortcut to divider card
     useEffect(() => {
         return editor.registerUpdateListener(() => {
+            // a selection change is an update too, and a read-only document's is not to be rewritten
+            if (!isDocumentEditable(editor)) {
+                return;
+            }
+
             editor.update(() => {
                 // don't do anything when using IME input
                 if (editor.isComposing()) {

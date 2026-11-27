@@ -5,9 +5,9 @@ import {
   PortalAccountPlanPage,
 } from '@/helpers/pages';
 import { signInAsMember } from './sign-in';
+import type { CollectedCheckoutInput, StripeTestService } from '@/helpers/services/stripe';
 import type { Member } from '@/data-factory';
 import type { Page } from '@playwright/test';
-import type { StripeTestService } from '@/helpers/services/stripe';
 
 function getLatestCheckoutSuccessUrl(stripe: StripeTestService): string {
   const successUrl = stripe.getCheckoutSessions().at(-1)?.response.success_url;
@@ -26,6 +26,8 @@ export async function completePaidUpgradeViaPortal(
   opts: {
     cadence: 'monthly' | 'yearly';
     tierName: string;
+    /** What the member fills in on the checkout page. */
+    collected?: CollectedCheckoutInput;
   },
 ): Promise<void> {
   await signInAsMember(page, member);
@@ -44,7 +46,10 @@ export async function completePaidUpgradeViaPortal(
 
   const fakeCheckoutPage = new FakeStripeCheckoutPage(page);
   await fakeCheckoutPage.waitUntilLoaded();
-  await stripe.completeLatestSubscriptionCheckout({ name: member.name ?? undefined });
+  await stripe.completeLatestSubscriptionCheckout({
+    name: member.name ?? undefined,
+    collected: opts.collected,
+  });
   await page.goto(getLatestCheckoutSuccessUrl(stripe));
 }
 

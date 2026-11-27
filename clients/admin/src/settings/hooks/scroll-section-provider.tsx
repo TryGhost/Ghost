@@ -1,0 +1,384 @@
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ScrollSectionContext } from './use-scroll-section';
+
+const SETTINGS_SCROLL_MARGIN = 96;
+
+const scrollToSection = (
+  element: HTMLDivElement,
+  doneInitialScroll: boolean,
+  scrollMargin: number,
+) => {
+  const root = document.getElementById('settings-scroller')!;
+  const top = element.getBoundingClientRect().top + root.scrollTop;
+
+  root.scrollTo({
+    behavior: doneInitialScroll ? 'smooth' : 'instant',
+    top: top - scrollMargin,
+  });
+};
+
+const HOLD_SETTLE_MS = 300;
+const HOLD_MAX_MS = 5000;
+const HOLD_RELEASE_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
+
+/**
+ * Pins a section under the scroll margin while sections above it are still
+ * fetching or loading images, until the page settles or the user takes over.
+ */
+const holdSectionInView = (
+  element: HTMLDivElement,
+  scrollMargin: number,
+  isFetching: () => boolean,
+) => {
+  const root = document.getElementById('settings-scroller');
+  if (!root) {
+    return () => {};
+  }
+
+  const pin = () => {
+    root.scrollTo({
+      behavior: 'instant',
+      top: element.getBoundingClientRect().top + root.scrollTop - scrollMargin,
+    });
+  };
+  const isSettled = () =>
+    !isFetching() && Array.from(root.querySelectorAll('img')).every((image) => image.complete);
+
+  let settleTimer: ReturnType<typeof setTimeout> | undefined;
+  const observer = new ResizeObserver(() => {
+    pin();
+    armSettle();
+  });
+  const release = () => {
+    clearTimeout(settleTimer);
+    clearTimeout(maxTimer);
+    observer.disconnect();
+    HOLD_RELEASE_EVENTS.forEach((event) => window.removeEventListener(event, release, true));
+  };
+  const armSettle = () => {
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => (isSettled() ? release() : armSettle()), HOLD_SETTLE_MS);
+  };
+  const maxTimer = setTimeout(release, HOLD_MAX_MS);
+
+  pin();
+  armSettle();
+  Array.from(root.children).forEach((child) => observer.observe(child));
+  HOLD_RELEASE_EVENTS.forEach((event) =>
+    window.addEventListener(event, release, { capture: true, passive: true }),
+  );
+
+  return release;
+};
+
+const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean) => {
+  const sidebar = document.getElementById('settings-sidebar-scroller');
+
+  // The navigation can be unmounted while the shell swaps sidebars.
+  if (!sidebar || !navElement.isConnected) {
+    return;
+  }
+
+  const bounds = navElement.getBoundingClientRect();
+
+  const parentBounds = sidebar.getBoundingClientRect();
+  const offsetTop = parentBounds.top + 40;
+
+  if (
+    bounds.top >= offsetTop &&
+    bounds.left >= parentBounds.left &&
+    bounds.right <= parentBounds.right &&
+    bounds.bottom <= parentBounds.bottom
+  ) {
+    return;
+  }
+
+  if (!['auto', 'scroll'].includes(getComputedStyle(sidebar).overflowY)) {
+    return;
+  }
+
+  const behavior = doneInitialScroll ? 'smooth' : 'instant';
+
+  // If this is the first nav item, scroll to top
+  if (sidebar.querySelector('[data-setting-nav-item]') === navElement) {
+    sidebar.scrollTo({
+      top: 0,
+      behavior,
+    });
+  } else if (bounds.top < offsetTop) {
+    sidebar.scrollTo({
+      top: sidebar.scrollTop + bounds.top - offsetTop,
+      behavior,
+    });
+  } else {
+    sidebar.scrollTo({
+      top:
+        sidebar.scrollTop + bounds.top - parentBounds.top - parentBounds.height + bounds.height + 4,
+      behavior,
+    });
+  }
+};
+
+const isScrolledToBottom = (root: HTMLElement) =>
+  root.scrollHeight - root.scrollTop - root.clientHeight <= 1;
+
+/**
+ * Sections whose anchor is inside the scroller's viewport, in document order.
+ * Section anchors are zero-size, so hidden (search-filtered) ones are detected
+ * by having no client rects.
+ */
+const getSectionsInView = (root: HTMLElement, sectionElements: Record<string, HTMLDivElement>) => {
+  const bounds = root.getBoundingClientRect();
+
+  return Object.entries(sectionElements)
+    .filter(([, element]) => element.isConnected && element.getClientRects().length > 0)
+    .map(([id, element]) => ({ id, top: element.getBoundingClientRect().top }))
+    .filter(({ top }) => top >= bounds.top && top < bounds.bottom)
+    .sort((first, second) => first.top - second.top)
+    .map(({ id }) => id);
+};
+
+const getIntersectingSections = (
+  current: string[],
+  entries: IntersectionObserverEntry[],
+  sectionElements: Record<string, HTMLDivElement>,
+) => {
+  const entriesWithId = entries
+    .map(({ isIntersecting, target }) => ({
+      isIntersecting,
+      id: Object.entries(sectionElements).find(([, element]) => element === target)?.[0],
+    }))
+    .filter((entry) => entry.id) as { id: string; isIntersecting: boolean }[];
+
+  const newlyIntersectingIds = entriesWithId
+    .filter((entry) => !current.includes(entry.id) && entry.isIntersecting)
+    .map((entry) => entry.id);
+  const unintersectingIds = entriesWithId
+    .filter((entry) => !entry.isIntersecting)
+    .map((entry) => entry.id);
+
+  const newSections = current
+    .filter((section) => !unintersectingIds.includes(section))
+    .concat(newlyIntersectingIds);
+
+  newSections.sort((first, second) => {
+    const firstElement = sectionElements[first];
+    const secondElement = sectionElements[second];
+
+    if (!firstElement || !secondElement) {
+      return 0;
+    }
+
+    return firstElement.getBoundingClientRect().top - secondElement.getBoundingClientRect().top;
+  });
+
+  return newSections;
+};
+
+export const ScrollSectionProvider: React.FC<{
+  children: ReactNode;
+}> = ({ children }) => {
+  const scrollMargin = SETTINGS_SCROLL_MARGIN;
+  const [navigatedSection, _setNavigatedSection] = useState<string | null>(null);
+  const sectionElements = useRef<Record<string, HTMLDivElement>>({});
+  const intersectionObserver = useRef<IntersectionObserver | null>(null);
+  const [intersectingSections, setIntersectingSections] = useState<string[]>([]);
+  const [lastIntersectedSection, setLastIntersectedSection] = useState<string | null>(null);
+
+  const [hasUpdatedNavigatedSection, setHasUpdatedNavigatedSection] = useState(false);
+  const [scrolledToBottom, setScrolledToBottom] = useState(false);
+  const doneInitialScroll = useRef(false);
+  const [, setDoneSidebarScroll] = useState(false);
+
+  const setNavigatedSection = useCallback((value: string) => {
+    _setNavigatedSection(value);
+    setHasUpdatedNavigatedSection(true);
+  }, []);
+
+  const navElements = useRef<Record<string, HTMLLIElement>>({});
+
+  const setupIntersectionObserver = useCallback(() => {
+    intersectionObserver.current?.disconnect();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIntersectingSections((sections) => {
+          const newSections = getIntersectingSections(sections, entries, sectionElements.current);
+
+          if (newSections.length) {
+            setLastIntersectedSection(newSections[0]);
+          }
+
+          return newSections;
+        });
+      },
+      {
+        rootMargin: `-${scrollMargin - 50}px 0px -40% 0px`,
+      },
+    );
+
+    Object.values(sectionElements.current).forEach((element) => observer.observe(element));
+
+    intersectionObserver.current = observer;
+  }, [scrollMargin]);
+
+  const queryClient = useQueryClient();
+  const releaseHold = useRef<() => void>();
+  const holdSection = useRef<string>();
+  const jumpTo = useCallback(
+    (id: string) => {
+      releaseHold.current?.();
+      const element = sectionElements.current[id];
+      if (element) {
+        holdSection.current = id;
+        releaseHold.current = holdSectionInView(
+          element,
+          scrollMargin,
+          () => queryClient.isFetching() > 0,
+        );
+      }
+    },
+    [queryClient, scrollMargin],
+  );
+
+  const updateSection = useCallback(
+    (id: string, element: HTMLDivElement) => {
+      if (sectionElements.current[id] === element) {
+        return;
+      }
+
+      if (sectionElements.current[id]) {
+        intersectionObserver.current?.unobserve(sectionElements.current[id]);
+      }
+
+      sectionElements.current[id] = element;
+      intersectionObserver.current?.observe(element);
+
+      // A deep link's section mounts after the URL sync on a fresh load
+      if (!doneInitialScroll.current && id === navigatedSection) {
+        doneInitialScroll.current = true;
+        jumpTo(id);
+      }
+    },
+    [navigatedSection, jumpTo],
+  );
+
+  const updateNav = useCallback((id: string, element: HTMLLIElement) => {
+    navElements.current[id] = element;
+  }, []);
+
+  const scrollTo = useCallback(
+    (id: string) => {
+      releaseHold.current?.();
+      if (sectionElements.current[id]) {
+        scrollToSection(sectionElements.current[id], true, scrollMargin);
+      }
+    },
+    [scrollMargin],
+  );
+
+  useEffect(() => () => releaseHold.current?.(), []);
+
+  // The last sections can't scroll into the observer's zone, so at the bottom
+  // the spy falls back to what's in view.
+  useEffect(() => {
+    const handleScroll = (event: Event) => {
+      if (event.target instanceof HTMLElement && event.target.id === 'settings-scroller') {
+        setScrolledToBottom(isScrolledToBottom(event.target));
+      }
+    };
+
+    // Capture on the document, since the scroller remounts with the settings content.
+    document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    return () => document.removeEventListener('scroll', handleScroll, { capture: true });
+  }, []);
+
+  const currentSection = useMemo(() => {
+    const root = scrolledToBottom ? document.getElementById('settings-scroller') : null;
+    if (root && isScrolledToBottom(root)) {
+      const sectionsInView = getSectionsInView(root, sectionElements.current);
+
+      if (navigatedSection && sectionsInView.includes(navigatedSection)) {
+        return navigatedSection;
+      }
+
+      if (sectionsInView.length) {
+        return sectionsInView[sectionsInView.length - 1];
+      }
+    }
+
+    if (navigatedSection && intersectingSections.includes(navigatedSection)) {
+      return navigatedSection;
+    }
+
+    if (intersectingSections.length) {
+      return intersectingSections[0];
+    }
+
+    return lastIntersectedSection;
+  }, [intersectingSections, lastIntersectedSection, navigatedSection, scrolledToBottom]);
+
+  useEffect(() => {
+    if (!hasUpdatedNavigatedSection) {
+      return;
+    }
+
+    // Back/Forward fires none of the hold's release events. A section that
+    // mounted in this same commit has already started its own hold.
+    if (holdSection.current !== navigatedSection) {
+      releaseHold.current?.();
+    }
+
+    if (navigatedSection && sectionElements.current[navigatedSection]) {
+      if (doneInitialScroll.current) {
+        scrollToSection(sectionElements.current[navigatedSection], true, scrollMargin);
+      } else {
+        doneInitialScroll.current = true;
+        jumpTo(navigatedSection);
+      }
+    } else if (!navigatedSection) {
+      // No navigated section means opening settings without a path
+      doneInitialScroll.current = true;
+    }
+
+    // Wait for the initial scroll so that the intersecting sections are correct
+    const setupTimeout = setTimeout(() => setupIntersectionObserver());
+
+    return () => {
+      clearTimeout(setupTimeout);
+      intersectionObserver.current?.disconnect();
+      intersectionObserver.current = null;
+    };
+  }, [
+    hasUpdatedNavigatedSection,
+    navigatedSection,
+    setupIntersectionObserver,
+    jumpTo,
+    scrollMargin,
+  ]);
+
+  useEffect(() => {
+    if (hasUpdatedNavigatedSection && currentSection && navElements.current[currentSection]) {
+      setDoneSidebarScroll((done) => {
+        scrollSidebarNav(navElements.current[currentSection], done);
+        return true;
+      });
+    }
+  }, [hasUpdatedNavigatedSection, currentSection]);
+
+  return (
+    <ScrollSectionContext.Provider
+      value={{
+        updateSection,
+        updateNav,
+        currentSection,
+        updateNavigatedSection: setNavigatedSection,
+        scrollToSection: scrollTo,
+        jumpToSection: jumpTo,
+      }}
+    >
+      {children}
+    </ScrollSectionContext.Provider>
+  );
+};

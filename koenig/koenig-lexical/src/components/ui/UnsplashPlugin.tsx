@@ -4,12 +4,14 @@ import UnsplashModal from './file-selectors/UnsplashModal.jsx';
 import generateEditorState from '../../utils/generateEditorState';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import {useIsDocumentEditable} from '../../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const [isOpen, setIsOpen] = React.useState(isModalOpen);
+    const isEditable = useIsDocumentEditable();
 
     const onClose = () => {
         if (nodeKey) {
@@ -43,7 +45,8 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
         setIsOpen(false);
     };
 
-    if (!isOpen) {
+    // closing the selector removes its card and picking an image fills it
+    if (!isOpen || !isEditable) {
         return null;
     }
 

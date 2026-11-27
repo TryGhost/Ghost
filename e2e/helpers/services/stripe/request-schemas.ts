@@ -221,6 +221,16 @@ export const CreateCheckoutSessionSchema = z.object({
     .object({ enabled: bool(false) })
     .optional()
     .catch(undefined),
+  // Read rather than passed through, so a test can assert the design a checkout was sent.
+  branding_settings: z
+    .object({
+      button_color: z.string(),
+      background_color: z.string(),
+      border_style: z.string(),
+      font_family: z.string(),
+    })
+    .optional()
+    .catch(undefined),
 });
 
 export const UpdateSubscriptionSchema = z.object({

@@ -13,4 +13,18 @@ describe('utils/escape-html', function () {
 
         assert.equal(escaped, 'Q&amp;A &quot;session&quot;');
     });
+
+    it('keeps a query string whose parameters look like legacy entities', function () {
+        assert.equal(
+            escapeHtml('https://x.example/?w=1&region=us&param=2&copy=1'),
+            'https://x.example/?w=1&amp;region=us&amp;param=2&amp;copy=1'
+        );
+    });
+
+    it('writes a value that is not a string as text', function () {
+        assert.equal(escapeHtml(5 as unknown as string), '5');
+        assert.equal(escapeHtml(true as unknown as string), 'true');
+        assert.equal(escapeHtml(null), '');
+        assert.equal(escapeHtml(undefined), '');
+    });
 });

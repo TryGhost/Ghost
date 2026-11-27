@@ -1,0 +1,379 @@
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import type { Knex } from 'knex';
+
+const rootPath = require.resolve('../../../../../core/server/services/app-installations');
+const endpointPaths = [
+  require.resolve('../../../../../core/server/api/endpoints/app-installations'),
+  require.resolve('../../../../../core/server/api/endpoints/app-installation-previews'),
+  require.resolve('../../../../../core/server/api/endpoints/app-sessions'),
+];
+const requestPath = require.resolve('../../../../../core/server/lib/request-external');
+const db = require('../../../../../core/server/data/db');
+const { IncorrectUsageError } = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+const config = require('../../../../../core/shared/config');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
+const { AppInstallationsService } =
+  require('../../../../../core/server/services/app-installations/service') as typeof import('../../../../../core/server/services/app-installations/service');
+type Root = typeof import('../../../../../core/server/services/app-installations').default;
+const { generateTestAppKeys, signTestManifest, answerTestChallenge } =
+  require('../../../../utils/app-identity') as typeof import('../../../../utils/app-identity');
+type TestAppKeys = import('../../../../utils/app-identity').TestAppKeys;
+
+const MANIFEST_URL = 'https://podcast.example/manifest.json';
+
+let keys: TestAppKeys;
+
+function manifestFor(manifestUrl: string) {
+  return {
+    id: 'com.example.podcast',
+    name: 'Podcast',
+    description: 'Publish episodes.',
+    author: { name: 'Example Audio', url: 'https://example.com' },
+    accent_color: '#ff5500',
+    icon: { name: 'audio-lines' },
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
+    scopes: [],
+    manifest_url: manifestUrl,
+    identity_key: keys.identity.publicJwk,
+    backend_key: keys.backend.publicJwk,
+    development: new URL(manifestUrl).hostname === 'localhost',
+  };
+}
+
+const manifest = { id: 'com.example.podcast' };
+
+/** A fake HTTP response: status 200 with `body` as the body. */
+const answering = (body: string | Promise<string>, type = 'application/json') =>
+  Object.assign(Promise.resolve({ statusCode: 200, headers: { 'content-type': type } }), {
+    on: () => {},
+    buffer: async () => Buffer.from(await body),
+  });
+
+/**
+ * Serves the app at whatever address it's asked for: its signed manifest, with `overrides`,
+ * and answers to challenges, as its backend.
+ */
+const servingApp =
+  (overrides: Record<string, unknown> = {}) =>
+  (url: URL, options: { body?: string; headers: { host?: string } }) => {
+    // As the browser would see it, without the localhost alias.
+    const asked = new URL(url.href);
+    if (options.headers.host) {
+      asked.host = options.headers.host;
+    }
+    return answering(
+      options.body
+        ? answerTestChallenge(options.body, keys.backend, asked.href)
+        : signTestManifest({ ...manifestFor(asked.href), ...overrides }, keys.identity).then(
+            (signed) => JSON.stringify(signed),
+          ),
+    );
+  };
+
+describe('App installations composition root', function () {
+  const sandbox = sinon.createSandbox();
+  let previousModules: Map<string, NodeJS.Module | undefined>;
+  let root: Root;
+  let readKnex: sinon.SinonStub;
+  let query: sinon.SinonStub;
+  let request: sinon.SinonStub;
+
+  beforeAll(async function () {
+    keys = await generateTestAppKeys();
+  });
+
+  beforeEach(function () {
+    previousModules = new Map(
+      [rootPath, ...endpointPaths].map((path) => [path, require.cache[path]]),
+    );
+    for (const path of previousModules.keys()) {
+      delete require.cache[path];
+    }
+    const builder = {
+      join: sandbox.stub().returnsThis(),
+      where: sandbox.stub().returnsThis(),
+      whereRaw: sandbox.stub().returnsThis(),
+      orderBy: sandbox.stub().returnsThis(),
+      limit: sandbox.stub().returnsThis(),
+      select: sandbox.stub().returnsThis(),
+      whereNot: sandbox.stub().returnsThis(),
+      first: sandbox.stub().resolves(undefined),
+      distinct: sandbox.stub().resolves([]),
+    };
+    query = sandbox.stub().returns(builder);
+    readKnex = sandbox.stub().returns(query as unknown as Knex);
+    sandbox.stub(db, 'knex').get(readKnex);
+    // Substitute only the outbound transport; keep the real fetcher, manifest validation and
+    // identity check. It serves the signed manifest, and answers challenges as the app's
+    // backend.
+    require(requestPath);
+    request = sandbox.stub().callsFake(servingApp());
+    sandbox.replace(require.cache[requestPath]!, 'exports', request);
+    root = require(rootPath).default;
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+    for (const [path, previous] of previousModules) {
+      delete require.cache[path];
+      if (previous) {
+        require.cache[path] = previous;
+      }
+    }
+  });
+
+  it('acquires the database only at init and retains one instance without queries or requests', async function () {
+    assert.throws(() => root.service, IncorrectUsageError);
+    sinon.assert.notCalled(readKnex);
+    await root.init();
+    const service = root.service;
+    assert.ok(service instanceof AppInstallationsService);
+    await root.init();
+    assert.equal(root.service, service);
+    sinon.assert.calledOnce(readKnex);
+    sinon.assert.notCalled(query);
+    sinon.assert.notCalled(request);
+  });
+
+  it('leaves the root unpublished after a dependency failure and permits a later init', async function () {
+    const failure = new Error('Database is not ready');
+    readKnex.onFirstCall().throws(failure);
+    await assert.rejects(root.init(), (error) => error === failure);
+    assert.throws(() => root.service, IncorrectUsageError);
+    await root.init();
+    assert.ok(root.service instanceof AppInstallationsService);
+    sinon.assert.calledTwice(readKnex);
+  });
+
+  it('lets the controllers loaded before init use the initialized instance', async function () {
+    const installations = require(endpointPaths[0]);
+    const previews = require(endpointPaths[1]);
+    const sessions = require(endpointPaths[2]);
+    sinon.assert.notCalled(readKnex);
+    await root.init();
+    const browse = sandbox.stub(AppInstallationsService.prototype, 'browse').resolves([]);
+    const preview = sandbox.spy(AppInstallationsService.prototype, 'preview');
+    const startSession = sandbox
+      .stub(AppInstallationsService.prototype, 'startSession')
+      .resolves({ revision: 0 } as never);
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+
+    assert.deepEqual(await installations.browse.query(), []);
+    const result = await previews.add.query({
+      data: {
+        app_installation_previews: [{ manifest_url: MANIFEST_URL }],
+      },
+    });
+    assert.equal(result.manifest.id, manifest.id);
+    assert.equal(browse.firstCall.thisValue, root.service);
+    assert.equal(preview.firstCall.thisValue, root.service);
+    const principal = { kind: 'anonymous' as const };
+    assert.deepEqual(
+      await sessions.start.query({ options: { id: 'installation-id', context: { principal } } }),
+      { revision: 0 },
+    );
+    sinon.assert.calledOnceWithExactly(startSession, 'installation-id', principal);
+    assert.equal(startSession.firstCall.thisValue, root.service);
+  });
+
+  it('wires logging through the manifest loader and fetcher', async function () {
+    const failure = new Error('Transport failed');
+    const warn = sandbox.stub(logging, 'warn');
+    request.returns({ on: () => {}, buffer: sandbox.stub().rejects(failure) });
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+
+    const manifestUrl = 'https://podcast.example/manifest.json';
+    await assert.rejects(root.service.preview(manifestUrl), {
+      code: 'APP_MANIFEST_UNREACHABLE',
+      message: 'Could not load the app’s manifest.',
+      context: manifestUrl,
+    });
+
+    sinon.assert.calledTwice(warn);
+    sinon.assert.calledWithExactly(
+      warn.firstCall,
+      `Could not load the app manifest at ${manifestUrl}`,
+    );
+    sinon.assert.calledWithExactly(warn.secondCall, failure);
+  });
+
+  it('wires the icon loader to keep a copy of the app’s icon as a data URL', async function () {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"/></svg>';
+    const app = servingApp({ icon: { url: '/icon.svg' } });
+    request.callsFake((url: URL, options: { body?: string; headers: { host?: string } }) =>
+      url.pathname === '/icon.svg' ? answering(svg, 'image/svg+xml') : app(url, options),
+    );
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+
+    const preview = await root.service.preview('https://podcast.example/manifest.json');
+
+    assert.equal(request.lastCall.args[0].href, 'https://podcast.example/icon.svg');
+    assert.equal(
+      preview.icon_data_url,
+      `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`,
+    );
+  });
+
+  // MySQL rolls back the whole install when its action insert deadlocks, so the install
+  // has to run again, action and all.
+  it('reruns the whole install when its action insert deadlocks', async function () {
+    const error = sandbox.stub(logging, 'error');
+    const insert = sandbox.stub().resolves();
+    const insertAction = sandbox
+      .stub()
+      .onFirstCall()
+      .rejects(Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' }))
+      .resolves();
+    const trx = Object.assign(
+      sandbox
+        .stub()
+        .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert })),
+      { isTransaction: true },
+    );
+    const transaction = sandbox
+      .stub()
+      .callsFake(async (write: (connection: Knex.Transaction) => Promise<unknown>) =>
+        write(trx as unknown as Knex.Transaction),
+      );
+    Object.assign(query, { transaction });
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+    const manifestUrl = 'https://podcast.example/manifest.json';
+    const preview = await root.service.preview(manifestUrl);
+
+    const installed = await root.service.create(
+      { actor: { id: 'staff-id', type: 'user' } },
+      { manifestUrl, digest: preview.digest },
+    );
+
+    assert.equal(installed.app_id, manifest.id);
+    sinon.assert.calledTwice(transaction);
+    assert.equal(insert.callCount, 4, 'both attempts insert the installation and its manifest');
+    sinon.assert.calledTwice(insertAction);
+    assert.equal(insertAction.secondCall.args[0].resource_id, installed.id);
+    sinon.assert.notCalled(error);
+  });
+
+  // Staff history is where the installer lives, so an install whose action can't be kept fails.
+  it('fails the installation when its action cannot be recorded', async function () {
+    const failure = new Error('History write failed');
+    const error = sandbox.stub(logging, 'error');
+    const insert = sandbox.stub().resolves();
+    const insertAction = sandbox.stub().rejects(failure);
+    const trx = Object.assign(
+      sandbox
+        .stub()
+        .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert })),
+      { isTransaction: true },
+    );
+    Object.assign(query, {
+      transaction: async (write: (connection: Knex.Transaction) => Promise<void>) =>
+        write(trx as unknown as Knex.Transaction),
+    });
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+    const manifestUrl = 'https://podcast.example/manifest.json';
+    const preview = await root.service.preview(manifestUrl);
+
+    await assert.rejects(
+      root.service.create(
+        { actor: { id: 'staff-id', type: 'user' } },
+        { manifestUrl, digest: preview.digest },
+      ),
+      (thrown) => thrown === failure,
+    );
+
+    sinon.assert.calledTwice(insert);
+    sinon.assert.calledOnce(insertAction);
+    sinon.assert.notCalled(error);
+  });
+
+  // Found at boot, rather than failing every app.
+  it('refuses to start with trusted origins that aren’t origins', async function () {
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({ trustedOrigins: ['https://app.example.net/ghost'] });
+
+    await assert.rejects(root.init(), {
+      errorType: 'InternalServerError',
+      code: 'APP_CONFIG_INVALID',
+    });
+  });
+
+  it('names a refused trusted origin without its credentials', async function () {
+    // Put together here, as written out it would read as a real credential.
+    const withCredentials = new URL('https://app.example.net');
+    withCredentials.username = 'user';
+    withCredentials.password = 'secret';
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({ trustedOrigins: [withCredentials.href] });
+
+    await assert.rejects(root.init(), (error: { context: string }) => {
+      assert.match(error.context, /not "https:\/\/app\.example\.net\/"/);
+      assert.doesNotMatch(error.context, /user|secret/);
+      return true;
+    });
+  });
+
+  it('names a trusted origin that isn’t a URL without its credentials', async function () {
+    // Put together here, as written out it would read as a real credential.
+    const credentials = ['user', 'secret'].join(':');
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({
+      trustedOrigins: [`https://${credentials}@app example.net`],
+    });
+
+    await assert.rejects(root.init(), (error: { context: string }) => {
+      assert.match(error.context, /not "https:\/\/app example\.net"/);
+      assert.doesNotMatch(error.context, /user|secret/);
+      return true;
+    });
+  });
+
+  it('reads manifest rules and the development localhost alias per operation', async function () {
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('env').returns('development');
+    getConfig.withArgs('apps').returns({ localhostAlias: 'first-alias.example' });
+    const urlFor = sandbox.stub(urlUtils, 'urlFor');
+    urlFor.withArgs('home', true).returns('https://publication.example/');
+    urlFor.withArgs('admin', true).returns('https://publication.example/ghost/');
+    await root.init();
+    const service = root.service;
+
+    await service.preview('http://localhost:8080/manifest.json');
+    assert.equal(request.lastCall.args[0].hostname, 'first-alias.example');
+    getConfig.withArgs('apps').returns({ localhostAlias: 'second-alias.example' });
+    await service.preview('http://localhost:8080/manifest.json');
+    assert.equal(request.lastCall.args[0].hostname, 'second-alias.example');
+
+    getConfig.withArgs('env').returns('production');
+    await assert.rejects(service.preview('http://localhost:8080/manifest.json'), {
+      errorType: 'ValidationError',
+    });
+    sinon.assert.calledTwice(request);
+    // A manifest URL on one of Ghost's hosts is refused before either the manifest or the
+    // challenge is fetched. The Admin URL is a separate rule from the site URL.
+    urlFor.withArgs('home', true).returns('https://podcast.example/');
+    urlFor.withArgs('admin', true).returns('https://admin.example/ghost/');
+    for (const manifestUrl of [
+      'https://podcast.example/manifest.json',
+      'https://admin.example/manifest.json',
+      'https://admin.example:8443/manifest.json',
+    ]) {
+      await assert.rejects(service.preview(manifestUrl), {
+        errorType: 'ValidationError',
+        code: 'APP_MANIFEST_URL_INVALID',
+      });
+    }
+    sinon.assert.calledTwice(request);
+    assert.equal(root.service, service);
+  });
+});

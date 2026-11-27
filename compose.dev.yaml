@@ -2,11 +2,12 @@ name: ghost-dev
 
 services:
   mysql:
-    image: mysql:8.4.11@sha256:85b9bf2e29cf836ecb8c2a15a935d4ba0c606631dff1dd79531a11983c638f2a
+    image: mysql:8.4.11@sha256:0f51e63e537a1f176423fa03ef559aabe6fa4372a53160a44bc7e75da7d15364
     container_name: ghost-dev-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1
+    # Shared by every checkout's Ghost and DB test runs, which outgrow MySQL's default 151 connections
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1 --max-connections=1000
     ports:
-      - '3306:3306'
+      - '127.0.0.1:3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-ghost_dev}
@@ -30,13 +31,14 @@ services:
       retries: 120
       timeout: 5s
       start_period: 10s
+      start_interval: 1s
 
   redis:
-    image: redis:7.4@sha256:71da9275c5f3fcb97d0fa0c8c5b36cc995327265420f17a04bfd544f458059f7
+    image: redis:7.4@sha256:2e3eb11462c4e3759e6972678dd051d150ff54b1e60714b3c33b701260172a90
     container_name: ghost-dev-redis
     command: ['redis-server', '--loglevel', 'warning']
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
       - redis-data:/data
     healthcheck:
@@ -50,33 +52,36 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
+    image: axllent/mailpit@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
     container_name: ghost-dev-mailpit
-    command: ['--quiet']
+    # Tags each message with the SMTP username, which `pnpm dev` sets to the checkout's name
+    command: ['--quiet', '--smtp-auth-accept-any', '--smtp-auth-allow-insecure', '--tags-username']
     ports:
-      - '1025:1025' # SMTP server
-      - '8025:8025' # Web interface
-      - '8026:8025' # Web interface (for e2e tests)
+      - '127.0.0.1:1025:1025' # SMTP server
+      - '127.0.0.1:8025:8025' # Web interface
+      - '127.0.0.1:8026:8025' # Web interface (for e2e tests)
     healthcheck:
-      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:8025']
       interval: 1s
       retries: 30
 
   # Main development Ghost instance
   # Additional instances can be created programmatically via E2E GhostManager
+  # `pnpm dev` runs Ghost and the dev servers on the host; these two services back
+  # `pnpm dev:docker` and the modes built on it, and e2e dev mode.
   ghost-dev:
+    profiles: ['docker-dev']
     build:
       context: ./
       dockerfile: docker/ghost-dev/Dockerfile
     container_name: ghost-dev
-    working_dir: /home/ghost/ghost/core
+    working_dir: /home/ghost/ghost
     command: ['pnpm', 'dev']
     # The entrypoint drains Ghost before exiting; give that longer than Docker's 10s
     stop_grace_period: 45s
     volumes:
       # Mount the backend source as whole-directory mounts instead of
       # enumerating each server-graph workspace package. `pnpm dev` runs in
-      # ghost/core, and pnpm's verify-deps-before-run only checks ghost/core's
+      # ghost, and pnpm's verify-deps-before-run only checks ghost's
       # own dependency closure — which is fully installed in the root
       # /home/ghost/node_modules baked into the image and never mounted over —
       # so the non-server packages these dirs also expose (e.g. koenig-lexical)
@@ -90,12 +95,13 @@ services:
       - ./koenig:/home/ghost/koenig
       - ./configs:/home/ghost/configs
       - ./packages:/home/ghost/packages
+      - ./contracts:/home/ghost/contracts
       # Mount specific content subdirectories to preserve themes/adapters from source
-      - ghost-dev-data:/home/ghost/ghost/core/content/data
-      - ghost-dev-images:/home/ghost/ghost/core/content/images
-      - ghost-dev-media:/home/ghost/ghost/core/content/media
-      - ghost-dev-files:/home/ghost/ghost/core/content/files
-      - ghost-dev-logs:/home/ghost/ghost/core/content/logs
+      - ghost-dev-data:/home/ghost/ghost/content/data
+      - ghost-dev-images:/home/ghost/ghost/content/images
+      - ghost-dev-media:/home/ghost/ghost/content/media
+      - ghost-dev-files:/home/ghost/ghost/content/files
+      - ghost-dev-logs:/home/ghost/ghost/content/logs
       - shared-config:/mnt/shared-config:ro
     environment:
       NODE_ENV: development
@@ -117,6 +123,15 @@ services:
       # Redis cache (optional)
       adapters__cache__Redis__host: redis
       adapters__cache__Redis__port: 6379
+      # Apps under development run on the host machine, where `localhost` is not this
+      # container: Ghost fetches their manifests through this alias instead
+      apps__localhostAlias: host.docker.internal
+    # Docker Desktop and OrbStack provide host.docker.internal and forward it to the host's
+    # loopback. On Linux it needs this, and it reaches the docker bridge rather than
+    # loopback: an app that only listens on 127.0.0.1 (Vite's default) is not reachable
+    # through it, so bind the app to 0.0.0.0 while developing against this container.
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     depends_on:
       mysql:
         condition: service_healthy
@@ -142,6 +157,7 @@ services:
   # Caddy reverse proxy for the main dev instance
   # Routes Ghost backend + proxies asset requests to host dev servers
   ghost-dev-gateway:
+    profiles: ['docker-dev']
     build:
       context: ./docker/dev-gateway
       dockerfile: Dockerfile
@@ -156,17 +172,17 @@ services:
     volumes:
       # Mount Caddyfile for live config changes without rebuilding
       - ./docker/dev-gateway/Caddyfile:/etc/caddy/Caddyfile:ro
-      # All workspace apps mounted read-only. Caddy file_server resolves
-      # /srv/apps/<name>/umd dynamically for the public-app routes (see
+      # All workspace clients mounted read-only. Caddy file_server resolves
+      # /srv/clients/<name>/umd dynamically for the public-app routes (see
       # the Caddyfile @public_app block). Replaces the per-app `vite preview`
       # sirv layer + avoids per-app bind mounts.
-      - ./apps:/srv/apps:ro
+      - ./clients:/srv/clients:ro
     depends_on:
       ghost-dev:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:da11dbbdb78100602014096a6cbf764b211243111b3b8a57309d18c3939c9777
+    image: stripe/stripe-cli:latest@sha256:c8e5a48108fb4c1e83583912c85810e9ac3bc8db91070da3f915ac369ceecf31
     container_name: ghost-dev-stripe
     entrypoint: ['/entrypoint.sh']
     profiles: ['stripe']
@@ -176,6 +192,9 @@ services:
     environment:
       - GHOST_URL=${GHOST_URL:-http://ghost-dev:2368}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    # `pnpm dev:stripe --listen` forwards to the Admin dev server on the host
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     healthcheck:
       test: ['CMD', 'test', '-f', '/mnt/shared-config/.env.stripe']
       interval: 1s

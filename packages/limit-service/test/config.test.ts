@@ -13,7 +13,7 @@ describe('Config', function () {
     });
 
     interface MockOptions {
-        firstResult?: { count?: number | string | null };
+        firstResult?: Record<string, number | string | null>;
         unionResult?: unknown[];
     }
 
@@ -27,7 +27,10 @@ describe('Config', function () {
             count: vi.fn(returnsChain),
             sum: vi.fn(returnsChain),
             where: vi.fn(returnsChain),
-            first: vi.fn().mockResolvedValue(options.firstResult || {count: 0}),
+            whereExists: vi.fn(returnsChain),
+            whereRaw: vi.fn(returnsChain),
+            whereNull: vi.fn(returnsChain),
+            first: vi.fn().mockResolvedValue(options.firstResult),
             select: vi.fn(returnsChain),
             leftJoin: vi.fn(returnsChain),
             whereNot: vi.fn(returnsChain),
@@ -47,6 +50,23 @@ describe('Config', function () {
 
             assert.equal(result, 42);
             expect(knex).toHaveBeenCalledWith('members');
+        });
+    });
+
+    describe('limitAutomations', () => {
+        it('counts active automations with an action graph', async () => {
+            const knex = createMockKnex({firstResult: {count: 2}});
+            const countQuery = config.limitAutomations?.currentCountQuery;
+            assertExists(countQuery);
+            assert.equal(await countQuery(knex), 2);
+            expect(knex).toHaveBeenCalledWith('automations');
+            const chain = knex.mock.results[0]?.value;
+            assertExists(chain);
+            expect(chain.where).toHaveBeenCalledWith('status', '=', 'active');
+            expect(knex).toHaveBeenCalledWith('automation_actions');
+            expect(chain.whereExists).toHaveBeenCalled();
+            expect(chain.whereRaw).toHaveBeenCalledWith('automation_id = automations.id');
+            expect(chain.whereNull).toHaveBeenCalledWith('deleted_at');
         });
     });
 
@@ -95,6 +115,51 @@ describe('Config', function () {
             expect(knex).toHaveBeenCalledWith('users');
             expect(knex).toHaveBeenCalledWith('invites');
         });
+    });
+
+    describe('allStaff', function () {
+        it.each([
+            [{users: '2', invites: '3'}, 5],
+            [{users: 0, invites: 0}, 0]
+        ])('adds the user and invitation counts from %j', async function (firstResult, expected) {
+            const knex = createMockKnex({firstResult});
+            const countQuery = config.allStaff?.currentCountQuery;
+            assertExists(countQuery);
+            assert.equal(await countQuery(knex), expected);
+            expect(knex).toHaveBeenCalledWith('users');
+            expect(knex).toHaveBeenCalledWith('invites');
+        });
+    });
+
+    describe('inviteEmails', function () {
+        const periodStart = '2026-10-10T10:00:00.000Z';
+
+        it('rejects a missing counter setting instead of granting a fresh allowance', async function () {
+            const query = config.inviteEmails?.currentCountQuery;
+            assertExists(query);
+            await assert.rejects(async () => query(createMockKnex(), periodStart), {
+                errorType: 'IncorrectUsageError',
+                message: 'Missing staff invitation email counter.'
+            });
+        });
+
+        it.each([
+            [null, 0],
+            [JSON.stringify({periodStart, count: 7}), 7],
+            [JSON.stringify({periodStart: '2026-09-10T10:00:00.000Z', count: 15}), 0]
+        ])('reads saved usage %s for the current period', async function (value, count) {
+            const query = config.inviteEmails?.currentCountQuery;
+            assertExists(query);
+            assert.equal(await query(createMockKnex({firstResult: {value: value as string | null}}), periodStart), count);
+        });
+
+        it.each(['{broken', '{}', JSON.stringify({periodStart, count: -1}), JSON.stringify({periodStart: 42, count: 7})])(
+            'rejects invalid stored usage instead of granting a fresh allowance: %s', async function (value) {
+                const query = config.inviteEmails?.currentCountQuery;
+                assertExists(query);
+                await assert.rejects(async () => query(createMockKnex({firstResult: {value}}), periodStart));
+            }
+        );
     });
 
     describe('uploads', function () {

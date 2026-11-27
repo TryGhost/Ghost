@@ -23,12 +23,31 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragH
 
     return (
         <div ref={setRef} className="not-kg-prose group/image relative">
-            <img
-                alt={alt ? alt : progressAlt}
-                className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
-                data-testid={imageUploader.isLoading ? 'image-card-loading' : 'image-card-populated'}
-                src={previewSrc ? previewSrc : src}
-            />
+            {/* sized to the image, so the edit button sits on it even when it's narrower than the card */}
+            <div className="relative mx-auto w-fit">
+                <img
+                    alt={alt ? alt : progressAlt}
+                    className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
+                    data-testid={imageUploader.isLoading ? 'image-card-loading' : 'image-card-populated'}
+                    src={previewSrc ? previewSrc : src}
+                />
+                {(isPinturaEnabled && !isGif(src)) &&
+                    <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-4 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100`}>
+                        <div className="flex flex-row-reverse">
+                            <IconButton className="!w-8 !rounded-full" Icon={WandIcon} label="Edit image" onClick={() => openImageEditor({
+                                image: src,
+                                handleSave: (editedImage) => {
+                                    onFileChange({
+                                        target: {
+                                            files: [editedImage]
+                                        }
+                                    });
+                                }
+                            })} />
+                        </div>
+                    </div>
+                }
+            </div>
             {imageUploader.isLoading ?
                 <div className="absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-white/50" data-testid="upload-progress">
                     <ProgressBar style={progressStyle} />
@@ -45,22 +64,6 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragH
                     <CardText text="Drop to replace image" />
                 </div>
             ) : null}
-            {(isPinturaEnabled && !isGif(src)) &&
-                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100`}>
-                    <div className="flex flex-row-reverse">
-                        <IconButton Icon={WandIcon} label="Edit" onClick={() => openImageEditor({
-                            image: src,
-                            handleSave: (editedImage) => {
-                                onFileChange({
-                                    target: {
-                                        files: [editedImage]
-                                    }
-                                });
-                            }
-                        })} />
-                    </div>
-                </div>
-            }
         </div>
     );
 }

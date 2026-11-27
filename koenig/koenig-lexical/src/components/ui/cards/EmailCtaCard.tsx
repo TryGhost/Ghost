@@ -77,9 +77,9 @@ export function EmailCtaCard({
                     initialEditor={htmlEditor}
                     initialEditorState={htmlEditorInitialState}
                     nodes='basic'
-                    placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl !text-grey-500 !dark:text-grey-800 ` }
+                    placeholderClassName={`bg-transparent whitespace-normal font-body text-body !text-grey-500 !dark:text-grey-800 ` }
                     placeholderText="Email only text... (optional)"
-                    textClassName={`w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 ${alignment === 'left' ? 'text-left' : 'text-center mx-auto [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left'} ` }
+                    textClassName={`w-full bg-transparent whitespace-normal font-body text-body text-grey-900 dark:text-grey-200 ${alignment === 'left' ? 'text-left' : 'text-center mx-auto [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left'} ` }
                 >
                     <ReplacementStringsPlugin />
                 </KoenigNestedEditor>

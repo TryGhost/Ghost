@@ -1,0 +1,136 @@
+import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths';
+import * as tseslint from 'typescript-eslint';
+import { reactAppConfig } from '@internal/cfg-eslint-react';
+import { shadeLayeredImportsRule } from '@internal/cfg-eslint';
+
+// The factory's shade restriction and this file's boundary bans share the
+// `no-restricted-imports` rule slot, so the boundary blocks must re-include it.
+const shadeRestrictedPaths = shadeLayeredImportsRule['no-restricted-imports'][1].paths;
+
+export default tseslint.config(
+  ...reactAppConfig({
+    tailwindCssPath: `${import.meta.dirname}/src/index.css`,
+    shadeRestricted: true,
+    ignores: ['dist/**/*', 'test-utils/acceptance/public/**/*'],
+    // One uniform block: src, test-utils, and the root vite/vitest configs
+    // all get the same rules (matching this workspace's historical setup).
+    srcGlobs: ['**/*.{ts,tsx}'],
+    testGlobs: false,
+    extraSrcRules: {
+      // The factory disables this (legacy violations elsewhere); this
+      // workspace is clean, so keep enforcing it.
+      'react-refresh/only-export-components': [
+        'error',
+        { allowConstantExport: true, extraHOCs: ['withErrorBoundary'] },
+      ],
+    },
+  }),
+  // The factory is type-unaware; layer the type-checked rule set on top.
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [...tseslint.configs.recommendedTypeCheckedOnly],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { 'no-relative-import-paths': noRelativeImportPaths },
+    rules: {
+      'no-relative-import-paths/no-relative-import-paths': [
+        'error',
+        { allowSameFolder: true, rootDir: 'src', prefix: '@' },
+      ],
+    },
+  },
+  // Autofix can produce wrong paths for cross-directory imports here; use
+  // @/* for src/ and @test-utils/* for test-utils/ manually.
+  {
+    files: ['test-utils/**/*.{ts,tsx}'],
+    plugins: { 'no-relative-import-paths': noRelativeImportPaths },
+    rules: {
+      'no-relative-import-paths/no-relative-import-paths': ['error', { allowSameFolder: true }],
+    },
+  },
+  // Boundary guardrails. Product code must reach react-router and the Admin
+  // API through their owning layers.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.*'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            ...shadeRestrictedPaths,
+            {
+              name: '@tryghost/app-contracts/identity',
+              message:
+                'App identity is for servers: it loads jose. Act on what the Admin API reports about an app instead.',
+            },
+            {
+              name: 'react-router',
+              message:
+                'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['react-router/*'],
+              message:
+                'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.name='fetch']",
+          message:
+            'Admin API requests belong in the @tryghost/admin-x-framework API layer. For non-Ghost URLs (external services, front-end previews), disable this rule for the line with a reason.',
+        },
+        {
+          selector: "CallExpression[callee.object.name='window'][callee.property.name='fetch']",
+          message:
+            'Admin API requests belong in the @tryghost/admin-x-framework API layer. For non-Ghost URLs (external services, front-end previews), disable this rule for the line with a reason.',
+        },
+        {
+          selector: "CallExpression[callee.object.name='globalThis'][callee.property.name='fetch']",
+          message:
+            'Admin API requests belong in the @tryghost/admin-x-framework API layer. For non-Ghost URLs (external services, front-end previews), disable this rule for the line with a reason.',
+        },
+      ],
+    },
+  },
+  // Test files keep react-router scaffolding (MemoryRouter, createMemoryRouter).
+  {
+    files: ['src/**/*.test.*'],
+    rules: {
+      'no-restricted-imports': ['error', { paths: [...shadeRestrictedPaths] }],
+    },
+  },
+  // Advisory only — warnings do not fail CI (`eslint .` without --max-warnings).
+  // Steers new code to the shade utilities without forcing a bulk conversion.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.*'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'warn',
+        {
+          paths: [
+            { name: 'clsx', message: 'Use cn from @tryghost/shade/utils.' },
+            {
+              name: 'lucide-react',
+              message: 'Use the LucideIcon namespace from @tryghost/shade/utils.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+);

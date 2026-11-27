@@ -1,0 +1,95 @@
+import BrandIcon from '@/shared/brand-icon/brand-icon';
+import IntegrationHeader from './integration-header';
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  Link,
+  Switch,
+} from '@tryghost/shade/components';
+import {
+  type Setting,
+  getSettingValues,
+  useEditSettings,
+} from '@tryghost/admin-x-framework/api/settings';
+import { SettingsModal } from '@tryghost/shade/patterns';
+import { useEffect, useState } from 'react';
+import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+
+function UnsplashModal() {
+  const { updateRoute } = useSettingsNavigation();
+  const { settings } = useGlobalData();
+  const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
+  const { mutateAsync: editSettings } = useEditSettings();
+  const handleError = useHandleError();
+  const [okLabel, setOkLabel] = useState('Save');
+  const [enabled, setEnabled] = useState<boolean>(!!unsplashEnabled);
+
+  useEffect(() => {
+    setEnabled(unsplashEnabled || false);
+  }, [unsplashEnabled]);
+
+  const handleToggleChange = async () => {
+    const updates: Setting[] = [{ key: 'unsplash', value: enabled }];
+    try {
+      setOkLabel('Saving...');
+      await Promise.all([
+        editSettings(updates),
+        new Promise((resolve) => {
+          setTimeout(resolve, 1000);
+        }),
+      ]);
+      setOkLabel('Saved');
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setTimeout(() => setOkLabel('Save'), 1000);
+    }
+  };
+
+  const isDirty = !(enabled === unsplashEnabled);
+
+  return (
+    <SettingsModal
+      cancelLabel="Close"
+      dirty={isDirty}
+      okLabel={okLabel}
+      okVariant="default"
+      testId="unsplash-modal"
+      title=""
+      onClose={() => {
+        updateRoute('integrations');
+      }}
+      onOk={handleToggleChange}
+    >
+      <IntegrationHeader
+        detail="Beautiful, free photos"
+        icon={<BrandIcon name="unsplash" size={48} />}
+        title="Unsplash"
+      />
+      <div className="mt-7">
+        <FieldGroup className="gap-8 rounded-sm border border-border-default p-4 md:p-7">
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel htmlFor="unsplash-enabled">Enable Unsplash</FieldLabel>
+              <FieldDescription>
+                Enable{' '}
+                <Link href="https://unsplash.com" external>
+                  Unsplash
+                </Link>{' '}
+                image integration for your posts
+              </FieldDescription>
+            </FieldContent>
+            <Switch checked={enabled} id="unsplash-enabled" onCheckedChange={setEnabled} />
+          </Field>
+        </FieldGroup>
+      </div>
+    </SettingsModal>
+  );
+}
+
+export default UnsplashModal;

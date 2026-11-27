@@ -1,0 +1,36 @@
+import { createContext } from 'preact';
+import { useContext } from 'preact/hooks';
+import type pages from './pages';
+import type { ComponentProps } from 'preact';
+import type { GhostApi } from './utils/api';
+import type { Page, PageName } from './pages';
+
+export type SignupFormOptions = {
+  title?: string;
+  description?: string;
+  icon?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  buttonColor?: string;
+  buttonTextColor?: string;
+  site: string;
+  labels: string[];
+  locale: string;
+};
+
+export type AppContextType = {
+  page: Page;
+  setPage: <T extends PageName>(name: T, data: ComponentProps<(typeof pages)[T]>) => void;
+  options: SignupFormOptions;
+  api: GhostApi;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: any;
+  scriptTag: HTMLElement;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AppContext = createContext<AppContextType>({} as any);
+
+export const AppContextProvider = AppContext.Provider;
+
+export const useAppContext = () => useContext(AppContext);

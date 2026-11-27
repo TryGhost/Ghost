@@ -15,6 +15,7 @@ export interface QueryBuilder {
 
 /** Aggregate queries retain the legacy allowance for an absent period binding. */
 interface CountQueryBuilder {
+  whereExists(query: KnexConnection.QueryBuilder): CountQueryBuilder;
   where(column: string, operator: string, value: unknown): CountQueryBuilder;
   first(): PromiseLike<CountRow>;
 }

@@ -1,3 +1,4 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -15,11 +16,10 @@ describe('CalloutNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -68,7 +68,7 @@ describe('CalloutNode', function () {
         it('has getDataset() method', editorTest(function () {
             const node = $createCalloutNode(dataset);
             const nodeDataset = node.getDataset();
-            expect(nodeDataset).toEqual(dataset);
+            expect(nodeDataset).toEqual({...dataset, visibility: buildDefaultVisibility()});
         }));
     });
 
@@ -108,6 +108,7 @@ describe('CalloutNode', function () {
             const json = calloutNode.exportJSON();
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'callout',
                 version: 1,
                 ...dataset
@@ -116,11 +117,11 @@ describe('CalloutNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('can render to HTML', editorTest(function () {
+        it('can render to HTML', editorTest(async function () {
             const node = $createCalloutNode(dataset);
             const result = node.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            assertPrettifiesTo(element.outerHTML, html`
+            await assertPrettifiesTo(element.outerHTML, html`
                 <div class="kg-card kg-callout-card kg-callout-card-blue">
                     <div class="kg-callout-emoji">\u{1F4A1}</div>
                     <div class="kg-callout-text">
@@ -205,6 +206,76 @@ describe('CalloutNode', function () {
             node.calloutText = 'Test';
 
             expect(node.getTextContent()).toBe('Test\n\n');
+        }));
+    });
+    describe('visibility', function () {
+        it('preserves restrictions through clone and JSON import', editorTest(function () {
+            const visibility = {
+                web: {nonMember: false, memberSegment: 'status:-free'},
+                email: {memberSegment: 'status:-free'}
+            };
+            const node = $createCalloutNode({...dataset, visibility});
+            expect(node.hasVisibility()).toBe(true);
+            expect(CalloutNode.clone(node).visibility).toEqual(visibility);
+            expect(CalloutNode.importJSON(node.exportJSON()).visibility).toEqual(visibility);
+        }));
+
+        it('renders nothing when hidden from email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createCalloutNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: ''}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a segment when limited to a member segment in email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createCalloutNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:-free'}
+            };
+
+            const {element} = node.exportDOM(editor, exportOptions);
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).toContain('data-gh-segment="status:-free"');
+            expect(output).toContain('kg-visibility-wrapper');
+        }));
+
+        it('renders nothing when hidden from web', editorTest(function () {
+            const node = $createCalloutNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a gated block when limited to a member segment on web', editorTest(function () {
+            const node = $createCalloutNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('value');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:end-->');
         }));
     });
 });

@@ -1,0 +1,271 @@
+import AutomationStatusBadge from './automation-status-badge';
+import AutomationListActions from './automation-list-actions';
+import React from 'react';
+import type { AutomationBrowseItem } from '@tryghost/admin-x-framework/api/automations';
+import { Link } from '@tryghost/admin-x-framework';
+import {
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  RowPrimaryAction,
+} from '@tryghost/shade/components';
+import { Stack, Text } from '@tryghost/shade/primitives';
+import { cn, formatNumber, formatTimestamp } from '@tryghost/shade/utils';
+
+// Widths are scoped to `lg` because below that the stats lay out on the row's
+// grid rather than in table cells, where a fixed width would fight the columns.
+const AUTOMATION_STAT_COLUMNS = [
+  {
+    key: 'lastEntry',
+    label: 'Last started',
+    widthClassName: 'lg:w-40',
+    skeletonWidthClassName: 'w-20',
+  },
+  {
+    key: 'totalEntries',
+    label: 'Total runs',
+    widthClassName: 'lg:w-32',
+    skeletonWidthClassName: 'w-10',
+  },
+  {
+    key: 'inProgressEntries',
+    label: 'In progress',
+    widthClassName: 'lg:w-32',
+    skeletonWidthClassName: 'w-10',
+  },
+] as const;
+
+export type AutomationsToShow = 'non-archived' | 'archived' | 'all';
+
+const EMPTY_COPY = {
+  'non-archived': {
+    title: 'No active automations',
+    description: 'Every automation you have is archived. Switch views to see them.',
+  },
+  archived: {
+    title: 'Nothing archived',
+    description: 'Archiving an automation takes it off your list without deleting it.',
+  },
+  all: {
+    title: 'No automations yet',
+    description: 'Automations you create will show up here.',
+  },
+};
+
+interface AutomationsListProps {
+  automations: AutomationBrowseItem[];
+  automationsToShow: AutomationsToShow;
+  isLoading?: boolean;
+  canManage: boolean;
+}
+
+const AutomationsListSkeleton: React.FC = () => {
+  return (
+    <Table
+      aria-busy="true"
+      aria-label="Automations"
+      className="flex table-auto flex-col lg:table"
+      data-testid="automations-list-loading"
+    >
+      <TableBody className="flex flex-col lg:table-row-group">
+        {Array.from({ length: 2 }, (_, index) => (
+          <TableRow
+            key={index}
+            aria-hidden="true"
+            className="grid w-full grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-0 py-6 lg:table-row lg:gap-0 lg:p-0"
+          >
+            <TableCell className="col-span-3 row-start-1 min-w-0 p-0 lg:table-cell lg:p-4">
+              <Skeleton className="mb-1 h-3 w-48 max-w-full " />
+              <Skeleton className="h-3 w-80 max-w-full" />
+            </TableCell>
+            {AUTOMATION_STAT_COLUMNS.map((column) => (
+              <TableCell
+                key={column.key}
+                className={cn(
+                  'row-start-2 min-w-0 p-0 lg:table-cell lg:p-4',
+                  column.widthClassName,
+                )}
+              >
+                <Skeleton className={cn('h-3', column.skeletonWidthClassName)} />
+              </TableCell>
+            ))}
+            <TableCell className="col-start-4 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-28 lg:p-4 lg:text-left">
+              <Skeleton className="ml-auto h-3 w-16 lg:ml-0" />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+};
+
+const AutomationsList: React.FC<AutomationsListProps> = ({
+  automations,
+  automationsToShow,
+  isLoading = false,
+  canManage,
+}) => {
+  if (isLoading) {
+    return <AutomationsListSkeleton />;
+  }
+
+  const filteredAutomations = automations.filter((automation) => {
+    if (automationsToShow === 'all') {
+      return true;
+    }
+    return automationsToShow === 'archived'
+      ? automation.status === 'archived'
+      : automation.status !== 'archived';
+  });
+
+  if (filteredAutomations.length === 0) {
+    const { title, description } = EMPTY_COPY[automations.length === 0 ? 'all' : automationsToShow];
+
+    return (
+      <Stack align="center" className="py-16 text-center" gap="xs">
+        <Text as="h3" weight="medium">
+          {title}
+        </Text>
+        <Text className="max-w-80 text-pretty" leading="tight" size="sm" tone="secondary">
+          {description}
+        </Text>
+      </Stack>
+    );
+  }
+
+  const showRunAnalytics = filteredAutomations.every(
+    (automation) => automation.stats !== undefined,
+  );
+
+  return (
+    <Table
+      aria-label="Automations"
+      className={cn('flex table-auto flex-col lg:table', !showRunAnalytics && 'border-t')}
+      data-testid="automations-list"
+    >
+      {showRunAnalytics && (
+        <TableHeader className="hidden lg:table-header-group">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="lg:px-4" scope="col">
+              Automation
+            </TableHead>
+            {AUTOMATION_STAT_COLUMNS.map((column) => (
+              <TableHead
+                key={column.key}
+                className={cn('lg:px-4', column.widthClassName)}
+                scope="col"
+              >
+                {column.label}
+              </TableHead>
+            ))}
+            <TableHead className="w-28 lg:px-4" scope="col">
+              Status
+            </TableHead>
+            {canManage && (
+              <TableHead className="w-16" scope="col">
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            )}
+          </TableRow>
+        </TableHeader>
+      )}
+      <TableBody className="flex flex-col lg:table-row-group">
+        {filteredAutomations.map((automation) => {
+          const description = automation.description.trim();
+          const lastEntry = automation.stats?.last_run_created_at;
+          const totalEntries = automation.stats?.total_run_count ?? 0;
+          const inProgressEntries = automation.stats?.in_progress_run_count ?? 0;
+          const statCells = {
+            lastEntry: {
+              content: lastEntry ? (
+                <time dateTime={lastEntry}>{formatTimestamp(lastEntry)}</time>
+              ) : (
+                'Never'
+              ),
+              isEmpty: !lastEntry,
+            },
+            totalEntries: {
+              content: formatNumber(totalEntries),
+              isEmpty: totalEntries === 0,
+            },
+            inProgressEntries: {
+              content: formatNumber(inProgressEntries),
+              isEmpty: inProgressEntries === 0,
+            },
+          };
+
+          return (
+            <TableRow
+              key={automation.id}
+              className={cn(
+                'grid w-full cursor-pointer items-center gap-x-4 gap-y-3 px-0 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0',
+                canManage
+                  ? 'grid-cols-[repeat(3,minmax(0,1fr))_auto_auto]'
+                  : 'grid-cols-[repeat(3,minmax(0,1fr))_auto]',
+              )}
+              data-testid="automation-list-row"
+            >
+              <TableHead
+                className="static col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:max-w-0 lg:p-4"
+                scope="row"
+              >
+                <RowPrimaryAction asChild>
+                  <Link
+                    className="rounded-sm focus-visible:outline-hidden"
+                    to={`/automations/${automation.id}`}
+                  >
+                    <span className="block text-md font-semibold">{automation.name}</span>
+                  </Link>
+                </RowPrimaryAction>
+                {description && (
+                  <span className="block truncate text-muted-foreground">{description}</span>
+                )}
+              </TableHead>
+              {showRunAnalytics &&
+                AUTOMATION_STAT_COLUMNS.map((column) => {
+                  const cell = statCells[column.key];
+
+                  return (
+                    <TableCell
+                      key={column.key}
+                      className={cn(
+                        'row-start-2 flex min-w-0 flex-col p-0 lg:table-cell lg:p-4',
+                        column.widthClassName,
+                        cell.isEmpty && 'text-muted-foreground',
+                      )}
+                    >
+                      {cell.content}
+                      {/* The column headers are hidden below `lg`, so each stat
+                          carries its own label there. */}
+                      <span className="mt-0.5 text-sm leading-tight whitespace-nowrap text-muted-foreground lg:hidden">
+                        {column.label}
+                      </span>
+                    </TableCell>
+                  );
+                })}
+              <TableCell
+                className={cn(
+                  'col-start-4 row-start-1 w-auto p-0 text-right lg:table-cell lg:p-4',
+                  showRunAnalytics ? 'lg:w-28 lg:text-left' : 'lg:w-32',
+                )}
+              >
+                <AutomationStatusBadge status={automation.status} />
+              </TableCell>
+              {canManage && (
+                <TableCell className="col-start-5 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-16 lg:p-4">
+                  <AutomationListActions automation={automation} />
+                </TableCell>
+              )}
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+};
+
+export default AutomationsList;

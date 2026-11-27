@@ -1,0 +1,224 @@
+const commentsService = require('../../services/comments').default;
+const { rejectContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+
+/**
+ * Deleted and hidden comments stay in public threads as placeholders while they have
+ * published replies, with their content withheld from the response. Restrict `filter`
+ * to the fields the Content API allows, so withheld content can't influence which
+ * comments are returned. `order` is restricted in the comments input serializer.
+ *
+ * @param {import('@tryghost/api-framework').Frame} frame
+ */
+function restrictPublicQueryOptions(frame) {
+  frame.options.mongoTransformer = rejectContentApiRestrictedFieldsTransformer;
+}
+
+const ALLOWED_INCLUDES = [
+  'member',
+  'replies',
+  'replies.member',
+  'replies.count.likes',
+  'replies.liked',
+  'replies.disliked',
+  'count.replies',
+  'count.direct_replies',
+  'count.likes',
+  'liked',
+  'disliked',
+  'post',
+  'parent',
+];
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
+  docName: 'comments',
+
+  browse: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['post_id', 'include', 'page', 'limit', 'fields', 'filter', 'order', 'debug'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+    },
+    permissions: false,
+    query(frame) {
+      restrictPublicQueryOptions(frame);
+      return commentsService.service.controller.browse(frame);
+    },
+  },
+
+  replies: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include', 'page', 'limit', 'fields', 'filter', 'order', 'debug', 'id'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+    },
+    permissions: false,
+    query(frame) {
+      restrictPublicQueryOptions(frame);
+      return commentsService.service.controller.replies(frame);
+    },
+  },
+
+  read: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include', 'fields'],
+    data: ['id', 'email'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+    },
+    permissions: false,
+    query(frame) {
+      return commentsService.service.controller.read(frame);
+    },
+  },
+
+  edit: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id', 'include'],
+    validation: {
+      options: {
+        include: {
+          values: ALLOWED_INCLUDES,
+        },
+        id: {
+          required: true,
+        },
+      },
+    },
+    permissions: false,
+    query(frame) {
+      return commentsService.service.controller.edit(frame);
+    },
+  },
+
+  add: {
+    statusCode: 201,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+      data: {
+        post_id: {
+          required: true,
+        },
+      },
+    },
+    permissions: false,
+    query(frame) {
+      return commentsService.service.controller.add(frame);
+    },
+  },
+
+  destroy: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['include', 'id'],
+    validation: {
+      options: {
+        include: ALLOWED_INCLUDES,
+      },
+    },
+    permissions: false,
+    query() {
+      return commentsService.service.controller.destroy();
+    },
+  },
+
+  counts: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    permissions: false,
+    options: ['ids'],
+    async query(frame) {
+      return commentsService.service.controller.count(frame);
+    },
+  },
+
+  like: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.service.controller.like(frame);
+    },
+  },
+
+  unlike: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.service.controller.unlike(frame);
+    },
+  },
+
+  dislike: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.service.controller.dislike(frame);
+    },
+  },
+
+  undislike: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      return await commentsService.service.controller.undislike(frame);
+    },
+  },
+
+  report: {
+    statusCode: 204,
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['id'],
+    validation: {},
+    permissions: false,
+    async query(frame) {
+      await commentsService.service.controller.report(frame);
+    },
+  },
+};
+
+module.exports = controller;

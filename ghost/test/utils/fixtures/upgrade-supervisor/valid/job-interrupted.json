@@ -1,0 +1,18 @@
+{
+  "id": "0000000000000000000000000000000000000000000000000000000000000000",
+  "state": "interrupted",
+  "component": "ghost",
+  "fromVersion": "6.68.0",
+  "toVersion": "6.72.0",
+  "createdAt": "2026-10-14T20:01:02Z",
+  "updatedAt": "2026-10-14T20:10:00Z",
+  "diagnostics": [
+    {
+      "source": "ghost-docker",
+      "code": "interrupted",
+      "severity": "error",
+      "message": "The upgrade supervisor stopped while this job was restarting. It is never resumed.",
+      "details": "In the site directory:\n  `./ghost-docker check`\n  `rm .ghost-docker.lock`"
+    }
+  ]
+}

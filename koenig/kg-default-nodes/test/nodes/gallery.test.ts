@@ -1,4 +1,5 @@
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {$getRoot, LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
@@ -17,11 +18,10 @@ describe('GalleryNode', function () {
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
     // failed tests
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -129,7 +129,8 @@ describe('GalleryNode', function () {
 
             expect(galleryNode.getDataset()).toEqual({
                 images: [],
-                caption: ''
+                caption: '',
+                visibility: buildDefaultVisibility()
             });
         }));
 
@@ -148,7 +149,7 @@ describe('GalleryNode', function () {
         it('has getDataset() convenience method', editorTest(function () {
             const galleryNode = $createGalleryNode(dataset);
 
-            expect(galleryNode.getDataset()).toEqual(dataset);
+            expect(galleryNode.getDataset()).toEqual({...dataset, visibility: buildDefaultVisibility()});
         }));
     });
 
@@ -233,7 +234,8 @@ describe('GalleryNode', function () {
                 type: 'gallery',
                 version: 1,
                 images: dataset.images,
-                caption: dataset.caption
+                caption: dataset.caption,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -643,11 +645,11 @@ describe('GalleryNode', function () {
     });
 
     describe('exportDOM', function () {
-        it('renders', editorTest(function () {
+        it('renders', editorTest(async function () {
             const galleryNode = $createGalleryNode(dataset);
             const {element} = galleryNode.exportDOM(editor, {...exportOptions, canTransformImage: () => false});
 
-            assertPrettifiesTo((element as HTMLElement).outerHTML, html`
+            await assertPrettifiesTo((element as HTMLElement).outerHTML, html`
                 <figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption">
                     <div class="kg-gallery-container">
                         <div class="kg-gallery-row">
@@ -698,6 +700,65 @@ describe('GalleryNode', function () {
 
             node.caption = 'Test caption';
             expect(node.getTextContent()).toBe('Test caption\n\n');
+        }));
+    });
+    describe('visibility', function () {
+        it('renders nothing when hidden from email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createGalleryNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: ''}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a segment when limited to a member segment in email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createGalleryNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:-free'}
+            };
+
+            const {element} = node.exportDOM(editor, exportOptions);
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).toContain('data-gh-segment="status:-free"');
+            expect(output).toContain('kg-visibility-wrapper');
+        }));
+
+        it('renders nothing when hidden from web', editorTest(function () {
+            const node = $createGalleryNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a gated block when limited to a member segment on web', editorTest(function () {
+            const node = $createGalleryNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('value');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:end-->');
         }));
     });
 });

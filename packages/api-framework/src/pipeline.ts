@@ -2,8 +2,10 @@ import createDebug from '@tryghost/debug';
 import errors from '@tryghost/errors';
 import promiseUtils from '@tryghost/promise';
 import _ from 'lodash';
-import Frame from './frame.ts';
+import Frame, { withoutPrincipal } from './frame.ts';
 import type { Dictionary, FrameConfiguration } from './frame.ts';
+import type { MethodSchemas, SchemaControllerMethod } from './define-method.ts';
+import parseRequest from './parse-request.ts';
 import serializers from './serializers/index.ts';
 import validators from './validators/index.ts';
 
@@ -20,32 +22,46 @@ interface Cache {
   set(key: string, value: unknown): AsyncResult;
 }
 
-interface PermissionConfiguration extends Dictionary {
-  before?: (frame: Frame) => AsyncResult;
+interface PermissionConfiguration<TFrame extends Frame = Frame> extends Dictionary {
+  before?: (frame: TFrame) => AsyncResult;
 }
 
-export interface ControllerMethod {
+export interface ControllerMethod<TFrame extends Frame = Frame> {
+  schema?: MethodSchemas;
   cache?: Cache;
   data?: FrameConfiguration['data'];
-  generateCacheKeyData?: (frame: Frame) => AsyncResult;
+  generateCacheKeyData?: (frame: TFrame) => AsyncResult;
   headers?: Dictionary;
   options?: FrameConfiguration['options'];
-  permissions?: boolean | PermissionConfiguration | ((frame: Frame) => AsyncResult);
-  query?: (frame: Frame) => AsyncResult;
+  permissions?: boolean | PermissionConfiguration<TFrame> | ((frame: TFrame) => AsyncResult);
+  query?: (frame: TFrame) => AsyncResult;
   response?: { format: string | (() => string | PromiseLike<string>) };
   statusCode?: number | ((result: unknown) => number);
-  validation?: Dictionary | ((frame: Frame) => AsyncResult);
+  validation?: Dictionary | ((frame: TFrame) => AsyncResult);
 }
 
-type ControllerHandler = ControllerMethod &
-  ((dataOrOptions?: Dictionary | Frame, options?: Dictionary | Frame) => Promise<unknown>);
+type ControllerCall = (
+  dataOrOptions?: Dictionary | Frame,
+  options?: Dictionary | Frame,
+) => Promise<unknown>;
+type ControllerHandler = ControllerMethod & ControllerCall;
 
-export type Controller = { docName?: string } & Record<
-  string,
-  ControllerMethod | string | undefined
->;
+export type ControllerFrameMap = Record<string, Frame>;
+
+export type Controller<TFrames extends ControllerFrameMap = ControllerFrameMap> = {
+  docName?: string;
+} & (string extends keyof TFrames
+  ? Record<string, ControllerMethod | string | undefined>
+  : { [TMethod in keyof TFrames]: ControllerMethod<TFrames[TMethod]> });
 interface ApiUtils {
-  permissions?: { handle(config: Dictionary, frame: Frame): AsyncResult };
+  permissions?: {
+    handle(config: Dictionary, frame: Frame): AsyncResult;
+    /**
+     * Runs before a method whose `permissions` is `false` or its own function, or one written as a
+     * single function, which `handle` never sees; a rejection stops the method
+     */
+    handleUnchecked?(config: ApiConfiguration, frame: Frame): AsyncResult;
+  };
   serializers?: { input?: Dictionary; output?: Dictionary };
   validators?: { input?: Dictionary };
 }
@@ -64,6 +80,21 @@ function sortKeysReplacer(_key: string, value: unknown) {
     return sorted;
   }
   return value;
+}
+
+function schemaCacheKeyReplacer(key: string, value: unknown) {
+  if (
+    typeof value === 'bigint' ||
+    typeof value === 'function' ||
+    typeof value === 'symbol' ||
+    (value && typeof value === 'object' && !Array.isArray(value) && !_.isPlainObject(value))
+  ) {
+    throw new IncorrectUsageError({
+      message:
+        'Schema cache keys must be JSON-compatible. Use generateCacheKeyData to serialize non-JSON values.',
+    });
+  }
+  return sortKeysReplacer(key, value);
 }
 
 const STAGES = {
@@ -196,16 +227,19 @@ const STAGES = {
       return Promise.reject(new IncorrectUsageError());
     }
 
-    // CASE: handle permissions completely yourself
-    if (typeof apiImpl.permissions === 'function') {
-      debug('permissions function call');
-      return Promise.resolve(apiImpl.permissions(frame));
-    }
+    const ownCheck = apiImpl.permissions;
+    if (typeof ownCheck === 'function' || ownCheck === false) {
+      return Promise.resolve(apiUtils.permissions?.handleUnchecked?.(apiConfig, frame)).then(() => {
+        // CASE: handle permissions completely yourself
+        if (typeof ownCheck === 'function') {
+          debug('permissions function call');
+          return ownCheck(frame);
+        }
 
-    // CASE: skip stage completely
-    if (apiImpl.permissions === false) {
-      debug('disabled permissions');
-      return Promise.resolve();
+        // CASE: skip stage completely
+        debug('disabled permissions');
+        return undefined;
+      });
     }
 
     const permissionConfig =
@@ -251,9 +285,25 @@ const STAGES = {
   },
 };
 
-const controllerMap = new Map<Controller, Record<string, ControllerHandler>>();
-type PipelineResult<T extends Controller> = {
-  [K in Exclude<keyof T, 'docName'>]: ControllerHandler;
+const controllerMap = new Map<object, Record<string, ControllerHandler>>();
+const apiConfigs = new WeakMap<object, Readonly<ApiConfiguration>>();
+
+/** The docName and method of a controller method the pipeline built, or undefined */
+export function apiConfigOf(controllerMethod: unknown): Readonly<ApiConfiguration> | undefined {
+  return typeof controllerMethod === 'function' ? apiConfigs.get(controllerMethod) : undefined;
+}
+type PipelineResult<T> = {
+  [K in Exclude<keyof T, 'docName'>]: T[K] & ControllerCall;
+};
+
+type PipelineController<T> = {
+  [K in keyof T]: K extends 'docName'
+    ? string | undefined
+    : T[K] extends { schema: infer Schemas }
+      ? Schemas extends MethodSchemas
+        ? SchemaControllerMethod<Schemas>
+        : never
+      : ControllerMethod;
 };
 
 /**
@@ -275,14 +325,26 @@ type PipelineResult<T extends Controller> = {
  * @param {String} [apiType] - Content or Admin API access
  * @return {Object}
  */
-const pipeline = <T extends Controller>(
+function pipeline<T extends Controller>(
   apiController: T,
   apiUtils: ApiUtils,
   apiType?: string,
-): PipelineResult<T> => {
+): PipelineResult<T>;
+// eslint-disable-next-line no-redeclare -- TypeScript overload for schema-aware controllers.
+function pipeline<T extends object>(
+  apiController: T & PipelineController<T>,
+  apiUtils: ApiUtils,
+  apiType?: string,
+): PipelineResult<T>;
+// eslint-disable-next-line no-redeclare -- Implementation shared by both TypeScript overloads.
+function pipeline(
+  apiController: Controller,
+  apiUtils: ApiUtils,
+  apiType?: string,
+): Record<string, ControllerHandler> {
   const cachedController = controllerMap.get(apiController);
   if (cachedController) {
-    return cachedController as PipelineResult<T>;
+    return cachedController;
   }
 
   const keys = Object.keys(apiController).filter((key) => key !== 'docName');
@@ -292,7 +354,8 @@ const pipeline = <T extends Controller>(
   //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
   const result = keys.reduce<Record<string, ControllerHandler>>((obj, method) => {
     // The clone keeps a controller's configuration private to the pipeline, but
-    // `cache` is not configuration: it is a shared adapter instance, and copying
+    // `schema` and `cache` must retain their instances. Zod schemas contain parser
+    // functions and internal state. The cache is a shared adapter, and copying
     // it breaks two things. lodash rebuilds a class instance as
     // `Object.create(prototype)` plus own enumerable properties, so the copy
     // keeps the methods but loses every private-field brand - an adapter holding
@@ -300,7 +363,7 @@ const pipeline = <T extends Controller>(
     // And a copy is a different object, so the `reset()` a service calls on
     // `site.changed` would never reach the cache actually serving requests.
     const apiImpl = _.cloneDeepWith(apiController, (value, key) =>
-      key === 'cache' ? value : undefined,
+      key === 'cache' || key === 'schema' ? value : undefined,
     )[method] as ControllerMethod;
 
     Object.freeze(apiImpl.headers);
@@ -329,17 +392,22 @@ const pipeline = <T extends Controller>(
           context: (options.context as Dictionary | undefined) || {},
         });
 
-        frame.configure({
-          options: apiImpl.options,
-          data: apiImpl.data,
-        });
+        frame.configure(
+          {
+            options: apiImpl.options,
+            data: apiImpl.data,
+          },
+          { deferBodyClone: Boolean(apiImpl.schema) },
+        );
       } else {
         frame = options;
       }
 
       // CASE: api controller *can* be a single function, but it's not recommended to disable the framework.
+      // It checks no permission, so it runs only once `handleUnchecked` allows the caller.
       if (typeof apiImpl === 'function') {
         debug('ctrl function call');
+        await apiUtils.permissions?.handleUnchecked?.(apiConfig, frame);
         return (apiImpl as ControllerHandler)(frame);
       }
 
@@ -347,24 +415,51 @@ const pipeline = <T extends Controller>(
       frame.docName = docName;
       frame.method = method;
 
-      let cacheKeyData: unknown = frame.options;
-      if (apiImpl.generateCacheKeyData) {
-        cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+      const validatedRequest = apiImpl.schema
+        ? await parseRequest(apiImpl.schema, frame)
+        : undefined;
+      if (apiImpl.schema) {
+        // Custom validation receives parsed input, even when the response is cached.
+        if (typeof apiImpl.validation === 'function') {
+          await apiImpl.validation(frame);
+        }
       }
 
-      const cacheKey = JSON.stringify(cacheKeyData, sortKeysReplacer);
+      let cacheKey = '';
+      // Legacy hooks also resolve gift access when response caching is disabled.
+      if (apiImpl.cache || (!apiImpl.schema && apiImpl.generateCacheKeyData)) {
+        const keyOptions = withoutPrincipal(frame.options);
+        let cacheKeyData: unknown = validatedRequest
+          ? { options: keyOptions, validated: validatedRequest }
+          : keyOptions;
+        if (apiImpl.generateCacheKeyData) {
+          cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+        }
+        if (apiImpl.cache) {
+          cacheKey = JSON.stringify(
+            cacheKeyData,
+            apiImpl.schema ? schemaCacheKeyReplacer : sortKeysReplacer,
+          );
+        }
+      }
+
+      // A shared response cache must never bypass request authorization. Keep
+      // input preparation before permissions, but outside the cache loader so
+      // it runs once per request, including cache hits.
+      if (!apiImpl.schema) {
+        await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
+      }
+      await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
+      await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
 
       if (apiImpl.cache) {
         const response = await apiImpl.cache.get(cacheKey, getResponse);
         if (response) {
-          return Promise.resolve(response);
+          return response;
         }
       }
 
       async function getResponse() {
-        await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
-        await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
-        await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
         const response = await STAGES.query(apiUtils, apiConfig, apiImpl, frame);
         await STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
         return frame.response;
@@ -381,13 +476,14 @@ const pipeline = <T extends Controller>(
     obj[method] = implWrapper;
 
     Object.assign(implWrapper, apiImpl);
+    apiConfigs.set(implWrapper, Object.freeze({ docName, method }));
     return obj;
   }, {});
 
   controllerMap.set(apiController, result);
 
-  return result as PipelineResult<T>;
-};
+  return result;
+}
 
 export { STAGES };
 export default Object.assign(pipeline, { STAGES });

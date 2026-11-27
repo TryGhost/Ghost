@@ -1,0 +1,290 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
+import { buildLexicalParagraph } from '@tryghost/test-data';
+
+import {
+  configResponse,
+  currentRoute,
+  fakeAdminEndpoint,
+  fakeEditorChrome,
+  fakePages,
+  fakePosts,
+  fakePostsListScreen,
+  post,
+  renderAdminApp,
+  tag,
+} from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
+import { postsListScreen } from '@/posts/list/posts-list.screen';
+import { clearStickyPostFilters } from '@/posts/list/posts-sticky-filters';
+
+describe('Editor route', () => {
+  function fakeEditorWorld() {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, { posts: [post({ id: 'abc123' })] });
+    fakeAdminEndpoint('GET', /^\/pages\/abc123\/\?/, { pages: [post({ id: 'abc123' })] });
+  }
+
+  it('renders the editor for a post', async () => {
+    fakeEditorWorld();
+    await renderAdminApp('/editor/post/abc123');
+
+    await expect.element(editorScreen.root()).toBeVisible();
+    await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
+  });
+
+  it('serves a new-post URL too', async () => {
+    fakeEditorWorld();
+    await renderAdminApp('/editor/post');
+
+    await expect.element(editorScreen.root()).toBeVisible();
+  });
+
+  it('returns page editors to the pages list', async () => {
+    fakeEditorWorld();
+    await renderAdminApp('/editor/page/abc123');
+
+    await expect.element(editorScreen.root()).toBeVisible();
+    await expect.element(editorScreen.backLink('page')).toHaveAttribute('href', '#/pages');
+  });
+});
+
+/** A force upgrade sends the editor to billing, as it does every other screen. */
+describe('Editor force upgrade', () => {
+  function duringForceUpgrade() {
+    const config = configResponse();
+    config.config.hostSettings = { forceUpgrade: true };
+    return { boot: { browseConfig: { response: config } } };
+  }
+
+  it('sends the editor to billing', async () => {
+    fakeEditorChrome();
+    const postRead = fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, {
+      posts: [post({ id: 'abc123' })],
+    });
+    await renderAdminApp('/editor/post/abc123', duringForceUpgrade());
+
+    await expect.poll(currentRoute).toBe('/pro');
+    expect(postRead.requests).toHaveLength(0);
+  });
+});
+
+/**
+ * An editor opened from post analytics or the analytics screens leads back
+ * there, query string included, in place of the list it belongs to.
+ */
+describe('Editor analytics breadcrumb', () => {
+  function fakePublishedPost(overrides: Partial<ReturnType<typeof post>> = {}) {
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', /^\/posts\/abc123\/\?/, {
+      posts: [
+        post({
+          id: 'abc123',
+          title: 'Published Post',
+          status: 'published',
+          lexical: buildLexicalParagraph('Published Post'),
+          published_at: '2026-01-01T00:00:00.000Z',
+          ...overrides,
+        }),
+      ],
+    });
+  }
+
+  it.each([
+    { from: 'the post analytics root', editorReturn: '/posts/analytics/abc123' },
+    { from: 'a post analytics subpage', editorReturn: '/posts/analytics/abc123/web' },
+    { from: 'the stats root', editorReturn: '/analytics' },
+    { from: 'a stats subpage', editorReturn: '/analytics/web' },
+    {
+      from: 'a stats subpage with query params',
+      editorReturn: '/analytics/growth?tab=total-members',
+    },
+  ])('leads back to $from', async ({ editorReturn }) => {
+    fakePublishedPost();
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
+
+    await expect
+      .element(editorScreen.analyticsBackLink())
+      .toHaveAttribute('href', `#${editorReturn}`);
+    await expect(editorScreen.backLink('post')).toHaveCount(0);
+  });
+
+  it('does not lead back to analytics for a new post', async () => {
+    fakeEditorChrome();
+    await renderAdminApp('/editor/post', {
+      locationState: { editorReturn: '/posts/analytics/abc123' },
+    });
+
+    await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
+    await expect(editorScreen.analyticsBackLink()).toHaveCount(0);
+    // Nothing has been saved, so there is no status to show either way.
+    await expect(editorScreen.status()).toHaveCount(0);
+  });
+
+  it.each([
+    '/analyticsfoo',
+    '/members',
+    'https://example.com/analytics',
+    '//example.com/analytics',
+    '/analytics/../members',
+    '/posts/analytics/abc123/..',
+  ])('ignores the return path %s', async (editorReturn) => {
+    fakePublishedPost();
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
+
+    await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
+    await expect(editorScreen.analyticsBackLink()).toHaveCount(0);
+  });
+
+  it('hides the status line unless the newsletter failed', async () => {
+    fakePublishedPost();
+    await renderAdminApp('/editor/post/abc123', {
+      locationState: { editorReturn: '/posts/analytics/abc123' },
+    });
+
+    await expect.element(editorScreen.analyticsBackLink()).toBeVisible();
+    await expect(editorScreen.status()).toHaveCount(0);
+  });
+
+  it('keeps the status line when the newsletter failed', async () => {
+    fakePublishedPost({
+      email: { id: 'email-1', status: 'failed', email_count: 20, opened_count: 0 },
+    });
+    await renderAdminApp('/editor/post/abc123', {
+      locationState: { editorReturn: '/posts/analytics/abc123' },
+    });
+
+    await expect.element(editorScreen.analyticsBackLink()).toBeVisible();
+    await expect
+      .element(editorScreen.status())
+      .toHaveTextContent('Published but failed to send newsletter.');
+  });
+
+  it('keeps the status line when a save fails', async () => {
+    fakePublishedPost();
+    fakeAdminEndpoint(
+      'PUT',
+      /^\/posts\/abc123\/\?/,
+      { errors: [{ type: 'InternalServerError' }] },
+      { status: 500 },
+    );
+    await renderAdminApp('/editor/post/abc123', {
+      locationState: { editorReturn: '/posts/analytics/abc123' },
+    });
+
+    await expect.element(editorScreen.analyticsBackLink()).toBeVisible();
+    await expect(editorScreen.status()).toHaveCount(0);
+    await editorScreen.body().click();
+    await userEvent.keyboard('{End} more');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    // A 500 without a reason is worded by the editor, not by the transport's endpoint summary.
+    await expect.element(editorScreen.status()).toHaveTextContent('Couldn’t save this post.');
+  });
+});
+
+/**
+ * An editor opened by an app leads back to the app, at the route it was on, in
+ * place of the list it belongs to. Admin passes the route as router state, so
+ * rendering with it is also what a reload of the editor sees.
+ */
+describe('Editor app breadcrumb', () => {
+  const appRoute = '/apps/6a1b2c3d4e5f60718293a4b5';
+
+  function fakePublished(postType: 'post' | 'page') {
+    const resource = postType === 'post' ? 'posts' : 'pages';
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/${resource}/abc123/\\?`), {
+      [resource]: [
+        post({
+          id: 'abc123',
+          title: 'Published',
+          status: 'published',
+          lexical: buildLexicalParagraph('Published'),
+          published_at: '2026-01-01T00:00:00.000Z',
+        }),
+      ],
+    });
+  }
+
+  it.each([
+    { postType: 'post', editorReturn: appRoute },
+    { postType: 'page', editorReturn: `${appRoute}/episodes/12?tab=notes` },
+    { postType: 'post', editorReturn: `${appRoute}/#/episodes` },
+  ] as const)(
+    'leads a $postType back to the app at $editorReturn',
+    async ({ postType, editorReturn }) => {
+      fakePublished(postType);
+      await renderAdminApp(`/editor/${postType}/abc123`, { locationState: { editorReturn } });
+
+      await expect.element(editorScreen.appBackLink()).toHaveAttribute('href', `#${editorReturn}`);
+      await expect(editorScreen.backLink(postType)).toHaveCount(0);
+      // Only the analytics return hides the status line.
+      await expect.element(editorScreen.status()).toBeVisible();
+    },
+  );
+
+  it.each([
+    '/apps/installation-1',
+    '/apps/install?manifest=https%3A%2F%2Fapp.example%2Fghost-app.json',
+    `${appRoute}/../../members`,
+    `${appRoute}/..`,
+    `${appRoute}x`,
+    `//example.com${appRoute}`,
+  ])('ignores the return path %s', async (editorReturn) => {
+    fakePublished('post');
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
+
+    await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
+    await expect(editorScreen.appBackLink()).toHaveCount(0);
+  });
+});
+
+describe('Editor list breadcrumb', () => {
+  afterEach(clearStickyPostFilters);
+
+  it.each([
+    { postType: 'post', returnWith: 'breadcrumb' },
+    { postType: 'page', returnWith: 'breadcrumb' },
+    { postType: 'post', returnWith: 'back' },
+    { postType: 'page', returnWith: 'back' },
+  ] as const)(
+    'returns a $postType to its filtered list with the same sort order using $returnWith and reopens it',
+    async ({ postType, returnWith }) => {
+      const resource = postType === 'post' ? 'posts' : 'pages';
+      const entry = post({ id: 'abc123', title: 'Engineering update', status: 'draft' });
+      fakeEditorChrome();
+      fakePostsListScreen();
+      const listApi = (postType === 'post' ? fakePosts : fakePages)([entry]);
+      fakeAdminEndpoint('GET', new RegExp(`^/${resource}/abc123/\\?`), { [resource]: [entry] });
+      fakeAdminEndpoint('GET', /^\/tags\/\?.*slug/, {
+        tags: [tag({ name: 'Engineering', slug: 'engineering' })],
+      });
+      const listUrl = `/${resource}?type=draft&tag=engineering&order=title+asc`;
+      await renderAdminApp(listUrl);
+
+      await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
+      await postsListScreen.listItems().first().click();
+      await expect.element(editorScreen.root()).toBeVisible();
+      await expect.element(editorScreen.backLink(postType)).toHaveAttribute('href', `#${listUrl}`);
+      if (returnWith === 'breadcrumb') {
+        await editorScreen.backLink(postType).click();
+      } else {
+        window.history.back();
+      }
+
+      await expect.poll(currentRoute).toBe(listUrl);
+      await expect.element(postsListScreen.filterBar()).toHaveTextContent('Engineering');
+      expect(
+        listApi.requests.some(
+          (request) => request.filter?.includes('tag:engineering') && request.order === 'title asc',
+        ),
+      ).toBe(true);
+
+      // Reopening the same row after returning still mounts the editor.
+      await expect(editorScreen.root()).toHaveCount(0);
+      await postsListScreen.listItems().first().click();
+      await expect.element(editorScreen.root()).toBeVisible();
+    },
+  );
+});

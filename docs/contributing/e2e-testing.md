@@ -207,8 +207,7 @@ await page.keyboard.type('Hello World');
 
 ## Ghost-Specific Patterns
 
-Ember Admin commonly uses `data-test-*` attributes and the React Admin apps use
-`data-testid`. Prefer a role, label, or unique visible text where one exists.
+Admin uses `data-testid` attributes. Prefer a role, label, or unique visible text where one exists.
 
 ### Admin URLs
 

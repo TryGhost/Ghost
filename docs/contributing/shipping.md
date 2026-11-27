@@ -23,9 +23,34 @@ checks pass.
 The public Ghost release contains a Ghost Admin build to keep self-hosted
 installs easy to manage.
 
-## Public apps
+## npm packages
 
-These public apps are npm packages served through jsDelivr:
+The monorepo publishes packages to npm through two lanes. Which lane a package
+is on is the one piece of hand-maintained state:
+[`tools/scripts/release/publish-manifest.json`](../../tools/scripts/release/publish-manifest.json)
+lists the continuous lane; every other publishable package is on the changeset
+lane.
+
+### Continuous lane
+
+A package in the manifest publishes from CI whenever a merge to `main` changes
+what it ships. The repo never records the version that went out: `package.json`
+pins the line the package lives in, and npm holds the moving part.
+
+- `versioning: patch` pins `major.minor`. Each publish is the next patch in that
+  line. The public apps use this.
+- `versioning: prerelease` pins `X.Y.Z-<tag>.0`. Each publish is the next
+  `X.Y.Z-<tag>.N`, under the `distTag` the entry names. Alpha packages use this
+  until they graduate to the changeset lane. Shade and the app SDK publish this
+  way under `latest`, so a plain install gets their newest release, and the
+  upgrade adapter base under `alpha`.
+
+CI publishes only when the package really changed. The affected graph selects
+candidates; the job then builds each one at the live version, packs it, and
+compares the tarball's integrity hash against npm's record. A dependency bump
+that never reaches the output publishes nothing.
+
+The public apps served through jsDelivr are the `cdn` entries:
 
 - `@tryghost/portal`
 - `@tryghost/sodo-search`
@@ -34,16 +59,31 @@ These public apps are npm packages served through jsDelivr:
 - `@tryghost/announcement-bar`
 - `@tryghost/admin-toolbar`
 
-The full list lives in
-[`scripts/public-apps.json`](../../scripts/public-apps.json). When one changes on
-`main`, CI publishes a new patch version to npm and clears the jsDelivr cache.
 Sites load the latest patch in the major/minor line configured by Ghost, so a
-patch can go live without a Ghost release.
+patch can go live without a Ghost release. jsDelivr caches which patch that is
+for twelve hours, so CI purges the jsDelivr aliases. A purge only takes effect
+once npm lists the new version, which takes a few minutes, so the `Purge CDN`
+job of every CI run on main waits for the versions that run published and then
+purges each alias that serves an older patch than npm lists. Nothing else in
+the run waits for it. If a later push cancels the run first, a later run's
+`Purge CDN` job purges the alias instead. That is best effort: a later run
+that gets to the job before npm lists the version finds nothing to purge and
+passes, and the patch then waits for the run after it, or goes live when
+jsDelivr's twelve hours are up.
 
-A minor or major app release is different. It changes the major/minor version
-pinned by Ghost. The new line becomes the default when that change is included
-in a public Ghost release and the site upgrades. See the app's README for that
-release process.
+A minor or major app release is different. It changes the
+major/minor version pinned by Ghost. The new line becomes the default when that
+change is included in a public Ghost release and the site upgrades. See the
+app's README for that release process.
+
+### Changeset lane
+
+Everything else publishable (`koenig/*`, `packages/*`, `contracts/*`) is versioned in the repo
+by `pnpm version -r` from the release intents in `.changeset/`, as part of the
+weekly Ghost release, and published from the release tag by
+`publish-packages.yml`. A pull request that changes one of these packages must
+add an intent with `pnpm change`; CI fails otherwise. Graduating a continuous
+package means removing its manifest entry and adding an intent.
 
 ## Public Ghost releases
 

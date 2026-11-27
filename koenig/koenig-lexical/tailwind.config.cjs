@@ -95,7 +95,10 @@ module.exports = {
         fontFamily: {
             sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
             serif: 'Georgia, Times, serif',
-            mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace'
+            mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace',
+            // The content fonts, which a host can swap through these variables
+            body: 'var(--kg-font-body, Georgia, Times, serif)',
+            heading: 'var(--kg-font-heading, Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif)'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.15), 0px 13px 27px -5px rgba(50, 50, 93, 0.08), 0px 8px 16px -8px rgba(0, 0, 0, 0.12)',
@@ -185,6 +188,7 @@ module.exports = {
                 md: '1.5rem',
                 lg: '1.8rem',
                 xl: '2rem',
+                body: 'calc(2rem * var(--kg-font-body-scale, 1))',
                 '2xl': '2.4rem',
                 '3xl': '3rem',
                 '4xl': '3.6rem',

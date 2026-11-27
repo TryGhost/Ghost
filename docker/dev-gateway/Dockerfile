@@ -1,8 +1,8 @@
-FROM caddy:2.11.4-builder-alpine@sha256:0aa610043dab5da82ad0a0268e46bb852785e6f5160f12f1c6fe3f42903d7e1b AS builder
+FROM caddy:2.11.9-builder-alpine@sha256:d26fbc8a56ed8c3c1534f5573162d148ad3ed41732665da8526eb181fac0b728 AS builder
 
 RUN xcaddy build --with github.com/caddyserver/transform-encoder@ba4124974830222da7f12a091cf11ddf4d49363f
 
-FROM caddy:2-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b
+FROM caddy:2-alpine@sha256:78bd35025c7ba85961dd149ae670315129954e77abe2383ac47c89106b35ade9
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
@@ -13,8 +13,6 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 # dev server — they have no *_DEV_SERVER entry here.
 ENV GHOST_BACKEND=ghost-dev:2368 \
     ADMIN_DEV_SERVER=host.docker.internal:5174 \
-    ADMIN_LIVE_RELOAD_SERVER=host.docker.internal:4200 \
-    LEXICAL_DEV_SERVER=host.docker.internal:4173 \
     ANALYTICS_PROXY_TARGET=analytics:3000 \
     ACTIVITYPUB_PROXY_TARGET=host.docker.internal:8080
 

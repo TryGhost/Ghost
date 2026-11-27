@@ -27,4 +27,10 @@ describe('util/options', function () {
       message: 'Params must be a string or array',
     });
   });
+
+  it('throws error for non-string array items', function () {
+    assert.throws(() => optionsUtil.trimAndLowerCase(['peanut', 42]), {
+      message: 'Params must contain only strings',
+    });
+  });
 });

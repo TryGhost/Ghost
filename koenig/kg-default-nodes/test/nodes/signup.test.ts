@@ -12,11 +12,10 @@ describe('SignupNode', function () {
     let dataset: SignupData;
     let exportOptions: Record<string, unknown>;
 
-    const editorTest = (testFn: () => void) => () => new Promise<void>((resolve, reject) => {
+    const editorTest = (testFn: () => void | Promise<void>) => () => new Promise<void>((resolve, reject) => {
         editor.update(() => {
             try {
-                testFn();
-                resolve();
+                resolve(testFn());
             } catch (e) {
                 reject(e);
             }
@@ -202,11 +201,11 @@ describe('SignupNode', function () {
             </g>
         </svg>`;
 
-        it('creates signup element', editorTest(function () {
+        it('creates signup element', editorTest(async function () {
             const signupNode = $createSignupNode(dataset);
             const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            assertPrettifiesTo(element.outerHTML, html`
+            await assertPrettifiesTo(element.outerHTML, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form=""  style="display: none;">
                     <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
                     <div class="kg-signup-card-content">
@@ -233,14 +232,14 @@ describe('SignupNode', function () {
             `);
         }));
 
-        it('does not render text colors with a transparent background', editorTest(function () {
+        it('does not render text colors with a transparent background', editorTest(async function () {
             dataset.backgroundColor = 'transparent';
             dataset.backgroundImageSrc = '';
 
             const signupNode = $createSignupNode(dataset);
             const result = signupNode.exportDOM(editor, exportOptions);
             const element = result.element as HTMLElement;
-            assertPrettifiesTo(element.outerHTML, html`
+            await assertPrettifiesTo(element.outerHTML, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="background-color: transparent; display:none">
                 <div class="kg-signup-card-content">
                     <div class="kg-signup-card-text kg-align-center">

@@ -2,10 +2,12 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToggleCard} from '../components/ui/cards/ToggleCard';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
+import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function ToggleNodeComponent({nodeKey, headingEditor, headingEditorInitialState, contentEditor, contentEditorInitialState}) {
@@ -25,6 +27,7 @@ export function ToggleNodeComponent({nodeKey, headingEditor, headingEditorInitia
         headingEditor.setEditable(isEditing);
         contentEditor.setEditable(isEditing);
     }, [isEditing, headingEditor, contentEditor]);
+    useEditModeAfterReadOnly(isEditing, headingEditor, contentEditor);
 
     return (
         <>
@@ -37,6 +40,8 @@ export function ToggleNodeComponent({nodeKey, headingEditor, headingEditorInitia
                 headingPlaceholder={'Toggle header'}
                 isEditing={isEditing}
             />
+
+            <CardSettingsPanel />
 
             <ActionToolbar
                 data-kg-card-toolbar="toggle"

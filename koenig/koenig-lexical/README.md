@@ -2,6 +2,10 @@
 
 Ghost editor, based on the Lexical framework.
 
+The package is published as an ES module only. Consuming apps import the editor
+from `@tryghost/koenig-lexical` and its stylesheet from
+`@tryghost/koenig-lexical/style.css`.
+
 ## Development
 
 The editor can be run in two modes:
@@ -16,12 +20,12 @@ Run `pnpm dev` to start the editor in standalone mode for development on http://
 
 All Koenig packages are part of the Ghost monorepo workspace, so no linking is
 needed — run `pnpm dev:lexical` from the monorepo root. That starts the normal
-Ghost dev environment plus the editor's `dev:integrated` target: a rebuild
-watcher for the editor (and kg-default-nodes / kg-default-transforms) and a
-preview server on port 4173 that the dev gateway proxies to Admin's
-`EDITOR_URL`.
+Ghost dev environment plus the editor's `dev:integrated` target, which rebuilds
+the editor (and kg-default-nodes / kg-default-transforms) on every change. In
+this mode Admin's dev server reads the editor's `dist` directly instead of
+pre-bundling it.
 
-Now, if you navigate to Ghost Admin at http://localhost:2368/ghost and open a post, it will use your local version of the editor. Changes to the editor will be reflected inside Ghost Admin after a few seconds - the time for the editor to get rebuilt.
+Now, if you open a post in Ghost Admin (http://localhost:2368/ghost in the main checkout), it uses your local version of the editor. Changes to the editor reach Admin a few seconds later, once the editor has been rebuilt.
 
 ### Specific card setup
 
@@ -50,6 +54,64 @@ The main module source. `/src/index.js` is the entry point for the exposed modul
 
 Used for developing/demoing the editor. Renders a blank editor with all features enabled.
 
+### Read-only
+
+Lexical's editable flag on the top-level editor is the one switch. An app makes
+the editor read-only with `setEditable(false)` on the editor instance it gets
+from `registerAPI`, and editable again with `setEditable(true)`. While the flag
+is off the document can be read, selected and copied, and nothing the reader
+does in the editor changes it:
+
+- typing, pasting and dropping do nothing. Lexical ignores its own input
+  events, and Koenig refuses the rest: input the browser would still apply in
+  the moment before the change is rendered, and anything dropped on the
+  document, which is also kept from the browser so a dropped link or file is
+  not opened
+- placing the cursor rewrites nothing. The text shortcuts for dashes, dividers
+  and the paywall, and the tidying of an unfinished link search, wait for the
+  next change once the editor is editable again
+- the format and link toolbars, the plus and slash card menus, and the emoji,
+  link search, Unsplash, GIF and video thumbnail pickers are not rendered,
+  including one that was open when the flag went off. The image editor is a
+  window of its own and stays open, but what it saves is refused
+- no card is selected or in edit mode, and none can be selected, edited,
+  inserted, deleted or dragged. A card that was open is closed, a drag under
+  way is abandoned, and an empty card is not removed, since that would change
+  the document
+- a card takes no pointer input and no new focus, and a control in it that
+  already had focus gets no keys or clicks, so its own buttons, links, inputs
+  and media controls do nothing. Shortcuts with Ctrl or Cmd pass untouched to
+  the browser and the app, and Tab still moves focus, so text can be copied and
+  focus can leave the card. A card's text is still part of a selection drawn
+  across it, of find-in-page and of the accessibility tree
+- a file chosen in a file dialog that was opened before the flag went off is
+  not taken
+- a picker, link field or name field a card had open is closed for good, not
+  shown again when the editor is editable. Link search results are offered
+  again with the editor's next change, if the cursor is still in the search.
+  The Unsplash and GIF selectors are the exception: each is all there is of
+  its card until an image is chosen, so it is shown again
+
+The flag does not cover:
+
+- updates the app makes itself, with `editor.update()` or the API it gets from
+  `registerAPI`, such as `insertParagraphAtTop`. Lexical allows those in a
+  read-only editor. `insertFiles` is the exception: it inserts cards, which is
+  refused
+- work a card had already started, such as fetching a bookmark or picking a
+  colour from the screen, which fills the card in when it finishes
+- links in the text. They are ordinary links in a read-only document and open
+  when clicked
+
+A card's nested editor has an editable flag of its own, which in most cards
+follows the card's edit mode. Lexical copies the top-level flag to every nested
+editor when it changes, so those cards put their editors back once the editor
+is editable again: a card that is not being edited stays closed.
+
+The `readOnly` prop is a different, narrower thing: it only turns off drag
+reordering and adds a `readonly` attribute to the content element. It does not
+set the flag, and the editor can still be typed in.
+
 ### Styling
 
 **CSS**
@@ -61,7 +123,29 @@ All styles are scoped under `.koenig-lexical` class to avoid clashes and keep st
 - Styles located in `src/styles/` are included in the final built module.
 - Styles located in `demo/*.css` are only used in the demo and will not be included in the built module.
 
-When packaging the module, styles are included inside the JS file rather than being separate to allow for a single import of the module in the consuming app.
+When packaging the module, styles are built into a separate `dist/style.css`, which consuming apps import alongside the module.
+
+**Content fonts**
+
+A host can restyle the text a writer writes by setting these variables on an
+ancestor of `.koenig-lexical`. Each falls back to the editor's own typography,
+so a host that sets none sees no change.
+
+| Variable                            | Applies to                                                                        | Default                 |
+| ----------------------------------- | --------------------------------------------------------------------------------- | ----------------------- |
+| `--kg-font-body`                    | Paragraphs, lists, quotes, tables, the placeholder and callout, toggle and CTA text | Georgia                 |
+| `--kg-font-body-scale`              | Multiplies the body's font sizes                                                  | `1`                     |
+| `--kg-font-body-line-height`        | The body's line height                                                            | `1.6em`                 |
+| `--kg-font-body-tracking`           | The body's letter spacing                                                         | inherited               |
+| `--kg-font-heading`                 | Headings, and the heading and subheading text of header, signup, product and toggle cards | Inter         |
+| `--kg-font-heading-scale`           | Multiplies the H1–H6 font sizes                                                   | `1`                     |
+| `--kg-font-heading-tracking-scale`  | Multiplies the H1–H6 letter spacing                                               | `1`                     |
+| `--kg-font-code-size`               | Inline code's font size, relative to the text around it                           | `.8em`                  |
+| `--kg-font-code-vertical-align`     | Inline code's vertical alignment; `baseline` suits code set at the body's size    | `middle`                |
+
+In Tailwind, `font-body`, `font-heading` and `text-body` read the same variables.
+Captions, buttons, link previews and the editor's own controls are not content
+and always stay in Inter.
 
 **SVGs**
 
@@ -92,8 +176,21 @@ Package tests live in `test/unit/` and `test/e2e/`, with shared test helpers in
 - `pnpm test:slowmo` runs headed acceptance tests with a 100ms delay between
   instructions (some tests may fail or time out due to the added delays)
 
+Acceptance tests start their own Vite demo server on port 5185, separate from
+Admin's development server on 5174. They never reuse an existing server or move
+to another port if it is occupied. Set `KOENIG_TEST_PORT` when running tests from
+multiple worktrees, for example `KOENIG_TEST_PORT=5186 pnpm test:acceptance`.
+The port must be an integer between 1 and 65535.
+
+Use `pnpm dev:test` to run the test demo manually on the same configurable port.
+The acceptance runner requires that port to be free, so stop the manual server
+before running tests. For collaboration development, `pnpm dev:multiplayer`
+starts the demo and WebSocket server together; acceptance tests do not start the
+unused WebSocket server.
+
 The acceptance-test commands use these environment variables:
 
+- `KOENIG_TEST_PORT=5186` changes the demo server port.
 - `PLAYWRIGHT_HEADED=true` shows the browser UI.
 - `PLAYWRIGHT_HTML_REPORT=true` generates an HTML report.
 - `PLAYWRIGHT_SLOWMO=100` adds a delay in milliseconds between browser actions.

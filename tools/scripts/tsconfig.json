@@ -1,0 +1,9 @@
+{
+  "extends": "@internal/cfg-typescript/esm.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["es2024", "esnext.array"],
+    "erasableSyntaxOnly": true
+  },
+  "include": ["**/*.ts"]
+}

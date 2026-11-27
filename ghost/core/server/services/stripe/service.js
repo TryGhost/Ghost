@@ -1,0 +1,95 @@
+const _ = require('lodash');
+const StripeService = require('./stripe-service');
+const logging = require('@tryghost/logging');
+const { tracer, meter } = require('../../lib/tracing');
+const { stripeTracking } = require('./tracking');
+const sentry = require('../../../shared/sentry');
+const membersService = require('../members');
+const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils').default;
+const events = require('../../lib/common/events');
+const models = require('../../models');
+const { WebhookStore } = require('./webhook-store');
+const { getConfig } = require('./config');
+const settingsHelpers = require('../settings-helpers');
+const donationService = require('../donations').default;
+const giftService = require('../gifts');
+const staffService = require('../staff').default;
+const labs = require('../../../shared/labs');
+const settingsCache = require('../../../shared/settings-cache');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+  remoteWebhooksWithoutStripe:
+    'stripeRemoteWebhooks is set but Stripe is not connected, so no webhook endpoint was registered. Connect Stripe in Ghost Admin under Settings, then restart.',
+};
+
+async function configureApi() {
+  const cfg = getConfig({ settingsHelpers, config, urlUtils });
+  if (cfg) {
+    cfg.testEnv = config.isTestEnv();
+    await module.exports.configure(cfg);
+    return true;
+  }
+  return false;
+}
+
+const debouncedConfigureApi = _.debounce(() => {
+  configureApi().catch((err) => {
+    logging.error(err);
+  });
+}, 600);
+
+module.exports = new StripeService({
+  labs,
+  tracking: stripeTracking({ tracer, meter }),
+  sentry,
+  membersService,
+  models: _.pick(models, [
+    'Product',
+    'StripePrice',
+    'StripeProduct',
+    'MemberStripeCustomer',
+    'Offer',
+    'Settings',
+  ]),
+  StripeWebhook: new WebhookStore({
+    settingsCache,
+    Settings: models.Settings,
+    transaction: (fn) => models.Base.transaction(fn),
+  }),
+  donationService,
+  giftService,
+  staffService,
+  settingsCache,
+  // Read each time it's used, as the site's uuid is a site fact (see docs/practices/dependencies.md).
+  siteUuid: () => settingsCache.get('site_uuid'),
+});
+
+function stripeSettingsChanged(model) {
+  if (
+    [
+      'stripe_publishable_key',
+      'stripe_secret_key',
+      'stripe_connect_publishable_key',
+      'stripe_connect_secret_key',
+    ].includes(model.get('key'))
+  ) {
+    debouncedConfigureApi();
+  }
+}
+
+module.exports.init = async function init() {
+  try {
+    const configured = await configureApi();
+    if (!configured && config.get('stripeRemoteWebhooks') === true) {
+      logging.warn(tpl(messages.remoteWebhooksWithoutStripe));
+    }
+  } catch (err) {
+    logging.error(err);
+  }
+
+  events
+    .removeListener('settings.edited', stripeSettingsChanged)
+    .on('settings.edited', stripeSettingsChanged);
+};

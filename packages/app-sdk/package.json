@@ -1,0 +1,100 @@
+{
+  "name": "@tryghost/app-sdk",
+  "version": "0.1.0-alpha.0",
+  "description": "The SDK apps use to talk to Ghost: from their page inside Admin, from their backend, and from their tooling",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "packages/app-sdk"
+  },
+  "bin": {
+    "ghost-app": "build/bin.js"
+  },
+  "files": [
+    "build",
+    "dist"
+  ],
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./backend": {
+      "source": "./src/backend/index.ts",
+      "types": "./build/backend.d.ts",
+      "default": "./build/backend.js"
+    },
+    "./tooling": {
+      "source": "./src/tooling/index.ts",
+      "types": "./build/tooling.d.ts",
+      "default": "./build/tooling.js"
+    },
+    "./vite": {
+      "source": "./src/vite/index.ts",
+      "types": "./build/vite.d.ts",
+      "default": "./build/vite.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build --mode package && vite build",
+    "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
+    "lint:code": "eslint src/ --cache",
+    "lint:test": "eslint test/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@quilted/threads": "catalog:",
+    "commander": "catalog:",
+    "jose": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@internal/cfg-vitest": "workspace:*",
+    "@tryghost/app-contracts": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "rolldown-plugin-dts": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "vite": ">=6"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "nx": {
+    "targets": {
+      "test": {
+        "dependsOn": [
+          "build"
+        ]
+      },
+      "build": {
+        "outputs": [
+          "{projectRoot}/build",
+          "{projectRoot}/dist"
+        ]
+      }
+    }
+  }
+}

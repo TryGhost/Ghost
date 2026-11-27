@@ -1,0 +1,125 @@
+import { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen } from '@testing-library/react';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  TabsTriggerCount,
+} from '../../../../src/components/ui/tabs';
+import { render } from '../../utils/test-utils';
+
+describe('Tabs Component', () => {
+  it('preserves void elements while reserving underline label width', () => {
+    render(
+      <Tabs defaultValue="first" variant="underline">
+        <TabsList>
+          <TabsTrigger value="first">
+            <img alt="" src="/avatar.png" />
+            First
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>,
+    );
+
+    const tab = screen.getByRole('tab', { name: 'First' });
+    expect(tab.querySelectorAll('img')).toHaveLength(1);
+  });
+
+  it('keeps sizing copies out of tab names and renders count badges once', () => {
+    render(
+      <Tabs defaultValue="first" variant="underline">
+        <TabsList>
+          <TabsTrigger value="first">
+            <>
+              <span>First</span>
+            </>
+            <TabsTriggerCount>12</TabsTriggerCount>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>,
+    );
+
+    expect(screen.getByRole('tab', { name: /^First\s*12$/ })).toBeTruthy();
+    expect(screen.getAllByText('12')).toHaveLength(1);
+  });
+
+  it('preserves the slotted element when reserving underline label width', () => {
+    render(
+      <Tabs defaultValue="first" variant="underline">
+        <TabsList>
+          <TabsTrigger value="first" asChild>
+            <a href="#first">First</a>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>,
+    );
+
+    const tab = screen.getByRole('tab', { name: 'First' });
+    expect(tab.tagName).toBe('A');
+    expect(tab.getAttribute('href')).toBe('#first');
+  });
+
+  it('gives tab counts a distinct semantic background', () => {
+    render(
+      <Tabs defaultValue="first" variant="underline">
+        <TabsList>
+          <TabsTrigger value="first">
+            First<TabsTriggerCount>12</TabsTriggerCount>
+          </TabsTrigger>
+          <TabsTrigger value="second">Second</TabsTrigger>
+        </TabsList>
+      </Tabs>,
+    );
+
+    const count = screen.getByText('12');
+
+    expect(count.className).toMatch(/bg-secondary/);
+    expect(count.className).toMatch(/text-xs/);
+    expect(count.className).not.toMatch(/bg-surface-elevated/);
+    expect(count.className).not.toMatch(/text-sm/);
+  });
+
+  it('commits a focused field before changing tabs and changes value once', () => {
+    const handleBlur = vi.fn();
+    const handleValueChange = vi.fn();
+
+    const TestTabs = () => {
+      const [value, setValue] = useState('first');
+
+      return (
+        <Tabs
+          value={value}
+          onValueChange={(nextValue) => {
+            handleValueChange(nextValue);
+            setValue(nextValue);
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="first">First</TabsTrigger>
+            <TabsTrigger value="second">Second</TabsTrigger>
+          </TabsList>
+          <TabsContent value="first">
+            <input aria-label="Field" onBlur={handleBlur} />
+          </TabsContent>
+          <TabsContent value="second">Second panel</TabsContent>
+        </Tabs>
+      );
+    };
+
+    render(<TestTabs />);
+    const input = screen.getByRole('textbox', { name: 'Field' });
+    const secondTab = screen.getByRole('tab', { name: 'Second' });
+    act(() => input.focus());
+
+    fireEvent.mouseDown(secondTab);
+    act(() => secondTab.focus());
+
+    expect(handleBlur.mock.calls.length, 'Blur handler should run before the panel unmounts').toBe(
+      1,
+    );
+    expect(handleValueChange.mock.calls.length, 'Value change handler should run once').toBe(1);
+    expect(secondTab.getAttribute('aria-selected')).toBe('true');
+  });
+});

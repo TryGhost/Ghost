@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/signup-renderer', function () {
     const loadingIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
@@ -19,6 +19,11 @@ describe('renderers/signup-renderer', function () {
             </style>
         </g>
     </svg>`;
+
+    // Values containing characters that are special in HTML and in CSS
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+    const badColor = 'red; width: 100%';
 
     function getTestData(overrides = {}) {
         return {
@@ -50,12 +55,12 @@ describe('renderers/signup-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display: none">
                     <picture>
                         <img class="kg-signup-card-image" src="https://example.com/image.jpg" alt="" />
@@ -129,10 +134,84 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('removes empty elements', function () {
+        it('writes button text and the success message as text', function () {
+            const result = renderForWeb(getTestData({buttonText: badText, successMessage: badText}));
+            const document = createDocument(result.html);
+            const button = document.querySelector('.kg-signup-card-button-default');
+            const success = document.querySelector('.kg-signup-card-success');
+
+            assert.equal(button?.textContent, badText);
+            assert.equal(button?.children.length, 0);
+            assert.equal(success?.textContent?.trim(), badText);
+            assert.equal(success?.children.length, 0);
+        });
+
+        it('renders HTML entities in button text as their characters', function () {
+            const result = renderForWeb(getTestData({buttonText: 'Subscribe &rarr;'}));
+
+            assert.equal(createDocument(result.html).querySelector('.kg-signup-card-button-default')?.textContent, 'Subscribe →');
+        });
+
+        it('keeps the header, subheader and disclaimer as HTML', function () {
+            const result = renderForWeb(getTestData({header: 'Join <b>us</b>', subheader: 'Every <i>week</i>', disclaimer: 'No <em>spam</em>'}));
+            const document = createDocument(result.html);
+
+            assert.equal(document.querySelector('.kg-signup-card-heading')?.innerHTML, 'Join <b>us</b>');
+            assert.equal(document.querySelector('.kg-signup-card-subheading')?.innerHTML, 'Every <i>week</i>');
+            assert.equal(document.querySelector('.kg-signup-card-disclaimer')?.innerHTML, 'No <em>spam</em>');
+        });
+
+        it('writes each label as stored, including labels containing special characters or that aren\'t strings', function () {
+            const result = renderForWeb(getTestData({labels: [badText, 'Q&amp;A', 123, null]}));
+            const inputs = Array.from(createDocument(result.html).querySelectorAll('input[data-members-label]'));
+
+            assert.deepEqual(inputs.map(input => input.getAttributeNames()), Array(4).fill(['data-members-label', 'type', 'value']));
+            assert.deepEqual(inputs.map(input => input.getAttribute('value')), [badText, 'Q&amp;A', '123', '']);
+        });
+
+        it('renders a background image and layout containing special characters', function () {
+            const badLayout = 'regular" x="<y>';
+            const result = renderForWeb(getTestData({backgroundImageSrc: badUrl, layout: badLayout}));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-signup-card');
+            const image = document.querySelector('.kg-signup-card-image');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-lexical-signup-form', 'style']);
+            assert.ok(card?.getAttribute('class')?.startsWith(`kg-card kg-signup-card kg-width-${badLayout}`));
+            assert.deepEqual(image?.getAttributeNames(), ['class', 'src', 'alt']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+        });
+
+        it('ignores a colour that isn\'t in a supported format', function () {
+            const result = renderForWeb(getTestData({
+                backgroundImageSrc: '',
+                backgroundColor: badColor,
+                textColor: badColor,
+                buttonColor: '#000000',
+                buttonTextColor: badColor
+            }));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-signup-card') as HTMLElement;
+            const button = document.querySelector('.kg-signup-card-button') as HTMLElement;
+
+            assert.deepEqual(Array.from(card.style), ['display']);
+            assert.deepEqual(Array.from(button.style), ['background-color']);
+            for (const selector of ['.kg-signup-card-heading', '.kg-signup-card-subheading', '.kg-signup-card-success', '.kg-signup-card-error', '.kg-signup-card-disclaimer']) {
+                assert.equal(document.querySelector(selector)?.hasAttribute('style'), false, selector);
+            }
+
+            const withBadButtonColor = renderForWeb(getTestData({buttonColor: badColor, buttonTextColor: '#ffffff'}));
+            const otherButton = createDocument(withBadButtonColor.html).querySelector('.kg-signup-card-button') as HTMLElement;
+
+            assert.deepEqual(Array.from(otherButton.style), ['color']);
+            assert.equal(otherButton.classList.contains('kg-style-accent'), true);
+        });
+
+        it('removes empty elements', async function () {
             const result = renderForWeb(getTestData({header: '', subheader: '', disclaimer: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                     <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""/></picture>
                     <div class="kg-signup-card-content">
@@ -156,10 +235,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders accent classes', function () {
+        it('renders accent classes', async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', buttonColor: 'accent', backgroundImageSrc: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
@@ -185,10 +264,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders split classes', function () {
+        it('renders split classes', async function () {
             const result = renderForWeb(getTestData({layout: 'split', textColor: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -215,10 +294,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders split card swapped', function () {
+        it('renders split card swapped', async function () {
             const result = renderForWeb(getTestData({layout: 'split', swapped: true, textColor: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-swapped" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -245,10 +324,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders background size', function () {
+        it('renders background size', async function () {
             const result = renderForWeb(getTestData({layout: 'split', backgroundSize: 'contain', textColor: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-content-wide" data-lexical-signup-form="" style="background-color: transparent; display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -275,10 +354,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('renders text color styles with non-transparent background', function () {
+        it('renders text color styles with non-transparent background', async function () {
             const result = renderForWeb(getTestData({backgroundColor: '#ffffff'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                 <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                     <div class="kg-signup-card-content">
@@ -305,10 +384,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('applies the accent color class if there is no background image', function () {
+        it('applies the accent color class if there is no background image', async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', backgroundImageSrc: ''}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
@@ -334,10 +413,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it('applies the accent color class with a split layout', function () {
+        it('applies the accent color class with a split layout', async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', layout: 'split'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-layout-split kg-width-full kg-style-accent" data-lexical-signup-form="" style="display:none">
                     <div class="kg-signup-card-content">
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
@@ -364,10 +443,10 @@ describe('renderers/signup-renderer', function () {
             `);
         });
 
-        it(`doesn't apply the accent color class if there is a background image`, function () {
+        it(`doesn't apply the accent color class if there is a background image`, async function () {
             const result = renderForWeb(getTestData({backgroundColor: 'accent', backgroundImageSrc: 'https://example.com/image.jpg'}));
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <div class="kg-card kg-signup-card kg-width-regular" data-lexical-signup-form="" style="display:none">
                     <picture>
                         <img

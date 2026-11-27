@@ -8,7 +8,10 @@ import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export function ProductCard({
+    visibilitySettings = null,
+    showVisibilitySettings = false,
     isEditing,
+    imgAlt,
     imgSrc,
     isButtonEnabled,
     buttonText,
@@ -20,6 +23,7 @@ export function ProductCard({
     onButtonUrlChange,
     onRatingToggle,
     imgDragHandler,
+    onImgAltChange,
     onImgChange,
     imgMimeTypes,
     imgUploader,
@@ -34,10 +38,45 @@ export function ProductCard({
 }) {
     const showFilledButton = !!buttonUrl && !!buttonText && isButtonEnabled;
     const showButtonInEditMode = isButtonEnabled && isEditing;
+    const contentSettings = (
+        <>
+            <ToggleSetting
+                dataTestId="product-rating-toggle"
+                isChecked={isRatingEnabled}
+                label='Rating'
+                onChange={onRatingToggle}
+            />
+            <ToggleSetting
+                dataTestId="product-button-toggle"
+                isChecked={isButtonEnabled}
+                label='Button'
+                onChange={onButtonToggle}
+            />
+            {isButtonEnabled && (
+                <>
+                    <InputSetting
+                        dataTestId="product-button-text-input"
+                        label='Button text'
+                        placeholder='Add button text'
+                        value={buttonText}
+                        onChange={onButtonTextChange}
+                    />
+                    <InputUrlSetting
+                        dataTestId="product-button-url-input"
+                        label='Button URL'
+                        value={buttonUrl}
+                        onChange={onButtonUrlChange}
+                    />
+                </>
+            )}
+        </>
+    );
+
     return (
         <>
             <div className="mx-auto my-4 flex w-full max-w-[550px] flex-col rounded-md border border-grey/40 p-5 font-sans dark:border-grey/20">
                 <ProductCardImage
+                    imgAlt={imgAlt}
                     imgDragHandler={imgDragHandler}
                     imgMimeTypes={imgMimeTypes}
                     imgSrc={imgSrc}
@@ -45,6 +84,7 @@ export function ProductCard({
                     isEditing={isEditing}
                     isPinturaEnabled={isPinturaEnabled}
                     openImageEditor={openImageEditor}
+                    onImgAltChange={onImgAltChange}
                     onImgChange={onImgChange}
                     onRemoveImage={onRemoveImage}
                 />
@@ -60,7 +100,7 @@ export function ProductCard({
                                     initialEditor={titleEditor}
                                     initialEditorState={titleEditorInitialState}
                                     nodes='minimal'
-                                    placeholderClassName="whitespace-normal !font-sans !text-2xl !leading-[1.1] !font-bold !tracking-tight text-black dark:text-grey-50 opacity-40"
+                                    placeholderClassName="whitespace-normal !font-heading !text-2xl !leading-[1.1] !font-bold !tracking-tight text-black dark:text-grey-50 opacity-40"
                                     placeholderText="Product title"
                                     singleParagraph={true}
                                     textClassName="koenig-lexical-heading heading-xsmall whitespace-normal"
@@ -81,7 +121,7 @@ export function ProductCard({
                                 hasSettingsPanel={true}
                                 initialEditor={descriptionEditor}
                                 initialEditorState={descriptionEditorInitialState}
-                                placeholderClassName="!text-[1.6rem] !font-sans !font-normal !tracking-tight !leading-snug text-grey-700 opacity-50"
+                                placeholderClassName="!text-[1.6rem] !font-heading !font-normal !tracking-tight !leading-snug text-grey-700 opacity-50"
                                 placeholderText="Description"
                                 textClassName="koenig-lexical-subheading subheading-xsmall whitespace-normal text-grey-700"
                             />
@@ -97,36 +137,12 @@ export function ProductCard({
             </div>
 
             {isEditing && (
-                <SettingsPanel>
-                    <ToggleSetting
-                        dataTestId="product-rating-toggle"
-                        isChecked={isRatingEnabled}
-                        label='Rating'
-                        onChange={onRatingToggle}
-                    />
-                    <ToggleSetting
-                        dataTestId="product-button-toggle"
-                        isChecked={isButtonEnabled}
-                        label='Button'
-                        onChange={onButtonToggle}
-                    />
-                    {isButtonEnabled && (
-                        <>
-                            <InputSetting
-                                dataTestId="product-button-text-input"
-                                label='Button text'
-                                placeholder='Add button text'
-                                value={buttonText}
-                                onChange={onButtonTextChange}
-                            />
-                            <InputUrlSetting
-                                dataTestId="product-button-url-input"
-                                label='Button URL'
-                                value={buttonUrl}
-                                onChange={onButtonUrlChange}
-                            />
-                        </>
-                    )}
+                <SettingsPanel
+                    settingsLabel="Content"
+                    showVisibilitySettings={showVisibilitySettings}
+                    visibilitySettings={visibilitySettings}
+                >
+                    {contentSettings}
                 </SettingsPanel>
             )}
 
@@ -136,7 +152,10 @@ export function ProductCard({
 }
 
 ProductCard.propTypes = {
+    visibilitySettings: PropTypes.node,
+    showVisibilitySettings: PropTypes.bool,
     isEditing: PropTypes.bool,
+    imgAlt: PropTypes.string,
     imgSrc: PropTypes.string,
     isButtonEnabled: PropTypes.bool,
     buttonText: PropTypes.string,
@@ -147,6 +166,7 @@ ProductCard.propTypes = {
     onButtonTextChange: PropTypes.func,
     onButtonUrlChange: PropTypes.func,
     onRatingToggle: PropTypes.func,
+    onImgAltChange: PropTypes.func,
     onImgChange: PropTypes.func,
     onRemoveImage: PropTypes.func,
     imgDragHandler: PropTypes.object,

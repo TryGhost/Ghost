@@ -1,5 +1,6 @@
 import React from 'react';
 import type {Doc} from 'yjs';
+import type {VisibilitySetting} from '../utils/visibility';
 
 export interface FileTypeConfig {
     mimeTypes: string[];
@@ -92,6 +93,11 @@ export interface CardConfig {
     feature?: CardConfigFeature;
     post?: CardConfigPost;
     snippets?: Snippet[];
+    stripeEnabled?: boolean;
+    // 'none' hides card visibility settings
+    visibilitySettings?: VisibilitySetting;
+    // card types whose visibility the backend can honour; every card when unset
+    visibilityCardTypes?: string[];
     [key: string]: unknown;
 }
 
@@ -108,6 +114,10 @@ export interface KoenigComposerContextType {
     multiplayerUsername?: string;
     createWebsocketProvider: (id: string, yjsDocMap: Map<string, Doc>) => unknown;
     onWordCountChangeRef: React.MutableRefObject<((counts: unknown) => void) | null>;
+    onSelectionWordCountChangeRef: React.MutableRefObject<((count: number | null) => void) | null>;
+    // keyed by editor key; SelectionWordCountPlugin instances share it across nested editors
+    selectionWordCountsRef: React.MutableRefObject<Map<string, number | null>>;
+    lastEmittedSelectionWordCountRef: React.MutableRefObject<number | null | undefined>;
     onError?: (error: Error) => void;
     dragDropHandler?: unknown;
     [key: string]: unknown;
@@ -140,7 +150,10 @@ export const defaultKoenigComposerContext: KoenigComposerContextType = {
     createWebsocketProvider() {
         throw new Error('KoenigComposerContext createWebsocketProvider was called outside KoenigComposer');
     },
-    onWordCountChangeRef: {current: null}
+    onWordCountChangeRef: {current: null},
+    onSelectionWordCountChangeRef: {current: null},
+    selectionWordCountsRef: {current: new Map()},
+    lastEmittedSelectionWordCountRef: {current: undefined}
 };
 
 const KoenigComposerContext = React.createContext<KoenigComposerContextType>(defaultKoenigComposerContext);

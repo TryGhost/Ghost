@@ -6,6 +6,7 @@ const productProperties = {
     productImageSrc: {default: '', urlType: 'url'},
     productImageWidth: {default: null as number | null},
     productImageHeight: {default: null as number | null},
+    productImageAlt: {default: ''},
     productTitle: {default: '', urlType: 'html', wordCount: true},
     productDescription: {default: '', urlType: 'html', wordCount: true},
     productRatingEnabled: {default: false},
@@ -15,25 +16,28 @@ const productProperties = {
     productUrl: {default: ''}
 } satisfies DecoratorNodePropertyMap;
 
-export type ProductData = DecoratorNodeData<typeof productProperties>;
+export type ProductData = DecoratorNodeData<typeof productProperties, true>;
 
 export class ProductNode extends generateDecoratorNode({
     nodeType: 'product',
+    hasVisibility: true,
     properties: productProperties,
     defaultRenderFn: renderProductNode
 }) {
     /* override */
     exportJSON() {
         // checks if src is a data string
-        const {productImageSrc, productImageWidth, productImageHeight, productTitle, productDescription, productRatingEnabled, productStarRating, productButtonEnabled, productButton, productUrl} = this;
+        const {productImageSrc, productImageWidth, productImageHeight, productImageAlt, productTitle, productDescription, productRatingEnabled, productStarRating, productButtonEnabled, productButton, productUrl} = this;
         const isBlob = productImageSrc && productImageSrc.startsWith('data:');
 
         const dataset = {
+            ...super.exportJSON(),
             type: 'product',
             version: 1,
             productImageSrc: isBlob ? '<base64String>' : productImageSrc,
             productImageWidth,
             productImageHeight,
+            productImageAlt,
             productTitle,
             productDescription,
             productRatingEnabled,

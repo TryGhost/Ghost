@@ -1,0 +1,190 @@
+import assert from 'node:assert/strict';
+import { setImmediate } from 'node:timers/promises';
+import sinon from 'sinon';
+import type donationsRoot from '../../../../../core/server/services/donations';
+import type { DonationPaymentEvent } from '../../../../../core/server/services/donations/donation-payment-event';
+import type { DonationCheckout } from '../../../../../core/server/services/stripe/webhook/webhook-event';
+
+// Keep the real CommonJS identities used by the factory and Stripe's composition.
+const models = require('../../../../../core/server/models');
+const StripeService = require('../../../../../core/server/services/stripe/stripe-service');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
+const labs = require('../../../../../core/shared/labs');
+const settingsCache = require('../../../../../core/shared/settings-cache');
+const ROOT_PATH = require.resolve('../../../../../core/server/services/donations');
+const { IncorrectUsageError } = require('@tryghost/errors');
+
+type DonationsRoot = typeof donationsRoot;
+
+function donation(): DonationCheckout {
+  return {
+    amount: 2500,
+    currency: 'gbp',
+    customerId: null,
+    donor: { name: 'A reader', email: 'reader@example.com' },
+    message: 'Keep writing',
+    attribution: {
+      attributionId: null,
+      attributionUrl: null,
+      attributionType: null,
+      referrerSource: null,
+      referrerMedium: null,
+      referrerUrl: null,
+      utmSource: 'newsletter',
+      utmMedium: null,
+      utmCampaign: null,
+      utmTerm: null,
+      utmContent: null,
+    },
+  };
+}
+
+describe('donations root with its Stripe consumer', function () {
+  const sandbox = sinon.createSandbox();
+  let previousModule: NodeJS.Module | undefined;
+  let root: DonationsRoot;
+  let stripe: InstanceType<typeof StripeService>;
+  let add: sinon.SinonStub;
+  let notifyDonationReceived: sinon.SinonStub<
+    [{ donationPaymentEvent: DonationPaymentEvent }],
+    Promise<void>
+  >;
+
+  beforeEach(function () {
+    previousModule = require.cache[ROOT_PATH];
+    delete require.cache[ROOT_PATH];
+    add = sandbox.stub(models.DonationPaymentEvent, 'add').resolves({ id: 'saved-donation' });
+    notifyDonationReceived = sandbox
+      .stub<[{ donationPaymentEvent: DonationPaymentEvent }], Promise<void>>()
+      .resolves();
+    root = require(ROOT_PATH).default;
+
+    // Boot constructs Stripe before initializing donations. The consumer must
+    // look up the repository later, when the checkout webhook arrives.
+    const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+    stripe = new StripeService({
+      labs,
+      tracking: stripeTracking({
+        tracer: createTracer(shipNothing),
+        meter: createMeter(shipNothing),
+      }),
+      settingsCache,
+      models,
+      donationService: root,
+      membersService: { api: { members: {} } },
+      giftService: {},
+      staffService: { service: { emails: { notifyDonationReceived } } },
+      StripeWebhook: {},
+    });
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+    // Other suites may retain the old root. Restore its full cache entry,
+    // rather than leaving them with a different instance from future imports.
+    delete require.cache[ROOT_PATH];
+    if (previousModule) {
+      require.cache[ROOT_PATH] = previousModule;
+    }
+  });
+
+  it('constructs one ready repository during boot without writing or notifying staff', async function () {
+    assert.equal(require(ROOT_PATH).default, root);
+    assert.throws(() => root.service, IncorrectUsageError);
+    sinon.assert.notCalled(add);
+    sinon.assert.notCalled(notifyDonationReceived);
+
+    const initialization = root.init();
+    assert.equal(root.init(), initialization);
+    await initialization;
+    const repository = root.service;
+    await root.init();
+
+    assert.equal(root.service, repository);
+    sinon.assert.notCalled(add);
+    sinon.assert.notCalled(notifyDonationReceived);
+  });
+
+  it('lets the earlier Stripe consumer save and notify through the initialized repository', async function () {
+    await root.init();
+    const save = sandbox.spy(root.service, 'save');
+
+    const result = await stripe.webhookCommands.donation_checkout(donation());
+
+    assert.deepEqual(result, { result: 'handled' });
+    sinon.assert.calledOnce(save);
+    assert.equal(await save.firstCall.returnValue, undefined);
+    sinon.assert.calledOnceWithExactly(add, {
+      name: 'A reader',
+      email: 'reader@example.com',
+      member_id: null,
+      amount: 2500,
+      currency: 'gbp',
+      donation_message: 'Keep writing',
+      attribution_id: null,
+      attribution_url: null,
+      attribution_type: null,
+      referrer_source: null,
+      referrer_medium: null,
+      referrer_url: null,
+      utm_source: 'newsletter',
+      utm_medium: null,
+      utm_campaign: null,
+      utm_term: null,
+      utm_content: null,
+    });
+    sinon.assert.calledOnce(notifyDonationReceived);
+    sinon.assert.calledWithExactly(notifyDonationReceived, {
+      donationPaymentEvent: save.firstCall.args[0],
+    });
+  });
+
+  it('keeps checkout handling pending and does not notify staff until the model write finishes', async function () {
+    let releaseWrite!: () => void;
+    const write = new Promise<void>((resolve) => {
+      releaseWrite = resolve;
+    });
+    add.returns(write);
+    await root.init();
+
+    let completed = false;
+    const handling: Promise<void> = stripe.webhookCommands
+      .donation_checkout(donation())
+      .then(() => {
+        completed = true;
+      });
+    const settled = handling.catch(() => {});
+
+    try {
+      // Allow the handler's promise continuations to run while the write stays
+      // held, so a missing await cannot pass on an early assertion.
+      await setImmediate();
+      sinon.assert.calledOnce(add);
+      assert.equal(completed, false, 'Checkout handling finished before the donation was saved');
+      sinon.assert.notCalled(notifyDonationReceived);
+
+      releaseWrite();
+      await handling;
+      sinon.assert.calledOnce(notifyDonationReceived);
+    } finally {
+      releaseWrite();
+      await settled;
+    }
+  });
+
+  it('propagates the model write failure unchanged without notifying staff', async function () {
+    const failure = new Error('The donation could not be saved');
+    add.rejects(failure);
+    await root.init();
+
+    await assert.rejects(
+      stripe.webhookCommands.donation_checkout(donation()),
+      (error: unknown) => error === failure,
+    );
+
+    sinon.assert.calledOnce(add);
+    sinon.assert.notCalled(notifyDonationReceived);
+  });
+});

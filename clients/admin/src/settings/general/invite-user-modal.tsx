@@ -1,0 +1,375 @@
+import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
+import { navigateTo } from '@/utils/navigation';
+import validator from 'validator';
+import { useGlobalData } from '@/settings/providers/global-data-context';
+import {
+  APIError,
+  JSONError,
+  HostLimitError,
+  ValidationError,
+  getErrorMessage,
+} from '@tryghost/admin-x-framework/errors';
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  Input,
+  Link,
+  RadioGroup,
+  RadioGroupItem,
+} from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
+import { toast } from 'sonner';
+import { useAddInvite, useBrowseInvites } from '@tryghost/admin-x-framework/api/invites';
+import { useBrowseRoles } from '@tryghost/admin-x-framework/api/roles';
+import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
+import { type FormEvent, useEffect, useState } from 'react';
+import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
+import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+
+type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
+
+const USER_ALREADY_REGISTERED_CODE = 'USER_ALREADY_REGISTERED';
+const USER_ALREADY_EXISTS_ERROR = 'A user with that email address already exists.';
+
+function InviteUserModal() {
+  const rolesQuery = useBrowseRoles();
+  const assignableRolesQuery = useBrowseRoles({
+    searchParams: { limit: '100', permissions: 'assign' },
+  });
+  const limiter = useLimiter();
+  const upgradeRoute = useUpgradeRoute();
+  const { config } = useGlobalData();
+  const hasInvitationLimits =
+    config?.hostSettings?.limits?.allStaff || config?.hostSettings?.limits?.inviteEmails;
+
+  const { updateRoute } = useSettingsNavigation();
+  const editorBeta = useFeatureFlag('superEditors');
+  const [invitationError, setInvitationError] = useState<string>();
+  const [email, setEmail] = useState<string>('');
+  const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error' | ''>('');
+  const [role, setRole] = useState<RoleType>('contributor');
+  const [errors, setErrors] = useState<{
+    email?: string;
+    role?: string;
+  }>({});
+
+  const { data: { users } = {} } = useBrowseUsers();
+  const { data: { invites } = {} } = useBrowseInvites();
+  const { mutateAsync: addInvite } = useAddInvite();
+  const handleError = useHandleError();
+
+  useEffect(() => {
+    if (saveState === 'saved') {
+      setTimeout(() => {
+        setSaveState('');
+      }, 2000);
+    }
+  }, [saveState]);
+
+  useEffect(() => {
+    const checkLimits = async () => {
+      try {
+        if (limiter?.isLimited('allStaff')) {
+          await limiter.errorIfWouldGoOverLimit('allStaff');
+        }
+        if (role !== 'contributor' && limiter?.isLimited('staff')) {
+          await limiter.errorIfWouldGoOverLimit('staff');
+        }
+        setErrors((e) => ({ ...e, role: undefined }));
+      } catch (error) {
+        if (error instanceof HostLimitError) {
+          setErrors((e) => ({ ...e, role: error.message }));
+        } else {
+          throw error;
+        }
+      }
+    };
+    void checkLimits();
+  }, [limiter, role]);
+
+  if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
+    return null;
+  }
+
+  const roles = rolesQuery.data.roles;
+  const assignableRoles = assignableRolesQuery.data.roles;
+
+  let okLabel = 'Send invitation';
+  if (saveState === 'saving') {
+    okLabel = 'Sending...';
+  } else if (saveState === 'saved') {
+    okLabel = 'Invite sent!';
+  } else if (saveState === 'error') {
+    okLabel = 'Retry';
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (saveState === 'saving' || invitationError) {
+      return;
+    }
+
+    if (!validator.isEmail(email)) {
+      setErrors({
+        email: 'Please enter a valid email address.',
+      });
+      return;
+    }
+
+    if (users?.some(({ email: userEmail }) => userEmail === email)) {
+      setErrors({
+        email: USER_ALREADY_EXISTS_ERROR,
+      });
+      return;
+    }
+
+    if (invites?.some(({ email: inviteEmail }) => inviteEmail === email)) {
+      setErrors({
+        email: 'A user with that email address was already invited.',
+      });
+      return;
+    }
+
+    if (errors.role) {
+      return;
+    }
+
+    setSaveState('saving');
+    try {
+      await addInvite({
+        email,
+        roleId: roles.find(({ name }) => name.toLowerCase() === role.toLowerCase())!.id,
+      });
+
+      setSaveState('saved');
+
+      toast.success(`Invitation sent`, { description: `${email}` });
+
+      updateRoute('staff?tab=invited');
+    } catch (e) {
+      const validationError = e instanceof ValidationError ? e.data?.errors[0] : undefined;
+
+      if (validationError?.code === USER_ALREADY_REGISTERED_CODE) {
+        setSaveState('');
+        setErrors({
+          email: USER_ALREADY_EXISTS_ERROR,
+        });
+        return;
+      }
+
+      if (e instanceof JSONError && e.data?.errors?.[0]?.type === 'HostLimitError') {
+        setSaveState('');
+        setInvitationError(getErrorMessage(e, e.data.errors[0].message));
+        return;
+      }
+      if (e instanceof APIError && e.response?.status === 429) {
+        setSaveState('error');
+        handleError(e);
+        return;
+      }
+      setSaveState('error');
+      const title = 'Failed to send invitation';
+      let message = (
+        <span>
+          If the problem persists, <Link href="https://ghost.org/contact">contact support</Link>.
+        </span>
+      );
+      if (e instanceof APIError) {
+        const data = e.data as { errors?: Array<{ type?: string }> } | undefined;
+        if (data?.errors?.[0]?.type === 'EmailError') {
+          message = <span>Check your Mailgun configuration.</span>;
+        }
+      }
+      toast.error(title, { description: message });
+      handleError(e, { withToast: false });
+      return;
+    }
+  };
+
+  const roleOptions = [
+    {
+      hint: 'Can create and edit their own posts, but cannot publish. An Editor needs to approve and publish for them.',
+      label: 'Contributor',
+      value: 'contributor',
+    },
+    {
+      hint: 'A trusted user who can create, edit and publish their own posts, but can’t modify others.',
+      label: 'Author',
+      value: 'author',
+    },
+    {
+      hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site.',
+      label: 'Editor',
+      value: 'editor',
+    },
+    {
+      hint: 'Trusted staff user who should be able to manage all content and users, as well as site settings and options.',
+      label: 'Administrator',
+      value: 'administrator',
+    },
+  ];
+
+  // If the editor beta is enabled, replace the editor role option with super editor options.
+  // This gets a little weird, because we aren't changing what is actually assigned based on the toggle.
+  // So, a site could have the editor beta enabled, but that doesn't automatically convert their editors.
+  // (Editors can be up/downgraded by reassigning them in this modal.  For 6.0, we should decide whether
+  // the old editors are going away or whether both roles are staying, and tidy this up then.)
+
+  if (editorBeta) {
+    roleOptions[2] = {
+      hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site. Can manage members and moderate comments.',
+      label: 'Editor (beta mode)',
+      value: 'super editor',
+    };
+  }
+  const allowedRoleOptions = roleOptions.filter((option) => {
+    return assignableRoles.some((r) => {
+      return (
+        r.name === option.label ||
+        (r.name === 'Super Editor' && option.label === 'Editor (beta mode)')
+      );
+    });
+  });
+
+  if (errors.email) {
+    okLabel = 'Retry';
+  }
+
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) {
+          updateRoute('staff');
+        }
+      }}
+    >
+      <DialogContent className="flex max-h-[85vh] flex-col" data-testid="invite-user-modal" asChild>
+        <form onSubmit={(event) => void handleSubmit(event)}>
+          <DialogHeader>
+            <DialogTitle>Invite a new staff user</DialogTitle>
+            <DialogDescription>
+              Send an invitation for a new person to create a staff account on your site, and select
+              a role that matches what you’d like them to be able to do.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogClose asChild>
+            <Button
+              aria-label="Close modal"
+              className="absolute top-6 right-6 -m-2 opacity-50 hover:opacity-100 md:hidden"
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <LucideIcon.X />
+            </Button>
+          </DialogClose>
+          <Stack className="-mx-6 min-h-0 flex-1 overflow-y-auto px-6" gap="xl">
+            <Field data-invalid={Boolean(errors.email) || undefined}>
+              <FieldLabel htmlFor="invite-email">Email address</FieldLabel>
+              <Input
+                aria-invalid={Boolean(errors.email) || undefined}
+                autoComplete="off"
+                id="invite-email"
+                placeholder="jamie@example.com"
+                value={email}
+                autoFocus
+                data-1p-ignore
+                onChange={(event) => setEmail(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') {
+                    setErrors((e) => ({ ...e, email: undefined }));
+                  }
+                }}
+              />
+              {errors.email && <FieldError>{errors.email}</FieldError>}
+            </Field>
+            <FieldSet>
+              <FieldLegend id="invite-role-legend" variant="label">
+                Role
+              </FieldLegend>
+              <RadioGroup
+                aria-describedby={errors.role ? 'invite-role-error' : undefined}
+                aria-invalid={!!errors.role || undefined}
+                aria-labelledby="invite-role-legend"
+                name="role"
+                value={role}
+                onValueChange={(value) => setRole(value as RoleType)}
+              >
+                {allowedRoleOptions.map((option) => {
+                  const id = `invite-role-${option.value.replace(/\s+/g, '-')}`;
+                  return (
+                    <Field
+                      key={option.value}
+                      className="has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-0"
+                      orientation="horizontal"
+                    >
+                      <RadioGroupItem id={id} value={option.value} />
+                      <FieldContent>
+                        <FieldLabel htmlFor={id}>{option.label}</FieldLabel>
+                        <FieldDescription>{option.hint}</FieldDescription>
+                      </FieldContent>
+                    </Field>
+                  );
+                })}
+              </RadioGroup>
+              {(errors.role || invitationError) && (
+                <FieldError id="invite-role-error">
+                  {invitationError || errors.role}
+                  {hasInvitationLimits && (
+                    <>
+                      {' '}
+                      <Link
+                        className="border-b border-current text-inherit no-underline"
+                        href={upgradeRoute.startsWith('/') ? `#${upgradeRoute}` : upgradeRoute}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          navigateTo(upgradeRoute);
+                        }}
+                      >
+                        Upgrade to invite more people{' '}
+                        <LucideIcon.ArrowRight
+                          aria-hidden="true"
+                          className="inline size-3 align-middle"
+                        />
+                      </Link>
+                    </>
+                  )}
+                </FieldError>
+              )}
+            </FieldSet>
+          </Stack>
+          <DialogFooter className="shrink-0">
+            <Button type="button" variant="outline" onClick={() => updateRoute('staff')}>
+              Close
+            </Button>
+            <Button
+              disabled={saveState === 'saving' || !!invitationError}
+              type="submit"
+              variant={saveState === 'error' || !!errors.email ? 'destructive' : 'default'}
+            >
+              {okLabel}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default InviteUserModal;

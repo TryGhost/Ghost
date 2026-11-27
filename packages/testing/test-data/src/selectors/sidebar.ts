@@ -1,14 +1,19 @@
 /**
  * Admin sidebar selector strings, consumed by the admin screen helpers and
- * the e2e page objects. Source of truth: apps/admin/src/layout/app-sidebar.
+ * the e2e page objects. Source of truth: clients/admin/src/layout/app-sidebar.
  */
 
 // testids
 export const adminSidebar = 'admin-sidebar';
 export const networkNotificationBadge = 'network-notification-badge';
 
+// element ids
+/** The member views submenu, which the "Toggle member views" button controls. */
+export const memberViewsMenu = 'members-submenu';
+
 // accessible names
 export const postsToggle = 'Toggle post views';
+export const createPostLink = 'Create new post';
 export const userMenuTrigger = 'User menu';
 /** Contributors get a floating avatar menu instead of the sidebar. */
 export const contributorMenuTrigger = 'Open user menu';
@@ -24,6 +29,11 @@ export const systemAppearanceOption = 'System appearance';
 export const themeErrorsDialog = 'Theme errors';
 export const ghostProLink = 'Ghost(Pro)';
 export const upgradeNowLink = 'Upgrade now';
+/** admin7Design moves Help from the sidebar to the user menu. */
+export const helpMenuItem = 'Help';
+/** The admin7Design floating sidebar's pin button, by state. */
+export const pinSidebarButton = 'Pin sidebar';
+export const unpinSidebarButton = 'Unpin sidebar';
 
 // text fragments
 export const themeErrorsBannerText = 'Your theme has errors';

@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/video-renderer', function () {
+    // URLs containing characters that are special in HTML attributes and in CSS
+    const badThumbnailSrc = 'https://example.org/a>b <c>.jpg';
+    const badCustomThumbnailSrc = 'https://example.org/it\'s "a" (thumbnail)\\ 1.jpg';
+    const encodedBadCustomThumbnailSrc = 'https://example.org/it%27s%20%22a%22%20(thumbnail)%5C%201.jpg';
+
     function getTestData(overrides = {}) {
         return {
             src: '/content/images/2022/11/koenig-lexical.mp4',
@@ -28,12 +33,12 @@ describe('renderers/video-renderer', function () {
     }
 
     describe('web', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForWeb(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-video-card kg-card-hascaption" data-kg-thumbnail="/content/images/2022/11/koenig-lexical.jpg" data-kg-custom-thumbnail="/content/images/2022/11/koenig-lexical-custom.jpg">
                     <div class="kg-video-container">
                         <video src="/content/images/2022/11/koenig-lexical.mp4" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="200" height="100" playsinline="" preload="metadata" style="aspect-ratio: 200 / 100; background: transparent url('/content/images/2022/11/koenig-lexical-custom.jpg') 50% 50% / cover no-repeat;"></video>
@@ -107,6 +112,33 @@ describe('renderers/video-renderer', function () {
             assert.ok(result.html.includes('poster="data:image/gif;base64,'));
         });
 
+        it('renders thumbnail URLs containing special characters', function () {
+            const result = renderForWeb(getTestData({thumbnailSrc: badThumbnailSrc, customThumbnailSrc: badCustomThumbnailSrc}));
+            const document = createDocument(result.html);
+            const figure = document.querySelector('figure.kg-video-card');
+            const video = document.querySelector('video');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(figure?.getAttributeNames(), ['class', 'data-kg-thumbnail', 'data-kg-custom-thumbnail']);
+            assert.equal(figure?.getAttribute('data-kg-thumbnail'), badThumbnailSrc);
+            assert.equal(figure?.getAttribute('data-kg-custom-thumbnail'), badCustomThumbnailSrc);
+            assert.equal(video?.getAttribute('style'), `aspect-ratio: 200 / 100; background: transparent url('${encodedBadCustomThumbnailSrc}') 50% 50% / cover no-repeat;`);
+        });
+
+        it('renders a file URL, dimensions and card width containing special characters', function () {
+            const badSrc = 'https://example.org/a"b>c.mp4?x=1&y=<2>';
+            const result = renderForWeb(getTestData({src: badSrc, width: '200" x="', height: '100>', cardWidth: 'wide" x="'}));
+            const document = createDocument(result.html);
+            const video = document.querySelector('video');
+
+            assert.equal(document.body.children.length, 1);
+            assert.equal(video?.getAttribute('src'), badSrc);
+            assert.equal(video?.getAttribute('width'), '200" x="');
+            assert.equal(video?.getAttribute('height'), '100>');
+            assert.equal(video?.hasAttribute('x'), false);
+            assert.equal(document.querySelector('figure')?.getAttribute('class'), 'kg-card kg-video-card kg-width-wide" x=" kg-card-hascaption');
+        });
+
         it('renders loop attribute', function () {
             const result = renderForWeb(getTestData({loop: true}));
 
@@ -115,12 +147,12 @@ describe('renderers/video-renderer', function () {
     });
 
     describe('email', function () {
-        it('matches snapshot for default test data', function () {
+        it('matches snapshot for default test data', async function () {
             const result = renderForEmail(getTestData());
 
             assert.ok(result.html);
 
-            assertPrettifiesTo(result.html, html`
+            await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-video-card kg-card-hascaption">
                     <!--[if !mso !vml]-->
                     <a class="kg-video-preview" href="https://test.com/post/" aria-label="Play video" style="mso-hide: all">
@@ -166,6 +198,28 @@ describe('renderers/video-renderer', function () {
             assert.ok(result.html.includes('https://img.spacergif.org/v1/150x338/0a/spacer.png'));
             assert.ok(result.html.includes('height:338px;'));
             assert.ok(!result.html.includes('NaN'));
+        });
+
+        it('renders a thumbnail URL containing special characters', function () {
+            const result = renderForEmail(getTestData({customThumbnailSrc: badCustomThumbnailSrc}));
+            const document = createDocument(result.html);
+            const table = document.querySelector('.kg-video-preview table');
+
+            assert.deepEqual(table?.getAttributeNames(), ['cellpadding', 'cellspacing', 'border', 'width', 'background', 'role', 'style']);
+            assert.equal(table?.getAttribute('background'), badCustomThumbnailSrc);
+            assert.equal(table?.getAttribute('style'), `background: url('${encodedBadCustomThumbnailSrc}') left top / cover; mso-hide: all`);
+            assert.ok(result.html.includes('<v:fill src="https://example.org/it&#039;s &quot;a&quot; (thumbnail)\\ 1.jpg" type="frame"/>'));
+        });
+
+        it('links to a video file URL containing special characters', function () {
+            const badSrc = 'https://example.org/a"b>c.mp4?x=1&y=<2>';
+            const result = renderForEmail(getTestData({src: badSrc}), {postUrl: undefined});
+            const links = Array.from(createDocument(result.html).querySelectorAll('a'));
+
+            assert.ok(links.length > 0);
+            for (const link of links) {
+                assert.equal(link.getAttribute('href'), badSrc);
+            }
         });
 
         it('links to the video file when postUrl is missing', function () {

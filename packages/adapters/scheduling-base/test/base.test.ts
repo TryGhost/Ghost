@@ -56,7 +56,7 @@ describe('SchedulingBase', function () {
 
       base.register({
         rescheduleAll: async () => {
-          // eslint-disable-next-line ghost/ghost-custom/no-native-error
+          // oxlint-disable-next-line ghost/ghost-custom/no-native-error
           throw new Error('a failed');
         },
       });
@@ -91,7 +91,7 @@ describe('SchedulingBase', function () {
       // Named classes so constructor.name reflects them in the log payload.
       class PostScheduling {
         async rescheduleAll() {
-          // eslint-disable-next-line ghost/ghost-custom/no-native-error
+          // oxlint-disable-next-line ghost/ghost-custom/no-native-error
           throw new Error('post failed');
         }
       }
@@ -101,7 +101,7 @@ describe('SchedulingBase', function () {
 
       const anonymous = new (class {
         async rescheduleAll() {
-          // eslint-disable-next-line ghost/ghost-custom/no-native-error
+          // oxlint-disable-next-line ghost/ghost-custom/no-native-error
           throw new Error('anonymous failed');
         }
       })();

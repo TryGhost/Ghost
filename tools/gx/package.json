@@ -1,0 +1,122 @@
+{
+  "name": "@internal/gx",
+  "version": "private",
+  "private": true,
+  "description": "Ghost contributor CLI",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "test:unit": "node --test test/*.test.ts",
+    "test": "pnpm run '/^test:/'",
+    "test:types": "tsc6 --noEmit"
+  },
+  "dependencies": {
+    "@internal/cfg-oxlint": "workspace:*",
+    "@internal/scripts": "workspace:*",
+    "@tryghost/errors": "catalog:",
+    "@tryghost/logging": "catalog:",
+    "@tryghost/pretty-cli": "catalog:",
+    "bson-objectid": "catalog:",
+    "chalk": "catalog:",
+    "cli-progress": "catalog:",
+    "dependency-cruiser": "catalog:",
+    "inquirer": "catalog:",
+    "js-yaml": "catalog:",
+    "jsonwebtoken": "catalog:",
+    "knex": "catalog:",
+    "knex-migrator": "catalog:",
+    "luxon": "catalog:",
+    "oxfmt": "catalog:",
+    "semver": "catalog:",
+    "tsx": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
+    "@types/js-yaml": "catalog:",
+    "@types/jsonwebtoken": "catalog:",
+    "@types/luxon": "catalog:",
+    "@types/node": "catalog:",
+    "@types/semver": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "nx": {
+    "namedInputs": {
+      "packageTemplate": [
+        "{workspaceRoot}/packages/_template/**/*"
+      ],
+      "goldenEmailCommand": [
+        "{workspaceRoot}/ghost/test/utils/fixtures/email-service/golden-post.json"
+      ],
+      "developmentTablesCommand": [
+        "{workspaceRoot}/ghost/core/server/data/schema/in-development.ts",
+        "{workspaceRoot}/ghost/core/server/data/schema/schema.ts",
+        "{workspaceRoot}/ghost/tsconfig.json",
+        "{workspaceRoot}/ghost/types/**/*.d.ts"
+      ],
+      "dataCommands": [
+        "{workspaceRoot}/ghost/bin/generate-data.ts",
+        "{workspaceRoot}/ghost/core/server/data/seeders/**/*",
+        "{workspaceRoot}/ghost/core/server/data/schema/**/*",
+        "{workspaceRoot}/ghost/core/server/models/**/*"
+      ],
+      "developmentStackCommands": [
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/.codex/hooks.json"
+      ],
+      "serviceReports": [
+        "{workspaceRoot}/.dependency-cruiser.cjs",
+        "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs",
+        "{workspaceRoot}/.dependency-cruiser-known-violations.json",
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
+      ],
+      "serviceGenerator": [
+        "{workspaceRoot}/.editorconfig",
+        "{workspaceRoot}/.oxfmtrc.json",
+        "{workspaceRoot}/.oxlintrc.json",
+        "{workspaceRoot}/tools/configs/oxlint/**/*",
+        "{workspaceRoot}/ghost/eslint.config.mjs",
+        "{workspaceRoot}/ghost/package.json",
+        "{workspaceRoot}/ghost/tsconfig.json",
+        "{workspaceRoot}/ghost/test/tsconfig.json",
+        "{workspaceRoot}/ghost/core/support/define-service.ts",
+        "{workspaceRoot}/ghost/core/server/services/README.md",
+        "{workspaceRoot}/ghost/test/unit/server/services/legacy-service-inventory.test.ts"
+      ]
+    },
+    "targets": {
+      "test:unit": {
+        "inputs": [
+          "default",
+          "^default",
+          "packageTemplate",
+          "developmentTablesCommand",
+          "goldenEmailCommand",
+          "dataCommands",
+          "developmentStackCommands",
+          "serviceReports",
+          "serviceGenerator",
+          {
+            "runtime": "node -v"
+          }
+        ]
+      },
+      "test:types": {
+        "inputs": [
+          "default",
+          "^default",
+          {
+            "input": "default",
+            "projects": "ghost"
+          },
+          {
+            "runtime": "node -v"
+          }
+        ]
+      }
+    }
+  }
+}

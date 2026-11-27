@@ -1,0 +1,118 @@
+import { QueryClient } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
+import { FrameworkProvider, type TopLevelFrameworkProps } from '@tryghost/admin-x-framework';
+
+export type TestWrapperComponent = ({ children }: { children: ReactNode }) => JSX.Element;
+
+/**
+ * Creates a test QueryClient with sensible defaults for testing
+ *
+ * Configures QueryClient for optimal test performance:
+ * - No retries (tests should pass on first attempt)
+ * - No caching (tests should be isolated)
+ */
+function createTestQueryClient(): QueryClient {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+        staleTime: 0,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  });
+}
+
+const defaultFrameworkProps: TopLevelFrameworkProps = {
+  ghostVersion: '5.x',
+  unsplashConfig: {
+    Authorization: '',
+    'Accept-Version': '',
+    'Content-Type': '',
+    'App-Pragma': '',
+    'X-Unsplash-Cache': false,
+  },
+};
+
+/**
+ * Wraps children in the runtime FrameworkProvider (which owns the
+ * QueryClientProvider) with inert framework props, mirroring the provider
+ * stack unit-tested hooks run under in the app.
+ */
+export function TestWrapper({
+  children,
+  queryClient = createTestQueryClient(),
+}: {
+  children: ReactNode;
+  queryClient?: QueryClient;
+}) {
+  return (
+    <FrameworkProvider {...defaultFrameworkProps} queryClient={queryClient}>
+      {children}
+    </FrameworkProvider>
+  );
+}
+
+/**
+ * Test fixture for QueryClient + React wrapper (PyTest-style fixtures for Vitest).
+ *
+ * Provides isolated QueryClient instance and TestWrapper for each test.
+ * Automatically cleans up QueryClient after each test.
+ *
+ * Use this fixture for:
+ * - Testing hooks without API calls (pure logic)
+ * - Testing React components that use react-query
+ * - When you DON'T need MSW server
+ *
+ * Usage:
+ *
+ * @example
+ * // Compose the fixtures into your test via vitest's test.extend
+ * import { queryClientFixtures } from "@test-utils/fixtures/query-client";
+ * import { describe, expect } from "vitest";
+ * const test = baseTest.extend({ ...queryClientFixtures });
+ *
+ * describe("useMyHook", () => {
+ *   test("computes derived state", ({ queryClient, wrapper }) => {
+ *     const { result } = renderHook(() => useMyHook(), { wrapper });
+ *     expect(result.current.value).toBe(expected);
+ *   });
+ * });
+ *
+ * @example
+ * // Tests without { queryClient, wrapper } won't initialize them (lazy initialization)
+ * test("pure logic test", () => {
+ *   expect(1 + 1).toBe(2); // No QueryClient overhead
+ * });
+ */
+/**
+ * QueryClient + wrapper fixture definitions.
+ * Can be composed with other fixtures using spread syntax.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- test fixture module, never a fast-refresh target
+export const queryClientFixtures = {
+  // Test-scoped fixture: create fresh QueryClient for each test
+  queryClient: async (
+    { task }: { task: unknown },
+    provide: (value: QueryClient) => Promise<void>,
+  ) => {
+    void task;
+    const client = createTestQueryClient();
+    await provide(client);
+    client.clear();
+  },
+
+  // Wrapper depends on queryClient fixture
+  wrapper: async (
+    { queryClient }: { queryClient: QueryClient },
+    provide: (value: TestWrapperComponent) => Promise<void>,
+  ) => {
+    const wrapper: TestWrapperComponent = ({ children }) => (
+      <TestWrapper queryClient={queryClient}>{children}</TestWrapper>
+    );
+    await provide(wrapper);
+  },
+} as const;

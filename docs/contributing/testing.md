@@ -13,24 +13,26 @@ pnpm check
 ```
 
 This is the default one-stop command for formatting checks, linting, and
-testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test` across
-the monorepo.
+testing. It runs `pnpm format:check`, `pnpm lint`, and then `pnpm test`, which
+runs every workspace's `test:unit` and `test:types` targets.
 
-`pnpm check` does not run the Playwright browser end-to-end suite or Ember
-Admin's test suite. Run those separately when your change affects those areas.
+`pnpm check` does not run app acceptance suites or the Playwright browser
+end-to-end suite. Run them separately when your change affects that area.
 
 ## Choose a Test Suite
 
 Put tests as close as possible to the code and behavior under test:
 
 - **Unit tests** cover a function, component, or package in isolation. Most
-  workspaces use Vitest and expose a `test` or `test:unit` target.
+  workspaces use Vitest and expose a `test` or `test:unit` target. App tests
+  under `clients/` assert with Vitest's `expect`; Ghost Core, the packages and
+  Koenig assert with `node:assert/strict`.
 - **Ghost Core integration tests** cover interactions between server modules
-  and live against a test database. They live in `ghost/core/test/integration/`.
+  and live against a test database. They live in `ghost/test/integration/`.
 - **Ghost Core server E2E tests** exercise the server, frontend rendering,
   webhooks, and APIs against a running Ghost instance and test database. They
-  live under `ghost/core/test/e2e-*/`. These are Vitest suites, not browser
-  tests. See the [Ghost Core E2E guide](../../ghost/core/test/README.md) for the
+  live under `ghost/test/e2e-*/`. These are Vitest suites, not browser
+  tests. See the [Ghost Core E2E guide](../../ghost/test/README.md) for the
   request agents, fixtures, mocks, and snapshot helpers.
 - **App acceptance tests** exercise an individual app through its UI. The
   framework and command vary by app, so use that workspace's
@@ -38,8 +40,6 @@ Put tests as close as possible to the code and behavior under test:
 - **Browser E2E tests** use Playwright to cover complete journeys across Ghost
   Admin and the public site. They live in `e2e/`. See
   [Writing Browser E2E Tests](e2e-testing.md) for conventions and examples.
-- **Ember Admin tests** cover the legacy Ember application in
-  `apps/ember-admin/` and run through Ember Exam via Nx.
 
 When a regression crosses several layers, prefer a focused test at the lowest
 layer that proves the fix. Add a broader acceptance or browser E2E test when the
@@ -62,6 +62,14 @@ integration between layers is itself the behavior being protected.
 - Assert the result a user or caller depends on, including important side
   effects. Avoid assertions that merely repeat how the implementation works.
 
+For async ordering, hold a collaborator's promise pending and assert that the
+next operation cannot start until it settles. Do not assume a single
+`await Promise.resolve()` advances an async chain far enough: an additional
+harmless await can change the number of microtasks. Observe a readiness signal;
+in Node tests, yielding an event-loop turn with `setImmediate()` can let the chain
+reach the held promise without counting microtasks. Check that a missing required
+await fails the test and an extra harmless await still passes.
+
 Snapshot tests are useful for stable, structured output, but a generated
 snapshot is not proof that the output is correct. Review every changed snapshot
 before committing it and add focused assertions for behaviour that should be
@@ -83,18 +91,19 @@ a prompt to inspect what is missing.
 To inspect Ghost Core unit coverage locally, run:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm test:unit --coverage
 ```
 
-The HTML report is written to `ghost/core/coverage/index.html`.
+The HTML report is written to `ghost/coverage/index.html`.
 
 For physical-device testing and URL configurations such as HTTPS,
 subdirectories, or a separate Admin origin, see
 [Testing development URLs and devices](testing-development-urls.md).
 
 For provider-backed development and the test doubles used by browser tests, see
-[Email testing](testing-email.md) and [Stripe testing](testing-stripe.md).
+[Email testing](testing-email.md), [Stripe testing](testing-stripe.md) and
+[Testing Ghost updates](testing-ghost-updates.md).
 For repeatable local datasets, see [Working with test data](test-data.md).
 
 ## Run Focused Tests
@@ -118,24 +127,57 @@ which targets it provides:
 pnpm nx show project <project-name>
 ```
 
-For Ghost Core, run its suites from `ghost/core/`:
+For Ghost Core, prefer its Nx targets from the repository root. They prepare
+workspace builds and Core assets before running the suite or selected files:
 
 ```bash
-cd ghost/core
+pnpm nx run ghost:test:unit
+pnpm nx run ghost:test:integration
+pnpm nx run ghost:test:e2e
 
-pnpm test:unit
-pnpm test:integration
-pnpm test:e2e
-pnpm test:all
+pnpm nx run ghost:test:unit test/unit/path/to/test.test.js
+pnpm nx run ghost:test:integration test/integration/path/to/test.test.js
+pnpm nx run ghost:test:e2e test/e2e-api/admin/integrations.test.js --maxWorkers=1
 ```
 
-`test:all` runs Ghost Core's unit, integration, server E2E, and lint targets. To
-run one Ghost Core test file, use:
+`pnpm bootstrap` installs dependencies but does not build workspace packages or
+Core's card assets. Direct Vitest and `pnpm test:single` commands from `ghost/`
+bypass Nx's prerequisites; use them once those outputs are prepared. Missing
+package `build/` files or `cards.manifest.json` indicate incomplete setup.
+Compiling Core with `build:tsc` is unnecessary for source tests and leaves
+adjacent JavaScript files that can shadow later TypeScript edits in CommonJS
+imports.
+
+### Unit test order
+
+Ghost Core's unit files share one module registry per worker, so state a file
+leaves behind, such as a stub, a config override, a registered Handlebars helper
+or an initialized service root, is still there for whichever file runs next. A
+test must also not rely on another test in its file having run first. CI runs
+the unit suite in a shuffled order, files and the tests inside them, to catch
+both.
+
+The shuffle uses one seed per CI run, which Vitest prints near the top of the
+unit test output:
+
+```text
+Running tests with seed "19283746501"
+```
+
+To rerun that order locally, pass the same seed. The seed isn't part of Nx's
+cache key, so skip the cache or Nx replays an earlier result:
 
 ```bash
-pnpm test:single test/unit/path/to/test.test.js
-pnpm test:single test/integration/path/to/test.test.js
+GHOST_UNIT_TEST_SEED=19283746501 pnpm nx run ghost:test:unit --skip-nx-cache
 ```
+
+Re-running the CI job keeps the seed, so it fails the same way until the order
+dependency is fixed. Fix it in the test that leaks or relies on state: restore
+what it changes in `afterEach` or `afterAll`, and set up what it needs in its
+own `beforeEach`.
+
+From `ghost/`, `pnpm test:all` runs Ghost Core's unit, integration, server E2E,
+type and lint commands after its prerequisites have been prepared.
 
 Watch mode at the repository root covers unit tests across the workspace:
 
@@ -147,7 +189,7 @@ To watch a single database-backed Ghost Core file, point Vitest at the database
 configuration explicitly:
 
 ```bash
-cd ghost/core
+cd ghost
 pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```
 
@@ -159,6 +201,19 @@ those adapters.
 
 If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
 server with `pnpm dev`.
+
+## Limit Parallel Workers
+
+Ghost Core's database-backed suites boot a Ghost per worker, and the Admin
+acceptance and browser E2E suites drive a browser per worker. Each sizes its
+workers as if it had the machine to itself, so tests running in several
+worktrees at once can exhaust memory.
+
+Set `GHOST_TEST_MACHINE_SHARE` in your shell profile to the share of the
+machine one test run may use, such as `0.5` when two worktrees run tests at
+once. Each suite scales its workers to that share by what its workers cost, so
+the suites split the machine instead of each taking all of it.
+`TEST_WORKERS_COUNT` sets an exact worker count instead.
 
 ## Run Browser E2E Tests
 
@@ -222,41 +277,21 @@ Common causes include:
    a timeout unless the operation is genuinely allowed to take longer.
 
 For browser failures, use `pnpm test:e2e --debug`, the retained Playwright trace,
-or the preserved-environment workflow in the E2E documentation. Ember Admin
-tests can temporarily use `await this.pauseTest()` as described in its README.
-Remove debugging changes before committing.
+or the preserved-environment workflow in the E2E documentation. Remove debugging
+changes before committing.
 
-## Run Ember Admin Tests
+## Run Editor Acceptance Tests
 
-Always run Ember Admin tests through Nx so its dependency graph is built first:
-
-```bash
-# From the repository root
-pnpm nx run ghost-admin:test
-```
-
-For one file, pass the numeric parallel value required by the Ember Admin test
-script before the Ember Exam arguments:
-
-```bash
-pnpm nx run ghost-admin:test -- 1 \
-  --file-path=tests/acceptance/editor/publish-flow-test.js
-```
-
-The React editor has its own acceptance specs in
-`apps/admin/src/editor/*.acceptance.test.tsx`, which run in Vitest Browser Mode
+The editor's acceptance specs live in
+`clients/admin/src/editor/*.acceptance.test.tsx` and run in Vitest Browser Mode
 through `pnpm nx test:acceptance @tryghost/admin`. See
-[the editor's README](../../apps/admin/src/editor/README.md) for the harness
+[the editor's README](../../clients/admin/src/editor/README.md) for the harness
 helpers and conventions they use.
-
-Do not run `ember test` or `ember exam` directly from `apps/ember-admin/`.
-Doing so bypasses Nx's dependency builds and can leave required Admin and
-Koenig outputs missing.
 
 ## Before Opening a Pull Request
 
-Run `pnpm check` to ensure everything works. Also run the relevant browser E2E,
-app acceptance, or Ember Admin suite when your change affects those areas.
+Run `pnpm check` to ensure everything works. Also run the relevant browser E2E
+or app acceptance suite when your change affects those areas.
 
 If a full suite is impractical locally, run the most relevant focused tests and
 state exactly what you ran in the pull request.

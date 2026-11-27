@@ -13,23 +13,35 @@ function isMobile() {
     return window.innerWidth < 768 && window.innerHeight > window.innerWidth;
 }
 
-const getSelectedCardOrigin = () => {
-    const cardElement = document.querySelector('[data-kg-card-editing="true"]');
-    if (!cardElement) {
-        return {x: 0, y: 0};
-    }
-    const containerRect = cardElement.getBoundingClientRect();
+// panels are shown for cards that are being edited, and for cards that are
+// only selected (e.g. the visibility panel on media cards), so both need to be
+// found here and in getInitialPosition - otherwise the two disagree about the
+// origin and the panel is positioned offscreen
+const getPanelCardElement = () => {
+    return document.querySelector('[data-kg-card-editing="true"]')
+        || document.querySelector('[data-kg-card-selected="true"]');
+};
 
-    // if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
-    // relative to the card element rather than the window
-    const cardStyles = window.getComputedStyle(cardElement);
+// if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
+// relative to the card element rather than the window
+const getCardOrigin = (cardElement) => {
     const origin = {x: 0, y: 0};
+
+    if (!cardElement) {
+        return origin;
+    }
+
+    const cardStyles = window.getComputedStyle(cardElement);
     if (cardStyles.transform !== 'none') {
+        const containerRect = cardElement.getBoundingClientRect();
         origin.x = containerRect.left;
         origin.y = containerRect.top;
     }
+
     return origin;
 };
+
+const getSelectedCardOrigin = () => getCardOrigin(getPanelCardElement());
 
 function getWindowWidthAdjustment(panelElem) {
     if (!panelElem) {
@@ -127,18 +139,18 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
 
     const getInitialPosition = useCallback((panelElem) => {
         const panelHeight = panelElem.offsetHeight;
-        const cardElement = positionToRef ||
-                    document.querySelector('[data-kg-card-editing="true"]') ||
-                    document.querySelector('[data-kg-card-selected="true"]');
+        const cardElement = positionToRef || getPanelCardElement();
         if (!cardElement) {
             return;
         }
         const containerRect = cardElement.getBoundingClientRect();
+        // positions are relative to the card when it has a transform, see getCardOrigin
+        const origin = getCardOrigin(cardElement);
 
         if (isMobile()) {
             // Mobile behaviour: position below card
-            const x = window.innerWidth / 2 - panelElem.offsetWidth / 2;
-            const y = containerRect.bottom + CARD_SPACING;
+            const x = window.innerWidth / 2 - panelElem.offsetWidth / 2 - origin.x;
+            const y = containerRect.bottom + CARD_SPACING - origin.y;
             return keepWithinSpacingOnDrag(panelElem, {x, y});
         }
 
@@ -149,19 +161,10 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
         // if we already have top set, leave it so that toggling additional settings doesn't cause the panel to jump (unless it would be offscreen)
         const containerMiddle = containerRect.top + (visibleHeight / 2);
 
-        let y = containerMiddle - (panelHeight) / 2;
+        let y = containerMiddle - (panelHeight) / 2 - origin.y;
 
         // position to right of panel
-        let x = containerRect.right + CARD_SPACING;
-
-        // if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
-        // relative to the card element rather than the window
-        const cardStyles = window.getComputedStyle(cardElement);
-        const origin = {x: 0, y: 0};
-        if (cardStyles.transform !== 'none') {
-            origin.x = containerRect.left;
-            origin.y = containerRect.top;
-        }
+        let x = containerRect.right + CARD_SPACING - origin.x;
 
         return keepWithinSpacingOnResize(panelElem, {x, y, origin});
     }, [positionToRef]);

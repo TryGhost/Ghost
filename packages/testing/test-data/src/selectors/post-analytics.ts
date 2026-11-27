@@ -1,6 +1,6 @@
 /**
  * Post analytics selector strings, consumed by the admin screen helpers and
- * the e2e page objects. Source of truth: apps/admin/src/posts/analytics.
+ * the e2e page objects. Source of truth: clients/admin/src/posts/analytics.
  */
 
 // testids
@@ -17,7 +17,7 @@ export const giftLinkViews = 'gift-link-views';
 export const giftLinkCardVisitors = 'gift-link-card-visitors';
 export const statsFilterContainer = 'stats-filter-container';
 export const statsFilterClearButton = 'stats-filter-clear-button';
-export const emailSendingStatusBanner = 'email-sending-status-banner';
+export const emailSendingStatusLine = 'email-sending-status-line';
 /** Per-row testid prefixes; append the source domain / country code. */
 export const sourceRowPrefix = 'source-row-';
 export const locationRowPrefix = 'location-row-';

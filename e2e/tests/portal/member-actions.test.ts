@@ -1,5 +1,5 @@
 import { APIRequestContext, Page } from '@playwright/test';
-import { HomePage, MemberDetailsPage, MembersPage } from '@/helpers/pages';
+import { HomePage, MemberDetailsPage, MembersListPage } from '@/helpers/pages';
 import { MemberFactory, createMemberFactory } from '@/data-factory';
 import { PortalAccountHomePage, PortalNewsletterManagementPage } from '@/portal-pages';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
@@ -30,7 +30,7 @@ async function createSubscribedMember(request: APIRequestContext, memberFactory:
 }
 
 async function impersonateMember(page: Page, memberName: string): Promise<void> {
-  const membersPage = new MembersPage(page);
+  const membersPage = new MembersListPage(page);
   await membersPage.goto();
   await membersPage.getMemberByName(memberName).click();
 
@@ -38,7 +38,7 @@ async function impersonateMember(page: Page, memberName: string): Promise<void> 
   await memberDetailsPage.settingsSection.memberActionsButton.click();
   await memberDetailsPage.settingsSection.impersonateButton.click();
 
-  await expect(memberDetailsPage.magicLinkInput).not.toHaveValue('');
+  await expect(memberDetailsPage.magicLinkInput).toHaveValue(/^https?:\/\/.+/);
   const magicLink = await memberDetailsPage.magicLinkInput.inputValue();
   await memberDetailsPage.goto(magicLink);
 

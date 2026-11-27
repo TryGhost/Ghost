@@ -1,0 +1,3148 @@
+import { omit } from 'lodash';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import errors from '@tryghost/errors';
+import ObjectId from 'bson-objectid';
+import createKnex, { type Knex } from 'knex';
+import moment from 'moment';
+import { NON_EMPTY_EMAIL_LEXICAL } from '../../../../utils/automations-fixtures';
+import ghostConfig from '../../../../../core/shared/config';
+import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
+import { createDatabaseAutomationsRepository2 } from '../../../../../core/server/services/automations/database-automations-repository-2';
+import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
+import type {
+  AutomationAction,
+  AutomationsRepository,
+  AutomationStatus,
+  AutomationStepToRun,
+} from '../../../../../core/server/services/automations/automations-repository';
+import { fromDatabaseDate, toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
+
+const HOUR_MS = 60 * 60 * 1000;
+const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
+
+const toRepositoryDateISOString = (date: Date | string): string =>
+  fromDatabaseDate(toDatabaseDate(date)).toISOString();
+const linkLexical = (url: string): string =>
+  JSON.stringify({
+    root: {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: 'link',
+              url,
+            },
+          ],
+        },
+      ],
+    },
+  });
+const hashRedirectDestination = (url: string): Buffer => createHash('sha256').update(url).digest();
+
+const addHours = (dateCol: unknown, hours: number): Date => {
+  assert(typeof dateCol === 'string', 'Expected date column to be a string');
+  return moment(fromDatabaseDate(dateCol)).add(hours, 'hours').toDate();
+};
+
+const createDatabase = async (): Promise<Knex> => {
+  const database = createKnex({
+    client: 'better-sqlite3',
+    connection: {
+      filename: ':memory:',
+    },
+    pool: {
+      min: 1,
+      max: 1,
+    },
+    useNullAsDefault: true,
+  });
+
+  await database.raw('PRAGMA foreign_keys = ON;');
+
+  const id = () => ObjectId().toHexString();
+  const now = () => toDatabaseDate(new Date());
+
+  const fakeEmailDesignSettingId = id();
+  const defaultEmailDesignSettingId = id();
+
+  await database.schema.createTable('members', (table) => {
+    table.text('id').primary();
+  });
+  await database('members').insert({ id: 'member_123' });
+
+  await database.schema.createTable('automations', (table) => {
+    table.text('id').primary();
+    table.text('created_at').notNullable();
+    table.text('updated_at').notNullable();
+    table.text('slug').unique();
+    table.text('name').notNullable();
+    table.text('description').notNullable();
+    table.text('status').notNullable();
+  });
+
+  await database.schema.createTable('products', (table) => {
+    table.text('id').primary();
+    table.text('type').notNullable();
+    table.boolean('active').notNullable();
+  });
+
+  await database.schema.createTable('automation_trigger_rules', (table) => {
+    table.text('id').primary();
+    table
+      .text('automation_id')
+      .notNullable()
+      .references('id')
+      .inTable('automations')
+      .onDelete('CASCADE');
+    table.text('trigger_type').notNullable();
+    table.text('scope');
+    table.text('product_id');
+    table.text('direction');
+    table.text('label_id');
+    table.dateTime('created_at').notNullable();
+  });
+
+  await database.schema.createTable('automation_actions', (table) => {
+    table.text('id').primary();
+    table.text('created_at').notNullable();
+    table.text('updated_at').notNullable();
+    table.text('deleted_at');
+    table.text('automation_id').notNullable().references('id').inTable('automations');
+    table.text('type').notNullable();
+  });
+
+  await database.schema.createTable('email_design_settings', (table) => {
+    table.text('id').primary();
+    table.text('slug').notNullable().unique();
+    table.text('created_at').notNullable();
+    table.text('updated_at');
+  });
+
+  await database.schema.createTable('welcome_email_automated_emails', (table) => {
+    table.text('id').primary();
+    table.text('welcome_email_automation_id').notNullable().references('id').inTable('automations');
+    table.text('next_welcome_email_automated_email_id');
+    table.integer('delay_days').notNullable();
+    table.text('subject').notNullable();
+    table.text('lexical');
+    table
+      .text('email_design_setting_id')
+      .notNullable()
+      .references('id')
+      .inTable('email_design_settings');
+    table.text('created_at').notNullable();
+    table.text('updated_at');
+  });
+
+  await database.schema.createTable('automation_action_revisions', (table) => {
+    table.text('id').primary();
+    table.text('created_at').notNullable();
+    table.text('action_id').notNullable().references('id').inTable('automation_actions');
+    table.integer('wait_hours');
+    table.text('email_subject');
+    table.text('email_lexical');
+    table.text('email_design_setting_id').references('id').inTable('email_design_settings');
+    table.integer('email_sent_count');
+    table.integer('email_tracked_sent_count');
+    table.integer('email_opened_count');
+    table.integer('email_clicked_count');
+    table.unique(['created_at', 'action_id']);
+  });
+
+  await database.schema.createTable('redirects', (table) => {
+    table.text('id').primary();
+    table
+      .text('automation_action_revision_id')
+      .references('id')
+      .inTable('automation_action_revisions');
+    table.text('to').notNullable();
+    table.binary('to_hash');
+    table.unique(['automation_action_revision_id', 'to_hash']);
+  });
+
+  await database.schema.createTable('members_click_events', (table) => {
+    table.text('id').primary();
+    table.text('member_id').notNullable();
+    table.text('redirect_id').notNullable().references('id').inTable('redirects');
+    table.text('created_at').notNullable();
+  });
+
+  await database.schema.createTable('automation_action_edges', (table) => {
+    table.text('source_action_id').notNullable().references('id').inTable('automation_actions');
+    table.text('target_action_id').notNullable().references('id').inTable('automation_actions');
+    table.primary(['source_action_id', 'target_action_id']);
+  });
+
+  await database.schema.createTable('automation_runs', (table) => {
+    table.text('id').primary();
+    table.text('created_at').notNullable();
+    table.text('updated_at').notNullable();
+    table.text('automation_id').notNullable().references('id').inTable('automations');
+    table.text('member_id'); // not a real foreign key here
+    table.text('member_email').notNullable();
+  });
+
+  await database.schema.createTable('automation_run_steps', (table) => {
+    table.text('id').primary();
+    table.text('created_at').notNullable();
+    table.text('updated_at').notNullable();
+    table.text('automation_run_id').notNullable().references('id').inTable('automation_runs');
+    table
+      .text('automation_action_revision_id')
+      .notNullable()
+      .references('id')
+      .inTable('automation_action_revisions');
+    table.text('ready_at').notNullable();
+    table.integer('step_attempts').notNullable().defaultTo(0);
+    table.text('started_at');
+    table.text('finished_at');
+    table.text('status').notNullable().defaultTo('pending');
+    table.text('locked_by');
+    table.text('locked_at');
+  });
+
+  await database.schema.createTable('automated_email_recipients', (table) => {
+    table.text('id').primary();
+    table
+      .text('automation_action_revision_id')
+      .references('id')
+      .inTable('automation_action_revisions');
+    table.text('automation_run_step_id').references('id').inTable('automation_run_steps');
+    table.text('member_id');
+    table.text('member_uuid');
+    table.text('member_email');
+    table.text('member_name');
+    table.text('mailgun_message_id');
+    table.datetime('delivered_at');
+    table.datetime('opened_at');
+    table.datetime('clicked_at');
+    table.boolean('track_opens').notNullable().defaultTo(false);
+    table.boolean('track_clicks').notNullable().defaultTo(false);
+    table.datetime('created_at');
+    table.datetime('updated_at');
+  });
+
+  const freeAutomationId = id();
+  const paidAutomationId = id();
+  await database('email_design_settings').insert([
+    {
+      id: defaultEmailDesignSettingId,
+      slug: 'default-automated-email',
+      created_at: now(),
+      updated_at: now(),
+    },
+    {
+      id: fakeEmailDesignSettingId,
+      slug: 'test-automation-email-design',
+      created_at: now(),
+      updated_at: now(),
+    },
+  ]);
+
+  await database('automations').insert([
+    {
+      id: freeAutomationId,
+      created_at: now(),
+      updated_at: now(),
+      slug: 'member-welcome-email-free',
+      name: 'Free member welcome flow',
+      description: 'Welcome new free members after they sign up.',
+      status: 'active',
+    },
+    {
+      id: paidAutomationId,
+      created_at: now(),
+      updated_at: now(),
+      slug: 'member-welcome-email-paid',
+      name: 'Paid member welcome flow',
+      description: 'Welcome new paid members after they start their subscription.',
+      status: 'active',
+    },
+  ]);
+
+  await database('automation_trigger_rules').insert([
+    {
+      id: ObjectId().toHexString(),
+      automation_id: freeAutomationId,
+      created_at: fromDatabaseDate(now()),
+      trigger_type: 'free_signup',
+      scope: null,
+      product_id: null,
+      direction: null,
+    },
+    {
+      id: ObjectId().toHexString(),
+      automation_id: paidAutomationId,
+      created_at: fromDatabaseDate(now()),
+      trigger_type: 'paid_subscription_started',
+      scope: 'any_paid_tier',
+      product_id: null,
+      direction: null,
+    },
+  ]);
+
+  const freeAction1Id = id();
+  const freeAction2Id = id();
+  const freeAction3Id = id();
+  const freeAction4Id = id();
+  const paidAction1Id = id();
+  const paidAction2Id = id();
+  const paidAction3Id = id();
+  const paidAction4Id = id();
+  await database('automation_actions').insert([
+    {
+      id: freeAction1Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: freeAutomationId,
+      type: 'wait',
+    },
+    {
+      id: freeAction2Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: freeAutomationId,
+      type: 'send_email',
+    },
+    {
+      id: freeAction3Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: freeAutomationId,
+      type: 'wait',
+    },
+    {
+      id: freeAction4Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: freeAutomationId,
+      type: 'send_email',
+    },
+    {
+      id: paidAction1Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: paidAutomationId,
+      type: 'wait',
+    },
+    {
+      id: paidAction2Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: paidAutomationId,
+      type: 'send_email',
+    },
+    {
+      id: paidAction3Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: paidAutomationId,
+      type: 'wait',
+    },
+    {
+      id: paidAction4Id,
+      created_at: now(),
+      updated_at: now(),
+      automation_id: paidAutomationId,
+      type: 'send_email',
+    },
+  ]);
+
+  await database('automation_action_revisions').insert([
+    {
+      id: id(),
+      created_at: now(),
+      action_id: freeAction1Id,
+      wait_hours: 48,
+      email_subject: null,
+      email_lexical: null,
+      email_design_setting_id: null,
+    },
+    {
+      id: id(),
+      created_at: now(),
+      action_id: freeAction2Id,
+      wait_hours: null,
+      email_subject: 'Welcome!',
+      email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+      email_design_setting_id: fakeEmailDesignSettingId,
+    },
+    {
+      id: id(),
+      created_at: now(),
+      action_id: freeAction3Id,
+      wait_hours: 72,
+      email_subject: null,
+      email_lexical: null,
+      email_design_setting_id: null,
+    },
+    {
+      id: id(),
+      created_at: now(),
+      action_id: freeAction4Id,
+      wait_hours: null,
+      email_subject: 'Follow up',
+      email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+      email_design_setting_id: fakeEmailDesignSettingId,
+    },
+    {
+      id: id(),
+      created_at: now(),
+      action_id: paidAction1Id,
+      wait_hours: 48,
+      email_subject: null,
+      email_lexical: null,
+      email_design_setting_id: null,
+    },
+    {
+      id: id(),
+      created_at: now(),
+      action_id: paidAction2Id,
+      wait_hours: null,
+      email_subject: 'Welcome to Paid!',
+      email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+      email_design_setting_id: fakeEmailDesignSettingId,
+    },
+    {
+      id: id(),
+      created_at: now(),
+      action_id: paidAction3Id,
+      wait_hours: 72,
+      email_subject: null,
+      email_lexical: null,
+      email_design_setting_id: null,
+    },
+    {
+      id: id(),
+      created_at: now(),
+      action_id: paidAction4Id,
+      wait_hours: null,
+      email_subject: 'Exclusive Insights',
+      email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+      email_design_setting_id: fakeEmailDesignSettingId,
+    },
+  ]);
+
+  await database('automation_action_edges').insert([
+    {
+      source_action_id: freeAction1Id,
+      target_action_id: freeAction2Id,
+    },
+    {
+      source_action_id: freeAction2Id,
+      target_action_id: freeAction3Id,
+    },
+    {
+      source_action_id: freeAction3Id,
+      target_action_id: freeAction4Id,
+    },
+    {
+      source_action_id: paidAction1Id,
+      target_action_id: paidAction2Id,
+    },
+    {
+      source_action_id: paidAction2Id,
+      target_action_id: paidAction3Id,
+    },
+    {
+      source_action_id: paidAction3Id,
+      target_action_id: paidAction4Id,
+    },
+  ]);
+
+  return database;
+};
+
+type ActionRow = {
+  revision_id: string;
+  [key: string]: unknown;
+};
+
+type RunRow = {
+  id: string;
+  [key: string]: unknown;
+};
+
+type KnexQuery = {
+  method?: string;
+  response?: unknown;
+  sql?: string;
+};
+
+// These tests are partly coupled to the *fake* repository. We should be able to
+// modify it once we have the real repository.
+describe('automations repository', function () {
+  let knex: Knex;
+  let repo: AutomationsRepository;
+
+  const getRunsByMemberEmail = async (email: string): Promise<RunRow[]> =>
+    await knex('automation_runs')
+      .select('automation_runs.*', 'automations.slug as automation_slug')
+      .innerJoin('automations', 'automations.id', 'automation_runs.automation_id')
+      .where('automation_runs.member_email', email);
+
+  const getStepByRunId = async (runId: string) =>
+    await knex('automation_run_steps')
+      .select(
+        'automation_run_steps.*',
+        'automation_actions.id as action_id',
+        'automation_actions.type as action_type',
+        'automation_action_revisions.wait_hours as wait_hours',
+        'automation_action_revisions.email_subject as email_subject',
+      )
+      .innerJoin(
+        'automation_action_revisions',
+        'automation_action_revisions.id',
+        'automation_run_steps.automation_action_revision_id',
+      )
+      .innerJoin(
+        'automation_actions',
+        'automation_actions.id',
+        'automation_action_revisions.action_id',
+      )
+      .where('automation_run_steps.automation_run_id', runId)
+      .first();
+
+  const getAutomationBySlug = async (slug: string) => {
+    const automationSummaries = await repo.browse();
+    const automationSummary = automationSummaries.data.find(
+      (automation) => automation.slug === slug,
+    );
+    assert(automationSummary);
+    const automation = await repo.getById(automationSummary.id);
+    assert(automation);
+    return automation;
+  };
+
+  const getRunCountByAutomationId = async (automationId: string) => {
+    const result = await knex('automation_runs')
+      .count({ count: '*' })
+      .where('automation_id', automationId)
+      .first();
+    return result?.count;
+  };
+
+  const getRevisionCount = async (actionId?: string) => {
+    const builder = knex('automation_action_revisions').count({ count: '*' });
+    const row = await (actionId ? builder.where('action_id', actionId) : builder).first();
+
+    return Number((row as { count: number }).count);
+  };
+
+  const getActionByIndex = async (automationId: string, index: number) => {
+    const result = await knex('automation_actions')
+      .select(
+        'automation_actions.id as action_id',
+        'automation_actions.type as action_type',
+        'automation_action_revisions.id as revision_id',
+        'automation_action_revisions.wait_hours as wait_hours',
+      )
+      .innerJoin(
+        'automation_action_revisions',
+        'automation_action_revisions.action_id',
+        'automation_actions.id',
+      )
+      .where('automation_actions.automation_id', automationId)
+      .whereNull('automation_actions.deleted_at')
+      .orderBy(['automation_actions.created_at', 'automation_actions.id'])
+      .offset(index)
+      .first();
+    assert(result, 'Expected action to exist');
+    return result as ActionRow;
+  };
+
+  const getLatestActionRevisionByActionId = async (actionId: string) => {
+    const result = await knex('automation_actions')
+      .select(
+        'automation_actions.id as action_id',
+        'automation_actions.type as action_type',
+        'automation_action_revisions.id as revision_id',
+        'automation_action_revisions.wait_hours as wait_hours',
+        'automation_action_revisions.email_lexical as email_lexical',
+        'automation_action_revisions.email_design_setting_id as email_design_setting_id',
+      )
+      .innerJoin(
+        'automation_action_revisions',
+        'automation_action_revisions.action_id',
+        'automation_actions.id',
+      )
+      .where('automation_actions.id', actionId)
+      .whereNull('automation_actions.deleted_at')
+      .orderBy('automation_action_revisions.created_at', 'desc')
+      .orderBy('automation_action_revisions.id', 'desc')
+      .first();
+    assert(result, 'Expected action revision to exist');
+    return result;
+  };
+
+  const insertAutomation = async ({
+    slug,
+    triggerTierScope,
+    triggerTierIds = [],
+    status = 'active',
+  }: {
+    slug: null | string;
+    triggerTierScope: 'free' | 'all_paid' | 'selected_paid';
+    triggerTierIds?: string[];
+    status?: AutomationStatus;
+  }) => {
+    const automationId = ObjectId().toHexString();
+    const actionId = ObjectId().toHexString();
+    const now = toDatabaseDate(new Date());
+
+    await knex('automations').insert({
+      id: automationId,
+      created_at: now,
+      updated_at: now,
+      slug,
+      name: slug ?? 'Automation with no slug',
+      description: slug ?? 'Automation with no slug',
+      status,
+    });
+    let definitions: { trigger_type: string; scope: string | null; product_id: string | null }[];
+    switch (triggerTierScope) {
+      case 'free':
+        definitions = [{ trigger_type: 'free_signup', scope: null, product_id: null }];
+        break;
+      case 'all_paid':
+        definitions = [
+          { trigger_type: 'paid_subscription_started', scope: 'any_paid_tier', product_id: null },
+        ];
+        break;
+      case 'selected_paid':
+        definitions = [...new Set(triggerTierIds)].map((product_id) => ({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id,
+        }));
+        break;
+      default:
+        throw new Error(`Unexpected trigger tier scope: ${triggerTierScope satisfies never}`);
+    }
+    const rules = definitions.map((definition) => ({
+      ...definition,
+      id: ObjectId().toHexString(),
+      automation_id: automationId,
+      created_at: fromDatabaseDate(now),
+      direction: null,
+    }));
+    if (rules.length > 0) {
+      await knex('automation_trigger_rules').insert(rules);
+    }
+    await knex('automation_actions').insert({
+      id: actionId,
+      created_at: now,
+      updated_at: now,
+      automation_id: automationId,
+      type: 'wait',
+    });
+    await knex('automation_action_revisions').insert({
+      id: ObjectId().toHexString(),
+      created_at: now,
+      action_id: actionId,
+      wait_hours: 24,
+    });
+
+    return automationId;
+  };
+
+  const insertRun = async (automationId: string, createdAt = new Date()) => {
+    const run = {
+      id: ObjectId().toHexString(),
+      created_at: toDatabaseDate(createdAt),
+      updated_at: toDatabaseDate(createdAt),
+      automation_id: automationId,
+      member_id: ObjectId().toHexString(),
+      member_email: 'member@example.com',
+    };
+
+    await knex('automation_runs').insert(run);
+
+    return run;
+  };
+
+  const normalizeDateColumns = (row: Record<string, unknown>, columns: string[]) => {
+    for (const column of columns) {
+      const value = row[column];
+      if (typeof value === 'string' || value instanceof Date) {
+        row[column] = toDatabaseDate(value);
+      }
+    }
+  };
+
+  const insertStep = async (
+    runId: string,
+    revisionId: string,
+    attrs: Record<string, unknown> = {},
+  ) => {
+    const now = toDatabaseDate(new Date());
+    const step = {
+      id: ObjectId().toHexString(),
+      created_at: now,
+      updated_at: now,
+      automation_run_id: runId,
+      automation_action_revision_id: revisionId,
+      ready_at: now,
+      step_attempts: 0,
+      started_at: null,
+      finished_at: null,
+      status: 'pending',
+      locked_by: null,
+      locked_at: null,
+      ...attrs,
+    };
+    normalizeDateColumns(step, [
+      'created_at',
+      'updated_at',
+      'ready_at',
+      'started_at',
+      'finished_at',
+      'locked_at',
+    ]);
+
+    await knex('automation_run_steps').insert(step);
+
+    return step;
+  };
+
+  const insertStepForRevision = async (revisionId: string) => {
+    const action = await knex('automation_action_revisions as revisions')
+      .select('actions.automation_id')
+      .innerJoin('automation_actions as actions', 'actions.id', 'revisions.action_id')
+      .where('revisions.id', revisionId)
+      .first();
+    assert(action, 'Expected action revision to exist');
+    const run = await insertRun(action.automation_id);
+    return await insertStep(run.id, revisionId);
+  };
+
+  const getStepById = async (id: string) => {
+    const result = await knex('automation_run_steps').select('*').where('id', id).first();
+    assert(result, 'Expected step to exist');
+    return result;
+  };
+
+  const getStepsByRunId = async (runId: string) =>
+    await knex('automation_run_steps')
+      .select('*')
+      .where('automation_run_id', runId)
+      .orderBy(['created_at', 'id']);
+
+  const getLockedStep = async (stepId: string): Promise<AutomationStepToRun> => {
+    const { steps } = await repo.fetchAndLockSteps(10);
+    const step = steps.find((candidate) => candidate.id === stepId);
+    assert(step);
+    return step;
+  };
+
+  const assertSingleBatchLock = (steps: AutomationStepToRun[]): string => {
+    const lockId = steps[0]?.locked_by;
+    assert.equal(typeof lockId, 'string');
+    assert(steps.every((step) => step.locked_by === lockId));
+    return lockId;
+  };
+
+  const changeWaitHours = (action: AutomationAction, waitHours: number): AutomationAction => {
+    assert.equal(action.type, 'wait');
+    return {
+      ...action,
+      data: {
+        wait_hours: waitHours,
+      },
+    };
+  };
+
+  beforeEach(async function () {
+    knex = await createDatabase();
+    repo = createDatabaseAutomationsRepository({
+      knex,
+      fakeWaitHoursMultiplier: null,
+    });
+  });
+
+  afterEach(async function () {
+    await knex?.destroy();
+  });
+
+  describe('add', function () {
+    const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+    const actions = [1, 2].map((wait_hours) => ({
+      id: ObjectId().toHexString(),
+      type: 'wait' as const,
+      data: { wait_hours },
+    }));
+    const data = {
+      status: 'active' as const,
+      actions,
+      edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
+      name: 'New automation',
+      description: 'Test description',
+      trigger_rules: tierIds.map((productId) => ({
+        trigger_type: 'paid_subscription_started' as const,
+        scope: 'specific_paid_tier' as const,
+        product_id: productId,
+        direction: null,
+      })),
+    };
+
+    beforeEach(async function () {
+      await knex('products').insert(tierIds.map((id) => ({ id, type: 'paid', active: true })));
+    });
+
+    it('preserves changed trigger directions through add, edit, and read', async function () {
+      const trigger_rules = [
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'any_paid_tier' as const,
+          direction: 'from' as const,
+          product_id: null,
+        },
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'free' as const,
+          direction: 'to' as const,
+          product_id: null,
+        },
+      ];
+      const added = await repo.add({ ...data, trigger_rules });
+      assert.deepEqual(added.trigger_rules, trigger_rules);
+      assert.deepEqual((await repo.getById(added.id))?.trigger_rules, trigger_rules);
+
+      const editedRules = [
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'specific_paid_tier' as const,
+          direction: 'from' as const,
+          product_id: tierIds[0],
+        },
+        {
+          trigger_type: 'paid_subscription_changed' as const,
+          scope: 'specific_paid_tier' as const,
+          direction: 'to' as const,
+          product_id: tierIds[0],
+        },
+      ];
+      const edited = await repo.edit(added.id, { ...data, trigger_rules: editedRules });
+      assert.deepEqual(edited?.trigger_rules, editedRules);
+      assert.deepEqual((await repo.getById(added.id))?.trigger_rules, editedRules);
+    });
+
+    it.each([
+      { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+      {
+        trigger_type: 'paid_subscription_started' as const,
+        scope: 'any_paid_tier' as const,
+        product_id: null,
+        direction: null,
+      },
+    ])('creates $trigger_type automations with scope $scope', async function (rule) {
+      const automation = await repo.add({
+        ...data,
+        trigger_rules: [rule],
+      });
+      assert.deepEqual(automation.trigger_rules, [rule]);
+      assert.deepEqual(
+        await knex('automation_trigger_rules')
+          .where({ automation_id: automation.id })
+          .pluck('trigger_type'),
+        [rule.trigger_type],
+      );
+    });
+
+    it('creates automations for specific paid tiers', async function () {
+      const automation = await repo.add(data);
+
+      assert.equal(automation.name, data.name);
+      assert.equal(automation.description, data.description);
+      assert.equal(automation.status, data.status);
+      assert.equal(automation.slug, null);
+      assert.deepEqual(
+        automation.trigger_rules,
+        [...tierIds].toSorted().map((productId) => ({
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: productId,
+          direction: null,
+        })),
+      );
+      assert.deepEqual(automation.actions, data.actions);
+      assert.deepEqual(automation.edges, data.edges);
+      assert.deepEqual(await repo.getById(automation.id), automation);
+      const row = await knex('automations').where({ id: automation.id }).first();
+      assert.equal(row.created_at, row.updated_at);
+      assert.deepEqual(
+        await knex('automation_trigger_rules')
+          .where({ automation_id: automation.id })
+          .pluck('product_id'),
+        tierIds,
+      );
+    });
+
+    it.each(['inactive', 'archived'] as const)(
+      'persists %s automations without actions',
+      async function (status) {
+        const saved = await repo.add({
+          name: 'Empty draft',
+          description: '',
+          status,
+          actions: [],
+          edges: [],
+          trigger_rules: [
+            {
+              trigger_type: 'free_signup' as const,
+              scope: null,
+              product_id: null,
+              direction: null,
+            },
+          ],
+        });
+        assert.deepEqual(await repo.getById(saved.id), saved);
+        assert.deepEqual(saved.actions, []);
+        assert.deepEqual(saved.edges, []);
+        const browse = await repo.browse();
+        assert(browse.data.some((automation) => automation.id === saved.id));
+      },
+    );
+
+    it('rejects actions that belong to another automation', async function () {
+      const existingId = await insertAutomation({ slug: null, triggerTierScope: 'free' });
+      const existing = await repo.getById(existingId);
+      assert(existing);
+      await assert.rejects(
+        repo.add({ ...data, actions: existing.actions, edges: existing.edges }),
+        {
+          errorType: 'ValidationError',
+          property: 'actions.id',
+        },
+      );
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_rules').whereIn('product_id', tierIds), []);
+      assert.deepEqual(await repo.getById(existingId), existing);
+    });
+
+    it('reads stored trigger settings and preserves them when editing actions', async function () {
+      const automationId = await insertAutomation({
+        slug: null,
+        triggerTierScope: 'selected_paid',
+        triggerTierIds: tierIds,
+        status: 'inactive',
+      });
+      const automation = await repo.getById(automationId);
+      assert(automation);
+      assert.deepEqual(
+        automation.trigger_rules,
+        [...tierIds].toSorted().map((productId) => ({
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: productId,
+          direction: null,
+        })),
+      );
+
+      const edited = await repo.edit(automationId, {
+        status: 'inactive',
+        actions: automation.actions,
+        edges: automation.edges,
+      });
+      assert(edited);
+      assert.deepEqual(
+        edited.trigger_rules,
+        [...tierIds].toSorted().map((productId) => ({
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: productId,
+          direction: null,
+        })),
+      );
+    });
+
+    it('rejects automations without trigger rules', async function () {
+      const automationId = await insertAutomation({ slug: null, triggerTierScope: 'free' });
+      await knex('automation_trigger_rules').where('automation_id', automationId).delete();
+      await assert.rejects(repo.getById(automationId), {
+        errorType: 'InternalServerError',
+        message: `No trigger rules for automation ${automationId}`,
+      });
+    });
+
+    it.each([null, ''])(
+      'rejects trying to load invalid trigger rules from the database when product_id is %j',
+      async function (productId) {
+        const automationId = await insertAutomation({
+          slug: null,
+          triggerTierScope: 'selected_paid',
+          triggerTierIds: tierIds,
+        });
+        await knex('automation_trigger_rules')
+          .where('automation_id', automationId)
+          .update({ product_id: productId });
+        await assert.rejects(repo.getById(automationId), { name: 'ZodError' });
+      },
+    );
+
+    it('rejects missing tiers when creating an automation', async function () {
+      await knex('products').where({ id: tierIds[1] }).delete();
+      await assert.rejects(repo.add(data), {
+        errorType: 'ValidationError',
+        property: 'trigger_rules',
+      });
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_rules').whereNotNull('product_id'), []);
+    });
+
+    it('rejects free tiers when creating an automation', async function () {
+      await knex('products').where({ id: tierIds[1] }).update({ type: 'free' });
+      await assert.rejects(repo.add(data), {
+        errorType: 'ValidationError',
+        property: 'trigger_rules',
+      });
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_rules').whereNotNull('product_id'), []);
+    });
+
+    it('rejects archived tiers when creating an automation', async function () {
+      await knex('products').where({ id: tierIds[1] }).update({ active: false });
+      await assert.rejects(repo.add(data), {
+        errorType: 'ValidationError',
+        property: 'trigger_rules',
+      });
+      assert.equal(await knex('automations').where({ name: data.name }).first(), undefined);
+      assert.deepEqual(await knex('automation_trigger_rules').whereNotNull('product_id'), []);
+    });
+  });
+
+  describe('browse', function () {
+    const deleteActionsForAutomationIds = async (automationIds: string[]) => {
+      const actionIds = await knex('automation_actions')
+        .whereIn('automation_id', automationIds)
+        .pluck('id');
+      await knex('automation_action_edges')
+        .whereIn('source_action_id', actionIds)
+        .orWhereIn('target_action_id', actionIds)
+        .del();
+      await knex('automation_action_revisions').whereIn('action_id', actionIds).del();
+      await knex('automation_actions').whereIn('id', actionIds).del();
+    };
+
+    const getWelcomeEmailDesignSettingId = async () => {
+      const row = await knex('email_design_settings')
+        .select('id')
+        .where('slug', 'test-automation-email-design')
+        .first();
+      assert(row);
+      return row.id;
+    };
+
+    const createWelcomeEmailsForAutomations = async (
+      automations: Array<{ id: string; slug: string }>,
+    ) => {
+      const emailDesignSettingId = await getWelcomeEmailDesignSettingId();
+      await knex('welcome_email_automated_emails').insert(
+        automations.map((automation) => ({
+          id: ObjectId().toHexString(),
+          welcome_email_automation_id: automation.id,
+          next_welcome_email_automated_email_id: null,
+          delay_days: 0,
+          subject: `${automation.slug} subject`,
+          lexical: NON_EMPTY_EMAIL_LEXICAL,
+          email_design_setting_id: emailDesignSettingId,
+          created_at: toDatabaseDate(new Date()),
+          updated_at: toDatabaseDate(new Date()),
+        })),
+      );
+      return emailDesignSettingId;
+    };
+
+    const assertWelcomeEmailActionsWereCreated = async (
+      automations: Array<{ id: string; slug: string }>,
+      emailDesignSettingId: string,
+    ) => {
+      for (const automation of automations) {
+        const result = await repo.getById(automation.id);
+        assert(result);
+        assert.deepEqual(result.edges, []);
+        assert.equal(result.actions.length, 1);
+        const action = result.actions[0];
+        assert.equal(action.type, 'send_email');
+        if (action.type !== 'send_email') {
+          assert.fail('Expected a send_email action');
+        }
+        assert.equal(action.data.email_subject, `${automation.slug} subject`);
+        assert.equal(action.data.email_lexical, NON_EMPTY_EMAIL_LEXICAL);
+        assert.equal(action.data.email_design_setting_id, emailDesignSettingId);
+      }
+    };
+
+    it.each(['inactive', 'archived'] as const)(
+      'keeps cleared legacy welcome automation in the %s state after browsing',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        await deleteActionsForAutomationIds([automation.id]);
+        assert(automation.slug);
+        await createWelcomeEmailsForAutomations([{ id: automation.id, slug: automation.slug }]);
+
+        await repo.browse();
+
+        const converted = await repo.getById(automation.id);
+        assert(converted);
+        assert.equal(converted.actions.length, 1);
+        const revision = await knex('automation_action_revisions')
+          .where('action_id', converted.actions[0].id)
+          .first();
+        assert(revision);
+
+        await repo.edit(automation.id, { status, actions: [], edges: [] });
+
+        await repo.browse();
+        const cleared = await repo.getById(automation.id);
+        assert(cleared);
+        assert.equal(cleared.status, status);
+        assert.deepEqual(cleared.actions, []);
+        assert.deepEqual(cleared.edges, []);
+        assert.deepEqual(
+          await knex('automation_action_revisions').where('id', revision.id).first(),
+          revision,
+        );
+        assert(
+          (await knex('automation_actions').where('id', converted.actions[0].id).first())
+            .deleted_at,
+        );
+      },
+    );
+
+    it('returns newest automations first', async function () {
+      await knex('automations')
+        .where('name', 'Free member welcome flow')
+        .update({ created_at: toDatabaseDate('2020-01-01T00:00:00.000Z') });
+      await knex('automations')
+        .where('name', 'Paid member welcome flow')
+        .update({ created_at: toDatabaseDate('2021-01-01T00:00:00.000Z') });
+      await knex('automations').insert([
+        {
+          id: '000000000000000000000001',
+          created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          slug: 'alpha-flow',
+          name: 'Alpha flow',
+          description: '',
+          status: 'inactive',
+        },
+        {
+          id: '000000000000000000000002',
+          created_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          updated_at: toDatabaseDate('2022-01-01T00:00:00.000Z'),
+          slug: 'zulu-flow',
+          name: 'Zulu flow',
+          description: '',
+          status: 'inactive',
+        },
+      ]);
+
+      const result = await repo.browse();
+
+      assert.deepEqual(
+        result.data.map((automation) => automation.name),
+        ['Zulu flow', 'Alpha flow', 'Paid member welcome flow', 'Free member welcome flow'],
+      );
+    });
+
+    it('omits stats without querying run tables', async function () {
+      const queries: string[] = [];
+      const captureQuery = (query: { sql: string }) => queries.push(query.sql);
+      knex.on('query', captureQuery);
+      try {
+        const result = await repo.browse();
+        assert(result.data.every((automation) => !Object.hasOwn(automation, 'stats')));
+        assert(!queries.some((sql) => /\bautomation_runs\b|\bautomation_run_steps\b/.test(sql)));
+      } finally {
+        knex.removeListener('query', captureQuery);
+      }
+    });
+
+    it('creates missing default free and paid automations', async function () {
+      const automationIds = await knex('automations')
+        .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+        .pluck('id');
+
+      await deleteActionsForAutomationIds(automationIds);
+      await knex('automations').whereIn('id', automationIds).del();
+
+      await repo.browse();
+
+      const automations = await knex('automations')
+        .select('id', 'name', 'slug', 'status')
+        .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+        .orderBy('slug');
+
+      assert.deepEqual(
+        automations.map(({ name, slug, status }) => ({
+          name,
+          slug,
+          status,
+        })),
+        [
+          {
+            name: 'Free member welcome flow',
+            slug: 'member-welcome-email-free',
+            status: 'inactive',
+          },
+          {
+            name: 'Paid member welcome flow',
+            slug: 'member-welcome-email-paid',
+            status: 'inactive',
+          },
+        ],
+      );
+
+      assert.deepEqual((await repo.getById(automations[0].id))?.trigger_rules, [
+        { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+      ]);
+      assert.deepEqual((await repo.getById(automations[1].id))?.trigger_rules, [
+        {
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'any_paid_tier' as const,
+          product_id: null,
+          direction: null,
+        },
+      ]);
+
+      const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+      await repo.browse();
+
+      await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+    });
+
+    it('creates copied send_email actions for default automations without actions', async function () {
+      const automations = await knex('automations')
+        .select('id', 'slug')
+        .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid']);
+      const automationIds = automations.map((automation) => automation.id);
+
+      await deleteActionsForAutomationIds(automationIds);
+      const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+      await repo.browse();
+
+      await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+
+      await repo.browse();
+
+      const totalActions = await knex('automation_actions')
+        .whereIn('automation_id', automationIds)
+        .whereNull('deleted_at')
+        .count({ count: 'id' })
+        .first();
+
+      assert.equal(Number(totalActions?.count), 2);
+    });
+  });
+
+  describe('exists', function () {
+    it('resolves to false for automations that do not exist', async function () {
+      assert.equal(await repo.exists('missing'), false);
+    });
+
+    it('resolves to true for automations that exist', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      assert.equal(await repo.exists(automation.id), true);
+    });
+  });
+
+  describe('browse archived automations', function () {
+    it('includes archived automations in browse results', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      await repo.edit(initial.id, { status: 'archived' });
+      const result = await repo.browse();
+      assert.equal(
+        result.data.find((automation) => automation.id === initial.id)?.status,
+        'archived',
+      );
+    });
+  });
+
+  describe('URL serialization', function () {
+    it('returns stored transform-ready email URLs as absolute URLs', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const emailAction = automation.actions.find((action) => action.type === 'send_email');
+      assert(emailAction);
+
+      await knex('automation_action_revisions')
+        .where('action_id', emailAction.id)
+        .update({
+          email_lexical: linkLexical('__GHOST_URL__/archive/'),
+        });
+
+      const result = await repo.getById(automation.id);
+      assert(result);
+      const returnedEmailAction = result.actions.find((action) => action.id === emailAction.id);
+      assert(returnedEmailAction?.type === 'send_email');
+      assert(returnedEmailAction.data.email_lexical.includes(`${ghostConfig.get('url')}/archive/`));
+      assert(!returnedEmailAction.data.email_lexical.includes('__GHOST_URL__'));
+    });
+
+    it('stores internal URLs as transform-ready without creating a revision on an unchanged save', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const emailAction = automation.actions.find((action) => action.type === 'send_email');
+      assert(emailAction?.type === 'send_email');
+
+      const absoluteLexical = linkLexical(`${ghostConfig.get('url')}/archive/`);
+      const updatedActions = automation.actions.map((action) =>
+        action.id === emailAction.id
+          ? {
+              ...emailAction,
+              data: {
+                ...emailAction.data,
+                email_lexical: absoluteLexical,
+              },
+            }
+          : action,
+      );
+
+      const result = await repo.edit(automation.id, {
+        status: automation.status,
+        actions: updatedActions,
+        edges: automation.edges,
+      });
+
+      assert(result);
+      const returnedEmailAction = result.actions.find((action) => action.id === emailAction.id);
+      assert(returnedEmailAction?.type === 'send_email');
+      assert(returnedEmailAction.data.email_lexical.includes(`${ghostConfig.get('url')}/archive/`));
+      assert(!returnedEmailAction.data.email_lexical.includes('__GHOST_URL__'));
+
+      const storedRevision = await getLatestActionRevisionByActionId(emailAction.id);
+      assert.equal(storedRevision.email_lexical, linkLexical('__GHOST_URL__/archive/'));
+      const initialRevisionCount = await getRevisionCount(emailAction.id);
+
+      await repo.edit(automation.id, {
+        status: result.status,
+        actions: result.actions,
+        edges: result.edges,
+      });
+
+      assert.equal(await getRevisionCount(emailAction.id), initialRevisionCount);
+    });
+  });
+
+  describe('email stats', function () {
+    it('reports the opened count and rate as 0 when there are sends but no recorded opens', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const emailAction = automation.actions.find((action) => action.type === 'send_email');
+      assert(emailAction);
+
+      await knex('automation_action_revisions').where('action_id', emailAction.id).update({
+        email_sent_count: 3,
+        email_opened_count: null,
+      });
+
+      const result = await repo.getById(automation.id);
+      assert(result);
+      const action = result.actions.find((candidate) => candidate.id === emailAction.id);
+      assert(action);
+      if (action.type !== 'send_email') {
+        assert.fail('Expected a send_email action');
+      }
+      assert.deepEqual(action.stats, {
+        email_clicked_count: 0,
+        email_sent_count: 3,
+        email_opened_count: 0,
+        opened_rate: 0,
+        clicked_rate: 0,
+      });
+    });
+
+    it('reports zero counts and null rates when there are no sends', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = automation.actions.find((candidate) => candidate.type === 'send_email');
+      assert(action);
+      if (action.type !== 'send_email') {
+        assert.fail('Expected a send_email action');
+      }
+      assert.deepEqual(action.stats, {
+        email_clicked_count: 0,
+        email_sent_count: 0,
+        email_opened_count: 0,
+        opened_rate: null,
+        clicked_rate: null,
+      });
+    });
+
+    it('calculates the open rate from the total sent count', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const emailAction = automation.actions.find((action) => action.type === 'send_email');
+      assert(emailAction);
+
+      await knex('automation_action_revisions').where('action_id', emailAction.id).update({
+        email_sent_count: 4,
+        email_opened_count: 3,
+      });
+
+      const result = await repo.getById(automation.id);
+      assert(result);
+      const action = result.actions.find((candidate) => candidate.id === emailAction.id);
+      assert(action);
+      if (action.type !== 'send_email') {
+        assert.fail('Expected a send_email action');
+      }
+      assert.deepEqual(action.stats, {
+        email_clicked_count: 0,
+        email_sent_count: 4,
+        email_opened_count: 3,
+        opened_rate: 75,
+        clicked_rate: 0,
+      });
+    });
+
+    it('aggregates click counts across revisions and rounds the rate', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const emailAction = automation.actions.find((action) => action.type === 'send_email');
+      assert(emailAction);
+      const firstRevision = await knex('automation_action_revisions')
+        .where('action_id', emailAction.id)
+        .first();
+      assert(firstRevision);
+      await knex('automation_action_revisions').where('id', firstRevision.id).update({
+        email_sent_count: 3,
+        email_opened_count: 1,
+        email_clicked_count: 2,
+      });
+      await knex('automation_action_revisions').insert({
+        ...firstRevision,
+        id: ObjectId().toHexString(),
+        created_at: toDatabaseDate(new Date(new Date(firstRevision.created_at).getTime() + 1000)),
+        email_sent_count: 5,
+        email_opened_count: 1,
+        email_clicked_count: 1,
+      });
+
+      const result = await repo.getById(automation.id);
+      assert(result);
+      const action = result.actions.find((candidate) => candidate.id === emailAction.id);
+      assert(action?.type === 'send_email');
+      assert.equal(action.stats?.email_clicked_count, 3);
+      assert.equal(action.stats?.clicked_rate, 38);
+    });
+  });
+
+  describe('getAutomationActionLinks', function () {
+    it('returns stored transform-ready destinations as absolute URLs', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = automation.actions.find((candidate) => candidate.type === 'send_email');
+      assert(action);
+      const revision = await getLatestActionRevisionByActionId(action.id);
+      const absoluteUrl = `${ghostConfig.get('url')}/archive/`;
+
+      await knex('redirects').insert({
+        id: ObjectId().toHexString(),
+        automation_action_revision_id: revision.revision_id,
+        to: '__GHOST_URL__/archive/',
+        to_hash: hashRedirectDestination(absoluteUrl),
+      });
+
+      assert.deepEqual(await repo.getAutomationActionLinks(automation.id, action.id), [
+        {
+          url: absoluteUrl,
+          clicked_count: 0,
+        },
+      ]);
+    });
+
+    it('aggregates unique member clicks by destination hash across action revisions', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = automation.actions.find((candidate) => candidate.type === 'send_email');
+      assert(action);
+      const existingRevision = await getLatestActionRevisionByActionId(action.id);
+      const secondRevisionId = ObjectId().toHexString();
+      await knex('automation_action_revisions').insert({
+        id: secondRevisionId,
+        action_id: action.id,
+        created_at: '2026-07-22 12:00:00',
+        email_subject: 'A later revision',
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: existingRevision.email_design_setting_id,
+      });
+
+      const redirects = [
+        {
+          id: ObjectId().toHexString(),
+          automation_action_revision_id: existingRevision.revision_id,
+          to: 'https://example.com/alpha',
+          to_hash: hashRedirectDestination('https://example.com/alpha'),
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_action_revision_id: secondRevisionId,
+          to: 'https://example.com/alpha',
+          to_hash: hashRedirectDestination('https://example.com/alpha'),
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_action_revision_id: secondRevisionId,
+          to: 'https://example.com/beta',
+          to_hash: hashRedirectDestination('https://example.com/beta'),
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_action_revision_id: secondRevisionId,
+          to: 'https://example.com/zero',
+          to_hash: hashRedirectDestination('https://example.com/zero'),
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_action_revision_id: secondRevisionId,
+          to: 'https://example.com/aaa-zero',
+          to_hash: hashRedirectDestination('https://example.com/aaa-zero'),
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_action_revision_id: secondRevisionId,
+          to: 'https://example.com/alpha',
+          to_hash: null,
+        },
+      ];
+      await knex('redirects').insert(redirects);
+      await knex('members_click_events').insert([
+        {
+          id: ObjectId().toHexString(),
+          member_id: 'member-1',
+          redirect_id: redirects[0].id,
+          created_at: '2026-07-22 13:00:00',
+        },
+        {
+          id: ObjectId().toHexString(),
+          member_id: 'member-1',
+          redirect_id: redirects[1].id,
+          created_at: '2026-07-22 13:01:00',
+        },
+        {
+          id: ObjectId().toHexString(),
+          member_id: 'member-2',
+          redirect_id: redirects[1].id,
+          created_at: '2026-07-22 13:02:00',
+        },
+        {
+          id: ObjectId().toHexString(),
+          member_id: 'member-3',
+          redirect_id: redirects[2].id,
+          created_at: '2026-07-22 13:03:00',
+        },
+        {
+          id: ObjectId().toHexString(),
+          member_id: 'member-4',
+          redirect_id: redirects[5].id,
+          created_at: '2026-07-22 13:04:00',
+        },
+      ]);
+
+      assert.deepEqual(await repo.getAutomationActionLinks(automation.id, action.id), [
+        {
+          url: 'https://example.com/alpha',
+          clicked_count: 2,
+        },
+        {
+          url: 'https://example.com/beta',
+          clicked_count: 1,
+        },
+        {
+          url: 'https://example.com/aaa-zero',
+          clicked_count: 0,
+        },
+        {
+          url: 'https://example.com/zero',
+          clicked_count: 0,
+        },
+      ]);
+    });
+
+    it('returns an empty list for a valid action without links', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      assert.deepEqual(
+        await repo.getAutomationActionLinks(automation.id, automation.actions[0].id),
+        [],
+      );
+    });
+
+    it('returns null when the action does not belong to the automation or is deleted', async function () {
+      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+      const actionId = freeAutomation.actions[0].id;
+
+      assert.equal(await repo.getAutomationActionLinks(paidAutomation.id, actionId), null);
+      await knex('automation_actions')
+        .where('id', actionId)
+        .update({ deleted_at: '2026-07-22 14:00:00' });
+      assert.equal(await repo.getAutomationActionLinks(freeAutomation.id, actionId), null);
+    });
+  });
+
+  describe('edit', function () {
+    it('disables, archives, and unarchives without changing graph storage or metadata', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const actions = await knex('automation_actions').orderBy('id');
+      const revisions = await knex('automation_action_revisions').orderBy('id');
+      const edges = await knex('automation_action_edges').orderBy([
+        'source_action_id',
+        'target_action_id',
+      ]);
+      for (const status of ['inactive', 'archived', 'inactive'] as const) {
+        const edited = await repo.edit(initial.id, { status });
+        assert.deepEqual(edited, { ...initial, status, updated_at: edited?.updated_at });
+        assert.deepEqual(await knex('automation_actions').orderBy('id'), actions);
+        assert.deepEqual(await knex('automation_action_revisions').orderBy('id'), revisions);
+        assert.deepEqual(
+          await knex('automation_action_edges').orderBy(['source_action_id', 'target_action_id']),
+          edges,
+        );
+      }
+    });
+
+    const assertValidationError = async (
+      fn: () => Promise<unknown>,
+      property: string,
+      message: RegExp,
+    ) => {
+      await assert.rejects(fn, (error: unknown) => {
+        assert(error instanceof errors.ValidationError);
+        assert.equal(error.property, property);
+        assert.match(error.message, message);
+        return true;
+      });
+    };
+
+    it('allows keeping the current automation name', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const edited = await repo.edit(automation.id, {
+        ...omit(automation, ['trigger_rules']),
+        description: 'Updated description',
+      });
+      assert(edited);
+      assert.equal(edited.name, automation.name);
+      assert.equal(edited.description, 'Updated description');
+    });
+
+    it('can edit automation trigger rules', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+      await knex('products').insert(
+        tierIds.map((id, index) => ({ id, type: 'paid', active: index === 0 })),
+      );
+      const edited = await repo.edit(initial.id, {
+        ...omit(initial, ['trigger_rules']),
+        trigger_rules: tierIds.map((productId) => ({
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: productId,
+          direction: null,
+        })),
+      });
+
+      assert(edited);
+      assert.deepEqual(
+        edited.trigger_rules,
+        [...tierIds].toSorted().map((productId) => ({
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: productId,
+          direction: null,
+        })),
+      );
+    });
+
+    it('rolls back edits that would remove all trigger rules', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const before = await knex('automation_trigger_rules').where('automation_id', initial.id);
+      await assert.rejects(
+        repo.edit(initial.id, {
+          status: initial.status,
+          trigger_rules: [],
+        }),
+        {
+          errorType: 'InternalServerError',
+          message: `No trigger rules for automation ${initial.id}`,
+        },
+      );
+      assert.deepEqual(await repo.getById(initial.id), initial);
+      assert.deepEqual(
+        await knex('automation_trigger_rules').where('automation_id', initial.id),
+        before,
+      );
+    });
+
+    it('replaces rules and preserves omitted rules', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const graph = { status: initial.status, actions: initial.actions, edges: initial.edges };
+      const firstId = ObjectId().toHexString();
+      const secondId = ObjectId().toHexString();
+      await knex('products').insert(
+        [firstId, secondId].map((id) => ({ id, type: 'paid', active: true })),
+      );
+      await repo.edit(initial.id, {
+        ...graph,
+        trigger_rules: [
+          {
+            trigger_type: 'paid_subscription_started' as const,
+            scope: 'specific_paid_tier' as const,
+            product_id: firstId,
+            direction: null,
+          },
+        ],
+      });
+      await repo.edit(initial.id, {
+        ...graph,
+        trigger_rules: [
+          {
+            trigger_type: 'paid_subscription_started' as const,
+            scope: 'specific_paid_tier' as const,
+            product_id: secondId,
+            direction: null,
+          },
+        ],
+      });
+      const storedRules = await knex('automation_trigger_rules').where('automation_id', initial.id);
+      const unchanged = await repo.edit(initial.id, graph);
+      assert.deepEqual(
+        await knex('automation_trigger_rules').where('automation_id', initial.id),
+        storedRules,
+      );
+      await repo.edit(initial.id, { ...graph, trigger_rules: undefined });
+      assert.deepEqual(
+        await knex('automation_trigger_rules').where('automation_id', initial.id),
+        storedRules,
+      );
+      assert(unchanged);
+      assert.deepEqual(unchanged.trigger_rules, [
+        {
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'specific_paid_tier' as const,
+          product_id: secondId,
+          direction: null,
+        },
+      ]);
+      for (const rule of [
+        { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+        {
+          trigger_type: 'paid_subscription_started' as const,
+          scope: 'any_paid_tier' as const,
+          product_id: null,
+          direction: null,
+        },
+      ]) {
+        await repo.edit(initial.id, {
+          ...graph,
+          trigger_rules: [
+            {
+              trigger_type: 'paid_subscription_started' as const,
+              scope: 'specific_paid_tier' as const,
+              product_id: firstId,
+              direction: null,
+            },
+          ],
+        });
+        const edited = await repo.edit(initial.id, {
+          ...graph,
+          trigger_rules: [rule],
+        });
+        assert(edited);
+        assert.deepEqual(edited.trigger_rules, [rule]);
+        assert.deepEqual(
+          await knex('automation_trigger_rules')
+            .where('automation_id', initial.id)
+            .whereNotNull('product_id'),
+          [],
+        );
+      }
+    });
+
+    it('rejects missing and free tiers without changing the automation', async function () {
+      const initial = await getAutomationBySlug('member-welcome-email-free');
+      const freeId = ObjectId().toHexString();
+      await knex('products').insert({ id: freeId, type: 'free', active: true });
+      for (const tierId of [freeId, ObjectId().toHexString()]) {
+        await assertValidationError(
+          () =>
+            repo.edit(initial.id, {
+              ...omit(initial, ['trigger_rules']),
+              name: 'Should not change',
+              trigger_rules: [
+                {
+                  trigger_type: 'paid_subscription_started' as const,
+                  scope: 'specific_paid_tier' as const,
+                  product_id: tierId,
+                  direction: null,
+                },
+              ],
+            }),
+          'trigger_rules',
+          /paid tiers/,
+        );
+        assert.deepEqual(await repo.getById(initial.id), initial);
+      }
+    });
+
+    it('persists optional metadata and preserves omitted fields', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const graph = {
+        status: automation.status,
+        actions: automation.actions,
+        edges: automation.edges,
+      };
+
+      const renamed = await repo.edit(automation.id, {
+        ...graph,
+        name: 'Renamed flow',
+        description: 'Updated description',
+      });
+      assert(renamed);
+      assert.equal(renamed.name, 'Renamed flow');
+      assert.equal(renamed.description, 'Updated description');
+      assert.equal(renamed.slug, automation.slug);
+      assert.deepEqual(await repo.getById(automation.id), renamed);
+
+      const unchanged = await repo.edit(automation.id, graph);
+      assert(unchanged);
+      assert.equal(unchanged.name, 'Renamed flow');
+      assert.equal(unchanged.description, 'Updated description');
+
+      const cleared = await repo.edit(automation.id, { ...graph, description: '' });
+      assert(cleared);
+      assert.equal(cleared.name, 'Renamed flow');
+      assert.equal(cleared.description, '');
+
+      const nameOnly = await repo.edit(automation.id, { ...graph, name: 'Another name' });
+      assert(nameOnly);
+      assert.equal(nameOnly.name, 'Another name');
+      assert.equal(nameOnly.description, '');
+    });
+
+    it.each(['inactive', 'archived'] as const)(
+      'cancels pending unlocked steps when disabling an automation (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const step = await insertStep(run.id, action.revision_id);
+
+        const beforeEdit = Date.now();
+        await repo.edit(automation.id, {
+          status,
+        });
+        const afterEdit = Date.now();
+
+        const cancelled = await getStepById(step.id);
+        assert.equal(cancelled.status, 'automation disabled');
+        assert.equal(cancelled.locked_by, null);
+        assert.equal(cancelled.locked_at, null);
+        assert.equal(cancelled.started_at, null);
+        const cancelledFinishedAt = cancelled.finished_at;
+        assert(typeof cancelledFinishedAt === 'string');
+        assert(cancelledFinishedAt >= toDatabaseDate(new Date(beforeEdit - 1000)));
+        assert(cancelledFinishedAt <= toDatabaseDate(new Date(afterEdit)));
+      },
+    );
+
+    it.each(['inactive', 'archived'] as const)(
+      'cancels pending steps with expired locks when disabling an automation (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const step = await insertStep(run.id, action.revision_id, {
+          locked_by: 'expired-lock',
+          locked_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+          started_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+        });
+
+        await repo.edit(automation.id, {
+          ...omit(automation, ['trigger_rules']),
+          status,
+        });
+
+        const cancelled = await getStepById(step.id);
+        assert.equal(cancelled.status, 'automation disabled');
+        assert.equal(cancelled.locked_by, null);
+        assert.equal(cancelled.locked_at, null);
+        assert.equal(typeof cancelled.finished_at, 'string');
+      },
+    );
+
+    it.each(['inactive', 'archived'] as const)(
+      'does not cancel pending steps with fresh locks when disabling an automation (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const lockedAt = toDatabaseDate(new Date(Date.now() - 29 * 60 * 1000));
+        const step = await insertStep(run.id, action.revision_id, {
+          locked_by: 'fresh-lock',
+          locked_at: lockedAt,
+          started_at: lockedAt,
+        });
+
+        await repo.edit(automation.id, {
+          ...omit(automation, ['trigger_rules']),
+          status,
+        });
+
+        const unchanged = await getStepById(step.id);
+        assert.equal(unchanged.status, 'pending');
+        assert.equal(unchanged.locked_by, 'fresh-lock');
+        assert.equal(unchanged.locked_at, lockedAt);
+        assert.equal(unchanged.finished_at, null);
+      },
+    );
+
+    it.each(['inactive', 'archived'] as const)(
+      'does not cancel pending steps for other automations when disabling an automation (%s)',
+      async function (status) {
+        const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+        const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+        const freeAction = await getActionByIndex(freeAutomation.id, 0);
+        const paidAction = await getActionByIndex(paidAutomation.id, 0);
+        const freeRun = await insertRun(freeAutomation.id);
+        const paidRun = await insertRun(paidAutomation.id);
+        const freeStep = await insertStep(freeRun.id, freeAction.revision_id);
+        const paidStep = await insertStep(paidRun.id, paidAction.revision_id);
+
+        await repo.edit(freeAutomation.id, {
+          ...omit(freeAutomation, ['trigger_rules']),
+          status,
+        });
+
+        const cancelledFreeStep = await getStepById(freeStep.id);
+        assert.equal(cancelledFreeStep.status, 'automation disabled');
+
+        const unchangedPaidStep = await getStepById(paidStep.id);
+        assert.equal(unchangedPaidStep.status, 'pending');
+        assert.equal(unchangedPaidStep.finished_at, null);
+      },
+    );
+
+    it('only inserts action revisions when action data changes', async function () {
+      const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const initialRevisionCount = await getRevisionCount();
+      const waitAction = initialAutomation.actions.find((action) => action.type === 'wait');
+      const unchangedEmailAction = initialAutomation.actions.find(
+        (action) => action.type === 'send_email',
+      );
+
+      assert(waitAction);
+      assert(unchangedEmailAction);
+      assert.equal(await getRevisionCount(waitAction.id), 1);
+      assert.equal(await getRevisionCount(unchangedEmailAction.id), 1);
+
+      await repo.edit(initialAutomation.id, {
+        status: 'inactive',
+        actions: initialAutomation.actions,
+        edges: initialAutomation.edges,
+      });
+
+      assert.equal(await getRevisionCount(), initialRevisionCount);
+      assert.equal(await getRevisionCount(waitAction.id), 1);
+      assert.equal(await getRevisionCount(unchangedEmailAction.id), 1);
+
+      const changedWaitAction = changeWaitHours(waitAction, waitAction.data.wait_hours + 24);
+
+      await repo.edit(initialAutomation.id, {
+        status: 'inactive',
+        actions: [changedWaitAction, unchangedEmailAction],
+        edges: [
+          {
+            source_action_id: changedWaitAction.id,
+            target_action_id: unchangedEmailAction.id,
+          },
+        ],
+      });
+
+      assert.equal(await getRevisionCount(), initialRevisionCount + 1);
+      assert.equal(await getRevisionCount(waitAction.id), 2);
+      assert.equal(await getRevisionCount(unchangedEmailAction.id), 1);
+
+      const addedActionId = ObjectId().toString();
+      const addedAction: AutomationAction = {
+        id: addedActionId,
+        type: 'wait',
+        data: {
+          wait_hours: 72,
+        },
+      };
+
+      await repo.edit(initialAutomation.id, {
+        status: 'inactive',
+        actions: [changedWaitAction, unchangedEmailAction, addedAction],
+        edges: [
+          {
+            source_action_id: changedWaitAction.id,
+            target_action_id: unchangedEmailAction.id,
+          },
+          {
+            source_action_id: unchangedEmailAction.id,
+            target_action_id: addedActionId,
+          },
+        ],
+      });
+
+      assert.equal(await getRevisionCount(), initialRevisionCount + 2);
+      assert.equal(await getRevisionCount(waitAction.id), 2);
+      assert.equal(await getRevisionCount(unchangedEmailAction.id), 1);
+      assert.equal(await getRevisionCount(addedActionId), 1);
+    });
+
+    it('resolves default email design setting slugs to the default design setting id', async function () {
+      const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const addedActionId = ObjectId().toString();
+      const addedAction: AutomationAction = {
+        id: addedActionId,
+        type: 'send_email',
+        data: {
+          email_subject: 'Welcome',
+          email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+          email_design_setting_id: 'default-automated-email',
+        },
+      };
+
+      await repo.edit(initialAutomation.id, {
+        status: 'inactive',
+        actions: [addedAction],
+        edges: [],
+      });
+
+      const defaultDesignSetting = await knex('email_design_settings')
+        .select('id')
+        .where('slug', 'default-automated-email')
+        .first();
+      const revision = await getLatestActionRevisionByActionId(addedActionId);
+
+      assert.equal(revision.email_design_setting_id, defaultDesignSetting.id);
+    });
+
+    it('rejects changing an action that is part of another automation', async function () {
+      const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+      const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+      const paidAction = paidAutomation.actions[0];
+
+      await assertValidationError(
+        async () =>
+          repo.edit(freeAutomation.id, {
+            status: 'inactive',
+            actions: [paidAction],
+            edges: [],
+          }),
+        'actions.id',
+        /already exists/,
+      );
+    });
+
+    it('rejects changing a soft-deleted action', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const now = toDatabaseDate(new Date());
+      const softDeletedActionId = ObjectId().toString();
+      await knex('automation_actions').insert({
+        id: softDeletedActionId,
+        created_at: now,
+        updated_at: now,
+        deleted_at: now,
+        automation_id: automation.id,
+        type: 'wait',
+      });
+
+      await assertValidationError(
+        async () =>
+          repo.edit(automation.id, {
+            status: 'inactive',
+            actions: [
+              {
+                id: softDeletedActionId,
+                type: 'wait',
+                data: {
+                  wait_hours: 24,
+                },
+              },
+            ],
+            edges: [],
+          }),
+        'actions.id',
+        /already exists/,
+      );
+    });
+
+    it('rejects changing the type of an action', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const waitAction = automation.actions.find((action) => action.type === 'wait');
+      const emailAction = automation.actions.find((action) => action.type === 'send_email');
+      assert(waitAction, 'test setup expects wait action');
+      assert.equal(emailAction?.type, 'send_email', 'test setup expects email action');
+
+      await assertValidationError(
+        async () =>
+          repo.edit(automation.id, {
+            status: 'inactive',
+            actions: [
+              {
+                id: waitAction.id,
+                type: 'send_email',
+                data: emailAction.data,
+              },
+            ],
+            edges: [],
+          }),
+        'actions.type',
+        /different type/,
+      );
+    });
+  });
+
+  describe('fetchAndLockSteps', function () {
+    const isCandidateStepSelect = (query: KnexQuery) => {
+      const sql = query.sql?.toLowerCase() ?? '';
+      return (
+        query.method === 'select' &&
+        sql.includes('select `id`') &&
+        sql.includes('from `automation_run_steps`')
+      );
+    };
+
+    const includesStepId = (response: unknown, stepId: string) =>
+      Array.isArray(response) &&
+      response.some(
+        (row) => typeof row === 'object' && row !== null && 'id' in row && row.id === stepId,
+      );
+
+    const simulateLockRace = (contendedStepId: string) => {
+      let hasSimulatedLock = false;
+
+      const originalTransaction = knex.transaction.bind(knex);
+
+      const mockTransaction = async (
+        scope: (_trx: Knex.Transaction) => Promise<unknown>,
+        config?: Knex.TransactionConfig,
+      ) =>
+        originalTransaction(async (trx: Knex.Transaction) => {
+          const { client } = trx;
+
+          const originalQuery = client.query.bind(client);
+          client.query = async (connection: unknown, query: KnexQuery) => {
+            const result = await originalQuery(connection, query);
+            if (
+              !hasSimulatedLock &&
+              isCandidateStepSelect(query) &&
+              includesStepId(result.response, contendedStepId)
+            ) {
+              hasSimulatedLock = true;
+              const lockedAt = toDatabaseDate(new Date());
+              await trx('automation_run_steps')
+                .update({
+                  locked_by: 'contending-lock',
+                  locked_at: lockedAt,
+                  started_at: lockedAt,
+                  updated_at: lockedAt,
+                })
+                .where('id', contendedStepId);
+              client.query = originalQuery;
+            }
+            return result;
+          };
+
+          return await scope(trx);
+        }, config);
+
+      const mockKnex = new Proxy(knex, {
+        get(target, property, receiver) {
+          if (property === 'transaction') {
+            return mockTransaction;
+          }
+          return Reflect.get(target, property, receiver);
+        },
+      }) as Knex;
+
+      repo = createDatabaseAutomationsRepository({
+        knex: mockKnex,
+        fakeWaitHoursMultiplier: null,
+      });
+    };
+
+    const assertContendedStepWasLocked = async (stepId: string) => {
+      const step = await getStepById(stepId);
+      assert.equal(step.locked_by, 'contending-lock');
+      assert.equal(typeof step.locked_at, 'string');
+      assert.equal(step.started_at, step.locked_at);
+      assert.equal(step.updated_at, step.locked_at);
+    };
+
+    it('returns step data', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const readyAt = new Date('2024-01-01T00:00:00.000Z');
+      const stepRow = await insertStep(run.id, action.revision_id, { ready_at: readyAt });
+      const ruleRow = await knex('automation_trigger_rules')
+        .where('automation_id', automation.id)
+        .first();
+      assert(ruleRow);
+
+      const { steps } = await repo.fetchAndLockSteps(1);
+      assert.deepEqual(steps, [
+        {
+          id: stepRow.id,
+          locked_by: assertSingleBatchLock(steps),
+          automation_run_id: run.id,
+          automation_id: automation.id,
+          automation_trigger_rules: [
+            {
+              id: ruleRow.id,
+              automation_id: automation.id,
+              created_at: fromDatabaseDate(ruleRow.created_at),
+              trigger_type: 'free_signup',
+              scope: null,
+              product_id: null,
+              direction: null,
+            },
+          ],
+          automation_status: 'active',
+          member_id: run.member_id,
+          member_email: run.member_email,
+          action_id: action.action_id,
+          automation_action_revision_id: action.revision_id,
+          ready_at: new Date(toRepositoryDateISOString(readyAt)),
+          step_attempts: 1,
+          type: 'wait',
+          wait_hours: 48,
+        },
+      ]);
+    });
+
+    it.each(['unsupported', 'missing product'])(
+      'rejects %s trigger rules and rolls back step locks',
+      async function (invalidRules) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const step = await insertStep(run.id, action.revision_id, {
+          ready_at: new Date('2024-01-01'),
+        });
+        const rules = knex('automation_trigger_rules').where('automation_id', automation.id);
+        await rules.update(
+          invalidRules === 'unsupported'
+            ? { trigger_type: 'unsupported' }
+            : {
+                trigger_type: 'paid_subscription_started',
+                scope: 'specific_paid_tier',
+                product_id: null,
+              },
+        );
+        await assert.rejects(repo.fetchAndLockSteps(1), { name: 'ZodError' });
+        const stored = await getStepById(step.id);
+        assert.equal(stored.locked_by, null);
+        assert.equal(stored.step_attempts, 0);
+      },
+    );
+
+    it('loads per-tier trigger tiers', async function () {
+      const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+      const automationId = await insertAutomation({
+        slug: null,
+        triggerTierScope: 'selected_paid',
+        triggerTierIds: tierIds,
+      });
+      const action = await getActionByIndex(automationId, 0);
+      const run = await insertRun(automationId);
+      await insertStep(run.id, action.revision_id, { ready_at: new Date('2024-01-01') });
+      const { steps } = await repo.fetchAndLockSteps(10);
+      assert.equal(steps.length, 1);
+      assert.deepEqual(
+        [...steps[0].automation_trigger_rules.map((rule) => rule.product_id)].toSorted(),
+        tierIds.toSorted(),
+      );
+    });
+
+    it('locks ready and steps with stale locks, but skips future and recently-locked steps', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const readyStep = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const staleLockStep = await insertStep(run.id, action.revision_id, {
+        locked_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+        locked_by: 'old-lock',
+        step_attempts: 2,
+      });
+      const finishedStep = await insertStep(run.id, action.revision_id, {
+        finished_at: new Date(Date.now() - 1000).toISOString(),
+        locked_at: new Date(Date.now() - 31 * 60 * 1000).toISOString(),
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+        locked_by: 'finished-lock',
+        status: 'finished',
+        step_attempts: 4,
+      });
+      const futureReadyAt = new Date(Date.now() + 60 * 1000);
+      const notReadyYetStep = await insertStep(run.id, action.revision_id, {
+        ready_at: futureReadyAt.toISOString(),
+      });
+      const recentlyLockedStep = await insertStep(run.id, action.revision_id, {
+        locked_at: new Date(Date.now() - 29 * 60 * 1000).toISOString(),
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+        locked_by: 'fresh-lock',
+      });
+
+      const result = await repo.fetchAndLockSteps(10);
+
+      const actualStepIds = new Set(result.steps.map((step) => step.id));
+      const expectedStepIds = new Set([readyStep.id, staleLockStep.id]);
+      assert.deepEqual(actualStepIds, expectedStepIds);
+      assert.equal(result.nextStepReadyAt?.toISOString(), toRepositoryDateISOString(futureReadyAt));
+
+      const lockId = assertSingleBatchLock(result.steps);
+
+      const lockedReady = await getStepById(readyStep.id);
+      assert.equal(lockedReady.status, 'pending');
+      assert.equal(lockedReady.step_attempts, 1);
+      assert.equal(lockedReady.locked_by, lockId);
+
+      const lockedStaleLock = await getStepById(staleLockStep.id);
+      assert.equal(lockedStaleLock.status, 'pending');
+      assert.equal(lockedStaleLock.step_attempts, 3);
+      assert.equal(lockedStaleLock.locked_by, lockId);
+
+      const skippedFinished = await getStepById(finishedStep.id);
+      assert.equal(skippedFinished.status, 'finished');
+      assert.equal(skippedFinished.step_attempts, 4);
+      assert.equal(skippedFinished.locked_by, 'finished-lock');
+
+      const skippedNotReadyYet = await getStepById(notReadyYetStep.id);
+      assert.equal(skippedNotReadyYet.step_attempts, 0);
+      assert.equal(skippedNotReadyYet.locked_by, null);
+
+      const skippedRecentlyLocked = await getStepById(recentlyLockedStep.id);
+      assert.equal(skippedRecentlyLocked.step_attempts, 0);
+      assert.equal(skippedRecentlyLocked.locked_by, 'fresh-lock');
+    });
+
+    it('returns the next future pending ready_at when no steps can be locked', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const later = new Date(Date.now() + 60 * 1000);
+      const sooner = new Date(Date.now() + 30 * 1000);
+
+      await insertStep(run.id, action.revision_id, { ready_at: later.toISOString() });
+      await insertStep(run.id, action.revision_id, { ready_at: sooner.toISOString() });
+
+      const result = await repo.fetchAndLockSteps(10);
+
+      assert.deepEqual(result.steps, []);
+      assert(result.nextStepReadyAt);
+      assert.equal(result.nextStepReadyAt.toISOString(), toRepositoryDateISOString(sooner));
+    });
+
+    it('does not schedule an immediate poll when due steps are locked by another worker', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const lockedAt = new Date(Date.now() - 60 * 1000);
+
+      await insertStep(run.id, action.revision_id, {
+        locked_at: lockedAt.toISOString(),
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+        locked_by: 'fresh-lock',
+      });
+
+      const result = await repo.fetchAndLockSteps(10);
+
+      assert.deepEqual(result.steps, []);
+      assert.equal(result.nextStepReadyAt, null);
+    });
+
+    it('respects the limit argument', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const readyAt1 = new Date(Date.now() - 2000).toISOString();
+      const readyAt2 = new Date(Date.now() - 1000).toISOString();
+      const firstStep = await insertStep(run.id, action.revision_id, { ready_at: readyAt1 });
+      const secondStep = await insertStep(run.id, action.revision_id, { ready_at: readyAt1 });
+      const thirdStep = await insertStep(run.id, action.revision_id, { ready_at: readyAt2 });
+
+      const result = await repo.fetchAndLockSteps(2);
+
+      assert.equal(result.steps.length, 2);
+      assert.equal(result.nextStepReadyAt?.toISOString(), toRepositoryDateISOString(readyAt2));
+
+      const lockId = assertSingleBatchLock(result.steps);
+
+      const first = await getStepById(firstStep.id);
+      const second = await getStepById(secondStep.id);
+      const third = await getStepById(thirdStep.id);
+      const allSteps = [first, second, third];
+
+      const lockedSteps = allSteps.filter((step) => step.locked_by === lockId);
+      assert.equal(lockedSteps.length, 2);
+
+      const notLockedSteps = allSteps.filter((step) => step.locked_by !== lockId);
+      assert.equal(notLockedSteps.length, 1);
+      const [notLockedStep] = notLockedSteps;
+      assert(notLockedStep);
+      assert.equal(notLockedStep.locked_by, null);
+      assert.equal(notLockedStep.step_attempts, 0);
+    });
+
+    it('does not return the same steps to concurrent callers', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const readyAt = new Date(Date.now() - 1000).toISOString();
+      const readySteps = await Promise.all([
+        insertStep(run.id, action.revision_id, { ready_at: readyAt }),
+        insertStep(run.id, action.revision_id, { ready_at: readyAt }),
+        insertStep(run.id, action.revision_id, { ready_at: readyAt }),
+        insertStep(run.id, action.revision_id, { ready_at: readyAt }),
+      ]);
+
+      const [firstResult, secondResult] = await Promise.all([
+        repo.fetchAndLockSteps(2),
+        repo.fetchAndLockSteps(2),
+      ]);
+
+      const firstStepIds = new Set(firstResult.steps.map((step) => step.id));
+      const secondStepIds = new Set(secondResult.steps.map((step) => step.id));
+      assert.equal(firstStepIds.size, firstResult.steps.length);
+      assert.equal(secondStepIds.size, secondResult.steps.length);
+      assert.equal(
+        [...firstStepIds].some((id) => secondStepIds.has(id)),
+        false,
+      );
+
+      const firstLockId = assertSingleBatchLock(firstResult.steps);
+      const secondLockId = assertSingleBatchLock(secondResult.steps);
+      assert.notEqual(firstLockId, secondLockId);
+
+      const allSteps = await Promise.all(readySteps.map((step) => getStepById(step.id)));
+      const lockedSteps = allSteps.filter((step) => step.locked_by !== null);
+      assert.equal(lockedSteps.length, firstResult.steps.length + secondResult.steps.length);
+      assert(lockedSteps.length <= readySteps.length);
+    });
+
+    it('handles concurrent locks in the same transaction', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const readyAt = new Date(Date.now() - 1000).toISOString();
+      const availableStep = await insertStep(run.id, action.revision_id, { ready_at: readyAt });
+      const contendedStep = await insertStep(run.id, action.revision_id, { ready_at: readyAt });
+
+      simulateLockRace(contendedStep.id);
+      const result = await repo.fetchAndLockSteps(2);
+
+      const actualStepIds = new Set(result.steps.map((step) => step.id));
+      const expectedStepIds = new Set([availableStep.id]);
+      assert.deepEqual(actualStepIds, expectedStepIds);
+      await assertContendedStepWasLocked(contendedStep.id);
+    });
+
+    it('returns the next unlocked ready_at when selected rows lose the lock race', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const readyAt = new Date(Date.now() - 1000).toISOString();
+      const contendedStep = await insertStep(run.id, action.revision_id, {
+        created_at: new Date(Date.now() - 2000).toISOString(),
+        ready_at: readyAt,
+      });
+      await insertStep(run.id, action.revision_id, {
+        created_at: new Date(Date.now() - 1000).toISOString(),
+        ready_at: readyAt,
+      });
+
+      simulateLockRace(contendedStep.id);
+      const result = await repo.fetchAndLockSteps(1);
+
+      assert.deepEqual(result.steps, []);
+      assert(result.nextStepReadyAt);
+      assert.equal(result.nextStepReadyAt.toISOString(), toRepositoryDateISOString(readyAt));
+      await assertContendedStepWasLocked(contendedStep.id);
+    });
+  });
+
+  describe('finishStepAndEnqueueNext', function () {
+    it('finishes a locked step and enqueues the next action revision', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const lockedStep = await getStepById(step.id);
+
+      const beforeFinish = Date.now();
+      const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+      const afterFinish = Date.now();
+
+      assert(nextReadyAt);
+      assert(nextReadyAt.getTime() >= beforeFinish);
+      assert(nextReadyAt.getTime() <= afterFinish);
+
+      const finished = await getStepById(stepRow.id);
+      assert.equal(finished.status, 'finished');
+      assert.equal(finished.locked_by, null);
+      assert.equal(finished.locked_at, null);
+      assert.equal(finished.started_at, lockedStep.started_at);
+      assert.equal(finished.ready_at, stepRow.ready_at);
+      assert.equal(finished.step_attempts, 1);
+      assert.equal(typeof finished.finished_at, 'string');
+
+      const allSteps = await getStepsByRunId(run.id);
+      assert.equal(allSteps.length, 2);
+      const nextStep = allSteps.find((candidate) => candidate.id !== stepRow.id);
+      assert(nextStep);
+      const nextAction = await getActionByIndex(automation.id, 1);
+      assert.equal(nextStep.automation_run_id, run.id);
+      assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
+      assert.equal(nextStep.status, 'pending');
+      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
+    });
+
+    it('uses wait hours when the next action is a wait action', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const sendEmailAction = await getActionByIndex(automation.id, 1);
+      assert.equal(sendEmailAction.action_type, 'send_email');
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+
+      const beforeFinish = Date.now();
+      const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+      const afterFinish = Date.now();
+
+      assert(nextReadyAt);
+      assert(nextReadyAt.getTime() >= beforeFinish + 72 * HOUR_MS);
+      assert(nextReadyAt.getTime() <= afterFinish + 72 * HOUR_MS);
+    });
+
+    it('uses the fake wait hours multiplier when configured', async function () {
+      repo = createDatabaseAutomationsRepository({
+        knex,
+        fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER,
+      });
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const sendEmailAction = await getActionByIndex(automation.id, 1);
+      assert.equal(sendEmailAction.action_type, 'send_email');
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+
+      const beforeFinish = Date.now();
+      const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+      const afterFinish = Date.now();
+
+      assert(nextReadyAt);
+      assert(nextReadyAt.getTime() >= beforeFinish + 72 * FAKE_WAIT_HOURS_MULTIPLIER);
+      assert(nextReadyAt.getTime() <= afterFinish + 72 * FAKE_WAIT_HOURS_MULTIPLIER);
+    });
+
+    it('does not enqueue a duplicate next step when called again with the same locked step', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+
+      const firstNextReadyAt = await repo.finishStepAndEnqueueNext(step);
+      const secondNextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+      assert(firstNextReadyAt);
+      assert.equal(secondNextReadyAt, null);
+
+      const allSteps = await getStepsByRunId(run.id);
+      assert.equal(allSteps.length, 2);
+
+      const finished = await getStepById(stepRow.id);
+      assert.equal(finished.status, 'finished');
+      assert.equal(finished.locked_by, null);
+      assert.equal(finished.locked_at, null);
+    });
+
+    it.each(['inactive', 'archived'] as const)(
+      'does not enqueue the next step when the automation was disabled after the step was locked (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const stepRow = await insertStep(run.id, action.revision_id, {
+          ready_at: new Date(Date.now() - 1000).toISOString(),
+        });
+        const step = await getLockedStep(stepRow.id);
+
+        await knex('automations')
+          .update({
+            status,
+            updated_at: toDatabaseDate(new Date()),
+          })
+          .where('id', automation.id);
+
+        const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+        assert.equal(nextReadyAt, null);
+
+        const finished = await getStepById(stepRow.id);
+        assert.equal(finished.status, 'finished');
+        assert.equal(finished.locked_by, null);
+        assert.equal(finished.locked_at, null);
+
+        const allSteps = await getStepsByRunId(run.id);
+        assert.equal(allSteps.length, 1);
+      },
+    );
+
+    it('does not finish or enqueue if the step lock has been taken by another runner', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const otherLockedAt = new Date().toISOString();
+
+      await knex('automation_run_steps')
+        .update({
+          locked_by: 'other-runner-lock',
+          locked_at: otherLockedAt,
+          updated_at: otherLockedAt,
+        })
+        .where('id', stepRow.id);
+
+      const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+      assert.equal(nextReadyAt, null);
+
+      const unchanged = await getStepById(stepRow.id);
+      assert.equal(unchanged.status, 'pending');
+      assert.equal(unchanged.locked_by, 'other-runner-lock');
+      assert.equal(unchanged.locked_at, otherLockedAt);
+      assert.equal(unchanged.finished_at, null);
+
+      const allSteps = await getStepsByRunId(run.id);
+      assert.equal(allSteps.length, 1);
+    });
+
+    it('returns null and does not enqueue when there is no next action', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const lastAction = await getActionByIndex(automation.id, 3);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, lastAction.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+
+      const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+      assert.equal(nextReadyAt, null);
+
+      const finished = await getStepById(stepRow.id);
+      assert.equal(finished.status, 'finished');
+      assert.equal(finished.locked_by, null);
+      assert.equal(finished.locked_at, null);
+
+      const allSteps = await getStepsByRunId(run.id);
+      assert.equal(allSteps.length, 1);
+    });
+
+    it('enqueues the latest revision of the next action', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const sendEmailAction = await getActionByIndex(automation.id, 1);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const nextActionBeforeEdit = await getActionByIndex(automation.id, 2);
+
+      const waitAction = automation.actions.find(
+        (action) => action.id === nextActionBeforeEdit.action_id,
+      );
+      assert(waitAction);
+      const updatedWaitAction = changeWaitHours(waitAction, 96);
+
+      await repo.edit(automation.id, {
+        status: automation.status,
+        actions: automation.actions.map((action) => {
+          if (action.id === updatedWaitAction.id) {
+            return updatedWaitAction;
+          }
+          return action;
+        }),
+        edges: automation.edges,
+      });
+
+      const updatedNextAction = await getLatestActionRevisionByActionId(updatedWaitAction.id);
+      assert.equal(updatedNextAction.wait_hours, 96);
+
+      const beforeFinish = Date.now();
+      const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+      const afterFinish = Date.now();
+
+      assert(nextReadyAt);
+      assert(nextReadyAt.getTime() >= beforeFinish + 96 * HOUR_MS);
+      assert(nextReadyAt.getTime() <= afterFinish + 96 * HOUR_MS);
+
+      const allSteps = await getStepsByRunId(run.id);
+      assert.equal(allSteps.length, 2);
+
+      const nextStep = allSteps.find((candidate) => candidate.id !== stepRow.id);
+      assert(nextStep);
+      assert.equal(nextStep.automation_action_revision_id, updatedNextAction.revision_id);
+      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
+    });
+  });
+
+  describe('markStepTerminal', function () {
+    it('marks a locked step with a terminal status and clears the lock', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const lockedStep = await getStepById(step.id);
+      assert.equal(typeof lockedStep.started_at, 'string');
+
+      const beforeMark = Date.now();
+      const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
+      const afterMark = Date.now();
+
+      assert.equal(didMark, true);
+
+      const marked = await getStepById(step.id);
+      assert.equal(marked.status, 'member unsubscribed');
+      assert.equal(marked.locked_by, null);
+      assert.equal(marked.locked_at, null);
+      assert.equal(marked.started_at, lockedStep.started_at);
+      assert.equal(marked.ready_at, lockedStep.ready_at);
+      assert.equal(marked.step_attempts, 1);
+      assert.equal((await getStepsByRunId(run.id)).length, 1);
+      const markedFinishedAt = marked.finished_at;
+      assert(typeof markedFinishedAt === 'string');
+      assert(markedFinishedAt >= toDatabaseDate(new Date(beforeMark - 1000)));
+      assert(markedFinishedAt <= toDatabaseDate(new Date(afterMark)));
+    });
+
+    it('does not overwrite a step that is no longer pending', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const finishedAt = new Date(Date.now() - 500).toISOString();
+
+      await knex('automation_run_steps')
+        .update({
+          status: 'finished',
+          finished_at: finishedAt,
+          locked_at: null,
+        })
+        .where('id', step.id);
+
+      const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
+
+      assert.equal(didMark, false);
+
+      const unchanged = await getStepById(step.id);
+      assert.equal(unchanged.status, 'finished');
+      assert.equal(unchanged.finished_at, finishedAt);
+      assert.equal(unchanged.locked_by, step.locked_by);
+      assert.equal(unchanged.locked_at, null);
+    });
+
+    it('does not mark a step terminal if the step lock has been taken by another runner', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const otherLockedAt = new Date().toISOString();
+
+      await knex('automation_run_steps')
+        .update({
+          locked_by: 'other-runner-lock',
+          locked_at: otherLockedAt,
+          updated_at: otherLockedAt,
+        })
+        .where('id', stepRow.id);
+
+      const beforeMark = await getStepById(stepRow.id);
+      const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
+
+      assert.equal(didMark, false);
+
+      const unchanged = await getStepById(stepRow.id);
+      assert.deepEqual(unchanged, beforeMark);
+    });
+  });
+
+  describe('retryStep', function () {
+    it('reschedules a locked step for retry and clears the lock', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const retryAt = new Date(Date.now() + 60 * 1000);
+
+      const beforeRetry = Date.now();
+      const didRetry = await repo.retryStep(step, retryAt);
+      const afterRetry = Date.now();
+
+      assert.equal(didRetry, true);
+
+      const retried = await getStepById(step.id);
+      assert.equal(retried.status, 'pending');
+      assert.equal(retried.ready_at, toDatabaseDate(retryAt));
+      assert.equal(retried.started_at, null);
+      assert.equal(retried.finished_at, null);
+      assert.equal(retried.locked_by, null);
+      assert.equal(retried.locked_at, null);
+      assert.equal(retried.step_attempts, 1);
+      const retriedUpdatedAt = retried.updated_at;
+      assert(typeof retriedUpdatedAt === 'string');
+      assert(retriedUpdatedAt >= toDatabaseDate(new Date(beforeRetry - 1000)));
+      assert(retriedUpdatedAt <= toDatabaseDate(new Date(afterRetry)));
+    });
+
+    it('does not retry a locked step that is no longer pending', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+      });
+      const step = await getLockedStep(stepRow.id);
+      const finishedAt = new Date(Date.now() - 500).toISOString();
+
+      await knex('automation_run_steps')
+        .update({
+          status: 'finished',
+          finished_at: finishedAt,
+        })
+        .where('id', step.id);
+
+      const beforeRetry = await getStepById(step.id);
+      const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
+
+      assert.equal(didRetry, false);
+
+      const unchanged = await getStepById(step.id);
+      assert.deepEqual(unchanged, beforeRetry);
+    });
+
+    it.each(['inactive', 'archived'] as const)(
+      'marks the step disabled instead of retrying when the automation was disabled after the step was locked (%s)',
+      async function (status) {
+        const automation = await getAutomationBySlug('member-welcome-email-free');
+        const action = await getActionByIndex(automation.id, 0);
+        const run = await insertRun(automation.id);
+        const stepRow = await insertStep(run.id, action.revision_id, {
+          ready_at: new Date(Date.now() - 1000).toISOString(),
+        });
+        const step = await getLockedStep(stepRow.id);
+        const lockedStep = await getStepById(step.id);
+
+        await knex('automations')
+          .update({
+            status,
+            updated_at: toDatabaseDate(new Date()),
+          })
+          .where('id', automation.id);
+
+        const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
+
+        assert.equal(didRetry, false);
+
+        const disabled = await getStepById(step.id);
+        assert.equal(disabled.status, 'automation disabled');
+        assert.equal(disabled.locked_by, null);
+        assert.equal(disabled.locked_at, null);
+        assert.equal(disabled.started_at, lockedStep.started_at);
+        assert.equal(disabled.ready_at, stepRow.ready_at);
+        assert.equal(typeof disabled.finished_at, 'string');
+      },
+    );
+  });
+
+  describe('getAutomatedEmailRecipientsByMailgunIds', function () {
+    it('returns no recipients for no Mailgun message IDs', async function () {
+      assert.deepEqual(await repo.getAutomatedEmailRecipientsByMailgunIds([]), []);
+    });
+
+    it('returns matching automated recipients', async function () {
+      const revisions = await knex('automation_action_revisions')
+        .select('id')
+        .orderBy('id')
+        .limit(2);
+      const [firstRevision, secondRevision] = revisions;
+      assert(firstRevision);
+      assert(secondRevision);
+
+      await knex('automated_email_recipients').insert([
+        {
+          id: 'matching-recipient-1',
+          automation_action_revision_id: firstRevision.id,
+          mailgun_message_id: 'matching-message-1',
+        },
+        {
+          id: 'matching-recipient-2',
+          automation_action_revision_id: secondRevision.id,
+          mailgun_message_id: 'matching-message-2',
+        },
+        {
+          id: 'non-automated-recipient',
+          automation_action_revision_id: null,
+          mailgun_message_id: 'other-message-3',
+        },
+        {
+          id: 'unmatched-recipient',
+          automation_action_revision_id: firstRevision.id,
+          mailgun_message_id: 'unmatched-message',
+        },
+      ]);
+
+      const recipients = await repo.getAutomatedEmailRecipientsByMailgunIds([
+        'matching-message-1',
+        'matching-message-2',
+        'other-message-3',
+      ]);
+
+      assert.deepEqual(
+        recipients.sort((left, right) => left.id.localeCompare(right.id)),
+        [
+          {
+            id: 'matching-recipient-1',
+            automation_action_revision_id: firstRevision.id,
+            mailgun_message_id: 'matching-message-1',
+          },
+          {
+            id: 'matching-recipient-2',
+            automation_action_revision_id: secondRevision.id,
+            mailgun_message_id: 'matching-message-2',
+          },
+        ],
+      );
+    });
+  });
+
+  describe('trackEmailClicked', function () {
+    const createClickApi = () =>
+      createAutomationsApi2({
+        repository: createDatabaseAutomationsRepository2({ knex }),
+        domainEvents: { dispatch: () => {} },
+        labs: { isSet: () => true },
+        fakeWaitHoursMultiplier: null,
+      });
+    const FIRST_CLICK = new Date('2026-01-01T00:00:00.000Z');
+    const LATER_CLICK = new Date('2026-02-02T00:00:00.000Z');
+
+    let firstRevisionId: string;
+    let secondRevisionId: string;
+    let trackedRunStepId: string;
+
+    const insertRecipient = async ({
+      id,
+      revisionId = firstRevisionId,
+      memberId = 'member-id',
+      trackClicks = true,
+    }: {
+      id: string;
+      revisionId?: string;
+      memberId?: string;
+      trackClicks?: boolean;
+    }): Promise<string> => {
+      const runStepId = (await insertStepForRevision(revisionId)).id;
+      await knex('automated_email_recipients').insert({
+        id,
+        automation_action_revision_id: revisionId,
+        automation_run_step_id: runStepId,
+        member_id: memberId,
+        track_clicks: trackClicks,
+        created_at: toDatabaseDate(FIRST_CLICK),
+      });
+      return runStepId;
+    };
+
+    const trackClick = async ({
+      memberId = 'member-id',
+      clickedAt = FIRST_CLICK,
+      automationRunStepId = trackedRunStepId,
+    }: {
+      memberId?: string;
+      clickedAt?: Date;
+      automationRunStepId?: string;
+    } = {}): Promise<void> => {
+      await knex.transaction(async (transaction) => {
+        await createClickApi().trackEmailClicked(
+          {
+            automationActionRevisionId: firstRevisionId,
+            automationRunStepId,
+            memberId,
+            clickedAt,
+          },
+          { connection: transaction },
+        );
+      });
+    };
+
+    const getClickedAt = async (id: string): Promise<Date | null> => {
+      const row = await knex('automated_email_recipients')
+        .select('clicked_at')
+        .where({ id })
+        .first();
+      assert(row, 'Expected recipient to exist');
+      return row.clicked_at === null ? null : new Date(row.clicked_at as number);
+    };
+
+    const getClickedCount = async (revisionId: string): Promise<number | null> => {
+      const row = await knex('automation_action_revisions')
+        .select('email_clicked_count')
+        .where({ id: revisionId })
+        .first();
+      assert(row, 'Expected revision to exist');
+      return row.email_clicked_count;
+    };
+
+    beforeEach(async function () {
+      const revisions = await knex('automation_action_revisions')
+        .select('id')
+        .orderBy('id')
+        .limit(2);
+      const [firstRevision, secondRevision] = revisions;
+      assert(firstRevision);
+      assert(secondRevision);
+      firstRevisionId = firstRevision.id;
+      secondRevisionId = secondRevision.id;
+
+      trackedRunStepId = await insertRecipient({ id: 'tracked-recipient' });
+    });
+
+    it('records the first click and increments the click count', async function () {
+      await trackClick();
+
+      assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+      assert.equal(await getClickedCount(firstRevisionId), 1);
+    });
+
+    it('ignores clicks for another member or a different email', async function () {
+      const otherMemberRunStepId = await insertRecipient({
+        id: 'other-member-recipient',
+        memberId: 'other-member-id',
+      });
+      const otherRevisionRunStepId = await insertRecipient({
+        id: 'other-revision-recipient',
+        revisionId: secondRevisionId,
+      });
+
+      await trackClick({ automationRunStepId: otherMemberRunStepId });
+      await trackClick({ automationRunStepId: otherRevisionRunStepId });
+
+      assert.equal(await getClickedAt('tracked-recipient'), null);
+      assert.equal(await getClickedAt('other-member-recipient'), null);
+      assert.equal(await getClickedAt('other-revision-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), null);
+      assert.equal(await getClickedCount(secondRevisionId), null);
+    });
+
+    it('keeps the first click timestamp on subsequent clicks', async function () {
+      await trackClick();
+      await trackClick({ clickedAt: LATER_CLICK });
+
+      assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+      assert.equal(await getClickedCount(firstRevisionId), 1);
+    });
+
+    it('keeps the first recorded click when events arrive out of order', async function () {
+      await trackClick({ clickedAt: LATER_CLICK });
+      await trackClick({ clickedAt: FIRST_CLICK });
+
+      assert.deepEqual(await getClickedAt('tracked-recipient'), LATER_CLICK);
+      assert.equal(await getClickedCount(firstRevisionId), 1);
+    });
+
+    it('ignores clicks for an unknown email', async function () {
+      await trackClick({ automationRunStepId: 'missing-step' });
+      assert.equal(await getClickedAt('tracked-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), null);
+    });
+
+    it('leaves the click unrecorded when its count cannot be saved', async function () {
+      // Fail the second write after the click timestamp has been saved.
+      await knex.raw(`
+        CREATE TRIGGER fail_email_clicked_count
+        BEFORE UPDATE OF email_clicked_count ON automation_action_revisions
+        BEGIN
+          SELECT RAISE(FAIL, 'click count update failed');
+        END
+      `);
+
+      try {
+        await assert.rejects(trackClick(), /click count update failed/);
+      } finally {
+        await knex.raw('DROP TRIGGER fail_email_clicked_count');
+      }
+
+      assert.equal(await getClickedAt('tracked-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), null);
+    });
+
+    it('increments an existing click count', async function () {
+      await knex('automation_action_revisions')
+        .where({ id: firstRevisionId })
+        .update({ email_clicked_count: 5 });
+
+      await trackClick();
+
+      assert.equal(await getClickedCount(firstRevisionId), 6);
+    });
+
+    it('records the click for the correct delivery when a member receives the same email twice', async function () {
+      await insertRecipient({
+        id: 'other-delivery-recipient',
+      });
+
+      await trackClick();
+      await trackClick({ clickedAt: LATER_CLICK });
+
+      assert.deepEqual(await getClickedAt('tracked-recipient'), FIRST_CLICK);
+      assert.equal(await getClickedAt('other-delivery-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), 1);
+    });
+
+    it('does not track clicks for recipients with tracking disabled', async function () {
+      const disabledRunStepId = await insertRecipient({
+        id: 'tracking-disabled-recipient',
+        memberId: 'disabled-member-id',
+        trackClicks: false,
+      });
+      await trackClick({
+        automationRunStepId: disabledRunStepId,
+        memberId: 'disabled-member-id',
+      });
+
+      assert.equal(await getClickedAt('tracking-disabled-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), null);
+    });
+  });
+});
