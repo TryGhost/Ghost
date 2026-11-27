@@ -18,7 +18,10 @@ const stripPrefix = (prefix: RegExp) => (url: string) => url.replace(prefix, '')
 
 // Local services with their own proxies, which match on the path as the browser sent it
 const ANALYTICS_ROUTE = '^/\\.ghost/analytics/';
-const ACTIVITYPUB_ROUTES = ['^/\\.ghost/activitypub/', '^/\\.well-known/(webfinger|nodeinfo)'];
+const ACTIVITYPUB_ROUTES = [
+  '^/\\.ghost/activitypub/',
+  '^/\\.well-known/(webfinger|nodeinfo|atproto-did)',
+];
 
 const SECOND_GHOST_PREFIX = '/__ghost-2__';
 

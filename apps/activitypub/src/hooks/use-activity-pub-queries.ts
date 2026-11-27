@@ -6,6 +6,8 @@ import {
   type AccountSearchResult,
   ActivityPubAPI,
   ActivityPubCollectionResponse,
+  type BlueskyDomainHandle,
+  type BlueskyHandleDetails,
   type ExploreAccount,
   type GetAccountFollowsResponse,
   type Notification,
@@ -86,6 +88,7 @@ const QUERY_KEYS = {
   account: (handle: string) => ['account', handle],
   accountAliases: (handle: string) => ['account_aliases', handle],
   accountMigration: (handle: string) => ['account_migration', handle],
+  blueskyDomainHandleCheck: (handle: string) => ['bluesky_domain_handle_check', handle],
   accountDomain: (handle: string) => ['account_domain', handle],
   accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
   searchResults: (query: string) => ['search_results', query],
@@ -2922,6 +2925,7 @@ type BlueskyDetails = {
   blueskyEnabled: boolean;
   blueskyHandleConfirmed: boolean;
   blueskyHandle: string | null;
+  blueskyDomainHandle?: BlueskyDomainHandle | null;
 };
 
 function updateAccountBlueskyCache(queryClient: QueryClient, blueskyDetails: BlueskyDetails) {
@@ -3013,18 +3017,74 @@ export function useConfirmBlueskyHandleMutationForUser(handle: string) {
 
       return api.confirmBlueskyHandle();
     },
-    onSuccess(blueskyHandle: string) {
+    onSuccess(details: BlueskyHandleDetails) {
       // If the bluesky handle is empty then the handle was not confirmed
       // so we don't need to update the cache
-      if (blueskyHandle === '') {
+      if (details.handle === '') {
         return;
       }
 
-      updateAccountBlueskyCache(queryClient, {
-        blueskyEnabled: true,
-        blueskyHandleConfirmed: true,
-        blueskyHandle: blueskyHandle,
-      });
+      updateConfirmedBlueskyCache(queryClient, details);
+    },
+    onError(error: { message: string; statusCode: number }) {
+      if (error.statusCode === 429) {
+        renderRateLimitError();
+      }
+    },
+  });
+}
+
+function updateConfirmedBlueskyCache(queryClient: QueryClient, details: BlueskyHandleDetails) {
+  const account = queryClient.getQueryData<BlueskyDetails>(QUERY_KEYS.account('index'));
+
+  // A response that arrives after sharing was disabled must not enable it again
+  if (account && !account.blueskyEnabled) {
+    return;
+  }
+
+  updateAccountBlueskyCache(queryClient, {
+    blueskyEnabled: true,
+    blueskyHandleConfirmed: true,
+    blueskyHandle: details.handle,
+    // Left out for ActivityPub services that predate domain handles, which
+    // the screen tells apart by the field being absent
+    ...(details.domainHandle !== undefined ? { blueskyDomainHandle: details.domainHandle } : {}),
+  });
+}
+
+/**
+ * Whether the site's domain can be offered as the Bluesky handle. Checked on
+ * every visit rather than cached, as it changes outside of Admin (eg a proxy
+ * that starts routing /.well-known/atproto-did)
+ */
+export function useBlueskyDomainHandleCheckForUser(handle: string, options: { enabled: boolean }) {
+  return useQuery({
+    queryKey: QUERY_KEYS.blueskyDomainHandleCheck(handle),
+    enabled: options.enabled,
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+    async queryFn() {
+      const siteUrl = await getSiteUrl();
+
+      return createActivityPubAPI(handle, siteUrl).checkBlueskyDomainHandle();
+    },
+  });
+}
+
+export function useClaimBlueskyDomainHandleMutationForUser(handle: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    async mutationFn() {
+      const siteUrl = await getSiteUrl();
+      const api = createActivityPubAPI(handle, siteUrl);
+
+      return api.claimBlueskyDomainHandle();
+    },
+    onSuccess(details: BlueskyHandleDetails) {
+      updateConfirmedBlueskyCache(queryClient, details);
     },
     onError(error: { message: string; statusCode: number }) {
       if (error.statusCode === 429) {

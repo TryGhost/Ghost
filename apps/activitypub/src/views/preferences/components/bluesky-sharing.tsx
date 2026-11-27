@@ -11,6 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Banner,
   Button,
   Dialog,
   DialogContent,
@@ -19,11 +20,14 @@ import {
   DialogTrigger,
   LoadingIndicator,
 } from '@tryghost/shade/components';
-import { H2, H3 } from '@tryghost/shade/primitives';
+import { type BlueskyDomainHandle, supportsBlueskyDomainHandles } from '@src/api/activitypub';
+import { H2, H3, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import {
   useAccountForUser,
+  useBlueskyDomainHandleCheckForUser,
+  useClaimBlueskyDomainHandleMutationForUser,
   useConfirmBlueskyHandleMutationForUser,
   useDisableBlueskyMutationForUser,
   useEnableBlueskyMutationForUser,
@@ -31,6 +35,139 @@ import {
 
 const CONFIRMATION_INTERVAL = 5000;
 const MAX_CONFIRMATION_RETRIES = 12;
+// Bridgy Fed usually switches the handle within a minute. After two, the
+// checks slow down until the service gives up on the switch (10 minutes)
+const FAST_DOMAIN_HANDLE_CHECKS = 24;
+const SLOW_DOMAIN_HANDLE_CHECK_INTERVAL = 30000;
+const SLOW_DOMAIN_HANDLE_CHECKS = 20;
+
+type DomainHandleBannerState = 'offer' | 'switching' | 'switched' | 'taken' | 'failed';
+
+/**
+ * What to say about using the site's domain as the Bluesky handle
+ *
+ * The outcome of a switch is only shown when the publisher asked for it:
+ * during this visit, or earlier if it is still in progress. Otherwise a domain
+ * that isn't the handle yet is offered, whatever happened before, as long as
+ * it can work right now (eg not when another account uses it, or the proxy
+ * doesn't route /.well-known/atproto-did)
+ */
+function getDomainHandleBannerState({
+  domainHandle,
+  requested,
+  requesting,
+  requestFailed,
+  showsDomain,
+  available,
+}: {
+  domainHandle: BlueskyDomainHandle | null;
+  requested: boolean;
+  requesting: boolean;
+  requestFailed: boolean;
+  showsDomain: boolean;
+  available: boolean;
+}): DomainHandleBannerState | null {
+  if (requesting) {
+    return 'switching';
+  }
+
+  if (requestFailed) {
+    return 'failed';
+  }
+
+  if (domainHandle?.status === 'claiming') {
+    // Setting the domain up while enabling Bluesky sharing isn't a switch
+    return domainHandle.automatic ? null : 'switching';
+  }
+
+  if (requested) {
+    if (domainHandle?.status === 'active') {
+      return 'switched';
+    }
+
+    if (domainHandle?.status === 'unavailable') {
+      return domainHandle.reason === 'taken' ? 'taken' : 'failed';
+    }
+  }
+
+  if (showsDomain || domainHandle?.status === 'active') {
+    return null;
+  }
+
+  return available ? 'offer' : null;
+}
+
+const DomainHandleBanner: React.FC<{
+  state: DomainHandleBannerState;
+  handle: string;
+  onUseDomain: () => void;
+}> = ({ state, handle, onUseDomain }) => {
+  const banners = {
+    offer: {
+      variant: 'info',
+      icon: <LucideIcon.Info className="text-blue-600" />,
+      title: `Use ${handle} as your Bluesky handle`,
+      body: 'Your followers and posts stay exactly as they are.',
+      action: (
+        <Button className="min-w-0" size="sm" onClick={onUseDomain}>
+          <span className="truncate">Use {handle}</span>
+        </Button>
+      ),
+    },
+    switching: {
+      variant: 'info',
+      icon: (
+        <LucideIcon.LoaderCircle className="animate-spin text-blue-600 motion-reduce:animate-none" />
+      ),
+      title: `Switching to ${handle}…`,
+      body: 'This can take a few minutes. You can leave this page and come back.',
+      action: null,
+    },
+    switched: {
+      variant: 'success',
+      icon: <LucideIcon.CircleCheck className="text-green-600" />,
+      title: `Your Bluesky handle is now ${handle}`,
+      body: 'Your followers and posts stayed exactly as they were.',
+      action: null,
+    },
+    taken: {
+      variant: 'destructive',
+      icon: <LucideIcon.CircleX className="text-red-600" />,
+      title: `${handle} is already taken`,
+      body: `Another Bluesky account is using ${handle} as handle.`,
+      action: null,
+    },
+    failed: {
+      variant: 'destructive',
+      icon: <LucideIcon.CircleX className="text-red-600" />,
+      title: `Couldn't change to ${handle}`,
+      body: 'Something went wrong. Try again in a few minutes.',
+      action: (
+        <Button size="sm" variant="outline" onClick={onUseDomain}>
+          Try again
+        </Button>
+      ),
+    },
+  } as const;
+  const { variant, icon, title, body, action } = banners[state];
+
+  return (
+    <Banner role={variant === 'destructive' ? 'alert' : 'status'} variant={variant}>
+      <Inline align="start" className="text-left" gap="md">
+        <span className="mt-0.5 shrink-0 [&_svg]:size-5">{icon}</span>
+        <Stack className="min-w-0 grow [overflow-wrap:anywhere]" gap="xs">
+          <Text as="strong" size="md" weight="semibold">
+            {title}
+          </Text>
+          <Text size="md" tone="secondary">
+            {body}
+          </Text>
+        </Stack>
+        {action && <div className="flex max-w-[60%] shrink-0 self-center">{action}</div>}
+      </Inline>
+    </Banner>
+  );
+};
 
 const BlueskySharing: React.FC = () => {
   const { data: account, isLoading: isLoadingAccount } = useAccountForUser('index', 'me');
@@ -41,14 +178,34 @@ const BlueskySharing: React.FC = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [handleConfirmed, setHandleConfirmed] = useState(false);
+  const [domainHandleTakingLong, setDomainHandleTakingLong] = useState(false);
+  // Whether the publisher asked for the domain: during this visit, or
+  // earlier if the switch is still in progress
+  const [domainHandleRequested, setDomainHandleRequested] = useState(false);
+  const [domainHandleRequestFailed, setDomainHandleRequestFailed] = useState(false);
   const retryCountRef = useRef(0);
+  const isConfirmingRef = useRef(false);
+  const wasSettingUpRef = useRef(false);
   const enableBlueskyMutation = useEnableBlueskyMutationForUser('index');
   const disableBlueskyMutation = useDisableBlueskyMutationForUser('index');
   const confirmBlueskyHandleMutation = useConfirmBlueskyHandleMutationForUser('index');
+  const claimBlueskyDomainHandleMutation = useClaimBlueskyDomainHandleMutationForUser('index');
+  // Older ActivityPub services keep Bridgy Fed's default handle
+  const domainHandlesSupported = supportsBlueskyDomainHandles(account);
+  const domainHandle = account?.blueskyDomainHandle ?? null;
+  const domainHandleStatus = domainHandle?.status ?? null;
+  const siteDomain = account?.handle?.split('@').pop() || 'your domain';
+  // Enabling sets up the domain handle too, which is shown as one step
+  const isSettingUp =
+    !!account?.blueskyEnabled &&
+    (!account?.blueskyHandleConfirmed ||
+      (domainHandleStatus === 'claiming' && !!domainHandle?.automatic && !domainHandleTakingLong));
+
+  const blueskyHandle = account?.blueskyHandle ? `@${account.blueskyHandle.replace(/^@/, '')}` : '';
 
   const handleCopy = async () => {
     setCopied(true);
-    await navigator.clipboard.writeText(account?.blueskyHandle || '');
+    await navigator.clipboard.writeText(blueskyHandle);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -78,17 +235,45 @@ const BlueskySharing: React.FC = () => {
   };
 
   const confirmHandle = useCallback(() => {
-    confirmBlueskyHandleMutation.mutateAsync().then((handle) => {
-      if (handle) {
-        setHandleConfirmed(true);
-      }
-    });
+    // One check at a time, so a slow, older response can't overwrite a newer one
+    if (isConfirmingRef.current) {
+      return;
+    }
+
+    isConfirmingRef.current = true;
+
+    confirmBlueskyHandleMutation
+      .mutateAsync()
+      .then(({ handle }) => {
+        if (handle) {
+          setHandleConfirmed(true);
+        }
+      })
+      .catch(() => {
+        // Errors are handled by the mutation, the next check retries
+      })
+      .finally(() => {
+        isConfirmingRef.current = false;
+      });
   }, []); // Empty deps - mutations are stable in practice
+
+  const handleClaimDomainHandle = async () => {
+    setDomainHandleRequested(true);
+    setDomainHandleRequestFailed(false);
+
+    try {
+      await claimBlueskyDomainHandleMutation.mutateAsync();
+    } catch {
+      setDomainHandleRequestFailed(true);
+    }
+  };
 
   useEffect(() => {
     if (!account?.blueskyEnabled) {
       setHandleConfirmed(false);
       setLoading(false);
+      setDomainHandleRequested(false);
+      setDomainHandleRequestFailed(false);
       retryCountRef.current = 0;
 
       return;
@@ -97,11 +282,6 @@ const BlueskySharing: React.FC = () => {
     if (account?.blueskyHandleConfirmed) {
       setHandleConfirmed(true);
       setLoading(false);
-
-      // Only show toast on first confirmation
-      if (retryCountRef.current > 0) {
-        toast.success('Bluesky sharing enabled');
-      }
       retryCountRef.current = 0;
 
       return;
@@ -131,6 +311,86 @@ const BlueskySharing: React.FC = () => {
     return () => clearInterval(confirmHandleInterval);
   }, [account?.blueskyEnabled, account?.blueskyHandleConfirmed, confirmHandle]); // disableBlueskyMutation is stable
 
+  // Tell the publisher once enabling has finished, including the domain handle
+  useEffect(() => {
+    if (wasSettingUpRef.current && !isSettingUp && account?.blueskyEnabled) {
+      toast.success('Bluesky sharing enabled');
+    }
+
+    wasSettingUpRef.current = isSettingUp;
+  }, [isSettingUp, account?.blueskyEnabled]);
+
+  // Keep checking while the domain is being switched to
+  const shouldCheckDomainHandle =
+    domainHandlesSupported &&
+    !!account?.blueskyEnabled &&
+    !!account?.blueskyHandleConfirmed &&
+    domainHandleStatus === 'claiming';
+  const [wasCheckingDomainHandle, setWasCheckingDomainHandle] = useState(shouldCheckDomainHandle);
+
+  // A switch the publisher asked for earlier may still be in progress
+  if (shouldCheckDomainHandle && domainHandle?.automatic === false && !domainHandleRequested) {
+    setDomainHandleRequested(true);
+  }
+
+  if (wasCheckingDomainHandle !== shouldCheckDomainHandle) {
+    setWasCheckingDomainHandle(shouldCheckDomainHandle);
+    setDomainHandleTakingLong(false);
+  }
+
+  useEffect(() => {
+    if (!shouldCheckDomainHandle) {
+      return;
+    }
+
+    confirmHandle();
+
+    let checks = 0;
+    let nextCheck: ReturnType<typeof setTimeout>;
+
+    const check = () => {
+      checks += 1;
+
+      if (checks > FAST_DOMAIN_HANDLE_CHECKS + SLOW_DOMAIN_HANDLE_CHECKS) {
+        return;
+      }
+
+      // Bluesky can be slow: enabling counts as done on the handle so far
+      if (checks > FAST_DOMAIN_HANDLE_CHECKS) {
+        setDomainHandleTakingLong(true);
+      }
+
+      confirmHandle();
+
+      nextCheck = setTimeout(
+        check,
+        checks >= FAST_DOMAIN_HANDLE_CHECKS
+          ? SLOW_DOMAIN_HANDLE_CHECK_INTERVAL
+          : CONFIRMATION_INTERVAL,
+      );
+    };
+
+    nextCheck = setTimeout(check, CONFIRMATION_INTERVAL);
+
+    return () => clearTimeout(nextCheck);
+  }, [shouldCheckDomainHandle, confirmHandle]);
+
+  const showAsEnabled = account?.blueskyEnabled && account?.blueskyHandleConfirmed && !isSettingUp;
+  const showsDomain = blueskyHandle === `@${siteDomain}`;
+
+  // Only offer the domain when it can work right now, whatever an earlier
+  // attempt found: a missing route can be added, and a failed request can
+  // work the next time
+  const { data: domainHandleCheck } = useBlueskyDomainHandleCheckForUser('index', {
+    enabled:
+      domainHandlesSupported &&
+      !!showAsEnabled &&
+      !showsDomain &&
+      !domainHandleRequested &&
+      domainHandleStatus !== 'claiming' &&
+      domainHandleStatus !== 'active',
+  });
+
   if (isLoadingAccount) {
     return (
       <Layout>
@@ -146,7 +406,22 @@ const BlueskySharing: React.FC = () => {
     );
   }
 
-  const showAsEnabled = account?.blueskyEnabled && account?.blueskyHandleConfirmed;
+  const domainHandleBannerState = domainHandlesSupported
+    ? getDomainHandleBannerState({
+        domainHandle,
+        requested: domainHandleRequested,
+        requesting: claimBlueskyDomainHandleMutation.isPending,
+        requestFailed: domainHandleRequestFailed,
+        showsDomain,
+        available: domainHandleCheck?.available === true,
+      })
+    : null;
+  // The offer names the domain that works, the rest the domain that was tried
+  const domainHandleBannerDomain =
+    (domainHandleBannerState === 'offer' ? undefined : domainHandle?.domain) ??
+    domainHandleCheck?.domain ??
+    domainHandle?.domain ??
+    siteDomain;
 
   return (
     <Layout>
@@ -187,10 +462,12 @@ const BlueskySharing: React.FC = () => {
                 </>
               )}
             </p>
-            <p className="-mt-2 text-base">
-              You can&apos;t change your Bluesky username, so make sure you&apos;re happy with your
-              current social web handle before connecting.
-            </p>
+            {!domainHandlesSupported && (
+              <p className="-mt-2 text-base">
+                You can&apos;t change your Bluesky username, so make sure you&apos;re happy with
+                your current social web handle before connecting.
+              </p>
+            )}
             {!account?.avatarUrl ? (
               <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                 <DialogTrigger>
@@ -214,11 +491,11 @@ const BlueskySharing: React.FC = () => {
               <>
                 <Button
                   className="h-10 text-base"
-                  disabled={loading}
+                  disabled={loading || isSettingUp}
                   variant="secondary"
                   onClick={handleEnable}
                 >
-                  {!loading ? (
+                  {!(loading || isSettingUp) ? (
                     <>
                       <svg
                         height="32"
@@ -242,7 +519,7 @@ const BlueskySharing: React.FC = () => {
                     </div>
                   )}
                 </Button>
-                {loading && (
+                {(loading || isSettingUp) && (
                   <p className="-mt-2 text-center text-sm text-gray-700 dark:text-gray-600">
                     You can leave this page and come back to check the status.
                   </p>
@@ -265,59 +542,68 @@ const BlueskySharing: React.FC = () => {
               . Posts are automatically synced after a short delay to complete activation.
             </p>
             {handleConfirmed && (
-              <div className="mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950">
-                <div className="relative">
-                  <APAvatar
-                    author={{
-                      icon: {
-                        url: account?.avatarUrl || '',
-                      },
-                      name: account?.name || '',
-                      handle: account?.handle || '',
-                    }}
-                    size="md"
+              <Stack className="mt-6" gap="xl">
+                {domainHandleBannerState && (
+                  <DomainHandleBanner
+                    handle={`@${domainHandleBannerDomain}`}
+                    state={domainHandleBannerState}
+                    onUseDomain={handleClaimDomainHandle}
                   />
-                  <div className="absolute right-0 bottom-0 z-10 flex size-6 items-center justify-center rounded-full bg-white shadow-xs">
-                    <svg
-                      height="14"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="14"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"
-                        fill="#0385FF"
-                        strokeWidth="1"
-                      ></path>
-                    </svg>
+                )}
+                <div className="flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950">
+                  <div className="relative">
+                    <APAvatar
+                      author={{
+                        icon: {
+                          url: account?.avatarUrl || '',
+                        },
+                        name: account?.name || '',
+                        handle: account?.handle || '',
+                      }}
+                      size="md"
+                    />
+                    <div className="absolute right-0 bottom-0 z-10 flex size-6 items-center justify-center rounded-full bg-white shadow-xs">
+                      <svg
+                        height="14"
+                        role="img"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M12 10.8c-1.087 -2.114 -4.046 -6.053 -6.798 -7.995C2.566 0.944 1.561 1.266 0.902 1.565 0.139 1.908 0 3.08 0 3.768c0 0.69 0.378 5.65 0.624 6.479 0.815 2.736 3.713 3.66 6.383 3.364 0.136 -0.02 0.275 -0.039 0.415 -0.056 -0.138 0.022 -0.276 0.04 -0.415 0.056 -3.912 0.58 -7.387 2.005 -2.83 7.078 5.013 5.19 6.87 -1.113 7.823 -4.308 0.953 3.195 2.05 9.271 7.733 4.308 4.267 -4.308 1.172 -6.498 -2.74 -7.078a8.741 8.741 0 0 1 -0.415 -0.056c0.14 0.017 0.279 0.036 0.415 0.056 2.67 0.297 5.568 -0.628 6.383 -3.364 0.246 -0.828 0.624 -5.79 0.624 -6.478 0 -0.69 -0.139 -1.861 -0.902 -2.206 -0.659 -0.298 -1.664 -0.62 -4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"
+                          fill="#0385FF"
+                          strokeWidth="1"
+                        ></path>
+                      </svg>
+                    </div>
                   </div>
-                </div>
-                <div className="flex grow flex-col items-center">
-                  <H3>{account?.name || ''}</H3>
-                  <div className="flex items-center gap-1 text-gray-800">
-                    <span className="text-lg font-medium">{account?.blueskyHandle}</span>
-                    <Button
-                      className="size-6 p-0 hover:opacity-80"
-                      title="Copy handle"
-                      variant="link"
-                      onClick={handleCopy}
-                    >
-                      {!copied ? <LucideIcon.Copy size={16} /> : <LucideIcon.Check size={16} />}
-                    </Button>
+                  <div className="flex grow flex-col items-center">
+                    <H3>{account?.name || ''}</H3>
+                    <div className="flex items-center gap-1 text-gray-800">
+                      <span className="text-lg font-medium">{blueskyHandle}</span>
+                      <Button
+                        className="size-6 p-0 hover:opacity-80"
+                        title="Copy handle"
+                        variant="link"
+                        onClick={handleCopy}
+                      >
+                        {!copied ? <LucideIcon.Copy size={16} /> : <LucideIcon.Check size={16} />}
+                      </Button>
+                    </div>
                   </div>
+                  <Button className="mt-2 w-full" size="lg" variant="secondary" asChild>
+                    <a
+                      href={`https://bsky.app/profile/${blueskyHandle.replace(/^@/, '')}`}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Open profile
+                      <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
+                    </a>
+                  </Button>
                 </div>
-                <Button className="mt-2 w-full" size="lg" variant="secondary" asChild>
-                  <a
-                    href={`https://bsky.app/profile/${account?.blueskyHandle?.replace(/^@/, '')}`}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    Open profile
-                    <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
-                  </a>
-                </Button>
-              </div>
+              </Stack>
             )}
           </>
         )}
