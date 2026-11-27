@@ -79,6 +79,11 @@ export function stripFingerprintingPlugin(): Plugin {
           replace: '/Macintosh|iPhone|iPad|iPod/.test(navigator.userAgent)',
           description: 'prosemirror-keymap: mac/iOS detection (navigator.platform)',
         },
+        {
+          search: '/Win/.test(navigator.platform)',
+          replace: '/Windows/.test(navigator.userAgent)',
+          description: 'prosemirror-keymap: windows detection (navigator.platform)',
+        },
       ],
     },
     {
@@ -105,9 +110,10 @@ export function stripFingerprintingPlugin(): Plugin {
       filePattern: /@tiptap[\\/]core[\\/]dist[\\/]index\.js$/,
       replacements: [
         {
-          // isAndroid: remove navigator.platform === 'Android' check,
-          // keep the userAgent fallback which already handles this
-          search: "navigator.platform === 'Android' || ",
+          // isAndroid: remove the navigator.platform check, keep the
+          // userAgent fallback. Must run before isiOS, whose search also
+          // matches this line.
+          search: '["Android"].includes(navigator.platform) || ',
           replace: '',
           description: '@tiptap/core: isAndroid (navigator.platform)',
         },
