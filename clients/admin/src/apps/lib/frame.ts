@@ -100,7 +100,7 @@ export const APP_FRAME_ALLOW = [
  * app once it notices, after that script has already run. The fix belongs in Core, which can
  * sandbox what it serves into another origin's frame (BER-3992). That doesn't cover a popup, which
  * is a top-level document. Nothing keeps script out of the site either: an app approved to write
- * posts can put HTML and script in a post or page, which runs for whoever opens it, a popup included, on
- * the site's origin, and on Admin's where the two share one.
+ * posts can put HTML and script in a post or page, which runs for whoever opens it, a popup
+ * included, on the site's origin, and on Admin's where the two share one.
  */
 export { isGhostHost } from '@tryghost/app-contracts';

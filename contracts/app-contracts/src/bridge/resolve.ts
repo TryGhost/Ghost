@@ -75,8 +75,9 @@ export type AdminApiRequestCheck =
  * ones the server reads.
  *
  * `approvedScopes` are those of the installation the app runs as, which the route's scope
- * check and the include and sort gaps read. Every gap `APP_ROUTES` names for the route is applied, in order: the first to
- * refuse the request ends it, and each of the others may rewrite its query.
+ * check and the include and sort gaps read. Every gap `APP_ROUTES` names for the route is
+ * applied, in order: the first to refuse the request ends it, and each of the others may
+ * rewrite its query.
  */
 export function checkAdminApiRequest(
   request: AdminApiRequest,

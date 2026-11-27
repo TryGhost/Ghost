@@ -284,7 +284,9 @@ export const SERVER_GAPS = {
    * details read nothing more.
    */
   noParameters: allowsOnlyParameters(PARAMETERS, []),
-  /** Code injection, which Ghost outputs as it is, and mobiledoc, which it converts cards and all. */
+  /**
+   * Code injection, which Ghost outputs as it is, and mobiledoc, which it converts cards and all.
+   */
   scriptInContent: refusesScriptInContent(WRITES),
   // Ghost's own defaults for posts and for pages, less authors' roles; a test in Ghost holds
   // them to its serializers.
