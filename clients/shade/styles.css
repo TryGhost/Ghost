@@ -454,6 +454,19 @@ html.theme-switching *::after {
   background-color: transparent;
 }
 
+/* WebKit before Safari 27 doesn't make a relatively positioned table row the
+ containing block of its absolutely positioned descendants. The primary
+ action's overlay and a static cell's fill would cover the whole table, and
+ every click would open the last row. A translate makes the row their
+ containing block, though WebKit still sizes them to the table's height, so
+ the clip ends them at the row and keeps the side gutters. */
+@layer base {
+  tr.shade-row {
+    translate: 0;
+    clip-path: inset(0 calc(-4 * var(--spacing)));
+  }
+}
+
 .shade-row::before,
 tr.shade-row > :is(td, th)::before {
   content: '';
