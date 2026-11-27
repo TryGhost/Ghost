@@ -84,12 +84,8 @@ const QUERY_KEYS = {
     return ['profile_posts', profileHandle];
   },
   // Nested under profilePosts so prefix-matched cache updates (likes, reposts,
-  // follows, deletes) also apply to the "Posts and replies" tab
-  profilePostsWithReplies: (profileHandle: string) => [
-    'profile_posts',
-    profileHandle,
-    'with-replies',
-  ],
+  // follows, deletes) also apply to the "Replies" tab
+  profileReplies: (profileHandle: string) => ['profile_posts', profileHandle, 'replies'],
   account: (handle: string) => ['account', handle],
   accountAliases: (handle: string) => ['account_aliases', handle],
   accountMigration: (handle: string) => ['account_migration', handle],
@@ -1690,8 +1686,8 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
       // Invalidate reply chain cache to refetch with new reply
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.replyChain(variables.inReplyTo) });
 
-      // Refetch the "Posts and replies" profile tab so it includes the new reply
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profilePostsWithReplies('index') });
+      // Refetch the "Replies" profile tab so it includes the new reply
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profileReplies('index') });
     },
     onError(error: { message: string; statusCode: number }, variables) {
       // eslint-disable-next-line no-console
@@ -1727,7 +1723,6 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
   const queryKeyFeed = QUERY_KEYS.feed;
   const queryKeyOutbox = QUERY_KEYS.outbox(handle);
   const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
-  const queryKeyPostsWithRepliesByAccount = QUERY_KEYS.profilePostsWithReplies('index');
 
   return useMutation({
     async mutationFn({
@@ -1758,14 +1753,8 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
       prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
       prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);
 
-      // Add to profile tabs (postsByAccount)
+      // Add to profile tab (postsByAccount)
       prependActivityToPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', activity);
-      prependActivityToPaginatedCollection(
-        queryClient,
-        queryKeyPostsWithRepliesByAccount,
-        'posts',
-        activity,
-      );
 
       return { id };
     },
@@ -1796,13 +1785,6 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
         context?.id ?? '',
         () => activity,
       );
-      updateActivityInPaginatedCollection(
-        queryClient,
-        queryKeyPostsWithRepliesByAccount,
-        'posts',
-        context?.id ?? '',
-        () => activity,
-      );
     },
     onError(error: { message: string; statusCode: number }, _variables, context) {
       // eslint-disable-next-line no-console
@@ -1813,12 +1795,6 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
       removeActivityFromPaginatedCollection(
         queryClient,
         queryKeyPostsByAccount,
-        'posts',
-        context?.id ?? '',
-      );
-      removeActivityFromPaginatedCollection(
-        queryClient,
-        queryKeyPostsWithRepliesByAccount,
         'posts',
         context?.id ?? '',
       );
@@ -2146,11 +2122,11 @@ export function useDiscoveryFeedForUser(options: { enabled: boolean; topic: stri
 
 export function usePostsByAccount(
   profileHandle: string,
-  options: { enabled: boolean; includeReplies?: boolean },
+  options: { enabled: boolean; onlyReplies?: boolean },
 ) {
   const queryHandle = profileHandle === 'me' ? 'index' : profileHandle;
-  const queryKey = options.includeReplies
-    ? QUERY_KEYS.profilePostsWithReplies(queryHandle)
+  const queryKey = options.onlyReplies
+    ? QUERY_KEYS.profileReplies(queryHandle)
     : QUERY_KEYS.profilePosts(queryHandle);
   const queryClient = useQueryClient();
 
@@ -2160,8 +2136,8 @@ export function usePostsByAccount(
     async queryFn({ pageParam }: { pageParam?: string }) {
       const siteUrl = await getSiteUrl();
       const api = createActivityPubAPI('index', siteUrl);
-      const request = options.includeReplies
-        ? api.getPostsWithRepliesByAccount(profileHandle, pageParam)
+      const request = options.onlyReplies
+        ? api.getRepliesByAccount(profileHandle, pageParam)
         : api.getPostsByAccount(profileHandle, pageParam);
       return request
         .then((response) => {

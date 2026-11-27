@@ -67,7 +67,7 @@ test.describe('My Profile', async () => {
       expect(thirdItemText).toContain(repostedPost.title);
     });
 
-    test('I can view my posts and replies on my profile', async ({ page }) => {
+    test('I can view my replies on my profile', async ({ page }) => {
       const myReply = {
         ...myPosts.posts[0],
         id: 'https://fake.host/.ghost/activitypub/note/22222222-aaaa-bbbb-cccc-222222222222',
@@ -89,10 +89,10 @@ test.describe('My Profile', async () => {
             path: '/v1/posts/me',
             response: myPosts,
           },
-          getMyProfilePostsWithReplies: {
+          getMyProfileReplies: {
             method: 'GET',
-            path: '/v1/posts/me/with-replies',
-            response: { posts: [myReply, ...myPosts.posts], next: null },
+            path: '/v1/posts/me/replies',
+            response: { posts: [myReply], next: null },
           },
           getMyAccount: {
             method: 'GET',
@@ -120,12 +120,13 @@ test.describe('My Profile', async () => {
         'This is a reply I wrote',
       );
 
-      await page.getByRole('tab', { name: 'Posts and replies' }).click();
+      await page.getByRole('tab', { name: 'Replies', exact: true }).click();
 
-      await expect(page).toHaveURL(/#\/profile\/with-replies$/);
+      await expect(page).toHaveURL(/#\/profile\/replies$/);
 
+      // The Replies tab only includes replies
       const profileItems = page.getByTestId('profile-post-item');
-      await expect(profileItems).toHaveCount(myPosts.posts.length + 1);
+      await expect(profileItems).toHaveCount(1);
       await expect(profileItems.first()).toContainText('This is a reply I wrote');
     });
 

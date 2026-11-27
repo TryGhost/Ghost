@@ -13,18 +13,18 @@ import {
 } from '@hooks/use-activity-pub-queries';
 import { useParams } from '@tryghost/admin-x-framework';
 
-export type ProfileTab = 'posts' | 'with-replies' | 'likes' | 'following' | 'followers';
+export type ProfileTab = 'posts' | 'replies' | 'likes' | 'following' | 'followers';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ProfileProps {}
 
-const PostsTab: React.FC<{ handle: string; includeReplies?: boolean }> = ({
+const PostsTab: React.FC<{ handle: string; onlyReplies?: boolean }> = ({
   handle,
-  includeReplies = false,
+  onlyReplies = false,
 }) => {
   const { postsByAccountQuery } = usePostsByAccount(handle ? handle : 'me', {
     enabled: true,
-    includeReplies,
+    onlyReplies,
   });
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = postsByAccountQuery;
@@ -33,15 +33,18 @@ const PostsTab: React.FC<{ handle: string; includeReplies?: boolean }> = ({
     data?.pages.flatMap((page: { posts: Activity[] }) => page.posts) ??
     Array.from({ length: 5 }, (_, index) => ({ id: `placeholder-${index}`, object: {} }));
 
+  const action = onlyReplies ? 'replied to' : 'posted';
+  const noResultsMessage = handle
+    ? `${handle} hasn't ${action} anything yet`
+    : `You haven't ${action} anything yet.`;
+
   return (
     <Posts
       fetchNextPage={fetchNextPage}
       hasNextPage={hasNextPage!}
       isFetchingNextPage={isFetchingNextPage}
       isLoading={isLoading}
-      noResultsMessage={
-        handle ? `${handle} hasn't posted anything yet` : `You haven't posted anything yet.`
-      }
+      noResultsMessage={noResultsMessage}
       posts={posts}
     />
   );
@@ -170,7 +173,7 @@ const Profile: React.FC<ProfileProps> = () => {
     }) || [];
 
   const postsTab = <PostsTab handle={params.handle || ''} />;
-  const postsWithRepliesTab = <PostsTab handle={params.handle || ''} includeReplies />;
+  const repliesTab = <PostsTab handle={params.handle || ''} onlyReplies />;
   const likesTab = <LikesTab />;
   const followingTab = <FollowingTab handle={params.handle || ''} />;
   const followersTab = <FollowersTab handle={params.handle || ''} />;
@@ -184,7 +187,7 @@ const Profile: React.FC<ProfileProps> = () => {
       isLoadingAccount={isLoadingAccount}
       likesTab={likesTab}
       postsTab={postsTab}
-      postsWithRepliesTab={postsWithRepliesTab}
+      repliesTab={repliesTab}
     />
   );
 };

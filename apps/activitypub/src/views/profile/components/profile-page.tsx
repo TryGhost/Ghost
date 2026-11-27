@@ -49,7 +49,7 @@ type ProfilePageProps = {
     value: string;
   }>;
   postsTab: React.ReactNode;
-  postsWithRepliesTab: React.ReactNode;
+  repliesTab: React.ReactNode;
   likesTab: React.ReactNode;
   followingTab: React.ReactNode;
   followersTab: React.ReactNode;
@@ -61,7 +61,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   customFields,
   isLoadingAccount,
   postsTab,
-  postsWithRepliesTab,
+  repliesTab,
   likesTab,
   followingTab,
   followersTab,
@@ -79,8 +79,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const allowedTabs = useMemo<ProfileTab[]>(
     () =>
       likesEnabled
-        ? ['with-replies', 'likes', 'following', 'followers']
-        : ['with-replies', 'following', 'followers'],
+        ? ['replies', 'likes', 'following', 'followers']
+        : ['replies', 'following', 'followers'],
     [likesEnabled],
   );
   const activeTab: ProfileTab = allowedTabs.includes(tabSlug as ProfileTab)
@@ -380,7 +380,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
               >
                 <TabsList>
                   <TabsTrigger value="posts">Posts</TabsTrigger>
-                  <TabsTrigger value="with-replies">Posts and replies</TabsTrigger>
+                  <TabsTrigger value="replies">Replies</TabsTrigger>
                   {likesEnabled && (
                     <TabsTrigger value="likes">
                       Likes
@@ -402,7 +402,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     </TabsTriggerCount>
                   </TabsTrigger>
                 </TabsList>
-                {(['posts', 'with-replies'] as const).map((tab) => (
+                {(['posts', 'replies'] as const).map((tab) => (
                   <TabsContent key={tab} value={tab}>
                     {(isBlocked || isDomainBlocked) && !viewBlockedPosts ? (
                       <NoValueLabel>
@@ -424,7 +424,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     ) : tab === 'posts' ? (
                       postsTab
                     ) : (
-                      postsWithRepliesTab
+                      repliesTab
                     )}
                   </TabsContent>
                 ))}
