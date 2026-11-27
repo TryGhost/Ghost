@@ -88,7 +88,9 @@ function AttachmentVideo({
   const blueskyVideo = getBlueskyVideoSources(attachment.url);
 
   if (!blueskyVideo) {
-    return <video className={className} controls={controls} src={attachment.url} />;
+    return (
+      <video key={attachment.url} className={className} controls={controls} src={attachment.url} />
+    );
   }
 
   // Videos bridged from Bluesky point at the author's PDS, which ignores Range
@@ -97,6 +99,7 @@ function AttachmentVideo({
   // original file elsewhere. With a poster, nothing is fetched until playback.
   return (
     <video
+      key={attachment.url}
       className={className}
       controls={controls}
       poster={blueskyVideo.thumbnailUrl}

@@ -46,6 +46,36 @@ describe('renderFeedAttachment', function () {
     ]);
   });
 
+  it('replaces the video element when the attachment changes, as browsers ignore source changes on a mounted video', function () {
+    const otherCid = 'bafkreiothervideo';
+    const otherBlobUrl = `https://inkcap.us-east.host.bsky.network/xrpc/com.atproto.sync.getBlob?did=${DID}&cid=${otherCid}`;
+    const plainUrl = 'https://example.com/video.mp4';
+    const attachmentFor = (url: string) => ({ type: 'Video', mediaType: '', name: '', url });
+
+    const { container, rerender } = renderAttachment(attachmentFor(BLOB_URL));
+    const firstVideo = container.querySelector('video');
+
+    rerender(
+      <>{renderFeedAttachment({ type: 'Note', attachment: [attachmentFor(otherBlobUrl)] })}</>,
+    );
+    const secondVideo = container.querySelector('video');
+
+    expect(secondVideo).not.toBe(firstVideo);
+    expect(secondVideo?.querySelector('source')?.getAttribute('src')).toBe(
+      `https://video.bsky.app/watch/did%3Aplc%3Aagxhun7wf2fm3fdfj6zrm33y/${otherCid}/playlist.m3u8`,
+    );
+
+    rerender(<>{renderFeedAttachment({ type: 'Note', attachment: [attachmentFor(plainUrl)] })}</>);
+    const thirdVideo = container.querySelector('video');
+
+    expect(thirdVideo).not.toBe(secondVideo);
+    expect(thirdVideo?.getAttribute('src')).toBe(plainUrl);
+
+    rerender(<>{renderFeedAttachment({ type: 'Note', attachment: [attachmentFor(BLOB_URL)] })}</>);
+
+    expect(container.querySelector('video')).not.toBe(thirdVideo);
+  });
+
   it('renders a Video attachment without a media type', function () {
     const { container } = renderAttachment({
       type: 'Video',
