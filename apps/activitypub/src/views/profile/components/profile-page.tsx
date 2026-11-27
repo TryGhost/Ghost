@@ -49,6 +49,7 @@ type ProfilePageProps = {
     value: string;
   }>;
   postsTab: React.ReactNode;
+  postsWithRepliesTab: React.ReactNode;
   likesTab: React.ReactNode;
   followingTab: React.ReactNode;
   followersTab: React.ReactNode;
@@ -60,6 +61,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   customFields,
   isLoadingAccount,
   postsTab,
+  postsWithRepliesTab,
   likesTab,
   followingTab,
   followersTab,
@@ -75,7 +77,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const tabSlug = params.handle ? params.tab || '' : location.pathname.split('/').pop() || '';
 
   const allowedTabs = useMemo<ProfileTab[]>(
-    () => (likesEnabled ? ['likes', 'following', 'followers'] : ['following', 'followers']),
+    () =>
+      likesEnabled
+        ? ['with-replies', 'likes', 'following', 'followers']
+        : ['with-replies', 'following', 'followers'],
     [likesEnabled],
   );
   const activeTab: ProfileTab = allowedTabs.includes(tabSlug as ProfileTab)
@@ -375,6 +380,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
               >
                 <TabsList>
                   <TabsTrigger value="posts">Posts</TabsTrigger>
+                  <TabsTrigger value="with-replies">Posts and replies</TabsTrigger>
                   {likesEnabled && (
                     <TabsTrigger value="likes">
                       Likes
@@ -396,28 +402,32 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     </TabsTriggerCount>
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="posts">
-                  {(isBlocked || isDomainBlocked) && !viewBlockedPosts ? (
-                    <NoValueLabel>
-                      <NoValueLabelIcon>
-                        <LucideIcon.Ban />
-                      </NoValueLabelIcon>
-                      <div className="mt-2 flex flex-col items-center gap-0.5">
-                        <H4>{account.name} is blocked</H4>
-                        <p>You can view the posts, but it won&apos;t unblock the user.</p>
-                        <Button
-                          className="mt-4"
-                          variant="secondary"
-                          onClick={() => setViewBlockedPosts(true)}
-                        >
-                          View posts
-                        </Button>
-                      </div>
-                    </NoValueLabel>
-                  ) : (
-                    postsTab
-                  )}
-                </TabsContent>
+                {(['posts', 'with-replies'] as const).map((tab) => (
+                  <TabsContent key={tab} value={tab}>
+                    {(isBlocked || isDomainBlocked) && !viewBlockedPosts ? (
+                      <NoValueLabel>
+                        <NoValueLabelIcon>
+                          <LucideIcon.Ban />
+                        </NoValueLabelIcon>
+                        <div className="mt-2 flex flex-col items-center gap-0.5">
+                          <H4>{account.name} is blocked</H4>
+                          <p>You can view the posts, but it won&apos;t unblock the user.</p>
+                          <Button
+                            className="mt-4"
+                            variant="secondary"
+                            onClick={() => setViewBlockedPosts(true)}
+                          >
+                            View posts
+                          </Button>
+                        </div>
+                      </NoValueLabel>
+                    ) : tab === 'posts' ? (
+                      postsTab
+                    ) : (
+                      postsWithRepliesTab
+                    )}
+                  </TabsContent>
+                ))}
                 {likesEnabled && <TabsContent value="likes">{likesTab}</TabsContent>}
                 <TabsContent value="following">{followingTab}</TabsContent>
                 <TabsContent value="followers">{followersTab}</TabsContent>

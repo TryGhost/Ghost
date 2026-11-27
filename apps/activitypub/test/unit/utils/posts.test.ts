@@ -188,6 +188,72 @@ describe('mapPostToActivity', function () {
     expect(object.contentWarning).toBe('Sensitive topic');
   });
 
+  test('it treats an omitted inReplyTo as null', function () {
+    expect(mapPostToActivity(post).object.inReplyTo).toBeNull();
+    expect(mapPostToActivity({ ...post, inReplyTo: null }).object.inReplyTo).toBeNull();
+    expect(mapPostToActivity({ ...post, inReplyTo: undefined }).object.inReplyTo).toBeNull();
+  });
+
+  test('it maps inReplyTo with a known parent author', function () {
+    const object = mapPostToActivity({
+      ...post,
+      inReplyTo: {
+        id: 'https://example.com/notes/parent',
+        type: 0,
+        author: {
+          name: 'Parent Author',
+          handle: '@parent@example.org',
+          url: 'https://example.org/users/parent',
+        },
+      },
+    }).object;
+
+    expect(object.inReplyTo).toEqual({
+      id: 'https://example.com/notes/parent',
+      type: 0,
+      author: {
+        name: 'Parent Author',
+        handle: '@parent@example.org',
+        url: 'https://example.org/users/parent',
+      },
+    });
+  });
+
+  test('it maps inReplyTo with an unknown parent author', function () {
+    const object = mapPostToActivity({
+      ...post,
+      inReplyTo: { id: 'https://example.com/notes/parent', type: 0, author: null },
+    }).object;
+
+    expect(object.inReplyTo).toEqual({
+      id: 'https://example.com/notes/parent',
+      type: 0,
+      author: null,
+    });
+  });
+
+  test('it nulls a malformed inReplyTo author and drops unusable context', function () {
+    expect(
+      mapPostToActivity({
+        ...post,
+        inReplyTo: {
+          id: 'https://example.com/notes/parent',
+          type: 0,
+          // @ts-expect-error — malformed API payload
+          author: { name: 'Bob', handle: 42, url: 'https://example.com/@bob' },
+        },
+      }).object.inReplyTo,
+    ).toEqual({ id: 'https://example.com/notes/parent', type: 0, author: null });
+
+    expect(
+      mapPostToActivity({
+        ...post,
+        // @ts-expect-error — malformed API payload
+        inReplyTo: { author: { name: 'Bob', handle: '@bob@example.com', url: '' } },
+      }).object.inReplyTo,
+    ).toBeNull();
+  });
+
   test('it maps object engagement properties', function () {
     const object = mapPostToActivity({
       ...post,

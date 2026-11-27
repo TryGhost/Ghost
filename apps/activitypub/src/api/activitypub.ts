@@ -127,6 +127,42 @@ const accountMigrationStatusSchema = z
 
 export type AccountMigrationStatus = z.infer<typeof accountMigrationStatusSchema>;
 
+export const PostType = {
+  Note: 0,
+  Article: 1,
+  Tombstone: 2,
+} as const;
+
+export type PostType = (typeof PostType)[keyof typeof PostType];
+
+const replyContextAuthorSchema = z.object({
+  name: z.string(),
+  handle: z.string(),
+  url: z.string(),
+});
+
+const inReplyToSchema = z.object({
+  id: z.string().min(1),
+  // Missing/invalid type → unknown (open current reply thread).
+  type: z
+    .union([
+      z.literal(PostType.Note),
+      z.literal(PostType.Article),
+      z.literal(PostType.Tombstone),
+      z.null(),
+    ])
+    .catch(null),
+  author: replyContextAuthorSchema.nullable().catch(null),
+});
+
+export type InReplyTo = z.infer<typeof inReplyToSchema>;
+
+/** Keep usable reply context; bad author → `author: null`; unusable → `null`. */
+export function sanitizeInReplyTo(raw: unknown): InReplyTo | null {
+  const parsed = inReplyToSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
+
 function emptyAccountAliasesResponse(): AccountAliasesResponse {
   return {
     destination: {
@@ -242,14 +278,6 @@ function parsePreferences(json: object | null): Preferences {
   };
 }
 
-export const PostType = {
-  Note: 0,
-  Article: 1,
-  Tombstone: 2,
-} as const;
-
-export type PostType = (typeof PostType)[keyof typeof PostType];
-
 export interface Post {
   id: string;
   type: PostType;
@@ -277,6 +305,8 @@ export interface Post {
   repostCount: number;
   repostedByMe: boolean;
   repostedBy: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url' | 'followedByMe'> | null;
+  /** Feed reply parent; not `Notification.inReplyTo`. `author: null` = unknown parent author. */
+  inReplyTo?: InReplyTo | null;
   metadata?: {
     ghostAuthors?: Array<{
       name: string;
@@ -683,6 +713,13 @@ export class ActivityPubAPI {
 
   async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {
     return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/${handle}`, next);
+  }
+
+  async getPostsWithRepliesByAccount(
+    handle: string,
+    next?: string,
+  ): Promise<PaginatedPostsResponse> {
+    return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/${handle}/with-replies`, next);
   }
 
   async getPostsLikedByAccount(next?: string): Promise<PaginatedPostsResponse> {

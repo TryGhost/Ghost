@@ -67,6 +67,163 @@ test.describe('My Profile', async () => {
       expect(thirdItemText).toContain(repostedPost.title);
     });
 
+    test('I can view my posts and replies on my profile', async ({ page }) => {
+      const myReply = {
+        ...myPosts.posts[0],
+        id: 'https://fake.host/.ghost/activitypub/note/22222222-aaaa-bbbb-cccc-222222222222',
+        type: 0,
+        title: '',
+        excerpt: '',
+        summary: null,
+        content: '<p>This is a reply I wrote</p>',
+        url: 'https://fake.host/.ghost/activitypub/note/22222222-aaaa-bbbb-cccc-222222222222',
+        featureImageUrl: null,
+        publishedAt: '2023-01-02T10:00:00.000Z',
+      };
+
+      await mockApi({
+        page,
+        requests: {
+          getMyProfilePosts: {
+            method: 'GET',
+            path: '/v1/posts/me',
+            response: myPosts,
+          },
+          getMyProfilePostsWithReplies: {
+            method: 'GET',
+            path: '/v1/posts/me/with-replies',
+            response: { posts: [myReply, ...myPosts.posts], next: null },
+          },
+          getMyAccount: {
+            method: 'GET',
+            path: '/v1/account/me',
+            response: {
+              id: 'alice',
+              handle: '@alice@fake.host',
+              name: 'Alice',
+              url: 'https://fake.host/@alice',
+              avatarUrl: 'https://fake.host/avatars/alice.jpg',
+              followingCount: 5,
+              followerCount: 10,
+              likedCount: 3,
+            },
+          },
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/profile');
+
+      // The Posts tab does not include replies
+      await expect(page.getByTestId('profile-post-item')).toHaveCount(myPosts.posts.length);
+      await expect(page.getByTestId('profile-posts-list')).not.toContainText(
+        'This is a reply I wrote',
+      );
+
+      await page.getByRole('tab', { name: 'Posts and replies' }).click();
+
+      await expect(page).toHaveURL(/#\/profile\/with-replies$/);
+
+      const profileItems = page.getByTestId('profile-post-item');
+      await expect(profileItems).toHaveCount(myPosts.posts.length + 1);
+      await expect(profileItems.first()).toContainText('This is a reply I wrote');
+    });
+
+    test('Replies on my profile show who they are replying to', async ({ page }) => {
+      const replyBase = {
+        ...myPosts.posts[0],
+        type: 0,
+        title: '',
+        excerpt: '',
+        summary: null,
+        featureImageUrl: null,
+        publishedAt: '2023-01-02T10:00:00.000Z',
+      };
+      const makeReply = (suffix: string, text: string, inReplyTo: unknown) => ({
+        ...replyBase,
+        id: `https://fake.host/.ghost/activitypub/note/${suffix}`,
+        url: `https://fake.host/.ghost/activitypub/note/${suffix}`,
+        content: `<p>${text}</p>`,
+        inReplyTo,
+      });
+
+      const namedReply = makeReply('named', 'Reply to Bob', {
+        id: 'https://other.example/notes/parent',
+        type: 0,
+        author: {
+          name: 'Bob Parent',
+          handle: '@bob@other.example',
+          url: 'https://other.example/users/bob',
+        },
+      });
+      const continuingReply = makeReply('continuing', 'Reply to myself', {
+        id: 'https://fake.host/.ghost/activitypub/note/earlier',
+        type: 0,
+        author: {
+          name: myPosts.posts[0].author.name,
+          handle: myPosts.posts[0].author.handle,
+          url: myPosts.posts[0].author.url,
+        },
+      });
+      const genericReply = makeReply('generic', 'Reply to unknown', {
+        id: 'https://remote.example/notes/parent',
+        type: 0,
+        author: null,
+      });
+
+      await mockApi({
+        page,
+        requests: {
+          getMyProfilePosts: {
+            method: 'GET',
+            path: '/v1/posts/me',
+            response: myPosts,
+          },
+          getMyProfilePostsWithReplies: {
+            method: 'GET',
+            path: '/v1/posts/me/with-replies',
+            response: { posts: [namedReply, continuingReply, genericReply], next: null },
+          },
+          getMyAccount: {
+            method: 'GET',
+            path: '/v1/account/me',
+            response: {
+              id: 'alice',
+              handle: '@alice@fake.host',
+              name: 'Alice',
+              url: 'https://fake.host/@alice',
+              avatarUrl: 'https://fake.host/avatars/alice.jpg',
+              followingCount: 5,
+              followerCount: 10,
+              likedCount: 3,
+            },
+          },
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/profile/with-replies');
+
+      const profileItems = page.getByTestId('profile-post-item');
+      await expect(profileItems).toHaveCount(3);
+
+      const named = profileItems.filter({ hasText: 'Reply to Bob' });
+      await expect(named.getByTestId('reply-context-banner')).toContainText('Replying to');
+      await expect(named.getByTestId('reply-context-banner')).toContainText('Bob Parent');
+
+      const continuing = profileItems.filter({ hasText: 'Reply to myself' });
+      await expect(continuing.getByTestId('reply-context-banner')).toContainText(
+        'Continuing a thread',
+      );
+
+      const generic = profileItems.filter({ hasText: 'Reply to unknown' });
+      await expect(generic.getByTestId('reply-context-banner')).toContainText('Replying to a post');
+
+      // Clicking the banner opens the parent note, not the current note or a profile
+      await named.getByTestId('reply-context-banner').click();
+      await expect(page).toHaveURL(/#\/notes\/https%3A%2F%2Fother\.example%2Fnotes%2Fparent$/);
+    });
+
     test('I can delete a post I created from my profile', async ({ page }) => {
       const firstPost = myPosts.posts[0]; // Post authored by me
       const postToDeleteId = encodeURIComponent(firstPost.id);

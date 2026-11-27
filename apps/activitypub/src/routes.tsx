@@ -79,6 +79,11 @@ export const routes: CustomRouteObject[] = [
         pageTitle: 'Profile',
       },
       {
+        path: 'profile/with-replies',
+        lazy: lazyComponent(() => import('./views/profile')),
+        pageTitle: 'Profile',
+      },
+      {
         path: 'profile/likes',
         lazy: lazyComponent(() => import('./views/profile')),
         pageTitle: 'Profile',
