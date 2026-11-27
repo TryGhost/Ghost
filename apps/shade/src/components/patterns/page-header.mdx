@@ -19,7 +19,8 @@ gradient and backdrop blur soften content scrolling beneath it.
 PageHeader is composed from named slots rather than configured with props:
 
 - `PageHeader.Left`: the title block.
-- `PageHeader.Breadcrumb`: a small, muted breadcrumb above the title.
+- `PageHeader.Breadcrumb`: the trail above the title, level with the actions. Pass it a
+  `Breadcrumb` that leads from the section down to the current page.
 - `PageHeader.Title`: the page's `h1`; it can hold an inline `PageHeader.Count`.
 - `PageHeader.Count`: a secondary count beside the title.
 - `PageHeader.Description`: a paragraph below the title.

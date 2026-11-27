@@ -406,36 +406,33 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             >
               <PageHeader blurredBackground={false} sticky={false}>
                 <PageHeader.Left>
-                  {/*
-                   * Breadcrumb sits directly under Left rather than inside
-                   * PageHeader.Breadcrumb — that slot adds a `pt-1` offset that
-                   * only makes sense when a title stacks below the breadcrumb.
-                   */}
-                  <Breadcrumb>
-                    <BreadcrumbList>
-                      <BreadcrumbItem>
-                        <BreadcrumbLink asChild>
-                          <Link
-                            data-test-link="members-back"
-                            state={getListReturnNavigationState(backPath)}
-                            to={backPath}
-                          >
-                            Members
-                          </Link>
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        {!isCreating && isLoading && !headerMember ? (
-                          <Skeleton className="h-4 w-40" />
-                        ) : (
-                          <BreadcrumbPage className="truncate" data-testid="member-detail-title">
-                            {title}
-                          </BreadcrumbPage>
-                        )}
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
+                  <PageHeader.Breadcrumb>
+                    <Breadcrumb>
+                      <BreadcrumbList>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink asChild>
+                            <Link
+                              data-test-link="members-back"
+                              state={getListReturnNavigationState(backPath)}
+                              to={backPath}
+                            >
+                              Members
+                            </Link>
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                          {!isCreating && isLoading && !headerMember ? (
+                            <Skeleton className="h-4 w-40" />
+                          ) : (
+                            <BreadcrumbPage data-testid="member-detail-title">
+                              {title}
+                            </BreadcrumbPage>
+                          )}
+                        </BreadcrumbItem>
+                      </BreadcrumbList>
+                    </Breadcrumb>
+                  </PageHeader.Breadcrumb>
                   {mapEnabled && (
                     <Inline
                       // A large name wraps rather than truncates, and stops

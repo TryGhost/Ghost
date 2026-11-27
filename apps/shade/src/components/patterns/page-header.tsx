@@ -154,18 +154,27 @@ PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';
 // Title-block primitives
 // ---------------------------------------------------------------------------
 
+// The trail sits level with the actions, at the size Breadcrumb gives it.
 // Crumbs truncate rather than wrapping under the title or running under the
-// actions. They render as blocks, since a flex link can't show an ellipsis.
-// Earlier crumbs keep their width up to a cap, so a long one can't crowd out
-// the current page, which shrinks to fit the rest.
-const breadcrumbFitClassName =
-  'min-w-0 [&_nav]:min-w-0 [&_ol]:flex-nowrap [&_li]:shrink-0 [&_li>*]:block [&_li>*]:truncate [&_li:not(:last-child)>*]:max-w-40 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink';
+// actions. Links and the current page render as blocks, since a flex element
+// can't show an ellipsis; anything else in a crumb (a badge, a skeleton)
+// keeps its own layout. Earlier crumbs keep their width up to a cap, so a
+// long one can't crowd out the current page, which shrinks to fit the rest.
+const breadcrumbFitClassName = [
+  'min-w-0 [&_li]:shrink-0 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink [&_nav]:min-w-0 [&_ol]:flex-nowrap',
+  '[&_[data-slot=breadcrumb-link]]:block [&_[data-slot=breadcrumb-link]]:truncate [&_li:not(:last-child)>[data-slot=breadcrumb-link]]:max-w-40',
+  '[&_[data-slot=breadcrumb-page]]:block [&_[data-slot=breadcrumb-page]]:truncate',
+].join(' ');
 
+/**
+ * The trail above the title: pass it a `Breadcrumb`, from the section the page
+ * belongs to down to the current page.
+ */
 function PageHeaderBreadcrumb({ className, children }: PropsWithChildrenAndClassName) {
   return (
     <Inline
       align="center"
-      className={cn('pt-1 text-sm text-muted-foreground', breadcrumbFitClassName, className)}
+      className={cn('text-muted-foreground', breadcrumbFitClassName, className)}
       data-page-header="breadcrumb"
       gap="sm"
     >

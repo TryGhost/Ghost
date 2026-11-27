@@ -147,21 +147,23 @@ function ActivityPage() {
             <PageHeader blurredBackground={false} sticky={false}>
               <PageHeader.Left>
                 {memberId ? (
-                  <Breadcrumb>
-                    <BreadcrumbList>
-                      <BreadcrumbItem>
-                        <BreadcrumbLink asChild>
-                          <Link to="/members-activity">Member activity</Link>
-                        </BreadcrumbLink>
-                      </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage className="truncate">
-                          {member && !memberHeader ? formatMemberName(member) : 'Member'}
-                        </BreadcrumbPage>
-                      </BreadcrumbItem>
-                    </BreadcrumbList>
-                  </Breadcrumb>
+                  <PageHeader.Breadcrumb>
+                    <Breadcrumb>
+                      <BreadcrumbList>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink asChild>
+                            <Link to="/members-activity">Member activity</Link>
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                          <BreadcrumbPage>
+                            {member && !memberHeader ? formatMemberName(member) : 'Member'}
+                          </BreadcrumbPage>
+                        </BreadcrumbItem>
+                      </BreadcrumbList>
+                    </Breadcrumb>
+                  </PageHeader.Breadcrumb>
                 ) : (
                   <PageHeader.Title>Member activity</PageHeader.Title>
                 )}

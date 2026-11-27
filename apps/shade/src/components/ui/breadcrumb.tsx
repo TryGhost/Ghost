@@ -48,6 +48,7 @@ const BreadcrumbLink = React.forwardRef<
         'inline-flex items-center gap-1 transition-colors hover:text-foreground',
         className,
       )}
+      data-slot="breadcrumb-link"
       {...props}
     />
   );
@@ -61,6 +62,7 @@ const BreadcrumbPage = React.forwardRef<HTMLSpanElement, React.ComponentPropsWit
       aria-current="page"
       aria-disabled="true"
       className={cn('font-medium text-foreground', className)}
+      data-slot="breadcrumb-page"
       role="link"
       {...props}
     />

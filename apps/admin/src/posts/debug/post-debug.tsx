@@ -12,6 +12,12 @@ import {
   useEmailRecipientFailures,
 } from '@tryghost/admin-x-framework/api/emails';
 import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
   LoadingIndicator,
   Tabs,
   TabsContent,
@@ -72,11 +78,21 @@ function DebugContent({ post }: { post: Post }) {
       <PageHeader className="pt-7" sticky={false}>
         <PageHeader.Left>
           <PageHeader.Breadcrumb>
-            <a href="#/posts">Posts</a>
-            <span aria-hidden="true">/</span>
-            <a href={`#/posts/analytics/${post.id}`}>Analytics</a>
-            <span aria-hidden="true">/</span>
-            <span>Debug</span>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="#/posts">Posts</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href={`#/posts/analytics/${post.id}`}>Analytics</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Debug</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </PageHeader.Breadcrumb>
           <PageHeader.Title className="whitespace-normal">
             {post.title || '(Untitled)'}

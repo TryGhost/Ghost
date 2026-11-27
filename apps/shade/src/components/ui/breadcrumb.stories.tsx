@@ -18,7 +18,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Breadcrumb navigation component showing the user's current location within a hierarchy. Built with semantic navigation markup for accessibility.",
+          "Breadcrumb navigation component showing the user's current location within a hierarchy. Built with semantic navigation markup for accessibility. Above a page title, wrap it in `PageHeader.Breadcrumb`, which keeps it on one line beside the actions.",
       },
     },
   },
