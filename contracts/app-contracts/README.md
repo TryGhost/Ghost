@@ -422,7 +422,7 @@ checkAdminApiRequest({ path: '/posts/?limit=5&filter=tag:news' }, root, approved
 // { url: …/ghost/api/admin/posts/?limit=5&filter=tag%3Anews&include=authors, pathname: '/posts/', gaps: ['postFields'] }
 checkAdminApiRequest({ path: '/../content/' }, root, approved); // { problem: 'invalid_path' }
 checkAdminApiRequest({ path: '/db/' }, root, approved);
-// { url: …/ghost/api/admin/db/, pathname: '/db/', gaps: [] }, which Ghost answers with a 403 APP_SCOPE_REQUIRED
+// { url: …/ghost/api/admin/db/, pathname: '/db/', gaps: [] }, which Ghost answers with a 403 APP_NOT_ALLOWED
 checkAdminApiRequest({ path: '/posts/?include[]=tags' }, root, approved);
 // { problem: 'blocked', pathname: '/posts/', detail: "Apps can't send a query parameter named include[]: …" }
 checkAdminApiRequest({ path: '/posts/', method: 'POST', body: '{"posts":[{"codeinjection_head":""}]}' }, root, approved);
