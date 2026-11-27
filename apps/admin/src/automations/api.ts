@@ -13,3 +13,4 @@ export { useLabelAutomations } from './hooks/use-label-automations';
 export { LabelAutomationNames, LabelAutomationRows } from './components/label-automation-rows';
 export { LARGE_LABEL_AUTOMATION_BATCH_SIZE } from './constants';
 export { useLabelNameAutomations } from './hooks/use-label-name-automations';
+export { useMemberLabelAutomations } from './hooks/use-member-label-automations';

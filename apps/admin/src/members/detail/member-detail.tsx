@@ -8,6 +8,8 @@ import MemberNewslettersField from './member-newsletters-field';
 import MemberSubscriptionsSection from './member-subscriptions-section';
 import MemberMapHeader from './member-map-header';
 import React from 'react';
+import { useMemberLabelAutomations } from '@/automations/api';
+import { MemberLabelAutomationDialog } from './member-label-automation-dialog';
 import {
   Avatar,
   Breadcrumb,
@@ -27,7 +29,7 @@ import { Box, Container, Inline } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { DetailPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { Link, useLocation, useNavigate, useParams } from '@tryghost/admin-x-framework';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import {
   buildMemberFieldEditPayload,
@@ -231,6 +233,21 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     ? getEmailErrorMessage(draft.email, emailTouched, member?.email ?? undefined)
     : null;
 
+  const [confirmingMemberId, setConfirmingMemberId] = React.useState<string | null>(null);
+  const isConfirming = confirmingMemberId === memberId;
+  const savingRef = React.useRef(false);
+  const [isCheckingAutomations, setCheckingAutomations] = React.useState(false);
+  const handleError = useHandleError();
+  const savedLabelNames = new Set(member?.labels?.map(({ name }) => name.trim().toLowerCase()));
+  const addedLabelNames = (draft?.labels ?? [])
+    .filter(({ name }) => !savedLabelNames.has(name.trim().toLowerCase()))
+    .map(({ name }) => name);
+  const automationLookup = useMemberLabelAutomations({
+    labelNames: addedLabelNames,
+    memberId,
+    enabled: !isCreating && !!member && emailValid,
+  });
+
   // The identity block (avatar + heading) reads from a "committed"
   // copy of name/email that only advances on blur, not per keystroke.
   // Live-updating the avatar's gravatar/initials on every character felt
@@ -267,8 +284,14 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     setDraft((prev) => (prev ? { ...prev, ...patch } : prev));
   };
 
-  const onSave = () => {
-    if (!draft || !hasUnsavedChanges || !emailValid || activeMutation.isPending) {
+  const saveMember = () => {
+    if (
+      !draft ||
+      !hasUnsavedChanges ||
+      !emailValid ||
+      activeMutation.isPending ||
+      savingRef.current
+    ) {
       return;
     }
     // Sync committed identity so the sidebar avatar shows what's actively
@@ -321,6 +344,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     if (!member || draftMemberIdRef.current !== member.id) {
       return;
     }
+    savingRef.current = true;
     editMutation.mutate(
       buildMemberFieldEditPayload(member.id, draft, getMemberEditableSlice(member)),
       {
@@ -331,27 +355,48 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             lastServerSliceRef.current = savedSlice;
             setDraft(savedSlice);
           }
+          setConfirmingMemberId(null);
           toast.success('Member updated');
         },
         onError: () => {
           toast.error('Member couldn’t be saved');
         },
+        onSettled: () => {
+          savingRef.current = false;
+        },
       },
     );
+  };
+
+  const checkAndSaveMember = async () => {
+    if (isCheckingAutomations || savingRef.current || activeMutation.isPending) {
+      return;
+    }
+    setCheckingAutomations(true);
+    try {
+      const matches = isCreating ? [] : await automationLookup.check();
+      if (draftMemberIdRef.current !== memberId) {
+        return;
+      }
+      if (matches.length > 0 && !isConfirming) {
+        setConfirmingMemberId(memberId);
+        return;
+      }
+      saveMember();
+    } finally {
+      setCheckingAutomations(false);
+    }
+  };
+
+  const onSave = () => {
+    checkAndSaveMember().catch(handleError);
   };
 
   // Save button state (Save / Saving / Saved / Retry).
   let saveLabel: React.ReactNode = 'Save';
   let saveVariant: ButtonProps['variant'] = 'default';
   let saveDisabled = true;
-  if (activeMutation.isPending) {
-    saveLabel = (
-      <>
-        <LoadingIndicator size="sm" />
-        <span className="sr-only">Saving</span>
-      </>
-    );
-  } else if (hasUnsavedChanges) {
+  if (hasUnsavedChanges) {
     saveLabel = activeMutation.isError ? 'Retry' : 'Save';
     saveVariant = activeMutation.isError ? 'destructive' : 'default';
     saveDisabled = !emailValid;
@@ -480,6 +525,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                         <Button
                           className="min-w-16"
                           disabled={saveDisabled}
+                          loading={
+                            activeMutation.isPending ||
+                            isCheckingAutomations ||
+                            automationLookup.isLoading
+                          }
                           variant={saveVariant}
                           onClick={onSave}
                         >
@@ -625,6 +675,18 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             )}
           </DetailPage.Body>
 
+          <MemberLabelAutomationDialog
+            confirmLabel={saveLabel}
+            isSaving={editMutation.isPending || isCheckingAutomations}
+            lookup={automationLookup}
+            open={isConfirming}
+            onConfirm={onSave}
+            onOpenChange={(open) => {
+              if (!open && !editMutation.isPending && !isCheckingAutomations) {
+                setConfirmingMemberId(null);
+              }
+            }}
+          />
           <DirtyConfirmDialog {...dialogProps} />
         </DetailPage>
       </Container>

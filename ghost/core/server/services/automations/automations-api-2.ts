@@ -47,6 +47,15 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
   };
 
   return {
+    getMemberEnrollments: async (memberId: string) => {
+      if (!labs.isSet('automations') || !labs.isSet('automationsLeadMagnets')) {
+        throw new errors.NotFoundError({ message: 'Label automations are not enabled.' });
+      }
+      return repository.withConnection(async (connection) => ({
+        data: await repository.getMemberEnrollments(connection, memberId),
+      }));
+    },
+
     getNumberOfAutomations: (): Promise<number> =>
       repository.withConnection(
         async (connection) => await repository.getNumberOfAutomations(connection),

@@ -272,6 +272,14 @@ export const createDatabaseAutomationsRepository2 = ({
       return rows.map((row) => nextActionRevisionRowSchema.parse(row));
     },
 
+    async getMemberEnrollments(connection, memberId) {
+      // Every recorded run prevents re-entry, including runs without steps.
+      const rows = await connection('automation_runs')
+        .distinct('automation_id')
+        .where('member_id', memberId);
+      return z.array(z.object({ automation_id: z.string() })).parse(rows);
+    },
+
     async getNumberOfAutomations(connection) {
       const result = await connection('automations').count({ count: '*' }).first();
       return Number(result?.count ?? 0);

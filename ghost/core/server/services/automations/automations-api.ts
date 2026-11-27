@@ -121,6 +121,8 @@ export async function browse() {
   };
 }
 
+export const getMemberEnrollments = automationsApi2.getMemberEnrollments.bind(automationsApi2);
+
 export const getNumberOfAutomations = automationsApi2.getNumberOfAutomations.bind(automationsApi2);
 
 export async function read(automationId: string) {
