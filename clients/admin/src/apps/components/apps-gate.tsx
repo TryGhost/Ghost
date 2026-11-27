@@ -9,16 +9,20 @@ import { canManageApps } from '@/apps/permissions';
 /**
  * Everything in Apps sits behind the private `apps` Labs flag, and is for the Owner and
  * Administrators. Other staff are sent home, or shown `denied` where there is something
- * to tell them.
+ * to tell them. Without the site's config nothing in Apps can tell whether apps work here, so
+ * a failed config fails the screen.
  */
 export const AppsGate: React.FC<{ children: React.ReactNode; denied?: React.ReactNode }> = ({
   children,
   denied,
 }) => {
-  const { isLoading } = useBrowseConfig({ refetchOnMount: false });
+  const { isLoading, error } = useBrowseConfig({ refetchOnMount: false });
   const enabled = useFeatureFlag('apps');
   const { data: currentUser } = useCurrentUser();
 
+  if (error) {
+    throw error;
+  }
   if (isLoading || !currentUser) {
     return null;
   }

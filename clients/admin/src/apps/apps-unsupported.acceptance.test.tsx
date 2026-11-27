@@ -5,6 +5,7 @@ import {
   configResponse,
   currentRoute,
   fakeAdminEndpoint,
+  fakeTags,
   renderAdminApp,
 } from '@test-utils/acceptance';
 import { appsScreen } from './apps.screen';
@@ -112,5 +113,25 @@ describe('Apps on a site that doesn’t run the new auth engine', () => {
     await expect
       .element(page.getByRole('link', { name: 'Review changes' }))
       .not.toBeInTheDocument();
+  });
+});
+
+describe('Apps when the site’s config failed to load', () => {
+  it('keeps the sidebar’s way to Apps, with no app to open', async () => {
+    fakeTags([]);
+    fakeInstallations([installation()]);
+
+    // the Labs flag comes from the session's URL override, as the config never loads
+    await renderAdminApp('/tags?labs=apps', {
+      boot: {
+        browseConfig: {
+          response: { errors: [{ type: 'InternalServerError', message: 'Config failed' }] },
+          responseStatus: 500,
+        },
+      },
+    });
+
+    await expect.element(appsScreen.sidebarLink()).toBeVisible();
+    await expect(appsScreen.sidebarAppItems()).toHaveCount(0);
   });
 });

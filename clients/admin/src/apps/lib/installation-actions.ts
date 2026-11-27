@@ -3,9 +3,10 @@ import { appDetailsRoute, appOpenRoute, appRoute } from './routes';
 
 /**
  * Whether apps can be used on this site: `loading` until Admin knows, then `supported`, or
- * `unsupported` where Ghost can't issue apps their tokens.
+ * `unsupported` where Ghost can't issue apps their tokens. `unknown` where the site's config
+ * failed to load, so Admin can't tell.
  */
-export type AppsAvailability = 'loading' | 'supported' | 'unsupported';
+export type AppsAvailability = 'loading' | 'supported' | 'unsupported' | 'unknown';
 
 /** What Admin offers for one installation, wherever it shows it. */
 export interface InstallationActions {

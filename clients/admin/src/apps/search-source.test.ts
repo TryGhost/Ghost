@@ -44,7 +44,7 @@ describe('appsSearchItems', () => {
   );
 
   // Every item opens an app
-  it.each(['unsupported', 'loading'] as const)(
+  it.each(['unsupported', 'loading', 'unknown'] as const)(
     'lists nothing while apps are %s',
     (availability) => {
       expect(appsSearchItems(admin, true, availability, [podcast, newsletter])).toEqual([]);

@@ -49,7 +49,7 @@ describe('installationActions', () => {
     }
   });
 
-  it.each(['unsupported', 'loading'] as AppsAvailability[])(
+  it.each(['unsupported', 'loading', 'unknown'] as AppsAvailability[])(
     'offers nothing that opens an app while apps are %s, and leads to its details',
     (availability) => {
       for (const status of ['active', 'suspended'] as const) {

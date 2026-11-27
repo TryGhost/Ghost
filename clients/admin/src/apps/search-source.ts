@@ -53,7 +53,8 @@ export function useAppsSearchSource({ enabled }: SearchSourceContext): SearchSou
     enabled: enabled && availability === 'supported' && canSee,
     defaultErrorHandler: false,
   });
-  // Still loading until it's known whether apps can be opened here, rather than empty
+  // Still loading until it's known whether apps can be opened here, rather than empty. A failed
+  // config drops the group, as a failed list does.
   const isLoading = isUserLoading || isAppsLoading || (canSee && availability === 'loading');
   const installations = data?.app_installations;
 
