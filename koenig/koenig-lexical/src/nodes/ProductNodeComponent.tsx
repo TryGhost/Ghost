@@ -10,7 +10,6 @@ import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
-import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function ProductNodeComponent({
@@ -46,7 +45,6 @@ export function ProductNodeComponent({
         titleEditor.setEditable(isEditing);
         descriptionEditor.setEditable(isEditing);
     }, [isEditing, titleEditor, descriptionEditor]);
-    useEditModeAfterReadOnly(isEditing, titleEditor, descriptionEditor);
 
     const handleImgUpload = async (files) => {
         const imgPreviewUrl = URL.createObjectURL(files[0]);

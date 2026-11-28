@@ -10,6 +10,7 @@ import {
 } from 'lexical';
 import {getParentEditor} from '../utils/lexical-internals';
 import {mergeRegister} from '@lexical/utils';
+import {topLevelEditor} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext.js';
 
 function KoenigNestedEditorPlugin({
@@ -26,16 +27,43 @@ function KoenigNestedEditorPlugin({
     // editor's editable state changes so we need to re-focus on re-render
     const [shouldFocus, setShouldFocus] = React.useState(autoFocus);
 
+    const latestIsParentCardEditing = React.useRef(isParentCardEditing);
+
     // Sync the nested editor's editable state with the parent card's editing
     // state synchronously (before browser paint). Without this, the nested
     // editor can briefly be contenteditable="true" during decorator mount
     // (e.g. after undo restores a card), causing the browser to fire
     // selectionchange events that interfere with the parent editor's selection.
     React.useLayoutEffect(() => {
+        latestIsParentCardEditing.current = isParentCardEditing;
+
         if (parentCardNodeKey !== undefined) {
             editor.setEditable(!!isParentCardEditing);
         }
     }, [editor, isParentCardEditing, parentCardNodeKey]);
+
+    // Lexical copies the top-level flag to every nested editor when it changes, so the editor goes
+    // back to its card's edit mode, or a closed card would be typable once editable again
+    React.useEffect(() => {
+        if (parentCardNodeKey === undefined) {
+            return;
+        }
+
+        const topLevel = topLevelEditor(editor);
+
+        return topLevel.registerEditableListener((isEditable) => {
+            if (!isEditable) {
+                return;
+            }
+
+            // once every listener has run, Lexical's own among them
+            queueMicrotask(() => {
+                if (topLevel.isEditable()) {
+                    editor.setEditable(!!latestIsParentCardEditing.current);
+                }
+            });
+        });
+    }, [editor, parentCardNodeKey]);
 
     React.useEffect(() => {
         // prevent nested editor getting focus when its card isn't being edited

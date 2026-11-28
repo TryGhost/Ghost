@@ -7,7 +7,6 @@ import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {EmailCtaCard} from '../components/ui/cards/EmailCtaCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
-import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function EmailCtaNodeComponent({
@@ -43,7 +42,6 @@ export function EmailCtaNodeComponent({
     React.useEffect(() => {
         htmlEditor.setEditable(isEditing);
     }, [isEditing, htmlEditor]);
-    useEditModeAfterReadOnly(isEditing, htmlEditor);
 
     const updateAlignment = (value) => {
         editor.update(() => {

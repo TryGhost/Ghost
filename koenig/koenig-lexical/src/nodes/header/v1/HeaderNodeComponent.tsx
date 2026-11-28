@@ -9,7 +9,6 @@ import {SnippetActionToolbar} from '../../../components/ui/SnippetActionToolbar.
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../../../components/ui/ToolbarMenu';
 import {backgroundImageUploadHandler} from '../../../utils/imageUploadHandler';
 import {useCardVisibilitySettings} from '../../../hooks/useCardVisibilitySettings';
-import {useEditModeAfterReadOnly} from '../../../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 function HeaderNodeComponent({
@@ -116,7 +115,6 @@ function HeaderNodeComponent({
         headerTextEditor.setEditable(isEditing);
         subheaderTextEditor.setEditable(isEditing);
     }, [isEditing, headerTextEditor, subheaderTextEditor]);
-    useEditModeAfterReadOnly(isEditing, headerTextEditor, subheaderTextEditor);
     return (
         <>
             <HeaderCard
