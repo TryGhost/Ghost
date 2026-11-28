@@ -1,6 +1,6 @@
 # The Tinybird CLI requires >=3.10,<3.14 — keep the base image in that range.
 # Renovate is capped at <3.14 for this file (.github/renovate.json5).
-FROM python:3.13-slim@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc
+FROM python:3.13-slim@sha256:168d3a5d10f2152f8e8d77b6843ac82c22a846cfefeef7afdf9aa630404e82a7
 
 # Install uv from Astral.sh
 COPY --from=ghcr.io/astral-sh/uv:0.11.6@sha256:b1e699368d24c57cda93c338a57a8c5a119009ba809305cc8e86986d4a006754 /uv /uvx /bin/
