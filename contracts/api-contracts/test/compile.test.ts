@@ -7,11 +7,12 @@ import { labels, snippets } from '../src/admin/index.ts';
 // runtime parser for any it can't model.
 
 const contracts = { labels, snippets };
+const METHODS = new Set(['browse', 'read', 'add', 'edit', 'destroy']);
 
 describe('compilable contracts', function () {
   for (const [resource, methods] of Object.entries(contracts)) {
     for (const [method, schemas] of Object.entries(methods)) {
-      if (typeof schemas !== 'object' || Array.isArray(schemas)) {
+      if (!METHODS.has(method)) {
         continue;
       }
       for (const [channel, schema] of Object.entries(schemas as Record<string, z.ZodType>)) {

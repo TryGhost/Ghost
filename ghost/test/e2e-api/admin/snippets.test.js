@@ -1,11 +1,22 @@
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const sinon = require('sinon');
-const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
+const { snippets } = require('@tryghost/api-contracts/admin');
+const {
+  agentProvider,
+  fixtureManager,
+  matchers,
+  assertions,
+} = require('../../utils/e2e-framework');
 const { anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId } =
   matchers;
 const config = require('../../../core/shared/config');
 const urlUtilsHelper = require('../../utils/url-utils');
+
+const { bodyMatchesSchema } = assertions;
+
+const mobiledocResponses = snippets.responses;
+const lexicalResponses = snippets.responsesFor({ formats: ['lexical'] });
 
 const matchSnippet = {
   id: anyObjectId,
@@ -32,6 +43,7 @@ describe('Snippets API', function () {
       .post('snippets/')
       .body({ snippets: [snippet] })
       .expectStatus(201)
+      .expect(bodyMatchesSchema(mobiledocResponses.add))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -46,6 +58,7 @@ describe('Snippets API', function () {
     await agent
       .get('snippets')
       .expectStatus(200)
+      .expect(bodyMatchesSchema(mobiledocResponses.browse))
       .matchBodySnapshot({
         snippets: new Array(4).fill(matchSnippet),
       })
@@ -59,6 +72,7 @@ describe('Snippets API', function () {
     await agent
       .get(`snippets/${fixtureManager.get('snippets', 0).id}/`)
       .expectStatus(200)
+      .expect(bodyMatchesSchema(mobiledocResponses.read))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -72,6 +86,7 @@ describe('Snippets API', function () {
     await agent
       .get(`snippets/${fixtureManager.get('snippets', 0).id}/?formats=lexical`)
       .expectStatus(200)
+      .expect(bodyMatchesSchema(lexicalResponses.read))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -96,6 +111,7 @@ describe('Snippets API', function () {
       .post(`snippets/`)
       .body({ snippets: [snippetToChange] })
       .expectStatus(201)
+      .expect(bodyMatchesSchema(mobiledocResponses.add))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -111,6 +127,7 @@ describe('Snippets API', function () {
       .put(`snippets/${newsnippet.id}/`)
       .body({ snippets: [snippetChanged] })
       .expectStatus(200)
+      .expect(bodyMatchesSchema(mobiledocResponses.edit))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -130,6 +147,7 @@ describe('Snippets API', function () {
       .post(`snippets/`)
       .body({ snippets: [snippet] })
       .expectStatus(201)
+      .expect(bodyMatchesSchema(mobiledocResponses.add))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -205,6 +223,7 @@ describe('Snippets API', function () {
       .post('snippets/?formats=lexical')
       .body({ snippets: [snippet] })
       .expectStatus(201)
+      .expect(bodyMatchesSchema(lexicalResponses.add))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -219,6 +238,7 @@ describe('Snippets API', function () {
     await agent
       .get('snippets?formats=lexical&filter=lexical:-null')
       .expectStatus(200)
+      .expect(bodyMatchesSchema(lexicalResponses.browse))
       .matchBodySnapshot({
         snippets: new Array(2).fill(matchSnippet),
       })
@@ -245,6 +265,7 @@ describe('Snippets API', function () {
       .post(`snippets/?formats=lexical`)
       .body({ snippets: [snippetToChange] })
       .expectStatus(201)
+      .expect(bodyMatchesSchema(lexicalResponses.add))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -260,6 +281,7 @@ describe('Snippets API', function () {
       .put(`snippets/${newsnippet.id}/?formats=lexical`)
       .body({ snippets: [snippetChanged] })
       .expectStatus(200)
+      .expect(bodyMatchesSchema(lexicalResponses.edit))
       .matchBodySnapshot({
         snippets: [matchSnippet],
       })
@@ -280,7 +302,8 @@ describe('Snippets API', function () {
     it('Can read Mobiledoc snippet with all URLs as absolute site URLs', async function () {
       const res = await agent
         .get("snippets/?formats=mobiledoc&filter=name:'Snippet with all media types - Mobiledoc'")
-        .expectStatus(200);
+        .expectStatus(200)
+        .expect(bodyMatchesSchema(mobiledocResponses.browse));
 
       const snippet = res.body.snippets[0];
       const mobiledoc = JSON.parse(snippet.mobiledoc);
@@ -307,7 +330,8 @@ describe('Snippets API', function () {
     it('Can read Lexical snippet with all URLs as absolute site URLs', async function () {
       const res = await agent
         .get("snippets/?formats=lexical&filter=name:'Snippet with all media types - Lexical'")
-        .expectStatus(200);
+        .expectStatus(200)
+        .expect(bodyMatchesSchema(lexicalResponses.browse));
 
       const snippet = res.body.snippets[0];
 
@@ -328,7 +352,8 @@ describe('Snippets API', function () {
 
       const res = await agent
         .get("snippets/?formats=mobiledoc&filter=name:'Snippet with all media types - Mobiledoc'")
-        .expectStatus(200);
+        .expectStatus(200)
+        .expect(bodyMatchesSchema(mobiledocResponses.browse));
 
       const snippet = res.body.snippets[0];
       const mobiledoc = JSON.parse(snippet.mobiledoc);
@@ -372,7 +397,8 @@ describe('Snippets API', function () {
 
       const res = await agent
         .get("snippets/?formats=lexical&filter=name:'Snippet with all media types - Lexical'")
-        .expectStatus(200);
+        .expectStatus(200)
+        .expect(bodyMatchesSchema(lexicalResponses.browse));
 
       const snippet = res.body.snippets[0];
 

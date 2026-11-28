@@ -1,6 +1,7 @@
 # @tryghost/api-contracts
 
-Ghost API contracts: the Zod schemas for Admin and Content API requests.
+Ghost API contracts: the Zod schemas for Admin and Content API requests, and
+the shapes of the responses they send back.
 
 This is an internal workspace package. See the
 [internal package golden path](../../packages/README.md) for its standing
@@ -8,10 +9,10 @@ architecture and maintenance rules.
 
 ## Entry points
 
-| Entry point                     | What it holds                                                            |
-| ------------------------------- | ------------------------------------------------------------------------ |
-| `@tryghost/api-contracts`       | Building blocks shared by every API: option primitives, `resourceBody()` |
-| `@tryghost/api-contracts/admin` | Admin API schemas, one module per resource                               |
+| Entry point                     | What it holds                                                                       |
+| ------------------------------- | ----------------------------------------------------------------------------------- |
+| `@tryghost/api-contracts`       | Building blocks shared by every API: option primitives, body and response envelopes |
+| `@tryghost/api-contracts/admin` | Admin API schemas, one module per resource                                          |
 
 Content API contracts get their own `./content` entry point.
 
@@ -58,6 +59,37 @@ that body.
 The result is not a `z.object()`, so it has no `.extend()` or `.pick()`. Compose
 the resource schema first, then wrap it.
 
+### Responses
+
+`browseResponse(key, item)` and `resourceResponse(key, item)` build the
+response envelopes: `{labels: [...], meta: {pagination}}` for browse, and
+`{labels: [item]}` for read, add and edit.
+
+Each Admin resource exports its `record` and `responses.browse`, `.read`,
+`.add` and `.edit`. Requests change the shape, so pick the schemas with
+`responsesFor()` and the parsed options:
+
+```ts
+import { labels, snippets } from '@tryghost/api-contracts/admin';
+
+labels.responsesFor({ include: ['count.members'] }).browse; // records carry `count.members`
+snippets.responsesFor({ formats: ['lexical'] }).read; // `lexical` only, no `mobiledoc`
+```
+
+Inferred types are exported for `import type`:
+
+```ts
+import type { LabelRecord, SnippetRecord } from '@tryghost/api-contracts/admin';
+
+type LexicalSnippet = SnippetRecord<'lexical'>;
+```
+
+Core does not parse responses at runtime. The e2e suites check each
+successful response body against its schema with
+`assertions.bodyMatchesSchema()`, so serializer drift fails tests. `fields`
+narrows records to the requested columns and isn't modelled; `.pick()` from
+`record` when using it.
+
 ## Writing a contract
 
 - Keep schemas plain Zod. `@tryghost/api-framework` compiles them with
@@ -70,6 +102,8 @@ the resource schema first, then wrap it.
   package replaces.
 - Contracts hold formats, types and validation only: no models, configuration
   or I/O.
+- Response schemas are strict: a new field in a serialized response fails the
+  e2e checks until the contract is updated.
 
 ## Develop
 

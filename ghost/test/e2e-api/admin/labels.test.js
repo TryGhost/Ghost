@@ -1,9 +1,17 @@
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
-const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
+const { labels } = require('@tryghost/api-contracts/admin');
+const {
+  agentProvider,
+  fixtureManager,
+  matchers,
+  assertions,
+} = require('../../utils/e2e-framework');
 const { anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor } =
   matchers;
 const sinon = require('sinon');
+
+const { bodyMatchesSchema } = assertions;
 
 const matchLabel = {
   id: anyObjectId,
@@ -25,10 +33,15 @@ describe('Labels API', function () {
   });
 
   it('Can browse with no labels', async function () {
-    await agent.get('labels').expectStatus(200).matchBodySnapshot().matchHeaderSnapshot({
-      'content-version': anyContentVersion,
-      etag: anyEtag,
-    });
+    await agent
+      .get('labels')
+      .expectStatus(200)
+      .expect(bodyMatchesSchema(labels.responses.browse))
+      .matchBodySnapshot()
+      .matchHeaderSnapshot({
+        'content-version': anyContentVersion,
+        etag: anyEtag,
+      });
   });
 
   it('Can add', async function () {
@@ -42,6 +55,7 @@ describe('Labels API', function () {
         ],
       })
       .expectStatus(201)
+      .expect(bodyMatchesSchema(labels.responses.add))
       .matchBodySnapshot({
         labels: [matchLabel],
       })
@@ -82,6 +96,7 @@ describe('Labels API', function () {
     await agent
       .get('labels/?include=count.members')
       .expectStatus(200)
+      .expect(bodyMatchesSchema(labels.responsesWithMemberCount.browse))
       .matchBodySnapshot({
         labels: [matchLabel],
       })
@@ -95,6 +110,7 @@ describe('Labels API', function () {
     const { body } = await agent
       .get('labels/slug/test/')
       .expectStatus(200)
+      .expect(bodyMatchesSchema(labels.responses.read))
       .matchBodySnapshot({
         labels: [matchLabel],
       })
@@ -109,6 +125,7 @@ describe('Labels API', function () {
       .put(`labels/${id}`)
       .body({ labels: [{ name: 'testing' }] })
       .expectStatus(200)
+      .expect(bodyMatchesSchema(labels.responses.edit))
       .matchBodySnapshot({
         labels: [matchLabel],
       })
@@ -130,7 +147,8 @@ describe('Labels API', function () {
           },
         ],
       })
-      .expectStatus(201);
+      .expectStatus(201)
+      .expect(bodyMatchesSchema(labels.responses.add));
 
     const { body } = await agent
       .post('labels')
@@ -141,7 +159,8 @@ describe('Labels API', function () {
           },
         ],
       })
-      .expectStatus(201);
+      .expectStatus(201)
+      .expect(bodyMatchesSchema(labels.responses.add));
 
     const id = body.labels[0].id;
 
@@ -205,7 +224,8 @@ describe('Labels API', function () {
     const { body: created } = await agent
       .post('labels')
       .body({ labels: [{ name: 'id-mismatch' }] })
-      .expectStatus(201);
+      .expectStatus(201)
+      .expect(bodyMatchesSchema(labels.responses.add));
     const id = created.labels[0].id;
 
     const { body } = await agent
@@ -219,7 +239,10 @@ describe('Labels API', function () {
 
   it('Ignores unknown includes and rejects invalid pagination', async function () {
     sinon.stub(logging, 'warn');
-    const { body } = await agent.get('labels?include=count.members,nope').expectStatus(200);
+    const { body } = await agent
+      .get('labels?include=count.members,nope')
+      .expectStatus(200)
+      .expect(bodyMatchesSchema(labels.responsesWithMemberCount.browse));
     for (const label of body.labels) {
       assert.equal(typeof label.count.members, 'number');
     }
@@ -249,6 +272,7 @@ describe('Labels API', function () {
     const { body } = await agent
       .get('labels/slug/test/')
       .expectStatus(200)
+      .expect(bodyMatchesSchema(labels.responses.read))
       .matchBodySnapshot({
         labels: [matchLabel],
       })

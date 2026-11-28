@@ -2,7 +2,7 @@
   "name": "@tryghost/api-contracts",
   "version": "private",
   "private": true,
-  "description": "Ghost API contracts: the Zod schemas for Admin and Content API requests",
+  "description": "Ghost API contracts: Zod schemas for Admin and Content API requests and responses",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
