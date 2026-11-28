@@ -1249,6 +1249,29 @@ describe('HTMLtoLexical', function () {
       assert.equal(product.productImageSrc, 'https://example.com/images/camera.jpg');
       assert.equal(product.productImageAlt, 'A camera on a wooden table');
     });
+
+    it('keeps signup card subheader and disclaimer in their own fields', function () {
+      const html = `
+            <div class="kg-card kg-signup-card kg-width-wide" data-lexical-signup-form="" style="display: none">
+                <div class="kg-signup-card-content">
+                    <div class="kg-signup-card-text">
+                        <h2 class="kg-signup-card-heading">Sign up for test site</h2>
+                        <p class="kg-signup-card-subheading">Thoughts, stories and ideas.</p>
+                        <form class="kg-signup-card-form" data-members-form="signup"></form>
+                        <p class="kg-signup-card-disclaimer">No spam. Unsubscribe anytime.</p>
+                    </div>
+                </div>
+            </div>
+            `;
+
+      const lexical = htmlToLexical(html, options);
+      const [signup] = lexical.root.children;
+
+      assert.equal(signup.type, 'signup');
+      assert.equal(signup.header, 'Sign up for test site');
+      assert.equal(signup.subheader, 'Thoughts, stories and ideas.');
+      assert.equal(signup.disclaimer, 'No spam. Unsubscribe anytime.');
+    });
   });
 
   describe('BRs', function () {

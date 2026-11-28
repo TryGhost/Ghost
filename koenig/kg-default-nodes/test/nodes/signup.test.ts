@@ -286,6 +286,52 @@ describe('SignupNode', function () {
             expect(nodes.length).toBe(1);
         }));
 
+        it('parses the header, subheader and disclaimer into their own fields', editorTest(function () {
+            const signupNode = $createSignupNode(dataset);
+            const result = signupNode.exportDOM(editor, exportOptions);
+            const element = result.element as HTMLElement;
+
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document) as SignupNode[];
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].header).toBe('Header');
+            expect(nodes[0].subheader).toBe('Subheader');
+            expect(nodes[0].disclaimer).toBe('Disclaimer');
+        }));
+
+        it('keeps the subheader out of an empty disclaimer', editorTest(function () {
+            dataset.disclaimer = '';
+
+            const signupNode = $createSignupNode(dataset);
+            const result = signupNode.exportDOM(editor, exportOptions);
+            const element = result.element as HTMLElement;
+
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document) as SignupNode[];
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].subheader).toBe('Subheader');
+            expect(nodes[0].disclaimer).toBe('');
+        }));
+
+        it('parses a subheading rendered as an h3 by older versions', editorTest(function () {
+            const document = createDocument(html`
+                <div class="kg-card kg-signup-card" data-lexical-signup-form>
+                    <div class="kg-signup-card-content">
+                        <div class="kg-signup-card-text">
+                            <h2 class="kg-signup-card-heading">Header</h2>
+                            <h3 class="kg-signup-card-subheading">Subheader</h3>
+                            <p class="kg-signup-card-disclaimer">Disclaimer</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+            const nodes = $generateNodesFromDOM(editor, document) as SignupNode[];
+            expect(nodes.length).toBe(1);
+            expect(nodes[0].header).toBe('Header');
+            expect(nodes[0].subheader).toBe('Subheader');
+            expect(nodes[0].disclaimer).toBe('Disclaimer');
+        }));
+
         it('parses split layout correctly', editorTest(function () {
             dataset.layout = 'split';
 
