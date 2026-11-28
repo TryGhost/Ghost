@@ -214,6 +214,7 @@ export const createDatabaseAutomationsRepository2 = ({
           member_id: memberId,
           track_clicks: true,
         })
+        .orderBy('id', 'asc')
         .forUpdate()
         .first();
       return row === undefined ? undefined : emailRecipientClickRowSchema.parse(row);
