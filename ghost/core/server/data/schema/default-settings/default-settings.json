@@ -731,6 +731,14 @@
         "isIn": [["true", "false"]]
       },
       "type": "boolean"
+    },
+    "default_social_web_share": {
+      "defaultValue": "article",
+      "validations": {
+        "isEmpty": false,
+        "isIn": [["article", "note", "none"]]
+      },
+      "type": "string"
     }
   },
   "explore": {

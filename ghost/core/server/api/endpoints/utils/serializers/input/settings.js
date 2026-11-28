@@ -90,6 +90,7 @@ const EDITABLE_SETTINGS = [
   'blocked_email_domains',
   'require_email_mfa',
   'social_web',
+  'default_social_web_share',
   'explore_ping',
   'explore_ping_growth',
   'indexnow_api_key',

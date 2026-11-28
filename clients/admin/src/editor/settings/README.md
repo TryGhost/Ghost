@@ -287,6 +287,28 @@ and the message for an excerpt past its limit sits under the field. The home
 decides the save: under the title it is canvas, held for Update on a post that
 is not a draft, and in the sidebar it is saved as the panel's other fields are.
 
+## Social web
+
+How the post is shared on the social web (ActivityPub) once it is published:
+as the full article, as a short note linking to it, or not at all. Only posts
+have it, and only while the site's Network is on (`social_web_enabled`); an
+email-only post is never on the web, so it has none either. A server that does
+not support the choice sends no value for the post and no site default, and the
+section stays out.
+
+A new post starts with the site's default from Settings → Network, which Core
+also gives the post when it creates it, so the field reads the default until the
+first save returns the post's own value. Once the post is published the select
+and the note text are disabled: the post is already shared in the form it was
+published with, and a shared note is not updated when the post is edited.
+Unpublishing makes them editable again.
+
+A note is the post's title and excerpt and a link to it, unless the writer gives
+it text of their own in the field that appears under the select. The counter
+shows how much fits in front of the link; text past it is not refused, but the
+shared note is shortened with "...". The save refuses only text past the
+column's 2000 characters.
+
 ## Authors
 
 Authors is a token field: a chip per credited staff member and a list of

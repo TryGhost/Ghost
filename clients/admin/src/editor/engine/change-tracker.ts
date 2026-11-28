@@ -5,6 +5,7 @@ import {
   type LexicalInput,
 } from '@/editor/engine/lexical-compare';
 import { pick } from '@/editor/engine/pick';
+import type { PostSocialWebShare } from '@tryghost/admin-x-framework/api/content-types';
 import { sameTag, type TagLike } from '@/shared/tags/tag-selection';
 
 // Codes identify each dirty cause; callers match on them and the leave report sends them.
@@ -82,6 +83,12 @@ export interface EditablePostProjection {
   twitter_description: string | null;
   /** Pages only; the write contract strips it from post payloads. */
   show_title_and_feature_image: boolean | null;
+  /**
+   * Posts only, and null when the server does not support it or has not
+   * created the post yet; the write contract strips both from page payloads.
+   */
+  social_web_share: PostSocialWebShare | null;
+  social_web_note: string | null;
   /** Server collision token: carried and rebased, never a dirty signal. */
   updated_at: string | null;
 }
@@ -170,6 +177,8 @@ const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
   'twitter_title',
   'twitter_description',
   'show_title_and_feature_image',
+  'social_web_share',
+  'social_web_note',
   'updated_at',
 ];
 

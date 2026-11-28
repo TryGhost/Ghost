@@ -133,6 +133,14 @@
         "email_only": {
           "type": "boolean"
         },
+        "social_web_share": {
+          "type": "string",
+          "enum": ["article", "note", "none"]
+        },
+        "social_web_note": {
+          "type": ["string", "null"],
+          "maxLength": 2000
+        },
         "authors": {
           "$ref": "#/definitions/post-authors"
         },

@@ -95,6 +95,8 @@ const expectedProperties = {
     'email_subject',
     'frontmatter',
     'email_only',
+    'social_web_share',
+    'social_web_note',
     'tiers',
     'newsletter',
     'count',

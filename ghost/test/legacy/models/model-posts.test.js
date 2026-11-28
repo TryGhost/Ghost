@@ -826,6 +826,52 @@ describe('Post Model', function () {
         assertExists(eventsTriggered['post.edited']);
       });
 
+      it('can add, social web sharing is taken from settings cache', async function () {
+        const originalSettingsCacheGetFn = settingsCache.get;
+        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+          if (key === 'default_social_web_share') {
+            return 'note';
+          }
+
+          return originalSettingsCacheGetFn(key, options);
+        });
+
+        const newPost = testUtils.DataGenerator.forModel.posts[2];
+        const addedPost = await models.Post.add(newPost, context);
+        const createdPost = await models.Post.findOne({ id: addedPost.id, status: 'all' });
+
+        assert.equal(createdPost.get('social_web_share'), 'note');
+      });
+
+      it('can add, social web sharing given for the post wins over the settings cache', async function () {
+        const originalSettingsCacheGetFn = settingsCache.get;
+        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+          if (key === 'default_social_web_share') {
+            return 'note';
+          }
+
+          return originalSettingsCacheGetFn(key, options);
+        });
+
+        const newPost = { ...testUtils.DataGenerator.forModel.posts[2], social_web_share: 'none' };
+        const addedPost = await models.Post.add(newPost, context);
+        const createdPost = await models.Post.findOne({ id: addedPost.id, status: 'all' });
+
+        assert.equal(createdPost.get('social_web_share'), 'none');
+      });
+
+      it('refuses an unknown social web sharing value', async function () {
+        const newPost = {
+          ...testUtils.DataGenerator.forModel.posts[2],
+          social_web_share: 'everywhere',
+        };
+
+        await assert.rejects(models.Post.add(newPost, context), (rejection) => {
+          const error = Array.isArray(rejection) ? rejection[0] : rejection;
+          return error.errorType === 'ValidationError';
+        });
+      });
+
       it('can add, with previous published_at date', async function () {
         const previousPublishedAtDate = new Date(2013, 8, 21, 12);
 

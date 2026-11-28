@@ -30,6 +30,7 @@ const COPIED_POSTS_FIELDS = [
   'feature_image',
   'featured',
   'show_title_and_feature_image',
+  'social_web_share',
   'type',
   'locale',
   'visibility',
@@ -52,6 +53,7 @@ const COPIED_POSTS_META_FIELDS = [
   'frontmatter',
   'feature_image_alt',
   'feature_image_caption',
+  'social_web_note',
 ];
 
 class PostsService {

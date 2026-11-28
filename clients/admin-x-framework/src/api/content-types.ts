@@ -149,6 +149,15 @@ export type PostEmailFields = {
   email_segment?: string | null;
 };
 
+/** How a published post is shared on the social web (ActivityPub). */
+export type PostSocialWebShare = 'article' | 'note' | 'none';
+
+/** Present when the server supports choosing how a post is shared on the social web. */
+export type PostSocialWebFields = {
+  social_web_share?: PostSocialWebShare;
+  social_web_note?: string | null;
+};
+
 export type Post = Override<
   ContentRecord,
   {
@@ -157,7 +166,8 @@ export type Post = Override<
     count?: PostCount;
   }
 > &
-  PostEmailFields;
+  PostEmailFields &
+  PostSocialWebFields;
 
 export type Page = Override<
   ContentRecord,
@@ -213,7 +223,9 @@ export type ContentEditableData = Override<
 >;
 
 export type PostEditableData = ContentEditableData &
-  Partial<Pick<Post, 'status' | 'email_subject' | 'email_only'>>;
+  Partial<
+    Pick<Post, 'status' | 'email_subject' | 'email_only' | 'social_web_share' | 'social_web_note'>
+  >;
 
 export type PageEditableData = ContentEditableData &
   Partial<Pick<Page, 'status' | 'show_title_and_feature_image'>>;

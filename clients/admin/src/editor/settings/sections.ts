@@ -7,6 +7,7 @@ export const SETTINGS_SECTION_ORDER = [
   'tags',
   'access',
   'excerpt',
+  'social-web',
   'authors',
   'template',
   'show-title-and-feature-image',
@@ -42,6 +43,7 @@ export const SETTINGS_FIELD_SECTIONS = {
   twitter_description: 'meta-data',
   codeinjection_head: 'code-injection',
   codeinjection_foot: 'code-injection',
+  social_web_note: 'social-web',
 } as const satisfies Record<Exclude<InvalidFieldKey, 'title' | 'email_subject'>, SettingsSectionId>;
 
 /** A field the settings panel edits, which the panel can be asked to take the writer to. */

@@ -37,6 +37,8 @@ export function newPostProjection(currentUserId?: string): EditablePostProjectio
     twitter_title: null,
     twitter_description: null,
     show_title_and_feature_image: null,
+    social_web_share: null,
+    social_web_note: null,
     updated_at: null,
   };
 }
@@ -78,6 +80,8 @@ export function projectionOf(record: EditorRecord): EditablePostProjection {
       'show_title_and_feature_image' in record
         ? (record.show_title_and_feature_image ?? null)
         : null,
+    social_web_share: 'social_web_share' in record ? (record.social_web_share ?? null) : null,
+    social_web_note: 'social_web_note' in record ? (record.social_web_note ?? null) : null,
     updated_at: record.updated_at,
   };
 }

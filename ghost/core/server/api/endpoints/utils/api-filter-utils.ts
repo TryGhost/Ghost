@@ -10,6 +10,8 @@ const CONTENT_API_RESTRICTED_FIELDS = new Set([
   'password',
   'email',
   'email_only',
+  'social_web_share',
+  'social_web_note',
   'html',
   'lexical',
   'locale',

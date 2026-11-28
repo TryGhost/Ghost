@@ -90,6 +90,8 @@ const post = (attrs, frame) => {
     delete attrs.email_only;
     delete attrs.newsletter;
     delete attrs.email_segment;
+    delete attrs.social_web_share;
+    delete attrs.social_web_note;
 
     // We are standardising on returning null from the Content API for any empty values
     if (attrs.twitter_title === '') {

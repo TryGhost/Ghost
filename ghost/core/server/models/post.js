@@ -98,6 +98,7 @@ Post = ghostBookshelf.Model.extend(
         visibility: visibility,
         email_recipient_filter: 'all',
         show_title_and_feature_image: true,
+        social_web_share: settingsCache.get('default_social_web_share') || 'article',
       };
     },
 
