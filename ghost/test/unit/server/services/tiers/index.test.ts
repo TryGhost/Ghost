@@ -12,6 +12,13 @@ const TierCreatedEvent = require('../../../../../core/server/services/tiers/tier
 const rootPath = require.resolve('../../../../../core/server/services/tiers');
 const tiersApiPath = require.resolve('../../../../../core/server/services/tiers/tiers-api');
 const metafieldsPath = require.resolve('../../../../../core/server/services/members-metafields');
+const invalidationsPath = require.resolve('../../../../../core/server/services/invalidations');
+const { InvalidationsService } =
+  require('../../../../../core/server/services/invalidations/invalidations-service') as typeof import('../../../../../core/server/services/invalidations/invalidations-service');
+const { FakeTransport } =
+  require('../invalidations/fake-transport') as typeof import('../invalidations/fake-transport');
+const { createLoggingFake } =
+  require('../../../../utils/logging-utils') as typeof import('../../../../utils/logging-utils');
 // The real check, which refuses until boot has set the custom fields services up. No unit test
 // sets them up.
 const { booted: bootedBeforeInit } = require(metafieldsPath);
@@ -83,6 +90,7 @@ describe('Tiers root', function () {
   let Product: ReturnType<typeof fakeProductModel>;
   let dispatch: sinon.SinonStub;
   let metafields: { booted: () => unknown };
+  let transport: InstanceType<typeof FakeTransport>;
 
   /** A fresh root, so each case starts uninitialized. */
   function loadRoot() {
@@ -90,7 +98,7 @@ describe('Tiers root', function () {
     return require(rootPath).default;
   }
 
-  beforeEach(function () {
+  beforeEach(async function () {
     cached.set(rootPath, require.cache[rootPath]);
     Product = fakeProductModel();
     sandbox.replace(models, 'Product', Product);
@@ -101,6 +109,18 @@ describe('Tiers root', function () {
     const metafieldsModule = require.cache[metafieldsPath];
     assert.ok(metafieldsModule);
     sandbox.replace(metafieldsModule, 'exports', metafields);
+    // Boot initializes invalidations long before tiers.
+    transport = new FakeTransport();
+    const invalidations = new InvalidationsService({
+      transport,
+      instanceId: 'this',
+      logging: createLoggingFake(),
+    });
+    await invalidations.start();
+    require(invalidationsPath);
+    const invalidationsModule = require.cache[invalidationsPath];
+    assert.ok(invalidationsModule);
+    sandbox.replace(invalidationsModule, 'exports', { default: { service: invalidations } });
   });
 
   afterEach(function () {
@@ -296,5 +316,41 @@ describe('Tiers root', function () {
 
     await assert.rejects(browse(), TypeError);
     await assert.rejects(read(PAID_ID), TypeError);
+  });
+
+  it('ends with the newer tiers when another instance changes them while it loads at boot', async function () {
+    const loading = deferred<unknown[]>();
+    Product.findAll.onFirstCall().returns(loading.promise);
+    Product.findAll.resolves([paidRow]);
+    const root = loadRoot();
+    const initialization = root.init();
+    await setImmediate();
+
+    await transport.subscribed.onMessage({ name: 'tiers', origin: 'peer' });
+    loading.resolve([freeRow, paidRow]);
+    await initialization;
+
+    async function names() {
+      const page = await root.service.api.browse();
+      return page.data.map((tier: { name: string }) => tier.name).join();
+    }
+    for (let i = 0; i < 10 && (await names()) !== 'Gold'; i++) {
+      await setImmediate();
+    }
+    assert.equal(await names(), 'Gold');
+  });
+
+  it('reloads its tiers when another instance says they changed', async function () {
+    const root = loadRoot();
+    await root.init();
+    Product.findAll.resolves([paidRow]);
+
+    await transport.subscribed.onMessage({ name: 'tiers', origin: 'peer' });
+
+    const page = await root.service.api.browse();
+    assert.deepEqual(
+      page.data.map((tier: { name: string }) => tier.name),
+      ['Gold'],
+    );
   });
 });

@@ -141,6 +141,11 @@ const specialistDependencies = [
     owners: [service('stripe/stripe-api.js'), service('machine-payments/stripe/')],
   },
   {
+    // Redis pub/sub between instances for cache invalidation.
+    dependency: npm('ioredis'),
+    owners: [service('invalidations/redis-transport.ts')],
+  },
+  {
     // oEmbed provider lookup and fetching, through a fetcher the caller passes.
     dependency: npm('@extractus/oembed-extractor'),
     owners: [service('oembed/extract-oembed.ts')],

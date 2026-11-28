@@ -117,6 +117,7 @@ catalog:
   '@tryghost/url-utils': 5.5.0
   '@types/csso': 5.0.5
   '@types/express': 4.17.25
+  '@types/ioredis': 4.28.10
   '@types/lodash': 4.17.27
   '@types/luxon': 3.7.6
   '@types/jsdom': 30.0.0
@@ -174,6 +175,7 @@ catalog:
   got: 16.0.0
   html-minifier-next: 8.11.0
   html-to-text: 10.0.1
+  ioredis: 4.31.0
   ipaddr.js: 2.5.0
   jiti: 2.7.0
   jose: 6.2.17

@@ -12,6 +12,9 @@
   "auth": {
     "engine": "legacy"
   },
+  "invalidations": {
+    "transport": "local"
+  },
   "externalRequest": {
     "keepAlive": true,
     "keepAliveMsecs": 60000,

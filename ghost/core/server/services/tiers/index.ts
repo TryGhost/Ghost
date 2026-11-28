@@ -5,12 +5,14 @@ import { TierRequirements } from './requirements';
 // Publishes the API and the cached tiers behind it together, once the tiers have loaded.
 // Test fixtures reload the repository after inserting products. Boot sets up the custom fields
 // services first, as tier requirements read which ports are bound to a custom field, and which
-// field each names.
+// field each names. It sets up invalidations earlier still, so a change another instance makes
+// while the tiers load reloads them once they have.
 export default defineService('Tiers', async () => {
   const DomainEvents = require('@tryghost/domain-events');
   const { knex } = require('../../data/db');
   const models = require('../../models');
   const metafields: typeof import('../members-metafields') = require('../members-metafields');
+  const invalidations: typeof import('../invalidations') = require('../invalidations');
   const TierRepository = require('./tier-repository');
   const TiersAPI = require('./tiers-api');
 
@@ -28,6 +30,7 @@ export default defineService('Tiers', async () => {
     ProductModel: models.Product,
     DomainEvents,
     requirements,
+    invalidations: invalidations.default.service,
   });
 
   const slugService = {

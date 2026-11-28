@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { loadBootFunction } from './harness';
 
 function createCoreHarness() {
+  const invalidations = { init: sinon.stub().resolves(), stop: sinon.stub().resolves() };
   const settings = {
     init: sinon.stub().resolves(),
     syncEmailSettings: sinon.stub().resolves(),
@@ -20,6 +21,7 @@ function createCoreHarness() {
     './server/lib/image/image-upload-config': { applyImageUploadConfig },
     './shared/url-utils': {},
     './server/services/limits': { init: async () => {} },
+    './server/services/invalidations': { default: invalidations },
     './server/services/settings/settings-service': settings,
     './server/services/signing-keys': { default: signingKeys },
     './server/services/internal-keys': { default: { init() {} } },
@@ -39,6 +41,7 @@ function createCoreHarness() {
       initCore({ config: { get: (key: string) => (key === 'uploads' ? uploads : {}) } }),
     applyImageUploadConfig,
     uploads,
+    invalidations,
     settings,
     signingKeys,
     i18n,
@@ -47,6 +50,25 @@ function createCoreHarness() {
     stripeCheckoutConfig,
   };
 }
+
+it('waits for invalidations before initializing settings', async function () {
+  const boot = createCoreHarness();
+  const ready = Promise.withResolvers<void>();
+  boot.invalidations.init.returns(ready.promise);
+  const startup = boot.init();
+
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.invalidations.init);
+    sinon.assert.notCalled(boot.settings.init);
+  } finally {
+    ready.resolve();
+    await Promise.allSettled([startup]);
+  }
+  await startup;
+
+  sinon.assert.callOrder(boot.invalidations.init, boot.settings.init);
+});
 
 for (const stage of ['init', 'syncEmailSettings'] as const) {
   it(`waits for settings.${stage} before initializing signing keys`, async function () {

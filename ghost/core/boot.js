@@ -122,6 +122,16 @@ async function initCore({ ghostServer, config }) {
   await limits.init();
   debug('End: limits');
 
+  // Caches tell other instances to invalidate through this, so it is listening
+  // before any of them is built
+  debug('Begin: invalidations');
+  const invalidations = require('./server/services/invalidations').default;
+  await invalidations.init();
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(() => invalidations.stop(), 'Invalidations');
+  }
+  debug('End: invalidations');
+
   // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
   debug('Begin: settings');
   const settings = require('./server/services/settings/settings-service');
