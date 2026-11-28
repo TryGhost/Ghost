@@ -2,6 +2,7 @@ import type { AppPermissionKey } from '../scopes.ts';
 import { findAllowedAdminApiRoute, scopeForField, type AdminApiRouteGroup } from './allowlist.ts';
 import { refusedContent } from './content.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
+import { readQuery, writeQuery } from './query.ts';
 import { isContainedPath, type FetchMethod } from './rules.ts';
 
 // The URL parser reads an escaped separator as part of one segment, but whatever decodes the
@@ -55,10 +56,15 @@ export type AdminApiRequestCheck =
  *
  * A path that stays under the root is `blocked` unless the allowlist has a route for where it
  * resolves to, with this method. It's also `blocked` when its path or query mentions `ghost/api`,
- * or its first segment is an old API version (`v4`), whatever the allowlist says; when it carries
- * a query parameter its group doesn't list; when its group checks content and its body holds a
- * field `refusedContent` refuses; or when it needs a scope, by its route, an `include` or an
- * `order`, that isn't among `approvedScopes`: those of the installation the app runs as.
+ * or its first segment is an old API version (`v4`), whatever the allowlist says; when its query
+ * isn't one every parser reads alike (`readQuery`); when it carries a query parameter its group
+ * doesn't list; when its group checks content and its body holds a field `refusedContent`
+ * refuses; or when it needs a scope, by its route, an `include` or an `order`, that isn't among
+ * `approvedScopes`: those of the installation the app runs as.
+ *
+ * The query is never sent as the app spelled it. The bridge reads it strictly and writes its
+ * own, one `name=value` for each parameter, so the parameters checked here are exactly the ones
+ * the server reads.
  */
 export function checkAdminApiRequest(
   request: AdminApiRequest,
@@ -105,6 +111,12 @@ export function checkAdminApiRequest(
     return blocked(`Apps can't use ${method} ${pathname}: it names an old API address`);
   }
 
+  const read = readQuery(url.search);
+  if ('refused' in read) {
+    return blocked(`${read.refused} (${method} ${pathname})`);
+  }
+  let query = read.parameters;
+
   const allowed = findAllowedAdminApiRoute(pathname, method);
   if (!allowed) {
     return blocked(`Apps can't use ${method} ${pathname}`);
@@ -120,75 +132,54 @@ export function checkAdminApiRequest(
     return forRoute;
   }
 
-  // Names are compared once decoded, by exact match, so `%5Bnewsletter%5D` is `[newsletter]`,
-  // which isn't on any list, although Ghost's query parser reads it as `newsletter`.
   const { allowedParameters } = group;
-  for (const name of url.searchParams.keys()) {
+  for (const name of query.keys()) {
     if (!allowedParameters.includes(name)) {
       return blocked(`Apps can't use the ${name} parameter on ${method} ${pathname}`);
     }
   }
 
   // Ghost splits both on commas and trims each part, and reads a sort as a field and a
-  // direction. Every `include` and `order` counts, as Ghost's query parser may read any of them.
+  // direction.
   const { fieldScopes } = resource;
+  const included = (query.get('include') ?? '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
   if (fieldScopes) {
-    for (const value of url.searchParams.getAll('include')) {
-      for (const relation of value.split(',').map((part) => part.trim())) {
-        if (!relation) {
-          continue;
-        }
-        const scope = scopeForField(fieldScopes, relation);
-        if (scope === undefined) {
-          return blocked(`Apps can't include ${relation} on ${method} ${pathname}`);
-        }
-        const refused = unapproved(scope, `including ${relation}`);
-        if (refused) {
-          return refused;
-        }
+    for (const relation of included) {
+      const scope = scopeForField(fieldScopes, relation);
+      if (scope === undefined) {
+        return blocked(`Apps can't include ${relation} on ${method} ${pathname}`);
+      }
+      const refused = unapproved(scope, `including ${relation}`);
+      if (refused) {
+        return refused;
       }
     }
-    for (const value of url.searchParams.getAll('order')) {
-      for (const part of value.split(',')) {
-        const [field = ''] = part.trim().split(/\s+/);
-        const refused = unapproved(
-          scopeForField(fieldScopes, field) ?? null,
-          `ordering by ${field}`,
-        );
-        if (refused) {
-          return refused;
-        }
+    for (const part of (query.get('order') ?? '').split(',')) {
+      const [field = ''] = part.trim().split(/\s+/);
+      const refused = unapproved(scopeForField(fieldScopes, field) ?? null, `ordering by ${field}`);
+      if (refused) {
+        return refused;
       }
     }
   }
 
   // Ghost includes how a post performed by default, so a request that names nothing names what
-  // the app may have. Ghost leaves its defaults out when a request asks for some `fields`: any
-  // value but one empty one, as it reads a repeated parameter as a list. Such a request is left
-  // alone, so it isn't sent relations it never asked for. A route that takes no `include`, such
-  // as a delete, is left alone too. `authors` needs no scope of its own, so what's named is
-  // never empty, which Ghost would refuse.
+  // the app may have. Ghost leaves its defaults out when a request asks for some `fields`, so
+  // such a request is left alone and isn't sent relations it never asked for. A route that takes
+  // no `include`, such as a delete, is left alone too. `authors` needs no scope of its own, so
+  // what's named is never empty, which Ghost would refuse.
   const defaults = resource.defaultIncludes?.[pathname.split('/')[1]?.toLowerCase() ?? ''];
   const takesInclude = allowedParameters.includes('include');
-  const fields = url.searchParams.getAll('fields');
-  const asksForFields = fields.length > 1 || (fields.length === 1 && fields[0] !== '');
-  if (defaults && fieldScopes && takesInclude && !asksForFields) {
-    const named = url.searchParams
-      .getAll('include')
-      .flatMap((value) => value.split(','))
-      .some((part) => part.trim() !== '');
-    if (!named) {
-      const allowedDefaults = defaults.filter((relation) => {
-        const scope = scopeForField(fieldScopes, relation);
-        return scope === null || (scope !== undefined && approvedScopes.has(scope));
-      });
-      // Rewritten by hand, so the rest of the query keeps the spelling the app sent.
-      const kept = url.search
-        .slice(1)
-        .split('&')
-        .filter((pair) => pair !== '' && decodeEscapes(pair.split('=')[0] ?? '') !== 'include');
-      url.search = [...kept, `include=${allowedDefaults.join(',')}`].join('&');
-    }
+  const asksForFields = (query.get('fields') ?? '') !== '';
+  if (defaults && fieldScopes && takesInclude && !asksForFields && included.length === 0) {
+    const allowedDefaults = defaults.filter((relation) => {
+      const scope = scopeForField(fieldScopes, relation);
+      return scope === null || (scope !== undefined && approvedScopes.has(scope));
+    });
+    query = new Map(query).set('include', allowedDefaults.join(','));
   }
 
   if (group.checksContent && body !== undefined) {
@@ -204,5 +195,6 @@ export function checkAdminApiRequest(
     }
   }
 
+  url.search = writeQuery(query);
   return { url, pathname, group };
 }

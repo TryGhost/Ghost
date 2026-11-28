@@ -2328,7 +2328,7 @@ describe('Managing apps', () => {
         ),
       ).toBe("blocked: Apps can't use the source parameter on POST /posts/");
       // Ghost's query parser reads both of these as `newsletter`, and an app could publish with
-      // email through either.
+      // email through either, so Admin sends no query it didn't write itself.
       for (const path of [
         '/posts/6500000000000000000000a1/?[newsletter]=weekly',
         '/posts/6500000000000000000000a1/?%5Bnewsletter%5D=weekly',
@@ -2342,9 +2342,7 @@ describe('Managing apps', () => {
             }),
           ),
           path,
-        ).toBe(
-          "blocked: Apps can't use the [newsletter] parameter on PUT /posts/6500000000000000000000a1/",
-        );
+        ).toMatch(/^blocked: Apps can't send a query parameter named /);
       }
       expect(tokenApi.requests).toHaveLength(0);
       expect(postsApi.requests).toHaveLength(0);

@@ -350,16 +350,40 @@ these checks filter more finely than a scope. The exact rules, and what the
 security review must look at, are in the header of `src/bridge/allowlist.ts`
 and in `src/bridge/resolve.ts`.
 
+A check only holds if the server reads the request as the bridge did, and
+query parsers disagree: Ghost's reads `include[]`, `[include]` and `%69nclude`
+as `include`, splits a part at `]=` before `=`, and makes a list of a name
+that repeats, none of which a URL parser does. So the bridge never sends a
+query as the app spelled it. `readQuery` in `src/bridge/query.ts` reads it
+strictly, and the bridge sends one it wrote itself, `name=value` for each
+parameter with the value escaped whole. It refuses, as `blocked`, a query it
+can't write so that every parser reads the same:
+
+- a parameter name that isn't plain word characters (letters, digits, `_`), so
+  no brackets, raw or escaped, and no escapes in a name at all;
+- a name that repeats;
+- a value with a malformed escape;
+- more than `QUERY_PARAMETER_LIMIT` (100) parameters, where Ghost reads 1,000
+  and drops the rest without an error.
+
+Values are free: brackets, colons, commas and anything else a filter needs.
+`ghost/test/unit/server/web/api/admin/app-bridge-query.test.ts` in Ghost shows
+every spelling of a query is either refused by the bridge or read by the
+parser Ghost's Express apps are set up with as exactly the parameters the
+bridge held.
+
 ```ts
 import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
 
 const root = new URL('https://site.example/ghost/api/admin/');
 const approved = new Set(['post:browse', 'post:add']);
-checkAdminApiRequest({ path: '/posts/?limit=5' }, root, approved);
-// { url: …/ghost/api/admin/posts/?limit=5&include=authors, pathname: '/posts/', group: { scope: 'post:browse', … } }
+checkAdminApiRequest({ path: '/posts/?limit=5&filter=tag:news' }, root, approved);
+// { url: …/ghost/api/admin/posts/?limit=5&filter=tag%3Anews&include=authors, pathname: '/posts/', group: { scope: 'post:browse', … } }
 checkAdminApiRequest({ path: '/../content/' }, root, approved); // { problem: 'invalid_path' }
 checkAdminApiRequest({ path: '/db/' }, root, approved);
 // { problem: 'blocked', pathname: '/db/', detail: "Apps can't use GET /db/" }
+checkAdminApiRequest({ path: '/posts/?include[]=tags' }, root, approved);
+// { problem: 'blocked', pathname: '/posts/', detail: "Apps can't send a query parameter named include[]: …" }
 checkAdminApiRequest({ path: '/posts/', method: 'POST', body: '{"posts":[{"codeinjection_head":""}]}' }, root, approved);
 // { problem: 'blocked', …, detail: "Apps can't send codeinjection_head to POST /posts/" }
 ```

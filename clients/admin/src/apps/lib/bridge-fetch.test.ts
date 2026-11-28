@@ -62,8 +62,8 @@ describe('createAdminApiFetch', () => {
     await withStats({ path: '/posts/' }, session.signal);
 
     expect(fetchMock.mock.calls.map(([url]) => (url as URL).href)).toEqual([
-      `${API_ROOT}posts/?include=email,count.clicks`,
-      `${API_ROOT}posts/?include=authors,email,count.clicks`,
+      `${API_ROOT}posts/?include=email%2Ccount.clicks`,
+      `${API_ROOT}posts/?include=authors%2Cemail%2Ccount.clicks`,
     ]);
   });
 
@@ -135,7 +135,7 @@ describe('createAdminApiFetch', () => {
     });
     const [url, init] = fetchMock.mock.calls[0];
     // With no include named, the app gets the defaults it may have, without how posts performed.
-    expect(url).toEqual(new URL(`${API_ROOT}posts/?limit=5&include=tags,authors`));
+    expect(url).toEqual(new URL(`${API_ROOT}posts/?limit=5&include=tags%2Cauthors`));
     // The app's token is the only credential: the staff session's cookie isn't sent.
     expect(init).toMatchObject({
       method: 'GET',
@@ -148,6 +148,23 @@ describe('createAdminApiFetch', () => {
         authorization: 'Bearer ghost_app_current',
       },
     });
+  });
+
+  // The server reads a query its own way, so Admin sends one it wrote itself
+  it('sends the app’s query as Admin wrote it, and refuses one it can’t write exactly', async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(new Response('{}')));
+
+    await adminApiFetch({ path: "/tags/?filter=slug:[a,b]%2Bname:'x y'&limit=5" }, session.signal);
+    expect((fetchMock.mock.calls[0]?.[0] as URL).search).toBe(
+      '?filter=slug%3A%5Ba%2Cb%5D%2Bname%3A%27x%20y%27&limit=5',
+    );
+
+    for (const path of ['/tags/?include[]=count.posts', '/tags/?limit=1&limit=2']) {
+      await expect(adminApiFetch({ path }, session.signal)).rejects.toThrow(
+        /^blocked: Apps can't send /,
+      );
+    }
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it('refuses a request the allowlist doesn’t allow, or a path that leaves the API, without sending it', async () => {
@@ -241,7 +258,7 @@ describe('createAdminApiFetch', () => {
     expect(answer.status).toBe(401);
     expect(answer.body).toBe('{"errors":[]}');
     expect(handleSessionExpiry).toHaveBeenCalledExactlyOnceWith(
-      new URL(`${API_ROOT}posts/?include=tags,authors`),
+      new URL(`${API_ROOT}posts/?include=tags%2Cauthors`),
       response,
     );
   });

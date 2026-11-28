@@ -17,6 +17,12 @@ site's public details. The allowlist still filters what an app can send more
 finely than a scope does, such as includes, query parameters and what a write
 may set.
 
+The bridge never sends an app's query as the app spelled it. `readQuery` reads
+it strictly (plain parameter names, each once) and the bridge writes its own,
+so its checks act on the parameters the server reads. Don't loosen what
+`readQuery` takes to match what Ghost's parser happens to accept: the two
+parsers disagreeing is what let requests walk past a rule.
+
 Apps need Ghost's new auth engine. `useAppsAvailability` reads whether the site
 runs it from its config, as `supported`, `unsupported`, `loading` until the
 config has loaded, or `unknown` if it failed to. Screens inside `AppsGate` see
