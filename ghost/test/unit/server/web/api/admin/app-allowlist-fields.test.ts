@@ -52,7 +52,7 @@ const scopeOf = (field: string) => scopeForField(fieldScopes, field);
 const REFUSED = new Set(['authors.roles', 'post_revisions.author']);
 
 // Apps reach posts and pages through Admin's bridge, which holds how a post performed back for
-// apps approved for `post:read_stats`. It does that from what it knows of Ghost's includes,
+// apps approved for `post:readStats`. It does that from what it knows of Ghost's includes,
 // defaults and sorts, so a change to any of them must change the bridge too.
 describe('the app bridge’s post and page fields', function () {
   for (const [resource, serializer] of [
@@ -73,14 +73,14 @@ describe('the app bridge’s post and page fields', function () {
       for (const fields of ['id,title', ' ', ['', '']]) {
         const included = defaultsOf(serializer, { fields });
         assert.deepEqual(
-          included.filter((relation) => scopeOf(relation) === 'post:read_stats'),
+          included.filter((relation) => scopeOf(relation) === 'post:readStats'),
           [],
           JSON.stringify(fields),
         );
       }
       assert.notDeepEqual(
         defaultsOf(serializer, { fields: '' }).filter(
-          (relation) => scopeOf(relation) === 'post:read_stats',
+          (relation) => scopeOf(relation) === 'post:readStats',
         ),
         [],
       );
@@ -96,13 +96,13 @@ describe('the app bridge’s post and page fields', function () {
     }
   });
 
-  it('needs post:read_stats for every field Ghost sorts posts by how they performed', function () {
+  it('needs post:readStats for every field Ghost sorts posts by how they performed', function () {
     const special = [
       ...String(models.Post.prototype.orderRawQuery).matchAll(/field === '([^']+)'/g),
     ].map((match) => match[1]!);
     assert.ok(special.length > 0, 'found no fields with their own sort');
     for (const field of special) {
-      assert.equal(scopeOf(field), 'post:read_stats', field);
+      assert.equal(scopeOf(field), 'post:readStats', field);
     }
   });
 });

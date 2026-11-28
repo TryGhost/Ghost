@@ -199,7 +199,6 @@ const controller = {
       'utm_term',
     ],
     permissions: {
-      docName: 'posts',
       method: 'browse',
     },
     cache: statsCache,
@@ -250,7 +249,6 @@ const controller = {
     },
     options: ['order', 'limit', 'date_from', 'date_to', 'timezone'],
     permissions: {
-      docName: 'posts',
       method: 'browse',
     },
     cache: statsCache,
@@ -276,7 +274,6 @@ const controller = {
     },
     options: ['order', 'limit', 'date_from', 'date_to', 'timezone', 'newsletter_id'],
     permissions: {
-      docName: 'posts',
       method: 'browse',
     },
     cache: statsCache,
@@ -313,7 +310,6 @@ const controller = {
       'newsletter_id',
     ],
     permissions: {
-      docName: 'posts',
       method: 'browse',
     },
     cache: newsletterBasicCache,
@@ -343,7 +339,6 @@ const controller = {
     },
     options: ['newsletter_id', 'post_ids', 'fail_on_error'],
     permissions: {
-      docName: 'posts',
       method: 'browse',
     },
     cache: statsCache,
@@ -367,7 +362,6 @@ const controller = {
     },
     options: ['date_from', 'date_to', 'newsletter_id'],
     permissions: {
-      docName: 'posts',
       method: 'browse',
     },
     cache: statsCache,
@@ -463,7 +457,7 @@ const controller = {
     },
     permissions: {
       docName: 'posts',
-      method: 'browse',
+      method: 'readStats',
     },
     cache: statsCache,
     generateCacheKeyData(frame) {
@@ -493,7 +487,7 @@ const controller = {
     },
     permissions: {
       docName: 'posts',
-      method: 'browse',
+      method: 'readStats',
     },
     cache: statsCache,
     generateCacheKeyData(frame) {
@@ -530,7 +524,7 @@ const controller = {
     },
     permissions: {
       docName: 'posts',
-      method: 'browse',
+      method: 'readStats',
     },
     cache: statsCache,
     generateCacheKeyData(frame) {

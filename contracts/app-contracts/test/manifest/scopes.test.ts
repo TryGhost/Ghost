@@ -33,9 +33,15 @@ describe('describeScopes', () => {
     ]);
   });
 
-  it('says that creating a post can publish it, choose who reads it and create tags', () => {
+  it('says that creating a post can publish it, include script, choose who reads it and create tags', () => {
     expect(describeScopes(['post:add'])[0]?.actions).toEqual([
-      'Create posts and pages, including published ones, choose who can read them and their authors, and create tags for them.',
+      'Create posts and pages, including published ones, with any content, including HTML and scripts that run on your site. Choose who can read them and their authors, and create tags for them.',
+    ]);
+  });
+
+  it('says that editing a post can change its content to include script', () => {
+    expect(describeScopes(['post:edit'])[0]?.actions).toEqual([
+      'Edit, publish and email posts and pages, and change their content to anything, including HTML and scripts that run on your site. Change who can read them and their authors, and create tags for them.',
     ]);
   });
 

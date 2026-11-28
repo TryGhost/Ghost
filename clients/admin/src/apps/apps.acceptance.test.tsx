@@ -2497,7 +2497,7 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().nth(0))
       .toHaveTextContent(
-        /Permissions approved\s*Posts and pages\s*Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them\.\s*No longer requires\s*Tiers/,
+        /Permissions approved\s*Posts and pages\s*Edit, publish and email posts and pages, and change their content to anything, including HTML and scripts that run on your site\. Change who can read them and their authors, and create tags for them\.\s*No longer requires\s*Tiers/,
       );
     // The approved suspension leaves its changes to the approval, so they show once.
     await expect

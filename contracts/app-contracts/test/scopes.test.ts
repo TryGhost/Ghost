@@ -13,8 +13,8 @@ describe('the scope registry', () => {
       const { resource, wording } = APP_SCOPES[name];
       expect(name.split(':')[0], name).toBe(resource);
       expect(Object.keys(APP_RESOURCES)).toContain(resource);
-      // A sentence that stands on its own.
-      expect(wording, name).toMatch(/^[A-Z][^.]*\.$/);
+      // Whole sentences that stand on their own.
+      expect(wording, name).toMatch(/^[A-Z][^.]*\.( [A-Z][^.]*\.)*$/);
     }
   });
 

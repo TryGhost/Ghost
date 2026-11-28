@@ -238,7 +238,7 @@ none can be approved and grant nothing. What a resource's objects can include
 or be sorted by is listed once for the resource. Everything else is refused, and
 so is a route, an `include` or a sort whose scope the installation wasn't
 approved for: a related object needs its own scope, and how a post performed
-needs `post:read_stats`. When an app names no `include` and no `fields`, the
+needs `post:readStats`. When an app names no `include` and no `fields`, the
 bridge names the includes it may have, as Ghost's defaults include how a post
 performed. Writes of posts, pages and tags are also checked so they can't send
 email, set code injection or write mobiledoc. The server also holds the app

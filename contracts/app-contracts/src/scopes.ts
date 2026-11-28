@@ -35,7 +35,7 @@ export type AppResourceName = keyof typeof APP_RESOURCES;
 
 export interface AppScope {
   readonly resource: AppResourceName;
-  /** What the scope lets an app do, as a sentence that stands on its own. */
+  /** What the scope lets an app do, in whole sentences that stand on their own. */
   readonly wording: string;
 }
 
@@ -49,19 +49,19 @@ export const APP_SCOPES = {
   'post:add': {
     resource: 'post',
     wording:
-      'Create posts and pages, including published ones, choose who can read them and their authors, and create tags for them.',
+      'Create posts and pages, including published ones, with any content, including HTML and scripts that run on your site. Choose who can read them and their authors, and create tags for them.',
   },
   // Editing also publishes, sends newsletters and changes who can read a post, until finer
   // scopes split those out.
   'post:edit': {
     resource: 'post',
     wording:
-      'Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them.',
+      'Edit, publish and email posts and pages, and change their content to anything, including HTML and scripts that run on your site. Change who can read them and their authors, and create tags for them.',
   },
   'post:destroy': { resource: 'post', wording: 'Delete posts and pages.' },
-  'post:read_stats': {
+  'post:readStats': {
     resource: 'post',
-    wording: 'See how each post performed, by email, in signups and in feedback.',
+    wording: 'See how each post performed, in web visits, by email, in signups and in feedback.',
   },
   'tag:browse': { resource: 'tag', wording: 'List and search tags.' },
   'tag:read': { resource: 'tag', wording: 'Read any tag.' },
