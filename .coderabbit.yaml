@@ -1,6 +1,37 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 reviews:
   profile: quiet
+  merge_risk_instructions: |
+    Critical risk:
+    - Concrete evidence of severe impact: exploitable security holes, data loss/corruption, a broad outage, or immediate harm to multiple customers' businesses through broken payments, broken post publishing, rendering or sending newsletters, member login. Touching these systems alone is High, not Critical.
+
+    High risk:
+    - Database migrations, schema, backfills, indexes, constraints, execution/rollback; consider locks and existing data.
+    - Tinybird queries, pipes, endpoints, datasources, ingestion, especially materialized views: query fixes may not repair historical data.
+    - Stripe, Mailgun, scheduler or other external interactions: webhooks, retries, idempotency, timeouts, execution order.
+    - Boot/shutdown, service initialization/dependencies, readiness, job startup, interrupted-work recovery.
+    - Authentication, sessions, staff permissions, paid/private content access.
+    - Who is charged, which members receive email, whether posts are published/sent.
+    - Email rendering: newsletter/automation templates, personalization, link rewriting, unsubscribe links, tracking pixels, HTML/plaintext, member-specific content/access. Reverting cannot correct sent emails.
+    - Large PRs combining multiple behavior changes across multiple domains or apps, especially coordinated deployment/rollback.
+    - Releases/deployment affecting published packages, CDN assets, production configuration or deployment gates.
+
+    Moderate risk:
+    - State-mutating queries, bulk updates/deletes, relation writes, transactions, locking order; consider concurrency and partial failure.
+    - Incidental loss/weakening of logging, Sentry, tracing, metrics or production observability.
+    - Read-only database queries, pagination or caching affecting results or large-site performance.
+    - Weakened regression tests, compatibility checks or CI gates without equivalent protection.
+
+    Low risk:
+    - Behavior-preserving JavaScript-to-TypeScript conversions and contained backend refactors: extraction, equivalent conditionals, deduplication.
+    - Internal renames; verified unused code/import removal, checking dynamic callers/exports.
+    - Test improvements, fixed clocks, seeded fixtures, isolation fixes preserving assertions/edge cases.
+    - Trivial frontend styling/copy (not email output); type corrections.
+
+    Minimal risk:
+    - No risk remains after review: e.g. docs/comment/formatting-only corrections without executable configuration or operational policy changes. Low examples can be Minimal when no residual risk remains; otherwise at least Low.
+
+    Changes that preserve behavior can be Low or Minimal even in High-risk areas. Verify that behavior is unchanged rather than relying on the PR description.
   request_changes_workflow: false
   review_details: true
   review_status: true
