@@ -432,6 +432,8 @@ minimumReleaseAgeExclude:
   # of nx itself still gates them
   - '@nx/nx-*'
   - 'readdir-glob@4.0.0' # audit fix bump
+  # Renovate security update: i18next@26.3.4
+  - i18next@26.3.4
 
 # configuration for pnpm's native versioning (changesets). Private packages opt out
 # by carrying the non-semver placeholder version "private", so only published
