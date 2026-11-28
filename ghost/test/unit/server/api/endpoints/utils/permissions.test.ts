@@ -376,3 +376,16 @@ describe('API permissions for apps', function () {
     );
   });
 });
+
+describe('The permission key a method’s standard check asks for', function () {
+  it('names the object type in the singular, and the method', function () {
+    for (const [docName, method, key] of [
+      ['posts', 'browse', 'post:browse'],
+      ['identities', 'read', 'identity:read'],
+      ['email_previews', 'sendTestEmail', 'email_preview:sendTestEmail'],
+      ['db', 'exportContent', 'db:exportContent'],
+    ]) {
+      assert.equal(permissions.permissionKey({ docName, method }), key);
+    }
+  });
+});

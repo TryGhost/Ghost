@@ -18,7 +18,7 @@ export type Site = Readonly<StartContext['site']>;
 
 /**
  * Who is using the app, by ID and role. Read anything more, such as their name, through
- * `` ghost.fetch(`/users/?filter=id:${ghost.user.id}`) ``: `/users/:id/` isn't allowed.
+ * `` ghost.fetch(`/users/?filter=id:${ghost.user.id}`) ``: no scope opens `/users/:id/`.
  */
 export type User = Readonly<StartContext['user']>;
 

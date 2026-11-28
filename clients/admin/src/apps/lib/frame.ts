@@ -96,11 +96,11 @@ export const APP_FRAME_ALLOW = [
  * server can redirect, and the page can set its own location, which the sandbox allows.
  * A document from Admin's origin loaded that way, such as a post the app injected a script into, is
  * same-origin with Admin. It can reach `window.parent` and call the Admin API as the staff user,
- * bypassing the allowlist. The handshake only withholds the bridge from it, and Admin reloads the
+ * past the app's scopes. The handshake only withholds the bridge from it, and Admin reloads the
  * app once it notices, after that script has already run. The fix belongs in Core, which can
  * sandbox what it serves into another origin's frame (BER-3992). That doesn't cover a popup, which
- * is a top-level document. Nothing keeps script out of the site either: the allowlist lets an app
- * write HTML and script into a post or page, which runs for whoever opens it, a popup included, on
- * the site's origin, and on Admin's where the two share one.
+ * is a top-level document. Nothing keeps script out of the site either: an app approved to write
+ * posts can put HTML and script in a post or page, which runs for whoever opens it, a popup
+ * included, on the site's origin, and on Admin's where the two share one.
  */
 export { isGhostHost } from '@tryghost/app-contracts';

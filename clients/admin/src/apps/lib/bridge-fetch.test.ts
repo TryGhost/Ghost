@@ -167,7 +167,7 @@ describe('createAdminApiFetch', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it('refuses a request the allowlist doesn’t allow, or a path that leaves the API, without sending it', async () => {
+  it('refuses a route the app routes don’t list, or a path that leaves the API, without sending it', async () => {
     await expect(adminApiFetch({ path: '/db/' }, session.signal)).rejects.toThrow(
       "blocked: Apps can't use GET /db/",
     );

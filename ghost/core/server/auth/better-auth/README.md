@@ -441,9 +441,19 @@ upload then never runs for an app request that can't succeed.
   runs through the pipeline for this alone: its methods are single functions,
   which the pipeline runs with no other stage. A unit test lists every such
   method the Admin API mounts, so a new one is refused until someone decides
-  otherwise. Admin's bridge allowlist still filters what an app can send. It
-  doesn't copy how Ghost parses a query: it reads an app's query strictly and
-  sends one it wrote itself, and
+  otherwise. Admin's bridge still sends only the routes the app contracts list
+  for an app's scopes (`APP_ROUTES` in
+  `contracts/app-contracts/src/bridge/app-routes.ts`), which
+  `test/unit/server/web/api/admin/app-routes.test.ts` holds to the routes the
+  Admin API mounts under each scope's key, naming the few it doesn't send yet,
+  and refuses or rewrites what the server doesn't check yet within them (the
+  server gaps in `contracts/app-contracts/src/bridge/server-gaps.ts`).
+  `test/e2e-api/admin/app-server-gaps.test.ts` sends what each gap acts on
+  twice, through the bridge's check and as written to the server, and fails
+  when the bridge no longer acts on it by that gap or the server stops
+  accepting it, which is when the gap goes. The bridge doesn't copy how Ghost
+  parses a query: it reads an app's query strictly and sends one it wrote
+  itself, and
   `test/unit/server/web/api/admin/app-bridge-query.test.ts` shows the parser
   Ghost's Express apps are set up with reads back exactly what the bridge
   held. A change to that parser (its options in `shared/express.js`, the

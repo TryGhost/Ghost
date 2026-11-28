@@ -339,19 +339,27 @@ What Admin sends has no schema, because Admin builds it and never parses it;
 what a page sends does, and those schemas build on the same rules, so both
 sides read a path, a header or a refusal the same way.
 
-`fetch` takes an Admin API path, never a URL. Admin checks each request with
-`checkAdminApiRequest({ path, method, body }, apiRoot, approvedScopes)`, which
-returns the URL to request, or the reason it refused. An app can only reach
-the routes in `ADMIN_API_ALLOWLIST`, and only the routes, includes and sorts
-its installation's approved scopes cover. Writes of posts, pages and tags are
-also checked for code injection and mobiledoc (`content.ts`). The server also
-holds the app user token Admin sends the calls with to the approved scopes;
-these checks filter more finely than a scope. The exact rules, and what the
-security review must look at, are in the header of `src/bridge/allowlist.ts`
-and in `src/bridge/resolve.ts`.
+`fetch` takes an Admin API path, never a URL, and Admin sends it with the app
+user token from the app's session, which Ghost's server holds to the
+installation's approved scopes. `APP_ROUTES` in `src/bridge/app-routes.ts` is
+the reviewed list of the routes each scope opens to an app, with what the
+bridge still covers on each. Opening a route to apps is one edit there.
 
-A check only holds if the server reads the request as the bridge did, and
-query parsers disagree: Ghost's reads `include[]`, `[include]` and `%69nclude`
+Admin checks each request with
+`checkAdminApiRequest({ path, method, body }, apiRoot, approvedScopes)`, which
+returns the URL to request, or the reason it refused. It sends only a route
+`APP_ROUTES` lists, under a scope the installation was approved for, and the
+site's public details. What the server doesn't check yet within such a route,
+it covers: `SERVER_GAPS` in `src/bridge/server-gaps.ts` holds each gap as one
+unit, with the issue that moves it to the server and its own check or rewrite
+of the request: the query parameters each route takes, by exact name, which
+leave out those that email a post or take HTML as its content; code injection
+and mobiledoc in a write; and the scopes a post's includes and sorts need. Every gap
+`APP_ROUTES` names for a route is applied, in order, and a refusal names the
+gap that made it.
+
+A gap only holds if the server reads the request as the bridge did, and query
+parsers disagree: Ghost's reads `include[]`, `[include]` and `%69nclude`
 as `include`, splits a part at `]=` before `=`, and makes a list of a name
 that repeats, none of which a URL parser does. So the bridge never sends a
 query as the app spelled it. `readQuery` in `src/bridge/query.ts` reads it
@@ -367,10 +375,26 @@ can't write so that every parser reads the same:
   and drops the rest without an error.
 
 Values are free: brackets, colons, commas and anything else a filter needs.
-`ghost/test/unit/server/web/api/admin/app-bridge-query.test.ts` in Ghost shows
-every spelling of a query is either refused by the bridge or read by the
-parser Ghost's Express apps are set up with as exactly the parameters the
-bridge held.
+
+On a post or page request that names no `include` and no `fields`, the bridge
+names the includes the app may have, as Ghost's own defaults include how a
+post performed. Ghost adds no defaults to a request that asks for some
+`fields`, so the bridge leaves such a request alone.
+
+Three tests in Ghost keep this honest:
+
+- `ghost/test/unit/server/web/api/admin/app-routes.test.ts` holds `APP_ROUTES`
+  to the routes Ghost opens under each scope's key, naming the few the bridge
+  doesn't send yet, and to how Ghost's router matches a path.
+- `ghost/test/unit/server/web/api/admin/app-bridge-query.test.ts` shows every
+  spelling of a query is either refused by the bridge or read by the parser
+  Ghost's Express apps are set up with as exactly the parameters the bridge
+  held.
+- `ghost/test/e2e-api/admin/app-server-gaps.test.ts` sends what each gap acts
+  on twice, with a real token: through `checkAdminApiRequest`, which must
+  refuse or rewrite it by that gap, and as written to the server, which must
+  still accept it. When the server stops, it has taken the check over: delete
+  the gap. A gap without a test there doesn't compile.
 
 ```ts
 import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
@@ -378,14 +402,14 @@ import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
 const root = new URL('https://site.example/ghost/api/admin/');
 const approved = new Set(['post:browse', 'post:add']);
 checkAdminApiRequest({ path: '/posts/?limit=5&filter=tag:news' }, root, approved);
-// { url: …/ghost/api/admin/posts/?limit=5&filter=tag%3Anews&include=authors, pathname: '/posts/', group: { scope: 'post:browse', … } }
+// { url: …/ghost/api/admin/posts/?limit=5&filter=tag%3Anews&include=authors, pathname: '/posts/', gaps: ['postListParameters', 'postFields'] }
 checkAdminApiRequest({ path: '/../content/' }, root, approved); // { problem: 'invalid_path' }
 checkAdminApiRequest({ path: '/db/' }, root, approved);
 // { problem: 'blocked', pathname: '/db/', detail: "Apps can't use GET /db/" }
 checkAdminApiRequest({ path: '/posts/?include[]=tags' }, root, approved);
 // { problem: 'blocked', pathname: '/posts/', detail: "Apps can't send a query parameter named include[]: …" }
 checkAdminApiRequest({ path: '/posts/', method: 'POST', body: '{"posts":[{"codeinjection_head":""}]}' }, root, approved);
-// { problem: 'blocked', …, detail: "Apps can't send codeinjection_head to POST /posts/" }
+// { problem: 'blocked', …, gap: 'scriptInContent', detail: "Apps can't send codeinjection_head to POST /posts/" }
 ```
 
 ## Develop

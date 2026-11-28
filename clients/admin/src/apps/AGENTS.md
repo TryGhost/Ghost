@@ -2,26 +2,36 @@
 
 While `apps` is in `PRIVATE_FEATURES` (`ghost/core/shared/labs.js`), this code
 and `admin-x-framework`'s app API hooks build against a matching Core only,
-with no older-Core fallbacks or tests. Origin, framing, identity and allowlist
-checks still apply.
+with no older-Core fallbacks or tests. Origin, framing and identity checks
+still apply.
 
-When an app needs an Admin API route, add it to the bridge's allowlist
-(`ADMIN_API_ALLOWLIST` in `contracts/app-contracts/src/bridge/allowlist.ts`)
-under its resource, in the group of the registry scope that opens it. Every
-registry scope must open a route, an include or a sort. A new scope goes in the
+Ghost holds an app's token to the installation's approved scopes on routes
+that check a permission and refuses it on the rest. To open a route to apps,
+give it a permission key in Core that a scope names, and add it under that
+scope in `APP_ROUTES` (`contracts/app-contracts/src/bridge/app-routes.ts`),
+the reviewed list of what each scope opens, which a test in Ghost holds to the
+server's routes, naming the few the server opens that the bridge doesn't send
+yet. The bridge sends only the routes listed
+there, for an installation approved for the scope. A new scope goes in the
 scope registry (`contracts/app-contracts/src/scopes.ts`) with its review
-wording. The bridge refuses a route, include or sort whose scope the running
-installation wasn't approved for. Ghost holds an app's token to its approved
-scopes on routes that check a permission and refuses it on the rest, except the
-site's public details. The allowlist still filters what an app can send more
-finely than a scope does, such as includes, query parameters and what a write
-may set.
+wording.
+
+The bridge also covers what the server doesn't check yet: `SERVER_GAPS` in
+`contracts/app-contracts/src/bridge/server-gaps.ts`, each one unit that names
+the issue that moves it to the server and holds its own check or rewrite of
+the request. A route's entry in `APP_ROUTES` names the gaps the bridge applies
+on it, or none, so opening a route means deciding that in the same edit. Add a
+gap only for something that would let an app do lasting harm until the server
+checks it, give it a test in `ghost/test/e2e-api/admin/app-server-gaps.test.ts`
+(it doesn't compile without one), and delete it as soon as the server checks
+for itself.
 
 The bridge never sends an app's query as the app spelled it. `readQuery` reads
 it strictly (plain parameter names, each once) and the bridge writes its own,
-so its checks act on the parameters the server reads. Don't loosen what
-`readQuery` takes to match what Ghost's parser happens to accept: the two
-parsers disagreeing is what let requests walk past a rule.
+so a gap acts on the parameters the server reads; a gap reads the `query` it is
+given and never parses one itself. Don't loosen what `readQuery` takes to
+match what Ghost's parser happens to accept: the two parsers disagreeing is
+what let requests walk past a rule.
 
 Apps need Ghost's new auth engine. `useAppsAvailability` reads whether the site
 runs it from its config, as `supported`, `unsupported`, `loading` until the

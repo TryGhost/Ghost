@@ -57,3 +57,59 @@ export async function insertTestInstallation(
   });
   return id;
 }
+
+/**
+ * A new verified staff session for a user, as signing in and verifying the device leaves one,
+ * with the cookies that sign a browser into it. Made directly, as signing in over HTTP is rate
+ * limited. Only under `auth:engine: better-auth`.
+ */
+export async function createTestStaffSession(
+  knex: Knex,
+  userId: string,
+): Promise<{ id: string; setCookies: string[] }> {
+  const { SESSION_COOKIE_NAME } = require('../../core/server/auth/better-auth/create-auth');
+  const setCookies: string[] =
+    await require('../../core/server/auth').staffSessions.createVerifiedSession(userId);
+  const prefix = `${SESSION_COOKIE_NAME}=`;
+  const cookie = setCookies
+    .map((each) => each.split(';')[0])
+    .find((each) => each.startsWith(prefix));
+  if (!cookie) {
+    throw new Error('No session cookie was set for the staff session.');
+  }
+  const token = decodeURIComponent(cookie.slice(prefix.length)).split('.')[0];
+  const session = await knex('user_sessions').where({ token }).first();
+  if (!session) {
+    throw new Error('The staff session was not stored.');
+  }
+  return { id: session.id as string, setCookies };
+}
+
+/**
+ * A user token for an installation, as starting an app session issues one, acting for `userId`
+ * in a new staff session of theirs. The installation's OAuth client is given `clientScopes`,
+ * and the token `tokenScopes`, or the client's. Only under `auth:engine: better-auth`.
+ */
+export async function issueTestAppToken(
+  knex: Knex,
+  {
+    installationId,
+    userId,
+    clientScopes,
+    tokenScopes = clientScopes,
+  }: { installationId: string; userId: string; clientScopes: string[]; tokenScopes?: string[] },
+): Promise<{ token: string; session: { id: string; setCookies: string[] } }> {
+  const { appTokens } = require('../../core/server/auth');
+  const session = await createTestStaffSession(knex, userId);
+  await appTokens.reconcileClient({ id: installationId, active: true, scopes: clientScopes });
+  const issued = await appTokens.issue({
+    installationId,
+    userId,
+    sessionId: session.id,
+    scopes: tokenScopes,
+  });
+  if (!('accessToken' in issued)) {
+    throw new Error(`No app token was issued: ${JSON.stringify(issued)}`);
+  }
+  return { token: issued.accessToken as string, session };
+}

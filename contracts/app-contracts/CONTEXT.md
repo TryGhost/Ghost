@@ -127,9 +127,22 @@ _Avoid_: object, entity
 
 **Scope registry**:
 The one list of scopes, with each scope's resource and the words the review
-screen uses for it. Manifest validation, Admin's review screen and the
-allowlist all read it. The words are Ghost's own, never the developer's.
+screen uses for it. Manifest validation, Admin's review screen and the bridge,
+which checks every route's scope and the include and sort gaps, all read it.
+The words are Ghost's own, never the developer's. Ghost's server holds an app's
+calls to the scopes it was approved for: a scope opens the Admin API routes
+that check its permission key, which the app routes list.
 _Avoid_: permission list, scope list
+
+**App routes**:
+The reviewed list of the Admin API routes each scope opens to an app
+(`APP_ROUTES`), each with the server gaps the bridge covers on it, or none. A
+test in Ghost holds it to the routes the server opens under each scope's key,
+naming the few the bridge doesn't send yet, so opening a route to apps is one
+edit here that also says what the bridge covers on it. The bridge sends only
+the routes it lists, and the site's public details, and only for an
+installation approved for the scope a route is listed under.
+_Avoid_: allowlist, route table
 
 **Scopes field**:
 The `scopes` a manifest asks for: a list of permission keys, each once, such as
@@ -230,23 +243,6 @@ app user token from its session, acting for the signed-in staff user. It takes
 an Admin API path, never a URL.
 _Avoid_: proxy, API access, app token
 
-**Allowlist**:
-The Admin API routes the fetch escape hatch allows, by method, grouped by
-resource and then under the scope registry's names (`post:browse`,
-`post:edit`), in `ADMIN_API_ALLOWLIST`; the site's public details need no
-scope. Every scope in the registry opens a route, an `include` or a sort, so
-none can be approved and grant nothing. What a resource's objects can include
-or be sorted by is listed once for the resource. Everything else is refused, and
-so is a route, an `include` or a sort whose scope the installation wasn't
-approved for: a related object needs its own scope, and how a post performed
-needs `post:readStats`. When an app names no `include` and no `fields`, the
-bridge names the includes it may have, as Ghost's defaults include how a post
-performed. Writes of posts, pages and tags are also checked so they can't send
-email, set code injection or write mobiledoc. The server also holds the app
-user token to the approved scopes; the allowlist filters more finely than a
-scope.
-_Avoid_: permissions, blocklist, denylist
-
 **Sent query**:
 The query the bridge sends with an app's request, which it writes itself:
 one `name=value` for each parameter, the value escaped whole. It never passes
@@ -259,6 +255,22 @@ value's escapes must be well formed, and there are at most 100 parameters.
 Values are free. A test in Ghost shows its parser reads back exactly what the
 bridge held.
 _Avoid_: normalised query, raw query
+
+**Server gap**:
+Something Ghost's server doesn't check yet in an app's request, which the
+bridge refuses or rewrites meanwhile. Each is one unit in `SERVER_GAPS`: the
+issue that moves it to the server, and its own check or rewrite of the
+request, so it goes whole when that lands. They are the query parameters each
+route takes, by exact name, which leave out those that email a post or take
+HTML as its content; code injection and mobiledoc in a post, page or tag
+write; and the scopes a post's includes and sorts need. A related object needs
+its own scope, and how a post performed needs `post:readStats`; when an app
+names no `include` and no `fields` on a post or page request, the bridge names
+the includes it may have, as Ghost's defaults include how a post performed.
+The app routes say which gaps apply on which route, and the bridge applies every
+one of them to the sent query's parameters, so a gap and the server act on the
+same ones. The gaps are no list of what apps may call.
+_Avoid_: allowlist, blocklist, permissions
 
 **Feature name**:
 A name in the connect message's list for something an Admin supports beyond

@@ -90,10 +90,10 @@ describe('checking an Admin API request', () => {
     expect(root.href).toBe('https://site.example/ghost/api/admin/');
   });
 
-  it('names the path within the API, as the allowlist read it, and the group that allows it', () => {
+  it('names the path within the API, as the app routes read it, and the server gaps covered on it', () => {
     const result = check('/tags/?limit=5');
     expect(result).toMatchObject({ pathname: '/tags/' });
-    expect(result.problem === undefined && result.group.scope).toBe('tag:browse');
+    expect(result.problem === undefined && result.gaps).toEqual(['listParameters']);
     expect(check('/')).toMatchObject({ pathname: '/' });
   });
 
@@ -229,23 +229,29 @@ describe('checking an Admin API request', () => {
 
   it('allows only the query parameters a group lists, by exact name', () => {
     const id = '5ddc9141c35e7700383b2937';
-    for (const [method, path, parameter] of [
-      ['PUT', `/posts/${id}/?newsletter=weekly`, 'newsletter'],
-      ['PUT', `/posts/${id}/?formats=lexical&email_segment=all`, 'email_segment'],
-      ['PUT', `/pages/${id}/?email_segment=status:free`, 'email_segment'],
-      ['POST', '/posts/?source=html', 'source'],
-      ['POST', '/pages/?SOURCE=html', 'SOURCE'],
-      ['PUT', `/posts/${id}/?newsletter`, 'newsletter'],
-      ['PUT', `/posts/${id}/?force_rerender=true`, 'force_rerender'],
-      ['PUT', `/posts/${id}/?anything=else`, 'anything'],
-      ['PUT', `/tags/${id}/?formats=lexical`, 'formats'],
-      ['DELETE', `/posts/${id}/?newsletter=weekly`, 'newsletter'],
+    for (const [method, path, parameter, gap] of [
+      ['PUT', `/posts/${id}/?newsletter=weekly`, 'newsletter', 'postWriteParameters'],
+      [
+        'PUT',
+        `/posts/${id}/?formats=lexical&email_segment=all`,
+        'email_segment',
+        'postWriteParameters',
+      ],
+      ['PUT', `/pages/${id}/?email_segment=status:free`, 'email_segment', 'postWriteParameters'],
+      ['POST', '/posts/?source=html', 'source', 'postWriteParameters'],
+      ['POST', '/pages/?SOURCE=html', 'SOURCE', 'postWriteParameters'],
+      ['PUT', `/posts/${id}/?newsletter`, 'newsletter', 'postWriteParameters'],
+      ['PUT', `/posts/${id}/?force_rerender=true`, 'force_rerender', 'postWriteParameters'],
+      ['PUT', `/posts/${id}/?anything=else`, 'anything', 'postWriteParameters'],
+      ['PUT', `/tags/${id}/?formats=lexical`, 'formats', 'tagWriteParameters'],
+      ['DELETE', `/posts/${id}/?newsletter=weekly`, 'newsletter', 'noParameters'],
     ] as const) {
       const pathname = path.split('?')[0];
       expect(check(path, method), `${method} ${path}`).toEqual({
         problem: 'blocked',
         pathname,
         detail: `Apps can't use the ${parameter} parameter on ${method} ${pathname}`,
+        gap,
       });
     }
     expect(
@@ -420,11 +426,12 @@ describe('checking an Admin API request', () => {
     ] as const;
     const withStats = new Set([...APPROVED, 'post:readStats' as const]);
     for (const [method, path, what] of cases) {
-      const pathname = path.split('?')[0];
+      const pathname = path.split('?')[0] as string;
       expect(check(path, method), `${method} ${path}`).toEqual({
         problem: 'blocked',
         pathname,
         detail: `This app wasn't approved for post:readStats, which ${what} needs`,
+        gap: pathname.startsWith('/pages/') ? 'pageFields' : 'postFields',
       });
       expect(check(path, method, root, undefined, withStats).problem, path).toBeUndefined();
     }
@@ -446,11 +453,13 @@ describe('checking an Admin API request', () => {
       problem: 'blocked',
       pathname: '/posts/',
       detail: "Apps can't send codeinjection_head to POST /posts/",
+      gap: 'scriptInContent',
     });
     expect(check('/posts/', 'POST', root, 'posts[0][title]=x')).toEqual({
       problem: 'blocked',
       pathname: '/posts/',
       detail: 'Apps can only send JSON to POST /posts/',
+      gap: 'scriptInContent',
     });
   });
 

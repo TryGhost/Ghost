@@ -5,17 +5,13 @@
  * in it has sent a hello from the right origin. This entry point holds what both sides agree
  * on: the two window messages that set up the channel, the calls each side exposes, the
  * validation Admin applies to every argument from the untrusted frame, and what the fetch
- * escape hatch may reach (`checkAdminApiRequest` and the allowlist).
+ * escape hatch may reach and what it still refuses because Ghost's server doesn't yet
+ * (`checkAdminApiRequest`, the app routes and the server gaps).
  *
  * The root entry point also exports the zod-free rules in `rules.ts`, for the SDK.
  */
 
-export {
-  ADMIN_API_ALLOWLIST,
-  type AdminApiResource,
-  type AdminApiRouteGroup,
-  scopeForField,
-} from './allowlist.ts';
+export { APP_ROUTES, scopesOpening, serverGapsFor } from './app-routes.ts';
 export type { AppExports, HostExports } from './exports.ts';
 export {
   FETCH_BODY_MAX_BYTES,
@@ -28,6 +24,7 @@ export { APP_PATH_MAX_LENGTH, AppPathSchema, PathMoveSchema, type AppPath } from
 export { OverlayOptionsSchema, type OverlayOptions } from './overlay.ts';
 export { PlaceSchema } from './places.ts';
 export { QUERY_PARAMETER_LIMIT, readQuery, type Query } from './query.ts';
+
 export {
   checkAdminApiRequest,
   type AdminApiRequest,
@@ -74,4 +71,14 @@ export {
   type StartContext,
   type Theme,
 } from './rules.ts';
+export {
+  SERVER_GAPS,
+  scopeForField,
+  type FieldScopes,
+  type FieldsGap,
+  type GapOutcome,
+  type GapRequest,
+  type ServerGap,
+  type ServerGapName,
+} from './server-gaps.ts';
 export { TitleSchema } from './title.ts';

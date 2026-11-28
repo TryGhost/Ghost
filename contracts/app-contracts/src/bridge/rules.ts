@@ -40,7 +40,7 @@ export type OverlayTint = (typeof OVERLAY_TINTS)[number];
 export const TITLE_MAX_LENGTH = 200;
 
 /**
- * The methods an app may use, in uppercase: the ones the allowlist has routes for. The SDK
+ * The methods an app may use, in uppercase: the ones the Admin API has routes for. The SDK
  * uppercases what apps pass.
  */
 export const FETCH_METHODS = ['GET', 'POST', 'PUT', 'DELETE'] as const;
@@ -116,8 +116,10 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * - `invalid_argument`: an argument Admin does not take.
  * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
  *   the Admin API only responds to with a redirect, such as a path without its trailing `/`.
- * - `blocked`: a request the allowlist doesn't allow, a write it refuses, or a query Admin
- *   can't write so that the server reads what Admin read, such as a parameter name in brackets.
+ * - `blocked`: a request Admin won't send: a route the app routes don't list, or list under a
+ *   scope the installation wasn't approved for; one it refuses to cover a gap in what Ghost's
+ *   server checks, such as a write that sets code injection; or one whose query it can't write
+ *   so that the server reads what Admin read, such as a parameter name in brackets.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
  */
