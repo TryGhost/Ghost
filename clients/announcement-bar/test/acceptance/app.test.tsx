@@ -8,7 +8,7 @@ const API_URL = 'https://site.test/members/api/announcement/';
 let container: HTMLElement;
 let announcement: AnnouncementSettings;
 
-function mountApp(props: { previewData?: AnnouncementSettings } = {}) {
+function mountApp(props: { initialSettings?: AnnouncementSettings } = {}) {
   container = document.createElement('div');
   document.body.appendChild(container);
   render(<App apiUrl={API_URL} {...props} />, container);
@@ -145,7 +145,7 @@ describe('Announcement bar', () => {
 
   test('renders preview data without fetching', async () => {
     mountApp({
-      previewData: { announcement: '<p>Preview text</p>', announcement_background: 'light' },
+      initialSettings: { announcement: '<p>Preview text</p>', announcement_background: 'light' },
     });
 
     const el = await shownBar();

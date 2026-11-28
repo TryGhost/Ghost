@@ -1,15 +1,15 @@
+import { AnnouncementBar } from './components/announcement-bar';
 import { Main } from './components/main';
-import { Preview } from './components/preview';
 import type { AnnouncementSettings } from './utils/api';
 
 type AppProps = {
   apiUrl?: string;
-  previewData?: AnnouncementSettings | null;
+  initialSettings?: AnnouncementSettings | null;
 };
 
-export function App({ apiUrl, previewData }: AppProps) {
-  if (previewData) {
-    return <Preview previewData={previewData} />;
+export function App({ apiUrl, initialSettings }: AppProps) {
+  if (initialSettings) {
+    return <AnnouncementBar settings={initialSettings} />;
   }
   return <Main apiUrl={apiUrl} />;
 }

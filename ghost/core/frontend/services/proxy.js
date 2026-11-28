@@ -1,4 +1,5 @@
 // This file contains everything that the helpers and frontend apps require from the core of Ghost
+const { getAnnouncementForViewer } = require('../../server/lib/announcement');
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 const settingsHelpers = require('../../server/services/settings-helpers');
@@ -22,6 +23,7 @@ const { SafeString } = require('./handlebars');
 const sanitizeHtml = require('sanitize-html');
 
 module.exports = {
+  getAnnouncementForViewer: (member) => getAnnouncementForViewer(settingsCache, member),
   getFrontendKey: async () => {
     try {
       const key = await internalKeys.service.get('ghost-internal-frontend');

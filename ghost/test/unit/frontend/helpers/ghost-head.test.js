@@ -2138,7 +2138,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
       getStub.withArgs('announcement_content').returns('Hello world');
-      getStub.withArgs('announcement_visibility').returns('visitors');
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
 
       const rendered = await testGhostHead({
         hash: { exclude: '' },
@@ -2155,11 +2155,31 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /js.stripe.com/);
       assert.match(rendered, /announcement-bar@/);
     });
+    it('only embeds a paid announcement for eligible readers and escapes its HTML attribute', async function () {
+      getStub.withArgs('announcement_content').returns('<p title="news">Subscribers only</p>');
+      getStub.withArgs('announcement_visibility').returns(['paid_members']);
+      const options = testUtils.createHbsResponse({
+        locals: { relativeUrl: '/', context: ['home', 'index'], safeVersion: '4.3' },
+      });
+      for (const member of [null, { status: 'free' }]) {
+        options.data.member = member;
+        assert.doesNotMatch(
+          String(await ghost_head(options)),
+          /data-announcement-bar|Subscribers only/,
+        );
+      }
+      options.data.member = { status: 'comped' };
+      assert.match(
+        String(await ghost_head(options)),
+        /data-announcement="&lt;p title&#x3D;&quot;news&quot;&gt;Subscribers only&lt;\/p&gt;"/,
+      );
+    });
+
     it('does not show the announcement when exclude contains announcement', async function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
       getStub.withArgs('announcement_content').returns('Hello world');
-      getStub.withArgs('announcement_visibility').returns('visitors');
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
 
       const rendered = await testGhostHead({
         hash: { exclude: 'announcement' },
