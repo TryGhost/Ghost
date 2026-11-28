@@ -68,12 +68,15 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = 'right', className, children, ...props }, ref) => {
-  const { container, inApp, overlayStyle, ref: contentRef, wrap } = useHostedModal('sheet', ref);
+  const { portalContainer, inApp, backdropStyle, contentRef, withPortalContainer } = useHostedModal(
+    'sheet',
+    ref,
+  );
   return (
-    <SheetPortal container={container}>
+    <SheetPortal container={portalContainer}>
       <ShadeScope>
-        <SheetOverlay style={overlayStyle} />
-        {wrap(
+        <SheetOverlay style={backdropStyle} />
+        {withPortalContainer(
           <SheetPrimitive.Content
             ref={contentRef}
             className={cn(

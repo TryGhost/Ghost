@@ -3,7 +3,8 @@ import React from 'react';
 import { type AppOverlay, AppOverlayContext, useOverlayToasts } from '@/lib/app-overlay';
 import ShadeProvider from '@/providers/shade-provider';
 import type { ControlShape } from '@/providers/shade-context';
-import { useHasSafeArea, useSafeAreaSlide } from '@/lib/safe-area';
+import { useHasSafeArea } from '@/lib/safe-area';
+import { useSafeAreaSlide } from '@/lib/safe-area-slide';
 import { cn } from '@/lib/utils';
 
 /**
@@ -45,14 +46,15 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   const root = React.useRef<HTMLDivElement>(null);
   const inApp = useHasSafeArea();
   useSafeAreaSlide(root);
-  // Last, so a className's own padding wins.
-  const appClassName = cn('shade', SAFE_AREA_PADDING, className);
-  const [hostedOverlay, toasterContainer] = useOverlayToasts(overlay);
+  // Last, so a className's own padding wins. Outside an app there's no padding to merge, and
+  // `clsx` leaves Admin's `className` as written.
+  const appClassName = inApp ? cn('shade', SAFE_AREA_PADDING, className) : clsx('shade', className);
+  const toasts = useOverlayToasts(overlay);
 
   return (
     <div
       ref={root}
-      className={inApp ? appClassName : clsx('shade', className)}
+      className={appClassName}
       {...props}
       data-admin7-design={admin7Design}
       data-admin7-mobile={admin7Mobile}
@@ -62,9 +64,9 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
         admin7Mobile={admin7Mobile}
         controlShape={controlShape}
         darkMode={darkMode}
-        toasterContainer={toasterContainer}
+        toasterContainer={toasts.toasterContainer}
       >
-        <AppOverlayContext.Provider value={hostedOverlay}>{children}</AppOverlayContext.Provider>
+        <AppOverlayContext.Provider value={toasts.overlay}>{children}</AppOverlayContext.Provider>
       </ShadeProvider>
     </div>
   );

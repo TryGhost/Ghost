@@ -153,11 +153,21 @@ export function watchHistory(
     if (!link || link.hasAttribute('download') || (target !== '' && target !== '_self')) {
       return;
     }
-    const url = new URL(link.getAttribute('href') as string, document.baseURI);
-    if (url.origin !== window.location.origin || !WEB_PROTOCOLS.has(url.protocol)) {
-      // A web page loads in the page's frame. Any other link, such as `mailto:`, opens as it is,
-      // with the overlay click's activation.
-      if (inOverlay && WEB_PROTOCOLS.has(url.protocol)) {
+    let url: URL;
+    try {
+      url = new URL(link.getAttribute('href') as string, document.baseURI);
+    } catch {
+      // Not an address the browser can follow either.
+      return;
+    }
+    // A link to anything but a web page, such as `mailto:`, opens as it is, with an overlay
+    // click's activation.
+    if (!WEB_PROTOCOLS.has(url.protocol)) {
+      return;
+    }
+    if (url.origin !== window.location.origin) {
+      // From the overlay, a web page elsewhere loads in the page's frame.
+      if (inOverlay) {
         event.preventDefault();
         load(url.href);
       }

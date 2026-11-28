@@ -1,13 +1,8 @@
 import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
-import {
-  overlayTint,
-  SAFE_AREA_DIALOG_HEIGHT,
-  SAFE_AREA_DIALOG_X,
-  useHostedModal,
-  useModalOpen,
-} from '@/lib/app-overlay';
+import { overlayTint, useHostedModal, useModalOpen } from '@/lib/app-overlay';
+import { SAFE_AREA_DIALOG_HEIGHT, SAFE_AREA_DIALOG_X } from '@/lib/safe-area';
 import { cn } from '@/lib/utils';
 import type { ButtonProps } from '@/components/ui/button';
 import { buttonVariants } from '@/components/ui/button-variants';
@@ -50,23 +45,26 @@ const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   AlertDialogContentProps
 >(({ className, overlayClassName, children, ...props }, ref) => {
-  const { container, inApp, overlayStyle, ref: contentRef, wrap } = useHostedModal('dialog', ref);
+  const { portalContainer, inApp, backdropStyle, contentRef, withPortalContainer } = useHostedModal(
+    'dialog',
+    ref,
+  );
   return (
-    <AlertDialogPortal container={container}>
+    <AlertDialogPortal container={portalContainer}>
       <ShadeScope>
         <AlertDialogOverlay
           className={overlayClassName}
-          style={overlayStyle}
+          style={backdropStyle}
           onClick={(e) => e.stopPropagation()}
         />
-        {wrap(
+        {withPortalContainer(
           <AlertDialogPrimitive.Content
             ref={contentRef}
             className={cn(
               'fixed top-[20%] left-[50%] z-[1100] grid max-w-lg translate-y-[-20%] gap-6 bg-surface-elevated-2 p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-[18%] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-[18%] sm:rounded-lg',
               SAFE_AREA_DIALOG_X,
-              // Moves up only as far as it must to stay between the safe area's top and bottom.
               inApp && SAFE_AREA_DIALOG_HEIGHT,
+              // Moves up only as far as it must to stay between the safe area's top and bottom.
               inApp &&
                 'translate-y-[clamp(var(--ghost-safe-area-inset-top,0px)_-_20dvh,-20%,80dvh_-_var(--ghost-safe-area-inset-bottom,0px)_-_1rem_-_100%)]',
               className,

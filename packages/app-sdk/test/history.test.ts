@@ -331,6 +331,17 @@ describe('the page’s history, once Admin owns it', () => {
     expect(load).not.toHaveBeenCalled();
   });
 
+  it('leaves alone a link whose address doesn’t parse', () => {
+    const failed = vi.fn((event: ErrorEvent) => event.preventDefault());
+    window.addEventListener('error', failed);
+    onTestFinished(() => window.removeEventListener('error', failed));
+
+    expect(click({ href: 'http://' })).toBe(true);
+
+    expect(failed).not.toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
+  });
+
   it('follows a link in the app’s overlay from the page, a web page elsewhere too', async () => {
     const overlayDocument = () => {
       const frame = document.createElement('iframe');

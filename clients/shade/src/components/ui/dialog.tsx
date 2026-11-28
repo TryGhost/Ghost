@@ -1,13 +1,8 @@
 import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 
-import {
-  overlayTint,
-  SAFE_AREA_DIALOG_HEIGHT,
-  SAFE_AREA_DIALOG_X,
-  useHostedModal,
-  useModalOpen,
-} from '@/lib/app-overlay';
+import { overlayTint, useHostedModal, useModalOpen } from '@/lib/app-overlay';
+import { SAFE_AREA_DIALOG_HEIGHT, SAFE_AREA_DIALOG_X } from '@/lib/safe-area';
 import { cn } from '@/lib/utils';
 import { keepOpenOnToast } from '@/lib/toast-press';
 import { ShadeScope } from '@/shade-scope';
@@ -82,17 +77,11 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
 >(({ className, children, scroll = 'fixed', ...props }, ref) => {
-  const {
-    container,
-    inApp,
-    modal,
-    overlayStyle,
-    ref: contentRef,
-    wrap,
-  } = useHostedModal('dialog', ref);
+  const { portalContainer, inApp, modal, backdropStyle, contentRef, withPortalContainer } =
+    useHostedModal('dialog', ref);
 
   // Wrapped outside the content, so an `asChild` content's element still gets Radix's props.
-  const panel = wrap(
+  const panel = withPortalContainer(
     <DialogPrimitive.Content
       ref={contentRef}
       className={cn(
@@ -124,20 +113,20 @@ const DialogContent = React.forwardRef<
   const scroller = cn('overflow-y-auto', inApp && inAppScrollerClassName);
 
   return (
-    <DialogPortal container={container}>
+    <DialogPortal container={portalContainer}>
       <ShadeScope>
         {scroll === 'overlay' ? (
           modal ? (
             // The dialog sits inside the backdrop here, so the backdrop animates as long as the
             // dialog does; otherwise closing unmounts the dialog part-way through its animation.
             inApp ? (
-              <DialogOverlay className="duration-200" style={overlayStyle}>
+              <DialogOverlay className="duration-200" style={backdropStyle}>
                 <div className={cn('fixed z-50', scroller)} data-slot="dialog-scroller">
                   {scrollingPanel}
                 </div>
               </DialogOverlay>
             ) : (
-              <DialogOverlay className={cn(scroller, 'duration-200')} style={overlayStyle}>
+              <DialogOverlay className={cn(scroller, 'duration-200')} style={backdropStyle}>
                 {scrollingPanel}
               </DialogOverlay>
             )
@@ -153,7 +142,7 @@ const DialogContent = React.forwardRef<
           )
         ) : (
           <>
-            <DialogOverlay style={overlayStyle} />
+            <DialogOverlay style={backdropStyle} />
             {panel}
           </>
         )}
