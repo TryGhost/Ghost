@@ -35,7 +35,7 @@ import type { AppInstallationStatus } from './schema';
 import type { AppTokens } from '../../auth/better-auth/app-tokens';
 import type { Principal } from '../../auth/principal';
 import type { AppSessionToken } from './serializers';
-import { AppSessionTokens } from './session-tokens';
+import { AppSessionTokens, tokensUnavailable } from './session-tokens';
 
 export type { AppInstallationHistoryEntry } from './codec';
 export type { AppSessionToken } from './serializers';
@@ -159,6 +159,7 @@ export class AppInstallationsService {
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
+  private appTokens: AppTokens;
   private sessionTokens: AppSessionTokens;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
@@ -187,6 +188,7 @@ export class AppInstallationsService {
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
+    this.appTokens = appTokens;
     this.sessionTokens = new AppSessionTokens({
       appTokens,
       findInstallation: (id) => this.currentInstallation(id),
@@ -435,10 +437,19 @@ export class AppInstallationsService {
   /**
    * Loads a manifest with its origin's challenge already on the way, so the two requests
    * run together rather than one after the other.
+   *
+   * Refused, before anything is fetched, on a site whose auth engine can't issue app tokens:
+   * an app previewed, installed or approved there could never be opened. Everything that uses
+   * a manifest loads it here, so nothing else has to ask. A site that only needs a restart can
+   * still load one, and what loads none (listing, reading, uninstalling) works on any engine,
+   * so an app installed earlier can be removed.
    */
   private async load(
     manifestUrl: string,
   ): Promise<{ loaded: LoadedManifest; started: StartedChallenge }> {
+    if (this.appTokens.availability() === 'legacy_engine') {
+      throw tokensUnavailable('legacy_engine');
+    }
     const started = this.identity.challenge(manifestUrl);
     return { loaded: await this.loadManifest(manifestUrl), started };
   }

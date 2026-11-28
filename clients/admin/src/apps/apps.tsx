@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AppsList from './components/apps-list';
 import { AppsGate } from './components/apps-gate';
+import { AppsUnsupportedBanner } from './components/apps-unsupported';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { Badge, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
 import { Box, Container } from '@tryghost/shade/primitives';
@@ -10,15 +11,20 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { useInstalledApps } from './lib/use-app-pins';
+import { APPS_NEED_NEW_AUTH_ENGINE, useAppsAvailability } from './lib/use-apps-availability';
 
 /** Fills the page with what it's given in the middle: a state the list can't show yet. */
 const Centered: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="flex flex-1 items-center justify-center py-16">{children}</div>
 );
 
-/** The site's apps, and where the install flow lands. */
+/**
+ * The site's apps, and where the install flow lands. On a site where apps can't be used, it says
+ * so, and lists the apps installed earlier only so they can be uninstalled.
+ */
 export const AppsListing: React.FC = () => {
   const { installations, isLoading, error, pins } = useInstalledApps();
+  const availability = useAppsAvailability();
   const [uninstalling, setUninstalling] = useState<AppInstallation | null>(null);
 
   let body: React.ReactNode;
@@ -41,11 +47,27 @@ export const AppsListing: React.FC = () => {
     );
   } else if (installations.length) {
     body = (
-      <AppsList
-        installations={installations}
-        pins={pins.isLoaded ? pins : undefined}
-        onUninstall={setUninstalling}
-      />
+      <>
+        {availability === 'unsupported' && <AppsUnsupportedBanner />}
+        <AppsList
+          availability={availability}
+          installations={installations}
+          pins={pins.isLoaded ? pins : undefined}
+          onUninstall={setUninstalling}
+        />
+      </>
+    );
+  } else if (availability === 'unsupported') {
+    body = (
+      <Centered>
+        <EmptyIndicator
+          data-testid="apps-need-new-auth-engine"
+          description={APPS_NEED_NEW_AUTH_ENGINE.description}
+          title={APPS_NEED_NEW_AUTH_ENGINE.title}
+        >
+          <LucideIcon.LayoutGrid />
+        </EmptyIndicator>
+      </Centered>
     );
   } else {
     body = (

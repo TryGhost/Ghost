@@ -1,0 +1,137 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
+import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
+import {
+  configResponse,
+  currentRoute,
+  fakeAdminEndpoint,
+  fakeTags,
+  renderAdminApp,
+} from '@test-utils/acceptance';
+import { appsScreen } from './apps.screen';
+import { MANIFEST_URL, fakeInstallations, installation, labs, readPath } from './apps.test-utils';
+
+const DETAILS_ROUTE = '/apps/details/installation-1';
+const INSTALL_ROUTE = `/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`;
+
+/** Admin on a site that runs the legacy auth engine, where Ghost can't issue apps their tokens. */
+function renderOnLegacyEngine(route: string) {
+  const config = configResponse({ labs });
+  config.config.auth = { engine: 'legacy' };
+  return renderAdminApp(route, { labs, boot: { browseConfig: { response: config } } });
+}
+
+const notice = () => page.getByTestId('apps-need-new-auth-engine');
+
+const fakeDetails = (app: AppInstallation) =>
+  fakeAdminEndpoint('GET', readPath(app.id), { app_installations: [{ ...app, history: [] }] });
+
+// Apps call Ghost with tokens only its new auth engine issues. Ghost refuses to preview, install,
+// approve or open an app on any other, so Admin offers none of those there.
+describe('Apps on a site that doesn’t run the new auth engine', () => {
+  beforeEach(() => {
+    fakeInstallations();
+  });
+
+  it('says apps aren’t available, in place of an empty list', async () => {
+    await renderOnLegacyEngine('/apps');
+
+    await expect.element(notice()).toHaveTextContent('Apps aren’t available on this site');
+    await expect.element(notice()).toHaveTextContent('Apps need Ghost’s new auth engine');
+    await expect.element(appsScreen.emptyState()).not.toBeInTheDocument();
+  });
+
+  it('shows the same message for an install link, and asks Ghost for nothing', async () => {
+    const previewApi = fakeAdminEndpoint('POST', '/apps/installations/preview/', {});
+
+    await renderOnLegacyEngine(INSTALL_ROUTE);
+
+    await expect.element(notice()).toHaveTextContent('Apps aren’t available on this site');
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    expect(previewApi.requests).toHaveLength(0);
+  });
+
+  it('lists an app installed earlier with nothing that opens it, and still uninstalls it', async () => {
+    const installed = installation();
+    const installations = fakeInstallations([installed]);
+    fakeDetails(installed);
+    const uninstallApi = fakeAdminEndpoint('DELETE', '/apps/installations/installation-1/', () => {
+      installations.set([]);
+      return new Response(null, { status: 204 });
+    });
+
+    await renderOnLegacyEngine('/apps');
+
+    await expect.element(notice()).toHaveTextContent('Apps aren’t available on this site');
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    // The sidebar keeps its way to this page, and lists no app to open.
+    await expect.element(appsScreen.sidebarLink()).toBeVisible();
+    await expect(appsScreen.sidebarAppItems()).toHaveCount(0);
+    // Pinning would put a link that opens the app in the sidebar.
+    await appsScreen.rowActions('Podcast').click();
+    await expect.element(appsScreen.menuItem('Uninstall')).toBeVisible();
+    await expect.element(appsScreen.menuItem('Pin to sidebar')).not.toBeInTheDocument();
+    await appsScreen.menuItem('Uninstall').click();
+    await appsScreen.uninstallDialog().getByRole('button', { name: 'Uninstall' }).click();
+
+    await expect.element(page.getByText('Podcast uninstalled')).toBeVisible();
+    await expect(appsScreen.rows()).toHaveCount(0);
+    expect(uninstallApi.requests).toHaveLength(1);
+  });
+
+  it('leads from the list to an app’s details, which offer only uninstalling', async () => {
+    const installed = installation();
+    fakeInstallations([installed]);
+    fakeDetails(installed);
+
+    await renderOnLegacyEngine('/apps');
+    await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
+
+    await expect.poll(currentRoute).toBe(DETAILS_ROUTE);
+    await expect.element(appsScreen.details()).toBeVisible();
+    await expect.element(notice()).toHaveTextContent('Apps need Ghost’s new auth engine');
+    await expect.element(page.getByRole('link', { name: 'Open' })).not.toBeInTheDocument();
+    await appsScreen.detailsActions().click();
+    await expect.element(appsScreen.menuItem('Uninstall')).toBeVisible();
+    await expect.element(appsScreen.menuItem('Pin to sidebar')).not.toBeInTheDocument();
+  });
+
+  it('offers no review of an app that was waiting for approval', async () => {
+    const suspended = installation({ status: 'suspended' });
+    fakeInstallations([suspended]);
+    fakeDetails(suspended);
+
+    await renderOnLegacyEngine('/apps');
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    await expect
+      .element(page.getByRole('link', { name: 'Review changes' }))
+      .not.toBeInTheDocument();
+
+    await renderOnLegacyEngine(DETAILS_ROUTE);
+    await expect.element(appsScreen.details()).toBeVisible();
+    await expect
+      .element(page.getByRole('link', { name: 'Review changes' }))
+      .not.toBeInTheDocument();
+  });
+});
+
+describe('Apps when the site’s config failed to load', () => {
+  it('keeps the sidebar’s way to Apps, with no app to open', async () => {
+    fakeTags([]);
+    fakeInstallations([installation()]);
+
+    // the Labs flag comes from the session's URL override, as the config never loads
+    await renderAdminApp('/tags?labs=apps', {
+      boot: {
+        browseConfig: {
+          response: { errors: [{ type: 'InternalServerError', message: 'Config failed' }] },
+          responseStatus: 500,
+        },
+      },
+    });
+
+    await expect.element(appsScreen.sidebarLink()).toBeVisible();
+    await expect(appsScreen.sidebarAppItems()).toHaveCount(0);
+  });
+});

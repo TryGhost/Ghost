@@ -23,5 +23,8 @@ export const configData = {
     security: {
       staffDeviceVerification: true,
     },
+    auth: {
+      engine: 'better-auth',
+    },
   },
 };

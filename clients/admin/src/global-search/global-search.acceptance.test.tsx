@@ -506,6 +506,19 @@ describe('Apps search', () => {
       .toBe(`/apps/install?manifest=${encodeURIComponent(SUSPENDED_MANIFEST_URL)}`);
   });
 
+  it('searches everything else when the site’s config failed to load', async () => {
+    const configError = {
+      response: { errors: [{ type: 'InternalServerError', message: 'Config failed' }] },
+      responseStatus: 500,
+    };
+    // the Labs flag comes from the session's URL override, as the config never loads
+    await renderAdminApp('/tags?labs=apps', { boot: { browseConfig: configError } });
+    await openAndSearch('first');
+
+    await expect.element(globalSearchScreen.option(/First tag/)).toBeVisible();
+    await expect(globalSearchScreen.group('Apps')).toHaveCount(0);
+  });
+
   it('leaves Apps out, without loading them, for staff who can’t manage apps', async () => {
     const me = currentUserResponse();
     me.users[0].roles = [staffRole({ name: 'Editor' })];

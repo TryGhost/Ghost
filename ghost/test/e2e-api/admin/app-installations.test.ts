@@ -11,6 +11,7 @@ import {
   signTestManifest,
   type TestAppKeys,
 } from '../../utils/app-identity';
+import { insertTestInstallation } from '../../utils/app-installations';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
@@ -2994,20 +2995,76 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
   });
 });
 
-describe.skipIf(isBetterAuth)('App sessions under auth:engine legacy', function () {
-  let agent: { loginAsOwner(): Promise<void>; post(path: string): any };
+describe.skipIf(isBetterAuth)('Apps under auth:engine legacy', function () {
+  let agent: {
+    loginAsOwner(): Promise<void>;
+    get(path: string): any;
+    post(path: string): any;
+    put(path: string): any;
+    delete(path: string): any;
+  };
+  const knex = () => models.Base.knex;
+  const reviewed = { manifest_url: MANIFEST_URL, digest: 'digest' };
+  const refusedAs = (body: { errors: Array<{ code: string }> }) => body.errors[0].code;
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users');
     await agent.loginAsOwner();
+    keys = await generateTestAppKeys();
   });
 
-  it('refuses to start, since app tokens need the Better Auth engine', async function () {
+  afterEach(async function () {
+    await knex()('app_installation_manifests').del();
+    await knex()('app_installations').del();
+  });
+
+  it('refuses to start a session, since app tokens need the Better Auth engine', async function () {
     const { body } = await agent
       .post(`apps/installations/${new ObjectId().toHexString()}/sessions/`)
       .expectStatus(409);
 
-    assert.equal(body.errors[0].code, 'APP_AUTH_ENGINE_UNSUPPORTED');
+    assert.equal(refusedAs(body), 'APP_AUTH_ENGINE_UNSUPPORTED');
+  });
+
+  // An app installed here could never be opened, so nothing is fetched or stored
+  it('refuses to preview, install or approve an app', async function () {
+    const id = await insertTestInstallation(knex(), { scopes: [], keys });
+
+    const preview = await agent
+      .post('apps/installations/preview/')
+      .body({ app_installation_previews: [{ manifest_url: MANIFEST_URL }] })
+      .expectStatus(409);
+    assert.equal(refusedAs(preview.body), 'APP_AUTH_ENGINE_UNSUPPORTED');
+
+    const install = await agent
+      .post('apps/installations/')
+      .body({ app_installations: [reviewed] })
+      .expectStatus(409);
+    assert.equal(refusedAs(install.body), 'APP_AUTH_ENGINE_UNSUPPORTED');
+
+    const approve = await agent
+      .put(`apps/installations/${id}/`)
+      .body({ app_installations: [{ ...reviewed, revision: 0 }] })
+      .expectStatus(409);
+    assert.equal(refusedAs(approve.body), 'APP_AUTH_ENGINE_UNSUPPORTED');
+
+    assert.equal((await knex()('app_installations')).length, 1);
+  });
+
+  it('still lists, reads and uninstalls an app installed earlier', async function () {
+    const id = await insertTestInstallation(knex(), { scopes: ['post:browse'], keys });
+
+    const { body: listed } = await agent.get('apps/installations/').expectStatus(200);
+    assert.deepEqual(
+      listed.app_installations.map((each: { id: string }) => each.id),
+      [id],
+    );
+    await agent.get(`apps/installations/${id}/`).expectStatus(200);
+
+    await agent.delete(`apps/installations/${id}/`).expectStatus(204);
+
+    const { body: after } = await agent.get('apps/installations/').expectStatus(200);
+    assert.deepEqual(after.app_installations, []);
   });
 });

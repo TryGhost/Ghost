@@ -2440,6 +2440,7 @@ jobs:
               tests/admin/settings/staff.test.ts
               tests/admin/settings/staff-invites.test.ts
               tests/admin/apps/access-approval.test.ts
+              tests/admin/apps/app-access.test.ts
               tests/admin/apps/install-lifecycle.test.ts
               tests/admin/apps/manifest-updates.test.ts
             shardIndex: 1

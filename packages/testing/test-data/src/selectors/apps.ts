@@ -7,6 +7,7 @@
 export const appsPage = 'apps-page';
 export const appsList = 'apps-list';
 export const appsListRow = 'apps-list-row';
+export const appsNeedNewAuthEngine = 'apps-need-new-auth-engine';
 export const appInstallDialog = 'app-install-dialog';
 export const appInstallNotAllowedDialog = 'app-install-not-allowed-dialog';
 export const appInstallNotice = 'app-install-notice';

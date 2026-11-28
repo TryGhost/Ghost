@@ -3,8 +3,9 @@ import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-instal
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { canSeeApps } from '@/apps/permissions';
-import { appOpenRoute } from './routes';
+import { installationActions } from './installation-actions';
 import { useInstalledApps } from './use-app-pins';
+import { useAppsAvailability } from './use-apps-availability';
 
 export interface SidebarApp {
   installation: AppInstallation;
@@ -15,7 +16,7 @@ export interface SidebarApp {
 }
 
 export interface SidebarApps {
-  /** False while there's nothing to show, or it hasn't loaded. */
+  /** False while there's nothing to show, or it hasn't loaded: the apps, the pins or the site's config. */
   visible: boolean;
   /** On the Apps page itself, where the eyebrow is the current page. */
   onAppsPage: boolean;
@@ -50,11 +51,15 @@ function openInstallationId(
  * pinned ones first; elsewhere only the pinned apps, plus the open app if it
  * isn't pinned. Hidden until something is installed, except on Apps' own pages,
  * so uninstalling the last app doesn't pull the link out from under you.
+ * On a site where apps can't be opened it lists none, and still leads to the Apps
+ * page, where one installed earlier can be uninstalled.
  */
 export function useSidebarApps(): SidebarApps {
   const enabled = useFeatureFlag('apps');
   const { data: currentUser } = useCurrentUser();
   const visibleToUser = canSeeApps(currentUser, enabled);
+  // Where no app can be opened, the sidebar keeps its way to the Apps page and lists none
+  const availability = useAppsAvailability();
   // Any failure just hides the section.
   const { installations, pins } = useInstalledApps({ enabled: visibleToUser });
   const { pathname, search } = useLocation();
@@ -66,19 +71,29 @@ export function useSidebarApps(): SidebarApps {
   const byId = new Map(installations.map((installation) => [installation.id, installation]));
   const pinned = pins.pinnedIds.flatMap((id) => byId.get(id) ?? []);
   const unpinned = installations.filter((installation) => !pins.isPinned(installation.id));
-  const listed = onAppsPage
+  const shown = onAppsPage
     ? [...pinned, ...unpinned]
     : [...pinned, ...unpinned.filter((installation) => installation.id === openId)];
 
   return {
-    visible: visibleToUser && pins.isLoaded && (installations.length > 0 || inApps),
+    // Shown once it's known which apps it lists, so none appears or goes after it does
+    visible:
+      visibleToUser &&
+      pins.isLoaded &&
+      availability !== 'loading' &&
+      (installations.length > 0 || inApps),
     onAppsPage,
-    apps: listed.map((installation) => ({
-      installation,
-      to: appOpenRoute(installation),
-      isActive: installation.id === openId,
-      isPinned: pins.isPinned(installation.id),
-    })),
+    apps: shown.flatMap((installation) => {
+      const { shortcutTo } = installationActions(installation, availability, pins);
+      return shortcutTo === null
+        ? []
+        : {
+            installation,
+            to: shortcutTo,
+            isActive: installation.id === openId,
+            isPinned: pins.isPinned(installation.id),
+          };
+    }),
     canPinMore: pins.canPinMore,
     setPinned: pins.setPinned,
   };

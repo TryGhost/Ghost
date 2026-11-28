@@ -20,31 +20,39 @@ const newsletter = installation('installation-2', 'Newsletter tools', 'suspended
 
 describe('appsSearchItems', () => {
   it('opens each installed app, in the list’s order', () => {
-    expect(appsSearchItems(admin, true, [podcast, newsletter])).toMatchObject([
+    expect(appsSearchItems(admin, true, 'supported', [podcast, newsletter])).toMatchObject([
       { kind: 'navigate', id: 'installation-1', title: 'Podcast', to: '/apps/installation-1' },
       { kind: 'navigate', id: 'installation-2', title: 'Newsletter tools' },
     ]);
   });
 
   it('opens a suspended app’s review rather than its page', () => {
-    expect(appsSearchItems(admin, true, [newsletter])[0]).toMatchObject({
+    expect(appsSearchItems(admin, true, 'supported', [newsletter])[0]).toMatchObject({
       to: `/apps/install?manifest=${encodeURIComponent(newsletter.manifest_url)}`,
     });
   });
 
   it.each(['Owner', 'Administrator'])('lists apps for an %s', (role) => {
-    expect(appsSearchItems(user(role), true, [podcast])).toHaveLength(1);
+    expect(appsSearchItems(user(role), true, 'supported', [podcast])).toHaveLength(1);
   });
 
   it.each(['Editor', 'Author', 'Contributor', 'Super Editor'])(
     'lists nothing for an %s',
     (role) => {
-      expect(appsSearchItems(user(role), true, [podcast])).toEqual([]);
+      expect(appsSearchItems(user(role), true, 'supported', [podcast])).toEqual([]);
+    },
+  );
+
+  // Every item opens an app
+  it.each(['unsupported', 'loading', 'unknown'] as const)(
+    'lists nothing while apps are %s',
+    (availability) => {
+      expect(appsSearchItems(admin, true, availability, [podcast, newsletter])).toEqual([]);
     },
   );
 
   it('lists nothing without the apps flag, or before the user loads', () => {
-    expect(appsSearchItems(admin, false, [podcast])).toEqual([]);
-    expect(appsSearchItems(undefined, true, [podcast])).toEqual([]);
+    expect(appsSearchItems(admin, false, 'supported', [podcast])).toEqual([]);
+    expect(appsSearchItems(undefined, true, 'supported', [podcast])).toEqual([]);
   });
 });

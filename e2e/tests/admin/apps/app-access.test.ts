@@ -20,6 +20,21 @@ test.describe('Ghost Admin - App access', () => {
   test.describe('with the Labs flag on', () => {
     test.use({ labs: { apps: true } });
 
+    const isBetterAuth = process.env.GHOST_E2E_AUTH_ENGINE === 'better-auth';
+
+    test('an install link says apps need the new auth engine on a site without it', async ({
+      page,
+      fixtureApp,
+    }) => {
+      test.skip(isBetterAuth, 'Runs on the legacy engine');
+      const appsPage = new AppsPage(page);
+
+      await appsPage.gotoInstallLink(fixtureApp.manifestUrl);
+
+      await expect(appsPage.needsNewAuthEngine).toBeVisible();
+      await expect(appsPage.installDialog.modal).toHaveCount(0);
+    });
+
     test('staff who can’t manage apps can’t install them', async ({
       page,
       browser,
@@ -27,6 +42,8 @@ test.describe('Ghost Admin - App access', () => {
       fixtureApp,
       ghostAccountEditor,
     }) => {
+      // Ghost offers install only on the auth engine that issues apps their tokens
+      test.skip(!isBetterAuth, 'Apps need auth:engine better-auth');
       const ownerAppsPage = new AppsPage(page);
       await ownerAppsPage.gotoInstallLink(fixtureApp.manifestUrl);
       await expect(ownerAppsPage.installDialog.installButton).toBeVisible();

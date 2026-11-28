@@ -44,6 +44,7 @@ import { useThemeContext } from '@/providers/theme-context';
 import { AppCanvas } from './components/app-canvas';
 import { WithAppFooter } from './components/app-footer';
 import { AppOverlay } from './components/app-overlay';
+import { APPS_NEED_NEW_AUTH_ENGINE } from './lib/use-apps-availability';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
@@ -586,9 +587,7 @@ const SITE_BLOCKS_APPS: Record<
 > = {
   'new-auth-engine': {
     testId: 'app-needs-new-auth-engine',
-    title: 'Apps aren’t available on this site',
-    description:
-      'Apps need Ghost’s new auth engine, which this site doesn’t use yet. Your site isn’t affected.',
+    ...APPS_NEED_NEW_AUTH_ENGINE,
     retry: false,
   },
   restart: {

@@ -11,6 +11,8 @@ export class AppsPage extends AdminPage {
   readonly notAllowedDialog: Locator;
   /** Admin's page for a route that doesn't exist, which Apps is while its Labs flag is off. */
   readonly notFound: Locator;
+  /** What Admin says on a site that doesn't run the auth engine apps need. */
+  readonly needsNewAuthEngine: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -19,6 +21,7 @@ export class AppsPage extends AdminPage {
     this.installDialog = new AppInstallDialog(page);
     this.notAllowedDialog = page.getByTestId(sel.appInstallNotAllowedDialog);
     this.notFound = page.getByRole('heading', { name: sel.notFoundHeading });
+    this.needsNewAuthEngine = page.getByTestId(sel.appsNeedNewAuthEngine);
   }
 
   async gotoInstallLink(manifestUrl: string): Promise<void> {
