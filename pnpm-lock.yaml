@@ -848,7 +848,7 @@ overrides:
   '@tryghost/mg-utils>fast-xml-parser': ^5.12.0
   consolidate@0.15.1: ^1.0.4
   supports-color: 10.2.2
-  trim@<0.0.3: ^0.0.3
+  trim@<0.0.3: ^1.0.0
   katex@>=0.11.0 <0.18.2: ^0.18.2
   re2js@>=2.2.0 <2.8.7: ^2.8.7
   tinypool@<2.1.2: ^2.1.2
