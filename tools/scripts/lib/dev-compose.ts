@@ -1,5 +1,8 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseEnv } from 'node:util';
 
 export interface ComposeService {
   image?: string;
@@ -16,9 +19,27 @@ export interface ComposeConfig {
 
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url));
 
-/** The overlays' `-f` arguments in DEV_COMPOSE_FILES, e.g. `-f compose.dev.analytics.yaml` */
+/** Whether Mailgun credentials are in the environment or the `.env` file compose reads */
+export function hasMailgunCredentials(): boolean {
+  const envFile = join(repoRoot, '.env');
+  const dotenv = existsSync(envFile) ? parseEnv(readFileSync(envFile, 'utf8')) : {};
+  const value = (key: string) => process.env[key] ?? dotenv[key];
+  return Boolean(value('MAILGUN_API_KEY') && value('MAILGUN_DOMAIN'));
+}
+
+const MAILGUN_OVERLAYS = new Set(['compose.dev.mailgun.yaml', 'compose.dev.fake-mailgun.yaml']);
+
+/**
+ * The overlays' `-f` arguments in DEV_COMPOSE_FILES, e.g. `-f compose.dev.analytics.yaml`.
+ * With Mailgun credentials, Ghost sends all email through Mailgun unless an overlay already
+ * configures Mailgun, such as the fake one.
+ */
 export function overlayArgs(): string[] {
-  return (process.env.DEV_COMPOSE_FILES ?? '').split(/\s+/).filter(Boolean);
+  const args = (process.env.DEV_COMPOSE_FILES ?? '').split(/\s+/).filter(Boolean);
+  if (!args.some((arg) => MAILGUN_OVERLAYS.has(basename(arg))) && hasMailgunCredentials()) {
+    args.push('-f', 'compose.dev.mailgun.yaml');
+  }
+  return args;
 }
 
 /** The dev compose configuration with the overlays applied, Ghost's own container included */

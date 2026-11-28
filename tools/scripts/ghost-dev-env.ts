@@ -1,6 +1,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { overlayArgs } from './lib/dev-compose.ts';
 import { checkoutRoot, devUrl, resolveGhostDevEnv } from './lib/ghost-dev-env.ts';
 
 // The theme submodules: `pnpm bootstrap` initialises them, but a checkout may not have run it
@@ -27,3 +28,6 @@ const env = await resolveGhostDevEnv();
 console.log(
   `Ghost dev: ${devUrl({ ...env })}ghost/ (Ghost on port ${env.GHOST_DEV_BACKEND_PORT}, database ${env.GHOST_DEV_DATABASE})`,
 );
+if (overlayArgs().includes('compose.dev.mailgun.yaml')) {
+  console.log('Email: all email is sent through Mailgun, not captured in Mailpit');
+}
