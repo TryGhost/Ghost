@@ -2,6 +2,7 @@ import {$getRoot, $isElementNode, $isLineBreakNode, $isParagraphNode, $isTextNod
 import {$isLinkNode} from '@lexical/link';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import TextContent from './utils/TextContent.js';
+import {$isInlineDecorator} from './utils/inline-decorator.js';
 import elementTransformers from './transformers/index.js';
 import type {ElementNode, LexicalEditor, LexicalNode} from 'lexical';
 import type {RendererOptions} from './types.js';
@@ -71,12 +72,14 @@ function exportChildren(node: ElementNode, options: RendererOptions): string {
     const textContent = new TextContent(exportChildren, options);
 
     for (const child of children) {
-        if (!textContent.isEmpty() && !$isLineBreakNode(child) && !$isTextNode(child) && !$isLinkNode(child)) {
+        const isInlineContent = $isLineBreakNode(child) || $isTextNode(child) || $isLinkNode(child) || $isInlineDecorator(child);
+
+        if (!textContent.isEmpty() && !isInlineContent) {
             output.push(textContent.render());
             textContent.clear();
         }
 
-        if ($isLineBreakNode(child) || $isTextNode(child) || $isLinkNode(child)) {
+        if (isInlineContent) {
             textContent.addNode(child);
         } else if ($isElementNode(child)) {
             output.push(exportChildren(child, options));
