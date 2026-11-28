@@ -87,19 +87,36 @@ function granted(principal: Principal): ReadonlySet<Capability> {
       return principal.actingFor
         ? staffGrants(names(principal.actingFor.roles))
         : toKeys(principal.scopes);
+    // A kind this doesn't know is granted nothing
+    default: {
+      // Fails the type check until a new kind is handled above
+      const unhandled: never = principal;
+      void unhandled;
+      return NONE;
+    }
   }
 }
 
 // Only one scope source exists per principal today; app tokens will intersect theirs here
 function scopeLimit(principal: Principal): Capabilities['scopes'] {
-  if (principal.kind === 'internal' || principal.kind === 'anonymous') {
-    return 'unlimited';
+  switch (principal.kind) {
+    case 'internal':
+    case 'anonymous':
+      return 'unlimited';
+    // An app is always scoped, so missing scopes mean no access rather than none to apply
+    case 'app':
+      return toKeys(principal.scopes);
+    case 'user':
+    case 'integration':
+      return principal.scopes ? toKeys(principal.scopes) : 'unlimited';
+    // A kind this doesn't know is allowed nothing, rather than left unscoped
+    default: {
+      // Fails the type check until a new kind is handled above
+      const unhandled: never = principal;
+      void unhandled;
+      return NONE;
+    }
   }
-  // An app is always scoped, so missing scopes mean no access rather than none to apply
-  if (principal.kind === 'app') {
-    return toKeys(principal.scopes);
-  }
-  return principal.scopes ? toKeys(principal.scopes) : 'unlimited';
 }
 
 // Keyed on the principal object, which is frozen once per request

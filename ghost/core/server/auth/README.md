@@ -44,7 +44,8 @@ the `object_type:action` keys its roles grant and the keys its token or app
 scopes allow, and `authorize` checks one, then any row rule in
 `policy/rules/`, throwing when it is refused. `canThis` refuses a key the
 scopes lack, then passes the grant to the model `permissible` hooks as flags
-until each hook becomes a row rule.
+until each hook becomes a row rule. A principal of a kind the policy doesn't
+know is granted nothing and its scopes allow nothing.
 
 The [previous inventory audit](https://github.com/TryGhost/Ghost/tree/2700a443fe1ff989630efbdb5e8355f066959bbf/ghost/core/server/services/legacy-service-inventory.yaml#L5789)
 records its contracts and open coverage gaps. Injecting models into

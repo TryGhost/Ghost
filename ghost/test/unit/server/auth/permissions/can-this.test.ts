@@ -487,6 +487,15 @@ describe('Permissions', function () {
     });
   });
 
+  describe('a principal of a kind the policy does not know', function () {
+    it('is refused, with or without a model permissible hook', async function () {
+      const principal = { kind: 'service', user: userView(['Owner'], '1') };
+      for (const check of [canThis({ principal }).edit.tag, canThis({ principal }).browse.post]) {
+        await assert.rejects(check(), { errorType: 'NoPermissionError' });
+      }
+    });
+  });
+
   describe('internal principal', function () {
     it('grants nothing to a principal claiming internal without an internal context', async function () {
       await assert.rejects(canThis({ principal: { kind: 'internal' } }).edit.tag(), {

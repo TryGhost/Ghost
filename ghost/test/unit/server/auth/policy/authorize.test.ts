@@ -118,6 +118,11 @@ describe('Authorization policy', function () {
       assert.deepEqual(capabilities(appPrincipal(null, undefined)).granted, new Set());
     });
 
+    it('grants and allows nothing to a principal of a kind it does not know', function () {
+      const unknown = { kind: 'service', user: userView(['Owner']) } as unknown as Principal;
+      assert.deepEqual(capabilities(unknown), { granted: new Set(), scopes: new Set() });
+    });
+
     it('scopes a token principal by its scopes', function () {
       assert.deepEqual(capabilities(user(['Owner'], ['tag:edit'])).scopes, new Set(['tag:edit']));
       assert.deepEqual(capabilities(integration(null, [])).scopes, new Set());
@@ -160,6 +165,11 @@ describe('Authorization policy', function () {
         authorize(appPrincipal(['Owner'], undefined), 'read', 'tag'),
         noPermission,
       );
+    });
+
+    it('refuses a principal of a kind it does not know', async function () {
+      const unknown = { kind: 'service', user: userView(['Owner']) } as unknown as Principal;
+      await assert.rejects(authorize(unknown, 'browse', 'post'), noPermission);
     });
 
     it('has no row rules yet', function () {
