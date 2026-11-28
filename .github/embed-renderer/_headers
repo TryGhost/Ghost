@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: frame-ancestors https:
+  Content-Security-Policy: frame-ancestors https: http://localhost:* http://*.localhost:* http://127.0.0.1:*
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   Strict-Transport-Security: max-age=31536000; includeSubDomains

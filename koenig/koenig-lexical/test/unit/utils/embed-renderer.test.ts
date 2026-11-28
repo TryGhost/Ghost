@@ -74,4 +74,16 @@ describe('Utils: embed-renderer', () => {
             expect(renderer).toContain(`'${EMBED_RESIZE_MESSAGE}'`);
         });
     });
+
+    // Admin's previews use version 2, and each deploy ships every version that editors may request
+    describe('renderer files', () => {
+        test.each([1, 2])('keeps version %i, speaking its own protocol', function (version) {
+            const renderer = fs.readFileSync(path.resolve(__dirname, `../../../public/embed-renderer/v${version}.html`), 'utf-8');
+
+            expect(renderer).toContain(`var VERSION = ${version};`);
+            expect(renderer).toContain(`'${EMBED_READY_MESSAGE}'`);
+            expect(renderer).toContain(`'${EMBED_RENDER_MESSAGE}'`);
+            expect(renderer).toContain(`'${EMBED_RESIZE_MESSAGE}'`);
+        });
+    });
 });

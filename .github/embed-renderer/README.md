@@ -1,10 +1,11 @@
 # Embed renderer hosting
 
-The editor previews embed card html in
-[`koenig/koenig-lexical/public/embed-renderer/`](../../koenig/koenig-lexical/public/embed-renderer/),
-loaded from a domain that serves nothing else. Embed scripts run with that
-domain's origin, so it must never share one with Ghost Admin, a Ghost site, or
-anything holding cookies. Sites point at it with `security.embedPreviewUrl`.
+The editor previews embed card html, and Ghost Admin previews whole site pages,
+in [`koenig/koenig-lexical/public/embed-renderer/`](../../koenig/koenig-lexical/public/embed-renderer/),
+loaded from a domain that serves nothing else. Embed and page scripts run with
+that domain's origin, so it must never share one with Ghost Admin, a Ghost site,
+or anything holding cookies. Sites point at it with `security.embedPreviewUrl`.
+Version 1 renders embed cards; version 2 also renders whole pages.
 
 Self-hosted Ghost previews embeds from `public.ghostembeds.com`, deployed from
 this repository.
@@ -28,9 +29,18 @@ The renderer is versioned by its message protocol, not by Ghost release. Add
 `v<N>.html` alongside the existing files and keep every older version: editors
 request the version they were built against, so each deploy ships all of them.
 
+`_headers` lets any https page frame the renderer, and http pages on
+`localhost`, `*.localhost` and `127.0.0.1`, so Admin in local development can
+use it too. A page that frames it gains nothing of Ghost's: the renderer holds
+no data of its own and only shows html that its own ancestors send it. Version 2
+only renders for a window that heard its ready message. Code on the renderer's
+origin is never trusted, and renderer frames in one tab can reach each other, so
+never render anything there that another renderer frame shouldn't see.
+
 ## Rules for this domain
 
 - serve nothing but the renderer files; every other path 404s
-- never set cookies, serve Ghost content, or add branding
+- never set cookies, serve Ghost content of its own, or add branding: pages
+  appear only as html that Ghost Admin sends a renderer to preview
 - never list it in `security.txt`, OAuth redirects, CORS allowlists or a CSP
   `script-src`: it runs arbitrary third-party code by design
