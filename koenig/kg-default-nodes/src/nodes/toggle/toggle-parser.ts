@@ -8,10 +8,10 @@ export function parseToggleNode(ToggleNode: new (data: Record<string, unknown>) 
                 return {
                     conversion(domNode: HTMLElement) {
                         const headingNode = domNode.querySelector('.kg-toggle-heading-text');
-                        const heading = headingNode?.textContent ?? '';
+                        const heading = headingNode?.innerHTML?.trim() ?? '';
 
                         const contentNode = domNode.querySelector('.kg-toggle-content');
-                        const content = contentNode?.textContent ?? '';
+                        const content = contentNode?.innerHTML?.trim() ?? '';
 
                         const payload: Record<string, unknown> = {
                             heading,
