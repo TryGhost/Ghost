@@ -3,18 +3,11 @@ const logging = require('@tryghost/logging');
 
 const { hbs } = require('../handlebars');
 
-// Register an async handlebars helper for a given handlebars instance
+// Register a promise helper; errors are logged and rendered as '' (the error in development) so they don't fail the page
 function asyncHelperWrapper(hbsInstance, name, fn) {
-  hbsInstance.registerAsyncHelper(name, async function returnAsync(context, options, cb) {
-    // Handle the case where we only get context and cb
-    if (!cb) {
-      cb = options;
-      options = undefined;
-    }
-
+  hbsInstance.registerPromiseHelper(name, async function returnAsync(...args) {
     try {
-      const response = await fn.call(this, context, options);
-      cb(response);
+      return await fn.apply(this, args);
     } catch (error) {
       const wrappedErr = errors.utils.isGhostError(error)
         ? error
@@ -30,7 +23,7 @@ function asyncHelperWrapper(hbsInstance, name, fn) {
 
       logging.error(wrappedErr);
 
-      cb(new hbsInstance.SafeString(response));
+      return new hbsInstance.SafeString(response);
     }
   });
 }
