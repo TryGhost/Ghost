@@ -562,6 +562,37 @@ describe('Sending service', function () {
       assert.equal(firstCall.args[0].replyTo, undefined);
     });
 
+    it('renders with the preview audience of a test send', async function () {
+      const sendingService = new SendingService({
+        emailRenderer,
+        emailProvider,
+        emailAddressService,
+      });
+      const previewAudience = { memberStatus: 'paid', memberTier: 'gold' };
+
+      await sendingService.send(
+        {
+          post: {},
+          newsletter: {},
+          segment: "status:-free+product:'gold'",
+          emailId: null,
+          members: [{ email: 'member@example.com', name: 'John' }],
+        },
+        {
+          clickTrackingEnabled: false,
+          openTrackingEnabled: false,
+          isTestEmail: true,
+          previewAudience,
+        },
+      );
+
+      sinon.assert.calledOnce(emailRenderer.renderBody);
+      assert.deepEqual(emailRenderer.renderBody.firstCall.args[3], {
+        clickTrackingEnabled: false,
+        previewAudience,
+      });
+    });
+
     describe('fallback sending domain', function () {
       // Shared test data to reduce boilerplate
       const baseEmailData = {

@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
 const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
+const lexicalLib = require('../../../../../core/server/lib/lexical');
 
 async function validateHtml(html) {
   const htmlvalidate = new HtmlValidate({
@@ -1702,6 +1703,167 @@ describe('Email renderer', function () {
       // Outlook's Word engine ignores `inherit`, so the heading needs concrete values
       assert.match(heading.attr('style'), /font-size: 36px/);
       assert.doesNotMatch(heading.attr('style'), /inherit/);
+    });
+
+    describe('browser links for previews and test sends', function () {
+      const uuid = '11111111-2222-4333-8444-555555555555';
+
+      async function renderBrowserLinks(previewAudience) {
+        const post = createModel({ ...basePost, uuid });
+        const newsletter = createModel(baseNewsletter);
+        const options = previewAudience ? { previewAudience } : {};
+
+        const response = await emailRenderer.renderBody(post, newsletter, null, options);
+        const $ = cheerio.load(response.html);
+        return {
+          title: $('a.post-title-link').attr('href'),
+          viewOnline: $('a.view-online-link')
+            .map((_i, el) => $(el).attr('href'))
+            .get(),
+        };
+      }
+
+      beforeEach(function () {
+        postUrl = `http://example.com/p/${uuid}/`;
+      });
+
+      it('keeps the free audience on an unpublished post', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'free' });
+        const expected = `http://example.com/p/${uuid}/?member_status=free`;
+
+        assert.equal(links.title, expected);
+        assert.ok(links.viewOnline.length > 0);
+        assert.ok(links.viewOnline.every((href) => href === expected));
+      });
+
+      it('keeps the paid audience on an unpublished post', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'paid' });
+        const expected = `http://example.com/p/${uuid}/?member_status=paid`;
+
+        assert.equal(links.title, expected);
+        assert.ok(links.viewOnline.every((href) => href === expected));
+      });
+
+      it('keeps the selected tier for a paid audience', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'paid', memberTier: 'gold tier' });
+        const expected = `http://example.com/p/${uuid}/?member_status=paid&member_tier=gold+tier`;
+
+        assert.equal(links.title, expected);
+        assert.ok(links.viewOnline.every((href) => href === expected));
+      });
+
+      it('ignores a tier for a free audience', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'free', memberTier: 'gold' });
+
+        assert.equal(links.title, `http://example.com/p/${uuid}/?member_status=free`);
+      });
+
+      it('leaves the preview unrestricted when no audience was picked', async function () {
+        const unpicked = await renderBrowserLinks({ memberStatus: null });
+        const absent = await renderBrowserLinks(undefined);
+
+        assert.equal(unpicked.title, `http://example.com/p/${uuid}/`);
+        assert.equal(absent.title, `http://example.com/p/${uuid}/`);
+      });
+
+      it('leaves published and email-only links alone', async function () {
+        postUrl = 'http://example.com/published-post/';
+        const published = await renderBrowserLinks({ memberStatus: 'paid' });
+        postUrl = `http://example.com/email/${uuid}/`;
+        const emailOnly = await renderBrowserLinks({ memberStatus: 'paid' });
+
+        assert.equal(published.title, 'http://example.com/published-post/');
+        assert.equal(emailOnly.title, `http://example.com/email/${uuid}/`);
+      });
+
+      describe('cards that link to the post', function () {
+        const lexical = JSON.stringify({
+          root: {
+            children: [
+              {
+                type: 'video',
+                version: 1,
+                src: 'https://example.com/content/media/video.mp4',
+                width: 1920,
+                height: 1080,
+                duration: 120,
+                thumbnailSrc: 'https://example.com/content/images/video-thumb.jpg',
+              },
+              {
+                type: 'audio',
+                version: 1,
+                src: 'https://example.com/content/media/audio.mp3',
+                title: 'Test Audio',
+                duration: 180,
+              },
+              {
+                type: 'file',
+                version: 1,
+                src: 'https://example.com/content/files/guide.pdf',
+                fileTitle: 'Guide',
+                fileName: 'guide.pdf',
+                fileSize: 2048,
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1,
+          },
+        });
+
+        // The first real render lazily loads the Koenig renderer and jsdom
+        beforeAll(async function () {
+          await lexicalLib.render(lexical, { target: 'email' });
+        }, 30000);
+
+        beforeEach(function () {
+          renderersStub.lexical.render = (doc, options) => lexicalLib.render(doc, options);
+        });
+
+        // Video, audio and file cards link to the post in email, as email can't play or attach them
+        it('keeps the audience on video, audio and file card links', async function () {
+          const post = createModel({ ...basePost, uuid, lexical });
+          const newsletter = createModel(baseNewsletter);
+
+          const response = await emailRenderer.renderBody(post, newsletter, null, {
+            previewAudience: { memberStatus: 'paid', memberTier: 'gold' },
+          });
+
+          const expected = `http://example.com/p/${uuid}/?member_status=paid&member_tier=gold`;
+          const $ = cheerio.load(response.html);
+          const cardLinks = $(
+            'a.kg-video-preview, a.kg-audio-title, a.kg-audio-play-button, a.kg-file-title, a.kg-file-meta',
+          )
+            .map((_i, el) => $(el).attr('href'))
+            .get();
+
+          assert.equal(cardLinks.length, 5);
+          assert.ok(cardLinks.every((href) => href === expected));
+          // Every link to the preview carries the audience, including Outlook's VML markup
+          assert.doesNotMatch(response.html, new RegExp(`/p/${uuid}/(?!\\?member_status=paid)`));
+        });
+
+        it('links cards to the unrestricted preview when no audience was picked', async function () {
+          const post = createModel({ ...basePost, uuid, lexical });
+          const newsletter = createModel(baseNewsletter);
+
+          const response = await emailRenderer.renderBody(post, newsletter, null, {});
+
+          const $ = cheerio.load(response.html);
+          assert.equal($('a.kg-video-preview').attr('href'), `http://example.com/p/${uuid}/`);
+          assert.equal($('a.kg-audio-title').attr('href'), `http://example.com/p/${uuid}/`);
+          assert.equal($('a.kg-file-title').attr('href'), `http://example.com/p/${uuid}/`);
+        });
+      });
+
+      it('keeps the audience under a subdirectory', async function () {
+        postUrl = `http://example.com/blog/p/${uuid}/`;
+        const links = await renderBrowserLinks({ memberStatus: 'paid' });
+
+        assert.equal(links.title, `http://example.com/blog/p/${uuid}/?member_status=paid`);
+      });
     });
 
     it('Converts a mobiledoc-only post to lexical before rendering', async function () {

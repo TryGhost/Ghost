@@ -45,6 +45,7 @@ const {
  * @prop {Map<string, EmailBody>} [emailBodyCache]
  * @prop {boolean} [recipientAccounting]
  * @prop {string} [batchId]
+ * @prop {import("./email-renderer").PreviewAudience} [previewAudience]
  */
 
 /**
@@ -148,6 +149,7 @@ class SendingService {
     if (!emailBody) {
       emailBody = await this.#emailRenderer.renderBody(post, newsletter, segment, {
         clickTrackingEnabled: !!options.clickTrackingEnabled,
+        ...(options.previewAudience && { previewAudience: options.previewAudience }),
       });
       if (options.emailBodyCache) {
         options.emailBodyCache.set(cacheId, emailBody);
