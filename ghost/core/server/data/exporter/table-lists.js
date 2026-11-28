@@ -56,9 +56,7 @@ const BACKUP_TABLES = [
   'members_current_subscription',
   'members_subscription_created_events',
   'members_newsletters',
-  'members_metafields',
   'members_metafield_values',
-  'members_metafield_bindings',
   'mentions',
   'comments',
   'comment_likes',
@@ -93,9 +91,6 @@ const BACKUP_TABLES = [
   'welcome_email_automation_runs',
   'welcome_email_automated_emails',
   'tinybird_syncs',
-  'stripe_checkout_config',
-  'tier_requirements',
-  'tier_requirement_tiers',
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file
@@ -123,6 +118,11 @@ const TABLES_ALLOWLIST = [
   'offer_redemptions',
   'snippets',
   'segments',
+  'members_metafields',
+  'members_metafield_bindings',
+  'stripe_checkout_config',
+  'tier_requirements',
+  'tier_requirement_tiers',
 ];
 
 // NOTE: these are non-core settings keys which should never end up in the export file

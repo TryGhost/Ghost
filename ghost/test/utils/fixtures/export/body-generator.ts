@@ -176,6 +176,8 @@ const exportedBodyLatest = () => {
             data: {
                 benefits: [],
                 custom_theme_settings: [],
+                members_metafield_bindings: [],
+                members_metafields: [],
                 newsletters: [],
                 offer_redemptions: [],
                 offers: [],
@@ -191,9 +193,12 @@ const exportedBodyLatest = () => {
                 segments: [],
                 settings: [],
                 snippets: [],
+                stripe_checkout_config: [],
                 stripe_prices: [],
                 stripe_products: [],
                 tags: [],
+                tier_requirement_tiers: [],
+                tier_requirements: [],
                 users: []
             }
         }]
