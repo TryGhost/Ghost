@@ -904,8 +904,8 @@ importers:
         specifier: runtime:22.23.5
         version: runtime:22.23.5
       nx:
-        specifier: 24.0.5
-        version: 24.0.5
+        specifier: 24.0.7
+        version: 24.0.7(@typescript/typescript6@6.0.2)
       oxfmt:
         specifier: 'catalog:'
         version: 0.77.0
@@ -6431,57 +6431,57 @@ packages:
       '@types/react':
         optional: true
 
-  '@nx/nx-darwin-arm64@24.0.5':
-    resolution: {integrity: sha512-9PjlxLE/EUoqHeply47177Pj3uUzfeitHGb/BaxQsQxuYckccWtfzXPnfyvfhTovDL/h8Tik2WBS6oObNh/YAg==}
+  '@nx/nx-darwin-arm64@24.0.7':
+    resolution: {integrity: sha512-nB+Knjik0yEd+FtuVXbW5hqhdS587DUR+Am+mtG5Nxy5LPMPnBbc+IUZG9C+cH4J4efkaRafedCmimkPrxvKOw==}
     cpu: [arm64]
     os: [darwin]
 
-  '@nx/nx-darwin-x64@24.0.5':
-    resolution: {integrity: sha512-dGwwlyWtuQxAbcXyC1+mdSBdJal4oT3eat6v/ObLkuV9T7rA9LuhLKemzJjXrxHgU2OAWT9RioEIfc1jjzsKYw==}
+  '@nx/nx-darwin-x64@24.0.7':
+    resolution: {integrity: sha512-/W0BE2h7ki2STmDLGQURSYCGOQpSmJaQ+z0rntJcrHosLarlEiaPk6WGyKKPH4zP8npH6W2HW/tlplEsDzrZYw==}
     cpu: [x64]
     os: [darwin]
 
-  '@nx/nx-freebsd-x64@24.0.5':
-    resolution: {integrity: sha512-j577U7wxQGJMXyXXQyuJIc2LBwjHwpElDdFgqamoQjTnoYoJWUtYW5AHzqTma9DMu++PvXLfQzg/j42pkJZH4A==}
+  '@nx/nx-freebsd-x64@24.0.7':
+    resolution: {integrity: sha512-XrOTtAhq/9hV8snWlnqtOld4Xf9wYjHZki1htkeQ43X1NLsvhUmGxLPuZvDyfdYNvYzHcUFzSFhtMYt/+Pp1YQ==}
     cpu: [x64]
     os: [freebsd]
 
-  '@nx/nx-linux-arm-gnueabihf@24.0.5':
-    resolution: {integrity: sha512-ANRCi1N5D6MLBZ3Jf9tqUlOyr1DnOsqPRqJrRbmIJlpElEndawL02HeE/BrJT9sP/Tu1Tt4uQs+/x1TJD1SVjQ==}
+  '@nx/nx-linux-arm-gnueabihf@24.0.7':
+    resolution: {integrity: sha512-W2Th0g15hyFb5GkilqhfBTl+zt9DDNntgDspr5etwd3FfnOulgoH+0r4kP1RnyxLwFd3miG7zjjAKP3jOByr4Q==}
     cpu: [arm]
     os: [linux]
 
-  '@nx/nx-linux-arm64-gnu@24.0.5':
-    resolution: {integrity: sha512-+UUfUOqqel1f3Qls1H6LYaBD+h72dElbl21mo+8m7D271QJBPrqWLf6hB+KhIVLj+n/Jreg9fSA92j9VSKr0xQ==}
+  '@nx/nx-linux-arm64-gnu@24.0.7':
+    resolution: {integrity: sha512-EUcJ42rUYJv95pNZYiROS04FWFeeO2agG78OTZZHdAqpO3gVtM2zGwuJCthBljkMPAsiwI+HZVnt06zCBSG9OQ==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@nx/nx-linux-arm64-musl@24.0.5':
-    resolution: {integrity: sha512-jTuuza0fhv3CA6avIVkjm5XttFmJP2p28zDzMXvHSdNga56k7BaZekSHiSQyv1Y5ot6LCalSsimuyXVMfgcyAQ==}
+  '@nx/nx-linux-arm64-musl@24.0.7':
+    resolution: {integrity: sha512-cm0OX4nouq1e1qLtF7BvKJFC1WCvLgLAUT7L9PViTirMUuNvMQqm1I15p/s7R7M3RfXd6En3uX1MjVX2wf3dPA==}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@nx/nx-linux-x64-gnu@24.0.5':
-    resolution: {integrity: sha512-B9FXZuMkXXGoFEZiPtx81VAigRF5/9DrXTOFHG419QXM3Dz3BsCMP8rwowcz+WbXzw0+DNKm8tIKE5wEBsYuVA==}
+  '@nx/nx-linux-x64-gnu@24.0.7':
+    resolution: {integrity: sha512-kmEiT8bSf4vy88PZsux0pfWQnq6tCkMq0GQlH/Q41Jb5ATJJskNZzqlq4aaT/ObUvgMs36E00Ci5UwuMmDrDxQ==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@nx/nx-linux-x64-musl@24.0.5':
-    resolution: {integrity: sha512-zrykHhL2yvHfpdzGCSdlTc2gGQZXNtut9/agF2b30JbDqXH9RIyVGg2su2/Su69OQuDuAEYfM8rGMYQdY2fV5w==}
+  '@nx/nx-linux-x64-musl@24.0.7':
+    resolution: {integrity: sha512-gl8nV5asXyttMMLPQWImXvn7xkCvWL+ZVnTa3iaDUqAodo+UtR8SbvwTepFYGkbdBgSBS/tIbK2E+0X+ulvl7Q==}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@nx/nx-win32-arm64-msvc@24.0.5':
-    resolution: {integrity: sha512-GIkAmdDfPiYF3VPJP+GeXNH6fv5yvP9o8h6aV0Utc6Sws0a0T8ZTwczUTaWm3+R1ELqcBvjR+739wnKBWegkmQ==}
+  '@nx/nx-win32-arm64-msvc@24.0.7':
+    resolution: {integrity: sha512-2489dGJVqP64nyi94mNTVZXbAWirRUEJ2Rjw3EmmRgXsTw0Um0LEUg39fT29lWv/kUlZnqmp2Isk2dV13XlqOg==}
     cpu: [arm64]
     os: [win32]
 
-  '@nx/nx-win32-x64-msvc@24.0.5':
-    resolution: {integrity: sha512-uwZ5cJ8DviPXRDkSeTdJsiOvYFaQ3fqdnBaJBt3nR3eveCLePyGJLMWzUQoaYcEKJAzI5MPOsXstlY3zMihWeA==}
+  '@nx/nx-win32-x64-msvc@24.0.7':
+    resolution: {integrity: sha512-T/+WDXqESjYFqfHixziPbFnC7PnplsTg7z3yqw0Akr9PHjmDXcNi0kVdJ8Xh0CcGwiI2UVGUE51xII7jUSK2LA==}
     cpu: [x64]
     os: [win32]
 
@@ -13622,16 +13622,12 @@ packages:
   mingo@2.5.3:
     resolution: {integrity: sha512-Wb98QEQ/DaT+xPQFAX08mzM/Zz2eW1UIpKH132gXglakl2SKYBCQFzeiFygS/Hgzc9j9MDDjgouB9W7BMaLyaQ==}
 
-  minimatch@10.2.5:
-    resolution: {integrity: sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg==}
-    engines: {node: 18 || 20 || >=22}
-
   minimatch@10.2.6:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
     engines: {node: 18 || 20 || >=22}
 
-  minimatch@11.0.5:
-    resolution: {integrity: sha512-snPlVppFcYWfLLFQGhDxUyBcHNtMlWmn3jtj7pEaO+DP8pqL0IvAzXhMYmn1z9ASNtgmwLBdFxSf4tMUB0OTKA==}
+  minimatch@11.0.8:
+    resolution: {integrity: sha512-nFQuYSTVrGvysVBps5Ih+0BdnYFN/Cj3C816r6+p7yK+FHrVLGE4O4N9AFwykrlNlvM2HYt+Rad1Uiro6h88Ig==}
     engines: {node: 20 || >=22}
 
   minimatch@3.1.5:
@@ -14069,16 +14065,19 @@ packages:
   number-flow@0.6.2:
     resolution: {integrity: sha512-MCnImG4Q5vPwhSXnov56nOuyyKn6LC+Qd7II1UiKc+ACRtug5iAtn0+CwXNxM38AC5lSowEY+oYEtZX2qMnUyw==}
 
-  nx@24.0.5:
-    resolution: {integrity: sha512-w4a4GvCfcjcF2TBULFTCVpv3MbEpG/oXOQCT6kuQepW3Psu4hOccBhVL0kdP6cG5xyvtz/AM76nMxNVOlMm/2w==}
+  nx@24.0.7:
+    resolution: {integrity: sha512-BLhKb5XeQ9Hq/WZ7AFdLqWeXWlisbCubI5eM2Oiu4Qg1ah6usulBJQl+MXQpzVeYrJAABO2LxbdHLV6G+U7TNw==}
     hasBin: true
     peerDependencies:
       '@swc-node/register': ^1.11.1
       '@swc/core': ^1.15.8
+      typescript: ^5.8.0 || ^6.0.0
     peerDependenciesMeta:
       '@swc-node/register':
         optional: true
       '@swc/core':
+        optional: true
+      typescript:
         optional: true
 
   object-assign@4.1.1:
@@ -18678,34 +18677,34 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
 
-  '@nx/nx-darwin-arm64@24.0.5':
+  '@nx/nx-darwin-arm64@24.0.7':
     optional: true
 
-  '@nx/nx-darwin-x64@24.0.5':
+  '@nx/nx-darwin-x64@24.0.7':
     optional: true
 
-  '@nx/nx-freebsd-x64@24.0.5':
+  '@nx/nx-freebsd-x64@24.0.7':
     optional: true
 
-  '@nx/nx-linux-arm-gnueabihf@24.0.5':
+  '@nx/nx-linux-arm-gnueabihf@24.0.7':
     optional: true
 
-  '@nx/nx-linux-arm64-gnu@24.0.5':
+  '@nx/nx-linux-arm64-gnu@24.0.7':
     optional: true
 
-  '@nx/nx-linux-arm64-musl@24.0.5':
+  '@nx/nx-linux-arm64-musl@24.0.7':
     optional: true
 
-  '@nx/nx-linux-x64-gnu@24.0.5':
+  '@nx/nx-linux-x64-gnu@24.0.7':
     optional: true
 
-  '@nx/nx-linux-x64-musl@24.0.5':
+  '@nx/nx-linux-x64-musl@24.0.7':
     optional: true
 
-  '@nx/nx-win32-arm64-msvc@24.0.5':
+  '@nx/nx-win32-arm64-msvc@24.0.7':
     optional: true
 
-  '@nx/nx-win32-x64-msvc@24.0.5':
+  '@nx/nx-win32-x64-msvc@24.0.7':
     optional: true
 
   '@octokit/auth-token@6.0.0': {}
@@ -24438,7 +24437,7 @@ snapshots:
 
   glob@14.0.6:
     dependencies:
-      minimatch: 11.0.5
+      minimatch: 11.0.8
       minipass: 7.1.3
       path-scurry: 3.0.0
 
@@ -26428,15 +26427,11 @@ snapshots:
 
   mingo@2.5.3: {}
 
-  minimatch@10.2.5:
-    dependencies:
-      brace-expansion: 5.0.12
-
   minimatch@10.2.6:
     dependencies:
       brace-expansion: 5.0.12
 
-  minimatch@11.0.5:
+  minimatch@11.0.8:
     dependencies:
       '@isaacs/nonrecursive-glob-match': 1.1.0
       brace-expansion: 5.0.12
@@ -26730,13 +26725,14 @@ snapshots:
     dependencies:
       esm-env: 1.2.2
 
-  nx@24.0.5:
+  nx@24.0.7(@typescript/typescript6@6.0.2):
     dependencies:
       '@clack/core': 1.4.3
       '@clack/prompts': 1.7.0
       '@emnapi/core': 1.4.5
       '@emnapi/runtime': 1.4.5
       '@emnapi/wasi-threads': 1.0.4
+      '@isaacs/nonrecursive-glob-match': 1.1.0
       '@jest/diff-sequences': 30.0.1
       '@napi-rs/wasm-runtime': 0.2.4
       '@tybys/wasm-util': 0.9.0
@@ -26784,7 +26780,7 @@ snapshots:
       lines-and-columns: 2.0.3
       log-symbols: 4.1.0
       mimic-fn: 2.1.0
-      minimatch: 10.2.5
+      minimatch: 11.0.8
       minimist: 1.2.8
       npm-run-path: 4.0.1
       once: 1.4.0
@@ -26821,16 +26817,17 @@ snapshots:
       yargs: 17.7.2
       yargs-parser: 21.1.1
     optionalDependencies:
-      '@nx/nx-darwin-arm64': 24.0.5
-      '@nx/nx-darwin-x64': 24.0.5
-      '@nx/nx-freebsd-x64': 24.0.5
-      '@nx/nx-linux-arm-gnueabihf': 24.0.5
-      '@nx/nx-linux-arm64-gnu': 24.0.5
-      '@nx/nx-linux-arm64-musl': 24.0.5
-      '@nx/nx-linux-x64-gnu': 24.0.5
-      '@nx/nx-linux-x64-musl': 24.0.5
-      '@nx/nx-win32-arm64-msvc': 24.0.5
-      '@nx/nx-win32-x64-msvc': 24.0.5
+      '@nx/nx-darwin-arm64': 24.0.7
+      '@nx/nx-darwin-x64': 24.0.7
+      '@nx/nx-freebsd-x64': 24.0.7
+      '@nx/nx-linux-arm-gnueabihf': 24.0.7
+      '@nx/nx-linux-arm64-gnu': 24.0.7
+      '@nx/nx-linux-arm64-musl': 24.0.7
+      '@nx/nx-linux-x64-gnu': 24.0.7
+      '@nx/nx-linux-x64-musl': 24.0.7
+      '@nx/nx-win32-arm64-msvc': 24.0.7
+      '@nx/nx-win32-x64-msvc': 24.0.7
+      typescript: '@typescript/typescript6@6.0.2'
 
   object-assign@4.1.1: {}
 
@@ -28021,7 +28018,7 @@ snapshots:
 
   readdir-glob@4.0.0:
     dependencies:
-      minimatch: 11.0.5
+      minimatch: 11.0.8
 
   readdirp@3.6.0:
     dependencies:
