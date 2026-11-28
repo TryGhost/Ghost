@@ -272,6 +272,38 @@ export const createDatabaseAutomationsRepository2 = ({
       return rows.map((row) => nextActionRevisionRowSchema.parse(row));
     },
 
+    async findNextActionRevision(connection, { actionId, automationRunId }) {
+      const row: unknown = await connection('automation_action_edges as edge')
+        .select(
+          'action.automation_id as automation_id',
+          'action.id as action_id',
+          'revision.id as automation_action_revision_id',
+          'action.type as type',
+          'revision.wait_hours as wait_hours',
+        )
+        .innerJoin('automation_actions as action', 'action.id', 'edge.target_action_id')
+        .innerJoin('automation_action_revisions as revision', 'revision.action_id', 'action.id')
+        .where('edge.source_action_id', actionId)
+        .whereExists(
+          connection('automation_runs as run')
+            .select(1)
+            .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+            .where('run.id', automationRunId)
+            .where('automation.status', 'active'),
+        )
+        .whereNull('action.deleted_at')
+        .where(
+          'revision.created_at',
+          connection('automation_action_revisions')
+            .max('created_at')
+            .where('action_id', connection.ref('action.id')),
+        )
+        .orderBy('revision.created_at', 'desc')
+        .orderBy('revision.id', 'desc')
+        .first();
+      return row === undefined ? null : nextActionRevisionRowSchema.parse(row);
+    },
+
     async getNumberOfAutomations(connection) {
       const result = await connection('automations').count({ count: '*' }).first();
       return Number(result?.count ?? 0);

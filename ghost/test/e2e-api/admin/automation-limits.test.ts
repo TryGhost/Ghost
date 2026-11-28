@@ -112,7 +112,6 @@ describe('Automation host limits', () => {
     assert.equal(await countActiveAutomations(), 1);
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     await repository.browse();
     for (const { id } of [free, paid]) {
@@ -134,7 +133,6 @@ describe('Automation host limits', () => {
       .expectStatus(201);
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     await repository.browse();
     assert.equal(await countActiveAutomations(), 1);
@@ -204,7 +202,6 @@ describe('Automation host limits', () => {
     await hostLimits.setHostLimits({ limitAutomations: { max: '0' } });
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     await repository.browse();
     const blocked = await agent
@@ -225,7 +222,6 @@ describe('Automation host limits', () => {
     await hostLimits.setHostLimits({ limitAutomations: { max: '0' } });
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     const [legacy] = await Promise.all([
       agent
@@ -243,7 +239,6 @@ describe('Automation host limits', () => {
     const free = await createWelcome('member-welcome-email-free', 'active');
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     const limitLockQueries: string[] = [];
     const capture = (query: { sql: string; bindings?: unknown[] }) => {
@@ -287,7 +282,6 @@ describe('Automation host limits', () => {
       await capAtCurrentCount(slots);
       const repository = createDatabaseAutomationsRepository({
         knex: db.knex,
-        fakeWaitHoursMultiplier: null,
       });
       await Promise.all([repository.browse(), repository.browse()]);
       assert.equal(
@@ -323,7 +317,6 @@ describe('Automation host limits', () => {
     await capAtCurrentCount(1);
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     const [activation, conversion] = await Promise.allSettled([
       repository.add(payload()),
@@ -392,7 +385,6 @@ describe('Automation host limits', () => {
   it('skips the limit lock for inactive writes but locks existing active edits', async () => {
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     const active = await repository.add(payload());
     const republished = await repository.add(payload());
@@ -438,7 +430,6 @@ describe('Automation host limits', () => {
   it('rolls back a failed activation write and releases the slot', async () => {
     const repository = createDatabaseAutomationsRepository({
       knex: db.knex,
-      fakeWaitHoursMultiplier: null,
     });
     const existing = await repository.add(payload('inactive'));
     await capAtCurrentCount(1);
@@ -454,9 +445,7 @@ describe('Automation host limits', () => {
   it.each(['add/add', 'edit/edit', 'add/edit', 'same edit'])(
     'serializes concurrent %s activations across repository instances',
     async (scenario) => {
-      const repositories = [0, 1].map(() =>
-        createDatabaseAutomationsRepository({ knex: db.knex, fakeWaitHoursMultiplier: null }),
-      );
+      const repositories = [0, 1].map(() => createDatabaseAutomationsRepository({ knex: db.knex }));
       const first = await repositories[0].add(payload('inactive'));
       const second = await repositories[1].add(payload('inactive'));
       await capAtCurrentCount(1);

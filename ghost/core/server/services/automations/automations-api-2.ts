@@ -33,6 +33,17 @@ export type RecordEmailSentOptions = Readonly<{
   trackOpens: boolean;
 }>;
 
+/**
+ * What happened to a step that was retried:
+ *
+ * - `requeued`: it is pending again and will be retried.
+ * - `automation disabled`: its automation is no longer active, so it was
+ *   marked terminal instead.
+ * - `lock lost`: another runner reclaimed it or it already ended, so it was
+ *   left alone.
+ */
+export type RetryStepResult = 'requeued' | 'automation disabled' | 'lock lost';
+
 const hashEnrollment = (
   enrollment: Readonly<Pick<RunToInsert, 'automation_id' | 'member_id'>>,
 ): string => `${enrollment.automation_id}-${enrollment.member_id}`;
@@ -59,7 +70,58 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
     domainEvents.dispatch(StartAutomationsPollEvent.create());
   };
 
+  const markLockedStepTerminal = async (
+    connection: RepositoryTransaction,
+    step: LockedRunStep,
+    status: AutomationStepTerminalStatus,
+  ): Promise<boolean> => {
+    const now = new Date();
+    return await repository.updateLockedRunStep(connection, step, {
+      status,
+      finished_at: now,
+      updated_at: now,
+    });
+  };
+
   return {
+    /**
+     * Atomically finish a locked step and enqueue the next one, so concurrent
+     * runners cannot enqueue duplicates.
+     *
+     * Returns the next step's ready time, or null if no next step was created.
+     */
+    finishStepAndEnqueueNext: async (
+      step: LockedRunStep & Readonly<{ action_id: string; automation_run_id: string }>,
+    ): Promise<Date | null> => {
+      return await repository.withTransaction(async (trx) => {
+        if (!(await markLockedStepTerminal(trx, step, 'finished'))) {
+          return null;
+        }
+
+        const next = await repository.findNextActionRevision(trx, {
+          actionId: step.action_id,
+          automationRunId: step.automation_run_id,
+        });
+        if (!next) {
+          return null;
+        }
+
+        const now = new Date();
+        const readyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
+        await repository.insertRunSteps(trx, [
+          {
+            id: ObjectId().toHexString(),
+            created_at: now,
+            updated_at: now,
+            automation_run_id: step.automation_run_id,
+            automation_action_revision_id: next.automation_action_revision_id,
+            ready_at: readyAt,
+          },
+        ]);
+        return readyAt;
+      });
+    },
+
     getNumberOfAutomations: (): Promise<number> =>
       repository.withConnection(
         async (connection) => await repository.getNumberOfAutomations(connection),
@@ -69,13 +131,8 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       step: LockedRunStep,
       status: AutomationStepTerminalStatus,
     ): Promise<boolean> => {
-      const now = new Date();
       return await repository.withConnection((connection) =>
-        repository.updateLockedRunStep(connection, step, {
-          status,
-          finished_at: now,
-          updated_at: now,
-        }),
+        markLockedStepTerminal(connection, step, status),
       );
     },
 
@@ -282,6 +339,26 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
     },
 
     requestPoll,
+
+    /** Put a locked step back in the queue for another attempt, unless its automation was disabled. */
+    retryStep: async (step: LockedRunStep, retryAt: Readonly<Date>): Promise<RetryStepResult> => {
+      return await repository.withTransaction(async (trx) => {
+        if (!(await repository.isAutomationActiveForRunStep(trx, step.id))) {
+          return (await markLockedStepTerminal(trx, step, 'automation disabled'))
+            ? 'automation disabled'
+            : 'lock lost';
+        }
+
+        const didRequeue = await repository.updateLockedRunStep(trx, step, {
+          status: 'pending',
+          started_at: null,
+          finished_at: null,
+          ready_at: retryAt,
+          updated_at: new Date(),
+        });
+        return didRequeue ? 'requeued' : 'lock lost';
+      });
+    },
 
     trackEmailClicked: async (
       {

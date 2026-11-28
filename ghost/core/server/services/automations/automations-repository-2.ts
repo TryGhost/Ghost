@@ -149,6 +149,15 @@ export type AutomationsRepository2<Connection> = {
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
+  /**
+   * Find the latest revision of the (non-deleted) action that follows this
+   * one, if the run's automation is still active.
+   */
+  findNextActionRevision: (
+    connection: Connection,
+    options: Readonly<{ actionId: string; automationRunId: string }>,
+  ) => Promisable<null | NextActionRevisionRow>;
+
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
 

@@ -190,24 +190,6 @@ export type AutomationsRepository = {
     nextStepReadyAt: Date | null;
   }>;
   /**
-   * Atomically finish a locked step and create the next one so concurrent
-   * runners cannot enqueue duplicates.
-   *
-   * Returns the next step's ready time, or null if no next step was created.
-   */
-  finishStepAndEnqueueNext(
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>,
-  ): Promise<Date | null>;
-  /**
-   * Put a locked step back in the queue for another attempt.
-   *
-   * Returns whether the step was updated.
-   */
-  retryStep(
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-    retryAt: Readonly<Date>,
-  ): Promise<boolean>;
-  /**
    * Fetch sent emails by their Mailgun IDs.
    */
   getAutomatedEmailRecipientsByMailgunIds(
