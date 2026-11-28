@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const { agentProvider, fixtureManager } = require('../utils/e2e-framework');
 const config = require('../../core/shared/config');
+const themeEngine = require('../../core/frontend/services/theme-engine');
 
 describe('Static files', function () {
   let adminAgent;
@@ -95,6 +96,20 @@ describe('Static files', function () {
         .expect('Content-Type', 'application/pdf')
         .expect('X-Content-Type-Options', 'nosniff');
     });
+  });
+
+  it('serves an AVIF theme asset as image/avif', async function () {
+    const filePath = path.join(themeEngine.getActive().path, 'assets', 'static-files-test.avif');
+    fs.writeFileSync(filePath, 'avif');
+
+    try {
+      await frontendAgent
+        .get('/assets/static-files-test.avif')
+        .expect(200)
+        .expect('Content-Type', 'image/avif');
+    } finally {
+      fs.removeSync(filePath);
+    }
   });
 
   it('serves plain text 404 for non-existing resized + original files', async function () {
