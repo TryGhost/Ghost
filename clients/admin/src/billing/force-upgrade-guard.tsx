@@ -33,7 +33,8 @@ export function ForceUpgradeGuard() {
   });
 
   if (!isAllowed) {
-    // Wait for config before mounting a page that may require a billing redirect.
+    // Wait for the first config response before mounting a page that may
+    // require a billing redirect.
     if (forceUpgrade === undefined) {
       return null;
     }

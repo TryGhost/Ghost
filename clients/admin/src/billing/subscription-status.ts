@@ -38,16 +38,20 @@ export function useSubscriptionStatus(): SubscriptionState | null {
 
 /**
  * Whether the site is in force upgrade mode (requires billing action), or
- * `undefined` while the initial config request is loading.
+ * `undefined` until the first config request has settled.
+ *
+ * A failed config request answers `false`: without config there is no force
+ * upgrade to enforce, and a refetch of config that never loaded goes back to
+ * loading, so waiting on it would hide every screen that reads config.
  *
  * Config `hostSettings.forceUpgrade` only changes on a server restart, so an
  * `active` subscription reported by the billing app clears it locally.
  */
 export function useForceUpgrade(): boolean | undefined {
-  const { data: config, isLoading } = useBrowseConfig();
+  const { data: config, isFetched } = useBrowseConfig();
   const subscriptionStatus = useSubscriptionStatus();
 
-  if (isLoading) {
+  if (!isFetched) {
     return undefined;
   }
 
