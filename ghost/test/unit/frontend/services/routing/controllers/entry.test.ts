@@ -397,4 +397,65 @@ describe('Unit - services/routing/controllers/entry', function () {
       sinon.assert.calledWith(renderEntry, post);
     });
   });
+
+  describe('route markdown requests', function () {
+    let llmsService: { isEnabled: sinon.SinonStub };
+    let fetchEntryStub: sinon.SinonStub;
+
+    beforeEach(function () {
+      llmsService = { isEnabled: sinon.stub().returns(true) };
+      req.app.get.withArgs('llmsService').returns(llmsService);
+
+      fetchEntryStub = sinon.stub();
+      sinon.stub(dataService, 'fetchEntry').get(() => fetchEntryStub);
+
+      post.url = 'http://127.0.0.1:2369/contact/';
+      post.visibility = 'public';
+      req.path = '/rubrique.md';
+      req.originalUrl = req.path;
+      res.routerOptions = {
+        data: 'page.contact',
+        isMarkdownRequest: true,
+        canonicalPath: '/rubrique/',
+        markdownPath: '/rubrique.md',
+      };
+    });
+
+    it('serves the route entry at the route markdown path', async function () {
+      fetchEntryStub.resolves(post);
+
+      await controllers.routeMarkdown(req, res, sinon.stub());
+
+      sinon.assert.calledOnceWithExactly(
+        fetchEntryStub,
+        sinon.match({ resource: 'pages', type: 'read', options: { slug: 'contact' } }),
+        res.locals,
+      );
+      assert.equal(res.routerOptions.resourceType, 'pages');
+      sinon.assert.calledWith(res.set, 'Content-Location', '/rubrique.md');
+      sinon.assert.calledWith(res.type, 'text/markdown');
+      sinon.assert.calledOnce(res.send);
+    });
+
+    it('redirects to the route when the llms feature is disabled', async function () {
+      llmsService.isEnabled.returns(false);
+      fetchEntryStub.resolves(post);
+      req.originalUrl = '/rubrique.md?a=b';
+
+      await controllers.routeMarkdown(req, res, sinon.stub());
+
+      sinon.assert.calledWith(res.redirect, 302, '/rubrique/?a=b');
+      sinon.assert.notCalled(res.send);
+    });
+
+    it('strips gift tokens without reading the entry', async function () {
+      req.query = { gift: 'token' };
+      req.originalUrl = '/rubrique.md?gift=token';
+
+      await controllers.routeMarkdown(req, res, sinon.stub());
+
+      sinon.assert.calledWith(res.redirect, 301, '/rubrique.md');
+      sinon.assert.notCalled(fetchEntryStub);
+    });
+  });
 });
