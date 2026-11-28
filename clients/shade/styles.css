@@ -459,9 +459,11 @@ html.theme-switching *::after {
  action's overlay and a static cell's fill would cover the whole table, and
  every click would open the last row. A translate makes the row their
  containing block, though WebKit still sizes them to the table's height, so
- the clip ends them at the row and keeps the side gutters. */
+ the clip ends them at the row and keeps the side gutters. Header rows are
+ left alone: their labels stick outside the row, where the clip would hide
+ them. */
 @layer base {
-  tr.shade-row {
+  tbody > tr.shade-row {
     translate: 0;
     clip-path: inset(0 calc(-4 * var(--spacing)));
   }
