@@ -76,12 +76,44 @@ export default tseslint.config(
               message:
                 'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
             },
+            {
+              name: 'flexsearch',
+              message:
+                'Import FlexSearch only from @/shared/text-search, and only from a lazily loaded module.',
+            },
+            {
+              name: '@/shared/text-search',
+              message:
+                'Pulls in FlexSearch. Import only from a lazily loaded module, and disable this rule on that import with that reason.',
+            },
           ],
           patterns: [
             {
               group: ['react-router/*'],
               message:
                 'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
+            },
+            {
+              group: ['flexsearch/**'],
+              message:
+                'Import FlexSearch only from @/shared/text-search, and only from a lazily loaded module.',
+            },
+            {
+              group: ['@/shared/text-search.*'],
+              message:
+                'Pulls in FlexSearch. Import only from a lazily loaded module via @/shared/text-search, and disable this rule on that import with that reason.',
+            },
+            {
+              // Same-folder and parent-relative bypasses (including re-exports;
+              // no-relative-import-paths only checks import declarations).
+              group: [
+                './text-search',
+                './text-search.*',
+                '../**/text-search',
+                '../**/text-search.*',
+              ],
+              message:
+                'Pulls in FlexSearch. Import only from a lazily loaded module via @/shared/text-search, and disable this rule on that import with that reason.',
             },
           ],
         },
