@@ -56,10 +56,6 @@ module.exports = {
     return require('./tags');
   },
 
-  get labels() {
-    return require('./labels');
-  },
-
   get users() {
     return require('./users');
   },
@@ -74,9 +70,5 @@ module.exports = {
 
   get webhooks() {
     return require('./webhooks');
-  },
-
-  get snippets() {
-    return require('./snippets');
   },
 };

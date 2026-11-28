@@ -2,10 +2,14 @@ import type { z } from 'zod';
 import type { default as Frame, Dictionary } from './frame.ts';
 import type { ControllerMethod } from './pipeline.ts';
 
-/** At least one request channel must have a schema. */
-export type MethodSchemas =
+/**
+ * At least one request channel must have a schema. Set `async` when a schema
+ * uses async refinements or transforms; sync parsing keeps compiled schemas fast.
+ */
+export type MethodSchemas = (
   | { options: z.ZodType; body?: z.ZodType }
-  | { options?: z.ZodType; body: z.ZodType };
+  | { options?: z.ZodType; body: z.ZodType }
+) & { async?: boolean };
 
 type ParsedChannel<Schema> = Schema extends z.ZodType ? z.output<Schema> : undefined;
 
@@ -48,7 +52,7 @@ export type InferMethodFrame<Method extends { schema: MethodSchemas }> = Validat
  */
 export function defineMethod<const Schemas extends MethodSchemas>(
   method: SchemaControllerMethod<Schemas> & {
-    schema: Record<Exclude<keyof Schemas, 'options' | 'body'>, never>;
+    schema: Record<Exclude<keyof Schemas, 'options' | 'body' | 'async'>, never>;
   },
 ): SchemaControllerMethod<Schemas> {
   return method;

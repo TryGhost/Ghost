@@ -1,4 +1,5 @@
-import { defineMethod, resourceBody, type Frame } from '@tryghost/api-framework';
+import { resourceBody } from '@tryghost/api-contracts';
+import { defineMethod, type Frame } from '@tryghost/api-framework';
 import * as errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';

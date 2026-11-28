@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
 const { anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor } =
@@ -190,6 +191,40 @@ describe('Labels API', function () {
         etag: anyEtag,
       });
     sinon.assert.calledOnce(loggingStub);
+  });
+
+  it('Rejects a body without the labels root key', async function () {
+    sinon.stub(logging, 'warn');
+    const { body } = await agent.post('labels').body({ name: 'no root key' }).expectStatus(422);
+    assert.equal(body.errors[0].type, 'ValidationError');
+    assert.equal(body.errors[0].property, 'body.labels');
+  });
+
+  it('Rejects an edit whose body id differs from the URL id', async function () {
+    sinon.stub(logging, 'warn');
+    const { body: created } = await agent
+      .post('labels')
+      .body({ labels: [{ name: 'id-mismatch' }] })
+      .expectStatus(201);
+    const id = created.labels[0].id;
+
+    const { body } = await agent
+      .put(`labels/${id}`)
+      .body({ labels: [{ id: 'abcd1234abcd1234abcd1234', name: 'renamed' }] })
+      .expectStatus(422);
+    assert.equal(body.errors[0].context, 'Invalid id provided.');
+
+    await agent.delete(`labels/${id}`).expectStatus(204);
+  });
+
+  it('Ignores unknown includes and rejects invalid pagination', async function () {
+    sinon.stub(logging, 'warn');
+    const { body } = await agent.get('labels?include=count.members,nope').expectStatus(200);
+    for (const label of body.labels) {
+      assert.equal(typeof label.count.members, 'number');
+    }
+
+    await agent.get('labels?page=first').expectStatus(422);
   });
 
   it('Errors when editing non-existent label', async function () {

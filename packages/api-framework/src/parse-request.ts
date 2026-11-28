@@ -24,7 +24,7 @@ export default async function parseRequest(schemas: MethodSchemas, frame: Frame)
       delete input.context;
     }
 
-    const result = await schema.safeParseAsync(input);
+    const result = schemas.async ? await schema.safeParseAsync(input) : schema.safeParse(input);
     if (!result.success) {
       throw new errors.ValidationError({
         message: `Validation failed for ${channel}.`,
