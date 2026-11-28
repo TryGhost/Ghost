@@ -2139,6 +2139,14 @@ const schema = {
       references: 'members.id',
       setNullDelete: true,
     },
+    user_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: true,
+      unique: false,
+      references: 'users.id',
+      setNullDelete: true,
+    },
     parent_id: {
       type: 'string',
       maxlength: 24,
