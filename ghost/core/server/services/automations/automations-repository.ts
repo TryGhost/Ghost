@@ -1,7 +1,7 @@
-import type { ReadonlyDeep } from 'type-fest';
 import type { AutomationStepStatus } from './automation-step-status';
 import type { AddAutomationData, EditAutomationData } from './automations-schemas';
-import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
+import type { AutomationStatus } from './automations-repository-2';
+import type { AutomationTriggerRuleDefinition } from './trigger-rules';
 
 export type Pagination = {
   page: number;
@@ -58,7 +58,7 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export type AutomationStatus = 'inactive' | 'active' | 'archived';
+export type { AutomationStatus };
 
 export type AutomationSummary = {
   id: string;
@@ -89,37 +89,6 @@ export type AutomatedEmailRecipientWithMailgunId = {
   mailgun_message_id: string;
   automation_action_revision_id: string;
 };
-
-type AutomationStepBase = {
-  id: string;
-  locked_by: string;
-  automation_run_id: string;
-  automation_id: string;
-  automation_trigger_rules: AutomationTriggerRule[];
-  automation_status: AutomationStatus;
-  member_id: string | null;
-  member_email: string;
-  action_id: string;
-  automation_action_revision_id: string;
-  ready_at: Date;
-  step_attempts: number;
-};
-
-export type AutomationStepToRun = ReadonlyDeep<
-  AutomationStepBase &
-    (
-      | {
-          type: 'wait';
-          wait_hours: number;
-        }
-      | {
-          type: 'send_email';
-          email_subject: string;
-          email_lexical: string;
-          email_design_setting_id: string | null;
-        }
-    )
->;
 
 export type AutomationRunHistoryAction =
   | WaitAction
@@ -175,20 +144,6 @@ export type AutomationsRepository = {
   ): Promise<AutomationActionLink[] | null>;
   add(data: AddAutomationData): Promise<Automation>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
-  /**
-   * Select the steps we want to run and return the next time any remaining
-   * pending step should be polled, if any.
-   *
-   * If we could guarantee this function would only be called once ever, it'd
-   * be pretty simple! However, we want to handle cases where this function is
-   * called multiple times simultaneously (maybe in different processes
-   * querying the same database). That's why we implement a row-level locking
-   * mechanism, hence the word "lock" in the name of this function.
-   */
-  fetchAndLockSteps(limit: number): Promise<{
-    steps: AutomationStepToRun[];
-    nextStepReadyAt: Date | null;
-  }>;
   /**
    * Fetch sent emails by their Mailgun IDs.
    */

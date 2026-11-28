@@ -95,8 +95,6 @@ async function loadRuntime() {
 
   const { default: db } = await import('../../ghost/core/server/data/db/index.js');
   const knex: Knex = db.knex;
-  const { createDatabaseAutomationsRepository } =
-    await import('../../ghost/core/server/services/automations/database-automations-repository.ts');
   const { poll } = await import('../../ghost/core/server/services/automations/poll.ts');
   const { createAutomationsApi2 } =
     await import('../../ghost/core/server/services/automations/automations-api-2.ts');
@@ -109,19 +107,12 @@ async function loadRuntime() {
     service: Parameters<typeof poll>[0]['memberWelcomeEmailService'];
   };
   const welcomeEmails = welcomeEmailsModule.default ?? welcomeEmailsModule;
-  const automationsApi2 = createAutomationsApi2({
+  const automationsApi: Parameters<typeof poll>[0]['automationsApi'] = createAutomationsApi2({
     domainEvents: { dispatch: () => {} },
     fakeWaitHoursMultiplier: 1,
     labs: { isSet: () => true },
     repository: createDatabaseAutomationsRepository2({ knex }),
   });
-  const automationsApi: Parameters<typeof poll>[0]['automationsApi'] = {
-    ...createDatabaseAutomationsRepository({ knex }),
-    finishStepAndEnqueueNext: automationsApi2.finishStepAndEnqueueNext,
-    markStepTerminal: automationsApi2.markStepTerminal,
-    recordEmailSent: automationsApi2.recordEmailSent,
-    retryStep: automationsApi2.retryStep,
-  };
 
   return { knex, poll, toDatabaseDate, welcomeEmails, automationsApi };
 }

@@ -8,7 +8,6 @@ import sinon from 'sinon';
 import logging from '@tryghost/logging';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../core/server/models';
-import { createDatabaseAutomationsRepository } from '../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../core/server/services/automations/automations-api-2';
 import { poll } from '../../../core/server/services/automations/poll';
@@ -25,7 +24,6 @@ const db: Knex = models.Base.knex;
 describe('Automation run history from the execution', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let clock: sinon.SinonFakeTimers;
-  let repository: ReturnType<typeof createDatabaseAutomationsRepository>;
   let automationsApi2: ReturnType<typeof createAutomationsApi2<Knex | Knex.Transaction>>;
   let member: {
     id: string;
@@ -66,7 +64,6 @@ describe('Automation run history from the execution', function () {
       created_at: new Date(),
     };
     await db('members').insert(member);
-    repository = createDatabaseAutomationsRepository({ knex: db });
     automationsApi2 = createAutomationsApi2({
       repository: createDatabaseAutomationsRepository2({ knex: db }),
       fakeWaitHoursMultiplier: null,
@@ -74,13 +71,7 @@ describe('Automation run history from the execution', function () {
       domainEvents: { dispatch: () => {} },
     });
     pollOptions = {
-      automationsApi: {
-        ...repository,
-        finishStepAndEnqueueNext: automationsApi2.finishStepAndEnqueueNext,
-        markStepTerminal: automationsApi2.markStepTerminal,
-        recordEmailSent: automationsApi2.recordEmailSent,
-        retryStep: automationsApi2.retryStep,
-      },
+      automationsApi: automationsApi2,
       enqueueAnotherPollAt: sinon.stub(),
       scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),
       memberWelcomeEmailService: {

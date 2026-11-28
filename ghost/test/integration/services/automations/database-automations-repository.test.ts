@@ -378,7 +378,7 @@ describe('database automations repository', function () {
       await knex('automation_run_steps')
         .where('automation_run_id', run.id)
         .update({ ready_at: toDatabaseDate(new Date('2024-01-01')) });
-      const { steps } = await createDatabaseAutomationsRepository({ knex }).fetchAndLockSteps(100);
+      const { steps } = await createApi().fetchAndLockSteps(100);
       const step = steps.find((candidate) => candidate.automation_run_id === run.id);
       assert(step);
       return { runId: run.id, step };
@@ -426,7 +426,6 @@ describe('database automations repository', function () {
   describe('fetchAndLockSteps', function () {
     it("returns each step once with the automation's current selected tiers", async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
-      const repo = createDatabaseAutomationsRepository({ knex });
       const api = createApi();
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
         await insertMember(memberId);
@@ -448,7 +447,7 @@ describe('database automations repository', function () {
         )
         .update({ ready_at: toDatabaseDate(new Date('2024-01-01')) });
 
-      const first = await repo.fetchAndLockSteps(1);
+      const first = await api.fetchAndLockSteps(1);
       assert.equal(first.steps.length, 1);
       assert.deepEqual(
         [...first.steps[0].automation_trigger_rules.map((rule) => rule.product_id)].sort(),
@@ -459,13 +458,74 @@ describe('database automations repository', function () {
       await knex('automation_trigger_rules')
         .where({ automation_id: selectedAutomationId, product_id: selectedTierIds[0] })
         .delete();
-      const second = await repo.fetchAndLockSteps(1);
+      const second = await api.fetchAndLockSteps(1);
       assert.equal(second.steps.length, 1);
       assert.notEqual(second.steps[0].id, first.steps[0].id);
       assert.deepEqual(
         second.steps[0].automation_trigger_rules.map((rule) => rule.product_id),
         [selectedTierIds[1]],
       );
+    });
+
+    it('never gives the same step to concurrent claims', async function () {
+      const claimAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
+      const action = await knex('automation_actions')
+        .where('automation_id', claimAutomationId)
+        .first();
+      const revision = await knex('automation_action_revisions')
+        .where('action_id', action.id)
+        .first();
+      const readyAt = toDatabaseDate(new Date('2024-01-01'));
+      const stepIds: string[] = [];
+      for (let index = 0; index < 20; index++) {
+        const memberId = ObjectId().toHexString();
+        const memberEmail = await insertMember(memberId);
+        const runId = ObjectId().toHexString();
+        await knex('automation_runs').insert({
+          id: runId,
+          automation_id: claimAutomationId,
+          member_id: memberId,
+          member_email: memberEmail,
+          created_at: readyAt,
+          updated_at: readyAt,
+        });
+        const stepId = ObjectId().toHexString();
+        stepIds.push(stepId);
+        await knex('automation_run_steps').insert({
+          id: stepId,
+          automation_run_id: runId,
+          automation_action_revision_id: revision.id,
+          created_at: readyAt,
+          updated_at: readyAt,
+          ready_at: readyAt,
+        });
+      }
+      const api = createApi();
+
+      // Four runners claim at once, in waves, until nothing is left to claim.
+      const claimed: Array<{ id: string; locked_by: string }> = [];
+      for (let wave = 0; wave < 10; wave++) {
+        const results = await Promise.all([1, 2, 3, 4].map(() => api.fetchAndLockSteps(3)));
+        const steps = results.flatMap((result) => result.steps);
+        if (steps.length === 0) {
+          break;
+        }
+        claimed.push(...steps);
+      }
+
+      const claimedIds = claimed.map((step) => step.id);
+      assert.equal(new Set(claimedIds).size, claimedIds.length, 'a step was claimed twice');
+      assert.deepEqual(
+        claimedIds.filter((id) => stepIds.includes(id)).toSorted(),
+        stepIds.toSorted(),
+      );
+      // Each step holds the lock of the claim that returned it, after one attempt.
+      const rows = await knex('automation_run_steps').whereIn('id', stepIds);
+      const lockByStepId = new Map(claimed.map((step) => [step.id, step.locked_by]));
+      for (const row of rows) {
+        assert.equal(row.locked_by, lockByStepId.get(row.id));
+        assert.equal(row.step_attempts, 1);
+      }
     });
   });
 });

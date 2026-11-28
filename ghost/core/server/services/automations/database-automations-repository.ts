@@ -1,18 +1,14 @@
 import {
-  automationTriggerRuleSchema,
   automationTriggerRuleDefinitionSchema,
-  type AutomationTriggerRule,
   type AutomationTriggerRuleDefinition,
 } from './trigger-rules';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automation-step-status';
 import tpl from '@tryghost/tpl';
-import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import ObjectId from 'bson-objectid';
 import { type Knex } from 'knex';
-import { AutoFillingMap } from '../../lib/auto-filling-map';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
 import urlUtils from '../../../shared/url-utils';
@@ -31,7 +27,6 @@ import type {
   AutomationRunHistory,
   AutomationRunHistoryStep,
   AutomationRunHistoryAction,
-  AutomationStepToRun,
   AutomationsRepository,
   Page,
 } from './automations-repository';
@@ -46,7 +41,7 @@ import {
 import { getStaleLockCutoff } from './stale-lock-cutoff';
 import { limitService } from '../limits';
 import { lockAutomationLimit } from './automation-limit';
-import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
+import type { ExclusifyUnion } from 'type-fest';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 
 // Keep within api_automation_run_search's complete-match run_ids limit.
@@ -162,25 +157,6 @@ type ActionLinkRow = {
 type ActionRevisionRow = {
   action_id: string;
   created_at: DatabaseDate;
-  wait_hours: number | null;
-  email_subject: string | null;
-  email_lexical: string | null;
-  email_design_setting_id: string | null;
-};
-
-type StepToRunRow = {
-  id: string;
-  locked_by: string;
-  automation_run_id: string;
-  automation_id: string;
-  automation_status: AutomationStatus;
-  member_id: string | null;
-  member_email: string;
-  action_id: string;
-  automation_action_revision_id: string;
-  type: string;
-  ready_at: DatabaseDate;
-  step_attempts: number;
   wait_hours: number | null;
   email_subject: string | null;
   email_lexical: string | null;
@@ -488,13 +464,6 @@ export function createDatabaseAutomationsRepository({
 
         return await buildAutomation(repository2, trx, updatedAutomation);
       });
-    },
-
-    async fetchAndLockSteps(limit: number): Promise<{
-      steps: AutomationStepToRun[];
-      nextStepReadyAt: null | Date;
-    }> {
-      return await knex.transaction((trx) => fetchAndLockSteps(trx, limit));
     },
 
     async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
@@ -812,191 +781,6 @@ async function ensureWelcomeEmailAction(
       createdAt: getNextRevisionCreatedAt(null, toDatabaseDate(now)),
     },
   ]);
-}
-
-async function fetchAndLockSteps(
-  trx: Knex.Transaction,
-  limit: number,
-): Promise<{
-  steps: AutomationStepToRun[];
-  nextStepReadyAt: null | Date;
-}> {
-  // Two things make this tricky:
-  //
-  // - We want to do row-level locking, so multiple calls don't step on each other.
-  // - We can't `UPDATE` a fixed number of rows.
-  //
-  // To get around these problems, here's what we do:
-  //
-  // 1. Select up to `limit` candidate rows.
-  // 2. Try to lock those rows.
-  // 3. Select any rows we successfully locked.
-
-  const now = new Date();
-  const nowString = toDatabaseDate(now);
-  const staleLockCutoff = getStaleLockCutoff(now);
-  const staleLockCutoffString = toDatabaseDate(staleLockCutoff);
-  const lockId = crypto.randomUUID();
-
-  // 1. Select up to `limit` candidate rows.
-  const candidates: ReadonlyArray<{ id: string }> = await trx('automation_run_steps')
-    .select('id')
-    .where('status', 'pending')
-    .where('ready_at', '<=', nowString)
-    .where((builder) => {
-      builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
-    })
-    .orderBy(['ready_at', 'created_at', 'id'])
-    .limit(limit);
-  if (candidates.length === 0) {
-    return {
-      steps: [],
-      nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
-    };
-  }
-
-  const candidateIds = candidates.map((candidate) => candidate.id);
-
-  // 2. Try to lock those rows.
-  await trx('automation_run_steps')
-    .update({
-      locked_by: lockId,
-      locked_at: nowString,
-      started_at: nowString,
-      updated_at: nowString,
-    })
-    .increment('step_attempts', 1)
-    .whereIn('id', candidateIds)
-    .where('status', 'pending')
-    .where('ready_at', '<=', nowString)
-    .where((builder) => {
-      builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
-    });
-
-  // 3. Select any rows we successfully locked.
-  const rows: StepToRunRow[] = await trx('automation_run_steps as step')
-    .select(
-      'step.id as id',
-      'step.locked_by as locked_by',
-      'step.automation_run_id as automation_run_id',
-      'run.automation_id as automation_id',
-      'automation.status as automation_status',
-      'run.member_id as member_id',
-      'run.member_email as member_email',
-      'action.id as action_id',
-      'revision.id as automation_action_revision_id',
-      'action.type as type',
-      'step.ready_at as ready_at',
-      'step.step_attempts as step_attempts',
-      'revision.wait_hours as wait_hours',
-      'revision.email_subject as email_subject',
-      'revision.email_lexical as email_lexical',
-      'revision.email_design_setting_id as email_design_setting_id',
-    )
-    .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
-    .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
-    .innerJoin(
-      'automation_action_revisions as revision',
-      'revision.id',
-      'step.automation_action_revision_id',
-    )
-    .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
-    .whereIn('step.id', candidateIds)
-    .where('step.locked_by', lockId)
-    .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
-
-  const rulesByAutomation = await getRulesByAutomation(trx, rows);
-
-  return {
-    steps: rows.map((row) => buildStepToRun(row, rulesByAutomation.get(row.automation_id))),
-    nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
-  };
-}
-
-async function getRulesByAutomation(
-  trx: Knex.Transaction,
-  stepsToRun: ReadonlyDeep<StepToRunRow[]>,
-): Promise<AutoFillingMap<string, AutomationTriggerRule[]>> {
-  const result = new AutoFillingMap<string, AutomationTriggerRule[]>(() => []);
-
-  const automationIds = [...new Set(stepsToRun.map((step) => step.automation_id))];
-  if (automationIds.length === 0) {
-    return result;
-  }
-
-  const rules = await trx('automation_trigger_rules')
-    .select(
-      'id',
-      'automation_id',
-      'created_at',
-      'trigger_type',
-      'scope',
-      'product_id',
-      'direction',
-      'label_id',
-    )
-    .whereIn('automation_id', automationIds);
-  for (const rule of rules) {
-    result.get(rule.automation_id).push(automationTriggerRuleSchema.parse(rule));
-  }
-
-  return result;
-}
-
-async function findNextPendingReadyAt(
-  trx: Knex.Transaction,
-  staleLockCutoff: Readonly<Date>,
-): Promise<Date | null> {
-  const row = await trx('automation_run_steps')
-    .select({ next_ready_at: 'ready_at' })
-    .where('status', 'pending')
-    .where((builder) => {
-      builder.whereNull('locked_by').orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
-    })
-    .orderBy('ready_at')
-    .first();
-  return row?.next_ready_at ? fromDatabaseDate(row.next_ready_at) : null;
-}
-
-function buildStepToRun(
-  row: ReadonlyDeep<StepToRunRow>,
-  triggerRules: AutomationTriggerRule[],
-): AutomationStepToRun {
-  const base = {
-    id: row.id,
-    step_attempts: row.step_attempts,
-    ready_at: fromDatabaseDate(row.ready_at),
-    locked_by: row.locked_by,
-    automation_run_id: row.automation_run_id,
-    automation_id: row.automation_id,
-    automation_trigger_rules: triggerRules,
-    automation_status: row.automation_status,
-    member_id: row.member_id,
-    member_email: row.member_email,
-    action_id: row.action_id,
-    automation_action_revision_id: row.automation_action_revision_id,
-  };
-
-  switch (row.type) {
-    case 'wait':
-      return {
-        ...base,
-        type: 'wait',
-        wait_hours: requireValue(row, 'wait_hours'),
-      };
-    case 'send_email':
-      return {
-        ...base,
-        type: 'send_email',
-        email_subject: requireValue(row, 'email_subject'),
-        email_lexical: requireValue(row, 'email_lexical'),
-        email_design_setting_id: row.email_design_setting_id,
-      };
-    default:
-      throw new errors.InternalServerError({
-        message: `Unexpected action type from database: ${row.type}`,
-      });
-  }
 }
 
 async function cancelCancelablePendingStepsForAutomation(

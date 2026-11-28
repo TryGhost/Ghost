@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import logging from '@tryghost/logging';
 
 import { poll } from '../../../../../core/server/services/automations/poll';
-import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-repository';
+import type { AutomationStepToRun } from '../../../../../core/server/services/automations/automations-api-2';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../../../../core/server/models';
 

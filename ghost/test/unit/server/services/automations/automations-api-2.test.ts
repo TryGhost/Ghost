@@ -50,6 +50,215 @@ describe('automations API', function () {
     });
   });
 
+  alphabeticalDescribe('fetchAndLockSteps', function () {
+    const now = new Date('2026-01-02T03:04:05Z');
+    const staleLockCutoff = new Date('2026-01-02T02:34:05Z');
+    const nextStepReadyAt = new Date('2026-01-03T00:00:00Z');
+    const transaction: TestAutomationsRepositoryConnection =
+      createTestAutomationsRepository2().withConnection((connection) => connection);
+
+    const buildLockedStep = (
+      id: string,
+      automationId: string,
+    ): Awaited<ReturnType<Repository['findLockedRunStepsToRun']>>[number] => ({
+      id,
+      locked_by: 'lock-id',
+      automation_run_id: `run-${id}`,
+      automation_id: automationId,
+      automation_status: 'active',
+      member_id: `member-${id}`,
+      member_email: `${id}@example.com`,
+      action_id: `action-${id}`,
+      automation_action_revision_id: `revision-${id}`,
+      ready_at: now,
+      step_attempts: 1,
+      type: 'wait',
+      wait_hours: 24,
+    });
+    const buildRule = (id: string, automationId: string) => ({
+      id,
+      automation_id: automationId,
+      created_at: now,
+      trigger_type: 'free_signup' as const,
+      scope: null,
+      product_id: null,
+      direction: null,
+    });
+
+    let calls: string[];
+    let candidateIds: string[];
+    let lockedSteps: Awaited<ReturnType<Repository['findLockedRunStepsToRun']>>;
+    let rules: Awaited<ReturnType<Repository['findTriggerRules']>>;
+    let findClaimableRunStepIds: ReturnType<typeof vi.fn<Repository['findClaimableRunStepIds']>>;
+    let lockClaimableRunSteps: ReturnType<typeof vi.fn<Repository['lockClaimableRunSteps']>>;
+    let findLockedRunStepsToRun: ReturnType<typeof vi.fn<Repository['findLockedRunStepsToRun']>>;
+    let findTriggerRules: ReturnType<typeof vi.fn<Repository['findTriggerRules']>>;
+    let findNextClaimableRunStepReadyAt: ReturnType<
+      typeof vi.fn<Repository['findNextClaimableRunStepReadyAt']>
+    >;
+    let repository: Repository;
+
+    beforeEach(function () {
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+      calls = [];
+      candidateIds = ['step-a', 'step-b', 'step-c'];
+      lockedSteps = [
+        buildLockedStep('step-a', 'automation-1'),
+        buildLockedStep('step-c', 'automation-2'),
+      ];
+      rules = [
+        buildRule('rule-1', 'automation-1'),
+        buildRule('rule-other', 'automation-other'),
+        buildRule('rule-2', 'automation-1'),
+      ];
+      const record = (name: string) => (connection: TestAutomationsRepositoryConnection) => {
+        calls.push(`${name} ${String(connection === transaction)}`);
+      };
+      findClaimableRunStepIds = vi.fn<Repository['findClaimableRunStepIds']>((connection) => {
+        record('findClaimable')(connection);
+        return candidateIds;
+      });
+      lockClaimableRunSteps = vi.fn<Repository['lockClaimableRunSteps']>((connection) => {
+        record('lock')(connection);
+      });
+      findLockedRunStepsToRun = vi.fn<Repository['findLockedRunStepsToRun']>((connection) => {
+        record('findLocked')(connection);
+        return lockedSteps;
+      });
+      findTriggerRules = vi.fn<Repository['findTriggerRules']>((connection) => {
+        record('findRules')(connection);
+        return rules;
+      });
+      findNextClaimableRunStepReadyAt = vi.fn<Repository['findNextClaimableRunStepReadyAt']>(
+        (connection) => {
+          record('findNextReadyAt')(connection);
+          return nextStepReadyAt;
+        },
+      );
+      repository = createTestAutomationsRepository2({
+        findClaimableRunStepIds,
+        findLockedRunStepsToRun,
+        findNextClaimableRunStepReadyAt,
+        findTriggerRules,
+        lockClaimableRunSteps,
+        withTransaction: async (fn) => {
+          calls.push('begin');
+          const result = await fn(transaction);
+          calls.push('commit');
+          return result;
+        },
+      });
+    });
+
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    it('finds, locks, and loads the claimed steps in one transaction', async function () {
+      await createApi({ repository }).fetchAndLockSteps(3);
+
+      expect(calls).toEqual([
+        'begin',
+        'findClaimable true',
+        'lock true',
+        'findLocked true',
+        'findRules true',
+        'findNextReadyAt true',
+        'commit',
+      ]);
+    });
+
+    it('claims only ready steps, taking over locks older than the stale-lock cutoff', async function () {
+      await createApi({ repository }).fetchAndLockSteps(7);
+
+      expect(findClaimableRunStepIds).toHaveBeenCalledExactlyOnceWith(transaction, {
+        readyBy: now,
+        staleLockCutoff,
+        limit: 7,
+      });
+      const [[, lockedIds, lockOptions]] = lockClaimableRunSteps.mock.calls;
+      expect(lockedIds).toEqual(candidateIds);
+      expect(lockOptions).toEqual({
+        lockedBy: expect.stringMatching(/^[0-9a-f-]{36}$/),
+        now,
+        staleLockCutoff,
+      });
+      expect(findLockedRunStepsToRun).toHaveBeenCalledExactlyOnceWith(
+        transaction,
+        candidateIds,
+        lockOptions.lockedBy,
+      );
+      expect(findNextClaimableRunStepReadyAt).toHaveBeenCalledExactlyOnceWith(
+        transaction,
+        staleLockCutoff,
+      );
+    });
+
+    it('uses a new lock ID for every claim', async function () {
+      const api = createApi({ repository });
+
+      await api.fetchAndLockSteps(3);
+      await api.fetchAndLockSteps(3);
+
+      const [first, second] = lockClaimableRunSteps.mock.calls.map(
+        ([, , options]) => options.lockedBy,
+      );
+      expect(first).not.toEqual(second);
+    });
+
+    it("returns the locked steps with their automations' trigger rules and the next ready time", async function () {
+      await expect(createApi({ repository }).fetchAndLockSteps(3)).resolves.toEqual({
+        steps: [
+          {
+            ...lockedSteps[0],
+            automation_trigger_rules: [rules[0], rules[2]],
+          },
+          { ...lockedSteps[1], automation_trigger_rules: [] },
+        ],
+        nextStepReadyAt,
+      });
+      expect(findTriggerRules).toHaveBeenCalledExactlyOnceWith(transaction, [
+        'automation-1',
+        'automation-2',
+      ]);
+    });
+
+    it('returns no steps and the next ready time when nothing could be claimed', async function () {
+      candidateIds = [];
+      lockedSteps = [];
+
+      await expect(createApi({ repository }).fetchAndLockSteps(3)).resolves.toEqual({
+        steps: [],
+        nextStepReadyAt,
+      });
+    });
+
+    it.each([
+      'findClaimableRunStepIds',
+      'lockClaimableRunSteps',
+      'findLockedRunStepsToRun',
+      'findTriggerRules',
+      'findNextClaimableRunStepReadyAt',
+    ] as const)('propagates %s failures without committing', async function (method) {
+      const failure = new Error(`${method} failed`);
+      (
+        {
+          findClaimableRunStepIds,
+          lockClaimableRunSteps,
+          findLockedRunStepsToRun,
+          findTriggerRules,
+          findNextClaimableRunStepReadyAt,
+        }[method] as ReturnType<typeof vi.fn>
+      ).mockImplementation(() => {
+        throw failure;
+      });
+
+      await expect(createApi({ repository }).fetchAndLockSteps(3)).rejects.toBe(failure);
+      expect(calls).not.toContain('commit');
+    });
+  });
+
   alphabeticalDescribe('finishStepAndEnqueueNext', function () {
     const HOUR_MS = 60 * 60 * 1000;
     const now = new Date('2026-01-02T03:04:05Z');
