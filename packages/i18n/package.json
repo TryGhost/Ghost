@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
-    "i18next": "23.16.8",
+    "i18next": "26.3.4",
     "zod": "catalog:"
   },
   "devDependencies": {
