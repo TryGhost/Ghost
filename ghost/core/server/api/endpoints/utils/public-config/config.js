@@ -15,7 +15,11 @@ const sanitizeHostSettings = (hostSettings) => {
     return hostSettings;
   }
 
-  return omit(hostSettings, ['export.webhookSecret', 'emailVerification.webhookSecret']);
+  return omit(hostSettings, [
+    'export.webhookSecret',
+    'emailVerification.webhookSecret',
+    'contentCheck',
+  ]);
 };
 
 const copyPayloadProperties = (target, source, properties) => {

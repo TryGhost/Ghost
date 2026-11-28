@@ -367,6 +367,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const members = require('./server/services/members');
   const tiers = require('./server/services/tiers').default;
   const indexnow = require('./server/services/indexnow-ping').default;
+  const contentCheck = require('./server/services/content-check').default;
   const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
@@ -454,6 +455,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     postsPublic.init(),
     membersEvents.init(),
     indexnow.init(),
+    contentCheck.init(),
     upgrades.init(),
     slack.init(),
     emailService.init({ ghostServer, jobsService }),
@@ -493,6 +495,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   if (ghostServer) {
     // Each releases what its start acquired; the next boot in this process starts it again.
     ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+    ghostServer.registerCleanupTask(() => contentCheck.stop(), 'Content Check');
     ghostServer.registerCleanupTask(() => slack.stop(), 'Slack ping');
   }
   // Member welcome emails captures the ready Email address and Link tracking instances during
