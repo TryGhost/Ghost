@@ -42,4 +42,13 @@ describe('MilestoneQueries', function () {
     assert.ok(milestoneQueries.hasImportedMembersInPeriod);
     assert.ok(milestoneQueries.getDefaultCurrency);
   });
+
+  it('Runs on the transaction when given one', async function () {
+    const transacting = sinon.stub().returns({ count: sinon.stub().resolves([{ count: 5 }]) });
+    milestoneQueries = new MilestoneQueries({ db: { knex: knexMock } });
+
+    assert.equal(await milestoneQueries.getMembersCount({ transacting }), 5);
+    sinon.assert.calledOnceWithExactly(transacting, 'members');
+    sinon.assert.notCalled(knexMock);
+  });
 });

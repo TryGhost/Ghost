@@ -25,11 +25,44 @@ module.exports = class InMemoryMilestoneRepository {
   }
 
   /**
+   * @template T
+   * @param {(transacting: {events: Array}) => Promise<T>} fn
+   * @returns {Promise<T>}
+   */
+  async transaction(fn) {
+    const store = [...this.#store];
+    const ids = { ...this.#ids };
+    const transacting = { events: [] };
+    let result;
+
+    try {
+      result = await fn(transacting);
+    } catch (err) {
+      this.#store = store;
+      this.#ids = ids;
+      throw err;
+    }
+
+    for (const event of transacting.events) {
+      this.#DomainEvents.dispatch(event);
+    }
+
+    return result;
+  }
+
+  /**
+   * @returns {Promise<void>}
+   */
+  async lockChecks() {}
+
+  /**
    * @param {Milestone} milestone
+   * @param {object} [options]
+   * @param {{events: Array}} [options.transacting]
    *
    * @returns {Promise<void>}
    */
-  async save(milestone) {
+  async save(milestone, options = {}) {
     if (this.#ids[milestone.id.toHexString()]) {
       const existingIndex = this.#store.findIndex((item) => {
         return item.id.equals(milestone.id);
@@ -38,6 +71,11 @@ module.exports = class InMemoryMilestoneRepository {
     } else {
       this.#store.push(milestone);
       this.#ids[milestone.id.toHexString()] = true;
+    }
+
+    if (options.transacting) {
+      options.transacting.events.push(...milestone.events);
+      return;
     }
 
     for (const event of milestone.events) {

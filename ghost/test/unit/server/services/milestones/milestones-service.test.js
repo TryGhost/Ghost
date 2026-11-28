@@ -608,5 +608,53 @@ describe('MilestonesService', function () {
       const lastDomainEventSpyResult = domainEventSpy.getCall(4).args[0];
       assert(lastDomainEventSpyResult.data.meta.reason === 'email');
     });
+
+    it('Takes the lock before reading anything', async function () {
+      repository = new InMemoryMilestoneRepository({ DomainEvents });
+      const lockChecks = sinon.spy(repository, 'lockChecks');
+      const getAllByType = sinon.spy(repository, 'getAllByType');
+      const getMembersCount = sinon.stub().resolves(5);
+
+      const milestoneEmailService = new MilestonesService({
+        repository,
+        milestonesConfig,
+        queries: {
+          getMembersCount,
+          async hasImportedMembersInPeriod() {
+            return false;
+          },
+        },
+      });
+
+      await milestoneEmailService.checkMilestones('members');
+
+      sinon.assert.callOrder(lockChecks, getMembersCount, getAllByType);
+    });
+
+    it('Stores and sends nothing when the check fails part way', async function () {
+      repository = new InMemoryMilestoneRepository({ DomainEvents });
+
+      await repository.save(await Milestone.create({ type: 'members', value: 100 }));
+
+      assert(domainEventSpy.callCount === 1);
+
+      const milestoneEmailService = new MilestonesService({
+        repository,
+        milestonesConfig,
+        queries: {
+          async getMembersCount() {
+            return 10005;
+          },
+          async hasImportedMembersInPeriod() {
+            throw new Error('query failed');
+          },
+        },
+      });
+
+      await assert.rejects(milestoneEmailService.checkMilestones('members'), /query failed/);
+
+      assert(domainEventSpy.callCount === 1);
+      assert((await repository.getAllByType('members')).length === 1);
+    });
   });
 });

@@ -160,4 +160,43 @@ describe('InMemoryMilestoneRepository', function () {
 
     assert(allMembersMilestones.length === 3);
   });
+
+  describe('transaction', function () {
+    let dispatch;
+    let transactionRepository;
+
+    beforeEach(function () {
+      dispatch = sinon.spy();
+      transactionRepository = new InMemoryMilestoneRepository({ DomainEvents: { dispatch } });
+    });
+
+    it('Dispatches events once the transaction has finished', async function () {
+      const milestone = await Milestone.create({ type: 'members', value: 700 });
+
+      const result = await transactionRepository.transaction(async (transacting) => {
+        await transactionRepository.save(milestone, { transacting });
+        sinon.assert.notCalled(dispatch);
+        return 'done';
+      });
+
+      assert.equal(result, 'done');
+      sinon.assert.calledOnceWithExactly(dispatch, milestone.events[0]);
+      assert.equal((await transactionRepository.getByCount(700)).value, 700);
+    });
+
+    it('Stores and dispatches nothing when the transaction fails', async function () {
+      const milestone = await Milestone.create({ type: 'members', value: 700 });
+
+      await assert.rejects(
+        transactionRepository.transaction(async (transacting) => {
+          await transactionRepository.save(milestone, { transacting });
+          throw new Error('failed');
+        }),
+        /failed/,
+      );
+
+      sinon.assert.notCalled(dispatch);
+      assert.equal(await transactionRepository.getByCount(700), undefined);
+    });
+  });
 });
