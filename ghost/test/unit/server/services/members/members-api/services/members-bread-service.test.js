@@ -202,6 +202,42 @@ describe('MemberBreadService', function () {
       assert.equal(linkStripeCustomerOptions.context.import, true, 'context.import should be true');
     });
 
+    describe('when linking the Stripe customer fails', function () {
+      function stripeError(message) {
+        return Object.assign(new Error(message), { code: 'resource_missing' });
+      }
+
+      async function addWithLinkError(error) {
+        const destroyStub = sinon.stub().resolves();
+        const { service } = createService({
+          linkStripeCustomer: sinon.stub().rejects(error),
+          destroy: destroyStub,
+        });
+
+        await assert.rejects(
+          service.add({ email: 'test@example.com', stripe_customer_id: 'cus_123' }, {}),
+          (thrown) => thrown === error,
+        );
+        assert.equal(destroyStub.calledOnce, true, 'member should be removed again');
+      }
+
+      it('labels a missing Stripe customer', async function () {
+        const error = stripeError("No such customer: 'cus_123'");
+        await addWithLinkError(error);
+
+        assert.equal(error.context, 'Missing Stripe Customer');
+        assert.equal(error.message, "Member not imported. No such customer: 'cus_123'");
+      });
+
+      it('does not label a missing subscription as a missing customer', async function () {
+        const error = stripeError("No such subscription: 'sub_123'");
+        await addWithLinkError(error);
+
+        assert.equal(error.context, undefined);
+        assert.equal(error.message, "No such subscription: 'sub_123'");
+      });
+    });
+
     it('sets email_disabled to true when the email is on the suppression list', async function () {
       // Prevents ONC-1640: a previous member with this email bounced/complained,
       // was deleted, and the suppression record remains. A new signup with that
