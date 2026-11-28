@@ -40,6 +40,7 @@ export const createTestAutomationsRepository2 = (
       'lockNotYetOpenedEmailRecipients',
       'setEmailRecipientClickedAt',
       'setEmailRecipientDeliveredAndOpenedAt',
+      'updateLockedRunStep',
     ]),
     ...overrides,
   } satisfies AutomationsRepository2<TestAutomationsRepositoryConnection>;

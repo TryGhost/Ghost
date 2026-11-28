@@ -4,11 +4,12 @@ import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import type { ReadonlyDeep } from 'type-fest';
 import { AutoFillingMap } from '../../lib/auto-filling-map';
+import type { AutomationStepTerminalStatus } from './automation-step-status';
 import type {
   AutomationsRepository2,
   AutomatedEmailRecipientTrackingData,
   EmailRecipientToInsert,
-  RecordEmailSentOptions,
+  LockedRunStep,
   RunStepToInsert,
   RunToInsert,
   TrackEmailClickedOptions,
@@ -19,6 +20,18 @@ import { getReadyAtForAction } from './util/get-ready-at-for-action';
 type Labs = { isSet(key: 'automations' | 'automationsLeadMagnets'): boolean };
 
 type MemberStatus = 'free' | 'paid' | 'gift' | 'comped';
+
+export type RecordEmailSentOptions = Readonly<{
+  automationActionRevisionId: string;
+  automationRunStepId: string;
+  mailgunMessageId?: string;
+  memberEmail: string;
+  memberId: string;
+  memberName: string | null;
+  memberUuid: string;
+  trackClicks: boolean;
+  trackOpens: boolean;
+}>;
 
 const hashEnrollment = (
   enrollment: Readonly<Pick<RunToInsert, 'automation_id' | 'member_id'>>,
@@ -51,6 +64,20 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       repository.withConnection(
         async (connection) => await repository.getNumberOfAutomations(connection),
       ),
+
+    markStepTerminal: async (
+      step: LockedRunStep,
+      status: AutomationStepTerminalStatus,
+    ): Promise<boolean> => {
+      const now = new Date();
+      return await repository.withConnection((connection) =>
+        repository.updateLockedRunStep(connection, step, {
+          status,
+          finished_at: now,
+          updated_at: now,
+        }),
+      );
+    },
 
     notify: async (
       event: ReadonlyDeep<
@@ -343,3 +370,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
     },
   };
 };
+
+export type AutomationsApi2<RepositoryTransaction> = ReturnType<
+  typeof createAutomationsApi2<RepositoryTransaction>
+>;

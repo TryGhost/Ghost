@@ -6,7 +6,10 @@ import {
 } from './trigger-rules';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automations-repository';
+import {
+  AUTOMATION_STEP_TERMINAL_STATUSES,
+  type AutomationStepTerminalStatus,
+} from './automation-step-status';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -31,7 +34,6 @@ import type {
   AutomationRunHistory,
   AutomationRunHistoryStep,
   AutomationRunHistoryAction,
-  AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
   Page,
@@ -516,13 +518,6 @@ export function createDatabaseAutomationsRepository({
           fakeWaitHoursMultiplier,
         }),
       );
-    },
-
-    async markStepTerminal(
-      step: AutomationStepToRun,
-      status: AutomationStepTerminalStatus,
-    ): Promise<boolean> {
-      return await knex.transaction((trx) => markStepTerminal(trx, step, status));
     },
 
     async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
@@ -1041,7 +1036,7 @@ async function finishStepAndEnqueueNext(
 ): Promise<Date | null> {
   const { step, fakeWaitHoursMultiplier } = options;
 
-  const didFinish = await markStepTerminal(trx, step, 'finished');
+  const didFinish = await markStepTerminal(repository2, trx, step, 'finished');
   if (!didFinish) {
     return null;
   }
@@ -1104,15 +1099,16 @@ async function findNextActionRevision(
 }
 
 async function markStepTerminal(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
   status: AutomationStepTerminalStatus,
 ): Promise<boolean> {
-  const nowString = toDatabaseDate(new Date());
-  return await updateStep(trx, step, {
+  const now = new Date();
+  return await repository2.updateLockedRunStep(trx, step, {
     status,
-    finished_at: nowString,
-    updated_at: nowString,
+    finished_at: now,
+    updated_at: now,
   });
 }
 
@@ -1123,17 +1119,16 @@ async function retryStep(
   retryAt: Readonly<Date>,
 ): Promise<boolean> {
   if (!(await repository2.isAutomationActiveForRunStep(trx, step.id))) {
-    await markStepTerminal(trx, step, 'automation disabled');
+    await markStepTerminal(repository2, trx, step, 'automation disabled');
     return false;
   }
 
-  const nowString = toDatabaseDate(new Date());
-  return await updateStep(trx, step, {
+  return await repository2.updateLockedRunStep(trx, step, {
     status: 'pending',
     started_at: null,
     finished_at: null,
-    ready_at: toDatabaseDate(retryAt),
-    updated_at: nowString,
+    ready_at: retryAt,
+    updated_at: new Date(),
   });
 }
 
@@ -1190,48 +1185,6 @@ async function cancelCancelablePendingStepsForAutomation(
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoff);
     });
-}
-
-/**
- * Update a step. Returns whether the update succeeded.
- *
- * Should only update locked steps to avoid race conditions. Imagine the following scenario:
- *
- * 1. A step is locked by Worker A.
- * 2. The lock expires.
- * 3. The step is locked by Worker B.
- * 4. Worker A finishes its work.
- *
- * Worker A has lost its lock, so it shouldn't be updating the step any more.
- */
-async function updateStep(
-  trx: Knex.Transaction,
-  step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-  attrs: {
-    status: string;
-    started_at?: string | null;
-    finished_at?: string | null;
-    ready_at?: string;
-    updated_at: string;
-  },
-): Promise<boolean> {
-  /* eslint-disable camelcase */
-  const { started_at, finished_at, ready_at } = attrs;
-  const changes = await trx('automation_run_steps')
-    .update({
-      status: attrs.status,
-      updated_at: attrs.updated_at,
-      locked_by: null,
-      locked_at: null,
-      ...(started_at === undefined ? {} : { started_at }),
-      ...(finished_at === undefined ? {} : { finished_at }),
-      ...(ready_at === undefined ? {} : { ready_at }),
-    })
-    .where('id', step.id)
-    .where('status', 'pending')
-    .where('locked_by', step.locked_by);
-  /* eslint-enable camelcase */
-  return changes >= 1;
 }
 
 async function loadAutomation(

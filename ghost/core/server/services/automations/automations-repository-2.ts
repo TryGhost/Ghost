@@ -1,3 +1,4 @@
+import type { AutomationStepTerminalStatus } from './automation-step-status';
 import type { AutomationTriggerRule } from './trigger-rules';
 import type { Promisable, ReadonlyDeep } from 'type-fest';
 import type { z } from 'zod';
@@ -42,18 +43,6 @@ export type AutomatedEmailRecipientTrackingData = {
   automationActionRevisionId: string;
 };
 
-export type RecordEmailSentOptions = Readonly<{
-  automationActionRevisionId: string;
-  automationRunStepId: string;
-  mailgunMessageId?: string;
-  memberEmail: string;
-  memberId: string;
-  memberName: string | null;
-  memberUuid: string;
-  trackClicks: boolean;
-  trackOpens: boolean;
-}>;
-
 export type EmailRecipientToInsert = {
   id: string;
   created_at: Date;
@@ -68,6 +57,26 @@ export type EmailRecipientToInsert = {
   track_clicks: boolean;
   track_opens: boolean;
 };
+
+export type LockedRunStep = Readonly<{
+  id: string;
+  locked_by: string;
+}>;
+
+/** End a step, or put it back in the queue for another attempt. */
+export type LockedRunStepUpdate =
+  | {
+      status: AutomationStepTerminalStatus;
+      finished_at: Date;
+      updated_at: Date;
+    }
+  | {
+      status: 'pending';
+      started_at: null;
+      finished_at: null;
+      ready_at: Date;
+      updated_at: Date;
+    };
 
 export type TrackEmailClickedOptions = ReadonlyDeep<{
   automationActionRevisionId: string;
@@ -217,6 +226,20 @@ export type AutomationsRepository2<Connection> = {
     automatedEmailRecipientId: string,
     events: ReadonlyDeep<Pick<AutomatedEmailRecipientTrackingData, 'deliveredAt' | 'openedAt'>>,
   ) => Promisable<void>;
+
+  /**
+   * Update a step that is still pending and locked by this runner, clearing
+   * its lock. Returns whether the step was updated.
+   *
+   * The guard stops a runner that lost its lock from changing the step. For
+   * example: runner A locks a step, the lock goes stale, runner B reclaims it,
+   * and then runner A finishes. Runner A must not update the step.
+   */
+  updateLockedRunStep: (
+    connection: Connection,
+    step: LockedRunStep,
+    changes: Readonly<LockedRunStepUpdate>,
+  ) => Promisable<boolean>;
 
   /** Run a function within a repository connection. */
   withConnection: <ReturnT>(fn: (connection: Connection) => ReturnT) => ReturnT;

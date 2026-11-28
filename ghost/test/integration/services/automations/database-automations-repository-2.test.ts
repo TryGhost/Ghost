@@ -2,11 +2,12 @@ import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import { onTestFinished } from 'vitest';
-import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
+import { type DatabaseDate, fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import type {
   ActionToInsert,
   EdgeRow,
   EmailRecipientToInsert,
+  LockedRunStep,
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
@@ -1446,6 +1447,142 @@ describe('database automations repository', function () {
       ).toEqual({
         count: 3,
       });
+    });
+  });
+
+  alphabeticalDescribe('updateLockedRunStep', function () {
+    const repository = createDatabaseAutomationsRepository2({ knex });
+    const startedAt = new Date('2026-01-05T00:00:00Z');
+    const lockedAt = new Date('2026-01-05T00:00:01Z');
+    const changedAt = new Date('2026-01-06T00:00:00Z');
+    const retryAt = new Date('2026-01-07T00:00:00Z');
+    let automationId: string;
+    let actionId: string;
+    let revisionId: string;
+    let memberId: string;
+    let runId: string;
+    let step: LockedRunStep;
+    let otherStepId: string;
+
+    const getStep = async (id: string) => {
+      const row = await knex('automation_run_steps').where({ id }).first();
+      const toDate = (value: DatabaseDate | null) =>
+        value === null ? null : fromDatabaseDate(value);
+      return {
+        status: row.status,
+        locked_by: row.locked_by,
+        locked_at: toDate(row.locked_at),
+        started_at: toDate(row.started_at),
+        finished_at: toDate(row.finished_at),
+        ready_at: toDate(row.ready_at),
+        updated_at: toDate(row.updated_at),
+        step_attempts: row.step_attempts,
+      };
+    };
+
+    beforeEach(async function () {
+      const automation = createAutomation();
+      const action = createAction(automation.id);
+      const revision = createRevision(action.id);
+      const member = createMember(ObjectId().toHexString());
+      const run = createRun(automation.id, member.id);
+      const lockedStep = {
+        ...createRunStep(run.id, revision.id),
+        status: 'pending',
+        locked_by: 'runner-lock',
+        locked_at: lockedAt,
+        started_at: startedAt,
+        step_attempts: 1,
+      };
+      // Same lock and run, so only the step ID distinguishes it.
+      const otherStep = { ...lockedStep, id: ObjectId().toHexString() };
+      automationId = automation.id;
+      actionId = action.id;
+      revisionId = revision.id;
+      memberId = member.id;
+      runId = run.id;
+      step = { id: lockedStep.id, locked_by: lockedStep.locked_by };
+      otherStepId = otherStep.id;
+      await knex('automations').insert(automation);
+      await knex('members').insert(member);
+      await knex('automation_actions').insert(action);
+      await knex('automation_action_revisions').insert(revision);
+      await knex('automation_runs').insert(run);
+      await knex('automation_run_steps').insert([lockedStep, otherStep]);
+    });
+
+    afterEach(async function () {
+      await knex('automation_run_steps').where('automation_run_id', runId).delete();
+      await knex('automation_runs').where('id', runId).delete();
+      await knex('automation_action_revisions').where('id', revisionId).delete();
+      await knex('automation_actions').where('id', actionId).delete();
+      await knex('automations').where('id', automationId).delete();
+      await knex('members').where('id', memberId).delete();
+    });
+
+    it('marks only this locked step terminal, clearing its lock and keeping its start and ready times', async function () {
+      const otherBefore = await getStep(otherStepId);
+
+      await expect(
+        repository.updateLockedRunStep(knex, step, {
+          status: 'member unsubscribed',
+          finished_at: changedAt,
+          updated_at: changedAt,
+        }),
+      ).resolves.toBe(true);
+
+      expect(await getStep(step.id)).toEqual({
+        status: 'member unsubscribed',
+        locked_by: null,
+        locked_at: null,
+        started_at: startedAt,
+        finished_at: changedAt,
+        ready_at: readyAt,
+        updated_at: changedAt,
+        step_attempts: 1,
+      });
+      expect(await getStep(otherStepId)).toEqual(otherBefore);
+    });
+
+    it('returns a locked step to the queue', async function () {
+      await expect(
+        repository.updateLockedRunStep(knex, step, {
+          status: 'pending',
+          started_at: null,
+          finished_at: null,
+          ready_at: retryAt,
+          updated_at: changedAt,
+        }),
+      ).resolves.toBe(true);
+
+      expect(await getStep(step.id)).toEqual({
+        status: 'pending',
+        locked_by: null,
+        locked_at: null,
+        started_at: null,
+        finished_at: null,
+        ready_at: retryAt,
+        updated_at: changedAt,
+        step_attempts: 1,
+      });
+    });
+
+    it.each([
+      ['is no longer pending', { status: 'finished', finished_at: lockedAt }],
+      ['was reclaimed by another runner', { locked_by: 'other-runner-lock' }],
+    ])('does not update a step that %s', async function (_, takenOver) {
+      await knex('automation_run_steps').where('id', step.id).update(takenOver);
+      const before = await getStep(step.id);
+
+      await expect(
+        repository.updateLockedRunStep(knex, step, {
+          status: 'failed',
+          finished_at: changedAt,
+          updated_at: changedAt,
+        }),
+      ).resolves.toBe(false);
+
+      expect(await getStep(step.id)).toEqual(before);
     });
   });
 

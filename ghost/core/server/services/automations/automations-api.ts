@@ -504,11 +504,7 @@ export async function finishStepAndEnqueueNext(
   return await repository.finishStepAndEnqueueNext(...args);
 }
 
-export async function markStepTerminal(
-  ...args: Parameters<AutomationsRepository['markStepTerminal']>
-) {
-  return await repository.markStepTerminal(...args);
-}
+export const markStepTerminal = automationsApi2.markStepTerminal.bind(automationsApi2);
 
 export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
   return await repository.retryStep(...args);

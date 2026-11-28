@@ -1,4 +1,5 @@
 import type { ReadonlyDeep } from 'type-fest';
+import type { AutomationStepStatus } from './automation-step-status';
 import type { AddAutomationData, EditAutomationData } from './automations-schemas';
 import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
 
@@ -120,18 +121,6 @@ export type AutomationStepToRun = ReadonlyDeep<
     )
 >;
 
-export const AUTOMATION_STEP_TERMINAL_STATUSES = [
-  'automation disabled',
-  'failed',
-  'finished',
-  'member changed status',
-  'member changed tier',
-  'member unsubscribed',
-] as const;
-
-export type AutomationStepTerminalStatus = (typeof AUTOMATION_STEP_TERMINAL_STATUSES)[number];
-export type AutomationStepStatus = 'pending' | AutomationStepTerminalStatus;
-
 export type AutomationRunHistoryAction =
   | WaitAction
   | (Pick<SendEmailAction, 'id' | 'type'> & {
@@ -209,16 +198,6 @@ export type AutomationsRepository = {
   finishStepAndEnqueueNext(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>,
   ): Promise<Date | null>;
-  /**
-   * Stop a locked step without continuing the automation, preserving the
-   * reason it ended.
-   *
-   * Returns whether the step was updated.
-   */
-  markStepTerminal(
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-    status: AutomationStepTerminalStatus,
-  ): Promise<boolean>;
   /**
    * Put a locked step back in the queue for another attempt.
    *
