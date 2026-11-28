@@ -272,8 +272,13 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).toBeVisible();
   });
 
-  it('starts the app with the site, the staff user, the theme and its own route', async () => {
-    await fakeAppPage(installation({ revision: 3 }));
+  it('starts the app with the site, the staff user, the theme, its approved scopes and its own route', async () => {
+    await fakeAppPage(
+      installation({
+        revision: 3,
+        manifest: { ...installation().manifest, scopes: ['post:browse', 'tag:browse'] },
+      }),
+    );
 
     await renderAdminApp(`${APP_ROUTE}/episodes/12?tab=notes`, { labs });
     await expect.element(appsScreen.frame()).toBeVisible();
@@ -294,6 +299,8 @@ describe('Managing apps', () => {
       user: { id: me.id, role: 'Owner' },
       theme: { mode: 'light', accent_color: setting('accent_color') },
       session: { revision: 3 },
+      // What the approved manifest lists, which Ghost holds the app's calls to.
+      scopes: ['post:browse', 'tag:browse'],
       path: '/episodes/12?tab=notes',
     });
   });

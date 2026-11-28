@@ -192,8 +192,9 @@ _Avoid_: ack, handshake
 
 **Start**:
 Admin's first call over the bridge. It sends the page the site, the staff
-user's ID and role, the theme, the app session's revision and the app path. Admin
-shows the page once the page has responded.
+user's ID and role, the theme, the app session's revision, the installation's
+approved scopes and the app path. Admin shows the page once the page has
+responded.
 _Avoid_: init, boot, launch
 
 **App session**:

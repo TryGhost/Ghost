@@ -298,6 +298,7 @@ const AppFrame: React.FC<{
     user: { id: user.id, role: user.roles[0]?.name ?? '' },
     theme,
     session: { revision: installation.revision },
+    scopes: [...manifest.scopes],
     path,
     layout,
   };

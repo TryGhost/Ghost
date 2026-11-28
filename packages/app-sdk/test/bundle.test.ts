@@ -196,6 +196,7 @@ describe('the package', () => {
     [
       'index',
       [
+        'AppPermissionKey',
         'ConnectOptions',
         'Ghost',
         'GhostAppError',
@@ -207,6 +208,7 @@ describe('the package', () => {
         'OverlayHold',
         'OverlayTint',
         'Place',
+        'Scopes',
         'Session',
         'Site',
         'StartContext',

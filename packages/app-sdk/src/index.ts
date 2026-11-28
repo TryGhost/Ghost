@@ -12,6 +12,7 @@
 export { connect } from './connect.ts';
 export { GhostAppError, type GhostAppErrorCode } from './errors.ts';
 export type {
+  AppPermissionKey,
   ConnectOptions,
   Ghost,
   GhostFetchInit,
@@ -21,6 +22,7 @@ export type {
   OverlayHold,
   OverlayTint,
   Place,
+  Scopes,
   Session,
   Site,
   StartContext,

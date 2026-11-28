@@ -1,8 +1,14 @@
-import type { OverlayTint, Place, StartContext, Theme } from '@tryghost/app-contracts';
+import type {
+  AppPermissionKey,
+  OverlayTint,
+  Place,
+  StartContext,
+  Theme,
+} from '@tryghost/app-contracts';
 
 import type { GhostAppError } from './errors.ts';
 
-export type { OverlayTint, Place, StartContext, Theme };
+export type { AppPermissionKey, OverlayTint, Place, StartContext, Theme };
 
 // The context is read-only: the SDK hands out frozen copies, so no part of a page can change
 // what every other part reads.
@@ -18,6 +24,13 @@ export type User = Readonly<StartContext['user']>;
 
 /** The session with Admin: the installation's revision when the session started. */
 export type Session = Readonly<StartContext['session']>;
+
+/**
+ * The permission keys the app was approved for on this site, as its manifest's `scopes` lists
+ * them, such as `post:browse`. A key this SDK doesn't know is still listed, so an app granted
+ * a key added in a later Ghost sees it.
+ */
+export type Scopes = Readonly<StartContext['scopes']>;
 
 export interface ConnectOptions {
   /** How long to wait for Admin to start the app, in milliseconds. Defaults to 10 seconds. */
@@ -100,6 +113,12 @@ export interface Ghost {
   readonly theme: Readonly<Theme>;
   /** The installation's revision when this session started. */
   readonly session: Session;
+  /**
+   * The permission keys the app was approved for on this site. Admin refuses a call none of
+   * them covers, rejecting it with `blocked`, so check here before offering something the app
+   * can't do. They don't change while the session lasts.
+   */
+  readonly scopes: Scopes;
   /** The app's route, kept in step with Admin's URL. */
   readonly path: GhostPath;
   /** False once the session has ended. Every call then rejects with `session_ended`. */

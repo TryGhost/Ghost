@@ -22,6 +22,7 @@ export function startContext(overrides: Partial<StartContext> = {}): StartContex
     user: { id: '5ddc9141c35e7700383b2937', role: 'Administrator' },
     theme: { mode: 'light', accent_color: '#ff5500' },
     session: { revision: 3 },
+    scopes: ['post:browse', 'post:edit'],
     path: '/',
     layout: {
       safeArea: { top: 0, right: 0, bottom: 57, left: 285 },

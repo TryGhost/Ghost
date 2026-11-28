@@ -246,6 +246,7 @@ async function start() {
     user: app.user,
     theme: app.theme,
     session: app.session,
+    scopes: [...app.scopes],
     path: app.path.current,
   };
   app.onThemeChange((theme) => received.push({ call: 'themeChanged', value: theme }));

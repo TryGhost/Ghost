@@ -32,6 +32,7 @@ import type {
   GhostFetchInit,
   GhostOverlay,
   GhostPath,
+  Scopes,
   Session,
   Site,
   Unsubscribe,
@@ -94,6 +95,7 @@ interface StartedContext {
   site: Site;
   user: User;
   session: Session;
+  scopes: Scopes;
 }
 
 export interface ChannelEvents {
@@ -176,6 +178,7 @@ export class Channel {
       site: Object.freeze({ ...context.site }),
       user: Object.freeze({ ...context.user }),
       session: Object.freeze({ ...context.session }),
+      scopes: Object.freeze([...context.scopes]),
     };
     this.#theme = Object.freeze({ ...context.theme });
     // Before the app starts, so its first paint keeps clear of Admin's chrome.
@@ -330,6 +333,9 @@ export class Channel {
       },
       get session(): Session {
         return context().session;
+      },
+      get scopes(): Scopes {
+        return context().scopes;
       },
       get connected(): boolean {
         return connected();

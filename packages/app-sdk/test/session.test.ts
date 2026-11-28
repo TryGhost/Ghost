@@ -667,6 +667,7 @@ describe('the Ghost object an app gets', () => {
       'open',
       'overlay',
       'path',
+      'scopes',
       'session',
       'site',
       'theme',
@@ -686,6 +687,7 @@ describe('the context', () => {
       [ghost.site, 'title'],
       [ghost.user, 'role'],
       [ghost.session, 'revision'],
+      [ghost.scopes, '0'],
       [ghost.theme, 'mode'],
     ];
     for (const [value, key] of writes) {
@@ -696,6 +698,7 @@ describe('the context', () => {
     }
     expect(ghost.site.title).toBe('Example');
     expect(ghost.session.revision).toBe(3);
+    expect(ghost.scopes).toEqual(['post:browse', 'post:edit']);
   });
 });
 
