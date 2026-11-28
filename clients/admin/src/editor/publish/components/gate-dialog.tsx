@@ -18,8 +18,8 @@ export interface GateDialogProps {
 }
 
 /**
- * The pre-publish interstitials (TK reminders, public-preview warnings):
- * continue into the flow, or go back to the editor.
+ * The pre-publish interstitials (TK reminders, public-preview warnings and
+ * `{first_name}` reminders): continue into the flow, or go back to the editor.
  */
 export function GateDialog({ testId, title, children, onContinue, onBack }: GateDialogProps) {
   return (
