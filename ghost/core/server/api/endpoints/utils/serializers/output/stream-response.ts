@@ -13,13 +13,19 @@ interface StreamResponseOptions {
   contentType: string;
   /** Error message when `filename` is missing — format-specific for callers that pin it. */
   missingFilenameMessage?: string;
+  /**
+   * Lets compression and proxies re-encode the body. Only for text formats,
+   * such as a JSON export, that are safe and worthwhile to compress.
+   */
+  compressible?: boolean;
 }
 
 /**
  * Builds the `frame.response` handler for a streaming download, centralising
  * the wiring shared by every streamed export (CSV, zip): the
  * Content-Type/Content-Disposition headers, the `no-transform` cache directive
- * (so proxies don't recompress and corrupt the byte stream), and `pipeline()`
+ * (so proxies don't recompress and corrupt the byte stream) unless the body is
+ * `compressible`, and `pipeline()`
  * piping that tears down every stream on error.
  */
 export function createStreamResponse({
@@ -28,6 +34,7 @@ export function createStreamResponse({
   filename,
   contentType,
   missingFilenameMessage = 'Missing export filename',
+  compressible = false,
 }: StreamResponseOptions) {
   return function streamResponse(
     req: IncomingMessage,
@@ -51,7 +58,7 @@ export function createStreamResponse({
           .split(',')
           .map((value: string) => value.trim().toLowerCase())
       : [];
-    if (!cacheControlDirectives.includes('no-transform')) {
+    if (!compressible && !cacheControlDirectives.includes('no-transform')) {
       res.setHeader(
         'Cache-Control',
         cacheControl ? `${cacheControl}, no-transform` : 'no-transform',
