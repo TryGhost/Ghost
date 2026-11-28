@@ -5,7 +5,7 @@ const models = require('../../models');
 const api = require('./index');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const ALLOWED_INCLUDES = [];
-const UNSAFE_ATTRS = ['role_id'];
+const UNSAFE_ATTRS = ['role_id', 'email'];
 
 const messages = {
   inviteNotFound: 'Invite not found.',
