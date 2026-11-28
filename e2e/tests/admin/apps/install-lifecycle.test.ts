@@ -37,19 +37,27 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     await expect(appPage.app.result).toHaveText(/^200 \{"posts":/);
   });
 
-  test('refuses app requests to endpoints apps can’t use', async ({ page, fixtureApp }) => {
+  test('Ghost refuses app requests to endpoints no scope covers', async ({ page, fixtureApp }) => {
     const appPage = new AppPage(page);
     await installApp(page, fixtureApp.manifestUrl);
-    const sent: string[] = [];
-    page.on('request', (request) => sent.push(new URL(request.url()).pathname));
+    const refusals: Array<[path: string, status: number]> = [];
+    page.on('response', (response) =>
+      refusals.push([new URL(response.url()).pathname, response.status()]),
+    );
 
+    // Admin sends them with the app's token, and the app gets Ghost's own answer.
     await appPage.app.callAdminApi('/db/');
-    await expect(appPage.app.result).toHaveText("blocked: Apps can't use GET /db/");
+    await expect(appPage.app.result).toHaveText(/^403 \{"errors":\[\{"message":/);
     await appPage.app.callAdminApi('/users/me/token/');
-    await expect(appPage.app.result).toHaveText("blocked: Apps can't use GET /users/me/token/");
-    // Admin refuses them before sending anything.
-    expect(sent).not.toContain('/ghost/api/admin/db/');
-    expect(sent).not.toContain('/ghost/api/admin/users/me/token/');
+    await expect(appPage.app.result).toHaveText(/^403 \{"errors":\[\{"message":/);
+    expect(refusals).toContainEqual(['/ghost/api/admin/db/', 403]);
+    expect(refusals).toContainEqual(['/ghost/api/admin/users/me/token/', 403]);
+
+    // What Ghost doesn't check yet, Admin still refuses before sending anything.
+    await appPage.app.callAdminApi('/posts/?include=authors.roles');
+    await expect(appPage.app.result).toHaveText(
+      "blocked: Apps can't include authors.roles on GET /posts/",
+    );
   });
 
   test('an uninstall from another Admin session ends the open app’s session, and reinstalling starts a new installation', async ({

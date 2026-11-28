@@ -5,19 +5,20 @@ and `admin-x-framework`'s app API hooks build against a matching Core only,
 with no older-Core fallbacks or tests. Origin, framing and identity checks
 still apply.
 
-Ghost holds an app's token to the installation's approved scopes on routes
-that check a permission a scope names (`403 APP_SCOPE_REQUIRED`) and refuses
-it on the rest (`403 APP_NOT_ALLOWED`). The app gets those answers: neither code says
-anything about the app's session. To open a route to apps, give it a
-permission key in Core that a scope names, and add it under that scope in
-`APP_ROUTES` (`contracts/app-contracts/src/bridge/app-routes.ts`), the
-reviewed list of what each scope opens, which a test in Ghost holds to the
-server's routes in both directions. The bridge sends only the routes listed
-there, and doesn't check the installation's scopes for them. A new scope goes
-in the scope registry (`contracts/app-contracts/src/scopes.ts`) with its
-review wording.
+Ghost's server decides what an app may call. It holds an app's token to the
+installation's approved scopes on routes that check a permission a scope
+names (`403 APP_SCOPE_REQUIRED`) and refuses it on the rest (`403 APP_NOT_ALLOWED`),
+the routes that authenticate nobody (sign-in, password reset, invitations,
+setup) included, so the bridge sends any Admin API path on and the app gets
+the server's answer, those refusals too: neither code says anything about the
+app's session. Don't add a route check to the bridge. To open a route to
+apps, give it a permission key in Core that a scope names, and add it under
+that scope in `APP_ROUTES` (`contracts/app-contracts/src/bridge/app-routes.ts`),
+the reviewed list of what each scope opens, which a test in Ghost holds to the
+server's routes in both directions. A new scope goes in the scope registry
+(`contracts/app-contracts/src/scopes.ts`) with its review wording.
 
-The bridge also covers what the server doesn't check yet: `SERVER_GAPS` in
+The bridge still covers what the server doesn't check yet: `SERVER_GAPS` in
 `contracts/app-contracts/src/bridge/server-gaps.ts`, each one unit that names
 the issue that moves it to the server and holds its own check or rewrite of
 the request. A route's entry in `APP_ROUTES` names the gaps the bridge applies

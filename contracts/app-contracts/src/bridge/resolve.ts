@@ -1,5 +1,5 @@
 import type { AppPermissionKey } from '../scopes.ts';
-import { scopesOpening, serverGapsFor } from './app-routes.ts';
+import { serverGapsFor } from './app-routes.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
 import { readQuery, writeQuery } from './query.ts';
 import { isContainedPath, type FetchMethod } from './rules.ts';
@@ -14,10 +14,6 @@ const ENCODED_SEPARATOR = /%2f|%5c/i;
 // whose path or query mentions either could reach a route other than the one checked here.
 const GHOST_API = /ghost\/api/i;
 const VERSION_SEGMENT = /^(?:v2|v3|v4|canary)$/i;
-
-// The site's public details, for showing its branding. Ghost serves them without signing in, so
-// they need no scope.
-const SITE = /^\/site\/?$/i;
 
 // Decodes every escape that's valid on its own, byte by byte, and leaves the rest. Only used
 // to look for the ASCII text above, so a byte of a longer character can decode to anything.
@@ -64,13 +60,11 @@ export type AdminApiRequestCheck =
  * Absolute and protocol-relative URLs, paths that don't start with `/`, backslashes, `..` in
  * any spelling the URL parser understands, and escaped separators are all `invalid_path`.
  *
- * A path that stays under the root is `blocked` when the route it reaches can't be told: its
- * path or query mentions `ghost/api`, its first segment is an old API version (`v4`), or it has
- * an empty segment; when its query isn't one every parser reads alike (`readQuery`); when
- * `APP_ROUTES` lists no route for it with this method, unless it reads the site's public
- * details; or when a server gap on the route refuses it. A listed route is sent whatever the
- * installation's scopes: Ghost's server holds the app's token to them, and the app gets its
- * answer, a refusal as `APP_SCOPE_REQUIRED` included.
+ * Any path that stays under the root is sent to the server, which decides whether the app may
+ * call it. It's `blocked` here only when the route it reaches can't be told: its path or query
+ * mentions `ghost/api`, its first segment is an old API version (`v4`), or it has an empty
+ * segment; when its query isn't one every parser reads alike (`readQuery`); or when a server
+ * gap on the route refuses it.
  *
  * The query is never sent as the app spelled it. The bridge reads it strictly and writes its
  * own, one `name=value` for each parameter, so the parameters the gaps acted on are exactly the
@@ -134,11 +128,6 @@ export function checkAdminApiRequest(
   const read = readQuery(url.search);
   if ('refused' in read) {
     return blocked(`${read.refused} (${method} ${pathname})`);
-  }
-
-  // Whether the installation was approved for the route's scope is the server's to say
-  if (scopesOpening(pathname, method).length === 0 && !(method === 'GET' && SITE.test(pathname))) {
-    return blocked(`Apps can't use ${method} ${pathname}`);
   }
 
   let query = read.parameters;

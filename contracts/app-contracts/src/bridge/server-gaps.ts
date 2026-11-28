@@ -6,10 +6,12 @@ import { isRecord, type FetchMethod } from './rules.ts';
  * What the bridge still refuses or rewrites in an app's Admin API request, because Ghost's
  * server doesn't yet. It is a list of gaps in the server, not a list of what apps may call.
  *
- * Apps call the Admin API with their session's token, and Ghost's server holds every call to
- * the installation's approved scopes. What the server doesn't check yet is what a request
- * carries within a route it allows, and each gap here covers one such thing until the issue it
- * names moves the check to the server:
+ * Apps call the Admin API with their session's token. Ghost's server decides which routes that
+ * token reaches: it holds every call to the installation's approved scopes and refuses a route
+ * no scope covers, apart from `GET /site`, the site's public details, which every app reaches,
+ * so the bridge sends any Admin API path on and an app gets the server's own answer. What the
+ * server doesn't check yet is what a request carries within a route it allows, and each gap
+ * here covers one such thing until the issue it names moves the check to the server:
  *
  * - Sending a post as email, or writing HTML as its content: the `newsletter`, `email_segment`
  *   and `source` parameters on a post or page write (BER-4142).

@@ -159,3 +159,26 @@ export function adminApiRouter(): MountedRouter {
 export function adminApiRoutes(router: MountedRouter = adminApiRouter()): AdminApiRoute[] {
   return walk(router, '', () => []);
 }
+
+/**
+ * What a route does with a request carrying an app token, read from what the request runs:
+ * `open` when app token authentication comes first, `refused` when the refusal of an
+ * unauthenticated token does, and `unguarded` when it runs neither, which leaves an app to be
+ * taken for whoever else is calling.
+ */
+export function appTokenAccess(handlers: unknown[]): 'open' | 'refused' | 'unguarded' {
+  // Required, so these are the handlers the CommonJS routes file mounted
+  const {
+    authenticatesAppTokens,
+    refuseUnauthenticatedAppToken,
+  } = require('../../core/server/auth/app-token');
+  for (const handler of handlers) {
+    if (authenticatesAppTokens(handler)) {
+      return 'open';
+    }
+    if (handler === refuseUnauthenticatedAppToken) {
+      return 'refused';
+    }
+  }
+  return 'unguarded';
+}

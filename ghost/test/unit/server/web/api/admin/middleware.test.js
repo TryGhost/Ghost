@@ -291,6 +291,7 @@ describe('Admin API Middleware', function () {
       app.post('/upload', refuseAppEarly, sideEffect, http(controller.upload));
       app.post('/import', refuseAppEarly, sideEffect, http(controller.importCSV));
       app.post('/not-http', refuseAppEarly, sideEffect, (req, res) => res.json({ ok: true }));
+      app.all('/plain-all', refuseAppEarly, sideEffect, (req, res) => res.json({ ok: true }));
       app.post('/bare', refuseAppEarly, sideEffect, http(controller.bare));
       app
         .route('/multi')
@@ -409,11 +410,17 @@ describe('Admin API Middleware', function () {
       await request(routes).post('/mounted/upload').expect(200);
     });
 
-    it('leaves a route that does not end in http() to its own checks', async function () {
-      const { app: routes, ran } = createRoutes(app([]));
+    // Only a route in front of a mounted router ends in this check, with nothing after it
+    it('refuses an app on a route that ends in a handler outside the pipeline', async function () {
+      const { app: routes, ran } = createRoutes(app(['post:browse']));
 
-      await request(routes).post('/not-http').expect(200);
-      assert.deepEqual(ran, ['/not-http']);
+      await request(routes).post('/not-http').expect(403).expect({
+        type: 'NoPermissionError',
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
+      });
+      await request(routes).get('/plain-all').expect(403);
+      assert.deepEqual(ran, []);
     });
 
     it('leaves every other principal to the route', async function () {

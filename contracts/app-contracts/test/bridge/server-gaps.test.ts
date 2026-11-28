@@ -232,6 +232,7 @@ describe('bulk edit and copying', () => {
         refusedBy('copy', /^Apps can't use POST /),
       );
     }
+    expect(sent(`/posts/${ID}/copy/`)).toBe('');
   });
 });
 

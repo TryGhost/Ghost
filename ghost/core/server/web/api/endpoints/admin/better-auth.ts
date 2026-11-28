@@ -3,6 +3,7 @@ import { toNodeHandler } from 'better-auth/node';
 import errors from '@tryghost/errors';
 import type { GhostAuth } from '../../../../auth/better-auth';
 import { setClientIPHeader } from '../../../../auth/better-auth/client-ip';
+import { refuseAppTokensByDefault } from './app-token-routes';
 
 const express = require('../../../../../shared/express');
 
@@ -32,9 +33,13 @@ function readBody(limit: number) {
   };
 }
 
-/** Serves Better Auth's native routes under `/auth/*`, which Better Auth rate limits itself. */
+/**
+ * Serves Better Auth's native routes under `/auth/*`, which Better Auth rate limits itself.
+ * None of them authenticates an app's token, so the router refuses a request carrying one
+ * before Better Auth, and its rate limiter, sees it.
+ */
 export function betterAuthRouter(auth: GhostAuth): Router {
-  const router: Router = express.Router('admin api better auth');
+  const router: Router = refuseAppTokensByDefault(express.Router('admin api better auth'));
   router.all('/auth/*', setClientIPHeader, readBody(BODY_SIZE_LIMIT), toNodeHandler(auth));
   return router;
 }

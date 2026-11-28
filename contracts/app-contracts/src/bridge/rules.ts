@@ -106,9 +106,9 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
 /**
  * The codes a refused call carries across the channel. The structured clone that carries an
  * error keeps only its message, so the refusing side puts the code at the start of the
- * message, as in `blocked: Apps can't use GET /db/`, and the other side parses it back out. Codes
- * are only ever added: an SDK that doesn't know a code treats the whole message as a generic
- * refusal.
+ * message, as in `blocked: Apps can't use PUT /posts/bulk/`, and the other side parses it back
+ * out. Codes are only ever added: an SDK that doesn't know a code treats the whole message as a
+ * generic refusal.
  *
  * The host codes, which Admin refuses the page's calls with:
  *
@@ -116,11 +116,10 @@ export const FETCH_RESPONSE_STATUS_MAX = 599;
  * - `invalid_argument`: an argument Admin does not take.
  * - `invalid_path`: a path that is not an Admin API path or a route within the app, or one
  *   the Admin API only responds to with a redirect, such as a path without its trailing `/`.
- * - `blocked`: a request Admin won't send: a route the app routes don't list; one it refuses to
- *   cover a gap in what Ghost's server checks, such as a write that sets code injection; or one
- *   whose query it can't write so that the server reads what Admin read, such as a parameter
- *   name in brackets. A request the server refuses is answered with the server's own response,
- *   not this code.
+ * - `blocked`: a request Admin won't send: one it refuses to cover a gap in what Ghost's
+ *   server checks, such as a write that sets code injection, or one whose query it can't write
+ *   so that the server reads what Admin read, such as a parameter name in brackets. A request
+ *   the server refuses is answered with the server's own response, not this code.
  * - `network_error`: Admin could not reach its own API.
  * - `rejected`: anything else; the detail says why.
  */

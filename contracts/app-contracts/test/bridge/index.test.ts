@@ -48,7 +48,6 @@ describe('the bridge entry point', () => {
       'normaliseAppPath',
       'readQuery',
       'scopeForField',
-      'scopesOpening',
       'serverGapsFor',
     ]);
   });

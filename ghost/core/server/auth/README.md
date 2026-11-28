@@ -50,6 +50,15 @@ no scope grants, that no app may take the action, as `403 APP_NOT_ALLOWED`;
 every other refusal is the generic one. A principal of a kind the policy doesn't know is
 granted nothing and its scopes allow nothing.
 
+For an app these checks are the only gate on what it may call, so a permission
+key an app's scopes can name opens every route that checks it. Before adding a
+route under such a key, or checking such a key in a new place, see
+[App tokens](better-auth/README.md#app-tokens): a route apps shouldn't reach
+gets a key of its own, granted to the same roles, as `stat:browse`,
+`post:export` and `post:bulkDestroy` were, and one they should is added to
+the reviewed list of what each scope opens, which a test holds to the routes
+the Admin API mounts.
+
 The [previous inventory audit](https://github.com/TryGhost/Ghost/tree/2700a443fe1ff989630efbdb5e8355f066959bbf/ghost/core/server/services/legacy-service-inventory.yaml#L5789)
 records its contracts and open coverage gaps. Injecting models into
 `canThis` still needs to keep `User.permissible`'s deferred

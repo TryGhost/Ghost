@@ -52,7 +52,7 @@ describe('checking an Admin API request', () => {
   it('names the path within the API and the server gaps covered on it', () => {
     expect(check('/tags/?limit=5')).toMatchObject({ pathname: '/tags/', gaps: [] });
     expect(check('/posts/?limit=5')).toMatchObject({ pathname: '/posts/', gaps: ['postFields'] });
-    expect(check('/site/')).toMatchObject({ pathname: '/site/', gaps: [] });
+    expect(check('/')).toMatchObject({ pathname: '/', gaps: [] });
   });
 
   it('works with a root written without its trailing slash, a query or a fragment', () => {
@@ -132,27 +132,21 @@ describe('checking an Admin API request', () => {
     });
   });
 
-  // Until Ghost's server refuses an app on every route no scope opens, the bridge does.
-  it('refuses a route the app routes don’t list', () => {
+  // Ghost's server decides which routes an app's token reaches, so the app gets its answer.
+  it('sends on any path within the API, as the server decides what an app may call', () => {
     for (const [method, path] of [
       ['GET', '/db/?include=all'],
       ['DELETE', '/posts/?filter=tag:news'],
       ['GET', '/settings/'],
       ['GET', '/users/5ddc9141c35e7700383b2937/token/'],
       ['POST', '/webhooks/'],
-      ['POST', '/site/'],
+      ['GET', '/site/'],
+      ['GET', '/posts/export/'],
+      ['GET', '/stats/posts/5ddc9141c35e7700383b2937/stats/'],
       ['GET', '/no/such/route/'],
     ] as const) {
-      const pathname = path.split('?')[0];
-      expect(check(path, method), `${method} ${path}`).toEqual({
-        problem: 'blocked',
-        pathname,
-        detail: `Apps can't use ${method} ${pathname}`,
-      });
+      expect(check(path, method).problem, `${method} ${path}`).toBeUndefined();
     }
-    // A parameter is any one segment, as Ghost's router reads it, so this is sent as the read
-    // of a post it would be routed as if no route named it, and the server answers.
-    expect(check('/posts/export/').problem).toBeUndefined();
   });
 
   // It needs none of the app's scopes: the server holds the route to them.
@@ -190,7 +184,7 @@ describe('checking an Admin API request', () => {
         detail: expect.stringMatching(/: its path has an empty segment$/),
       });
     }
-    expect(check('/tags/').problem).toBeUndefined();
+    expect(check('/').problem).toBeUndefined();
   });
 
   // A parameter's value is Ghost's to read, and Ghost answers 400 to one it can't decode, so the
@@ -319,6 +313,9 @@ describe('checking an Admin API request', () => {
       check(`/posts/${id}/?newsletter=weekly&include=sentiment`, 'DELETE', root, 'not json'),
     ).toMatchObject({ gaps: [] });
     expect(check('/tags/?include=count.posts&order=sentiment').problem).toBeUndefined();
+    expect(check('/settings/?source=html', 'PUT', root, '{"codeinjection_head":""}').problem).toBe(
+      undefined,
+    );
   });
 
   it('refuses escaped separators, which a later reader may decode', () => {

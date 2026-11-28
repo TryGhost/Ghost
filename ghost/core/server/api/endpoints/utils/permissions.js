@@ -14,11 +14,16 @@ const messages = {
 /**
  * The methods an app may call although they check no permission or check their own, so the
  * scopes an app was approved for can't limit them. A method is listed here only when it is safe
- * for any app, whatever its scopes; every other such method refuses apps. None is yet. A
- * controller outside the pipeline has no name to list, so it runs through `pipeline()` first,
- * which for methods written as single functions adds only this check.
+ * for any app, whatever its scopes; every other such method refuses apps. A controller outside
+ * the pipeline has no name to list, so it runs through `pipeline()` first, which for methods
+ * written as single functions adds only this check.
+ *
+ * - `site.read`: the site's public config, which anyone may read without signing in: its
+ *   title, description, images and accent colour, but also its URL, locale, timezone, Ghost's
+ *   version, the site's UUID, whether anyone can sign up, and the browser Sentry DSN and
+ *   environment where those are set
  */
-const APP_UNCHECKED_ALLOWLIST = new Set();
+const APP_UNCHECKED_ALLOWLIST = new Set(['site.read']);
 
 /** The object type a docName names in permissions, e.g. `posts` → `post` */
 const singularOf = (docName) =>
