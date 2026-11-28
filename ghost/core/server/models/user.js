@@ -14,8 +14,8 @@ const {
   writePasswordHash,
 } = require('../auth/better-auth/credential-password');
 const urlUtils = require('../../shared/url-utils').default;
+const { ACTIVE_STAFF_STATUSES: activeStates } = require('../../shared/staff-status');
 const { ASSIGNABLE_ROLES, setIsRoles } = require('./role-utils');
-const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const DEFAULT_ACCESSIBILITY_PREFERENCES = JSON.stringify({ nightShift: 'system' });
 
 /**

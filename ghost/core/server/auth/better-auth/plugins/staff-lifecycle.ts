@@ -6,13 +6,10 @@ import { setSessionCookie } from 'better-auth/cookies';
 import { z } from 'zod';
 import { ROUTES, SSO_PREFIX } from '../routes';
 import { deleteAppTokens } from './app-clients';
+import { ACTIVE_STAFF_STATUSES, isActiveStaffStatus } from '../../../../shared/staff-status';
 
-// Legacy user model statuses; `warn-*` users can still sign in
-const WARN_STATUSES = ['warn-1', 'warn-2', 'warn-3', 'warn-4'];
-const ACTIVE_STATUSES = ['active', ...WARN_STATUSES];
-
-export const isActiveStatus = (status: unknown): boolean =>
-  typeof status === 'string' && ACTIVE_STATUSES.includes(status);
+// A warned user who signs in is set back to active
+const WARN_STATUSES = ACTIVE_STAFF_STATUSES.filter((status) => status !== 'active');
 
 /**
  * A user row's `status`, which Better Auth's internal adapter returns but
@@ -77,7 +74,7 @@ export async function admitStaffUser(
   { passwordless }: { passwordless: boolean },
 ): Promise<void> {
   const status = staffStatus(user);
-  if (isActiveStatus(status)) {
+  if (isActiveStaffStatus(status)) {
     return;
   }
   if (status === 'locked' && passwordless) {

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import type { Principal } from '../../../../../core/server/auth/principal';
+import { tables } from '../../../../../core/server/data/schema';
 import {
   ACTIVE_STAFF_STATUSES,
-  staffSessionOf,
-} from '../../../../../core/server/services/app-installations/staff-session';
+  isActiveStaffStatus,
+} from '../../../../../core/shared/staff-status';
+import { staffSessionOf } from '../../../../../core/server/services/app-installations/staff-session';
 
 function sessionPrincipal({
   role = 'Administrator',
@@ -42,12 +44,23 @@ describe('staffSessionOf', function () {
     }
   });
 
-  it('accepts every status the User model counts as active, as the token lookup does', function () {
-    const { User } = require('../../../../../core/server/models/user');
-    assert.deepEqual([...ACTIVE_STAFF_STATUSES], User.activeStates);
-    for (const status of ACTIVE_STAFF_STATUSES) {
-      assert.equal(staffSessionOf(sessionPrincipal({ status })).userId, 'user-id', status);
+  // Issuing, each call with the token and Better Auth's session gate all read the shared list,
+  // so this holds for each of them
+  it('accepts exactly the active and warned statuses a staff user can have', function () {
+    const statuses: readonly string[] = tables.users.status.validations.isIn[0];
+    const active = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
+    assert.deepEqual(statuses.filter(isActiveStaffStatus).sort(), active);
+    for (const status of statuses) {
+      if (active.includes(status)) {
+        assert.equal(staffSessionOf(sessionPrincipal({ status })).userId, 'user-id', status);
+      } else {
+        assert.throws(() => staffSessionOf(sessionPrincipal({ status })), refused, status);
+      }
     }
+  });
+
+  it('shares a list of active statuses that nothing can change', function () {
+    assert.ok(Object.isFrozen(ACTIVE_STAFF_STATUSES));
   });
 
   it('refuses other roles', function () {

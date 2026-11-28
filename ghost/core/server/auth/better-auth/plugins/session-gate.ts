@@ -2,7 +2,8 @@ import type { BetterAuthPlugin, GenericEndpointContext } from 'better-auth';
 import { createAuthMiddleware } from 'better-auth/api';
 import { ROUTES } from '../routes';
 import { allowsUnverifiedSession, recordUnverifiedSession } from './device-verification';
-import { isActiveStatus, staffStatus } from './staff-lifecycle';
+import { isActiveStaffStatus } from '../../../../shared/staff-status';
+import { staffStatus } from './staff-lifecycle';
 
 type Ctx = Pick<GenericEndpointContext, 'context' | 'headers'>;
 
@@ -47,7 +48,7 @@ export const ghostSessionGate = () =>
               return;
             }
 
-            if (!isActiveStatus(staffStatus(found.user))) {
+            if (!isActiveStaffStatus(staffStatus(found.user))) {
               await ctx.context.internalAdapter.deleteSession(token);
               return { context: { headers: withoutSessionCookie(ctx) } };
             }

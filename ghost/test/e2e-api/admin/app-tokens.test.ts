@@ -197,6 +197,30 @@ describe.skipIf(!isBetterAuth)('App tokens on the Admin API', function () {
     assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
   });
 
+  // Issuing accepts a staff user Ghost has warned about failed sign-ins, so each call must too
+  for (const status of ['warn-1', 'warn-2', 'warn-3', 'warn-4']) {
+    it(`accepts a token whose user is ${status}`, async function () {
+      const id = await installation(['post:browse']);
+      const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+      await knex()('users').where({ id: owner().id }).update({ status });
+
+      await agent.get('posts/').header('Authorization', bearer(token)).expectStatus(200);
+    });
+  }
+
+  it('refuses a token once the user is locked', async function () {
+    const id = await installation(['post:browse']);
+    const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
+    await knex()('users').where({ id: owner().id }).update({ status: 'locked' });
+
+    const { body } = await agent
+      .get('posts/')
+      .header('Authorization', bearer(token))
+      .expectStatus(401);
+
+    assert.equal(refusedAs(body), 'APP_TOKEN_INVALID');
+  });
+
   it('refuses app tokens from the next request once the apps flag is off', async function () {
     const id = await installation(['post:browse']);
     const { token } = await tokenFor(id, { clientScopes: ['post:browse'] });
