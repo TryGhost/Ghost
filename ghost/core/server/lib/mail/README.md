@@ -3,6 +3,11 @@
 GhostMailer sends transactional messages. Bulk delivery uses the Mailgun client
 in the neighboring `mailgun` directory.
 
+Member sign-in and confirmation messages use `mail.transactional_from`
+(`mail__transactional_from` via environment) when configured, falling back to
+`mail.from`. The members support address remains the Reply-To address for those
+messages.
+
 `formatAddressForDelivery` owns the Gmail display-name compatibility rule shared
 by those delivery paths. General mailbox parsing and formatting live in
 `@tryghost/parse-email-address/mailbox`, independently of Ghost settings and boot.

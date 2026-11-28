@@ -57,6 +57,9 @@ describe('Members - config', function () {
     membersConfig = new MembersConfigProvider({
       config: configUtils.config,
       settingsCache: createSettingsMock({ setDirect: true, setConnect: false }),
+      settingsHelpers: {
+        getTransactionalEmailAddress: sinon.stub().returns('"Transactions" <tx@example.com>'),
+      },
       urlUtils: urlUtils.stubUrlUtilsFromConfig(),
     });
   });
@@ -69,6 +72,13 @@ describe('Members - config', function () {
 
   it('can get correct token issuer', function () {
     assert.equal(membersConfig.getTokenIssuer(), 'http://domain.tld/subdir/members/api');
+  });
+
+  it('can get the transactional email address', function () {
+    assert.equal(
+      membersConfig.getEmailTransactionalAddress(),
+      '"Transactions" <tx@example.com>',
+    );
   });
 
   it('can get correct signinUrl', function () {
