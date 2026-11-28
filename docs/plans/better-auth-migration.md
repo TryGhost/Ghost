@@ -353,6 +353,17 @@ with `overrideAll`, so `verified` is not reset to its default. Team SSO uses
   `post:edit` today; a token also needs `post:send_newsletter`). `scopes.ts`
   maps each finer scope to its base key, and `authorize` checks both (§3.6).
   `scopes.ts` also adds the coarse presets the UI offers.
+- A scope may carry a constraint: `post:edit:own` allows the action only on
+  rows the principal owns (for an app, posts it created, §3.6). `scopes.ts`
+  parses each scope once, where the token or app is resolved, into
+  `{action, objectType, constraint}`; rules read the constraint and never
+  match on the scope string.
+- A fixed deny set lists actions a principal kind may never take, whatever
+  its scopes or its user's role. For apps: transferring ownership, assigning
+  roles, deleting staff, resetting authentication, and managing tokens,
+  integrations and API keys. Staff tokens and personal access tokens already
+  have one, the staff-token blocklist. `capabilities` removes these keys
+  before the scope check, and no rule can add them back.
 - Scopes apply to everything a request reads, not only its endpoint:
   includes, relations and relation filters (for example
   `posts?include=authors`, or a filter on `tags`) are checked against the
@@ -469,16 +480,29 @@ access, and `canThis` becomes an adapter over it.
   today; a scoped Owner token is also capped by its scopes.
 
 - **Decisions.** `authorize(principal, action, objectType, {resource, attrs})`
-  resolves to `{excludedAttrs?}` when allowed and throws otherwise, with the
-  same errors as today: `NoPermissionError`, `NotFoundError`, limit errors,
-  and `UnauthorizedError` for an inactive user. `attrs` is the `unsafeAttrs`
-  `canThis` receives today. Without a row rule for the type, the request is
-  allowed when the key is in `granted` and in `scopes`. With one, the rule
-  receives the principal, whether the key is granted, the resource and
-  `attrs`, and decides, so it can narrow or widen as the hook does today. A
-  rule is reached only when the key is in `scopes`, so a widening rule never
-  lets a scoped principal past a key its scopes lack. Internal requests (an
-  `internal` context or principal) bypass the check, as in `canThis` today.
+  resolves to `{excludedAttrs?, reason}` when allowed and throws otherwise,
+  with the same errors as today: `NoPermissionError`, `NotFoundError`, limit
+  errors, and `UnauthorizedError` for an inactive user. `attrs` is the
+  `unsafeAttrs` `canThis` receives today. Every decision runs in this order:
+  1. Internal requests (an `internal` context or principal) are allowed, as
+     in `canThis` today.
+  2. The deny set for the principal's kind (§3.3) refuses. Nothing later
+     overrides it.
+  3. A key missing from `scopes` refuses.
+  4. Grants: the key in `granted`, or a widening relation in the type's rule
+     (a user edits their own profile; an Author publishes a post they are
+     primary author of), allows the action.
+  5. Narrowing: the rule's conditions refuse what step 4 allowed (an Author
+     edits only posts they co-author).
+  6. The rule's `check` judges the payload.
+
+  Steps 2, 3, 5 and 6 only refuse, so a widening relation never lets a
+  scoped principal past a key its scopes lack. Without a row rule for the
+  type, steps 1–4 decide. `reason` names the step and the rule, or the
+  missing scope, that decided. App actions carry it into the audit log, and
+  a refusal for a missing scope names the scope in the error, as GitHub's
+  `X-Accepted-GitHub-Permissions` header does.
+
 - **Finer scopes.** Where one key covers more than one capability, a fixed
   map in `scopes.ts` names the extra scope, and it applies only to scoped
   principals. The check runs at every point that performs the extra action,
@@ -491,15 +515,63 @@ access, and `canThis` becomes an adapter over it.
   without a send needs only `post:edit`. Phase 4 (PLA-639) places and tests
   each check point.
 - **Row rules.** Per-type rules in `auth/policy/rules/` replace the
-  `permissible` hooks, one model at a time. Each keeps its hook's narrowing,
-  widening, errors, limit checks and `excludedAttrs`, and the endpoint keeps
-  stripping `excludedAttrs` before the write. Rules are async, since they load
-  the resource as the hooks do.
+  `permissible` hooks, one model at a time. A rule works on a plain row view
+  (the row's columns and the link ids it needs), not a Bookshelf model:
+  - `relations` are computed from the row: for posts `primary_author`,
+    `co_author` and `owning_app`; for users `self`.
+  - `conditions` say which relation an action needs under each grant: an
+    Author edits a post as `co_author` and destroys it as `primary_author`,
+    and `post:edit:own` edits a post as `owning_app`. The hook's narrowing
+    and widening then read as a table.
+  - `check?` keeps what concerns the payload: status changes a Contributor
+    may not make, role assignment, limit checks, `excludedAttrs`, and the
+    errors callers rely on. The endpoint keeps stripping `excludedAttrs`
+    before the write.
+
+  Conditions are data, and a rule is `{conditions?, check?}`, the shape of a
+  CASL raw rule with Ghost code around it. That keeps a later move to CASL
+  mechanical (§11).
+
+- **Writes.** Seeing a row and acting on it are separate decisions: an
+  Author sees a co-authored post but may destroy it only as its primary
+  author. The service that owns the write locks and loads the row inside its
+  transaction, builds the row view and its relations from that load, and
+  decides synchronously before writing, so the state the decision reads
+  cannot change before the write. A read decides on the row view the
+  endpoint loads, without a lock. Bulk writes decide per row and keep their
+  chunk boundaries. The first write rule settles the rest of the write
+  contract, covering:
+  - link rows read after the lock, which plain subqueries under `REPEATABLE
+    READ` may see from an older snapshot
+  - writes that already share a caller's transaction: member edits with
+    metafields, and post edits that create a newsletter email
+  - paths that write outside the API, such as comment moderation's
+    `bulkUpdateStatus`
+  - relations whose rows change without the parent's lock, such as a
+    member's `feedback`, which is deleted with its post
+  - relation payloads that list only some rows: tag sync treats the
+    submitted `tags` as the full set
+- **First policy, end to end.** The first rule is the first real app
+  scope: an app edits or publishes only posts it created (`post:edit:own`).
+  Posts gain a provenance column, `posts.app_installation_id` (§4.8), set on
+  create from the app principal and never editable through the API. Before
+  any hook moves, this rule is built with explicit expected results for an
+  edit, a publish, a destroy and a bulk edit, on a post the app created and
+  on one it did not, and each result reports its `reason`. It is write-only:
+  the app reads every post its `post:browse` and `post:read` scopes allow.
+  The Apps team settles before 7 December (PLA-631) whether "own" must also
+  hide other posts from reads, as Google Drive's `drive.file` scope does;
+  if it must, row filters (§11) come first.
+- **Characterization tests.** Each type has one table: principals ×
+  resources × actions → allow, deny or which error, plus `excludedAttrs`.
+  The same table runs against the `permissible` hook and against the rule,
+  so "every response for an unscoped principal stays the same" is a test,
+  not a goal. A hook moves when its table passes against both.
 - **Relations.** Includes and relation filters check the related type's key
   against `scopes` (§3.3). The check runs where the API resolves includes and
   filters, which the Phase 4 spike locates, and reads `scopes` from
-  `capabilities`. It does not run the related type's row rule, and role
-  grants are not checked on includes, as today.
+  `capabilities`. Rules do not run there, and role grants are not checked on
+  includes, as today.
 - **Unchanged.** Endpoint `permissions` configs and `unsafeAttrs` in
   `api/endpoints/`, `frame.options.context` (internal callers still pass
   `{internal: true}`), and the `canThis(context).edit.post(id, attrs)` call
@@ -508,9 +580,9 @@ access, and `canThis` becomes an adapter over it.
 Order: Phase 4 builds `capabilities` and `authorize` with scopes and finer
 scopes. `canThis` uses them for its grant flags while the hooks still decide,
 and refuses a scoped principal whose scopes lack the key before any hook runs,
-so scopes cap hooks the same way they will cap row rules. Each hook then moves
-to a row rule in its own pull request, behind characterization tests for its
-narrowing, widening, errors, limit checks and `excludedAttrs`;
+so scopes cap hooks the same way they will cap row rules. Once the first
+policy is proved end to end, each hook moves to a row rule in its own pull
+request, once its characterization table passes against both;
 `posts`/`authors` is the largest and goes last. `canThis` call sites move to
 `authorize` directly in Phase 7. These steps keep every response for an
 unscoped principal; scopes only restrict tokens and apps.
@@ -637,6 +709,14 @@ Auth does not purge them.
   replaced it. Decide whether credential rows join content exports.
 - **Ghost 8.0:** remove `Authorization: Ghost`, Staff Access Tokens,
   `ghostApiKeys`, the Custom Integrations UI and the `api_keys` table.
+
+### 4.8 Post provenance
+
+`posts.app_installation_id` (nullable, versioned migration) records the app
+installation that created a post, for the `post:edit:own` rule (§3.6). It is
+set on create from the app principal and is never accepted as input through
+the API. It is the one change to an existing Ghost table in this plan, and
+it lands with the first policy.
 
 ## 5. Compatibility contract
 
@@ -1102,8 +1182,15 @@ Decided:
 - Access is decided in `auth/policy/` from the principal: role grants
   (Owner granted every key) and per-type row rules that replace model
   `permissible` hooks and may narrow or widen a grant, with the result capped
-  by token and app scopes. `canThis` is an adapter over it, not extended with
-  more actor flags (§3.6). Endpoint permission configs, `excludedAttrs` and
+  by token and app scopes. Decisions run in a fixed order, with a deny set
+  per principal kind that nothing overrides. Rules are declarative relations
+  and conditions over a row view, plus a payload `check`, decided
+  synchronously on the locked row inside the write's transaction. Reads are
+  not filtered per principal until a scope needs it (§11). `canThis` is an
+  adapter over it, not extended with more actor flags (§3.6).
+- No authorization library for now. Casbin, Cedar, Oso, Cerbos,
+  OpenFGA/SpiceDB and `accesscontrol` were reviewed. Rules are shaped as
+  CASL raw rules so that moving to CASL later is mechanical (§11). Endpoint permission configs, `excludedAttrs` and
   `frame.options.context` stay.
 - `user_accounts` is the only password store: the legacy engine moves to it in
   Phase 2 wherever it exists, and the migration that graduates it copies
@@ -1132,6 +1219,41 @@ audit trail from `databaseHooks.session.create.after`; multi-site staff
 identity with `organization`; identity tokens on `jwt` and member sign-in on
 `magicLink`/`emailOTP`; Content API keys as read-scoped tokens; audited
 support impersonation via `impersonatedBy`.
+
+**Row filters (deferred).** No principal is limited in which rows it can
+read yet. That changes with the first scope that must hide rows, for
+example an app's "own posts only" if it must also hide other posts. A rule
+then also returns a Mongo-style filter, ANDed in SQL onto every query that
+reads rows for the principal, beside the user's filter and not through
+`enforcedFilters` (NQL's override merge drops the user's same-key
+statements). The contract is what a principal can learn: a row the filter
+hides never appears in:
+
+- a browse, or a read by any selector
+- an include, a relation filter match or a related count
+- a search or the CSV export
+- the order of visible rows, which the count-based `tag:[…]` and
+  `author:[…]` ordering in `orderDefaultRaw` can leak
+
+An empty set of alternatives matches nothing, and each form is pinned by a
+test with one visible and one hidden row.
+
+The prerequisite is TryGhost/NQL#306. It fixes `mongo-knex` so that:
+
+- an `$or` element with several keys, or several operators on one key, is
+  ANDed
+- `$nor` is supported
+- an empty `$or` matches nothing
+- unknown operators throw
+
+Today those shapes widen results silently. No current Ghost path emits
+them, so this is not a vulnerability today.
+
+**CASL.** Move the rules onto `@casl/ability` once a scope needs conditions
+stored per app installation, or needs to hide rows on reads. Its rules are
+`{action, subject, conditions, fields, inverted}` data, and
+`rulesToCondition` yields the Mongo query a fixed `mongo-knex` compiles.
+Ghost's `check` code stays around it.
 
 ## 12. File map
 
