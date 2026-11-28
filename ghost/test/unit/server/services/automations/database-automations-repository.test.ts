@@ -7,6 +7,10 @@ import createKnex, { type Knex } from 'knex';
 import moment from 'moment';
 import { NON_EMPTY_EMAIL_LEXICAL } from '../../../../utils/automations-fixtures';
 import ghostConfig from '../../../../../core/shared/config';
+import {
+  AUTOMATION_RUN_STEP_PRIORITY_HIGH,
+  AUTOMATION_RUN_STEP_PRIORITY_LOW,
+} from '../../../../../core/server/services/automations/constants';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../../core/server/services/automations/database-automations-repository-2';
 import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
@@ -195,6 +199,7 @@ const createDatabase = async (): Promise<Knex> => {
       .references('id')
       .inTable('automation_action_revisions');
     table.text('ready_at').notNullable();
+    table.integer('priority').notNullable().defaultTo(AUTOMATION_RUN_STEP_PRIORITY_HIGH);
     table.integer('step_attempts').notNullable().defaultTo(0);
     table.text('started_at');
     table.text('finished_at');
@@ -2206,11 +2211,38 @@ describe('automations repository', function () {
           action_id: action.action_id,
           automation_action_revision_id: action.revision_id,
           ready_at: new Date(toRepositoryDateISOString(readyAt)),
+          priority: AUTOMATION_RUN_STEP_PRIORITY_HIGH,
           step_attempts: 1,
           type: 'wait',
           wait_hours: 48,
         },
       ]);
+    });
+
+    it('locks higher-priority steps before lower-priority steps that were ready earlier', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const lowPriorityStep = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date('2024-01-01T00:00:00.000Z'),
+        priority: AUTOMATION_RUN_STEP_PRIORITY_LOW,
+      });
+      const highPriorityStep = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date('2024-01-02T00:00:00.000Z'),
+        priority: AUTOMATION_RUN_STEP_PRIORITY_HIGH,
+      });
+
+      const first = await repo.fetchAndLockSteps(1);
+      const second = await repo.fetchAndLockSteps(1);
+
+      assert.deepEqual(
+        first.steps.map((step) => [step.id, step.priority]),
+        [[highPriorityStep.id, AUTOMATION_RUN_STEP_PRIORITY_HIGH]],
+      );
+      assert.deepEqual(
+        second.steps.map((step) => [step.id, step.priority]),
+        [[lowPriorityStep.id, AUTOMATION_RUN_STEP_PRIORITY_LOW]],
+      );
     });
 
     it.each(['unsupported', 'missing product'])(
@@ -2503,6 +2535,25 @@ describe('automations repository', function () {
       assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
       assert.equal(nextStep.status, 'pending');
       assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
+    });
+
+    it('enqueues the next step with the same priority as the finished step', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const stepRow = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date(Date.now() - 1000).toISOString(),
+        priority: AUTOMATION_RUN_STEP_PRIORITY_LOW,
+      });
+      const step = await getLockedStep(stepRow.id);
+
+      await repo.finishStepAndEnqueueNext(step);
+
+      const nextStep = (await getStepsByRunId(run.id)).find(
+        (candidate) => candidate.id !== stepRow.id,
+      );
+      assert(nextStep);
+      assert.equal(nextStep.priority, AUTOMATION_RUN_STEP_PRIORITY_LOW);
     });
 
     it('uses wait hours when the next action is a wait action', async function () {

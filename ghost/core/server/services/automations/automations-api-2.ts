@@ -13,6 +13,11 @@ import type {
   RunToInsert,
   TrackEmailClickedOptions,
 } from './automations-repository-2';
+import {
+  AUTOMATION_RUN_STEP_PRIORITY_HIGH,
+  AUTOMATION_RUN_STEP_PRIORITY_LOW,
+  LOW_PRIORITY_RUN_THRESHOLD,
+} from './constants';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { getReadyAtForAction } from './util/get-ready-at-for-action';
 
@@ -161,7 +166,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
         const hashedEnrollments = new Set(priorEnrollments.map(hashEnrollment));
 
         const runsToInsert: RunToInsert[] = [];
-        const stepsToInsert: RunStepToInsert[] = [];
+        const stepsToInsert: Omit<RunStepToInsert, 'priority'>[] = [];
 
         for (const member of members) {
           for (const firstAction of firstActions) {
@@ -206,8 +211,18 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
           }
         }
 
+        // Bulk enrollments, such as labelling many members at once, shouldn't delay smaller ones,
+        // such as a single signup.
+        const priority =
+          runsToInsert.length >= LOW_PRIORITY_RUN_THRESHOLD
+            ? AUTOMATION_RUN_STEP_PRIORITY_LOW
+            : AUTOMATION_RUN_STEP_PRIORITY_HIGH;
+
         await repository.insertRuns(trx, runsToInsert);
-        await repository.insertRunSteps(trx, stepsToInsert);
+        await repository.insertRunSteps(
+          trx,
+          stepsToInsert.map((step) => ({ ...step, priority })),
+        );
 
         return runsToInsert.length > 0;
       });

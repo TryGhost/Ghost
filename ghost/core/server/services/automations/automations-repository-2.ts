@@ -25,6 +25,7 @@ export type RunStepToInsert = {
   automation_run_id: string;
   automation_action_revision_id: string;
   ready_at: Date;
+  priority: number;
 };
 
 export type RunToInsert = {
