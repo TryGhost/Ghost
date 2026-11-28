@@ -3,12 +3,11 @@ import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-instal
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { canSeeApps } from '@/apps/permissions';
-import { appOpenRoute } from './routes';
+import { appRoute } from './routes';
 import { useInstalledApps } from './use-app-pins';
 
 export interface SidebarApp {
   installation: AppInstallation;
-  /** Where the app opens: its page, or its review while it's suspended. */
   to: string;
   isActive: boolean;
   isPinned: boolean;
@@ -75,7 +74,7 @@ export function useSidebarApps(): SidebarApps {
     onAppsPage,
     apps: listed.map((installation) => ({
       installation,
-      to: appOpenRoute(installation),
+      to: appRoute(installation.id),
       isActive: installation.id === openId,
       isPinned: pins.isPinned(installation.id),
     })),

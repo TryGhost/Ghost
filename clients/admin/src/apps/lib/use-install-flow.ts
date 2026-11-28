@@ -13,7 +13,7 @@ const previewKey = (manifestUrl: string | null) => ['AppInstallationPreview', ma
 
 /**
  * The install link's flow: Ghost fetches and checks the app's manifest for a review, and
- * confirming installs or approves exactly the version reviewed.
+ * confirming installs the app, or moves the site's installation to it, exactly as reviewed.
  *
  * The preview is a query keyed on the manifest's address, although Ghost answers it on a
  * POST: react-query then de-duplicates the fetch and keeps a slow answer from replacing a
@@ -51,7 +51,7 @@ export function useInstallFlow(manifestUrl: string | null) {
     replace: (next: AppInstallationPreview) =>
       queryClient.setQueryData(previewKey(manifestUrl), next),
     /**
-     * Installs, or approves changes to the site's installation, as reviewed. Returns the
+     * Installs, or approves the site's installation at the reviewed manifest URL. Returns the
      * new installation on a fresh install, so the app can be opened.
      */
     confirm: async (reviewed: AppInstallationPreview): Promise<AppInstallation | undefined> => {

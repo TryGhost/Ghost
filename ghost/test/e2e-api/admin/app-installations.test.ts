@@ -1142,12 +1142,119 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
 
       assert.deepEqual(Object.keys(body), ['app_sessions']);
       const [session] = body.app_sessions;
-      assert.deepEqual(Object.keys(session), ['installation', 'token']);
+      assert.deepEqual(Object.keys(session), ['installation', 'token', 'preview']);
       assert.equal(session.installation.id, installed.id);
       assert.equal(session.installation.status, 'active');
       assert.equal(session.installation.revision, 0);
+      assert.equal(session.preview, null);
       assert.equal((await manifestRows()).length, 1);
       assert.equal((await installationRow(installed.id)).revision, 0);
+    });
+
+    it('reviews the pending manifest of a suspended app as the re-check stored it, without fetching again', async function () {
+      serveIcon(ICON, 2);
+      const installed = await install(servedIcon);
+      serve(manifest({ ...servedIcon, name: 'Podcasts', scopes: ['post:read'] }));
+      serveIcon(NEW_ICON);
+
+      const { body } = await start(installed.id);
+
+      const [session] = body.app_sessions;
+      const pending = await pendingOf(installed.id);
+      assert.equal(session.installation.status, 'suspended');
+      assert.equal(session.preview.manifest_url, MANIFEST_URL);
+      assert.equal(session.preview.manifest.name, 'Podcasts');
+      assert.equal(session.preview.digest, pending.digest);
+      assert.equal(session.preview.icon_data_url, copyOf(NEW_ICON));
+      assert.deepEqual(session.preview.trusted_origins, []);
+      assert.deepEqual(session.preview.installation, {
+        id: installed.id,
+        status: 'suspended',
+        revision: 1,
+        manifest_url: MANIFEST_URL,
+        manifest: installed.manifest,
+        icon_data_url: copyOf(ICON),
+        changes: [
+          { kind: 'field', path: 'name', requires_approval: true },
+          { kind: 'scope', scope: 'post:read', change: 'added' },
+        ],
+      });
+
+      // The same review the preview endpoint gives for the manifest the app serves.
+      serve(manifest({ ...servedIcon, name: 'Podcasts', scopes: ['post:read'] }));
+      assert.deepEqual(session.preview, await preview());
+    });
+
+    it('approves the pending manifest itself with the values from the session’s review', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      const { body } = await start(installed.id);
+      const reviewed = body.app_sessions[0].preview;
+      const pendingId = (await installationRow(installed.id)).pending_manifest_id;
+      serve(manifest({ name: 'Podcasts' }));
+
+      await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [
+            {
+              manifest_url: reviewed.manifest_url,
+              digest: reviewed.digest,
+              revision: reviewed.installation.revision,
+            },
+          ],
+        })
+        .expectStatus(200);
+
+      const row = await installationRow(installed.id);
+      assert.equal(row.status, 'active');
+      assert.equal(row.manifest_id, pendingId);
+      assert.equal(row.pending_manifest_id, null);
+      assert.equal((await manifestRows()).length, 2);
+    });
+
+    it('fails as unavailable while the pending manifest was stored under an older contract, and reviews the next one', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      await outdate((await pendingOf(installed.id)).id);
+      serve(manifest({ name: 'Podcasts' }));
+
+      const { body } = await start(installed.id, 409);
+
+      assert.equal(body.errors[0].code, 'APP_UNAVAILABLE');
+      assert.equal((await installationRow(installed.id)).revision, 1);
+
+      serve(manifest({ name: 'Podcasts!' }));
+      const { body: opened } = await start(installed.id);
+      assert.equal(opened.app_sessions[0].preview.manifest.name, 'Podcasts!');
+    });
+
+    it('lists the changes an approval would find, not the ones stored with the pending manifest', async function () {
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+      await start(installed.id);
+      const pending = await pendingOf(installed.id);
+      await models.Base.knex('app_installation_manifests')
+        .where({ id: pending.id })
+        .update({ changes: JSON.stringify([{ kind: 'unknown' }]) });
+      serve(manifest({ name: 'Podcasts' }));
+
+      const { body } = await start(installed.id);
+
+      assert.deepEqual(body.app_sessions[0].preview.installation.changes, [
+        { kind: 'field', path: 'name', requires_approval: true },
+      ]);
+    });
+
+    it('says the site’s configuration trusts the app’s origin in the review', async function () {
+      configUtils.set('apps:trustedOrigins', [MANIFEST_HOST]);
+      const installed = await install();
+      serve(manifest({ name: 'Podcasts' }));
+
+      const { body } = await start(installed.id);
+
+      assert.deepEqual(body.app_sessions[0].preview.trusted_origins, [MANIFEST_HOST]);
     });
 
     it('applies changes that need no approval, as a new manifest row', async function () {
@@ -1197,12 +1304,16 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
       const first = await pendingOf(installed.id);
       serve(manifest({ name: 'Podcasts!' }));
 
-      await start(installed.id);
+      const { body } = await start(installed.id);
 
       const second = await pendingOf(installed.id);
       assert.notEqual(second.id, first.id);
       assert.equal(JSON.parse(second.manifest).name, 'Podcasts!');
       assert.equal((await installationRow(installed.id)).revision, 2);
+      const { preview: reviewed } = body.app_sessions[0];
+      assert.equal(reviewed.digest, second.digest);
+      assert.equal(reviewed.manifest.name, 'Podcasts!');
+      assert.equal(reviewed.installation.revision, 2);
     });
 
     it('changes nothing when the manifest is the pending one', async function () {
@@ -1227,6 +1338,7 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
 
       assert.equal(body.app_sessions[0].installation.status, 'active');
       assert.equal(body.app_sessions[0].installation.manifest.name, 'Podcast');
+      assert.equal(body.app_sessions[0].preview, null);
       const row = await installationRow(installed.id);
       assert.equal(row.pending_manifest_id, null);
       assert.equal(row.revision, 2);
@@ -1756,10 +1868,9 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
         const issue = tokens.issue.bind(tokens);
         sinon.stub(tokens, 'issue').callsFake(async (...args: unknown[]) => {
           const request = args[0] as Parameters<typeof issue>[0];
-          await models.Base.knex('app_installations')
-            .where({ id: installed.id })
-            .update({ status: 'suspended' });
-          await reconcileAs(installed.id, false);
+          // Another session starts while issuing, and its re-check suspends the app
+          serve(manifest({ name: 'Podcasts' }));
+          await service().startSession(installed.id, await ownerPrincipal());
           return issue(request);
         });
 
@@ -1767,6 +1878,7 @@ describe.skipIf(!isBetterAuth)('App installations Admin API', function () {
 
         assert.equal(body.app_sessions[0].installation.status, 'suspended');
         assert.equal(body.app_sessions[0].token, null);
+        assert.equal(body.app_sessions[0].preview.manifest.name, 'Podcasts');
         assert.equal((await tokenRowsOf(installed.id)).length, 0);
       });
 

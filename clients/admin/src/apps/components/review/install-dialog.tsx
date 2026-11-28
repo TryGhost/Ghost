@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@tryghost/shade/components';
 import { toast } from 'sonner';
 import { isOutdatedReviewCode } from '@tryghost/app-contracts';
 import { useNavigate } from '@tryghost/admin-x-framework';
@@ -8,13 +7,11 @@ import { AlreadyInstalled } from './already-installed';
 import { Failed } from './failed';
 import { Loading } from './loading';
 import { Review } from './review';
+import { ReviewDialog } from './review-dialog';
+import { REVIEW_CHANGED } from './review-header';
 import { type InstallFailure, apiErrorOf, installFailureOf } from '@/apps/lib/install-failure';
 import { appRoute } from '@/apps/lib/routes';
 import { useInstallFlow } from '@/apps/lib/use-install-flow';
-
-/** Shown on a review that replaced the one the publisher was looking at. */
-const CHANGED =
-  'This app has changed since you opened it. Review the latest version before continuing.';
 
 /** Ghost puts the review it fetched instead in a 409's `details`, which is typed `unknown`. */
 function isPreview(value: unknown): value is AppInstallationPreview {
@@ -28,47 +25,19 @@ function isPreview(value: unknown): value is AppInstallationPreview {
 }
 
 /**
- * The result of a successful review: the installation that is now active, and whether it is new.
+ * The install link's screen. Ghost fetches and checks the app's manifest, the publisher reviews
+ * it, and confirming installs the app, or moves the site's installation to this link, exactly as
+ * reviewed. An app the site already has from this link isn't reviewed here: its page is.
  */
-export interface InstallDone {
-  installationId: string;
-  /**
-   * Whether confirming was a fresh install, rather than an approval or finding nothing left to
-   * approve.
-   */
-  installed: boolean;
-}
-
-interface InstallDialogProps {
-  manifestUrl: string | null;
-  /** Called when the publisher leaves without deciding. By default, goes back to the Apps list. */
-  onClose?: () => void;
-  /**
-   * Called after installing, approving, or finding nothing left to approve, with the installation
-   * that is now active. That can be a different installation from the one the review was opened
-   * for. By default, a fresh install opens the app, and every other outcome goes back to the Apps
-   * list.
-   */
-  onDone?: (done: InstallDone | undefined) => void;
-}
-
-/**
- * The install link's screen, also used to review an app's changes. Ghost fetches and checks the
- * app's manifest, the publisher reviews it, and confirming installs or approves exactly the version
- * they reviewed.
- */
-export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClose, onDone }) => {
+export const InstallDialog: React.FC<{ manifestUrl: string | null }> = ({ manifestUrl }) => {
   const navigate = useNavigate();
   const { preview, reload, replace, confirm, isConfirming } = useInstallFlow(manifestUrl);
   const [notice, setNotice] = useState<string>();
   // Kept while shown, so Try again confirms the same review.
   const [confirmFailure, setConfirmFailure] = useState<InstallFailure>();
 
-  const close = onClose ?? (() => navigate('/apps', { replace: true }));
-  const done =
-    onDone ??
-    ((result: InstallDone | undefined) =>
-      navigate(result?.installed ? appRoute(result.installationId) : '/apps', { replace: true }));
+  const close = () => navigate('/apps', { replace: true });
+  const open = (installationId: string) => navigate(appRoute(installationId), { replace: true });
 
   const confirmReviewed = async (reviewed: AppInstallationPreview) => {
     setConfirmFailure(undefined);
@@ -76,15 +45,18 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
       const installed = await confirm(reviewed);
       const { name } = reviewed.manifest;
       toast.success(reviewed.installation ? `Changes to ${name} approved` : `${name} installed`);
-      const active = installed ?? reviewed.installation;
-      done(active ? { installationId: active.id, installed: installed !== undefined } : undefined);
+      if (installed) {
+        open(installed.id);
+      } else {
+        close();
+      }
     } catch (error) {
       const apiError = apiErrorOf(error);
       const code = apiError?.code;
       if (isOutdatedReviewCode(code)) {
         // Only a changed manifest or installation can carry the current review; otherwise
         // fetch it.
-        setNotice(CHANGED);
+        setNotice(REVIEW_CHANGED);
         const details: unknown = apiError?.details;
         const sendsReview = code === 'APP_MANIFEST_CHANGED' || code === 'APP_INSTALLATION_CHANGED';
         if (sendsReview && isPreview(details)) {
@@ -100,9 +72,7 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
 
   let content: React.ReactNode;
   const reviewed = preview.data;
-  // Leaving a review that found nothing to approve counts as done, the same as approving: the
-  // changes are already approved.
-  let leave = close;
+  const current = reviewed?.installation;
   if (!manifestUrl) {
     content = <Failed attempted="check" failure={{ kind: 'incomplete-link' }} onClose={close} />;
   } else if (preview.isFetching || !reviewed) {
@@ -119,21 +89,17 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
   } else if (confirmFailure) {
     content = (
       <Failed
-        attempted={reviewed.installation ? 'approve' : 'install'}
+        attempted={current ? 'approve' : 'install'}
         failure={confirmFailure}
         onClose={close}
         onRetry={() => void confirmReviewed(reviewed)}
       />
     );
-  } else if (
-    !reviewed.installation ||
-    reviewed.installation.changes.length ||
-    reviewed.installation.status !== 'active'
-  ) {
+  } else if (!current || current.manifest_url !== reviewed.manifest_url) {
     content = (
       <Review
-        // An install that turns out to be an approval starts afresh, as another screen would.
-        key={reviewed.installation ? 'approve' : 'install'}
+        // An install that turns out to be a move starts afresh, as another screen would.
+        key={current ? 'approve' : 'install'}
         isConfirming={isConfirming}
         notice={notice}
         preview={reviewed}
@@ -142,28 +108,14 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
       />
     );
   } else {
-    const installationId = reviewed.installation.id;
-    leave = () => done({ installationId, installed: false });
-    content = <AlreadyInstalled notice={notice} preview={reviewed} onClose={leave} />;
+    content = (
+      <AlreadyInstalled installation={current} onClose={close} onOpen={() => open(current.id)} />
+    );
   }
 
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open) {
-          leave();
-        }
-      }}
-    >
-      {/* The review can be taller than a short screen; the backdrop then scrolls the whole dialog. */}
-      <DialogContent
-        className="max-w-lg overflow-x-hidden"
-        data-testid="app-install-dialog"
-        scroll="overlay"
-      >
-        {content}
-      </DialogContent>
-    </Dialog>
+    <ReviewDialog locked={isConfirming} onClose={close}>
+      {content}
+    </ReviewDialog>
   );
 };

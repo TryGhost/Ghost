@@ -16,9 +16,9 @@ changes are defined in [App Contracts](../../../../../contracts/app-contracts/CO
    the pending manifest and suspends the installation; a re-check that finds
    only silent changes, or the approved manifest, lifts the suspension. A
    manifest that can't be used makes the app unavailable until it can.
-3. **Approval.** The publisher reviews the pending manifest, or the app at a
-   new manifest URL, and approves it. It becomes the approved manifest, and a
-   suspended installation is active again.
+3. **Approval.** The publisher reviews the pending manifest, as the app session
+   returned it, or the app at a new manifest URL, and approves it. It becomes
+   the approved manifest, and a suspended installation is active again.
 4. **Uninstall.** The installation ends and is kept as a record. Installing the
    app again starts a new installation.
 
@@ -48,8 +48,9 @@ _Avoid_: active manifest, current manifest
 What a manifest row differs by from the approved manifest when the row was
 added, kept with the row: field changes by path and scope changes by scope,
 in the shape App Contracts defines for a change. An install's are compared
-against no manifest at all, so they list every scope it grants. The preview and
-the history serve them as Ghost computed them, and Admin only displays them.
+against no manifest at all, so they list every scope it grants. The history
+serves them as Ghost computed them, and Admin only displays them. A preview
+compares the manifests afresh.
 _Avoid_: diff, changelog
 
 **Pending manifest**:
@@ -113,7 +114,10 @@ _Avoid_: intake, fetched manifest, raw manifest
 **Preview**:
 What a publisher reviews before installing or approving: the loaded manifest,
 once it has passed the identity check, and, when the site already has the app,
-the changes from its approved manifest.
+the changes from its approved manifest. Previewing a manifest URL, for an
+install or a move, fetches it and stores nothing. A suspended app's preview is
+its pending manifest as the re-check stored it. Its app session returns that
+without fetching again, so the preview always matches the suspension.
 _Avoid_: dry run
 
 **Trusted origin**:
@@ -144,9 +148,10 @@ _Avoid_: accept, update
 
 **App session**:
 One run of an installed app in Admin, started when Admin opens one of its
-pages. Starting a session re-checks the app and returns the installation and,
-for an active one, an app user token. The session is pinned to the installation's
-revision at that point. Nothing about the session is stored; it ends when the
+pages. Starting a session re-checks the app and returns the installation. An
+active one comes with an app user token. A suspended one comes with the preview
+of its pending manifest. The session is pinned to the installation's
+revision at that point. No record of the session is stored; it ends when the
 revision changes. Sessions open only on the `better-auth` auth engine, for a
 verified staff session of an active Administrator or the Owner.
 _Avoid_: login, connection

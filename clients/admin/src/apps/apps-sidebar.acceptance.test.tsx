@@ -12,9 +12,9 @@ import {
 import { PINS_FULL_HINT } from './lib/pins';
 import { appsScreen } from './apps.screen';
 import {
-  MANIFEST_URL,
   fakeAppPage,
   fakeInstallations,
+  fakeSessionStart,
   installation,
   labs,
   manifest,
@@ -151,6 +151,43 @@ describe('Apps in the sidebar', () => {
     await expect.poll(currentRoute).toBe('/apps/installation-1');
     await expect.element(appsScreen.frame()).toBeVisible();
     await expect.element(appsScreen.sidebarApp('Podcast')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('leaves the app that was opened alone when an approval for the one before is refused late', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    fakeInstallations([suspended, app(2)]);
+    await fakeAppPage(suspended);
+    const otherSessions = fakeSessionStart('installation-2', app(2));
+    let refuse!: () => void;
+    const refusal = new Promise<void>((resolve) => {
+      refuse = resolve;
+    });
+    let refused = false;
+    const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', async () => {
+      await refusal;
+      refused = true;
+      return new Response(
+        JSON.stringify({ errors: [{ message: 'Changed.', code: 'APP_INSTALLATION_CHANGED' }] }),
+        { status: 409, headers: { 'content-type': 'application/json' } },
+      );
+    });
+    await renderAdminApp(
+      '/apps/installation-1',
+      withPins({ pinned: ['installation-1', 'installation-2'], unpinned: [] }),
+    );
+
+    await appsScreen.approveChangesButton().click();
+    await expect.poll(() => approveApi.requests.length).toBe(1);
+    window.location.hash = '#/apps/installation-2';
+    await expect.element(appsScreen.frame()).toBeVisible();
+    refuse();
+    await expect.poll(() => refused).toBe(true);
+    // Nothing shows that a refusal was ignored, so give the page that asked time to act on it.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 300);
+    });
+
+    expect(otherSessions.requests).toHaveLength(1);
   });
 
   it('lists an open app that isn’t pinned while it’s open', async () => {
@@ -306,7 +343,7 @@ describe('Apps in the sidebar', () => {
     await expect.poll(listedApps).toEqual(['App 1', 'App 2', 'App 3', 'App 4']);
   });
 
-  it('marks a suspended app, which opens the review of its changes', async () => {
+  it('marks a suspended app, which opens its page like any other', async () => {
     fakeTags([]);
     fakeInstallations([installation({ status: 'suspended' })]);
     await renderAdminApp('/tags', withPins());
@@ -314,7 +351,7 @@ describe('Apps in the sidebar', () => {
     await expect.element(appsScreen.sidebarNeedsApproval()).toBeVisible();
     await expect
       .element(appsScreen.sidebarApp('Podcast Needs approval'))
-      .toHaveAttribute('href', `#/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+      .toHaveAttribute('href', '#/apps/installation-1');
   });
 
   it('drops an app from the sidebar once it’s uninstalled', async () => {

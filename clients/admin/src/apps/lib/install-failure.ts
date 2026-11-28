@@ -86,7 +86,7 @@ const READINGS: Record<AppFailureCode, Reading> = {
     };
   },
 
-  // The install dialog handles these itself.
+  // The review dialogs handle these themselves.
   APP_MANIFEST_CHANGED: notExplained,
   APP_INSTALLATION_CHANGED: notExplained,
   APP_ALREADY_INSTALLED: notExplained,

@@ -24,6 +24,7 @@ import {
   type ActiveAppSession,
   type AppInstallation,
   type AppSession,
+  type ApprovalPreview,
   isActiveAppSession,
   useBrowseAppInstallations,
   useReadAppInstallation,
@@ -45,7 +46,7 @@ import { AppCanvas } from './components/app-canvas';
 import { WithAppFooter } from './components/app-footer';
 import { AppOverlay } from './components/app-overlay';
 import { AppsGate } from './components/apps-gate';
-import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
+import { ApproveChangesDialog } from './components/review/approve-changes-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
 import { createAppTokenHolder } from './lib/app-token';
 import {
@@ -71,7 +72,6 @@ import {
 } from './lib/app-failure';
 import { isInstallationNotFound } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
-import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
 
 const Centered: React.FC<{ children: React.ReactNode; testId?: string }> = ({
@@ -538,42 +538,35 @@ const ActiveApp: React.FC<{
 };
 
 /**
- * A suspended app doesn't load. The review of its changes opens over the page straight away. The
- * page behind it explains why, and has a button to reopen the review once it's closed.
- *
- * Approving starts a new session. So does a review that finds the changes already approved, for
- * example from another tab. If the review finds the app was uninstalled in the meantime, it offers
- * a fresh install, which creates a new installation. If it finds the app was reinstalled in the
- * meantime, it has found a different installation. Either way, the page opens that installation
- * instead.
+ * A suspended app doesn't load. The review from its session opens over the page straight away, and
+ * the page behind it explains why, with a button to review the changes once it's closed. The
+ * button, approving, and an outdated review each start a new session, which decides what the page
+ * shows next. A review that replaces an outdated one says the app changed.
  */
-const NeedsApproval: React.FC<{ installation: AppInstallation; onApproved: () => void }> = ({
-  installation,
-  onApproved,
-}) => {
-  const navigate = useNavigate();
+const NeedsApproval: React.FC<{
+  installation: AppInstallation;
+  preview: ApprovalPreview;
+  afterOutdatedReview: boolean;
+  onRestart: () => void;
+  onOutdated: () => void;
+}> = ({ installation, preview, afterOutdatedReview, onRestart, onOutdated }) => {
   const [reviewing, setReviewing] = useState(true);
-  const onDone = (done: InstallDone | undefined) => {
-    if (done && done.installationId !== installation.id) {
-      navigate(appRoute(done.installationId), { replace: true });
-    } else {
-      onApproved();
-    }
-  };
   return (
     <Centered testId="app-needs-approval">
       <EmptyIndicator
-        actions={<Button onClick={() => setReviewing(true)}>Review changes</Button>}
+        actions={<Button onClick={onRestart}>Review changes</Button>}
         description="It’s been updated and needs your approval before it can open."
         title={`${installation.manifest.name} needs approval`}
       >
         <LucideIcon.ShieldAlert />
       </EmptyIndicator>
       {reviewing && (
-        <InstallDialog
-          manifestUrl={installation.manifest_url}
+        <ApproveChangesDialog
+          afterOutdatedReview={afterOutdatedReview}
+          preview={preview}
+          onApproved={onRestart}
           onClose={() => setReviewing(false)}
-          onDone={onDone}
+          onOutdated={onOutdated}
         />
       )}
     </Centered>
@@ -674,21 +667,31 @@ const NotInstalled: React.FC = () => (
   </Centered>
 );
 
+/** Why a session replaced the one before it, when the page has something to say about it. */
+type RestartReason = 'outdated-review';
+
 /**
- * Starts a session of the app when the page opens, and again on `restart`. Ghost first re-checks
- * the app's manifest, and only its response decides what the page shows. No part of the app loads
- * before then.
+ * Starts a session of the app when the page opens, and again on `restart` or `retry`. Ghost first
+ * re-checks the app's manifest, and only its response decides what the page shows. No part of the
+ * app loads before then.
  */
 function useAppSession(installationId: string): {
   settled: boolean;
   session?: ReceivedSession;
   error?: unknown;
+  /** The reason the last `restart` gave, if any. */
+  restartedAfter?: RestartReason;
   /** Ends this session and starts a new one, for example after approving changes. */
-  restart: () => void;
+  restart: (after?: RestartReason) => void;
+  /** Starts a session that failed to start again, for the same reason as before. */
+  retry: () => void;
 } {
   const { mutateAsync: start } = useStartAppSession();
   const fetchApi = useFetchApi();
-  const [generation, setGeneration] = useState(0);
+  const [{ generation, restartedAfter }, setStarted] = useState<{
+    generation: number;
+    restartedAfter?: RestartReason;
+  }>({ generation: 0 });
 
   // One start per open and per restart. Each start is its own query that never goes stale, isn't
   // retried, and is removed once nothing renders it.
@@ -717,18 +720,31 @@ function useAppSession(installationId: string): {
     refetchOnReconnect: false,
   });
 
-  const restart = useCallback(() => setGeneration((value) => value + 1), []);
-  return { settled: !isPending, session: data ?? undefined, error: error ?? undefined, restart };
+  const restart = useCallback(
+    (after?: RestartReason) =>
+      setStarted((started) => ({ generation: started.generation + 1, restartedAfter: after })),
+    [],
+  );
+  const retry = useCallback(
+    () => setStarted((started) => ({ ...started, generation: started.generation + 1 })),
+    [],
+  );
+  return {
+    settled: !isPending,
+    session: data ?? undefined,
+    error: error ?? undefined,
+    restartedAfter,
+    restart,
+    retry,
+  };
 }
 
 /**
  * `/apps/:installationId/*`. Only an active installation loads, in its own session. The rest of the
  * path is the app's own route, which the bridge passes to the app.
  */
-export const AppPage: React.FC = () => {
-  const { installationId = '' } = useParams();
-  const { settled, session, error, restart } = useAppSession(installationId);
-  const installation = session?.installation;
+const AppPage: React.FC<{ installationId: string }> = ({ installationId }) => {
+  const { settled, session, error, restartedAfter, restart, retry } = useAppSession(installationId);
   const failure = sessionFailureOf(error);
   const blocked = siteBlocksApps(error);
   const denied = refusesStaffUser(error);
@@ -752,24 +768,30 @@ export const AppPage: React.FC = () => {
     );
   } else if (isActiveAppSession(session)) {
     body = <ActiveApp session={session} onEnded={restart} />;
-  } else if (installation?.status === 'suspended') {
+  } else if (session?.preview) {
     body = (
-      <WithAppFooter app={installation}>
-        <NeedsApproval installation={installation} onApproved={restart} />
+      <WithAppFooter app={session.installation}>
+        <NeedsApproval
+          afterOutdatedReview={restartedAfter === 'outdated-review'}
+          installation={session.installation}
+          preview={session.preview}
+          onOutdated={() => restart('outdated-review')}
+          onRestart={restart}
+        />
       </WithAppFooter>
     );
   } else if (blocked) {
-    body = <AppsBlocked reason={blocked} onRetry={restart} />;
+    body = <AppsBlocked reason={blocked} onRetry={retry} />;
   } else if (denied) {
     body = <NoAppsAccess />;
   } else if (failure) {
-    body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
+    body = <Unavailable failure={failure} installationId={installationId} onRetry={retry} />;
   } else if (error && !notFound) {
     body = (
       <Centered>
         <Stack align="center" gap="md">
           <Text tone="secondary">Couldn’t load this app. Please try again.</Text>
-          <Button variant="outline" onClick={restart}>
+          <Button variant="outline" onClick={retry}>
             Retry
           </Button>
         </Stack>
@@ -790,10 +812,14 @@ export const AppPage: React.FC = () => {
   );
 };
 
-const AppPageScreen: React.FC = () => (
-  <AppsGate>
-    <AppPage />
-  </AppsGate>
-);
+const AppPageScreen: React.FC = () => {
+  const { installationId = '' } = useParams();
+  return (
+    <AppsGate>
+      {/* A page per installation, so nothing still running for one app acts on another. */}
+      <AppPage key={installationId} installationId={installationId} />
+    </AppsGate>
+  );
+};
 
 export default AppPageScreen;

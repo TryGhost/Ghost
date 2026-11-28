@@ -46,6 +46,7 @@ import {
   installation,
   labs,
   manifest,
+  pendingPreview,
   readPath,
 } from './apps.test-utils';
 
@@ -72,28 +73,8 @@ const installedOn = (createdAt: string) => entry('h1', 'installed', createdAt);
 const fakeDetails = (read: AppInstallation) =>
   fakeAdminEndpoint('GET', readPath(read.id), () => ({ app_installations: [read] }));
 
-const fakeReview = () =>
-  fakeAdminEndpoint('POST', '/apps/installations/preview/', {
-    app_installation_previews: [
-      {
-        manifest_url: MANIFEST_URL,
-        manifest: manifest({ name: 'Podcasts' }),
-        digest: 'digest-2',
-        trusted_origins: [],
-        installation: {
-          id: 'installation-1',
-          status: 'suspended',
-          revision: 0,
-          manifest_url: MANIFEST_URL,
-          manifest: manifest(),
-          changes: [{ kind: 'field', path: 'name', requires_approval: true }],
-        },
-      },
-    ],
-  });
-
-const apiError = (status: number, message: string, code?: string) =>
-  new Response(JSON.stringify({ errors: [{ message, ...(code ? { code } : {}) }] }), {
+const apiError = (status: number, message: string, code?: string, details?: unknown) =>
+  new Response(JSON.stringify({ errors: [{ message, ...(code ? { code } : {}), details }] }), {
     status,
     headers: { 'content-type': 'application/json' },
   });
@@ -422,11 +403,11 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
-  it('opens the review over a suspended app, and loads the app once approved', async () => {
+  it('opens the review from the session over a suspended app, and loads the app once approved', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
     fakeInstallations([suspended]);
     const { sessionsApi, set } = await fakeAppPage(suspended);
-    fakeReview();
+    const previewApi = fakeAdminEndpoint('POST', '/apps/installations/preview/', {});
     const approved = installation({ manifest: manifest({ name: 'Podcasts' }), revision: 2 });
     const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
       set(approved);
@@ -439,127 +420,225 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
     // The review opens straight away, in place of the app, and the URL stays on the app's route.
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    await expect.element(appsScreen.changes()).toHaveTextContent('NameWas: PodcastNow: Podcasts');
     expect(currentRoute()).toBe(APP_ROUTE);
 
-    // Closing it leaves the page explaining why, with a button to reopen the review.
-    await appsScreen.cancelButton().click();
-    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
-    await appsScreen.reviewChangesButton().click();
     await appsScreen.approveChangesButton().click();
 
     await expect.element(page.getByText('Changes to Podcasts approved')).toBeVisible();
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(currentRoute()).toBe(APP_ROUTE);
-    expect(approveApi.requests).toHaveLength(1);
+    expect(approveApi.requests.map(({ body }) => body)).toEqual([
+      { app_installations: [{ manifest_url: MANIFEST_URL, digest: 'digest-2', revision: 1 }] },
+    ]);
     // Approving starts a new session, pinned to the approved revision.
     expect(sessionsApi.requests).toHaveLength(2);
     expect((await appState()).context?.session).toEqual({ revision: 2 });
+    // The session's review is the one shown, so Ghost isn't asked for another.
+    expect(previewApi.requests).toHaveLength(0);
   });
 
-  it('loads a suspended app once the review finds its changes already approved', async () => {
+  it('leaves the page explaining why when the review is closed, and reviews again in a new session', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
     const { sessionsApi } = await fakeAppPage(suspended);
-    // Approved in another tab in the meantime, so the review has nothing left to approve.
-    const approved = installation({ revision: 2 });
-    fakeAdminEndpoint('POST', '/apps/installations/preview/', {
-      app_installation_previews: [
-        {
-          manifest_url: MANIFEST_URL,
-          manifest: manifest(),
-          digest: 'digest-2',
-          trusted_origins: [],
-          installation: {
-            id: 'installation-1',
-            status: 'active',
-            revision: 2,
-            manifest_url: MANIFEST_URL,
-            manifest: manifest(),
-            changes: [],
-          },
-        },
-      ],
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await appsScreen.cancelButton().click();
+
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    await expect.element(appsScreen.needsApproval()).toHaveTextContent('Podcast needs approval');
+
+    await appsScreen.reviewChangesButton().click();
+
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    expect(sessionsApi.requests).toHaveLength(2);
+  });
+
+  it('loads a suspended app when its changes were withdrawn after the review was closed', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi, set } = await fakeAppPage(suspended);
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await expect.element(appsScreen.approveChangesButton()).toBeVisible();
+    await appsScreen.cancelButton().click();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+
+    // The developer reverts the manifest, so the next session's re-check resumes the app.
+    set(installation({ revision: 2 }));
+    await appsScreen.reviewChangesButton().click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    expect(currentRoute()).toBe(APP_ROUTE);
+    expect(sessionsApi.requests).toHaveLength(2);
+  });
+
+  it('starts a new session when Ghost finds the review outdated, and loads the app it resumed', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi, set } = await fakeAppPage(suspended);
+    const resumed = installation({ revision: 2 });
+    fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
+      set(resumed);
+      return apiError(409, 'The app changed.', 'APP_MANIFEST_CHANGED');
     });
 
     await renderAdminApp(APP_ROUTE, { labs });
-    await expect.element(appsScreen.needsApproval()).toBeVisible();
-    sessionsApi.set(approved);
-
-    await expect
-      .element(appsScreen.installDialog())
-      .toHaveTextContent('Podcast is already installed');
-    await appsScreen.doneButton().click();
+    await appsScreen.approveChangesButton().click();
 
     await expect.element(appsScreen.frame()).toBeVisible();
-    expect(currentRoute()).toBe(APP_ROUTE);
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
     expect(sessionsApi.requests).toHaveLength(2);
     expect((await appState()).context?.session).toEqual({ revision: 2 });
   });
 
-  it('opens the new installation when the review reinstalls an app uninstalled in the meantime', async () => {
+  it('starts a new session when Ghost finds the review outdated, and reviews the newer changes', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
-    const { sessionsApi } = await fakeAppPage(suspended);
-    // Uninstalled in another tab in the meantime, so the review offers a fresh install.
-    fakeAdminEndpoint('POST', '/apps/installations/preview/', {
-      app_installation_previews: [
-        {
-          manifest_url: MANIFEST_URL,
-          manifest: manifest(),
-          digest: 'digest-2',
-          trusted_origins: [],
-        },
-      ],
+    const { sessionsApi, set } = await fakeAppPage(suspended);
+    const newer = installation({ status: 'suspended', revision: 2 });
+    const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
+      set({
+        installation: newer,
+        preview: pendingPreview(newer, {
+          manifest: manifest({ name: 'Podcast Studio' }),
+          digest: 'digest-3',
+        }),
+      });
+      // A review Ghost sends with the refusal isn't shown: the new session's is.
+      const sent = pendingPreview(newer, { manifest: manifest({ name: 'Podcasts FM' }) });
+      return apiError(409, 'The installation changed.', 'APP_INSTALLATION_CHANGED', sent);
     });
-    const reinstalled = installation({ id: 'installation-2' });
-    fakeAdminEndpoint('POST', '/apps/installations/', { app_installations: [reinstalled] });
-    const reinstalledSessionsApi = fakeSessionStart('installation-2', reinstalled);
 
     await renderAdminApp(APP_ROUTE, { labs });
-    await expect.element(appsScreen.needsApproval()).toBeVisible();
-    await appsScreen.installButton().click();
+    await appsScreen.approveChangesButton().click();
 
-    await expect.poll(currentRoute).toBe('/apps/installation-2');
-    await expect.element(appsScreen.frame()).toBeVisible();
-    expect(sessionsApi.requests).toHaveLength(1);
-    expect(reinstalledSessionsApi.requests).toHaveLength(1);
+    await expect
+      .element(appsScreen.changes())
+      .toHaveTextContent('NameWas: PodcastNow: Podcast Studio');
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
+    expect(sessionsApi.requests).toHaveLength(2);
+
+    await appsScreen.approveChangesButton().click();
+
+    await expect.poll(() => approveApi.requests.length).toBe(2);
+    expect(approveApi.requests[1].body).toEqual({
+      app_installations: [{ manifest_url: MANIFEST_URL, digest: 'digest-3', revision: 2 }],
+    });
   });
 
-  it('opens the active installation when the review finds the app reinstalled in the meantime', async () => {
+  it('stops saying the app changed once the publisher reopens the review', async () => {
     const suspended = installation({ status: 'suspended', revision: 1 });
-    const { sessionsApi } = await fakeAppPage(suspended);
-    // Uninstalled and installed again in another tab: the review finds the new installation.
-    fakeAdminEndpoint('POST', '/apps/installations/preview/', {
-      app_installation_previews: [
-        {
-          manifest_url: MANIFEST_URL,
-          manifest: manifest(),
-          digest: 'digest-2',
-          trusted_origins: [],
-          installation: {
-            id: 'installation-2',
-            status: 'active',
-            revision: 0,
-            manifest_url: MANIFEST_URL,
-            manifest: manifest(),
-            changes: [],
-          },
-        },
-      ],
+    const { set } = await fakeAppPage(suspended);
+    const newer = installation({ status: 'suspended', revision: 2 });
+    fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
+      set({
+        installation: newer,
+        preview: pendingPreview(newer, { manifest: manifest({ name: 'Podcast Studio' }) }),
+      });
+      return apiError(409, 'The installation changed.', 'APP_INSTALLATION_CHANGED');
     });
-    const reinstalledSessionsApi = fakeSessionStart(
-      'installation-2',
-      installation({ id: 'installation-2' }),
-    );
 
     await renderAdminApp(APP_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+    await expect.element(appsScreen.notice()).toBeVisible();
+    await appsScreen.cancelButton().click();
+    await appsScreen.reviewChangesButton().click();
+
+    await expect
+      .element(appsScreen.changes())
+      .toHaveTextContent('NameWas: PodcastNow: Podcast Studio');
+    await expect.element(appsScreen.notice()).not.toBeInTheDocument();
+  });
+
+  it('says the app isn’t installed when it was uninstalled while its review was open', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi } = await fakeAppPage(suspended);
+    fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
+      sessionsApi.set(apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'));
+      return apiError(409, 'This app has been uninstalled.', 'APP_INSTALLATION_UNINSTALLED');
+    });
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+
+    await expect.element(page.getByText('This app isn’t installed')).toBeVisible();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+  });
+
+  it('still says the app changed when the session after an outdated review had to be tried again', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi, set } = await fakeAppPage(suspended);
+    fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
+      sessionsApi.set(
+        apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+      );
+      return apiError(409, 'The installation changed.', 'APP_INSTALLATION_CHANGED');
+    });
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+    await expect.element(appsScreen.unavailable()).toBeVisible();
+    const newer = installation({ status: 'suspended', revision: 2 });
+    set({
+      installation: newer,
+      preview: pendingPreview(newer, { manifest: manifest({ name: 'Podcast Studio' }) }),
+    });
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(appsScreen.notice()).toHaveTextContent('has changed since you opened it');
+  });
+
+  it('keeps the review open until Ghost has answered its approval', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { set } = await fakeAppPage(suspended);
+    const approved = installation({ manifest: manifest({ name: 'Podcasts' }), revision: 2 });
+    let finishApproval!: () => void;
+    const answered = new Promise<void>((resolve) => {
+      finishApproval = resolve;
+    });
+    const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', async () => {
+      await answered;
+      set(approved);
+      return { app_installations: [approved] };
+    });
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+    await expect.poll(() => approveApi.requests.length).toBe(1);
+
+    await expect.element(appsScreen.cancelButton()).toBeDisabled();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(appsScreen.installDialog()).toBeVisible();
+    finishApproval();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('says it couldn’t approve the changes when approving fails, and tries again', async () => {
+    const suspended = installation({ status: 'suspended', revision: 1 });
+    const { sessionsApi, set } = await fakeAppPage(suspended);
+    const approved = installation({ manifest: manifest({ name: 'Podcasts' }), revision: 2 });
+    let attempts = 0;
+    const approveApi = fakeAdminEndpoint('PUT', '/apps/installations/installation-1/', () => {
+      attempts += 1;
+      if (attempts === 1) {
+        return apiError(500, 'Something went wrong.');
+      }
+      set(approved);
+      return { app_installations: [approved] };
+    });
+
+    await renderAdminApp(APP_ROUTE, { labs });
+    await appsScreen.approveChangesButton().click();
+
     await expect
       .element(appsScreen.installDialog())
-      .toHaveTextContent('Podcast is already installed');
-    await appsScreen.doneButton().click();
+      .toHaveTextContent('Couldn’t approve the changes');
+    await appsScreen.tryAgainButton().click();
 
-    await expect.poll(currentRoute).toBe('/apps/installation-2');
     await expect.element(appsScreen.frame()).toBeVisible();
-    expect(sessionsApi.requests).toHaveLength(1);
-    expect(reinstalledSessionsApi.requests).toHaveLength(1);
+    expect(approveApi.requests).toHaveLength(2);
+    expect(approveApi.requests[1].body).toEqual(approveApi.requests[0].body);
+    expect(sessionsApi.requests).toHaveLength(2);
   });
 
   it('says the app isn’t installed when it was uninstalled or never installed', async () => {
@@ -1066,7 +1145,6 @@ describe('Managing apps', () => {
     it('keeps the footer when the app needs approval', async () => {
       const suspended = installation({ status: 'suspended' });
       await fakeAppPage(suspended);
-      fakeReview();
 
       await renderAdminApp(APP_ROUTE, { labs });
 
@@ -2856,7 +2934,7 @@ describe('Managing apps', () => {
     });
     fakeInstallations([suspended]);
     fakeDetails(suspended);
-    fakeReview();
+    await fakeAppPage(suspended);
 
     await renderAdminApp('/apps', { labs });
     // The row's Review changes button marks it; there's no badge by the name.
@@ -2876,26 +2954,20 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
     await appsScreen.reviewChangesLink().click();
 
-    await expect
-      .poll(currentRoute)
-      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
   });
 
   it('can review changes from the list too', async () => {
-    fakeInstallations([installation({ status: 'suspended' })]);
-    const reviewApi = fakeReview();
+    const suspended = installation({ status: 'suspended' });
+    fakeInstallations([suspended]);
+    await fakeAppPage(suspended);
 
     await renderAdminApp('/apps', { labs });
     await appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }).click();
 
-    await expect
-      .poll(currentRoute)
-      .toBe(`/apps/install?manifest=${encodeURIComponent(MANIFEST_URL)}`);
+    await expect.poll(currentRoute).toBe(APP_ROUTE);
     await expect.element(appsScreen.approveChangesButton()).toBeVisible();
-    expect(reviewApi.requests[0].body).toEqual({
-      app_installation_previews: [{ manifest_url: MANIFEST_URL }],
-    });
   });
 
   it('styles a row as hovered by where the pointer is once its menu closes', async () => {
@@ -2916,6 +2988,20 @@ describe('Managing apps', () => {
     await userEvent.keyboard('{Escape}');
     await expect.element(appsScreen.menuItem('Uninstall')).not.toBeInTheDocument();
     await expect.element(actions).toHaveClass('bg-background');
+  });
+
+  it('opens an app the list still shows as waiting, once its changes were withdrawn', async () => {
+    fakeInstallations([installation({ status: 'suspended', revision: 1 })]);
+    // Starting a session re-checks the manifest, which finds the changes gone and resumes the app.
+    // No review is faked: a request for one would fail the test.
+    await fakeAppPage(installation({ revision: 2 }));
+
+    await renderAdminApp('/apps', { labs });
+    await appsScreen.row('Podcast').getByRole('link', { name: 'Review changes' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+    await expect.element(appsScreen.installDialog()).not.toBeInTheDocument();
+    expect(currentRoute()).toBe(APP_ROUTE);
   });
 
   it('shows an uninstalled app’s record without offering to uninstall it again', async () => {

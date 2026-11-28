@@ -1,6 +1,7 @@
 import type {
   AppInstallation,
   AppManifest,
+  ApprovalPreview,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
   type AppFrameFlags,
@@ -96,29 +97,65 @@ export const SESSION_TOKEN = {
 };
 
 /**
- * Fakes starting a session of the installation `id`. Ghost responds with `answer`: either the
- * installation, whose revision the session is pinned to, or a `Response` such as an error. `set`
- * changes the response for later sessions.
+ * The preview a session of the suspended installation `suspended` carries: by default, the app
+ * renamed to Podcasts.
  */
-export function fakeSessionStart(id: string, answer: AppInstallation | Response) {
-  let next: () => AppInstallation | Response = () => answer;
+export const pendingPreview = (
+  suspended: AppInstallation,
+  overrides: Partial<ApprovalPreview> = {},
+): ApprovalPreview => ({
+  manifest_url: suspended.manifest_url,
+  manifest: manifest({ name: 'Podcasts' }),
+  digest: 'digest-2',
+  icon_data_url: null,
+  trusted_origins: [],
+  installation: {
+    id: suspended.id,
+    status: suspended.status,
+    revision: suspended.revision,
+    manifest_url: suspended.manifest_url,
+    manifest: suspended.manifest,
+    icon_data_url: suspended.icon_data_url,
+    changes: [{ kind: 'field', path: 'name', requires_approval: true }],
+  },
+  ...overrides,
+});
+
+/** A session's installation and preview. Its token follows from the installation's status. */
+type FakeSession = { installation: AppInstallation; preview: ApprovalPreview | null };
+
+/** A session, or just its installation, which gets the default preview when it's suspended. */
+type SessionAnswer = AppInstallation | FakeSession;
+
+const sessionOf = (answer: SessionAnswer) => {
+  const session: FakeSession =
+    'installation' in answer
+      ? answer
+      : {
+          installation: answer,
+          preview: answer.status === 'suspended' ? pendingPreview(answer) : null,
+        };
+  return { ...session, token: session.installation.status === 'active' ? SESSION_TOKEN : null };
+};
+
+/**
+ * Fakes starting a session of the installation `id`. Ghost responds with `answer`: the session, or
+ * just its installation, whose revision the session is pinned to, or a `Response` such as an error.
+ * `set` changes the response for later sessions.
+ */
+export function fakeSessionStart(id: string, answer: SessionAnswer | Response) {
+  let next: () => SessionAnswer | Response = () => answer;
   const capture = fakeAdminEndpoint('POST', sessionsPath(id), () => {
     const current = next();
     // A body can only be read once, so each request gets its own copy of a `Response`.
-    return current instanceof Response
-      ? current.clone()
-      : {
-          app_sessions: [
-            { installation: current, token: current.status === 'active' ? SESSION_TOKEN : null },
-          ],
-        };
+    return current instanceof Response ? current.clone() : { app_sessions: [sessionOf(current)] };
   });
   return Object.assign(capture, {
-    set: (nextAnswer: AppInstallation | Response) => {
+    set: (nextAnswer: SessionAnswer | Response) => {
       next = () => nextAnswer;
     },
     /** Answers each later request with what `answer` returns when it arrives. */
-    setAnswer: (nextAnswer: () => AppInstallation | Response) => {
+    setAnswer: (nextAnswer: () => SessionAnswer | Response) => {
       next = nextAnswer;
     },
   });
@@ -127,23 +164,23 @@ export function fakeSessionStart(id: string, answer: AppInstallation | Response)
 /**
  * Fakes the app's page as Admin opens it: the session it starts, the installation it reads to
  * detect when the session ends, and the page it frames (options as for `fakeAppFrame`). `set`
- * changes the installation for later sessions and reads.
+ * changes the session for later starts, and its installation for later reads.
  */
 export async function fakeAppPage(
-  read: AppInstallation,
+  read: SessionAnswer,
   { html, flags, kind }: { html?: string; flags?: AppFrameFlags; kind?: AppFramePageKind } = {},
 ) {
-  let current = read;
-  const sessionsApi = fakeSessionStart(read.id, read);
-  const readApi = fakeAdminEndpoint('GET', readPath(read.id), () => ({
+  let current = sessionOf(read).installation;
+  const sessionsApi = fakeSessionStart(current.id, read);
+  const readApi = fakeAdminEndpoint('GET', readPath(current.id), () => ({
     app_installations: [current],
   }));
   await fakeAppFrame({ html, flags, kind });
   return {
     sessionsApi,
     readApi,
-    set: (next: AppInstallation) => {
-      current = next;
+    set: (next: SessionAnswer) => {
+      current = sessionOf(next).installation;
       sessionsApi.set(next);
     },
   };

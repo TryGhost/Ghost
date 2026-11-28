@@ -83,7 +83,14 @@ export interface AppInstallationPreview {
 export interface AppSession {
   installation: Installation;
   token: AppSessionToken | null;
+  /** The pending manifest's review while the installation is suspended, otherwise null. */
+  preview: ApprovalPreview | null;
 }
+
+/** A preview for an app the site already has, which approving it would change. */
+export type ApprovalPreview = AppInstallationPreview & {
+  installation: NonNullable<AppInstallationPreview['installation']>;
+};
 
 function notFound() {
   return new errors.NotFoundError({ message: 'App installation not found.' });
@@ -117,6 +124,39 @@ function unavailable(err: InstanceType<typeof errors.ValidationError>) {
     context: err.context,
     code: err.code ?? 'APP_UNAVAILABLE',
   });
+}
+
+/**
+ * The pending manifest was stored under an older contract and no longer decodes, so there's
+ * nothing to show for review. The app opens again once it serves a different manifest.
+ */
+function pendingManifestUnreadable() {
+  return new errors.ConflictError({
+    message: 'Ghost can no longer read the changes this app is waiting for approval of.',
+    code: 'APP_UNAVAILABLE' satisfies AppFailureCode,
+  });
+}
+
+/**
+ * The preview of `reviewed` for approval on `current`. The approved manifest shown is the one
+ * the changes are compared against, so the review matches the list of changes.
+ */
+function approvalPreview(
+  reviewed: Omit<AppInstallationPreview, 'installation'>,
+  current: Installation,
+): ApprovalPreview {
+  return {
+    ...reviewed,
+    installation: {
+      id: current.id,
+      status: current.status,
+      revision: current.revision,
+      manifest_url: current.manifest_url,
+      manifest: current.manifest,
+      icon_data_url: current.icon_data_url,
+      changes: changesFrom(current, reviewed),
+    },
+  };
 }
 
 /** A loaded manifest that has passed the identity check. */
@@ -339,8 +379,10 @@ export class AppInstallationsService {
 
   /**
    * Starts an app session when Admin opens an app page. Re-checks the manifest, then
-   * returns the installation, which Admin decides what to show from, and for an active one an
-   * app user token for the staff user. Nothing about the session is stored.
+   * returns the installation, which Admin decides what to show from. An active one comes with
+   * an app user token for the staff user, a suspended one with the review of its pending
+   * manifest. The re-check is the only fetch, so the review always matches the suspension.
+   * Nothing about the session is stored.
    */
   async startSession(id: string, principal: Principal | null): Promise<AppSession> {
     const staff = this.sessionTokens.staffSessionFor(principal);
@@ -353,11 +395,19 @@ export class AppInstallationsService {
       throw notInstalled();
     }
     if (installation.status !== 'active') {
-      return { installation, token: null };
+      return this.sessionWithoutToken(installation);
     }
     // Null when the app was suspended while issuing, which reconciled its client again
     const token = await this.sessionTokens.issue(installation, staff);
-    return token ? { installation, token } : { installation: await this.read(id), token: null };
+    return token
+      ? { installation, token, preview: null }
+      : this.sessionWithoutToken(await this.read(id));
+  }
+
+  private async sessionWithoutToken(installation: Installation): Promise<AppSession> {
+    const preview =
+      installation.status === 'suspended' ? await this.pendingPreviewOf(installation) : null;
+    return { installation, token: null, preview };
   }
 
   /** A fresh app user token for a session started at `revision`; see `AppSessionTokens.renew`. */
@@ -490,21 +540,29 @@ export class AppInstallationsService {
 
     const pending = await this.pendingManifestOf(current);
     const write = await this.withIconCopy(approvalWrite({ current, pending, loaded }));
-    return {
-      ...reviewed,
-      icon_data_url: iconCopyKeptBy(write, current, pending),
-      // The approved manifest shown is the one the changes were computed from, so the
-      // review matches the list of changes.
-      installation: {
-        id: current.id,
-        status: current.status,
-        revision: current.revision,
-        manifest_url: current.manifest_url,
-        manifest: current.manifest,
-        icon_data_url: current.icon_data_url,
-        changes: changesFrom(current, loaded),
-      },
+    const iconDataUrl = iconCopyKeptBy(write, current, pending);
+    return approvalPreview({ ...reviewed, icon_data_url: iconDataUrl }, current);
+  }
+
+  /**
+   * The review of a suspended installation's pending manifest, with its changes from the
+   * approved manifest as an approval would find them.
+   */
+  private async pendingPreviewOf(suspended: Installation): Promise<ApprovalPreview> {
+    const pendingId = suspended.pending_manifest_id;
+    // Manifest rows never change, so this is the pending manifest as the installation was read.
+    const pending = pendingId ? await this.repository.findPendingManifest(pendingId) : undefined;
+    if (!pending) {
+      throw pendingManifestUnreadable();
+    }
+    const reviewed = {
+      manifest_url: pending.manifest_url,
+      manifest: pending.manifest,
+      digest: pending.digest,
+      icon_data_url: pending.icon_data_url,
+      trusted_origins: this.identity.trustedOriginsOf(pending.manifest_url),
     };
+    return approvalPreview(reviewed, suspended);
   }
 
   /**

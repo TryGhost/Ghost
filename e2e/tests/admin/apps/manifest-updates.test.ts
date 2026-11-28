@@ -68,8 +68,12 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await expect(appPage.needsApproval).toBeVisible();
     await appPage.installDialog.cancel();
 
+    // The Apps list still shows the app as waiting for approval. Opening it from there re-checks
+    // the manifest, the same as any other way of opening it.
     fixtureApp.setPageUrl('app.html');
-    await reopenApp(page, installationId);
+    const appsPage = new AppsPage(page);
+    await appsPage.goto();
+    await appsPage.reviewChangesLink.click();
 
     await expect(appPage.frame).toBeVisible();
     await expect(appPage.app.servedFrom).toHaveText('/app.html');

@@ -81,6 +81,11 @@ export interface IdentityChecker {
     pinned: PinnedIdentity | null,
     started: StartedChallenge,
   ): Promise<IdentityCheckResult>;
+  /**
+   * The trusted origins a check of a manifest from this URL reports, from the site's
+   * configuration alone, without a request to the app.
+   */
+  trustedOriginsOf(manifestUrl: string): string[];
 }
 
 function challengeUnreachable(
@@ -214,7 +219,12 @@ export function createIdentityChecker({
     }
   }
 
-  return { challenge, check };
+  function trustedOriginsOf(manifestUrl: string): string[] {
+    const { origin } = new URL(manifestUrl);
+    return isTrusted(origin) ? [origin] : [];
+  }
+
+  return { challenge, check, trustedOriginsOf };
 }
 
 /**

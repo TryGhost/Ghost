@@ -2,7 +2,7 @@ import React from 'react';
 import { AppsGate } from './components/apps-gate';
 import { AppsListing } from './apps';
 import { AskAdminDialog } from './components/ask-admin-dialog';
-import { InstallDialog } from './components/install-dialog/install-dialog';
+import { InstallDialog } from './components/review/install-dialog';
 import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 
 /**
@@ -12,11 +12,13 @@ import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 const AppInstall: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const manifestUrl = searchParams.get('manifest');
 
   return (
     <AppsGate denied={<AskAdminDialog onClose={() => navigate('/', { replace: true })} />}>
       <AppsListing />
-      <InstallDialog manifestUrl={searchParams.get('manifest')} />
+      {/* A dialog per link, so nothing left from one app's review acts on another's. */}
+      <InstallDialog key={manifestUrl} manifestUrl={manifestUrl} />
     </AppsGate>
   );
 };

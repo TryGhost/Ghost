@@ -56,25 +56,33 @@ export interface AppInstallationPreview {
    * holds the app's key. Empty when it proved it. An app is one origin, so there's at most one.
    */
   trusted_origins: string[];
-  /**
-   * The site's installation of the same app, if it has one: the manifest it was approved
-   * with and where that was read from, and what would change.
-   */
-  installation: {
-    id: string;
-    status: AppInstallationStatus;
-    /** Sent back when approving, so the changes approved are the ones that were reviewed. */
-    revision: number;
-    manifest_url: string;
-    manifest: AppManifest;
-    icon_data_url: string | null;
-    /**
-     * Field changes by path, such as `surfaces[0].url`, or `manifest_url` when the app moved,
-     * then scope changes in the registry's order.
-     */
-    changes: ManifestChange[];
-  } | null;
+  /** The site's installation of the same app, if it has one. */
+  installation: PreviewedInstallation | null;
 }
+
+/**
+ * The site's installation of an app as a preview shows it: the manifest it was approved with and
+ * where that was read from, and what approving the preview would change.
+ */
+export interface PreviewedInstallation {
+  id: string;
+  status: AppInstallationStatus;
+  /** Sent back when approving, so the changes approved are the ones that were reviewed. */
+  revision: number;
+  manifest_url: string;
+  manifest: AppManifest;
+  icon_data_url: string | null;
+  /**
+   * Field changes by path, such as `surfaces[0].url`, or `manifest_url` when the app moved,
+   * then scope changes in the registry's order.
+   */
+  changes: ManifestChange[];
+}
+
+/** The preview of a suspended installation's pending manifest. */
+export type ApprovalPreview = AppInstallationPreview & {
+  installation: PreviewedInstallation;
+};
 
 export interface AppInstallationsResponseType {
   app_installations: AppInstallation[];
@@ -109,12 +117,20 @@ const installationWithStatus = <Status extends AppInstallationStatus>(
 const ActiveAppSessionSchema = z.object({
   installation: installationWithStatus(['active']),
   token: AppSessionTokenSchema,
+  preview: z.null(),
 });
 
-/** A session of an installation that isn't active: it gets no token, and the app doesn't load. */
+/**
+ * A session of an installation that isn't active: it gets no token, and the app doesn't load. A
+ * suspended one comes with the preview of what waits for approval, read as the preview endpoint's
+ * is.
+ */
 const InactiveAppSessionSchema = z.object({
   installation: installationWithStatus(['suspended', 'uninstalled']),
   token: z.null(),
+  preview: z
+    .custom<ApprovalPreview>((value) => typeof value === 'object' && value !== null)
+    .nullable(),
 });
 
 export type ActiveAppSession = z.infer<typeof ActiveAppSessionSchema>;
@@ -176,9 +192,10 @@ export const useReadAppInstallation = createQueryWithId<AppInstallationsResponse
 /**
  * Starts a session of an installed app. Opening the app's page does this. Ghost first re-checks the
  * app's manifest: a change that needs no approval is applied, and one that needs approval suspends
- * the app. Ghost then returns the current installation, and only that response decides whether the
- * app loads. The session ends when the installation's revision changes from the one in the
- * response. For an app that isn't installed, Ghost returns 404 with the code `APP_NOT_INSTALLED`.
+ * the app. Ghost then returns the current installation, with the preview of its pending manifest
+ * when it's suspended, and only that response decides what the app's page shows. The session ends
+ * when the installation's revision changes from the one in the response. For an app that isn't
+ * installed, Ghost returns 404 with the code `APP_NOT_INSTALLED`.
  */
 export const useStartAppSession = createMutation<AppSessionsResponseType, string>({
   method: 'POST',
@@ -218,9 +235,9 @@ export const useAddAppInstallation = createMutation<
 });
 
 /**
- * Approves changes to an installed app, including the app moving somewhere new. `revision`
- * is the installation's, as the preview showed it: Ghost refuses the approval if the
- * installation changed since.
+ * Approves an installed app's pending manifest, or the app at a new manifest URL. `revision`
+ * is the installation's, as the preview showed it. Ghost fetches the manifest again, and refuses
+ * the approval with an outdated review's code if the app or the installation changed since.
  */
 export const useApproveAppInstallation = createMutation<
   AppInstallationsResponseType,

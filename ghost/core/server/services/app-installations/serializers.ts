@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { AppInstallationHistoryEntry, InstallationWithHistory } from './codec';
 import { AppInstallationStatus } from './schema';
-import type { AppSession } from './service';
+import type { ApprovalPreview, AppSession } from './service';
 
 const AppInstallationResource = z.object({
   id: z.string(),
@@ -44,6 +44,8 @@ const AppSessionsResponse = z.object({
     z.object({
       installation: AppInstallationResource,
       token: AppSessionTokenResource.nullable(),
+      // Served as the preview endpoint serves it.
+      preview: z.custom<ApprovalPreview>().nullable(),
     }),
   ]),
 });
