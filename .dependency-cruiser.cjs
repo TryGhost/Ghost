@@ -597,6 +597,20 @@ module.exports = {
       from: { path: '^ghost/core/' },
       to: { path: '(^|/)node_modules/sharp/', dependencyTypesNot: ['type-only'] },
     },
+    // ============================================================
+    // Better Auth's root entry point loads its full build, Kysely adapter included
+    // ============================================================
+    {
+      name: 'core-better-auth-via-subpaths',
+      comment:
+        "Invalid import of a value from the root of better-auth, which loads its Kysely adapter that Ghost doesn't use. Import it from a subpath, such as better-auth/api or @better-auth/core/context.",
+      severity: 'error',
+      from: { path: '^ghost/core/' },
+      to: {
+        path: '(^|/)node_modules/better-auth/dist/index\\.mjs$',
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
 
     // ============================================================
     // clients/ — shade/ is the foundation; must not depend on higher layers

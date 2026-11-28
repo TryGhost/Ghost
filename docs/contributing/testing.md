@@ -258,7 +258,10 @@ Common causes include:
   reached an observable state;
 - uncontrolled time, randomness, timezone, network access, or external
   services;
-- parallel tests competing for the same resource; and
+- parallel tests competing for the same resource;
+- a large module graph first loaded inside a test or hook, where the load counts
+  against its timeout, rather than as the file is imported, where none applies;
+  and
 - a race or other nondeterminism in the application code itself.
 
 1. Re-run the smallest affected file or test, then run its containing group to

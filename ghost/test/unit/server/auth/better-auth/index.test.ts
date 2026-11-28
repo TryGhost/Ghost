@@ -9,6 +9,11 @@ const db = require('../../../../../core/server/data/db');
 const rootPath = require.resolve('../../../../../core/server/auth/better-auth');
 type Root = typeof import('../../../../../core/server/auth/better-auth').default;
 
+// The root's first load in a worker brings in Better Auth: hundreds of modules, which tsx
+// compiles as they are required. That takes seconds on a cold cache, so it happens here, as the
+// file is imported, where no timeout applies. Inside a test it used most of that test's 5s
+require('../../../../../core/server/auth/better-auth/create-auth');
+
 describe('Better Auth service root', function () {
   let cachedRoot: NodeJS.Module | undefined;
 

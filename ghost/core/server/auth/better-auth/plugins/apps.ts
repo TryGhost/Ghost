@@ -1,5 +1,5 @@
 import errors from '@tryghost/errors';
-import { getCurrentAdapter } from 'better-auth';
+import { getCurrentAdapter } from '@better-auth/core/context';
 import { isAPIError } from 'better-auth/api';
 import type { BetterAuthPlugin } from 'better-auth';
 import { createAuthEndpoint } from 'better-auth/api';

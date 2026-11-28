@@ -1,4 +1,4 @@
-import { getCurrentAdapter } from 'better-auth';
+import { getCurrentAdapter } from '@better-auth/core/context';
 import type { AuthContext, Where } from 'better-auth';
 import { z } from 'zod';
 import { DbJson } from '../../../lib/db-types/json';

@@ -1,5 +1,5 @@
-import { runWithTransaction } from '@better-auth/core/context';
-import { APIError, BASE_ERROR_CODES, getCurrentAdapter } from 'better-auth';
+import { getCurrentAdapter, runWithTransaction } from '@better-auth/core/context';
+import { APIError, BASE_ERROR_CODES } from '@better-auth/core/error';
 import type { BetterAuthPlugin } from 'better-auth';
 import { createAuthEndpoint } from 'better-auth/api';
 import { setSessionCookie } from 'better-auth/cookies';
