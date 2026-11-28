@@ -5,4 +5,5 @@ module.exports = {
   logRequest: require('./log-request'),
   queueRequest: require('./queue-request').queueRequest,
   requestId: require('./request-id').requestId,
+  createSiteFrameProtection: require('./site-frame-protection').createSiteFrameProtection,
 };

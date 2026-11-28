@@ -21,6 +21,7 @@ export interface ConfigHelpers {
   getContentPath(type: string): string;
   getBackendMountPath(): string | RegExp;
   getFrontendMountPath(): string | RegExp;
+  hasSeparateAdminHost(): boolean;
   isTestEnv(): boolean;
   isProductionOrDevelopment(): boolean;
 }
@@ -58,6 +59,11 @@ function getFrontendMountPath(this: ConfigWithUrlHelpers): string | RegExp {
   return hasSeparateBackendHost && backendHost
     ? new RegExp(`^(?!${escapeRegExp(backendHost)}).*`)
     : DEFAULT_HOST_ARG;
+}
+
+// Without a separate admin host, Admin is served on every host the site is, so shares its origin
+function hasSeparateAdminHost(this: ConfigWithUrlHelpers): boolean {
+  return Boolean(getHostInfo(this).hasSeparateBackendHost);
 }
 
 function isPrivacyDisabled(this: ConfigLike, privacyFlag: string): boolean {
@@ -132,6 +138,7 @@ export function bindAll<T extends ConfigWithUrlHelpers>(
   target.getContentPath = getContentPath.bind(nconf);
   target.getBackendMountPath = getBackendMountPath.bind(nconf);
   target.getFrontendMountPath = getFrontendMountPath.bind(nconf);
+  target.hasSeparateAdminHost = hasSeparateAdminHost.bind(nconf);
   target.isTestEnv = isTestEnv.bind(nconf);
   target.isProductionOrDevelopment = isProductionOrDevelopment.bind(nconf);
 }
