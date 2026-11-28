@@ -60,5 +60,16 @@ describe('slugify()', function () {
     it('removes leading/trailing "-" and collapses "-" groups', function () {
       expect(slugify(' \ttest    one  two! \t')).toBe('test-one-two');
     });
+
+    it('collapses "-" groups to a single "-" instead of removing them', function () {
+      expect(slugify('Setup - Linux')).toBe('setup-linux');
+      expect(slugify('a--b')).toBe('a-b');
+      expect(slugify('a --- b')).toBe('a-b');
+    });
+
+    it('removes leading/trailing "-" groups', function () {
+      expect(slugify('--test--')).toBe('test');
+      expect(slugify('- test -')).toBe('test');
+    });
   });
 });
