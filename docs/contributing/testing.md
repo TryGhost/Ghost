@@ -199,6 +199,12 @@ optional Redis and object-storage adapters skip when their services are not
 available; start the relevant development services when you need to exercise
 those adapters.
 
+Nx caches passing runs of these suites. The cache key includes the Node version,
+timezone, MySQL server version and whether Redis and object storage are
+reachable (`ghost/test/utils/nx-cache-key.mts`), so starting a service or
+switching MySQL versions reruns them. Pass `--skip-nx-cache` to rerun an
+unchanged suite, for example when chasing a flaky test.
+
 If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
 server with `pnpm dev`.
 

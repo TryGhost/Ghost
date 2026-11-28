@@ -262,7 +262,7 @@ jobs:
 
       - name: Define Node test matrix
         # Node lines the unit / legacy / acceptance suites must keep passing on.
-        # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
+        # Their Nx caches are keyed on `node -v`, so each leg runs its own suites.
         id: node_matrix
         run: |
           echo "matrix=[\"${NODE_VERSION}\", \"24.22.3\"]" >> $GITHUB_OUTPUT

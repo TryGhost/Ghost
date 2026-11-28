@@ -6,6 +6,15 @@
       "{workspaceRoot}/package.json",
       "{workspaceRoot}/pnpm-workspace.yaml",
       "{workspaceRoot}/pnpm-lock.yaml"
+    ],
+    "dbTests": [
+      "default",
+      {
+        "runtime": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON ghost/test/utils/nx-cache-key.mts"
+      },
+      {
+        "env": "GHOST_TEST_STRICT_MODE"
+      }
     ]
   },
   "parallel": 4,
@@ -46,7 +55,13 @@
     },
     "test:ci:*": {
       "cache": true,
-      "inputs": ["default", "^default"]
+      "inputs": [
+        "default",
+        "^default",
+        {
+          "runtime": "node -v"
+        }
+      ]
     },
     "dev": {
       "dependsOn": ["^dev"],
