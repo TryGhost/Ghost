@@ -269,6 +269,21 @@ describe('useFeatureImageBinding', () => {
     expect(result.current.featureImageCaptionKey).not.toBe(loadedKey);
   });
 
+  it('starts the caption editor over on a copy loaded from the server', () => {
+    const session = port({ caption: 'My caption' });
+    const { result, rerender } = renderHook(
+      ({ loaded, contentKey }) => useFeatureImageBinding(session, loaded, contentKey),
+      { initialProps: { loaded: record({ feature_image_caption: 'My caption' }), contentKey: 0 } },
+    );
+    const loadedKey = result.current.featureImageCaptionKey;
+
+    session.featureImageCaption = 'Their caption';
+    rerender({ loaded: record({ feature_image_caption: 'Their caption' }), contentKey: 1 });
+
+    expect(result.current.featureImageCaption).toBe('<p>Their caption</p>');
+    expect(result.current.featureImageCaptionKey).not.toBe(loadedKey);
+  });
+
   it('leaves the caption editor alone for the writer’s own typing', () => {
     const session = port({ caption: 'My caption' });
     const { result } = renderHook(() =>

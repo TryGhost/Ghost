@@ -660,11 +660,11 @@ function EditorContent({
           <Box ref={writingAreaRef} className="relative isolate min-h-0 flex-1">
             <div className="-mt-(--editor-overlap) h-[calc(100%+var(--editor-overlap))] min-h-0">
               <PostEditor
-                key={session.contentKey}
                 {...session.bind}
                 actionsSlotRef={setBottomBar}
                 autofocusTitle={!record}
                 cardConfig={currentCardConfig}
+                contentKey={session.contentKey}
                 dimmed={lockShown}
                 excerptError={settingsFieldErrorFor('custom_excerpt', session.settings)}
                 featureImage={featureImage}

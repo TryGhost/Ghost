@@ -52,6 +52,11 @@ export interface PostEditorProps {
   titleAndFeatureImageHidden?: boolean;
   /** Initial body; the editor owns its own state after mount. */
   initialLexical: string | null;
+  /**
+   * Changes when another copy of the document is loaded. Only the body editor
+   * starts over on it: the canvas, its scroll position and its entrance stay.
+   */
+  contentKey?: number;
   cardConfig: PostCardConfig;
   showExcerpt: boolean;
   autofocusTitle?: boolean;
@@ -201,6 +206,7 @@ export function PostEditor({
   featureImage,
   titleAndFeatureImageHidden = false,
   initialLexical,
+  contentKey,
   cardConfig,
   showExcerpt,
   autofocusTitle = false,
@@ -601,6 +607,7 @@ export function PostEditor({
           </div>
           <KoenigPostEditor
             cardConfig={cardConfig}
+            contentKey={contentKey}
             cursorDidExitAtTop={showExcerpt ? focusExcerpt : focusTitle}
             darkMode={darkMode}
             initialLexical={initialLexical}
