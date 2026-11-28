@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { EditorPresenceService, resolveRetentionMs } from './editor-presence-service';
 import { MemoryPresenceStore } from './memory-presence-store';
 import { RedisPresenceStore, type RedisPresenceClient } from './redis-presence-store';

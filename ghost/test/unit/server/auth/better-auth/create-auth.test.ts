@@ -47,6 +47,7 @@ function deps({
     isEmailMfaRequired: () => false,
     sendDeviceVerificationCode: async () => {},
     getRequestOrigin: (headers) => headers.get('origin'),
+    apps: false,
   };
 }
 

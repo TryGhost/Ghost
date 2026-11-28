@@ -23,7 +23,7 @@
 //   installArgs extra `pnpm install` flags for the publish job, e.g.
 //               "--ignore-scripts" for a package whose install hooks are dev-only.
 //
-// Neither membership nor the cdn key is derivable from the tree: apps/ also
+// Neither membership nor the cdn key is derivable from the tree: clients/ also
 // holds admin and friends, which never go to npm, and comments-ui's config key
 // is `comments`, not `commentsUi`.
 

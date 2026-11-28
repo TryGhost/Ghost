@@ -261,7 +261,7 @@ test('the boot call the generator prints and the guides show is the one services
   );
   for (const [guide, service] of [
     ['ghost/core/server/services/README.md', name],
-    ['ghost/core/kernel/README.md', 'example'],
+    ['ghost/core/support/README.md', 'example'],
     ['.agents/skills/add-service/SKILL.md', name],
   ] as const) {
     const source = readFileSync(path.join(repo, guide), 'utf8');
@@ -279,7 +279,7 @@ test('generated output passes real lint, boundary and inventory checks with no r
   for (const file of [
     '.dependency-cruiser.cjs',
     'tools/scripts/ci/service-dependency-resolver.mjs',
-    'ghost/core/kernel/define-service.ts',
+    'ghost/core/support/define-service.ts',
     'ghost/eslint.config.mjs',
     'ghost/package.json',
     'ghost/tsconfig.json',
@@ -299,7 +299,7 @@ test('generated output passes real lint, boundary and inventory checks with no r
     path.join(root, 'tools/configs/oxlint/node_modules'),
   );
   symlinkSync(path.join(repo, 'ghost/node_modules'), path.join(root, 'ghost/node_modules'));
-  mkdirSync(path.join(root, 'apps'));
+  mkdirSync(path.join(root, 'clients'));
   writeFileSync(path.join(root, '.dependency-cruiser-known-violations.json'), '[]');
   // No legacy entries: the generated service is the only one, and it is not listed.
   writeFileSync(path.join(root, inventoryPath), inventory());

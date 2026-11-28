@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { transactionsWaitingOn } from '../../utils/lock-waits';
 import { z } from 'zod';
 import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 
@@ -497,6 +498,22 @@ describe('Member Custom Fields Admin API', function () {
       const fresh = await createField({ name: 'Favourite topic' });
       assert.equal(fresh.key, 'favourite_topic');
     });
+
+    it('does not find a field to delete once its stored type cannot be read', async function () {
+      // A deleted field is reported as it was read, so one that can't be read at all is not
+      // found, as it is for an edit, and stays where it is.
+      const stale = await createField({ name: 'Legacy field' });
+      await setStatus(stale.key, 'archived');
+      // Corrupt the stored field's type directly, past the service's immutability.
+      await models.Base.knex('members_metafields')
+        .where('key', stale.key)
+        .update({ type: 'no_longer_a_type' });
+
+      await agent.delete(`members/metafields/custom/${stale.key}/`).expectStatus(404);
+
+      const stored = await models.Base.knex('members_metafields').where('key', stale.key);
+      assert.equal(stored.length, 1);
+    });
   });
 
   // Written straight to the table: the database has to refuse these whoever writes them.
@@ -519,6 +536,139 @@ describe('Member Custom Fields Admin API', function () {
       await assert.rejects(insertField('shop', 'company\n'), /members_metafields_key_check/);
 
       await insertField('shop', 'company');
+    });
+  });
+
+  // A definition takes the key it is given, or one derived from its name when it is given none.
+  describe('Keys', function () {
+    const addKeyed = (status: number, ...definitions: Array<{ name: string; key: string }>) =>
+      agent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: definitions.map((definition) => ({
+            ...definition,
+            type: 'short_text',
+          })),
+        })
+        .expectStatus(status);
+
+    it('adds a definition under the key it is given', async function () {
+      const { body } = await addKeyed(201, { name: 'Delivery notes', key: 'shipping_notes' });
+      assert.equal(body.members_metafields[0].key, 'shipping_notes');
+
+      const read = await agent.get('members/metafields/custom/shipping_notes/').expectStatus(200);
+      assert.equal(read.body.members_metafields[0].name, 'Delivery notes');
+    });
+
+    it('refuses a key an archived definition already has', async function () {
+      await addKeyed(201, { name: 'Favourite topic', key: 'topic' });
+      await agent
+        .put('members/metafields/custom/topic/')
+        .body({ members_metafields: [{ status: 'archived' }] })
+        .expectStatus(200);
+
+      const { body } = await addKeyed(422, { name: 'Topic', key: 'topic' });
+      assert.equal(body.errors[0].property, 'key');
+      assert.match(body.errors[0].context, /A custom field with this key already exists\./);
+    });
+
+    it('refuses two definitions given the same key in one batch, adding neither', async function () {
+      const { body } = await addKeyed(
+        422,
+        { name: 'Favourite topic', key: 'topic' },
+        { name: 'Topic', key: 'topic' },
+      );
+      assert.equal(body.errors[0].property, 'key');
+      assert.match(body.errors[0].context, /Custom field 2 of 2\./);
+
+      const list = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(list.body.members_metafields, []);
+    });
+
+    // A key becomes a property name on the plain objects that carry a member's values, so one
+    // naming a member of Object.prototype is never taken, given or derived.
+    it('refuses a key that names a member of Object.prototype', async function () {
+      const { body } = await addKeyed(422, { name: 'Builder', key: 'constructor' });
+      assert.equal(body.errors[0].property, 'key');
+    });
+
+    // A key given with a new field is written, so it has to be an underscore slug, as a minted
+    // key is: no separator at either end and none doubled, although a key that is read can have
+    // them.
+    it('refuses a key that is not a slug, or that the fields table cannot store', async function () {
+      for (const key of ['_vip_', 'a__b', 'vip_', 'VIP', 'a-b', '']) {
+        const malformed = await addKeyed(422, { name: 'Topic', key });
+        assert.equal(malformed.body.errors[0].property, 'key', JSON.stringify(key));
+        assert.match(
+          malformed.body.errors[0].context,
+          /A custom field key can only contain lowercase letters and digits, in words joined by single underscores/,
+        );
+      }
+
+      const long = await addKeyed(422, { name: 'Topic', key: 'k'.repeat(1000) });
+      assert.equal(long.body.errors[0].property, 'key');
+      assert.match(long.body.errors[0].context, /Custom field key is too long\./);
+    });
+  });
+
+  // A key given with a new field has to be a slug, but a field can have a key that is only a key,
+  // such as `a__b`, from before that rule. Everything that reads or addresses a key still takes it.
+  describe('A key that is not a slug', function () {
+    const KEY = 'a__b';
+
+    const listedKeys = async (): Promise<string[]> =>
+      (await agent.get('members/metafields/custom/').expectStatus(200)).body.members_metafields.map(
+        (field: { key: string }) => field.key,
+      );
+
+    beforeEach(async function () {
+      await models.Base.knex('members_metafields').insert({
+        id: '6600000000000000000000c1',
+        namespace: 'custom',
+        key: KEY,
+        name: 'Legacy',
+        type: 'short_text',
+        created_at: new Date(),
+      });
+    });
+
+    it('is listed, read, renamed and given back on an edit', async function () {
+      assert.deepEqual(await listedKeys(), [KEY]);
+      await agent.get(`members/metafields/custom/${KEY}/`).expectStatus(200);
+
+      const { body } = await agent
+        .put(`members/metafields/custom/${KEY}/`)
+        .body({ members_metafields: [{ name: 'Legacy renamed', key: KEY }] })
+        .expectStatus(200);
+      assert.equal(body.members_metafields[0].key, KEY);
+      assert.equal(body.members_metafields[0].name, 'Legacy renamed');
+    });
+
+    it("holds a member's value, which a filter and the export find", async function () {
+      const memberId = await createMember();
+      await setValues(memberId, { [KEY]: 'Ghost' });
+      assert.deepEqual(await readValues(memberId), { [KEY]: 'Ghost' });
+
+      const filter = encodeURIComponent(
+        `metafields.identity:'custom.${KEY}'+metafields.value:'Ghost'`,
+      );
+      const { body } = await agent.get(`members/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.members.map((member: { id: string }) => member.id),
+        [memberId],
+      );
+
+      const exported = await agent.get('members/upload/?limit=all').expectStatus(200);
+      const [header, ...rows]: string[] = exported.text.trim().split(/\r?\n/);
+      assert.ok(header.split(',').includes(`metafields.custom.${KEY}`), header);
+      assert.ok(rows.some((row) => row.includes('Ghost')));
+    });
+
+    it('is archived and deleted', async function () {
+      await setStatus(KEY, 'archived');
+      await agent.delete(`members/metafields/custom/${KEY}/`).expectStatus(204);
+
+      await agent.get(`members/metafields/custom/${KEY}/`).expectStatus(404);
     });
   });
 
@@ -2455,19 +2605,6 @@ describe('Member Custom Fields Admin API', function () {
   // create members rather than edit them, because editing two members who get the same
   // newsletter makes the second edit wait for the first, so their saves never overlap.
   describe.runIf(DatabaseInfo.isMySQL(knex))('Two members created at once', function () {
-    // How many transactions are waiting for a lock on members_metafield_values.
-    async function savesWaitingToWriteValues(): Promise<number> {
-      const [rows] = await models.Base.knex.raw(`
-        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
-        FROM performance_schema.data_lock_waits AS waits
-        JOIN performance_schema.data_locks AS requested
-          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
-        WHERE requested.OBJECT_SCHEMA = DATABASE()
-          AND requested.OBJECT_NAME = 'members_metafield_values'
-      `);
-      return Number(rows[0].waiting);
-    }
-
     // Sends both creates while a transaction holds a lock on the whole members_metafield_values
     // table, so neither create can write a value yet. Once both creates are waiting on that
     // lock, or one has already answered, the lock is released and both write their values at
@@ -2497,7 +2634,11 @@ describe('Member Custom Fields Admin API', function () {
             });
         });
         await vi.waitFor(
-          async () => assert.equal((await savesWaitingToWriteValues()) + answered, 2),
+          async () =>
+            assert.equal(
+              (await transactionsWaitingOn(knex, 'members_metafield_values')) + answered,
+              2,
+            ),
           { timeout: 5000 },
         );
         await gate.commit();
@@ -2589,10 +2730,11 @@ describe('Member Custom Fields Admin API', function () {
       return body.actions;
     };
 
-    // A field is addressed publicly by its key, and the key rides in the action's
+    // A field is addressed publicly by its namespace and key, and both ride in the action's
     // context rather than in resource_id, which holds the row id.
     const ActionContext = z.object({
       primary_name: z.string().optional(),
+      namespace: z.string().optional(),
       key: z.string().optional(),
       previous_name: z.string().optional(),
       member_access: z.string().optional(),
@@ -2628,6 +2770,7 @@ describe('Member Custom Fields Admin API', function () {
       const actions = await customFieldActions();
       assert.equal(actions.length, 1);
       assert.equal(actions[0].event, 'added');
+      assert.equal(contextOf(actions[0]).namespace, 'custom');
       assert.equal(contextOf(actions[0]).key, field.key);
       assert.equal(actions[0].actor_type, 'user');
       assert.equal(actions[0].actor_id, actorId);
@@ -2674,6 +2817,7 @@ describe('Member Custom Fields Admin API', function () {
       assert.equal(edited.length, 1, 'a reorder records one action, not one per field');
       assert.equal(edited[0].resource_id, null);
       assert.equal(contextOf(edited[0]).action_name, 'reordered');
+      assert.equal(contextOf(edited[0]).namespace, 'custom');
       assert.equal(contextOf(edited[0]).count, 3);
       assert.equal(edited[0].actor_id, actorId);
     });

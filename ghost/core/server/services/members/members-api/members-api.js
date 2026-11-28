@@ -85,6 +85,7 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   metafieldValues,
+  metafieldActivity,
   metafieldBindings,
   tierRequirements,
   checkouts,
@@ -146,7 +147,7 @@ module.exports = function MembersAPI({
     labsService,
     memberAttributionService,
     MemberEmailChangeEvent,
-    metafieldValues,
+    metafieldActivity,
     AutomatedEmailRecipient,
     giftSubscriptions: giftService,
   });

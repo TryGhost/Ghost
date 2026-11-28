@@ -45,7 +45,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
-  '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
+  '^ghost/core/support/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
@@ -65,8 +65,11 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
   '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
+  '^ghost/core/server/data/schema/schema\\.ts$', // The table definitions, as static data; no database access or application instances.
   '^ghost/core/server/lib/sortable\\.ts$', // Ordered reads, inserts and reorders for a schema-declared collection, on the caller's connection; no application instances.
   '^ghost/core/server/lib/db-errors\\.ts$', // Recognises the errors a database rejects a write with.
+  '^ghost/core/server/lib/changes\\.ts$', // Base classes a service extends to declare the changes it reports; they hold data only, no application instances.
+  '^ghost/core/server/lib/first-error\\.ts$', // Reads a thrown array of errors, as model validation throws, as its first error.
   '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
   '^ghost/core/server/lib/db-types/text\\.ts$', // Byte-length check for text columns.
   '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
@@ -77,6 +80,9 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/soonest-timer\\.ts$', // Timer class the caller builds and owns.
   '^ghost/core/server/lib/auto-filling-map\\.ts$', // Map that fills missing keys from a caller-supplied factory.
   '^ghost/core/server/lib/member-signup-contexts\\.ts$', // Member signup context constants and one predicate.
+  '^ghost/core/server/lib/truncate-characters\\.ts$', // Cuts a string to a column's length in characters; no application instances.
+  '^ghost/core/server/lib/slug\\.ts$', // What a slug is, and minting slugs people type, such as custom field keys and segment slugs, from names; no application instances.
+  '^ghost/core/server/lib/filters/index\\.ts$', // Parses filter text, rewrites the parsed filter with caller-supplied steps and compiles it onto the caller's query builder; no application instances or I/O.
   '^ghost/core/shared/errify\\.ts$', // Turns any thrown value into an Error.
   '^ghost/core/shared/timing-safe-string-equal\\.ts$', // Constant-time string comparison.
   '^ghost/core/shared/one-at-a-time\\.ts$', // Wraps a caller's function so calls do not overlap.
@@ -218,6 +224,15 @@ const specialistDependencies = [
 
   // Content and rendering.
   {
+    // Transliterating names to ASCII, to mint slugs such as custom field keys and segment slugs.
+    // The migration that gives existing segments their slugs keeps its own copy of the minting.
+    dependency: npm('unidecode'),
+    owners: [
+      core('server/lib/slug.ts'),
+      core('server/data/migrations/versions/6.80/2026-11-26-01-02-18-backfill-segment-slugs.ts'),
+    ],
+  },
+  {
     // Converting Mobiledoc and Lexical content.
     dependency: workspace('@tryghost/kg-converters', 'koenig/kg-converters'),
     owners: [
@@ -270,6 +285,25 @@ const specialistDependencies = [
     ],
   },
 
+  // Filters. The filters library parses filter text and compiles the parsed
+  // filter onto a query; other code uses the library.
+  {
+    // Parsing NQL filter text.
+    dependency: npm('@tryghost/nql-lang'),
+    owners: [
+      core('server/lib/filters/'),
+      // Checks that each slug it mints reads back as itself in a filter.
+      core('server/data/migrations/versions/6.80/2026-11-26-01-02-18-backfill-segment-slugs.ts'),
+      core('frontend/helpers/get.js'),
+      core('server/api/endpoints/utils/serializers/input/tiers.js'),
+    ],
+  },
+  {
+    // Compiling a parsed filter onto a Knex query.
+    dependency: npm('@tryghost/mongo-knex'),
+    owners: [core('server/lib/filters/'), service('members-metafields/')],
+  },
+
   // Database.
   {
     // Telling SQLite from MySQL on a connection the caller passes.
@@ -279,16 +313,12 @@ const specialistDependencies = [
       core('server/models/label.js'),
       service('jobs-service/index.ts'),
       service('members/service.js'),
+      service('stripe/webhook-store.ts'),
       service('url/routable-resources.js'),
     ],
   },
 
   // One service each.
-  {
-    // Custom field keys and filters.
-    dependency: `${npm('unidecode')}|${npm('@tryghost/mongo-knex')}`,
-    owners: [service('members-metafields/')],
-  },
   {
     // Cron expressions for scheduled jobs.
     dependency: npm('cron-validate'),
@@ -372,7 +402,7 @@ const serviceDependencyDecisions = {
   // owners is counted here too, without a pattern.
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
-    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
+    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the Support clock, which exports moment for existing date logic.
     '^(node:)?url$', // Use the global URL; url.parse is deprecated.
     '^(node:)?(fs(/promises)?|os|net)$|^fs-extra$', // No file system, operating system or networking modules: the root passes a loader limited to what is needed.
   ],
@@ -387,7 +417,7 @@ const serviceDependencyDecisions = {
  *                 proxy seam, and server/ must not reach into the frontend
  *                 rendering layer. Paths are anchored on `^ghost/core/`.
  *
- *   apps/       — design system layer hierarchy and public/admin separation.
+ *   clients/       — design system layer hierarchy and public/admin separation.
  *                 shade/ is a leaf package that nothing above it may pull
  *                 back into. admin-x-framework/ sits above it but below
  *                 feature apps. Public UMD bundles (portal, comments-ui,
@@ -457,22 +487,22 @@ module.exports = {
         path: '^ghost/core/',
         pathNot: [
           `^${servicesRoot}/[^/]+/index\\.ts$`,
-          '^ghost/core/kernel/',
+          '^ghost/core/support/',
           ...serviceRootsElsewhere,
         ],
       },
       to: {
-        path: '^ghost/core/kernel/define-service\\.ts$',
+        path: '^ghost/core/support/define-service\\.ts$',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
-    // Kernel primitives must be independent of the application they support.
+    // Support primitives must be independent of the application they serve.
     {
-      name: 'kernel-not-application',
-      comment: 'Kernel code must not import application code, including shared.',
+      name: 'support-not-application',
+      comment: 'Support code must not import application code, including shared.',
       severity: 'error',
-      from: { path: '^ghost/core/kernel/' },
-      to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+      from: { path: '^ghost/core/support/' },
+      to: { path: '^ghost/', pathNot: '^ghost/core/support/' },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*
@@ -569,28 +599,28 @@ module.exports = {
     },
 
     // ============================================================
-    // apps/ — shade/ is the foundation; must not depend on higher layers
+    // clients/ — shade/ is the foundation; must not depend on higher layers
     // ============================================================
     {
       name: 'shade-is-leaf',
       comment: 'shade/ must not depend on admin-x-framework. It is the foundation layer.',
       severity: 'error',
-      from: { path: '^apps/shade/' },
-      to: { path: '^@tryghost/admin-x-framework($|/)|^apps/admin-x-framework/' },
+      from: { path: '^clients/shade/' },
+      to: { path: '^@tryghost/admin-x-framework($|/)|^clients/admin-x-framework/' },
     },
     // ============================================================
-    // apps/ — admin-x-framework/ must not depend on feature apps
+    // clients/ — admin-x-framework/ must not depend on feature apps
     // ============================================================
     {
       name: 'framework-not-feature-apps',
       comment:
         'admin-x-framework/ must not depend on feature apps (activitypub). The framework layer sits below the feature layer.',
       severity: 'error',
-      from: { path: '^apps/admin-x-framework/' },
-      to: { path: '^@tryghost/activitypub($|/)|^apps/activitypub/' },
+      from: { path: '^clients/admin-x-framework/' },
+      to: { path: '^@tryghost/activitypub($|/)|^clients/activitypub/' },
     },
     // ============================================================
-    // apps/ — public UMD apps must not depend on admin-only libraries
+    // clients/ — public UMD apps must not depend on admin-only libraries
     // ============================================================
     {
       name: 'public-apps-not-admin-libs',
@@ -598,9 +628,9 @@ module.exports = {
         'Public UMD apps (portal, comments-ui, etc.) must not depend on admin-only libraries (shade, admin-x-framework).',
       severity: 'error',
       from: {
-        path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
+        path: '^clients/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
-      to: { path: '^@tryghost/(shade|admin-x-framework)($|/)|^apps/(shade|admin-x-framework)/' },
+      to: { path: '^@tryghost/(shade|admin-x-framework)($|/)|^clients/(shade|admin-x-framework)/' },
     },
     {
       name: 'public-apps-not-field-rules',
@@ -608,7 +638,7 @@ module.exports = {
         "Public UMD apps load on every page view of a site, so they draw custom fields from @tryghost/metafield-types/structure rather than loading the package root's value rules, which carry zod and libphonenumber-js. Types from the root are fine.",
       severity: 'error',
       from: {
-        path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
+        path: '^clients/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
       to: {
         path: '^@tryghost/metafield-types$|^contracts/metafield-types/(src|build)/index\\.(ts|js)$|^libphonenumber-js($|/)|(^|/)node_modules/libphonenumber-js/',
@@ -616,18 +646,18 @@ module.exports = {
       },
     },
     // ============================================================
-    // apps/ — admin is an app, not a library
+    // clients/ — admin is an app, not a library
     // ============================================================
     {
       name: 'admin-is-app',
       comment:
         'No sibling app or library may depend on @tryghost/admin - whether by package specifier or by relative reach-in. Admin sits at the top of the layer stack.',
       severity: 'error',
-      from: { path: '^apps/', pathNot: '^apps/admin/' },
-      to: { path: '^@tryghost/admin($|/)|^apps/admin/' },
+      from: { path: '^clients/', pathNot: '^clients/admin/' },
+      to: { path: '^@tryghost/admin($|/)|^clients/admin/' },
     },
     // ============================================================
-    // apps/ — test data must not reach production source
+    // clients/ — test data must not reach production source
     // ============================================================
     {
       name: 'no-test-data-in-production-source',
@@ -635,7 +665,7 @@ module.exports = {
         'App source must not import @tryghost/test-data. Only the ./selectors/* subpath is allowed, and only for testids — product copy is declared in the component that renders it. Tests, fixtures, and test utilities are exempt.',
       severity: 'error',
       from: {
-        path: '^apps/[^/]+/src/',
+        path: '^clients/[^/]+/src/',
         pathNot: ['\\.test\\.[^/]+$', '(^|/)__fixtures__/', '(^|/)__test-utils__/'],
       },
       to: {
@@ -646,60 +676,60 @@ module.exports = {
       },
     },
     // ============================================================
-    // apps/admin — domains cross into each other only via api.ts
+    // clients/admin — domains cross into each other only via api.ts
     // ============================================================
     {
       name: 'admin-domains-cross-via-api-only',
       comment:
-        "A domain folder in apps/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
+        "A domain folder in clients/admin/src may import a different domain only through that domain's public surface (its api.ts). Deep imports couple domains to each other's internals. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier; both that shape and resolved relative paths are matched. Test files are exempt.",
       severity: 'error',
       from: {
-        path: '^apps/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/',
+        path: '^clients/admin/src/(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/',
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {
-        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
+        path: '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
         pathNot: [
-          '^(?:@/|apps/admin/src/)$1($|/)',
-          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
+          '^(?:@/|clients/admin/src/)$1($|/)',
+          '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
 
           // Shared-shaped modules that still live inside a domain.
           // Goal: move them under src/shared and work this list down to empty.
-          '^(?:@/|apps/admin/src/)settings/components/(?:koenig-loader|error-boundary)$',
-          '^(?:@/|apps/admin/src/)posts/list/post-time$',
+          '^(?:@/|clients/admin/src/)settings/components/(?:koenig-loader|error-boundary)$',
+          '^(?:@/|clients/admin/src/)posts/list/post-time$',
         ],
       },
     },
     // ============================================================
-    // apps/admin — the shell and layout import domains only via api.ts
+    // clients/admin — the shell and layout import domains only via api.ts
     // ============================================================
     {
       name: 'admin-shell-into-domains-via-api-only',
       comment:
-        'The admin shell (top-level files in apps/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
+        'The admin shell (top-level files in clients/admin/src plus its non-domain support folders) may import a domain only through its api.ts. Same matching notes as admin-domains-cross-via-api-only. Test files are exempt.',
       severity: 'error',
       from: {
-        path: '^apps/admin/src/(?:(?:layout|hooks|providers|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
+        path: '^clients/admin/src/(?:(?:layout|hooks|providers|utils|schemas)/.+|[^/]+\\.(?:ts|tsx))$',
         pathNot: ['\\.test\\.(ts|tsx)$'],
       },
       to: {
-        path: '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
+        path: '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)($|/)',
         pathNot: [
-          '^(?:@/|apps/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
+          '^(?:@/|clients/admin/src/)(?:members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor)/api(\\.ts)?$',
         ],
       },
     },
     // ============================================================
-    // apps/admin — shared/ must stay domain-free
+    // clients/admin — shared/ must stay domain-free
     // ============================================================
     {
       name: 'admin-shared-no-domains',
       comment:
-        'apps/admin/src/shared must not import from feature domains. Move code used by a single domain into that domain; keep shared/ generic. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier.',
+        'clients/admin/src/shared must not import from feature domains. Move code used by a single domain into that domain; keep shared/ generic. In-app imports use the @/ alias, which the cruiser sees as an unresolved @/-prefixed specifier.',
       severity: 'error',
-      from: { path: '^apps/admin/src/shared/' },
+      from: { path: '^clients/admin/src/shared/' },
       to: {
-        path: '^(@/|apps/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor|layout)($|/)',
+        path: '^(@/|clients/admin/src/)(members|settings|analytics|posts|tags|comments|automations|onboarding|whats-new|editor|layout)($|/)',
       },
     },
   ],
@@ -733,14 +763,14 @@ module.exports = {
     doNotFollow: {
       path: [
         'node_modules',
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
+        '^(?!ghost/core/server/services/)(clients|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
       ],
     },
     // Skip our own tests and emitted companions. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.
     exclude: {
       path: [
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/',
+        '^(?!ghost/core/server/services/)(clients|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/',
         ...sourceExclusions(__dirname),
       ],
     },

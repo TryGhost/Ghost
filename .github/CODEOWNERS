@@ -13,8 +13,8 @@
 # @tryghost/parse-email-address
 /packages/parse-email-address/ @EvanHahn
 
-# Kernel
-/ghost/core/kernel/ @ErisDS
+# Support
+/ghost/core/support/ @ErisDS
 
 # Service policy: dependency rules, legacy services and their reviewed violations
 /.dependency-cruiser.cjs @ErisDS

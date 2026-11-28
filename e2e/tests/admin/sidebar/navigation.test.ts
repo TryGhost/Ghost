@@ -2,7 +2,7 @@ import { NAV_ITEMS, SidebarPage } from '@/admin-pages';
 import { expect, test } from '@/helpers/playwright/fixture';
 
 // Client-side sidebar cases (nav rendering, posts submenu and views, user menu,
-// network badge, settings navigation) live in apps/admin/src/layout/sidebar.acceptance.test.tsx.
+// network badge, settings navigation) live in clients/admin/src/layout/sidebar.acceptance.test.tsx.
 test.describe('Ghost Admin - Sidebar Navigation', () => {
   test('clicking each nav item navigates and shows active state', async ({ page }) => {
     const sidebar = new SidebarPage(page);

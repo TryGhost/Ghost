@@ -18,6 +18,7 @@ describe('StripeAPI', function () {
   const mockCustomerEmail = 'foo@example.com';
   const mockCustomerId = 'cust_mock_123456';
   const mockCustomerName = 'Example Customer';
+  const SITE_UUID = '9b6c2f7e-2f0e-4c55-9d0a-1f4e3b7c6a11';
   const mockLabs = {
     isSet() {
       return false;
@@ -29,6 +30,7 @@ describe('StripeAPI', function () {
       tracer: createTracer({ transport: { metric: () => Promise.resolve(null) }, logging }),
       meter: createMeter({ transport: { metric: () => Promise.resolve(null) }, logging }),
     }),
+    siteUuid: () => SITE_UUID,
   });
 
   let mockStripe;
@@ -607,6 +609,8 @@ describe('StripeAPI', function () {
   describe('cancelSubscriptionTrial', function () {
     const mockSubscription = {
       id: 'sub_123',
+      customer: 'cus_123',
+      status: 'active',
     };
     beforeEach(function () {
       mockStripe = {
@@ -639,6 +643,7 @@ describe('StripeAPI', function () {
   describe('addCouponToSubscription', function () {
     const mockSubscription = {
       id: 'sub_123',
+      customer: 'cus_123',
       status: 'active',
       discount: {
         coupon: {
@@ -678,7 +683,7 @@ describe('StripeAPI', function () {
     beforeEach(function () {
       mockStripe = {
         subscriptions: {
-          update: sinon.stub().resolves({ id: 'sub_123' }),
+          update: sinon.stub().resolves({ id: 'sub_123', customer: 'cus_123', status: 'active' }),
         },
       };
       sinon.stub(stripe, 'Stripe').returns(mockStripe);
@@ -963,7 +968,10 @@ describe('StripeAPI', function () {
       });
 
       assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata);
-      assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
+      assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, {
+        ...metadata,
+        ghost_site_uuid: SITE_UUID,
+      });
     });
 
     it('passes custom fields correctly', async function () {
@@ -1150,7 +1158,7 @@ describe('StripeAPI', function () {
         args.line_items[0].price_data.product_data.name,
         'Gift subscription — Pro (1 year)',
       );
-      assert.deepEqual(args.metadata, { ghost_gift_id: 'gift_123' });
+      assert.deepEqual(args.metadata, { ghost_gift_id: 'gift_123', ghost_site_uuid: SITE_UUID });
       assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.args[1], {
         idempotencyKey: 'gift_123',
       });
@@ -1266,7 +1274,7 @@ describe('StripeAPI', function () {
 
       const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
-      assert.deepEqual(args.metadata, metadata);
+      assert.deepEqual(args.metadata, { ...metadata, ghost_site_uuid: SITE_UUID });
     });
 
     it('passes customer ID when customer is provided', async function () {

@@ -1,5 +1,3 @@
-const logging = require('@tryghost/logging');
-
 /**
  * @typedef {import('./oembed-service').ICustomProvider} ICustomProvider
  * @typedef {import('./oembed-service').IExternalRequest} IExternalRequest
@@ -13,6 +11,8 @@ const TWITTER_PATH_REGEX = /\/status\/(\d+)/;
 class TwitterOEmbedProvider {
   /**
    * @param {object} dependencies
+   * @param {{bearerToken?: string}} dependencies.config
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'error'>} dependencies.logging
    */
   constructor(dependencies) {
     this.dependencies = dependencies;
@@ -148,7 +148,7 @@ class TwitterOEmbedProvider {
             err.context = err.response.body;
           }
         }
-        logging.error(err);
+        this.dependencies.logging.error(err);
       }
     }
 

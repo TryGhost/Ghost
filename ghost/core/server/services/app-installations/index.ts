@@ -1,19 +1,21 @@
 import { z } from 'zod';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import { ActionLog } from '../../lib/action-log/action-log';
+import { recordAppInstallationChanges } from '../../lib/action-log/app-installations';
 import { createAppFetcher } from './fetch-from-app';
 import { createIconFetcher } from './fetch-icon';
 import { createIdentityChecker, readTrustedOrigins } from './identity-check';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
+export type { InstallationAccess } from './app-installations-repository';
 export type { Installation, InstallationWithHistory } from './codec';
 export type { AppInstallation } from './serializers';
-export type { AppInstallationPreview, AppSession } from './service';
+export type { AppInstallationPreview, AppSession, AppSessionToken } from './service';
 
 /**
  * The apps slice of config, parsed here as the config guide asks of a feature's keys.
@@ -90,6 +92,7 @@ export default defineService('App Installations', () => {
   appsConfig();
   const { knex } = require('../../data/db');
   const externalRequest = require('../../lib/request-external');
+  const auth = require('../../auth');
 
   const fetchFromApp = createAppFetcher({
     request: externalRequest,
@@ -103,7 +106,8 @@ export default defineService('App Installations', () => {
 
   return new AppInstallationsService({
     knex,
-    actionLog: new ActionLog(),
+    // Each change is logged as a staff action inside the command that made it.
+    onAppInstallationUpdated: recordAppInstallationChanges(new ActionLog()),
     loadManifest: createManifestLoader({ fetchFromApp, logging, getManifestRules }),
     identity: createIdentityChecker({
       fetchFromApp,
@@ -116,5 +120,8 @@ export default defineService('App Installations', () => {
       getManifestRules,
     }),
     fetchIcon: createIconFetcher({ fetchFromApp, logging }),
+    // Better Auth's OAuth provider issues app tokens; it says whether it can on this site
+    appTokens: auth.appTokens,
+    logging,
   });
 });

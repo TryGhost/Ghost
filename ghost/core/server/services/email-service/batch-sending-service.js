@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const ObjectID = require('bson-objectid').default;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const { allOf } = require('@tryghost/nql-string');
 const SendEmailJob = require('./jobs/send-email-job').default;
 const { validateMaxConcurrency } = require('../../lib/promise-pool');
 const {
@@ -578,16 +579,20 @@ class BatchSendingService {
     const startedAt = Date.now();
     this.#checkPreparationActive();
     // Parse once outside retries: malformed filters and newsletter settings cannot recover.
-    const queries = segments.map((segment) => {
-      const filter = this.#emailSegmenter.getMemberFilterForSegment(
-        newsletter,
-        email.get('recipient_filter'),
-        segment,
-      );
-      return this.#models.Member.getFilteredCollectionQuery({
-        filter: filter + `+id:<'${email.id}'`,
-      });
-    });
+    const filters = await Promise.all(
+      segments.map((segment) => {
+        const filter = this.#emailSegmenter.getMemberFilterForSegment(
+          newsletter,
+          email.get('recipient_filter'),
+          segment,
+        );
+        // Members who join after the email was created don't receive it
+        return this.#models.Member.resolveFilter({
+          filter: allOf(filter, `id:<'${email.id}'`),
+        });
+      }),
+    );
+    const queries = filters.map((filter) => filter.query());
     const candidates = await this.retryDb(
       () => {
         this.#checkPreparationActive();

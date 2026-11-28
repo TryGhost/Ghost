@@ -40,6 +40,7 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
     customer: 'cus_' + counter,
     status: 'active',
     cancel_at_period_end: false,
+    canceled_at: null,
     metadata: {},
     current_period_end: Math.floor(Date.now() / 1000 + 1000),
     start_date: moment(date).unix(),
@@ -47,6 +48,7 @@ async function createMemberWithSubscription(interval, amount, currency, date) {
     items: {
       data: [
         {
+          id: 'si_1234',
           price: fakePrice,
         },
       ],

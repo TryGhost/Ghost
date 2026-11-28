@@ -11,7 +11,9 @@ type IdentityTokensRoot = {
   instance: IdentityTokenService | undefined;
 };
 type IdentitiesController = {
-  read: { query(frame: { user: unknown }): Promise<{ token: string }> };
+  read: {
+    query(frame: { user: unknown; options: { audience?: string } }): Promise<{ token: string }>;
+  };
 };
 
 // Use the CommonJS copy that the signing-keys root requires, so prototype stubs reach it.
@@ -106,7 +108,7 @@ describe('Identity tokens root', function () {
       relations: { roles: { toJSON: () => [{ name: 'Editor' }] } },
     };
 
-    const { token } = await identities.read.query({ user });
+    const { token } = await identities.read.query({ user, options: {} });
     const claims = claimsOf(token, keys[0], { issuer: 'https://example.com/blog/ghost/' });
 
     assert.equal(claims.sub, 'staff@example.com');

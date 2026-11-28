@@ -28,23 +28,6 @@ export type ReassignableCheckResult =
   | { reassignable: true }
   | { reassignable: false; reason: ReassignableCheckFailureReason };
 
-export type GiftFromPurchaseData = Pick<
-  GiftDataInput,
-  | 'token'
-  | 'buyerEmail'
-  | 'buyerMemberId'
-  | 'tierId'
-  | 'cadence'
-  | 'duration'
-  | 'currency'
-  | 'amount'
-  | 'stripeCheckoutSessionId'
-  | 'stripePaymentIntentId'
-> & {
-  purchasedAt: Date;
-  expiryTimeZone: string;
-};
-
 export type GiftFromCheckoutData = Pick<
   GiftDataInput,
   | 'token'
@@ -130,25 +113,6 @@ export class Gift implements GiftData {
     this.expiredAt = data.expiredAt;
     this.refundedAt = data.refundedAt;
     this.consumesSoonReminderSentAt = data.consumesSoonReminderSentAt ?? null;
-  }
-
-  static fromPurchase(data: GiftFromPurchaseData) {
-    const { expiryTimeZone, ...giftData } = data;
-
-    return new Gift({
-      ...giftData,
-      redeemerMemberId: null,
-      consumesAt: null,
-      checkoutStartedAt: data.purchasedAt,
-      expiresAt: calculateGiftExpiration(data.purchasedAt, expiryTimeZone),
-      status: 'purchased',
-      purchasedAt: data.purchasedAt,
-      redeemedAt: null,
-      consumedAt: null,
-      expiredAt: null,
-      refundedAt: null,
-      consumesSoonReminderSentAt: null,
-    });
   }
 
   static fromCheckout(data: GiftFromCheckoutData) {

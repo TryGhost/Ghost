@@ -12,7 +12,6 @@ const models = require('../../../../../core/server/models');
 const { limitService } = require('../../../../../core/server/services/limits');
 const urlService = require('../../../../../core/server/services/url');
 const membersService = require('../../../../../core/server/services/members');
-const { ADMIN } = require('../../../../../core/server/services/members-metafields');
 const tiersService = require('../../../../../core/server/services/tiers').default;
 const { Post } = require('../../../../../core/server/models/post');
 const { Member } = require('../../../../../core/server/models/member');
@@ -337,7 +336,7 @@ describe('Webhooks service root', function () {
       return model;
     }
 
-    it('reads the member’s Admin metafields from the members API current when the event arrives', async function () {
+    it('reads every one of the member’s metafields from the members API current when the event arrives', async function () {
       configUtils.set('security:allowWebhookInternalIPs', true);
       Webhook.findAllByEvent.resolves({ models: [webhookFor('member.added', '/members')] });
       const received = receive('/members');
@@ -353,7 +352,10 @@ describe('Webhooks service root', function () {
       events.emit('member.added', memberModel(), {});
 
       const body = JSON.parse((await received).body);
-      sinon.assert.calledOnceWithExactly(readMetafieldsForMember, 'member-id', ADMIN);
+      // Read as Ghost itself, which reaches every field, as staff do.
+      sinon.assert.calledOnceWithExactly(readMetafieldsForMember, 'member-id', {
+        kind: 'internal',
+      });
       assert.equal(body.member.current.email, 'member@example.com');
       assert.deepEqual(body.member.current.metafields, { custom: { favourite_colour: 'teal' } });
       await edited;

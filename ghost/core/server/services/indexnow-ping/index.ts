@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import { IndexNowPingService } from './indexnow-ping-service';
 
 export default defineService('IndexNow', {

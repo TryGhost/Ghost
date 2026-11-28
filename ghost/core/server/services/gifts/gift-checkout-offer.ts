@@ -29,7 +29,7 @@ export interface GiftCheckoutPlan {
   amount: number;
 }
 
-// Mirrored by the Portal catalogue in apps/portal/src/utils/gift-subscriptions.ts
+// Mirrored by the Portal catalogue in clients/portal/src/utils/gift-subscriptions.ts
 // until later customization work makes durations server-provided
 const GIFT_DURATION_CATALOGUE = new Map<number, GiftDurationDefinition>([
   [

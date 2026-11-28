@@ -33,7 +33,7 @@
       }
     },
     {
-      "files": ["apps/**/*.test.{js,jsx,ts,tsx}", "apps/*/test/**"],
+      "files": ["clients/**/*.test.{js,jsx,ts,tsx}", "clients/*/test/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -49,11 +49,11 @@
       }
     },
     {
-      "files": ["apps/admin/src/**/*.{ts,tsx}"],
+      "files": ["clients/admin/src/**/*.{ts,tsx}"],
       "rules": {
         "local/no-hardcoded-ghost-paths": "error"
       },
-      "excludeFiles": ["apps/admin/src/**/*.test.*"]
+      "excludeFiles": ["clients/admin/src/**/*.test.*"]
     },
     {
       "files": ["packages/app-sdk/**/*.ts", "contracts/app-contracts/**/*.ts"],
@@ -71,7 +71,7 @@
     {
       "files": [
         "ghost/core/server/**/*.js",
-        "ghost/core/kernel/**/*.js",
+        "ghost/core/support/**/*.js",
         "ghost/core/shared/**/*.js",
         "ghost/core/frontend/**/*.js",
         "ghost/core/*.js",
@@ -237,7 +237,7 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../kernel/define-service"
+            "helperImport": "../../../support/define-service"
           }
         ],
         "ghost/no-injected-service-libraries": "error"
@@ -278,8 +278,8 @@
     }
   ],
   "ignorePatterns": [
-    "apps/admin/dist/**/*",
-    "apps/admin/test-utils/acceptance/public/**/*",
+    "clients/admin/dist/**/*",
+    "clients/admin/test-utils/acceptance/public/**/*",
     "e2e/build/**",
     "e2e/data/**",
     "e2e/playwright/**",

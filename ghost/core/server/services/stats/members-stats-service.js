@@ -1,4 +1,4 @@
-const { moment } = require('../../../kernel/clock');
+const { moment } = require('../../../support/clock');
 const { startOfUtcDayAgo, utcToday } = require('./utils/date-utils');
 
 class MembersStatsService {

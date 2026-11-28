@@ -10,10 +10,10 @@ const CleanExpiredCompedJob =
   require('../../../../../../core/server/services/members/jobs/clean-expired-comped-job').default;
 
 describe('member jobs: expired comped cleanup scheduling', function () {
-  let jobsService: { scheduleRecurring: sinon.SinonStub };
+  let jobsService: { scheduleRecurring: sinon.SinonStub; dispatch: sinon.SinonStub };
 
   beforeEach(function () {
-    jobsService = { scheduleRecurring: sinon.stub().resolves() };
+    jobsService = { scheduleRecurring: sinon.stub().resolves(), dispatch: sinon.stub().resolves() };
   });
 
   afterEach(function () {
@@ -36,6 +36,15 @@ describe('member jobs: expired comped cleanup scheduling', function () {
       schedule.cron,
       /^\d{1,2} \d{1,2} [0-5] \* \* \*$/,
       'a random daily cron inside the 0-5am off-peak window',
+    );
+  });
+
+  it('dispatches one clean-expired-comped run', async function () {
+    await memberJobs.runExpiredCompCleanupJob(jobsService);
+
+    sinon.assert.calledOnceWithExactly(
+      jobsService.dispatch,
+      sinon.match.instanceOf(CleanExpiredCompedJob),
     );
   });
 });

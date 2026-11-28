@@ -18,5 +18,6 @@ export type GiftLink = z.infer<typeof GiftLink>;
 /** A post and its live gift links — distinct from the Bookshelf Post model. */
 export interface Post {
   id: string;
+  title: string;
   giftLinks: GiftLink[];
 }

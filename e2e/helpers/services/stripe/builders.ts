@@ -423,6 +423,7 @@ export function buildSubscription(opts: {
 
 export function buildCheckoutSessionCompletedEvent(opts: {
   customerId: string;
+  subscriptionId: string | null;
   metadata?: Record<string, string>;
 }): StripeEvent {
   return {
@@ -431,8 +432,12 @@ export function buildCheckoutSessionCompletedEvent(opts: {
     type: 'checkout.session.completed',
     data: {
       object: {
+        id: generateId('cs'),
+        object: 'checkout.session',
+        created: Math.floor(Date.now() / 1000),
         mode: 'subscription',
         customer: opts.customerId,
+        subscription: opts.subscriptionId,
         metadata: {
           checkoutType: 'signup',
           ...(opts.metadata ?? {}),

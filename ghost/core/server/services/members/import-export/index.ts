@@ -1,9 +1,11 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-csv';
 import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
-import { INTERNAL } from '../../members-metafields';
-import type { MetafieldDefinitionsService } from '../../members-metafields/definitions-service';
-import type { MetafieldValuesService, PlannedWrite } from '../../members-metafields/values-service';
+import {
+  type MemberMetafieldValues,
+  type MemberDefinitions,
+  type PlannedWrite,
+} from '../../members-metafields';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -18,6 +20,9 @@ import type MembersImportJob from '../jobs/members-import-job';
 import { tracer } from '../../../lib/tracing';
 import { importExportTracking } from './tracking';
 import MembersCSVExporter, { type ExportOptions } from './export/exporter';
+
+/** An import is Ghost's own work, which reaches every field whoever started it. */
+const INTERNAL = { kind: 'internal' } as const;
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
@@ -49,15 +54,15 @@ interface ImporterServices {
   productRepository: unknown;
   // The metafields services the members service hands the import composition root.
   metafields: {
-    definitions: Pick<MetafieldDefinitionsService, 'browse'>;
-    values: Pick<MetafieldValuesService, 'planWrite' | 'applyImportedWrite'>;
+    definitions: Pick<MemberDefinitions, 'browse'>;
+    values: Pick<MemberMetafieldValues, 'planWrite' | 'applyImportedWrite'>;
   };
 }
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
-  definitions: Pick<MetafieldDefinitionsService, 'browse'>;
-  values: Pick<MetafieldValuesService, 'getValuesForMembers'>;
+  definitions: Pick<MemberDefinitions, 'browse'>;
+  values: Pick<MemberMetafieldValues, 'getValuesForMany'>;
 }
 
 // Build the members CSV importer. This is the composition root: today's models and
@@ -159,7 +164,7 @@ export function makeImporter(deps: ImporterServices) {
 }
 
 // Build the members CSV exporter. The same composition root from the other direction:
-// knex and the members id lookup are wired here, and the metafields definitions and
+// knex and the filtered member reads are wired here, and the metafields definitions and
 // values services are injected (boot builds them before this one).
 export function makeExporter({
   definitions,
@@ -169,8 +174,7 @@ export function makeExporter({
     knex: db.knex,
 
     members: {
-      // Minimal query, only to fetch the ids of the filtered members; the stream
-      // reads their related data itself.
+      canReadFilteredBatches: (options) => models.Member.canOptimizeFreeSubscriberFilter(options),
       findFilteredIds: async (options) => {
         const page = await models.Member.findPage({
           ...options,
@@ -180,6 +184,25 @@ export function makeExporter({
         });
         return page.data.map((member: { id: string }) => member.id);
       },
+      openFilteredBatchReader: async (options, transacting) => {
+        const activeNewsletterIds = await models.Member.activeNewsletterIds(transacting);
+        const filterOptions = models.Member.filterOptions(
+          { ...options, transacting, activeNewsletterIds },
+          'findPage',
+        );
+        const filter = await models.Member.resolveFilter(filterOptions);
+        const query: Knex.QueryBuilder = filter.query();
+        return (columns, limit, afterId) => {
+          const batch = query.clone();
+          if (afterId !== undefined) {
+            batch.where('members.id', '>', afterId);
+          }
+          return batch
+            .select(columns.map((column) => `members.${column}`))
+            .orderBy('members.id')
+            .limit(limit);
+        };
+      },
     },
 
     metafields: {
@@ -188,7 +211,8 @@ export function makeExporter({
       // The same fields the import reads back.
       activeDefinitions: async (): Promise<CsvField[]> =>
         definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
-      valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
+      valuesForMembers: (memberIds, executor) =>
+        values.getValuesForMany(memberIds, INTERNAL, executor),
     },
 
     tracking: importExportTracking(tracer),

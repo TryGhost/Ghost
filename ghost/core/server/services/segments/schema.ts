@@ -1,5 +1,4 @@
-import type { Knex } from 'knex';
-import type { DatabaseDate } from '../../lib/db-types/date';
+import type { NewRow, RowUpdate, SchemaTable, StoredRow } from '../../lib/db-types/tables';
 import type { SortableInsert } from '../../lib/sortable';
 import type { Segment } from './models';
 
@@ -7,23 +6,20 @@ import type { Segment } from './models';
  * A segment as the table holds it. The table is a sortable collection, which reads and writes
  * each row's position, so the position isn't a column a query of the service can name.
  */
-interface SegmentRow extends Segment {
-  created_at: Date;
-  updated_at: Date | null;
-}
+type SegmentRow = Omit<StoredRow<'segments'>, 'sort_order' | 'id'> & Pick<Segment, 'id'>;
 
 /** What an insert names. The collection adds the position. */
-interface NewSegmentRow extends Segment {
-  created_at: DatabaseDate;
-}
+type NewSegmentRow = Omit<NewRow<'segments'>, 'sort_order' | 'id'> & Pick<Segment, 'id'>;
 
-/** Only a segment's name changes once it is stored. */
-interface SegmentUpdate extends Pick<Segment, 'name'> {
-  updated_at: DatabaseDate;
-}
+/** A segment's name and filter can change once it is stored, and an edit sets when it was edited. */
+type SegmentUpdate = Pick<RowUpdate<'segments'>, 'name' | 'filter'> &
+  Required<Pick<RowUpdate<'segments'>, 'updated_at'>>;
 
 declare module 'knex/types/tables' {
   interface Tables {
-    segments: Knex.CompositeTableType<SegmentRow, SortableInsert<NewSegmentRow>, SegmentUpdate>;
+    segments: SchemaTable<
+      'segments',
+      { row: SegmentRow; insert: SortableInsert<NewSegmentRow>; update: SegmentUpdate }
+    >;
   }
 }

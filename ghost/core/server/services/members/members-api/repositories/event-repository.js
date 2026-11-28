@@ -43,7 +43,7 @@ module.exports = class EventRepository {
     memberAttributionService,
     urlService,
     MemberEmailChangeEvent,
-    metafieldValues,
+    metafieldActivity,
     AutomatedEmailRecipient,
     giftSubscriptions,
   }) {
@@ -62,7 +62,7 @@ module.exports = class EventRepository {
     this._EmailSpamComplaintEvent = EmailSpamComplaintEvent;
     this._memberAttributionService = memberAttributionService;
     this._MemberEmailChangeEvent = MemberEmailChangeEvent;
-    this._metafieldValues = metafieldValues;
+    this._metafieldActivity = metafieldActivity;
     this._AutomatedEmailRecipient = AutomatedEmailRecipient;
     this._giftSubscriptions = giftSubscriptions;
     this._knex = db.knex;
@@ -1026,7 +1026,7 @@ module.exports = class EventRepository {
         )(filter)
       : undefined;
 
-    const { events, total } = await this._metafieldValues.browseChangeEvents({
+    const { events, total } = await this._metafieldActivity.browse({
       // The feed's limit arrives as the request sent it, which can be a numeric string
       // or `all`; the service takes a number, or nothing for every entry.
       limit: options.limit === 'all' ? undefined : Number(options.limit),

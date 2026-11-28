@@ -380,6 +380,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
+  const oembed = require('./server/services/oembed').default;
   const mentionsService = require('./server/services/mentions').default;
   const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
@@ -437,6 +438,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await audienceFeedback.init();
   // Members captures the ready Newsletters instance during initialization.
   await newsletters.init();
+  // Mentions and Recommendations read the ready oEmbed instance during initialization.
+  await oembed.init();
   // Recommendations reads the ready Mentions instance during initialization.
   await mentionsService.init();
   // Explore captures the ready Stats aggregate during initialization.
@@ -481,6 +484,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     machinePaymentsService.init(),
     segments.init(),
   ]);
+  // Members filters can name saved segments, which the members model reads from the segments service
+  const labs = require('./shared/labs');
+  models.Member.readSegmentsWith({
+    isEnabled: () => labs.isSet('memberSegments'),
+    browse: (criteria, executor) => segments.service.browse(criteria, executor),
+  });
   if (ghostServer) {
     // Each releases what its start acquired; the next boot in this process starts it again.
     ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
@@ -596,9 +605,16 @@ async function initBackgroundServices({ config }) {
   const giftService = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
+  // Catch-up run of the daily expired comped cleanup, in case the process was not
+  // running at its scheduled time.
+  await runIsolated(() =>
+    require('./server/services/members/jobs').runExpiredCompCleanupJob(jobsService),
+  );
+
   // These run before activitypub.init for the same reason as the send recovery above: gifts,
-  // reminders, tokens, expired comped subscriptions, signing keys and expired auth rows would
-  // otherwise go unhandled for the life of the process if an unrelated background service fails.
+  // reminders, tokens, expired comped subscriptions, signing keys, expired auth rows and email
+  // analytics would otherwise go unhandled for the life of the process if an unrelated background
+  // service fails.
   // Each is scheduled in turn and isolated from the others.
   const jobsBeforeActivityPub = [
     () => require('./server/services/gifts/jobs').scheduleGiftCleanupJob(jobsService),
@@ -607,28 +623,10 @@ async function initBackgroundServices({ config }) {
     () => require('./server/services/members/jobs').scheduleExpiredCompCleanupJob(jobsService),
     () => require('./server/services/signing-keys').default.extras.scheduleCheckJob(jobsService),
     () => require('./server/auth/better-auth/cleanup').scheduleClearExpiredJob(jobsService),
+    () => require('./server/services/email-analytics/jobs').scheduleRecurringJobs(),
   ];
   for (const scheduleJob of jobsBeforeActivityPub) {
     await runIsolated(scheduleJob);
-  }
-
-  // Load email analytics recurring jobs. Runs before activitypub.init for the
-  // same reason as the schedules above. Each failure is logged rather than
-  // thrown so one failed registration cannot hide a sibling's or stop the
-  // remaining background services from starting.
-  if (config.get('backgroundJobs:emailAnalytics')) {
-    const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-    const results = await Promise.allSettled([
-      emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
-      emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
-      emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
-    ]);
-    const logging = require('@tryghost/logging');
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        logging.error(result.reason);
-      }
-    }
   }
 
   // Isolated like the jobs around it: a failed start is logged and the work below still starts.

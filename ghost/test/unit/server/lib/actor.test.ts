@@ -99,5 +99,29 @@ describe('Unit: lib/actor', function () {
     it('has no actor for a request nobody made', function () {
       assert.deepEqual(actingContext({ internal: true }), { actor: null });
     });
+
+    it('names the app installation a user acted through', function () {
+      assert.deepEqual(
+        actingContext({
+          user: 'user-id',
+          principal: { kind: 'app', app: { id: 'installation-id' } },
+        }),
+        { actor: { type: 'user', id: 'user-id' }, appInstallationId: 'installation-id' },
+      );
+    });
+
+    it('names no app for any other principal', function () {
+      assert.deepEqual(
+        actingContext({ user: 'user-id', principal: { kind: 'user', method: 'session' } }),
+        { actor: { type: 'user', id: 'user-id' } },
+      );
+      assert.deepEqual(actingContext({ user: 'user-id', principal: null }), {
+        actor: { type: 'user', id: 'user-id' },
+      });
+      assert.deepEqual(
+        actingContext({ user: 'user-id', principal: { kind: 'app', app: { id: '' } } }),
+        { actor: { type: 'user', id: 'user-id' } },
+      );
+    });
   });
 });

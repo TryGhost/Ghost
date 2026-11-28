@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import nql from '@tryghost/nql';
 import { describe, it } from 'vitest';
-import { escapeNqlString } from '../src/index.ts';
+import { allOf, escapeNqlString } from '../src/index.ts';
 
 describe('escapeNqlString', function () {
   it('escapes single quotes', function () {
@@ -64,5 +64,37 @@ describe('escapeNqlString', function () {
     // lex - callers must not pass an empty value. Pinned here so a future
     // nql version relaxing this is a visible change rather than a surprise.
     assert.throws(() => nql(`to:${escapeNqlString('')}`).parse());
+  });
+});
+
+/** Whether `filter` matches `record`, as NQL reads it. */
+const matches = (filter: string, record: Record<string, unknown>) => nql(filter).queryJSON(record);
+
+describe('allOf', function () {
+  it('matches what every filter matches', function () {
+    const filter = allOf('status:free', 'label:vip');
+    assert.ok(filter);
+    assert.equal(matches(filter, { status: 'free', label: 'vip' }), true);
+    assert.equal(matches(filter, { status: 'free', label: 'other' }), false);
+    assert.equal(matches(filter, { status: 'paid', label: 'vip' }), false);
+  });
+
+  it('keeps a comma inside the filter it belongs to', function () {
+    const filter = allOf('status:free,status:paid', 'label:vip');
+    assert.ok(filter);
+    assert.equal(matches(filter, { status: 'paid', label: 'vip' }), true);
+    assert.equal(matches(filter, { status: 'free', label: 'other' }), false);
+  });
+
+  it('skips a filter that is undefined', function () {
+    const filter = allOf(undefined, 'label:vip', undefined);
+    assert.ok(filter);
+    assert.equal(matches(filter, { label: 'vip' }), true);
+    assert.equal(matches(filter, { label: 'other' }), false);
+  });
+
+  it('returns undefined when every filter is undefined', function () {
+    assert.equal(allOf(undefined, undefined), undefined);
+    assert.equal(allOf(), undefined);
   });
 });

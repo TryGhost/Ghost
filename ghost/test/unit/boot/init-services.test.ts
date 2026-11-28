@@ -10,6 +10,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const gifts = sinon.stub();
   const analytics = sinon.stub();
   const emailSuppressionList = { init: sinon.stub().resolves() };
+  const oembed = sinon.stub().resolves();
   const mentions = sinon.stub().resolves();
   // Recommendations initializes synchronously and reads the mentions fields during its call.
   const recommendations = sinon.stub();
@@ -61,6 +62,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
         deliveryService: {},
         service: {},
       },
+      './server/services/oembed': { default: { init: oembed } },
       './server/services/mentions': {
         default: { init: mentions, service: { controller: {}, sendingService: {} } },
       },
@@ -87,6 +89,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/signing-keys': { default: { service: signingKeys } },
       './server/services/automations': { automationsService: { init: automations } },
+      './server/models': { Member: { readSegmentsWith: sinon.stub() } },
     },
     { fallback: () => ({ ...genericService, default: genericService }) },
   );
@@ -96,6 +99,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     stripe,
     emailAddress,
     gifts,
+    oembed,
     mentions,
     recommendations,
     analytics,
@@ -361,6 +365,26 @@ for (const dependency of [
     sinon.assert.notCalled(boot.reschedule);
   });
 }
+
+it('waits for oEmbed initialization to finish before initializing mentions and recommendations', async function () {
+  // Mentions and Recommendations read the ready oEmbed instance while they initialize.
+  const boot = createServicesHarness();
+  const ready = Promise.withResolvers<void>();
+  boot.oembed.returns(ready.promise);
+  const startup = boot.initServices();
+
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.oembed);
+    sinon.assert.notCalled(boot.mentions);
+    sinon.assert.notCalled(boot.recommendations);
+  } finally {
+    ready.resolve();
+    await startup;
+  }
+
+  sinon.assert.callOrder(boot.oembed, boot.mentions, boot.recommendations);
+});
 
 it('waits for mentions initialization to finish before initializing recommendations', async function () {
   // Recommendations reads the ready Mentions instance while it initializes.

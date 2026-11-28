@@ -1,6 +1,6 @@
 /**
  * Settings screen selector strings, consumed by Admin acceptance helpers.
- * Source of truth: apps/admin/src/settings/app.
+ * Source of truth: clients/admin/src/settings/app.
  */
 
 // testids
@@ -116,7 +116,7 @@ export const profileImagePreview = 'profile-image-preview';
 export const coverImageUpload = 'cover-image-upload';
 export const coverImagePreview = 'cover-image-preview';
 
-// testids rendered by the Shade image-upload pattern (apps/shade)
+// testids rendered by the Shade image-upload pattern (clients/shade)
 export const imageUploadContainer = 'image-upload-container';
 export const imageDeleteButton = 'image-delete-button';
 

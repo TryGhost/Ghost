@@ -23,16 +23,16 @@
     "ghost": {
       "ignoreDependencies": ["cssnano", "mysql"]
     },
-    "apps/admin": {
+    "clients/admin": {
       "entry": ["src/members/detail/map-data/generate-map.mjs"]
     },
-    "apps/admin-x-framework": {
+    "clients/admin-x-framework": {
       "entry": ["src/api/*.ts"]
     },
-    "apps/comments-ui": {
+    "clients/comments-ui": {
       "ignoreDependencies": ["eslint-plugin-tailwindcss"]
     },
-    "apps/signup-form": {
+    "clients/signup-form": {
       "ignoreDependencies": ["eslint-plugin-tailwindcss"]
     },
     "e2e": {

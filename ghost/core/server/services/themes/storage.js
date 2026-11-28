@@ -31,13 +31,7 @@ const messages = {
 
 const INVALID_THEME_REGEX = /^[./]*$/;
 
-let themeStorage;
-
-const getStorage = () => {
-  themeStorage = themeStorage || new ThemeStorage();
-
-  return themeStorage;
-};
+const getStorage = () => new ThemeStorage();
 
 module.exports = {
   getZip: async (themeName) => {
@@ -73,7 +67,9 @@ module.exports = {
     return await getStorage().zipToFile(themeName, zipPath);
   },
   setFromZip: async (zip, { copySettingsFrom } = {}) => {
-    const themeName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
+    // One storage for the whole upload, so the cleanup below removes what this upload wrote
+    const storage = getStorage();
+    const themeName = storage.getSanitizedFileName(zip.name.split('.zip')[0]);
     const backupName = `${themeName}_${ObjectID()}`;
     const stagingName = `${themeName}_${ObjectID()}`;
 
@@ -114,20 +110,20 @@ module.exports = {
 
       // CASE: copy the extracted theme in under a staging name first, so the live
       // folder is only missing between the two renames below rather than for the whole copy
-      await getStorage().save({
+      await storage.save({
         name: stagingName,
         path: checkedTheme.path,
       });
 
-      const themeExists = await getStorage().exists(themeName);
+      const themeExists = await storage.exists(themeName);
       // CASE: move the existing theme to a backup folder
       if (themeExists) {
         debug('setFromZip Theme exists already');
         renamedExisting = true;
-        await getStorage().rename(themeName, backupName);
+        await storage.rename(themeName, backupName);
       }
 
-      await getStorage().rename(stagingName, themeName);
+      await storage.rename(stagingName, themeName);
 
       // CASE: loads the theme from the fs & sets the theme on the themeList
       const loadedTheme = await themeLoader.loadOneTheme(themeName);
@@ -157,8 +153,8 @@ module.exports = {
 
       // restore backup if we renamed an existing theme but saving failed
       // awaited so the finally block can't delete the backup before it's restored
-      if (renamedExisting && !(await getStorage().exists(themeName))) {
-        await getStorage().rename(backupName, themeName);
+      if (renamedExisting && !(await storage.exists(themeName))) {
+        await storage.rename(backupName, themeName);
       }
 
       throw error;
@@ -173,11 +169,9 @@ module.exports = {
 
       // CASE: remove the backup and any staging copy left behind by a failure
       for (const leftover of [backupName, stagingName]) {
-        getStorage()
-          .delete(leftover)
-          .catch((err) => {
-            logging.error(new errors.InternalServerError({ err: err }));
-          });
+        storage.delete(leftover).catch((err) => {
+          logging.error(new errors.InternalServerError({ err: err }));
+        });
       }
     }
   },

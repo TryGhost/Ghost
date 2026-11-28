@@ -54,7 +54,14 @@ export type Controller<TFrames extends ControllerFrameMap = ControllerFrameMap> 
   ? Record<string, ControllerMethod | string | undefined>
   : { [TMethod in keyof TFrames]: ControllerMethod<TFrames[TMethod]> });
 interface ApiUtils {
-  permissions?: { handle(config: Dictionary, frame: Frame): AsyncResult };
+  permissions?: {
+    handle(config: Dictionary, frame: Frame): AsyncResult;
+    /**
+     * Runs before a method whose `permissions` is `false` or its own function, or one written as a
+     * single function, which `handle` never sees; a rejection stops the method
+     */
+    handleUnchecked?(config: ApiConfiguration, frame: Frame): AsyncResult;
+  };
   serializers?: { input?: Dictionary; output?: Dictionary };
   validators?: { input?: Dictionary };
 }
@@ -220,16 +227,19 @@ const STAGES = {
       return Promise.reject(new IncorrectUsageError());
     }
 
-    // CASE: handle permissions completely yourself
-    if (typeof apiImpl.permissions === 'function') {
-      debug('permissions function call');
-      return Promise.resolve(apiImpl.permissions(frame));
-    }
+    const ownCheck = apiImpl.permissions;
+    if (typeof ownCheck === 'function' || ownCheck === false) {
+      return Promise.resolve(apiUtils.permissions?.handleUnchecked?.(apiConfig, frame)).then(() => {
+        // CASE: handle permissions completely yourself
+        if (typeof ownCheck === 'function') {
+          debug('permissions function call');
+          return ownCheck(frame);
+        }
 
-    // CASE: skip stage completely
-    if (apiImpl.permissions === false) {
-      debug('disabled permissions');
-      return Promise.resolve();
+        // CASE: skip stage completely
+        debug('disabled permissions');
+        return undefined;
+      });
     }
 
     const permissionConfig =
@@ -276,6 +286,12 @@ const STAGES = {
 };
 
 const controllerMap = new Map<object, Record<string, ControllerHandler>>();
+const apiConfigs = new WeakMap<object, Readonly<ApiConfiguration>>();
+
+/** The docName and method of a controller method the pipeline built, or undefined */
+export function apiConfigOf(controllerMethod: unknown): Readonly<ApiConfiguration> | undefined {
+  return typeof controllerMethod === 'function' ? apiConfigs.get(controllerMethod) : undefined;
+}
 type PipelineResult<T> = {
   [K in Exclude<keyof T, 'docName'>]: T[K] & ControllerCall;
 };
@@ -388,8 +404,10 @@ function pipeline(
       }
 
       // CASE: api controller *can* be a single function, but it's not recommended to disable the framework.
+      // It checks no permission, so it runs only once `handleUnchecked` allows the caller.
       if (typeof apiImpl === 'function') {
         debug('ctrl function call');
+        await apiUtils.permissions?.handleUnchecked?.(apiConfig, frame);
         return (apiImpl as ControllerHandler)(frame);
       }
 
@@ -458,6 +476,7 @@ function pipeline(
     obj[method] = implWrapper;
 
     Object.assign(implWrapper, apiImpl);
+    apiConfigs.set(implWrapper, Object.freeze({ docName, method }));
     return obj;
   }, {});
 

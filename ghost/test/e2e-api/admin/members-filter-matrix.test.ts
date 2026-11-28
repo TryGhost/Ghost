@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
+const ObjectId = require('bson-objectid');
 const models = require('../../../core/server/models');
 
 // The NQL strings below are copied verbatim from what Ghost Admin emits. Do not tidy them into
@@ -140,6 +141,40 @@ describe('Members filtering, every operator admin can emit', function () {
     ]);
   });
 
+  // SQL's `IN` never matches NULL, so negating an empty value can't be folded into one list with
+  // the other negations of the same key. Each filter below selects what both of its conditions
+  // select on their own.
+  describe('combinations — negating an empty value beside another negation', function () {
+    const NAMELESS = 'nameless@example.com';
+
+    beforeAll(async function () {
+      await agent
+        .post('members/')
+        .body({ members: [{ email: NAMELESS }] })
+        .expectStatus(201);
+    });
+
+    afterAll(async function () {
+      await models.Base.knex('members').where({ email: NAMELESS }).del();
+    });
+
+    it('name is set and is not one name', async function () {
+      assert.deepEqual(await browse("name:-null+name:-'Bob Brown'"), [ALICE, CAROL]);
+    });
+
+    it('no label at all, with a label spelled the other way left out', async function () {
+      const both = await browse('label:-null+labels:-gold');
+      const noLabel = await browse('label:-null');
+      const notGold = await browse('labels:-gold');
+
+      assert.deepEqual(
+        both,
+        noLabel.filter((email) => notGold.includes(email)),
+      );
+      assert.deepEqual(both, [CAROL, NAMELESS]);
+    });
+  });
+
   describe('derived — subscribed, which is not a column at all', function () {
     it('is subscribed means on a newsletter and still being sent to', async function () {
       assert.deepEqual(await browse('(subscribed:true+email_disabled:0)'), [ALICE]);
@@ -243,6 +278,85 @@ describe('Members filtering, every operator admin can emit', function () {
 
     it('a subscription state alongside a native filter', async function () {
       assert.deepEqual(await browse('(subscribed:true+email_disabled:0)+status:free'), [ALICE]);
+    });
+
+    it('paginates free subscribers in date order and counts each member once', async function () {
+      const db = models.Base.knex;
+      const active = await db('newsletters').select('id').where({ status: 'active' }).limit(2);
+      const archived = await db('newsletters').select('id').where({ status: 'archived' }).first();
+      const multiNewsletterEmail = 'multiple-active@example.com';
+      const archivedOnly = 'archived-only@example.com';
+
+      try {
+        const { body: multiple } = await agent
+          .post('members/')
+          .body({ members: [{ email: multiNewsletterEmail, newsletters: active }] })
+          .expectStatus(201);
+        assert.equal(multiple.members[0].newsletters.length, 2);
+        await setColumns(multiNewsletterEmail, { created_at: '2025-01-01 00:00:00' });
+
+        const { body: archivedMember } = await agent
+          .post('members/')
+          .body({ members: [{ email: archivedOnly, newsletters: [] }] })
+          .expectStatus(201);
+        await db('members_newsletters').insert({
+          id: ObjectId().toHexString(),
+          member_id: archivedMember.members[0].id,
+          newsletter_id: archived.id,
+        });
+
+        const filter = encodeURIComponent('(subscribed:true+email_disabled:0)+status:free');
+        const query = `members/?filter=${filter}&include=labels,tiers&order=created_at+desc`;
+        const statements: string[] = [];
+        const capture = ({ sql }: { sql: string }) => statements.push(sql);
+        db.on('query', capture);
+        let initial;
+        try {
+          initial = await agent.get(`${query}&limit=100`).expectStatus(200);
+        } finally {
+          db.off('query', capture);
+        }
+
+        const count = statements.find((sql) =>
+          sql.startsWith('select count(*) as aggregate from `members`'),
+        );
+        assert.ok(count);
+        assert.ok(count.includes('exists (select 1 from `members_newsletters`'));
+        assert.ok(!count.includes('join `newsletters`'));
+
+        const first = await agent.get(`${query}&limit=1`).expectStatus(200);
+        const second = await agent.get(`${query}&limit=1&page=2`).expectStatus(200);
+        assert.deepEqual(
+          initial.body.members.map((member: { email: string }) => member.email),
+          [multiNewsletterEmail, ALICE],
+        );
+        assert.equal(initial.body.meta.pagination.total, 2);
+        assert.deepEqual(
+          first.body.members.map((member: { email: string }) => member.email),
+          [multiNewsletterEmail],
+        );
+        assert.deepEqual(
+          second.body.members.map((member: { email: string }) => member.email),
+          [ALICE],
+        );
+        assert.equal(second.body.members[0].labels[0].slug, 'vip');
+        assert.equal(first.body.meta.pagination.total, 2);
+        assert.equal(first.body.meta.pagination.next, 2);
+        assert.equal(second.body.meta.pagination.total, 2);
+        assert.equal(second.body.meta.pagination.next, null);
+
+        const activeNewsletters = await db('newsletters').where({ status: 'active' }).pluck('id');
+        await db('newsletters').whereIn('id', activeNewsletters).update({ status: 'archived' });
+        try {
+          const { body } = await agent.get(`${query}&limit=100`).expectStatus(200);
+          assert.deepEqual(body.members, []);
+          assert.equal(body.meta.pagination.total, 0);
+        } finally {
+          await db('newsletters').whereIn('id', activeNewsletters).update({ status: 'active' });
+        }
+      } finally {
+        await db('members').whereIn('email', [multiNewsletterEmail, archivedOnly]).del();
+      }
     });
   });
 

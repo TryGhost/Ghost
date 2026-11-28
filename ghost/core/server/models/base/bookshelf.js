@@ -52,7 +52,7 @@ ghostBookshelf.plugin(require('./plugins/generate-slug'));
 
 ghostBookshelf.plugin(require('./plugins/bulk-operations'));
 
-ghostBookshelf.plugin(require('./plugins/filtered-collection'));
+ghostBookshelf.plugin(require('./plugins/filtered-collection').default);
 
 ghostBookshelf.plugin(require('./plugins/user-type'), {
   resolveIntegrationUserId: function resolveIntegrationUserId(options) {

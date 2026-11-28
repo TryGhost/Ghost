@@ -1,6 +1,6 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import { actingContext } from '../../lib/actor';
-import { ADMIN, booted } from '../../services/members-metafields';
+import { booted, callerOf, changedForMembers } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
 const permissionsService = require('../../auth/permissions');
@@ -55,7 +55,7 @@ const controller = {
     query(frame: ReadFrame) {
       return booted().definitions.browse(
         { ...namespaceRoute(frame.options), filter: frame.options.filter },
-        ADMIN,
+        callerOf(frame.options.context),
       );
     },
   },
@@ -67,7 +67,7 @@ const controller = {
     permissions: false,
     query(frame: ReadFrame) {
       const { namespace, key } = fieldRoute(frame.options);
-      return booted().definitions.read(namespace, key, ADMIN);
+      return booted().definitions.read(namespace, key, callerOf(frame.options.context));
     },
   },
 
@@ -79,7 +79,7 @@ const controller = {
     validation: { options: { namespace: { required: true }, key: { required: true } } },
     permissions: { docName: 'member', method: 'browse' },
     query(frame: ReadFrame) {
-      return booted().values.heldValues(fieldRoute(frame.options));
+      return booted().values.heldValues(fieldRoute(frame.options), callerOf(frame.options.context));
     },
   },
 
@@ -133,10 +133,13 @@ const controller = {
       );
       // Tiers list to anyone the field a port writes into while members can read it, so the site's
       // cache is cleared when an edit starts or stops that for a field a port writes into.
-      if (edited.changedForMembers && (await booted().bindings.isBound(field))) {
+      if (
+        changedForMembers(booted().namespaces, edited) &&
+        (await booted().bindings.isBound(field))
+      ) {
         frame.setHeader('X-Cache-Invalidate', '/*');
       }
-      return edited.field;
+      return edited.next;
     },
   },
 

@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 import type ExternalMediaInliner from './external-media-inliner';
 import type ExternalMediaInlinerJob from './external-media-inliner-job';
 

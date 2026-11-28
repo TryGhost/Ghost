@@ -16,7 +16,7 @@ const MODULE_PATHS = [ROOT_PATH, ACCESS_PATH, CONTROLLER_PATH];
 type Root = (typeof import('../../../../../core/server/services/gift-links'))['default'];
 type Access = typeof import('../../../../../core/server/api/endpoints/utils/gift-link-access');
 type GiftAccessFrame = Parameters<Access['generateGiftKeyData']>[0];
-type LinkRow = { post_id: string; token: string; created_at: Date };
+type LinkRow = { post_id: string; post_title: string; token: string; created_at: Date };
 
 function giftFrame(token: string): GiftAccessFrame {
   return new Frame({ context: { giftToken: token } });
@@ -101,6 +101,7 @@ describe('gift-links root with its API consumers', function () {
     await root.init();
     query.first.resolves({
       post_id: 'post-id',
+      post_title: 'A post',
       token: 'live-token',
       created_at: new Date('2026-01-01T00:00:00Z'),
     });
@@ -133,36 +134,5 @@ describe('gift-links root with its API consumers', function () {
     assert.equal(frame.giftLinkPostId, undefined);
     sinon.assert.calledOnce(query.first);
     sinon.assert.notCalled(query.insert);
-  });
-
-  it('lets the earlier Admin controller remove links and record the action through the wired knex', async function () {
-    const controller = require(CONTROLLER_PATH);
-    const root: Root = require(ROOT_PATH).default;
-    assert.throws(() => root.service, /Gift Links used before init/);
-    await root.init();
-
-    const result = await controller.removeAll.query({ options: { context: { user: 'actor-id' } } });
-
-    assert.deepEqual(result, { count: 2 });
-    assert.deepEqual(
-      knex.getCalls().map((call) => call.args[0]),
-      ['post_gift_links', 'actions'],
-    );
-    sinon.assert.calledOnceWithExactly(query.del);
-    sinon.assert.calledOnce(query.insert);
-    const [row] = query.insert.firstCall.args;
-    assert.deepEqual(
-      { ...row, id: undefined, created_at: undefined },
-      {
-        id: undefined,
-        resource_id: null,
-        resource_type: 'gift_link',
-        actor_id: 'actor-id',
-        actor_type: 'user',
-        event: 'deleted',
-        context: null,
-        created_at: undefined,
-      },
-    );
   });
 });

@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../support/define-service';
 
 export default defineService('Integrations', () => {
   const models = require('../../models');

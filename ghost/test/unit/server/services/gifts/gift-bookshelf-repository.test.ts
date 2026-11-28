@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import type { Knex } from 'knex';
 import { GiftBookshelfRepository } from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
 import { Gift } from '../../../../../core/server/services/gifts/gift';
+import { buildGift } from './utils';
 
 type GiftBookshelfModel = ConstructorParameters<typeof GiftBookshelfRepository>[0]['GiftModel'];
 type TestGiftBookshelfModel = Omit<GiftBookshelfModel, 'findPage'> &
@@ -188,20 +189,7 @@ describe('GiftBookshelfRepository', function () {
       findAll: sinon.stub(),
     };
     const repository = createRepository(GiftModel);
-    const gift = Gift.fromPurchase({
-      token: 'gift-token',
-      buyerEmail: 'buyer@example.com',
-      buyerMemberId: null,
-      tierId: 'tier_1',
-      cadence: 'year',
-      duration: 1,
-      currency: 'usd',
-      amount: 5000,
-      stripeCheckoutSessionId: 'cs_123',
-      stripePaymentIntentId: 'pi_456',
-      purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-      expiryTimeZone: 'America/Los_Angeles',
-    });
+    const gift = buildGift();
 
     const id = await repository.create(gift, { transacting });
 
@@ -220,20 +208,7 @@ describe('GiftBookshelfRepository', function () {
       findAll: sinon.stub(),
     };
     const repository = createRepository(GiftModel);
-    const gift = Gift.fromPurchase({
-      token: 'gift-token',
-      buyerEmail: 'buyer@example.com',
-      buyerMemberId: null,
-      tierId: 'tier_1',
-      cadence: 'year',
-      duration: 1,
-      currency: 'usd',
-      amount: 5000,
-      stripeCheckoutSessionId: 'cs_123',
-      stripePaymentIntentId: 'pi_456',
-      purchasedAt: new Date('2026-08-18T23:30:00.000Z'),
-      expiryTimeZone: 'America/Los_Angeles',
-    });
+    const gift = buildGift();
 
     await assert.rejects(() => repository.create(gift), {
       message: 'Created gift is missing an id',

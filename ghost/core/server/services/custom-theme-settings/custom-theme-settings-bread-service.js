@@ -8,7 +8,8 @@ module.exports = class CustomThemeSettingsBREADService {
   }
 
   async browse(data, options = {}) {
-    return this.Model.findAll(data, options);
+    const collection = await this.Model.findAll(data, options);
+    return collection.toJSON();
   }
 
   async read(data, options = {}) {
@@ -23,11 +24,22 @@ module.exports = class CustomThemeSettingsBREADService {
     return this.Model.add(data, options);
   }
 
-  async destroy(data, options = {}) {
-    return this.Model.destroy(data, options);
+  /**
+   * Removes the records in one statement. A record that is already gone is skipped.
+   */
+  async destroyMany(ids, { transacting }) {
+    await transacting('custom_theme_settings').whereIn('id', ids).del();
   }
 
   async transaction(fn) {
     return this.Model.transaction(fn);
+  }
+
+  /**
+   * Locks the active theme setting row so concurrent syncs run one at a time.
+   * A new theme has no rows of its own to lock.
+   */
+  async lockActiveTheme(transacting) {
+    await transacting('settings').where('key', 'active_theme').forUpdate().first('id');
   }
 };

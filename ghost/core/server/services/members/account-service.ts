@@ -2,14 +2,13 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { isRecordValue } from '@tryghost/metafield-types/structure';
 import { CHECKOUT_PORTS, matchRequirement } from '@tryghost/checkout';
-import { MEMBERS } from '../members-metafields';
-import type { MetafieldBindingsService } from '../members-metafields/bindings-service';
 import {
   refusalError,
+  type MemberMetafieldValues,
+  type MemberBindings,
   type MetafieldPlan,
-  type MetafieldValuesService,
   type Refusal,
-} from '../members-metafields/values-service';
+} from '../members-metafields';
 import { parseRequest } from '../../lib/parse-request';
 import { COLLECTION_FLAG } from '../stripe-checkout-config/models';
 import type { TierRequirement, TierRequirements } from '../tiers/requirements';
@@ -73,8 +72,8 @@ interface EmailSuppressionList {
   removeEmail(email: string): Promise<unknown>;
 }
 
-type MetafieldValues = Pick<MetafieldValuesService, 'unwrapWire' | 'planWrite'>;
-type MetafieldBindings = Pick<MetafieldBindingsService, 'planThrough'>;
+type MetafieldValues = Pick<MemberMetafieldValues, 'unwrapWire' | 'planWrite'>;
+type MetafieldBindings = Pick<MemberBindings, 'planThrough'>;
 
 const AnswersInput = z.object({
   // An answer holds something: a `null` would clear what the field holds, which no answer can.
@@ -129,7 +128,10 @@ export class MemberAccountService {
   async read(memberId: string): Promise<Record<string, unknown> | null> {
     // As the member rather than as staff: how much of the extra fields a publisher
     // defines is answered depends on which side of Ghost is asking.
-    return this.#memberBREADService.read({ id: memberId }, { metafieldsFor: MEMBERS });
+    return this.#memberBREADService.read(
+      { id: memberId },
+      { metafieldsFor: { kind: 'member', memberId } },
+    );
   }
 
   /** Apply what a member asked to change about themselves, and say what they now hold. */
@@ -141,10 +143,10 @@ export class MemberAccountService {
     const writes =
       data.metafields === undefined
         ? []
-        : await this.#metafieldValues.planWrite(
-            this.#metafieldValues.unwrapWire(data.metafields),
-            MEMBERS,
-          );
+        : await this.#metafieldValues.planWrite(this.#metafieldValues.unwrapWire(data.metafields), {
+            kind: 'member',
+            memberId,
+          });
 
     // Saved through the members service, like a staff edit, so the change reaches webhooks.
     await this.#memberBREADService.updateWithMetafields(

@@ -1,4 +1,6 @@
 const omit = require('lodash/omit');
+const nql = require('@tryghost/nql');
+const { getUsedKeys } = require('@tryghost/mongo-utils');
 const statsService = require('../../services/stats').default;
 
 // Every staff user sees the same stats, and permissions run before the cache
@@ -33,14 +35,35 @@ const newsletterBasicCache = {
   },
 };
 
+// Hiding or showing a comment changes only its status, and every status but deleted
+// is counted, so only a status filter changes. An invalid filter is left to the query.
+const filtersOnCommentStatus = (filter) => {
+  try {
+    return getUsedKeys(nql(filter).parse()).includes('status');
+  } catch {
+    return true;
+  }
+};
+
+const commentsStatsCache = {
+  get(key, getResponse) {
+    const { filter } = JSON.parse(key).options;
+    return filter && filtersOnCommentStatus(filter) ? undefined : statsCache.get(key, getResponse);
+  },
+  set(key, response) {
+    const { filter } = JSON.parse(key).options;
+    if (!filter || !filtersOnCommentStatus(filter)) {
+      return statsCache.set(key, response);
+    }
+  },
+};
+
 /**
- * A comments stats method; its cache key covers exactly the options it accepts
- * @param {string} method
  * @param {'getCommentsOverview' | 'getCommentsTopPosts' | 'getCommentsTopCommenters'} serviceMethod
  * @param {string[]} [extraOptions]
  */
-function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
-  const options = ['date_from', 'date_to', 'timezone', ...extraOptions];
+function commentsStatsEndpoint(serviceMethod, extraOptions = []) {
+  const options = ['date_from', 'date_to', 'timezone', 'filter', ...extraOptions];
   return {
     headers: {
       cacheInvalidate: false,
@@ -50,15 +73,20 @@ function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
       docName: 'comments',
       method: 'browse',
     },
-    cache: statsCache,
+    cache: commentsStatsCache,
     generateCacheKeyData(frame) {
       return {
-        method,
+        method: serviceMethod,
         options: Object.fromEntries(options.map((option) => [option, frame.options[option]])),
       };
     },
     async query(frame) {
-      return await statsService.service.api[serviceMethod](frame.options);
+      const result = await statsService.service.api[serviceMethod](frame.options);
+      return {
+        data: result.data ?? [result],
+        // Admin must detect support: older endpoints silently ignore filter.
+        meta: { filters: true },
+      };
     },
   };
 }
@@ -185,13 +213,9 @@ const controller = {
       return await statsService.service.api.getTopContent(frame.options);
     },
   },
-  commentsOverview: commentsStatsEndpoint('commentsOverview', 'getCommentsOverview'),
-  commentsTopPosts: commentsStatsEndpoint('commentsTopPosts', 'getCommentsTopPosts', ['limit']),
-  commentsTopCommenters: commentsStatsEndpoint(
-    'commentsTopCommenters',
-    'getCommentsTopCommenters',
-    ['limit'],
-  ),
+  commentsOverview: commentsStatsEndpoint('getCommentsOverview'),
+  commentsTopPosts: commentsStatsEndpoint('getCommentsTopPosts', ['limit']),
+  commentsTopCommenters: commentsStatsEndpoint('getCommentsTopCommenters', ['limit']),
   topPosts: {
     headers: {
       cacheInvalidate: false,

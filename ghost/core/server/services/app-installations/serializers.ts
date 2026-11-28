@@ -24,8 +24,32 @@ export type AppInstallation = z.output<typeof AppInstallationResource>;
 const AppInstallationsResponse = z.object({
   app_installations: z.array(AppInstallationResource),
 });
+/**
+ * The app user token Admin sends for the app, as `Authorization: Bearer`. It acts for the staff
+ * user within the installation's approved scopes, and is bound to their staff session.
+ *
+ * Admin's alone: it never reaches the app's frame. Session start and renewal return the same
+ * shape.
+ */
+export const AppSessionTokenResource = z.object({
+  access_token: z.string(),
+  /** Seconds from when Ghost answered, so the browser's clock doesn't matter */
+  expires_in: z.number().int().positive(),
+});
+
+export type AppSessionToken = z.output<typeof AppSessionTokenResource>;
+
 const AppSessionsResponse = z.object({
-  app_sessions: z.tuple([z.object({ installation: AppInstallationResource })]),
+  app_sessions: z.tuple([
+    z.object({
+      installation: AppInstallationResource,
+      token: AppSessionTokenResource.nullable(),
+    }),
+  ]),
+});
+
+const AppTokensResponse = z.object({
+  app_tokens: z.tuple([AppSessionTokenResource]),
 });
 
 export const toAppInstallationsResponse = z
@@ -39,3 +63,8 @@ export const toAppSessionsResponse = z
   .custom<AppSession>()
   .transform((session): z.input<typeof AppSessionsResponse> => ({ app_sessions: [session] }))
   .pipe(AppSessionsResponse);
+
+export const toAppTokensResponse = z
+  .custom<AppSessionToken>()
+  .transform((token): z.input<typeof AppTokensResponse> => ({ app_tokens: [token] }))
+  .pipe(AppTokensResponse);

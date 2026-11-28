@@ -262,7 +262,7 @@ test.describe('Ghost Admin - Members Saved Views', () => {
     await expectListed(membersPage.memberNames, ['Vera Reader']);
   });
 
-  test("renaming a view to another view's name - shows the same error and leaves both views unchanged, while changing the case of its own name succeeds", async ({
+  test("renaming a view to another view's name - shows that the name is taken and leaves both views unchanged, while changing the case of its own name succeeds", async ({
     page,
   }) => {
     await memberFactory.create({ name: 'Vera Reader', labels: ['VIP'] });
@@ -287,8 +287,9 @@ test.describe('Ghost Admin - Members Saved Views', () => {
     await membersPage.viewPopover.enterName('vip readers');
     await membersPage.viewPopover.saveButton.click();
 
+    // The popover shows the server's message, which calls a saved view a segment.
     await expect(
-      membersPage.viewPopover.dialog.getByText('A view with this name already exists', {
+      membersPage.viewPopover.dialog.getByText('A segment with this name already exists', {
         exact: true,
       }),
     ).toBeVisible();

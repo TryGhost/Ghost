@@ -15,12 +15,23 @@ export type StaffSessionsDeps = {
 /** Session changes on security events under `better-auth` (plan §5.4, Phase 2 steps 7–8). */
 export function createStaffSessions(deps: StaffSessionsDeps) {
   return {
-    /** Also deletes legacy rows, so a rollback to `legacy` can't revive them (plan §8) */
+    /**
+     * Also deletes legacy rows, so a rollback to `legacy` can't revive them (plan §8), and the
+     * user's app tokens. Legacy rows are deleted even when revoking the rest fails.
+     */
     async revokeUserSessions(userId: string) {
-      await deps.getAuth().revokeUserSessions({ body: { userId } });
-      await deps.deleteLegacyUserSessions(userId);
+      const results = await Promise.allSettled([
+        deps.getAuth().revokeUserSessions({ body: { userId } }),
+        deps.deleteLegacyUserSessions(userId),
+      ]);
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          throw result.reason;
+        }
+      }
     },
 
+    /** Also deletes every app token. */
     async revokeAllSessions() {
       await deps.getAuth().revokeAllSessions();
     },

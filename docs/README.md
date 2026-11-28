@@ -34,7 +34,7 @@ setup, development variants, and troubleshooting.
 
 ```text
 Ghost/
-├── apps/              # Admin and public frontend apps
+├── clients/           # Admin and public frontend clients
 │   ├── admin/          # React Admin
 │   ├── portal/         # Member Portal
 │   ├── comments-ui/    # Comments
@@ -81,7 +81,7 @@ Codebase guides explain how the main systems fit together:
 - [Codebase direction](codebase/direction.md)
 - [Runtime architecture](codebase/runtime-architecture.md)
 - [Ghost Core services](../ghost/core/server/services/README.md)
-- [Kernel](../ghost/core/kernel/README.md)
+- [Support](../ghost/core/support/README.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
 - [Database structure](codebase/database.md)

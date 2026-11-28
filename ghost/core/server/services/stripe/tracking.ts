@@ -1,9 +1,9 @@
-import type Stripe from 'stripe';
 import { COLLECTED_PARTS, portsOf, type CollectedPart } from '@tryghost/checkout';
 import type { Meter } from '../../lib/tracing/meter';
 import type { Span, Tracer } from '../../lib/tracing/tracer';
 import { SECTION_OF } from '../stripe-checkout-config/models';
-import type { CollectedPhone } from './services/checkout/completed-session';
+import type { StripeWallet } from './stripe-api-responses';
+import type { CollectedPhone } from './webhook/completed-session';
 import {
   CHECKOUT_PARTS,
   type CheckoutPart,
@@ -197,9 +197,10 @@ export type CollectedPhoneOutcome = 'saved' | 'refused' | 'no_destination';
 
 /**
  * The wallet a buyer paid with, as Stripe names it, such as `apple_pay`: `none` for a card or
- * another method, and `unknown` when the checkout's subscription couldn't be found to tell.
+ * another method, and `unknown` when the checkout's subscription couldn't be found to tell. A
+ * wallet's name is counted as Stripe sends it, so a wallet Stripe adds is counted under its own.
  */
-export type CheckoutWallet = Stripe.PaymentMethod.Card.Wallet.Type | 'none' | 'unknown';
+export type CheckoutWallet = StripeWallet | 'none' | 'unknown';
 
 export type StripeTracking = ReturnType<typeof stripeTracking>;
 

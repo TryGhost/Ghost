@@ -58,7 +58,7 @@ function fixture(t: TestContext, files: Record<string, string>) {
     'tools/scripts/package.json': '{"type":"module"}',
     'tools/configs/oxlint/package.json': '{"type":"module"}',
     '.dependency-cruiser-known-violations.json': '[]',
-    'apps/empty.ts': 'export {};',
+    'clients/empty.ts': 'export {};',
     [config]: 'export const enabled = true; export interface Config {}',
     ...files,
   })) {
@@ -254,7 +254,7 @@ it('rejects known violations for standard services, duplicates and non-service r
   assert.throws(() => readKnownViolations(f.root), /duplicate entry/);
   f.write(
     '.dependency-cruiser-known-violations.json',
-    JSON.stringify([{ ...known, rule: 'kernel-not-application' }]),
+    JSON.stringify([{ ...known, rule: 'support-not-application' }]),
   );
   assert.throws(() => readKnownViolations(f.root));
 });
@@ -346,17 +346,17 @@ it('matches external packages across stores without merging subpaths or workspac
 
 it('continues enforcing non-service boundaries in the same scan', (t) => {
   const f = fixture(t, {
-    'ghost/core/kernel/forbidden.ts': "import '../shared/config';",
+    'ghost/core/support/forbidden.ts': "import '../shared/config';",
   });
   const result = f.lint();
   assert.equal(result.status, 1, result.stderr);
-  assert.match(result.stderr, /kernel-not-application/);
+  assert.match(result.stderr, /support-not-application/);
 });
 
 it('rejects a defineService root outside the services directory unless it is a listed exception', (t) => {
-  const helper = 'ghost/core/kernel/define-service.ts';
+  const helper = 'ghost/core/support/define-service.ts';
   const use = (depth: number) =>
-    `import { defineService } from '${'../'.repeat(depth)}kernel/define-service'; export default defineService;`;
+    `import { defineService } from '${'../'.repeat(depth)}support/define-service'; export default defineService;`;
   const outside = 'ghost/core/server/lib/capability/index.ts';
   const nested = `${alpha}/nested/index.ts`;
   const f = fixture(t, {
@@ -365,7 +365,7 @@ it('rejects a defineService root outside the services directory unless it is a l
     'ghost/core/server/auth/better-auth/index.ts': use(3),
     // Types say nothing about where an instance is built.
     'ghost/core/server/web/consumer.ts':
-      "import type { defineService } from '../../kernel/define-service'; export type Root = typeof defineService;",
+      "import type { defineService } from '../../support/define-service'; export type Root = typeof defineService;",
   });
   const allowed = f.lint();
   assert.equal(allowed.status, 0, allowed.stderr);
@@ -399,7 +399,7 @@ it('lists only roots outside the services directory that exist and use defineSer
   });
   assert.deepEqual(listed, ['ghost/core/server/auth/better-auth/index.ts']);
   for (const file of listed) {
-    assert.match(readFileSync(path.join(repository, file), 'utf8'), /kernel\/define-service'/);
+    assert.match(readFileSync(path.join(repository, file), 'utf8'), /support\/define-service'/);
   }
 });
 
@@ -421,7 +421,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
     'ghost/core/server/lib/db-types/date.ts': 'export const date = true;',
     'ghost/core/server/lib/db-types/boolean.ts': 'export const boolean = true;',
     'ghost/core/server/lib/db-types/json.ts': 'export const json = true;',
-    'ghost/core/kernel/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
+    'ghost/core/support/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
     'ghost/core/server/lib/public-jwk.ts': 'export const key = true;',
     [`${services}/jobs-service/job.ts`]: 'export class Job {}',
     [`${alpha}/implementation.ts`]: `
@@ -431,7 +431,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
       import 'node:crypto'; import 'util'; import 'bson-objectid';
       import '../../lib/db-types/date'; import '../../lib/db-types/boolean'; import '../../lib/db-types/json';
       import '../../lib/public-jwk'; import '../jobs-service/job';
-      import {getUnixTime, moment} from '../../../kernel/clock';
+      import {getUnixTime, moment} from '../../../support/clock';
     `,
   });
   for (const name of [
@@ -497,22 +497,22 @@ it('sees type-only imports and leaves them out of the runtime dependency rules',
 });
 
 it('applies a rule that does not exclude types to type-only imports', (t) => {
-  const kernel = 'ghost/core/kernel/primitive.ts';
+  const support = 'ghost/core/support/primitive.ts';
   const f = fixture(t, {
-    [kernel]: "import type { Config } from '../shared/config'; export type A = Config;",
+    [support]: "import type { Config } from '../shared/config'; export type A = Config;",
     'ghost/core/shared/typed.ts':
       "import type { Model } from '../server/models/model'; export type B = Model;",
     'ghost/core/server/models/model.ts': 'export interface Model {}',
   });
   const graph = f.graph('ghost/core');
-  assert.ok(labels(graph, kernel, config)?.includes('type-only'));
+  assert.ok(labels(graph, support, config)?.includes('type-only'));
   assert.deepEqual(violations(graph), [
-    ['kernel-not-application', kernel, config],
     [
       'shared-not-server-or-frontend',
       'ghost/core/shared/typed.ts',
       'ghost/core/server/models/model.ts',
     ],
+    ['support-not-application', support, config],
   ]);
 });
 
@@ -1465,7 +1465,7 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     'package.ts': "import '@tryghost/errors-extra';",
     'security-package.ts': "import '@tryghost/security-extra';",
     'shared.ts': "import '../../lib/db-types/other';",
-    'kernel.ts': "import '../../../kernel/clock-extra';",
+    'support.ts': "import '../../../support/clock-extra';",
   };
   const f = fixture(t, {
     ...Object.fromEntries(
@@ -1477,7 +1477,7 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     [`${alpha}/implementation.ts`]: "import './test/helper';",
     [`${services}/alpha-extra/helper.ts`]: 'export {};',
     'ghost/core/server/lib/db-types/other.ts': 'export {};',
-    'ghost/core/kernel/clock-extra.ts': 'export {};',
+    'ghost/core/support/clock-extra.ts': 'export {};',
     'node_modules/@tryghost/errors-extra/package.json': '{"main":"index.js"}',
     'node_modules/@tryghost/errors-extra/index.js': 'module.exports = {};',
     'node_modules/@tryghost/security-extra/package.json': '{"main":"index.js"}',
@@ -1677,17 +1677,17 @@ it('resolves the approved workspace export to source without a build and keeps o
 
 it('preserves app boundaries and the test-selector allowance after workspace exports resolve', (t) => {
   const f = fixture(t, {
-    'apps/shade/src/forbidden.ts': "import '@tryghost/admin-x-framework/helpers';",
-    'apps/admin-x-framework/src/forbidden.ts': "import '@tryghost/activitypub/api';",
-    'apps/admin-x-framework/src/root.ts': "import '@tryghost/activitypub';",
-    'apps/portal/src/forbidden.ts': "import '@tryghost/shade/primitives';",
-    'apps/portal/src/test-data.ts': "import '@tryghost/test-data';",
-    'apps/portal/src/selectors.ts': "import '@tryghost/test-data/selectors/member';",
+    'clients/shade/src/forbidden.ts': "import '@tryghost/admin-x-framework/helpers';",
+    'clients/admin-x-framework/src/forbidden.ts': "import '@tryghost/activitypub/api';",
+    'clients/admin-x-framework/src/root.ts': "import '@tryghost/activitypub';",
+    'clients/portal/src/forbidden.ts': "import '@tryghost/shade/primitives';",
+    'clients/portal/src/test-data.ts': "import '@tryghost/test-data';",
+    'clients/portal/src/selectors.ts': "import '@tryghost/test-data/selectors/member';",
   });
   for (const [name, directory, subpath, target] of [
-    ['@tryghost/admin-x-framework', 'apps/admin-x-framework', './helpers', 'helpers.ts'],
-    ['@tryghost/activitypub', 'apps/activitypub', './api', 'index.ts'],
-    ['@tryghost/shade', 'apps/shade', './primitives', 'primitives.ts'],
+    ['@tryghost/admin-x-framework', 'clients/admin-x-framework', './helpers', 'helpers.ts'],
+    ['@tryghost/activitypub', 'clients/activitypub', './api', 'index.ts'],
+    ['@tryghost/shade', 'clients/shade', './primitives', 'primitives.ts'],
     ['@tryghost/test-data', 'packages/testing/test-data', '.', 'index.ts'],
   ] as const) {
     f.write(
@@ -1712,35 +1712,43 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
     f.link(directory, `node_modules/${name}`);
   }
   f.write('packages/testing/test-data/src/selectors/member.ts', 'export const member = "member";');
-  const graph = f.graph('apps');
+  const graph = f.graph('clients');
   const expected = [
     [
       'framework-not-feature-apps',
-      'apps/admin-x-framework/src/forbidden.ts',
-      'apps/activitypub/src/index.ts',
+      'clients/admin-x-framework/src/forbidden.ts',
+      'clients/activitypub/src/index.ts',
     ],
-    ['framework-not-feature-apps', 'apps/admin-x-framework/src/root.ts', '@tryghost/activitypub'],
+    [
+      'framework-not-feature-apps',
+      'clients/admin-x-framework/src/root.ts',
+      '@tryghost/activitypub',
+    ],
     [
       'no-test-data-in-production-source',
-      'apps/portal/src/test-data.ts',
+      'clients/portal/src/test-data.ts',
       'packages/testing/test-data/src/index.ts',
     ],
-    ['public-apps-not-admin-libs', 'apps/portal/src/forbidden.ts', 'apps/shade/src/primitives.ts'],
-    ['shade-is-leaf', 'apps/shade/src/forbidden.ts', 'apps/admin-x-framework/src/helpers.ts'],
+    [
+      'public-apps-not-admin-libs',
+      'clients/portal/src/forbidden.ts',
+      'clients/shade/src/primitives.ts',
+    ],
+    ['shade-is-leaf', 'clients/shade/src/forbidden.ts', 'clients/admin-x-framework/src/helpers.ts'],
   ];
   assert.deepEqual(violations(graph), expected);
   assert.ok(
     edges(graph).some(
       ([from, , to]) =>
-        from === 'apps/portal/src/selectors.ts' &&
+        from === 'clients/portal/src/selectors.ts' &&
         to === 'packages/testing/test-data/src/selectors/member.ts',
     ),
   );
-  const output = 'apps/activitypub/dist/activitypub.js';
+  const output = 'clients/activitypub/dist/activitypub.js';
   f.write(output, "import '../../../packages/output-only/index.js';");
-  f.write('apps/activitypub/dist/unreferenced.js', 'export {};');
+  f.write('clients/activitypub/dist/unreferenced.js', 'export {};');
   f.write('packages/output-only/index.js', 'export {};');
-  const built = f.graph('apps');
+  const built = f.graph('clients');
   assert.deepEqual(
     violations(built),
     expected.map(([rule, from, to]) => [rule, from, to === '@tryghost/activitypub' ? output : to]),
@@ -1748,7 +1756,7 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
   assert.ok(
     edges(built).some(
       ([from, specifier, to]) =>
-        from === 'apps/admin-x-framework/src/root.ts' &&
+        from === 'clients/admin-x-framework/src/root.ts' &&
         specifier === '@tryghost/activitypub' &&
         to === output,
     ),
@@ -1756,7 +1764,7 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
   assert.deepEqual(built.modules.find(({ source }) => source === output)?.dependencies, []);
   assert.ok(!built.modules.some(({ source }) => source === 'packages/output-only/index.js'));
   assert.ok(
-    !built.modules.some(({ source }) => source === 'apps/activitypub/dist/unreferenced.js'),
+    !built.modules.some(({ source }) => source === 'clients/activitypub/dist/unreferenced.js'),
   );
 });
 

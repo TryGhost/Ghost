@@ -230,7 +230,7 @@ describe('Gift Subscriptions', function () {
       const checkoutSession = getLatestCheckoutSession();
 
       assert.ok(checkoutSession, 'Checkout session should be captured');
-      assert.deepEqual(Object.keys(checkoutSession.metadata), ['ghost_gift_id']);
+      assert.deepEqual(Object.keys(checkoutSession.metadata), ['ghost_gift_id', 'ghost_site_uuid']);
       const pendingGift = await models.Gift.findOne(
         { id: checkoutSession.metadata.ghost_gift_id },
         { require: true },
@@ -252,7 +252,7 @@ describe('Gift Subscriptions', function () {
             payment_status: 'paid',
             amount_total: paidTier.monthly_price,
             currency: paidTier.currency.toLowerCase(),
-            customer: checkoutSession.customer,
+            customer: checkoutSession.customer ?? null,
             customer_details: { email: 'gift-buyer@example.com' },
             metadata: toWebhookMetadata(checkoutSession.metadata),
             payment_intent: 'pi_gift_test_123',
@@ -316,7 +316,7 @@ describe('Gift Subscriptions', function () {
         mode: 'payment',
         amount_total: paidTier.monthly_price,
         currency: paidTier.currency.toLowerCase(),
-        customer: checkoutSession.customer,
+        customer: checkoutSession.customer ?? null,
         customer_details: { email: 'delayed-gift-buyer@example.com' },
         metadata: toWebhookMetadata(checkoutSession.metadata),
       };
@@ -367,7 +367,7 @@ describe('Gift Subscriptions', function () {
         payment_status: 'unpaid',
         amount_total: paidTier.monthly_price,
         currency: paidTier.currency.toLowerCase(),
-        customer: checkoutSession.customer,
+        customer: checkoutSession.customer ?? null,
         customer_details: { email: 'failed-gift-buyer@example.com' },
         metadata: toWebhookMetadata(checkoutSession.metadata),
         payment_intent: 'pi_failed_gift',
@@ -416,7 +416,7 @@ describe('Gift Subscriptions', function () {
             mode: 'payment',
             amount_total: paidTier.monthly_price,
             currency: paidTier.currency.toLowerCase(),
-            customer: checkoutSession.customer,
+            customer: checkoutSession.customer ?? null,
             payment_status: 'paid',
             metadata: toWebhookMetadata(checkoutSession.metadata),
             payment_intent: 'pi_gift_no_email',
@@ -474,7 +474,7 @@ describe('Gift Subscriptions', function () {
             payment_status: 'paid',
             amount_total: paidTier.yearly_price,
             currency: paidTier.currency.toLowerCase(),
-            customer: checkoutSession.customer,
+            customer: checkoutSession.customer ?? null,
             customer_details: { email },
             metadata: toWebhookMetadata(checkoutSession.metadata),
             payment_intent: 'pi_gift_member_test_456',
@@ -536,7 +536,7 @@ describe('Gift Subscriptions', function () {
             payment_status: 'paid',
             amount_total: expectedAmount,
             currency: paidTier.currency.toLowerCase(),
-            customer: checkoutSession.customer,
+            customer: checkoutSession.customer ?? null,
             customer_details: { email: buyerEmail },
             metadata: toWebhookMetadata(checkoutSession.metadata),
             payment_intent: `pi_gift_multi_month_${giftSequence + 1}`,
@@ -726,7 +726,7 @@ describe('Gift Subscriptions', function () {
             payment_status: 'paid',
             amount_total: paidTier.monthly_price,
             currency: paidTier.currency.toLowerCase(),
-            customer: checkoutSession.customer,
+            customer: checkoutSession.customer ?? null,
             customer_details: { email: 'idempotent-buyer@example.com' },
             metadata: toWebhookMetadata(checkoutSession.metadata),
             payment_intent: 'pi_idempotent_test',
@@ -809,7 +809,7 @@ describe('Gift Subscriptions', function () {
             payment_status: 'paid',
             amount_total: expectedAmount,
             currency: paidTier.currency.toLowerCase(),
-            customer: checkoutSession.customer,
+            customer: checkoutSession.customer ?? null,
             customer_details: { email: 'refund-buyer@example.com' },
             metadata: toWebhookMetadata(checkoutSession.metadata),
             payment_intent: paymentIntentId,

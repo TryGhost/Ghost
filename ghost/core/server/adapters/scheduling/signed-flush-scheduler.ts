@@ -2,6 +2,8 @@ import logging from '@tryghost/logging';
 import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey, InternalKeys } from '../../services/internal-keys';
 import { buildSignedJob } from './build-signed-job';
+import type { SchedulingAdapter } from './error-capture';
+import { getSchedulerIdempotencyKey } from './get-scheduler-idempotency-key';
 
 // The default scheduling adapter can ping up to 50ms before the scheduled
 // time, and the flush queries truncate "now" to whole seconds — an exactly
@@ -15,7 +17,7 @@ function normalizeTime(time: number): number {
 
 interface SignedFlushSchedulerOptions {
   apiUrl: string;
-  adapter: SchedulerAdapter;
+  adapter: SchedulerAdapter & Pick<SchedulingAdapter, 'dedupesByIdempotencyKey'>;
   internalKeys: InternalKeys;
   // Admin API path segments of the flush endpoint the armed callback hits
   // (e.g. ['gifts', 'flush_deliveries']).
@@ -36,7 +38,7 @@ interface SignedFlushSchedulerOptions {
  */
 export class SignedFlushScheduler {
   readonly #apiUrl: string;
-  readonly #adapter: SchedulerAdapter;
+  readonly #adapter: SignedFlushSchedulerOptions['adapter'];
   readonly #internalKeys: InternalKeys;
   readonly #endpoint: SignedFlushSchedulerOptions['endpoint'];
   readonly #name: string;
@@ -129,6 +131,8 @@ export class SignedFlushScheduler {
     // rebuilt job; only key rotation has a distinct stale URL to
     // unschedule.
     const bootstrap = !previousKey;
+    // An adapter that dedupes by idempotency key already holds the boot job
+    const skipUnschedule = bootstrap && this.#adapter.dedupesByIdempotencyKey === true;
     const scheduledTimes = new Set(pending.map(normalizeTime));
 
     this.#scheduledTimes.clear();
@@ -141,7 +145,9 @@ export class SignedFlushScheduler {
       // Reuse the boot job so correctness doesn't depend on token
       // signing being deterministic.
       const staleJob = previousKey ? this.#buildJob(time, previousKey) : job;
-      this.#adapter.unschedule(staleJob, { bootstrap });
+      if (!skipUnschedule) {
+        this.#adapter.unschedule(staleJob, { bootstrap });
+      }
 
       if (previousKey) {
         for (const delayMs of this.#legacyDelaysMs) {
@@ -160,6 +166,12 @@ export class SignedFlushScheduler {
       path: this.#endpoint,
       time: time + delayMs,
       key,
+      getIdempotencyKey: (url) =>
+        getSchedulerIdempotencyKey({
+          namespace: this.#name.replaceAll('_', '-'),
+          date: new Date(time + delayMs),
+          url,
+        }),
     });
   }
 }

@@ -300,8 +300,9 @@ is the surface's, and answers with a `ghost-app:connect` carrying the port and
 the names of the calls it exports. The ID lets Admin tell whether a hello comes
 from a document it already connected or from a new document. Over the port,
 each side exposes named calls: `HostExports` are what an app may call on Admin
-(`fetch`, `titleChanged`, `pathChanged`, `open`), and `AppExports` what Admin
-calls on the app (`start`, `themeChanged`, `pathChanged`).
+(`fetch`, `titleChanged`, `pathChanged`, `open`, `overlayShown`,
+`overlayHidden`), and `AppExports` what Admin calls on the app (`start`,
+`themeChanged`, `pathChanged`, `layoutChanged`, `overlayDismissed`).
 
 The frame is untrusted, so Admin parses every argument with the schemas here
 (`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before
@@ -341,10 +342,11 @@ sides read a path, a header or a refusal the same way.
 returns the URL to request, or the reason it refused. An app can only reach
 the routes in `ADMIN_API_ALLOWLIST`, and only the routes, includes and sorts
 its installation's approved scopes cover. Writes of posts, pages and tags are
-also checked for code injection and mobiledoc (`content.ts`). It all stands in
-for apps' own token until the server checks what an app does. The exact rules,
-and what the security review must look at, are in the header of
-`src/bridge/allowlist.ts` and in `src/bridge/resolve.ts`.
+also checked for code injection and mobiledoc (`content.ts`). The server also
+holds the app user token Admin sends the calls with to the approved scopes;
+these checks filter more finely than a scope. The exact rules, and what the
+security review must look at, are in the header of `src/bridge/allowlist.ts`
+and in `src/bridge/resolve.ts`.
 
 ```ts
 import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';

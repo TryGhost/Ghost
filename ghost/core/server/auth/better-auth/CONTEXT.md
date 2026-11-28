@@ -32,8 +32,8 @@ to one Better Auth ships.
 _Avoid_: custom plugin, extension
 
 **Server-only endpoint**:
-An endpoint on the instance that Ghost's own code can call and no HTTP request
-can reach.
+An endpoint on the instance that Ghost's own code can call and Better Auth's
+router never matches to an HTTP request.
 _Avoid_: internal endpoint, private route
 
 ### Routes

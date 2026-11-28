@@ -1,6 +1,6 @@
 packages:
   - 'ghost'
-  - 'apps/*'
+  - 'clients/*'
   - 'e2e'
   - 'koenig/*'
   - 'packages/**'
@@ -48,6 +48,7 @@ allowBuilds:
 
 catalog:
   '@better-auth/core': 1.7.25
+  '@better-auth/oauth-provider': 1.7.25
   '@better-auth/test-utils': 1.7.25
   '@codemirror/autocomplete': 6.20.4
   '@codemirror/commands': 6.11.1
@@ -89,7 +90,7 @@ catalog:
   '@storybook/react-vite': 10.6.6
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
-  '@tanstack/react-query': 5.105.1
+  '@tanstack/react-query': 5.108.4
   '@tanstack/react-virtual': 3.14.13
   '@testing-library/dom': 10.4.2
   '@testing-library/jest-dom': 6.9.1
@@ -103,9 +104,9 @@ catalog:
   '@tryghost/logging': 6.1.0
   '@tryghost/mg-clean-html': 0.12.7
   '@tryghost/metrics': 3.8.0
-  '@tryghost/mongo-knex': 0.12.0
-  '@tryghost/nql': 0.13.6
-  '@tryghost/nql-lang': 0.7.2
+  '@tryghost/mongo-knex': 0.13.0
+  '@tryghost/nql': 0.14.0
+  '@tryghost/nql-lang': 0.8.0
   '@tryghost/pretty-cli': 3.4.4
   '@tryghost/promise': 2.4.0
   '@tryghost/request': 4.1.0
@@ -138,6 +139,7 @@ catalog:
   '@vitest/ui': 4.1.12
   ajv: 8.20.0
   ajv-formats: 3.0.1
+  aria-hidden: 1.2.6
   better-auth: 1.7.25
   better-sqlite3: 13.1.1
   body-parser: 1.20.9
@@ -251,7 +253,7 @@ catalog:
   '@x402/core': 2.29.0
   '@x402/evm': 2.29.0
   '@x402/hono': 2.29.0
-  hono: 4.13.19
+  hono: 4.13.21
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5

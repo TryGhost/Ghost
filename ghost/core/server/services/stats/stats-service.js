@@ -268,6 +268,7 @@ class StatsService {
    * @param {object} deps.urlUtils - URL helpers for absolute image URLs
    * @param {import('@tryghost/logging').GhostLogger} deps.logging
    * @param {object|null} deps.tinybirdClient - Configured Tinybird client, when web analytics is enabled
+   * @param {import('../members/member-avatar').memberAvatarImage} deps.memberAvatarImage
    *
    * @returns {StatsService}
    **/

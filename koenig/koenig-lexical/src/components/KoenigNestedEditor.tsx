@@ -16,6 +16,7 @@ const KoenigNestedEditor = ({
     initialEditorState,
     initialTheme,
     nodes = 'basic',
+    markdownTransformers: customMarkdownTransformers = null,
     placeholderText = '',
     textClassName = '',
     placeholderClassName = '',
@@ -30,7 +31,7 @@ const KoenigNestedEditor = ({
     children
 }) => {
     const initialNodes = nodes === 'minimal' ? MINIMAL_NODES : BASIC_NODES;
-    const markdownTransformers = nodes === 'minimal' ? MINIMAL_TRANSFORMERS : BASIC_TRANSFORMERS;
+    const markdownTransformers = customMarkdownTransformers ?? (nodes === 'minimal' ? MINIMAL_TRANSFORMERS : BASIC_TRANSFORMERS);
 
     return (
         <KoenigNestedComposer

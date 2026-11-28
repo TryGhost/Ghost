@@ -76,6 +76,14 @@
 		}
 	}
 
+	# atproto DID - lets the site's domain be its Bluesky handle
+	handle /.well-known/atproto-did {
+		reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
 	# Public app dev server assets - must come BEFORE general /ghost/* handler
 	# Ghost is configured to load these from /ghost/assets/* via compose.dev.yaml
 	handle /ghost/assets/* {
@@ -94,7 +102,7 @@
 		@public_app path_regexp public_app ^/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/(.*)$
 		handle @public_app {
 			rewrite * /{re.public_app.2}
-			root * /srv/apps/{re.public_app.1}/umd
+			root * /srv/clients/{re.public_app.1}/umd
 			file_server
 		}
 

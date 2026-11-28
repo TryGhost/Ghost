@@ -3,9 +3,41 @@ import { parse as parseUrl } from 'node:url';
 import Frame from './frame.ts';
 import headers from './headers.ts';
 import type { Dictionary } from './frame.ts';
-import type { ControllerMethod } from './pipeline.ts';
+import { apiConfigOf, type ControllerMethod } from './pipeline.ts';
 
 const debug = createDebug('http');
+
+const routed = new WeakMap<HttpHandler, ControllerMethod | undefined>();
+
+/** The controller method an `http()` handler runs */
+export interface RoutedMethod {
+  /**
+   * The method itself, which two routes mounting it share; undefined when `http()` was given
+   * none, as for a method the controller doesn't have
+   */
+  controller: ControllerMethod | undefined;
+  /** Undefined unless the pipeline built the method */
+  docName?: string;
+  method?: string;
+  /**
+   * As the controller declares it; undefined for a method outside the pipeline or written as a
+   * single function, neither of which checks a permission
+   */
+  permissions?: ControllerMethod['permissions'];
+}
+
+/**
+ * The controller method a handler from `http()` runs, for middleware that must decide on the
+ * request before the route's other middleware does. Undefined for any handler `http()` didn't
+ * return.
+ */
+export function routedMethod(handler: unknown): RoutedMethod | undefined {
+  if (typeof handler !== 'function' || !routed.has(handler as HttpHandler)) {
+    return undefined;
+  }
+  const apiImpl = routed.get(handler as HttpHandler);
+  return { controller: apiImpl, ...apiConfigOf(apiImpl), permissions: apiImpl?.permissions };
+}
 
 export interface GhostRequest {
   /** The request's principal, set by Ghost's auth middleware */
@@ -63,7 +95,11 @@ const http = (
    * @param res - Express response object.
    * @param next - Express next function.
    */
-  return async function Http(req: GhostRequest, res: GhostResponse, next: GhostNextFunction) {
+  const handler: HttpHandler = async function Http(
+    req: GhostRequest,
+    res: GhostResponse,
+    next: GhostNextFunction,
+  ) {
     debug(`External API request to ${req.url}`);
     let apiKey = null;
     let integration = null;
@@ -181,6 +217,8 @@ const http = (
       next(err);
     }
   };
+  routed.set(handler, apiImpl as ControllerMethod);
+  return handler;
 };
 
 export default http;
