@@ -238,6 +238,7 @@ class PostsExporter {
           .map((tag) => tag.get('name'))
           .join(', '),
         post_access: this.postAccessToString(post),
+        email_subject: email?.get('subject') ?? null,
         email_recipients: email
           ? this.humanReadableEmailRecipientFilter(email?.get('recipient_filter'), labels, tiers)
           : null,
@@ -274,6 +275,7 @@ class PostsExporter {
 
       if (!membersEnabled) {
         removeableColumns.push(
+          'email_subject',
           'email_recipients',
           'sends',
           'opens',

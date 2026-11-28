@@ -47,6 +47,7 @@ describe('PostsExporter', function () {
         featured: false,
         loaded: ['tiers', 'tags', 'authors', 'email'],
         email: createModel({
+          subject: 'Custom Subject',
           feedback_enabled: true,
           track_clicks: true,
           email_count: 256,
@@ -121,6 +122,34 @@ describe('PostsExporter', function () {
 
       // Check status
       assert.equal(posts[0].status, 'published and emailed');
+
+      // Exports the subject stored on the email, not the post title
+      assert.equal(posts[0].email_subject, 'Custom Subject');
+    });
+
+    it('Exports the email subject of posts sent without a custom subject', async function () {
+      // An email sent without a custom subject stores the post title as its subject
+      models.Post.options.findAll = [
+        {
+          ...post,
+          title: 'Unchanged Title',
+          email: createModel({ subject: 'Unchanged Title' }),
+        },
+        {
+          ...post,
+          title: 'Title Edited After Sending',
+          email: createModel({ subject: 'Title When Sent' }),
+        },
+      ];
+      const posts = await Array.fromAsync(await exporter.export({}));
+
+      // The subject is exported even though it repeats the title
+      assert.equal(posts[0].title, 'Unchanged Title');
+      assert.equal(posts[0].email_subject, 'Unchanged Title');
+
+      // A later title edit does not change the exported subject
+      assert.equal(posts[1].title, 'Title Edited After Sending');
+      assert.equal(posts[1].email_subject, 'Title When Sent');
     });
 
     it('Can export posts without an email', async function () {
@@ -133,6 +162,9 @@ describe('PostsExporter', function () {
 
       // Check status
       assert.equal(posts[0].status, 'published only');
+
+      // Keeps the column, but leaves it empty
+      assert.equal(posts[0].email_subject, null);
     });
 
     it('Adds newsletter columns if multiple newsletters', async function () {
@@ -182,6 +214,7 @@ describe('PostsExporter', function () {
       assert.equal(posts[0].feedback_less_like_this, null);
 
       // Sends etc
+      assert.equal(posts[0].email_subject, null);
       assert.equal(posts[0].sends, null);
       assert.equal(posts[0].opens, null);
       assert.equal(posts[0].clicks, null);
@@ -195,6 +228,7 @@ describe('PostsExporter', function () {
     it('Hides member related columns if members disabled', async function () {
       settingsHelpers.isMembersEnabled = () => false;
       const posts = await Array.fromAsync(await exporter.export({}));
+      assert.equal(posts[0].email_subject, undefined);
       assert.equal(posts[0].email_recipients, undefined);
 
       // No feedback columns
