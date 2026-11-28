@@ -109,61 +109,74 @@ describe.skipIf(!isBetterAuth)('What Ghost’s server doesn’t check yet for ap
     return body[resource][0] as { id: string; updated_at: string };
   }
 
-  /**
-   * Shows the bridge refuses a parameter its route's list leaves out, which the server reads or
-   * ignores. The next change in this issue replaces these lists with refusals by name.
-   */
-  function unlistedParameter(
-    scopes: AppPermissionKey[],
-    gap: ServerGapName,
-    requestFor: AppRequest | (() => Promise<AppRequest>),
-  ) {
-    return async () => {
-      const app = await appWith(scopes);
-      const request = typeof requestFor === 'function' ? await requestFor() : requestFor;
-      const status = request.method === 'POST' ? 201 : request.method === 'DELETE' ? 204 : 200;
-      await onlyTheBridgeRefuses(app, gap, request, status);
-    };
-  }
-
   // One test for each gap, so a gap added without one doesn't compile
   const gaps: Record<ServerGapName, () => Promise<void>> = {
-    postListParameters: unlistedParameter(['post:browse'], 'postListParameters', {
-      method: 'GET',
-      path: '/posts/?limit=1&debug=true',
-    }),
-    postReadParameters: unlistedParameter(['post:read'], 'postReadParameters', async () => ({
-      method: 'GET',
-      path: `/posts/${fixtureManager.get('posts', 0).id}/?filter=status:published`,
-    })),
-    postWriteParameters: unlistedParameter(['post:add'], 'postWriteParameters', {
-      method: 'POST',
-      path: '/posts/?force_rerender=true',
-      body: { posts: [{ title: 'From an app' }] },
-    }),
-    listParameters: unlistedParameter(['tag:browse'], 'listParameters', {
-      method: 'GET',
-      path: '/tags/?debug=true',
-    }),
-    tagReadParameters: unlistedParameter(['tag:read'], 'tagReadParameters', async () => ({
-      method: 'GET',
-      path: `/tags/${(await knex()('tags').first('id')).id}/?limit=5`,
-    })),
-    tagWriteParameters: unlistedParameter(['tag:add'], 'tagWriteParameters', {
-      method: 'POST',
-      path: '/tags/?formats=lexical',
-      body: { tags: [{ name: 'From an app' }] },
-    }),
-    noParameters: unlistedParameter(['slug:generate'], 'noParameters', {
-      method: 'GET',
-      path: '/slugs/post/hello/?debug=true',
-    }),
+    async emailAndHtmlSource() {
+      const app = await appWith(['post:add', 'post:edit']);
 
-    // Ghost reads no query on the search index, so an include there gets nothing more
-    searchIndexFields: unlistedParameter(['post:browse'], 'searchIndexFields', {
-      method: 'GET',
-      path: '/search-index/posts/?include=email',
-    }),
+      for (const resource of ['posts', 'pages'] as const) {
+        const made = await onlyTheBridgeRefuses(
+          app,
+          'emailAndHtmlSource',
+          {
+            method: 'POST',
+            path: `/${resource}/?source=html`,
+            body: { [resource]: [{ title: 'HTML', html: '<p>Written as <em>HTML</em></p>' }] },
+          },
+          201,
+        );
+        assert.match(made.body[resource][0].lexical, /Written as /);
+
+        const { id, updated_at: updatedAt } = made.body[resource][0];
+        const rewritten = await onlyTheBridgeRefuses(
+          app,
+          'emailAndHtmlSource',
+          {
+            method: 'PUT',
+            path: `/${resource}/${id}/?source=html`,
+            body: {
+              [resource]: [{ updated_at: updatedAt, html: '<p>Rewritten as <em>HTML</em></p>' }],
+            },
+          },
+          200,
+        );
+        assert.match(rewritten.body[resource][0].lexical, /Rewritten as /);
+
+        const { updated_at: rewrittenAt } = rewritten.body[resource][0];
+        for (const parameters of ['newsletter=default-newsletter', 'email_segment=all']) {
+          await onlyTheBridgeRefuses(
+            app,
+            'emailAndHtmlSource',
+            {
+              method: 'PUT',
+              path: `/${resource}/${id}/?${parameters}`,
+              body: { [resource]: [{ updated_at: rewrittenAt }] },
+            },
+            200,
+          );
+        }
+      }
+    },
+
+    async rerenderOrConvert() {
+      const app = await appWith(['post:add', 'post:edit']);
+
+      for (const resource of ['posts', 'pages'] as const) {
+        for (const parameter of ['force_rerender', 'convert_to_lexical']) {
+          const { id, updated_at: updatedAt } = await draft(app, resource);
+          await onlyTheBridgeRefuses(
+            app,
+            'rerenderOrConvert',
+            {
+              method: 'PUT',
+              path: `/${resource}/${id}/?${parameter}=true`,
+              body: { [resource]: [{ updated_at: updatedAt }] },
+            },
+            200,
+          );
+        }
+      }
+    },
 
     async scriptInContent() {
       const app = await appWith(['post:add', 'post:edit', 'tag:add', 'tag:edit']);
@@ -228,6 +241,52 @@ describe.skipIf(!isBetterAuth)('What Ghost’s server doesn’t check yet for ap
         200,
       );
       assert.equal(editedTag.body.tags[0].codeinjection_foot, script);
+    },
+
+    // An app approved only to add posts gets all of one it can't read, as the copy
+    async copy() {
+      const app = await appWith(['post:add']);
+      const source = {
+        posts: fixtureManager.get('posts', 0),
+        pages: fixtureManager.get('posts', 5),
+      };
+
+      for (const resource of ['posts', 'pages'] as const) {
+        const copied = await onlyTheBridgeRefuses(
+          app,
+          'copy',
+          { method: 'POST', path: `/${resource}/${source[resource].id}/copy/` },
+          201,
+        );
+        assert.equal(copied.body[resource][0].title, `${source[resource].title} (Copy)`);
+        assert.ok(
+          copied.body[resource][0].lexical || copied.body[resource][0].mobiledoc,
+          'the copy came back without the original’s content',
+        );
+      }
+    },
+
+    async bulkEdit() {
+      const app = await appWith(['post:add', 'post:edit']);
+
+      for (const resource of ['posts', 'pages'] as const) {
+        const { id } = await draft(app, resource);
+        await onlyTheBridgeRefuses(
+          app,
+          'bulkEdit',
+          {
+            method: 'PUT',
+            path: `/${resource}/bulk/?filter=id:'${id}'`,
+            body: { bulk: { action: 'feature' } },
+          },
+          200,
+        );
+        assert.equal(
+          (await knex()('posts').where({ id }).first('featured')).featured,
+          1,
+          `PUT /${resource}/bulk/ didn’t feature the ${resource.slice(0, -1)}`,
+        );
+      }
     },
 
     // An app approved only to list posts gets how they performed, and their tags, for the asking

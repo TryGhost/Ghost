@@ -11,16 +11,20 @@ import { isRecord, type FetchMethod } from './rules.ts';
  * carries within a route it allows, and each gap here covers one such thing until the issue it
  * names moves the check to the server:
  *
- * - Query parameters: a request may carry only those Ghost reads on its route that apps need,
- *   by exact name. On a post or page write that leaves out `newsletter` and `email_segment`,
- *   which send the post as email, and `source=html`, which turns HTML into its content as it is
- *   (BER-4140).
+ * - Sending a post as email, or writing HTML as its content: the `newsletter`, `email_segment`
+ *   and `source` parameters on a post or page write (BER-4142).
+ * - Re-rendering a post's HTML, or converting a mobiledoc post to Lexical for good: the
+ *   `force_rerender` and `convert_to_lexical` parameters on a post or page write (BER-4142).
  * - Script in a write: code injection at any depth and a `mobiledoc` that isn't `null`, in the
  *   body of a post, page or tag write (BER-4142).
+ * - Bulk edit of posts and pages, which writes without the checks a single edit gets
+ *   (BER-4142).
+ * - Copying a post or page, which answers with the copy, and so with the original's content,
+ *   under `post:add` alone, without `post:read` (BER-4141).
  * - What reading a post returns beyond the post: a related object needs its own scope, and how
  *   a post performed needs `post:readStats`, through the includes and sort fields that reach
- *   them. Ghost includes some of both by default, so a request that names no `include` and no
- *   `fields` is sent with the defaults the app may have (BER-4141, BER-4143).
+ *   them. Ghost includes some of both by default, so a request that names no `include` is sent
+ *   with the defaults the app may have (BER-4141, BER-4143).
  *
  * A gap is one unit: the issues that retire it, and what it does to a request, built by one of
  * the constructors below. Retiring a gap is deleting its entry in `SERVER_GAPS`, the
@@ -42,10 +46,12 @@ import { isRecord, type FetchMethod } from './rules.ts';
  *   scheduled post that already has a newsletter sends its email then, with no parameter.
  * - Staff emails: `GET /users/` returns every staff user's email, and so does every post's
  *   `authors`, which are full user records on the Admin API, with `status` and `last_seen`.
- *   Reading posts includes them, so every app with `post:browse` gets them.
+ *   The bridge names `authors` on every post and page request that names no `include`, one
+ *   that asks for some `fields` included, so a post comes with them unless the app names
+ *   includes without them.
  * - Filters: `filter` is passed to Ghost as it is, and can reach a post's related objects that
  *   `include` needs a scope for, such as `tags.visibility:internal` without `tag:browse`, or test
- *   guesses at `authors.email`. No filter reaches how a post performed.
+ *   guesses at `authors.email`.
  * - Content: a write can put HTML and script in a post or page, in a Lexical card or a caption
  *   for one, which Ghost serves on the site's own origin, and on Admin's where the two share
  *   one. Only code injection and a mobiledoc that isn't `null` are refused.
@@ -76,13 +82,16 @@ export interface ServerGap {
 
 const where = ({ method, pathname }: GapRequest) => `${method} ${pathname}`;
 
-/**
- * Refuses a request that names any query parameter but these, by exact name. The bridge's
- * strict reading of a query already keeps a spelling such as `include[]` from slipping past a
- * check, so the next change in this issue replaces these lists with refusals of the parameters
- * that do harm, by name, and removes this constructor.
- */
-function allowsOnlyParameters(
+/** Refuses the route whole. */
+function refusesRoute(retiredBy: readonly string[]): ServerGap {
+  return {
+    retiredBy,
+    apply: (request) => ({ refused: `Apps can't use ${where(request)}` }),
+  };
+}
+
+/** Refuses a request that names any of these query parameters. */
+function refusesParameters(
   retiredBy: readonly string[],
   parameters: readonly string[],
 ): ServerGap & { readonly parameters: readonly string[] } {
@@ -90,12 +99,10 @@ function allowsOnlyParameters(
     retiredBy,
     parameters,
     apply(request) {
-      for (const name of request.query.keys()) {
-        if (!parameters.includes(name)) {
-          return { refused: `Apps can't use the ${name} parameter on ${where(request)}` };
-        }
-      }
-      return { query: request.query };
+      const named = parameters.find((parameter) => request.query.has(parameter));
+      return named
+        ? { refused: `Apps can't use the ${named} parameter on ${where(request)}` }
+        : { query: request.query };
     },
   };
 }
@@ -178,11 +185,13 @@ export interface FieldsGap extends ServerGap {
  * name is refused, one it names needs its scope, and so does an `order` field it names.
  *
  * Given `defaultIncludes`, what Ghost includes when a request names nothing, a request that
- * names no `include` and no `fields` is sent with those of them the app may have, so what's
- * named is what the server acts on and its own defaults, which hold how a post performed, never
- * apply. Ghost leaves its defaults out when a request asks for some `fields`, so such a request
- * is left alone and isn't sent relations it never asked for. One of the defaults should need no
- * scope, so what's named is never empty, which Ghost would refuse.
+ * names no `include` is sent with those of them the app may have, so what's named is what the
+ * server acts on and its own defaults, which hold how a post performed, never apply. That goes
+ * for a request that asks for some `fields` too. Ghost adds no defaults to a read that does,
+ * but it honours `fields` only on a read, and only when it reads it as a list, so a write with
+ * `fields` gets its defaults; naming them whatever `fields` says is what keeps them off every
+ * request. A read that asks for some fields comes back with what's named as well. One of them
+ * should need no scope, so what's named is never empty, which Ghost would refuse.
  */
 function holdsFieldsToScopes(
   retiredBy: readonly string[],
@@ -221,8 +230,7 @@ function holdsFieldsToScopes(
           return needs(scope, `ordering by ${field}`);
         }
       }
-      const asksForFields = (query.get('fields') ?? '') !== '';
-      if (included.length > 0 || asksForFields || defaultIncludes.length === 0) {
+      if (included.length > 0 || defaultIncludes.length === 0) {
         return { query };
       }
       const allowed = defaultIncludes.filter((relation) => {
@@ -252,42 +260,29 @@ const POST_FIELD_SCOPES: FieldScopes = {
 
 const READS = ['BER-4141', 'BER-4143'] as const;
 const WRITES = ['BER-4142'] as const;
-const PARAMETERS = ['BER-4140'] as const;
-
-// What Ghost reads on a list of tags, tiers, newsletters or staff users, minus `debug`.
-const LIST_PARAMETERS = ['include', 'filter', 'fields', 'limit', 'order', 'page'];
 
 export const SERVER_GAPS = {
-  /** What Ghost's post and page lists read, minus `debug` and `collection`. */
-  postListParameters: allowsOnlyParameters(PARAMETERS, [
-    ...LIST_PARAMETERS,
-    'formats',
-    'absolute_urls',
-  ]),
-  postReadParameters: allowsOnlyParameters(PARAMETERS, [
-    'include',
-    'fields',
-    'formats',
-    'absolute_urls',
-  ]),
+  /** Asking Ghost to email a post, or to take HTML as its content as it is. */
+  emailAndHtmlSource: refusesParameters(WRITES, ['newsletter', 'email_segment', 'source']),
   /**
-   * What Ghost reads on a post or page write, minus `newsletter` and `email_segment`, which send
-   * the post as email, `source=html`, which turns HTML into the post's content as it is, and the
-   * rest of what only Admin's editor needs.
+   * Asking Ghost to re-render a post's HTML from its content, or to convert a mobiledoc post's
+   * stored content to Lexical, which can't be undone.
    */
-  postWriteParameters: allowsOnlyParameters(PARAMETERS, ['include', 'formats', 'save_revision']),
-  listParameters: allowsOnlyParameters(PARAMETERS, LIST_PARAMETERS),
-  tagReadParameters: allowsOnlyParameters(PARAMETERS, ['include', 'filter', 'fields']),
-  tagWriteParameters: allowsOnlyParameters(PARAMETERS, ['include']),
-  /**
-   * A delete sends nothing and answers with nothing, and slug generation and the site's public
-   * details read nothing more.
-   */
-  noParameters: allowsOnlyParameters(PARAMETERS, []),
+  rerenderOrConvert: refusesParameters(WRITES, ['force_rerender', 'convert_to_lexical']),
   /**
    * Code injection, which Ghost outputs as it is, and mobiledoc, which it converts cards and all.
    */
   scriptInContent: refusesScriptInContent(WRITES),
+  /**
+   * Bulk edit writes to the database directly, with none of the checks a single edit gets, so
+   * until the server checks each of its actions it is refused.
+   */
+  bulkEdit: refusesRoute(WRITES),
+  /**
+   * A copy answers with the new post, which holds everything the original does, and checks only
+   * `post:add`. Until the server asks for read access to the original, it is refused.
+   */
+  copy: refusesRoute(['BER-4141']),
   // Ghost's own defaults for posts and for pages, less authors' roles; a test in Ghost holds
   // them to its serializers.
   postFields: holdsFieldsToScopes(READS, POST_FIELD_SCOPES, [
@@ -305,9 +300,6 @@ export const SERVER_GAPS = {
     'count.signups',
     'count.paid_conversions',
   ]),
-  // The search index of posts and pages is held to the same includes and sorts as listing them,
-  // and names no defaults. Ghost reads no query there, so the next change in this issue drops it.
-  searchIndexFields: holdsFieldsToScopes(READS, POST_FIELD_SCOPES),
   /**
    * How many posts a newsletter sent comes with listing it. How many members subscribe is member
    * data, which no scope grants yet.

@@ -22,8 +22,8 @@ function queryEcho() {
 }
 
 /**
- * What the bridge makes of a query an app wrote, on a list of tags: the reason it refuses it, or
- * the parameters it held and the query it sends in their place.
+ * What the bridge makes of a query an app wrote, on a route with no server gaps: the reason it
+ * refuses it, or the parameters it held and the query it sends in their place.
  */
 function bridged(written: string) {
   const check = checkAdminApiRequest({ path: `/tags/?${written}` }, ROOT, new Set(['tag:browse']));
@@ -61,8 +61,7 @@ describe('the query the app bridge sends, as Ghost reads it', function () {
     return req.query;
   };
 
-  // The parameters the allowlist takes on a list of tags; it refuses every other name
-  const NAMES = ['include', 'fields', 'order', 'filter', 'limit', 'page'];
+  const NAMES = ['include', 'fields', 'order', 'filter', 'newsletter', 'email_segment', 'source'];
   const escaped = (name: string) =>
     name.replace(/^./, (first) => `%${first.charCodeAt(0).toString(16)}`);
   const spellings = (name: string) => [
@@ -141,7 +140,7 @@ describe('the query the app bridge sends, as Ghost reads it', function () {
     `x=${key}]=${value}`,
     `x]=${key}=${value}`,
     `${key}=${value}&${key}=y`,
-    `limit=1&${key}=${value}`,
+    `a=1&${key}=${value}`,
     `${key}=${value}&`,
   ];
 
@@ -171,7 +170,7 @@ describe('the query the app bridge sends, as Ghost reads it', function () {
         }
       }
     }
-    assert.ok(sent > 500, `sent only ${sent} queries`);
+    assert.ok(sent > 1000, `sent only ${sent} queries`);
     assert.ok(refused > 5000, `refused only ${refused} queries`);
     for (const name of NAMES) {
       assert.ok((readBack.get(name) ?? 0) > 50, `Ghost read ${name} in only ${readBack.get(name)}`);
@@ -202,6 +201,7 @@ describe('the query the app bridge sends, as Ghost reads it', function () {
       `filter=${'%00'.repeat(3)}`,
       `filter=${encodeURIComponent('\u{1F600}\u0000\r\n\t "\'<>\\^`{|}~')}`,
       `filter=${'a'.repeat(1500)}`,
+      Array.from({ length: 100 }, (_, index) => `p${index}=${index}`).join('&'),
     );
 
     let sent = 0;
@@ -222,12 +222,14 @@ describe('the query the app bridge sends, as Ghost reads it', function () {
   });
 
   // Ghost's parser reads 1,000 parameters and drops the rest without an error
-  it('reads fewer parameters than Ghost’s parser does', function () {
+  it('sends fewer parameters than Ghost’s parser reads', function () {
     const many = (count: number) =>
       Array.from({ length: count }, (_, index) => `p${index}=1`).join('&');
 
-    assert.ok('parameters' in readQuery(many(100)));
-    assert.ok('refused' in readQuery(many(101)));
+    const most = bridged(many(100));
+    assert.ok(!most.refused);
+    assert.equal(Object.keys(parse(most.sent)).length, 100);
+    assert.equal(bridged(many(101)).refused, true);
     assert.equal(Object.keys(parse(many(1001))).length, 1000);
   });
 });

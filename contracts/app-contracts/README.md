@@ -352,9 +352,10 @@ returns the URL to request, or the reason it refused. It sends only a route
 site's public details. What the server doesn't check yet within such a route,
 it covers: `SERVER_GAPS` in `src/bridge/server-gaps.ts` holds each gap as one
 unit, with the issue that moves it to the server and its own check or rewrite
-of the request: the query parameters each route takes, by exact name, which
-leave out those that email a post or take HTML as its content; code injection
-and mobiledoc in a write; and the scopes a post's includes and sorts need. Every gap
+of the request: the parameters that email a post or take HTML as its content,
+those that re-render a post or convert it to Lexical, code injection and
+mobiledoc in a write, bulk edit of posts and pages, copying
+a post or page, and the scopes a post's includes and sorts need. Every gap
 `APP_ROUTES` names for a route is applied, in order, and a refusal names the
 gap that made it.
 
@@ -376,16 +377,18 @@ can't write so that every parser reads the same:
 
 Values are free: brackets, colons, commas and anything else a filter needs.
 
-On a post or page request that names no `include` and no `fields`, the bridge
-names the includes the app may have, as Ghost's own defaults include how a
-post performed. Ghost adds no defaults to a request that asks for some
-`fields`, so the bridge leaves such a request alone.
+On a post or page request that names no `include`, the bridge names the
+includes the app may have, as Ghost's own defaults include how a post
+performed. It does so whatever `fields` says: Ghost honours `fields` only on a
+read, and only when it reads it as a list, so a write that sends it gets
+Ghost's defaults. A read that asks for some `fields` comes back with those
+fields and the relations the bridge named.
 
 Three tests in Ghost keep this honest:
 
 - `ghost/test/unit/server/web/api/admin/app-routes.test.ts` holds `APP_ROUTES`
-  to the routes Ghost opens under each scope's key, naming the few the bridge
-  doesn't send yet, and to how Ghost's router matches a path.
+  to the routes Ghost opens under each scope's key, in both directions, and to
+  how Ghost's router matches a path.
 - `ghost/test/unit/server/web/api/admin/app-bridge-query.test.ts` shows every
   spelling of a query is either refused by the bridge or read by the parser
   Ghost's Express apps are set up with as exactly the parameters the bridge
@@ -402,7 +405,7 @@ import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
 const root = new URL('https://site.example/ghost/api/admin/');
 const approved = new Set(['post:browse', 'post:add']);
 checkAdminApiRequest({ path: '/posts/?limit=5&filter=tag:news' }, root, approved);
-// { url: …/ghost/api/admin/posts/?limit=5&filter=tag%3Anews&include=authors, pathname: '/posts/', gaps: ['postListParameters', 'postFields'] }
+// { url: …/ghost/api/admin/posts/?limit=5&filter=tag%3Anews&include=authors, pathname: '/posts/', gaps: ['postFields'] }
 checkAdminApiRequest({ path: '/../content/' }, root, approved); // { problem: 'invalid_path' }
 checkAdminApiRequest({ path: '/db/' }, root, approved);
 // { problem: 'blocked', pathname: '/db/', detail: "Apps can't use GET /db/" }

@@ -7,23 +7,9 @@ import { adminApiRouter, adminApiRoutes, examplePath } from '../../../../../util
 
 const ROUTES: Record<string, Record<string, readonly string[]>> = APP_ROUTES;
 
-// Routes Ghost's server opens under a scope that the bridge doesn't send yet. The next change in
-// this issue lists them in APP_ROUTES and removes this.
-const NOT_SENT_YET: Record<string, readonly string[]> = {
-  'post:add': ['POST /pages/:id/copy', 'POST /posts/:id/copy'],
-  'post:edit': ['PUT /pages/bulk', 'PUT /posts/bulk'],
-  'post:readStats': [
-    'GET /feedback/:id',
-    'GET /stats/posts/:id/stats',
-    'POST /stats/posts-member-counts',
-    'POST /stats/posts-visitor-counts',
-  ],
-  'user:browse': ['GET /search-index/users'],
-};
-
 // On Ghost's server a scope opens every route whose permission check is the scope's key. The
 // app contracts hold the reviewed list of those routes, with what Admin's bridge still covers on
-// each, so that list has to be exactly the routes Ghost opens, but those named above.
+// each, so that list has to be exactly the routes Ghost opens.
 describe('The routes an app’s scopes open', function () {
   const routes = adminApiRoutes();
 
@@ -32,7 +18,6 @@ describe('The routes an app’s scopes open', function () {
       const opened = routes
         .filter(({ permissionKey }) => permissionKey === scope)
         .map(({ route }) => route)
-        .filter((route) => !NOT_SENT_YET[scope]?.includes(route))
         .sort();
 
       assert.deepEqual(
@@ -43,9 +28,10 @@ describe('The routes an app’s scopes open', function () {
     });
   }
 
-  // The bridge reads `:id` only as an object ID, so a route Ghost mounts ahead of a listed `:id`
-  // route, such as `GET /posts/export`, doesn't reach the bridge as the listed route. A new
-  // route that would fails here until it is reviewed.
+  // The bridge reads `:id` as any one segment, so a route Ghost mounts ahead of a listed `:id`
+  // route, such as `GET /posts/export`, reaches the bridge as the listed route. Each such route
+  // is named here, and the server refuses it to every app, as its key is no scope; a change to
+  // its key, or a new route like it, fails here until it is reviewed.
   it('leaves no other route reached as a listed one, but those the server refuses to apps', function () {
     const listed = new Set(Object.values(ROUTES).flatMap((opened) => Object.keys(opened)));
     const reachedAsListed = routes
@@ -55,7 +41,7 @@ describe('The routes an app’s scopes open', function () {
         return scopesOpening(`${examplePath(path)}/`, method as 'GET').length > 0;
       });
 
-    assert.deepEqual(reachedAsListed.map(({ route }) => route).sort(), []);
+    assert.deepEqual(reachedAsListed.map(({ route }) => route).sort(), ['GET /posts/export']);
     for (const { route, permissionKey } of reachedAsListed) {
       assert.ok(
         permissionKey !== null && !isAppPermissionKey(permissionKey),

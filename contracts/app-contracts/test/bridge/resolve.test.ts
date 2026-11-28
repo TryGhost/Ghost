@@ -17,8 +17,8 @@ const check = (
   approved: ReadonlySet<AppPermissionKey> = APPROVED,
 ) => checkAdminApiRequest({ path, method, body }, apiRoot, approved);
 
-// The URL a path resolves to, or null when it is not an Admin API path. Every path these tests
-// resolve is one apps can reach, except in the tests about the allowlist.
+// The URL a path resolves to, or null when it is not an Admin API path. No path these tests
+// resolve is one a server gap refuses, except in the tests about the gaps.
 function resolved(path: string, apiRoot = root) {
   const result = check(path, 'GET', apiRoot);
   expect(result.problem, path).not.toBe('blocked');
@@ -35,52 +35,11 @@ function landsOn(path: string, apiRoot = root) {
 describe('checking an Admin API request', () => {
   it('resolves a leading / against the API root, not the origin', () => {
     expect(resolved('/tags/')).toBe('https://site.example/ghost/api/admin/tags/');
-    expect(resolved('/tags/?limit=5&filter=tag:news')).toBe(
-      'https://site.example/ghost/api/admin/tags/?limit=5&filter=tag%3Anews',
+    expect(resolved('/tags/?limit=5&page=2')).toBe(
+      'https://site.example/ghost/api/admin/tags/?limit=5&page=2',
     );
     expect(landsOn('/')).toBe('/');
     expect(landsOn('/a:b/')).toBe('/a:b/');
-  });
-
-  it('sends a query it wrote itself, each value escaped whole', () => {
-    expect(resolved("/tags/?filter=canonical_url:'https%3A%2F%2Fexample.com%2F'")).toBe(
-      'https://site.example/ghost/api/admin/tags/?filter=canonical_url%3A%27https%3A%2F%2Fexample.com%2F%27',
-    );
-    expect(resolved('/tags/?limit=5&&filter=a+b&page')).toBe(
-      'https://site.example/ghost/api/admin/tags/?limit=5&filter=a%20b&page=',
-    );
-  });
-
-  // Ghost's query parser reads each of these names as `newsletter`, `email_segment`, `source`
-  // or `include`, and makes a list of a name that repeats, which a URL parser doesn't.
-  it('refuses a query it can’t write so that every parser reads the same', () => {
-    const id = '5ddc9141c35e7700383b2937';
-    for (const [method, path] of [
-      ['PUT', `/posts/${id}/?news%6cetter=weekly`],
-      ['PUT', `/posts/${id}/?[newsletter]=weekly`],
-      ['PUT', `/posts/${id}/?%5Bnewsletter%5D=weekly`],
-      ['PUT', `/posts/${id}/?[email_segment]=all`],
-      ['POST', '/posts/?[source]=html'],
-      ['PUT', `/posts/${id}/?newsletter[]=weekly`],
-      ['PUT', `/posts/${id}/?newsletter%5Ba%5D=weekly`],
-      ['PUT', `/posts/${id}/?include[]=tags`],
-      ['GET', '/posts/?include[]=email'],
-    ] as const) {
-      expect(check(path, method), `${method} ${path}`).toMatchObject({
-        problem: 'blocked',
-        detail: expect.stringMatching(/: a name may only have letters, digits and _ \(/),
-      });
-    }
-    for (const path of ['/posts/?include=tags&include=sentiment', '/posts/?fields=&fields=']) {
-      expect(check(path), path).toMatchObject({
-        problem: 'blocked',
-        detail: expect.stringMatching(/ parameter more than once \(GET \/posts\/\)$/),
-      });
-    }
-    expect(check('/tags/?filter=%E0%A4%A')).toMatchObject({
-      problem: 'blocked',
-      detail: "Apps can't send a filter parameter with a malformed escape in it (GET /tags/)",
-    });
   });
 
   it('returns a new URL, leaving the root alone', () => {
@@ -90,11 +49,10 @@ describe('checking an Admin API request', () => {
     expect(root.href).toBe('https://site.example/ghost/api/admin/');
   });
 
-  it('names the path within the API, as the app routes read it, and the server gaps covered on it', () => {
-    const result = check('/tags/?limit=5');
-    expect(result).toMatchObject({ pathname: '/tags/' });
-    expect(result.problem === undefined && result.gaps).toEqual(['listParameters']);
-    expect(check('/')).toMatchObject({ pathname: '/' });
+  it('names the path within the API and the server gaps covered on it', () => {
+    expect(check('/tags/?limit=5')).toMatchObject({ pathname: '/tags/', gaps: [] });
+    expect(check('/posts/?limit=5')).toMatchObject({ pathname: '/posts/', gaps: ['postFields'] });
+    expect(check('/site/')).toMatchObject({ pathname: '/site/', gaps: [] });
   });
 
   it('works with a root written without its trailing slash, a query or a fragment', () => {
@@ -164,30 +122,61 @@ describe('checking an Admin API request', () => {
     expect(resolved('/../admin-evil/posts/')).toBeNull();
   });
 
-  it('allows .. that stays within the root, so the allowlist sees where it lands', () => {
+  it('allows .. that stays within the root, so the gaps are read where it lands', () => {
     expect(resolved('/posts/%2e%2e/tags/')).toBe('https://site.example/ghost/api/admin/tags/');
-    expect(check('/posts/%2e%2e/users/password/')).toEqual({
+    expect(check('/tags/%2e%2e/posts/bulk/', 'PUT')).toEqual({
       problem: 'blocked',
-      pathname: '/users/password/',
-      detail: "Apps can't use GET /users/password/",
+      pathname: '/posts/bulk/',
+      detail: "Apps can't use PUT /posts/bulk/",
+      gap: 'bulkEdit',
     });
   });
 
-  it('blocks what the allowlist leaves out, naming the method and the path within the API', () => {
-    expect(check('/db/?include=all')).toEqual({
-      problem: 'blocked',
-      pathname: '/db/',
-      detail: "Apps can't use GET /db/",
-    });
-    expect(check('/posts/?filter=tag:news', 'DELETE')).toEqual({
-      problem: 'blocked',
-      pathname: '/posts/',
-      detail: "Apps can't use DELETE /posts/",
-    });
-    expect(check('/posts/?filter=tag:news', 'GET')).toMatchObject({ pathname: '/posts/' });
+  // Until Ghost's server refuses an app on every route no scope opens, the bridge does.
+  it('refuses a route the app routes don’t list', () => {
+    for (const [method, path] of [
+      ['GET', '/db/?include=all'],
+      ['DELETE', '/posts/?filter=tag:news'],
+      ['GET', '/settings/'],
+      ['GET', '/users/5ddc9141c35e7700383b2937/token/'],
+      ['POST', '/webhooks/'],
+      ['POST', '/site/'],
+      ['GET', '/no/such/route/'],
+    ] as const) {
+      const pathname = path.split('?')[0];
+      expect(check(path, method), `${method} ${path}`).toEqual({
+        problem: 'blocked',
+        pathname,
+        detail: `Apps can't use ${method} ${pathname}`,
+      });
+    }
+    // A parameter is any one segment, as Ghost's router reads it, so this is sent as the read
+    // of a post it would be routed as if no route named it, and the server answers.
+    expect(check('/posts/export/').problem).toBeUndefined();
   });
 
-  it('blocks the same paths whichever way the root is written', () => {
+  it('refuses a route whose scope the installation wasn’t approved for', () => {
+    const approved = new Set<AppPermissionKey>(['post:browse']);
+    expect(check('/posts/', 'GET', root, undefined, approved).problem).toBeUndefined();
+    expect(check('/tags/', 'GET', root, undefined, approved)).toEqual({
+      problem: 'blocked',
+      pathname: '/tags/',
+      detail: "This app wasn't approved for tag:browse, which GET /tags/ needs",
+    });
+    expect(check('/posts/', 'POST', root, '{"posts":[{"title":"Hi"}]}', approved).problem).toBe(
+      'blocked',
+    );
+    const stats = '/stats/posts/5ddc9141c35e7700383b2937/stats/';
+    expect(check(stats).problem).toBe('blocked');
+    expect(check(stats, 'GET', root, undefined, new Set(['post:readStats'])).problem).toBe(
+      undefined,
+    );
+    // The site's public details need no scope.
+    expect(check('/site/', 'GET', root, undefined, new Set()).problem).toBeUndefined();
+    expect(check('/SITE', 'GET', root, undefined, new Set()).problem).toBeUndefined();
+  });
+
+  it('reads the gaps the same whichever way the root is written', () => {
     for (const apiRoot of [
       'https://site.example/ghost/api/admin',
       'https://site.example/ghost/api/admin/',
@@ -195,11 +184,33 @@ describe('checking an Admin API request', () => {
       'https://site.example/',
       'https://site.example',
     ]) {
-      expect(check('/db/', 'GET', new URL(apiRoot)), apiRoot).toMatchObject({
+      expect(check('/posts/bulk/', 'PUT', new URL(apiRoot)), apiRoot).toMatchObject({
         problem: 'blocked',
-        pathname: '/db/',
+        pathname: '/posts/bulk/',
       });
       expect(check('/posts/', 'GET', new URL(apiRoot)).problem, apiRoot).toBeUndefined();
+    }
+  });
+
+  it('blocks a path with an empty segment, as the route it reaches can’t be told', () => {
+    for (const path of ['/posts//bulk/', '/posts//', '/tags/slug//', '/a//']) {
+      expect(check(path, 'PUT'), path).toMatchObject({
+        problem: 'blocked',
+        detail: expect.stringMatching(/: its path has an empty segment$/),
+      });
+    }
+    expect(check('/tags/').problem).toBeUndefined();
+  });
+
+  // A parameter's value is Ghost's to read, and Ghost answers 400 to one it can't decode, so the
+  // bridge sends it on rather than judging it.
+  it('sends on a path whose parameter has a malformed escape', () => {
+    for (const path of ['/tags/slug/%zz/', '/tags/slug/%E0%A4%A/']) {
+      const result = check(path);
+      expect(result.problem, path).toBeUndefined();
+      expect(result.problem === undefined && result.url.pathname, path).toBe(
+        `/ghost/api/admin${path}`,
+      );
     }
   });
 
@@ -227,240 +238,96 @@ describe('checking an Admin API request', () => {
     expect(check('/posts/slug/v4/').problem).toBeUndefined();
   });
 
-  it('allows only the query parameters a group lists, by exact name', () => {
-    const id = '5ddc9141c35e7700383b2937';
-    for (const [method, path, parameter, gap] of [
-      ['PUT', `/posts/${id}/?newsletter=weekly`, 'newsletter', 'postWriteParameters'],
+  // The bridge never passes an app's spelling of a query on: it reads the query strictly and
+  // writes its own, so the server reads the parameters the bridge acted on.
+  it('sends a query it wrote itself, with each value escaped whole', () => {
+    for (const [written, sent] of [
+      ['?limit=5&filter=tag:news', '?limit=5&filter=tag%3Anews'],
       [
-        'PUT',
-        `/posts/${id}/?formats=lexical&email_segment=all`,
-        'email_segment',
-        'postWriteParameters',
+        "?filter=canonical_url:'https%3A%2F%2Fexample.com%2F'",
+        '?filter=canonical_url%3A%27https%3A%2F%2Fexample.com%2F%27',
       ],
-      ['PUT', `/pages/${id}/?email_segment=status:free`, 'email_segment', 'postWriteParameters'],
-      ['POST', '/posts/?source=html', 'source', 'postWriteParameters'],
-      ['POST', '/pages/?SOURCE=html', 'SOURCE', 'postWriteParameters'],
-      ['PUT', `/posts/${id}/?newsletter`, 'newsletter', 'postWriteParameters'],
-      ['PUT', `/posts/${id}/?force_rerender=true`, 'force_rerender', 'postWriteParameters'],
-      ['PUT', `/posts/${id}/?anything=else`, 'anything', 'postWriteParameters'],
-      ['PUT', `/tags/${id}/?formats=lexical`, 'formats', 'tagWriteParameters'],
-      ['DELETE', `/posts/${id}/?newsletter=weekly`, 'newsletter', 'noParameters'],
+      ['?filter=tag:[a,b]%2Bx:1', '?filter=tag%3A%5Ba%2Cb%5D%2Bx%3A1'],
+      ['?filter=a+b&limit=all', '?filter=a%20b&limit=all'],
+      ['?filter=a]=b', '?filter=a%5D%3Db'],
+      ['?formats', '?formats='],
+      ['?limit=5&&page=2&', '?limit=5&page=2'],
+      ['?', ''],
+      ['', ''],
     ] as const) {
-      const pathname = path.split('?')[0];
-      expect(check(path, method), `${method} ${path}`).toEqual({
-        problem: 'blocked',
-        pathname,
-        detail: `Apps can't use the ${parameter} parameter on ${method} ${pathname}`,
-        gap,
-      });
+      const result = check(`/tags/${written}`);
+      expect(result.problem, written).toBeUndefined();
+      expect((result as { url: URL }).url.search, written).toBe(sent);
     }
-    expect(
-      check(`/posts/${id}/?formats=lexical&include=tags&save_revision=true`, 'PUT').problem,
-    ).toBeUndefined();
-    expect(check(`/tags/${id}/?include=count.posts`, 'PUT').problem).toBeUndefined();
-    // A read takes only what Ghost reads for it, too.
-    expect(check('/tags/?filter=visibility:public&anything=else').problem).toBe('blocked');
   });
 
-  it('refuses a route whose scope the installation wasn’t approved for', () => {
-    const approved = new Set<AppPermissionKey>(['post:browse']);
-    expect(check('/posts/', 'GET', root, undefined, approved).problem).toBeUndefined();
-    expect(check('/tags/', 'GET', root, undefined, approved)).toEqual({
+  it('blocks a query it can’t send as every parser reads it', () => {
+    const many = (count: number) =>
+      Array.from({ length: count }, (_, index) => `p${index}=1`).join('&');
+    for (const [query, detail] of [
+      [
+        'include[]=tags',
+        "Apps can't send a query parameter named include[]: a name may only have letters, digits and _ (GET /posts/)",
+      ],
+      [
+        '%69nclude=tags',
+        "Apps can't send a query parameter named %69nclude: a name may only have letters, digits and _ (GET /posts/)",
+      ],
+      [
+        'include=tags&include=authors',
+        "Apps can't send the include parameter more than once (GET /posts/)",
+      ],
+      [
+        'filter=%ff',
+        "Apps can't send a filter parameter with a malformed escape in it (GET /posts/)",
+      ],
+      [many(101), "Apps can't send more than 100 query parameters (GET /posts/)"],
+    ] as const) {
+      expect(check(`/posts/?${query}`), query).toEqual({
+        problem: 'blocked',
+        pathname: '/posts/',
+        detail,
+      });
+    }
+    expect(check(`/posts/?${many(100)}`).problem).toBeUndefined();
+    // Whichever route it is for, as the server would read it differently there too
+    expect(check('/db/?a[]=1').problem).toBe('blocked');
+  });
+
+  it('applies every gap on the route in order, and names the one that refused', () => {
+    const id = '5ddc9141c35e7700383b2937';
+    // `/posts/bulk` is also `/posts/:id`, so a post write's gaps apply to it ahead of its own
+    expect(check('/posts/bulk/?source=html', 'PUT')).toMatchObject({
       problem: 'blocked',
-      pathname: '/tags/',
-      detail: "This app wasn't approved for tag:browse, which GET /tags/ needs",
+      gap: 'emailAndHtmlSource',
     });
-    expect(check('/posts/', 'POST', root, '{"posts":[{"title":"Hi"}]}', approved).problem).toBe(
-      'blocked',
-    );
-    // The site's public details need no scope.
-    expect(check('/site/', 'GET', root, undefined, new Set()).problem).toBeUndefined();
-  });
-
-  // Ghost includes how a post performed when a request names nothing, so the bridge names what
-  // the app may have instead.
-  it('names the includes an app may have when it names none', () => {
-    const include = (path: string, approved: ReadonlySet<AppPermissionKey> = APPROVED) => {
-      const result = check(path, 'GET', root, undefined, approved);
-      return result.problem ? result.problem : result.url.searchParams.get('include');
-    };
-    expect(include('/posts/')).toBe('tags,authors,tiers,newsletter');
-    expect(include('/pages/?include=,')).toBe('tags,authors,tiers');
-    expect(include('/posts/?include=%20')).toBe('tags,authors,tiers,newsletter');
-    expect(include('/posts/', new Set(['post:browse']))).toBe('authors');
-    expect(include('/posts/', new Set([...APPROVED, 'post:readStats']))).toBe(
-      'tags,authors,email,tiers,newsletter,count.clicks',
-    );
-    expect(include('/pages/', new Set(['post:browse', 'post:readStats']))).toBe(
-      'authors,count.signups,count.paid_conversions',
-    );
-    // What an app names is left as it is.
-    expect(include('/posts/?include=tags')).toBe('tags');
-    // An empty `fields` asks for nothing, so Ghost would add its defaults, how the post
-    // performed included.
-    expect(include('/posts/?fields=', new Set(['post:browse']))).toBe('authors');
-    expect(include('/pages/?fields=', new Set(['post:browse']))).toBe('authors');
-    expect(include('/posts/5ddc9141c35e7700383b2937/?fields=', new Set(['post:read']))).toBe(
-      'authors',
-    );
-    // Asking for some fields, Ghost adds no defaults, so neither does the bridge.
-    expect(include('/posts/?fields=id,title')).toBeNull();
-    expect(include('/posts/?fields=%20')).toBeNull();
-    // The rest of the query is sent as the bridge read it.
-    const result = check("/posts/?filter=slug:'a%2Cb'&include=&limit=5");
-    expect(result.problem === undefined && result.url.search).toBe(
-      '?filter=slug%3A%27a%2Cb%27&include=tags%2Cauthors%2Ctiers%2Cnewsletter&limit=5',
-    );
-    // Writes answer with the post too, and other routes take no include.
-    const id = '5ddc9141c35e7700383b2937';
-    const written = check(`/posts/${id}/`, 'PUT', root, '{"posts":[{"title":"Hi"}]}');
-    expect(written.problem === undefined && written.url.searchParams.get('include')).toBe(
-      'tags,authors,tiers,newsletter',
-    );
-    expect(include('/search-index/posts/')).toBeNull();
-    expect(include('/tags/')).toBeNull();
-  });
-
-  it('needs the related object’s scope to include it', () => {
-    const approved = new Set<AppPermissionKey>(['post:browse']);
-    for (const [relation, scope] of [
-      ['tags', 'tag:browse'],
-      ['tiers', 'product:browse'],
-      ['newsletter', 'newsletter:browse'],
-    ] as const) {
-      expect(check(`/posts/?include=${relation}`, 'GET', root, undefined, approved)).toMatchObject({
-        detail: `This app wasn't approved for ${scope}, which including ${relation} needs`,
-      });
-    }
-    expect(
-      check('/posts/?include=authors,post_revisions', 'GET', root, undefined, approved).problem,
-    ).toBeUndefined();
-    for (const relation of ['authors.roles', 'post_revisions.author']) {
-      expect(check(`/posts/?include=${relation}`).problem, relation).toBe('blocked');
-    }
-  });
-
-  it('refuses newsletters’ member counts, as no scope grants member data yet', () => {
-    const approved = new Set<AppPermissionKey>(['newsletter:browse']);
-    for (const relation of ['count.members', 'count.active_members']) {
-      expect(
-        check(`/newsletters/?include=${relation}`, 'GET', root, undefined, approved),
-      ).toMatchObject({
-        problem: 'blocked',
-        detail: `Apps can't include ${relation} on GET /newsletters/`,
-      });
-    }
-    expect(
-      check('/newsletters/?include=count.posts', 'GET', root, undefined, approved).problem,
-    ).toBeUndefined();
-  });
-
-  it('refuses an include spelled as an array, which Ghost’s query parser reads as include', () => {
-    const approved = new Set<AppPermissionKey>(['newsletter:browse', 'post:browse', 'post:read']);
-    const id = '5ddc9141c35e7700383b2937';
-    for (const path of [
-      '/newsletters/?include[]=count.members',
-      '/newsletters/?include[0]=count.members',
-      '/newsletters/?include%5B%5D=count.members',
-      '/posts/?include[]=email',
-      '/pages/?include[0]=count.signups',
-      `/posts/${id}/?include[]=email`,
-    ]) {
-      expect(check(path, 'GET', root, undefined, approved).problem, path).toBe('blocked');
-    }
-  });
-
-  it('takes only the parameters Ghost reads on every route, so none slips past a check', () => {
-    const id = '5ddc9141c35e7700383b2937';
-    for (const path of [
-      '/tags/?include[]=count.posts',
-      `/tags/${id}/?debug=true`,
-      '/tiers/?include[]=monthly_price',
-      '/users/?debug=true',
-      '/slugs/post/hello/?include=x',
-      '/site/?debug=true',
-    ]) {
-      expect(check(path).problem, path).toBe('blocked');
-    }
-    for (const path of [
-      '/tags/?limit=5&filter=visibility:public&order=name&page=2&fields=name&include=count.posts',
-      '/tiers/?limit=all&include=monthly_price',
-      '/newsletters/?limit=5&filter=status:active&order=sort_order&page=1&fields=name',
-      '/users/?limit=5&include=roles',
-      '/slugs/post/hello/',
-      '/site/',
-    ]) {
-      expect(check(path).problem, path).toBeUndefined();
-    }
-  });
-
-  it('takes no parameters on a delete, names no includes for it, and doesn’t check its body', () => {
-    const id = '5ddc9141c35e7700383b2937';
-    for (const path of [`/posts/${id}/?include=tags`, `/tags/${id}/?include=count.posts`]) {
-      expect(check(path, 'DELETE').problem, path).toBe('blocked');
-    }
-    const result = check(`/posts/${id}/`, 'DELETE', root, '{"posts":[{"codeinjection_head":"x"}]}');
-    expect(result.problem).toBeUndefined();
-    expect(result.problem === undefined && result.url.search).toBe('');
-  });
-
-  // How a post performed is `post:readStats`'s, so reads and writes of posts and pages can
-  // include it, or sort by it, only with that scope.
-  it('includes or sorts by how posts performed only with post:readStats', () => {
-    const id = '5ddc9141c35e7700383b2937';
-    const cases = [
-      ['GET', '/posts/?include=email', 'including email'],
-      ['GET', '/posts/?include=tags,count.clicks', 'including count.clicks'],
-      ['GET', '/posts/?include=tags,sentiment', 'including sentiment'],
-      ['GET', `/posts/${id}/?include=tags, count.signups`, 'including count.signups'],
-      ['GET', '/pages/?include=count.paid_conversions', 'including count.paid_conversions'],
-      [
-        'GET',
-        '/posts/slug/hello/?include=count.positive_feedback',
-        'including count.positive_feedback',
-      ],
-      ['PUT', `/posts/${id}/?include=email`, 'including email'],
-      ['POST', '/pages/?include=count.signups', 'including count.signups'],
-      ['GET', '/posts/?order=sentiment%20desc', 'ordering by sentiment'],
-      ['GET', '/posts/?order=title%20asc,%20email.open_rate%20desc', 'ordering by email.open_rate'],
-    ] as const;
-    const withStats = new Set([...APPROVED, 'post:readStats' as const]);
-    for (const [method, path, what] of cases) {
-      const pathname = path.split('?')[0] as string;
-      expect(check(path, method), `${method} ${path}`).toEqual({
-        problem: 'blocked',
-        pathname,
-        detail: `This app wasn't approved for post:readStats, which ${what} needs`,
-        gap: pathname.startsWith('/pages/') ? 'pageFields' : 'postFields',
-      });
-      expect(check(path, method, root, undefined, withStats).problem, path).toBeUndefined();
-    }
-    expect(
-      check('/posts/?include=tags,authors,tiers&order=published_at%20desc&limit=5').problem,
-    ).toBeUndefined();
-    expect(check(`/posts/${id}/?include=post_revisions&formats=lexical`).problem).toBe(undefined);
-    expect(check('/posts/?include=members').problem).toBe('blocked');
-    // Ghost skips an empty part, so it needs nothing.
-    expect(check('/posts/?include=tags,,authors').problem).toBeUndefined();
-    expect(check('/posts/?debug=true').problem).toBe('blocked');
-  });
-
-  it('checks the content a write sends', () => {
-    expect(check('/posts/', 'POST', root, '{"posts":[{"title":"Hello"}]}').problem).toBeUndefined();
-    expect(
-      check('/posts/', 'POST', root, '{"posts":[{"codeinjection_head":"<script></script>"}]}'),
-    ).toEqual({
+    expect(check('/posts/bulk/', 'PUT', root, '{"bulk":{"mobiledoc":"{}"}}')).toMatchObject({
       problem: 'blocked',
-      pathname: '/posts/',
-      detail: "Apps can't send codeinjection_head to POST /posts/",
       gap: 'scriptInContent',
     });
-    expect(check('/posts/', 'POST', root, 'posts[0][title]=x')).toEqual({
+    expect(check('/posts/bulk/?include=sentiment', 'PUT')).toMatchObject({
       problem: 'blocked',
-      pathname: '/posts/',
-      detail: 'Apps can only send JSON to POST /posts/',
-      gap: 'scriptInContent',
+      gap: 'postFields',
     });
+    expect(check('/posts/bulk/', 'PUT')).toMatchObject({ problem: 'blocked', gap: 'bulkEdit' });
+
+    // A gap that passes the request on may rewrite its query for the next, and for the server
+    const sent = check(`/posts/${id}/?formats=lexical`, 'PUT', root, '{"posts":[{}]}');
+    expect(sent).toMatchObject({
+      pathname: `/posts/${id}/`,
+      gaps: ['emailAndHtmlSource', 'rerenderOrConvert', 'scriptInContent', 'postFields'],
+    });
+    expect((sent as { url: URL }).url.search).toBe(
+      '?formats=lexical&include=tags%2Cauthors%2Ctiers%2Cnewsletter',
+    );
+  });
+
+  it('leaves a request alone on a route with no gaps, whatever it carries', () => {
+    const id = '5ddc9141c35e7700383b2937';
+    expect(
+      check(`/posts/${id}/?newsletter=weekly&include=sentiment`, 'DELETE', root, 'not json'),
+    ).toMatchObject({ gaps: [] });
+    expect(check('/tags/?include=count.posts&order=sentiment').problem).toBeUndefined();
   });
 
   it('refuses escaped separators, which a later reader may decode', () => {

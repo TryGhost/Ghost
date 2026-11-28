@@ -22,7 +22,6 @@ const GAPS: Record<string, ServerGap> = SERVER_GAPS;
 const FIELD_GAPS: FieldsGap[] = [
   SERVER_GAPS.postFields,
   SERVER_GAPS.pageFields,
-  SERVER_GAPS.searchIndexFields,
   SERVER_GAPS.newsletterFields,
 ];
 
@@ -80,6 +79,78 @@ describe('the gaps in what Ghost’s server checks', () => {
     expect(scopeForField(fieldScopes, 'authors')).toBeNull();
     expect(scopeForField(fieldScopes, 'authors.roles')).toBeUndefined();
     expect(scopeForField(fieldScopes, 'counts')).toBeUndefined();
+  });
+});
+
+describe('re-rendering a post or converting it to Lexical', () => {
+  it('refuses the two parameters on a post or page write', () => {
+    for (const [method, path, parameter] of [
+      ['PUT', `/posts/${ID}/?force_rerender=true`, 'force_rerender'],
+      ['PUT', `/pages/${ID}/?convert_to_lexical=true`, 'convert_to_lexical'],
+      ['POST', '/posts/?convert_to_lexical=true', 'convert_to_lexical'],
+      ['POST', '/pages/?force_rerender', 'force_rerender'],
+    ] as const) {
+      const pathname = path.split('?')[0];
+      expect(sent(path, { method }), `${method} ${path}`).toEqual(
+        refusedBy(
+          'rerenderOrConvert',
+          `Apps can't use the ${parameter} parameter on ${method} ${pathname}`,
+        ),
+      );
+    }
+  });
+});
+
+describe('emailing a post or writing HTML as its content', () => {
+  it('refuses the three parameters on a post or page write', () => {
+    for (const [method, path, parameter] of [
+      ['PUT', `/posts/${ID}/?newsletter=weekly`, 'newsletter'],
+      ['PUT', `/posts/${ID}/?formats=lexical&email_segment=all`, 'email_segment'],
+      ['PUT', `/pages/${ID}/?email_segment=status:free`, 'email_segment'],
+      ['POST', '/posts/?source=html', 'source'],
+      ['POST', '/pages/?source=html', 'source'],
+      ['PUT', `/posts/${ID}/?source=html`, 'source'],
+      ['PUT', `/posts/${ID}/?newsletter`, 'newsletter'],
+      ['PUT', '/posts/not-an-object-id/?newsletter=weekly', 'newsletter'],
+    ] as const) {
+      const pathname = path.split('?')[0];
+      expect(sent(path, { method }), `${method} ${path}`).toEqual(
+        refusedBy(
+          'emailAndHtmlSource',
+          `Apps can't use the ${parameter} parameter on ${method} ${pathname}`,
+        ),
+      );
+    }
+  });
+
+  // Another spelling of one of them never reaches this gap: the bridge refuses the query
+  it('is never walked past by another spelling of a parameter', () => {
+    for (const query of [
+      'news%6cetter=weekly',
+      '[newsletter]=weekly',
+      '%5Bnewsletter%5D=weekly',
+      'newsletter[]=weekly',
+      'newsletter%5Ba%5D=weekly',
+      'x=1&newsletter=&newsletter=weekly',
+    ]) {
+      expect(sent(`/posts/${ID}/?${query}`, { method: 'PUT' }), query).toMatchObject({
+        detail: expect.stringMatching(/^Apps can't send /),
+      });
+    }
+  });
+
+  // The server reads what it knows and ignores the rest, so the bridge passes them on.
+  it('sends on every other parameter, and those three anywhere but a post or page write', () => {
+    for (const [method, path] of [
+      ['PUT', `/posts/${ID}/?formats=lexical&include=tags&save_revision=true`],
+      ['PUT', `/posts/${ID}/?anything=else`],
+      ['PUT', `/posts/${ID}/?NEWSLETTER=weekly`],
+      ['PUT', `/tags/${ID}/?include=count.posts&formats=lexical&source=html`],
+      ['GET', '/posts/?newsletter=weekly'],
+      ['DELETE', `/posts/${ID}/?newsletter=weekly`],
+    ] as const) {
+      expect(sent(path, { method }), `${method} ${path}`).toBeTypeOf('string');
+    }
   });
 });
 
@@ -146,6 +217,24 @@ describe('script in a write', () => {
   });
 });
 
+describe('bulk edit and copying', () => {
+  it('refuses bulk edit of posts and pages, until the server checks each action', () => {
+    for (const path of ['/posts/bulk/', '/pages/bulk/', '/posts/BULK', '/Pages/Bulk/?filter=x']) {
+      expect(sent(path, { method: 'PUT', body: '{"bulk":{"action":"feature"}}' }), path).toEqual(
+        refusedBy('bulkEdit', /^Apps can't use PUT /),
+      );
+    }
+  });
+
+  it('refuses a copy of a post or page, until the server asks for read access to it', () => {
+    for (const path of [`/posts/${ID}/copy/`, `/pages/${ID}/copy`, `/Posts/${ID}/COPY/?a=b`]) {
+      expect(sent(path, { method: 'POST' }), path).toEqual(
+        refusedBy('copy', /^Apps can't use POST /),
+      );
+    }
+  });
+});
+
 describe('what a post, page or newsletter comes with', () => {
   const included = (path: string, options: Sent = {}) => {
     const search = sent(path, options);
@@ -176,33 +265,18 @@ describe('what a post, page or newsletter comes with', () => {
     expect(sent('/posts/?limit=5')).toBe('?limit=5&include=tags%2Cauthors%2Ctiers%2Cnewsletter');
   });
 
-  // Ghost adds no defaults to a request that asks for some `fields`, so neither does the bridge.
-  // An empty `fields` asks for nothing, so Ghost would add its defaults.
-  it('names none when a request asks for some fields', () => {
-    for (const fields of ['id,title', 'false', 'true', '%20']) {
-      expect(included(`/posts/?fields=${fields}`), fields).toBeNull();
-      expect(included(`/pages/${ID}/?fields=${fields}`), fields).toBeNull();
+  // Ghost answers a request for some `fields` with no defaults of its own, but only a read, and
+  // only when it reads `fields` as a list. The bridge doesn't copy that: it always names them.
+  it('names them whatever fields a request asks for, on a read and on a write', () => {
+    for (const fields of ['id,title', '', 'false', 'true', '%20']) {
+      expect(included(`/posts/?fields=${fields}`), fields).toBe('tags,authors,tiers,newsletter');
+      expect(included(`/pages/${ID}/?fields=${fields}`), fields).toBe('tags,authors,tiers');
     }
-    expect(included('/posts/?fields=')).toBe('tags,authors,tiers,newsletter');
     const body = '{"posts":[{"title":"Hi"}]}';
-    // A write can't ask for fields, which Ghost honours only on a read
-    expect(included('/posts/?fields=id', { method: 'POST', body })).toEqual(
-      refusedBy('postWriteParameters', "Apps can't use the fields parameter on POST /posts/"),
+    expect(included('/posts/?fields=id', { method: 'POST', body })).toBe(
+      'tags,authors,tiers,newsletter',
     );
-    expect(included('/posts/', { method: 'POST', body })).toBe('tags,authors,tiers,newsletter');
-  });
-
-  it('holds the search index of posts and pages to the same includes and sorts, naming none', () => {
-    expect(included('/search-index/posts/')).toBeNull();
-    expect(included('/search-index/pages/?include=email')).toEqual(
-      refusedBy(
-        'searchIndexFields',
-        "This app wasn't approved for post:readStats, which including email needs",
-      ),
-    );
-    expect(sent('/search-index/posts/?order=sentiment%20desc')).toMatchObject({
-      gap: 'searchIndexFields',
-    });
+    expect(included(`/pages/${ID}/?fields=id`, { method: 'PUT', body })).toBe('tags,authors,tiers');
   });
 
   it('leaves an include the app named as it is, once it is allowed', () => {
