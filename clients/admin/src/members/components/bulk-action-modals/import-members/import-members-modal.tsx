@@ -416,7 +416,9 @@ export function ImportMembersModal({
     ],
   );
 
-  const isWide = state.status === 'MAPPING' || state.status === 'UPLOADING';
+  const isAutomationConfirming = state.isConfirming;
+  const isWide =
+    (state.status === 'MAPPING' || state.status === 'UPLOADING') && !state.isConfirming;
 
   const title = useMemo(() => {
     switch (state.status) {
@@ -446,8 +448,12 @@ export function ImportMembersModal({
         )}
       >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="sr-only">Import members from a CSV file.</DialogDescription>
+          <DialogTitle>{isAutomationConfirming ? 'Import members?' : title}</DialogTitle>
+          {!isAutomationConfirming && (
+            <DialogDescription className="sr-only">
+              Import members from a CSV file.
+            </DialogDescription>
+          )}
         </DialogHeader>
 
         {state.status === 'INIT' && (
@@ -480,6 +486,7 @@ export function ImportMembersModal({
               canCreateCustomFields={canCreateCustomFields}
               dataPreviewIndex={state.dataPreviewIndex}
               fileData={state.fileData}
+              isConfirming={state.isConfirming}
               labelPicker={labelPicker}
               mapping={state.mapping}
               mappingError={state.mappingError}
@@ -489,6 +496,9 @@ export function ImportMembersModal({
               onColumnsChanged={() => {
                 hasEditsRef.current = true;
               }}
+              onConfirmingChange={(isConfirming) =>
+                dispatch({ type: 'SET_CONFIRMING', isConfirming })
+              }
               onDataPreviewIndexChange={(nextIndex) => {
                 dispatch({
                   type: 'SET_DATA_PREVIEW_INDEX',
