@@ -167,6 +167,35 @@ describe('Authorization policy', function () {
       );
     });
 
+    it('tells an app which scope it lacked, with a code of its own', async function () {
+      await assert.rejects(authorize(appPrincipal(['Owner'], ['tag:browse']), 'read', 'tag'), {
+        ...noPermission,
+        code: 'APP_SCOPE_REQUIRED',
+        message: 'This app was not approved for the tag:read scope',
+      });
+    });
+
+    it('tells an app it may not take an action no scope grants', async function () {
+      await assert.rejects(authorize(appPrincipal(['Owner'], ['tag:browse']), 'browse', 'member'), {
+        ...noPermission,
+        code: 'APP_NOT_ALLOWED',
+        message: 'Apps are not allowed to access this endpoint',
+      });
+    });
+
+    it('keeps the generic refusal for a role that lacks the key, and for any other principal’s scopes', async function () {
+      const generic = { ...noPermission, code: null };
+      await assert.rejects(
+        authorize(appPrincipal(['Contributor'], ['tag:edit']), 'edit', 'tag'),
+        generic,
+      );
+      await assert.rejects(authorize(user(['Owner'], ['tag:read']), 'edit', 'tag'), generic);
+      await assert.rejects(
+        authorize(integration('Admin Integration', ['tag:read']), 'edit', 'tag'),
+        generic,
+      );
+    });
+
     it('refuses a principal of a kind it does not know', async function () {
       const unknown = { kind: 'service', user: userView(['Owner']) } as unknown as Principal;
       await assert.rejects(authorize(unknown, 'browse', 'post'), noPermission);

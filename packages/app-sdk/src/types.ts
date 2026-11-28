@@ -114,9 +114,8 @@ export interface Ghost {
   /** The installation's revision when this session started. */
   readonly session: Session;
   /**
-   * The permission keys the app was approved for on this site. Admin refuses a call none of
-   * them covers, rejecting it with `blocked`, so check here before offering something the app
-   * can't do. They don't change while the session lasts.
+   * The permission keys the app was approved for on this site. Ghost answers a call none of
+   * them covers with a `403`, so check here before offering something the app can't do. They don't change while the session lasts.
    */
   readonly scopes: Scopes;
   /** The app's route, kept in step with Admin's URL. */

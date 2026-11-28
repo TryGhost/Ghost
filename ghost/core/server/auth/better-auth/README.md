@@ -432,17 +432,27 @@ upload then never runs for an app request that can't succeed.
   cookie; a failure to read the installation or the user is an error, not a
   refusal. The principal is `kind: 'app'` with method `app_user_token`,
   acting for the staff user.
+- Ghost refuses an app in two ways of its own, both 403s with a code, built in
+  `auth/policy/app-refusals.ts`: `APP_SCOPE_REQUIRED` when the app wasn't approved for a
+  scope the call needs, and `APP_NOT_ALLOWED` when no app may call the
+  endpoint whatever its scopes. A refusal because of the staff user's role
+  stays Ghost's generic one. The message names the scope, but Ghost words a
+  refusal of a standard action (browse, read, add, edit, destroy) itself when
+  it comes from the pipeline, with the reason as the error's `context`, so
+  the code is what to read.
 - The scopes cap the standard permission checks a call meets, through the
-  policy core, on top of the user's role. A method whose permission check is
+  policy core, on top of the user's role: `canThis` and `authorize` answer
+  `APP_SCOPE_REQUIRED`, naming the scope, or `APP_NOT_ALLOWED` for a key the
+  scope registry doesn't list, which no approval can grant. A method whose permission check is
   its own or none would see the staff user the app acts for, so the API
-  pipeline refuses apps on every such method (403) unless it's on the
-  allowlist in `api/endpoints/utils/permissions.js`, which is for methods safe
-  for any app whatever its scopes and holds none yet. The session controller
-  runs through the pipeline for this alone: its methods are single functions,
-  which the pipeline runs with no other stage. A unit test lists every such
-  method the Admin API mounts, so a new one is refused until someone decides
-  otherwise. Admin's bridge still sends only the routes the app contracts list
-  for an app's scopes (`APP_ROUTES` in
+  pipeline refuses apps on every such method (`APP_NOT_ALLOWED`) unless it's
+  on the allowlist in `api/endpoints/utils/permissions.js`, which is for
+  methods safe for any app whatever its scopes and holds none yet. The session
+  controller runs through the pipeline for this alone: its methods are single
+  functions, which the pipeline runs with no other stage. A unit test lists
+  every such method the Admin API mounts, so a new one is refused until
+  someone decides otherwise. Admin's bridge still sends only the routes the
+  app contracts list, whatever the app's scopes (`APP_ROUTES` in
   `contracts/app-contracts/src/bridge/app-routes.ts`), which
   `test/unit/server/web/api/admin/app-routes.test.ts` holds to the routes the
   Admin API mounts under each scope's key, in both directions, and refuses or
@@ -460,23 +470,26 @@ upload then never runs for an app request that can't succeed.
   Admin API's query middleware, or an Express or `qs` upgrade) has to keep it
   passing.
 - A route ending in a controller outside the pipeline, which has no permission
-  stage and no name the allowlist could hold, refuses apps (403). That includes
-  a route whose `http()` mounts a method the API doesn't have. To let an app
-  call one, run it through `pipeline()` first. A unit test drives the refusal
-  over every route the Admin API mounts, and fails on a route in a mounted
-  router that ends outside the pipeline, which nothing could refuse.
+  stage and no name the allowlist could hold, refuses apps
+  (`APP_NOT_ALLOWED`). That includes a route whose `http()` mounts a method
+  the API doesn't have. To let an app call one, run it through `pipeline()`
+  first. A unit test drives the refusal over every route the Admin API mounts,
+  and fails on a route in a mounted router that ends outside the pipeline,
+  which nothing could refuse.
 - The Admin API refuses an app on those methods and routes, and on a method
-  whose standard check needs a scope the app wasn't approved for, before the
-  route's own middleware runs (`refuseAppEarly` in the Admin API's
-  `authAdminApi`). It reads the method from the route's last handler, which
-  `routedMethod` recognises for every handler `http()` returns. A route ending
-  in anything else is a `router.all` that authenticates a router mounted after
-  it; the app goes on, and the mounted route's method decides. A rate limit
-  keyed on the staff user the app acts for, or an upload being parsed and
-  stored, never acts for an app request that can't succeed, so an app can't
-  spend the user's budget. The error is the one the pipeline would give. An
-  app approved for the scope goes on to the route and spends the budget as
-  the user would.
+  whose standard check needs a scope the app wasn't approved for
+  (`APP_SCOPE_REQUIRED`, or `APP_NOT_ALLOWED` for a key no scope grants),
+  before the route's own middleware runs
+  (`refuseAppEarly` in the Admin API's `authAdminApi`). It reads the method
+  from the route's last handler, which `routedMethod` recognises for every
+  handler `http()` returns. A route ending in anything else is a `router.all`
+  that authenticates a router mounted after it; the app goes on, and the
+  mounted route's method decides. A rate limit keyed on the staff user the app
+  acts for, or an upload being parsed and stored, never acts for an app
+  request that can't succeed, so an app can't spend the user's budget. The
+  code is the one the pipeline would give, but the message may not be: the
+  pipeline words a refusal of a standard action itself. An app approved for the scope goes
+  on to the route and spends the budget as the user would.
 - Reconciling an installation that isn't active (suspension at session
   start, uninstall) disables its client and
   deletes its tokens, and enabling a disabled client again deletes its tokens

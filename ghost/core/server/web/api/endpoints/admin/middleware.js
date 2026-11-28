@@ -5,11 +5,11 @@ const shared = require('../../../shared');
 const apiMw = require('../../middleware');
 const { routedMethod } = require('@tryghost/api-framework');
 const apiPermissions = require('../../../../api/endpoints/utils/permissions');
+const { appNotAllowed } = require('../../../../auth/policy/app-refusals');
 
 const messages = {
   apiTokenBlocked: 'API tokens do not have permission to access this endpoint',
   staffTokenBlocked: 'Staff tokens are not allowed to access this endpoint',
-  appTokenBlocked: 'Apps are not allowed to access this endpoint',
 };
 
 /**
@@ -43,11 +43,7 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
   // permission system
   if (req.auth?.kind === 'app') {
     if (isBlockedForStaffTokens(req)) {
-      return next(
-        new errors.NoPermissionError({
-          message: tpl(messages.appTokenBlocked),
-        }),
-      );
+      return next(appNotAllowed());
     }
     return next();
   }

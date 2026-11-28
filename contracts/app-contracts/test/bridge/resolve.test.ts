@@ -155,25 +155,16 @@ describe('checking an Admin API request', () => {
     expect(check('/posts/export/').problem).toBeUndefined();
   });
 
-  it('refuses a route whose scope the installation wasn’t approved for', () => {
-    const approved = new Set<AppPermissionKey>(['post:browse']);
-    expect(check('/posts/', 'GET', root, undefined, approved).problem).toBeUndefined();
-    expect(check('/tags/', 'GET', root, undefined, approved)).toEqual({
-      problem: 'blocked',
-      pathname: '/tags/',
-      detail: "This app wasn't approved for tag:browse, which GET /tags/ needs",
-    });
-    expect(check('/posts/', 'POST', root, '{"posts":[{"title":"Hi"}]}', approved).problem).toBe(
-      'blocked',
-    );
-    const stats = '/stats/posts/5ddc9141c35e7700383b2937/stats/';
-    expect(check(stats).problem).toBe('blocked');
-    expect(check(stats, 'GET', root, undefined, new Set(['post:readStats'])).problem).toBe(
+  // It needs none of the app's scopes: the server holds the route to them.
+  it('doesn’t check that a route’s scope was approved', () => {
+    const none = new Set<AppPermissionKey>();
+    expect(check('/tags/', 'GET', root, undefined, none).problem).toBeUndefined();
+    expect(check('/posts/', 'POST', root, '{"posts":[{"title":"Hi"}]}', none).problem).toBe(
       undefined,
     );
-    // The site's public details need no scope.
-    expect(check('/site/', 'GET', root, undefined, new Set()).problem).toBeUndefined();
-    expect(check('/SITE', 'GET', root, undefined, new Set()).problem).toBeUndefined();
+    // The site's public details are sent too, however the path is cased.
+    expect(check('/site/', 'GET', root, undefined, none).problem).toBeUndefined();
+    expect(check('/SITE', 'GET', root, undefined, none).problem).toBeUndefined();
   });
 
   it('reads the gaps the same whichever way the root is written', () => {

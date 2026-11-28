@@ -68,17 +68,17 @@ export type AdminApiRequestCheck =
  * path or query mentions `ghost/api`, its first segment is an old API version (`v4`), or it has
  * an empty segment; when its query isn't one every parser reads alike (`readQuery`); when
  * `APP_ROUTES` lists no route for it with this method, unless it reads the site's public
- * details; when the installation wasn't approved for the scope its route is listed under; or
- * when a server gap on the route refuses it.
+ * details; or when a server gap on the route refuses it. A listed route is sent whatever the
+ * installation's scopes: Ghost's server holds the app's token to them, and the app gets its
+ * answer, a refusal as `APP_SCOPE_REQUIRED` included.
  *
  * The query is never sent as the app spelled it. The bridge reads it strictly and writes its
  * own, one `name=value` for each parameter, so the parameters the gaps acted on are exactly the
  * ones the server reads.
  *
- * `approvedScopes` are those of the installation the app runs as, which the route's scope
- * check and the include and sort gaps read. Every gap `APP_ROUTES` names for the route is
- * applied, in order: the first to refuse the request ends it, and each of the others may
- * rewrite its query.
+ * `approvedScopes` are those of the installation the app runs as, which the include and sort
+ * gaps read. Every gap `APP_ROUTES` names for the route is applied, in order: the first to
+ * refuse the request ends it, and each of the others may rewrite its query.
  */
 export function checkAdminApiRequest(
   request: AdminApiRequest,
@@ -136,13 +136,9 @@ export function checkAdminApiRequest(
     return blocked(`${read.refused} (${method} ${pathname})`);
   }
 
-  const scopes = scopesOpening(pathname, method);
-  if (scopes.length === 0 && !(method === 'GET' && SITE.test(pathname))) {
+  // Whether the installation was approved for the route's scope is the server's to say
+  if (scopesOpening(pathname, method).length === 0 && !(method === 'GET' && SITE.test(pathname))) {
     return blocked(`Apps can't use ${method} ${pathname}`);
-  }
-  const unapproved = scopes.find((scope) => !approvedScopes.has(scope));
-  if (unapproved) {
-    return blocked(`This app wasn't approved for ${unapproved}, which ${method} ${pathname} needs`);
   }
 
   let query = read.parameters;

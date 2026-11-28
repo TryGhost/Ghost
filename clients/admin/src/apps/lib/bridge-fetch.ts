@@ -13,11 +13,12 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
 
 /**
  * Sends the requests an app asks for, only to the Admin API under `apiRoot`. `request` is already
- * validated. This function checks where its path leads and what it sends, and refuses a path that
- * leaves the API, a route the app routes don't list or list under a scope the installation wasn't
- * approved for, a query it can't write so that the server reads what it read, and what the
- * server doesn't check yet (the server gaps in the app contracts), before anything reaches the
- * network. The query it sends is one it wrote, never the app's spelling of it.
+ * validated. Ghost's server holds the app's token to the scopes it was approved for, and the app
+ * gets the server's answer, refusals included. This function refuses a path that leaves the API,
+ * a route the app routes don't list, a query it can't write so that the server reads what it
+ * read, and what the server doesn't check yet (the server gaps in the app contracts), before
+ * anything reaches the network. The query it sends is one it wrote, never the app's spelling of
+ * it.
  * It also drops headers that only Admin sets, so none of the app's headers can replace Admin's,
  * whatever reaches this function.
  *
@@ -33,9 +34,9 @@ export function createAdminApiFetch({
   /** The Admin API's root URL, as Admin's own requests use it. */
   apiRoot: URL;
   /**
-   * The scopes in the approved manifest the app session is pinned to. The bridge refuses a
-   * route none of them opens, and the include and sort gaps read them until the server holds
-   * what a read returns to scopes itself.
+   * The scopes in the approved manifest the app session is pinned to, which the include and
+   * sort gaps read until the server holds what a read returns to scopes itself. Which routes
+   * they open is the server's to check.
    */
   approvedScopes: ReadonlySet<AppPermissionKey>;
   ghostVersion?: string;

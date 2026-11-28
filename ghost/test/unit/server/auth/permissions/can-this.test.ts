@@ -451,6 +451,7 @@ describe('Permissions', function () {
     it('refuses an app acting for a user who lacks the permission', async function () {
       await assert.rejects(canThis(appFor(['tag:edit'], ['Contributor'])).edit.tag({ id: 1 }), {
         errorType: 'NoPermissionError',
+        code: null,
       });
     });
 
@@ -460,9 +461,13 @@ describe('Permissions', function () {
       for (const scopes of [[], ['post:read']]) {
         await assert.rejects(canThis(appFor(scopes)).edit.post({ id: 1 }), {
           errorType: 'NoPermissionError',
+          code: 'APP_SCOPE_REQUIRED',
+          message: 'This app was not approved for the post:edit scope',
         });
         await assert.rejects(canThis(appFor(scopes)).edit.tag({ id: 1 }), {
           errorType: 'NoPermissionError',
+          code: 'APP_SCOPE_REQUIRED',
+          message: 'This app was not approved for the tag:edit scope',
         });
       }
 

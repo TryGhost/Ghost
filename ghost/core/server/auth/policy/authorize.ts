@@ -1,7 +1,8 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { Principal } from '../principal';
-import { capabilities, capabilityKey } from './capabilities';
+import { appOutOfScope } from './app-refusals';
+import { capabilities, capabilityKey, type Capability } from './capabilities';
 import { rowRules } from './rules';
 import { scopesAllow } from './scopes';
 
@@ -26,6 +27,15 @@ export function noPermission() {
 }
 
 /**
+ * The refusal of a key the principal's scopes don't allow. An app's says which scope it lacked,
+ * or that no app may take the action when the key is no scope, with a code of its own; a refusal
+ * because of the user's role is never this one.
+ */
+export function outOfScope(principal: Principal, key: Capability) {
+  return principal.kind === 'app' ? appOutOfScope(key) : noPermission();
+}
+
+/**
  * Resolves when the principal may take the action, and throws otherwise. A
  * row rule for the type decides, and can narrow or widen the grant, but is
  * only reached when the scopes allow the key.
@@ -44,7 +54,7 @@ export async function authorize(
   const key = capabilityKey(objectType, action);
 
   if (!scopesAllow(scopes, key)) {
-    throw noPermission();
+    throw outOfScope(principal, key);
   }
 
   if (Object.hasOwn(rowRules, objectType)) {

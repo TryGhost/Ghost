@@ -5,12 +5,10 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const { capabilities, capabilityKey } = require('../../../auth/policy/capabilities');
 const { scopesAllow } = require('../../../auth/policy/scopes');
-const { noPermission } = require('../../../auth/policy/authorize');
+const { appNotAllowed, appOutOfScope } = require('../../../auth/policy/app-refusals');
 
 const messages = {
   noPermissionToCall: 'You do not have permission to {method} {docName}',
-  appsCannotCall: 'Apps do not have permission to {method} {docName}',
-  appsCannotCallOutside: 'Apps do not have permission to call this endpoint',
 };
 
 /**
@@ -87,10 +85,14 @@ const nonePublicAuth = async (apiConfig, frame) => {
     }
   } catch (err) {
     if (err instanceof errors.NoPermissionError) {
-      err.message = tpl(messages.noPermissionToCall, {
-        method: apiConfig.method,
-        docName: apiConfig.docName,
-      });
+      // An app refused for a scope keeps its message here, which names the scope it lacked. Ghost's
+      // error handler still words a refusal of a standard action itself, with this as its context
+      if (err.code !== 'APP_SCOPE_REQUIRED') {
+        err.message = tpl(messages.noPermissionToCall, {
+          method: apiConfig.method,
+          docName: apiConfig.docName,
+        });
+      }
       throw err;
     }
 
@@ -143,20 +145,16 @@ module.exports = {
     if (APP_UNCHECKED_ALLOWLIST.has(`${apiConfig.docName}.${apiConfig.method}`)) {
       return;
     }
-    throw new errors.NoPermissionError({
-      message: tpl(messages.appsCannotCall, {
-        method: apiConfig.method,
-        docName: apiConfig.docName,
-      }),
-    });
+    throw appNotAllowed();
   },
 
   /**
    * @description Refuses an app, ahead of the route's other middleware, on a method whose
    * permission stage would refuse it whatever the request: one it may not call unchecked, or one
    * whose standard check needs a scope the app wasn't approved for. Rate limits and uploads on
-   * the route then never act for a request that can't succeed. The error is the one the stage
-   * would throw; the role and row checks still run in the stage. A controller outside the
+   * the route then never act for a request that can't succeed. Its code is the one the stage
+   * would give; its message may not be, as the stage words some refusals itself. The role and row
+   * checks still run in the stage. A controller outside the
    * pipeline has no permission stage and no name the allowlist could hold, so it refuses apps.
    *
    * @param {import('@tryghost/api-framework').RoutedMethod} routed
@@ -167,7 +165,7 @@ module.exports = {
       return;
     }
     if (!routed.docName || !routed.method) {
-      throw new errors.NoPermissionError({ message: tpl(messages.appsCannotCallOutside) });
+      throw appNotAllowed();
     }
     const { permissions: own, docName, method } = routed;
     // A method with no permissions of its own is written as a single function, which checks none
@@ -180,12 +178,7 @@ module.exports = {
     const config = Object.assign({ docName, method }, typeof own === 'object' ? own : {});
     const key = permissionKey(config);
     if (!scopesAllow(capabilities(principal).scopes, key)) {
-      const err = noPermission();
-      err.message = tpl(messages.noPermissionToCall, {
-        method: config.method,
-        docName: config.docName,
-      });
-      throw err;
+      throw appOutOfScope(key);
     }
   },
 

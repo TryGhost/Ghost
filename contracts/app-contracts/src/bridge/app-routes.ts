@@ -34,8 +34,9 @@ const PAGE_WRITE = [
  * route until the server does: the gaps in `SERVER_GAPS` that apply, or none. A route with none
  * is sent as the app wrote it.
  *
- * The bridge still sends only the routes listed here, and the site's public details, and only
- * for an installation approved for the scope a route is listed under (`scopesOpening`).
+ * The bridge still sends only the routes listed here, and the site's public details
+ * (`scopesOpening`). Whether the installation was approved for a route's scope is the server's
+ * to say, and the app gets its answer.
  *
  * Routes are written as `METHOD /path`, in path segments, as Ghost's router mounts them. A
  * `:name` matches any one segment. A route matches with or without a trailing `/`, and its
@@ -152,8 +153,7 @@ export function serverGapsFor(pathname: string, method: FetchMethod): ServerGapN
 
 /**
  * The scopes the routes a request matches are listed under, without repeats, or none when it
- * matches no route here. The bridge sends a request only when it matches a route and the
- * installation was approved for every one of these.
+ * matches no route here. The bridge sends a request only when it matches a route.
  */
 export function scopesOpening(pathname: string, method: FetchMethod): AppPermissionKey[] {
   return [...new Set(matching(pathname, method).map((route) => route.scope))];
