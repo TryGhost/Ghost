@@ -7,7 +7,7 @@ import {
 } from '../../../../../core/server/auth/better-auth/ghost-models';
 import schema from '../../../../../core/server/data/schema/schema';
 
-type Column = { nullable?: boolean; defaultTo?: unknown };
+type Column = { nullable?: boolean; defaultTo?: unknown; defaultExpression?: unknown };
 type DeclaredField = { required?: boolean };
 type Mapping = { modelName: string; fields: Record<string, string> };
 
@@ -57,7 +57,8 @@ describe('ghost-models', function () {
           const isRequired = required !== false;
           const isNullable = column.nullable === true;
           // A NOT NULL column for an optional field holds only with a default to fill it
-          if (isRequired ? isNullable : !isNullable && !('defaultTo' in column)) {
+          const hasDefault = 'defaultTo' in column || 'defaultExpression' in column;
+          if (isRequired ? isNullable : !isNullable && !hasDefault) {
             return [`${field} (${isRequired ? 'required' : 'optional'}) -> ${columnOf(field)}`];
           }
           return [];

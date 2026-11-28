@@ -53,14 +53,15 @@ type CanBeNull<Column> = Column extends { nullable: infer Nullable }
   : false;
 
 /**
- * The columns an insert may leave out: the ones that can be null and the ones with a default.
- * A definition that doesn't keep `defaultTo` as a literal type reads as one without a default,
+ * The columns an insert may leave out: the ones that can be null and the ones with a default,
+ * a value (`defaultTo`) or an expression the database evaluates (`defaultExpression`). A
+ * definition that doesn't keep the default in its literal type reads as one without a default,
  * so an insert is never allowed to leave out a column the database requires.
  */
 type FilledIn<Table extends TableName> = {
   [Name in keyof ColumnsOf<Table>]: CanBeNull<ColumnsOf<Table>[Name]> extends true
     ? Name
-    : ColumnsOf<Table>[Name] extends { defaultTo: unknown }
+    : ColumnsOf<Table>[Name] extends { defaultTo: unknown } | { defaultExpression: unknown }
       ? Name
       : never;
 }[keyof ColumnsOf<Table>];

@@ -63,7 +63,8 @@ export function validateSchema(tableName: string, model: Model, options?: Option
       Object.hasOwn(column, 'nullable') &&
       column.nullable !== true &&
       column.type !== 'text' &&
-      !Object.hasOwn(column, 'defaultTo')
+      !Object.hasOwn(column, 'defaultTo') &&
+      !Object.hasOwn(column, 'defaultExpression')
     ) {
       if (validator.isEmpty(strVal)) {
         message = tpl(messages.valueCannotBeBlank, {

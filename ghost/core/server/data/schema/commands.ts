@@ -5,6 +5,7 @@ import tpl from '@tryghost/tpl';
 import type { Knex } from 'knex';
 import _ from 'lodash';
 import * as db from '../db';
+import { defaultExpressionSql } from './lib/column-defaults';
 import { type PatternCheck, patternChecksOf } from './lib/column-patterns';
 import { defaultIndexName } from './lib/default-index-name';
 import { type ForeignKeySpec, foreignKeySpecsOf, onDeleteOf } from './lib/foreign-keys';
@@ -45,11 +46,14 @@ const messages = {
  * Adds a column to a table being built. A `references` on the column is built by
  * `addForeignKey`, like any other foreign key, and a `pattern` by the caller, as a check on
  * the table.
+ *
+ * @param transaction - the connection the table is built on
  */
 function addTableColumn(
   tableName: string,
   tableBuilder: TableBuilder,
   columnName: string,
+  transaction: Knex,
   columnSpec: ColumnDefinition = tables[tableName]![columnName] as ColumnDefinition,
 ) {
   let column: LooseColumnBuilder;
@@ -92,6 +96,16 @@ function addTableColumn(
   }
   if (Object.hasOwn(columnSpec, 'defaultTo')) {
     column.defaultTo((columnSpec as LooseColumnSpec).defaultTo!);
+  }
+  // Held only on MySQL, like a column's pattern: SQLite is being removed, and can't add a
+  // column whose default is an expression to a table that exists.
+  if (
+    'defaultExpression' in columnSpec &&
+    columnSpec.defaultExpression !== undefined &&
+    DatabaseInfo.isMySQL(transaction)
+  ) {
+    const expression = defaultExpressionSql(columnSpec.defaultExpression, columnSpec.precision);
+    column.defaultTo(transaction.raw(`(${expression})`));
   }
   if (Object.hasOwn(columnSpec, 'index') && columnSpec.index === true) {
     column.index();
@@ -189,7 +203,7 @@ async function addColumn(
 ) {
   const checks = patternChecksOn(tableName, { [column]: columnSpec }, transaction);
   const addColumnBuilder = transaction.schema.table(tableName, function (table) {
-    addTableColumn(tableName, table, column, columnSpec);
+    addTableColumn(tableName, table, column, transaction, columnSpec);
     foreignKeySpecsOf({ [column]: columnSpec }).forEach((foreignKey) =>
       addForeignKey(table, foreignKey),
     );
@@ -720,7 +734,9 @@ function createTable(
   return transaction.schema.createTable(table, function (t) {
     Object.keys(tableSpec)
       .filter((column) => !column.startsWith('@@'))
-      .forEach((column) => addTableColumn(table, t, column, tableSpec[column] as ColumnDefinition));
+      .forEach((column) =>
+        addTableColumn(table, t, column, transaction, tableSpec[column] as ColumnDefinition),
+      );
 
     if (tableSpec['@@INDEXES@@']) {
       tableSpec['@@INDEXES@@'].forEach((index: IndexDefinition) => {
